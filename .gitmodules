@@ -1,0 +1,3 @@
+[submodule "contracts"]
+	path = contracts
+	url = git@github.com:RTradeLtd/RT-Contracts.git
