@@ -15,7 +15,16 @@ Once a day we will incremental backups of our data, encrypting them with our pub
 
 Nodes will be running the golang reference implementation of the IPFS spec, and the golang implementation and will run on Ubuntu 16.04.3LTS.
 
-### Security Considerations
+### Security
+
+#### Internal Endpoints
+
+We never exchange unencrypted secrets, even through encrypted communication channels (ssh, https, etc..) we always encrypt the secret prior to transmission with PGP.
+
+Since the endpoint used by cluster peers to communicate is controlled by the `cluster.listen_multiaddress` and defaults to `/ip4/0.0.0.0/tcp/9096` we use port forwarding, and ip filtering to restrict which remote hosts can access this api.
+
+#### HTTP API Endpoints
+
 
 ### How It Works
 
@@ -35,5 +44,10 @@ Currently we only issue charges in one month intervals. To prevent people from u
 Should you wish to pay for these services without RTC and use other cryptos, that is also possible but will incur a 5% markup
 
 ### Scalability
+
+TODO: Need to formulate a better method of pinning files from local node to cluster as per this from the cluster docs:
+```
+The reason pins (and unpin) requests are queued is because ipfs only performs one pin at a time, while any other requests are hanging in the meantime. All in all, pinning items which are unavailable in the network may create significants bottlenecks (this is a problem that comes from ipfs), as the pin request takes very long to time out. Facing this problem involves restarting the ipfs node.
+```
 
 This is an on-going considering for us, and we are always analyzing how to ensure we can scale as much as possible
