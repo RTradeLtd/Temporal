@@ -129,9 +129,22 @@ The smart contract will perform the following functions:
 
 ### Smart Contract - File Repository
 
+Each file will be identified by the following:
+    > keccak256 hash of the ipfs file hash
+    > eth addresses of all uploaders
+    > The currently longest file retention period
+        > Note if User A uploads for 2 months, and 1.5 months into duration, User B uploads for 1 month, the retention period is updated from 1 month from that date since it will extend past the end of the retention period from user A. 
+    > whether or not the file is still pinned in the system
 
+The smart contract will perform the following functions:
+    > Allow backend to update the information
+    > Allow payment contract to modify data
+    > Alter user profile information as appropriate
+    > Expose getters to read various data
 
+### Smart Contract - Payment Contract
 
+Payment system architecture design WIP
 
 ## Architecture Configuration 
 
