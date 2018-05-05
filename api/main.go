@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/RTradeLtd/RTC-IPFS/rtfs"
@@ -32,7 +31,18 @@ func pinHash(c *gin.Context) {
 }
 
 func addFile(c *gin.Context) {
-	file, _ := c.FormFile("file")
-
-	fmt.Println(file)
+	fileHandler, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	openFile, err := fileHandler.Open()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	manager := rtfs.Initialize()
+	resp, err := manager.Shell.Add(openFile)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, gin.H{"response": resp})
 }
