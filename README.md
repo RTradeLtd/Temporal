@@ -25,6 +25,8 @@ https://cluster.ipfs.io/developer/api/
 https://cluster.ipfs.io/guides/quickstart/
 https://github.com/gin-gonic/gin/issues/774
 
+https://cluster.ipfs.io/documentation/internals/
+
 # HOW TO:
 
 Upload file with curl:
@@ -39,3 +41,5 @@ Write smart contract fo facilitate storage:
     > must contain user accounts
         > each user account must contain a valid balance
         > when uploading a file specify duration, the user accoun must contain enough RTC to pay for the entire duration
+
+Optimize RAFT consensus, and other cluster factors
