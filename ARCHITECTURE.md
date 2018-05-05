@@ -66,18 +66,26 @@ This is an on-going considering for us, and we are always analyzing how to ensur
 ### Cluster Configuration
 
 `cluster.listen_on_multiaddress = /ip4/0.0.0.0/9096`
+
 `cluster.bootstrap = [....]`
+
 `cluster.state_sync_interval = 0m45s`
+
 `cluster.ipfs_sync_interval = 1m30s`
+
 `cluster.monitor_ping_interval = 10s`
 
 we increase to 30s to allow for proper peer init
 `cluster.consensus.raft.wait_for_leader_timeout = 30s`
+
 `cluster.consensus.raft.network_timeout = 5s`
+
 `cluster.consensus.raft.commit_retries = 2`
+
 `cluster.consensus.raft.snapshot_interval = 1m0s`
 
 `cluster.api.restapi.listen_multiaddress = /ip4/0.0.0.0/9094`
+
 `cluster.ipfs_connector.ipfshttp.proxy_listen_multiaddress = /ip4/0.0.0.0/1337`
 
 `concurrent_pins = 2` default is 1, maybe set to 2?

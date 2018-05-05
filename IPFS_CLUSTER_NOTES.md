@@ -52,3 +52,9 @@ Default listen point:
     The responses would come from cluster, not from go-ipfs.
     
     "Note that the intercepted endpoints aim to mimic the format and response code from IPFS, but they may lack headers. If you encounter a problem, open an issue so we can address it."
+
+
+# Security
+
+
+https://github.com/ipfs/ipfs-cluster/issues/79
