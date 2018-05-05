@@ -31,6 +31,9 @@ func setupRoutes(g *gin.Engine) {
 
 func getUploads(c *gin.Context) {
 	uploads := database.GetUploads()
+	if uploads == nil {
+		c.JSON(http.StatusNotFound, nil)
+	}
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 

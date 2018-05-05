@@ -61,8 +61,8 @@ func CloseDBConnection(db *gorm.DB) {
 }
 
 // GetUploads is used to retrieve all uploads
-func GetUploads() *models.Upload {
-	var uploads *models.Upload
+func GetUploads() []*models.Upload {
+	var uploads []*models.Upload
 	db = OpenDBConnection()
 	db.Find(&uploads)
 	return uploads
