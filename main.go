@@ -15,7 +15,7 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "cluster":
-		rtfs_cluster.L()
+		rtfs_cluster.BuildClusterHost()
 	case "api":
 		database.RunMigrations()
 		router := api.Setup()
