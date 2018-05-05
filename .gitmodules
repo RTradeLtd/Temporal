@@ -1,3 +1,6 @@
 [submodule "contracts"]
 	path = contracts
 	url = git@github.com:RTradeLtd/RT-Contracts.git
+[submodule "ipfs_linux_service"]
+	path = ipfs_linux_service
+	url = git@github.com:RTradeLtd/ipfs-linux-service.git

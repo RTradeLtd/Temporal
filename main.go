@@ -1,13 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"os"
-
-	"github.com/RTradeLtd/RTC-IPFS/rtfs"
+	"github.com/RTradeLtd/RTC-IPFS/api"
 )
 
+func main() {
+	router := api.Setup()
+	router.Run(":6767")
+}
+
+/*
 func main() {
 	if len(os.Args) > 2 || len(os.Args) < 2 {
 		log.Fatal("not enough arguments")
@@ -26,4 +28,4 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(resp)
-}
+}*/
