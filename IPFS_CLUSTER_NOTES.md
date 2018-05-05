@@ -25,3 +25,6 @@ ipfs-key | base64 -w 0
 05:13:56.021  INFO   ipfshttp: IPFS Proxy: /ip4/127.0.0.1/tcp/9095 -> /ip4/127.0.0.1/tcp/5001 ipfshttp.go:182
 05:13:56.021  INFO    restapi: REST API (HTTP): /ip4/127.0.0.1/tcp/9094 restapi.go:385
 05:13:56.021  INFO    restapi:   - /ip4/127.0.0.1/tcp/9096/ipfs/QmUcjzWikdGfnD533AsRL4nyyLiESDu7gb9X9HFK5ekqzd restapi.go:398
+
+#
+01:08:01.215  INFO   ipfshttp: IPFS Proxy: /ip4/127.0.0.1/tcp/9095 -> /ip4/127.0.0.1/tcp/5001 ipfshttp.go:182

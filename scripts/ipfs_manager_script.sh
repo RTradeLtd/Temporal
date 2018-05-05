@@ -13,6 +13,6 @@ case "$MODE" in
         ;;
 
     cluster-daemon)
-        ipfs-cluster-service daemon --debug | tee --append /var/log/ipfs/ipfs_cluster_daemon.log
+        ipfs-cluster-service daemon | tee --append /var/log/ipfs/ipfs_cluster_daemon.log
         ;;
 esac

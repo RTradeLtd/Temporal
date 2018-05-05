@@ -17,3 +17,9 @@ Proffesional, enterprise IPFS file hosting paid for in RTC
 > https://github.com/ipfs/go-ipfs-api
 
 > github.com/gin-gonic/gin
+
+IPFS Cluster Go API https://godoc.org/github.com/ipfs/ipfs-cluster
+
+https://cluster.ipfs.io/developer/api/
+
+https://cluster.ipfs.io/guides/quickstart/

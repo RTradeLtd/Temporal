@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/RTradeLtd/RTC-IPFS/rtfs"
 	"github.com/gin-gonic/gin"
 )
@@ -14,14 +16,15 @@ func Setup() *gin.Engine {
 
 func setupRoutes(g *gin.Engine) {
 
-	g.POST("/apiv1/add/ipfs-hash/:hash", hashAdd)
+	g.POST("/api/v1/ipfs/pin-hash/:hash", pinHash)
 }
 
-func hashAdd(c *gin.Context) {
+func pinHash(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs.Initialize()
 	err := manager.Shell.Pin(hash)
 	if err != nil {
 		c.JSON(404, nil)
 	}
+	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
