@@ -23,3 +23,9 @@ IPFS Cluster Go API https://godoc.org/github.com/ipfs/ipfs-cluster
 https://cluster.ipfs.io/developer/api/
 
 https://cluster.ipfs.io/guides/quickstart/
+
+
+# HOW TO:
+
+Upload file with curl:
+curl http://localhost:6767/api/v1/ipfs/add-file -F "file=@/home/solidity/go/src/github.com/RTradeLtd/RTC-IPFS/README.md" -H "Content-Type: multipart/form-data"
