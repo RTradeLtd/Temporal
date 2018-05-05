@@ -29,3 +29,13 @@ https://cluster.ipfs.io/guides/quickstart/
 
 Upload file with curl:
 curl http://localhost:6767/api/v1/ipfs/add-file -F "file=@/home/solidity/go/src/github.com/RTradeLtd/RTC-IPFS/README.md" -H "Content-Type: multipart/form-data"
+
+
+# TO DO:
+
+Virus scan files that are uploaded before storage onto ipfs
+
+Write smart contract fo facilitate storage:
+    > must contain user accounts
+        > each user account must contain a valid balance
+        > when uploading a file specify duration, the user accoun must contain enough RTC to pay for the entire duration
