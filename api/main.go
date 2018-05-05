@@ -11,24 +11,6 @@ import (
 	"github.com/stvp/roll"
 )
 
-/*
-	roll.Token = "POST_SERVER_ITEM_ACCESS_TOKEN"
-	//roll.Environment = "production" // defaults to "development"
-
-	r := gin.Default()
-	r.Use(rollbar.Recovery(true))
-
-	r.Run(":8080")
-	func l(err error) {
-	token := os.Getenv("ROLLBAR_TOKEN")
-	rollbar.SetToken(token)
-	rollbar.SetServerRoot("github.com/RTradeLtd/RTC-IPFS") // path of project (required for GitHub integration and non-project stacktrace collapsing)
-
-	rollbar.Error(err)
-
-	rollbar.Wait()
-}
-*/
 // Setup is used to build our routes
 func Setup() *gin.Engine {
 	token := os.Getenv("ROLLBAR_TOKEN")
