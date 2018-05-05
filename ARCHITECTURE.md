@@ -7,6 +7,17 @@ We will operate an IPFS cluster initially consisting of three nodes, two at HQ o
 
 Everytime content is uploaded to our system, we add the hashes to our database to create a easily indexable, and backupable listing of file in our system. Periodically we will parse through this database to ensure the files in our clusters are still there. If we notice any discrepancies, missing files will be re-inserted into the cluster
 
+### How It Works
+
+Payment Orchestration is done using smart contracts, see Smart Contracts for more details
+
+Hold up a minute, files, hashes? I thought IPFS was a content addressed data storage system. It is! However we make use of IPFS for two different purposes. One is to ensure that content people want pinned and accessible, but may not be able to pin regularly themselves is still accessibl; In this model you could be the primary storer of your data, and simply want us to act as a secondary host, backup of your content or we could be the primary provider of the content hash, and you the secondary. The possibilities are endless! The second way we make use of IPFS, is for the data storage, and replication of files that people upload to our storage farms. We decided to  go with IPFS due to it's immense capabilities, promising future, and ease of integration into our infrastructure due to a majority of the protocol being built with golang. 
+
+To prevent abuse of the pricing system, even if a file or hash is already pinned on the system, a subsequent pin request from a different user will incur data charges according to how long that file or hash is to be pinned in our system, since that user is also requesting data persistence. In terms of files remaining in our system, the longest pin request is what we follow. 
+
+In order to prevent issues with pinning large files to clusters, and timeouts we first pin to an ipfs node locally, followed by adding that pin to the cluster pinset. Since IPFS Cluster is itself still a working product, we first pin locally to ensure immediate availability, followed by cluster pinning
+
+
 ### Deployment
 
 Currently we aren't using any special deployment techniques, although this is under works.
@@ -15,13 +26,14 @@ Current idea is to use:
 
 https://github.com/hsanjuan/ansible-ipfs-cluster
 
-### Data Backup (expand on)
+### Node OS Configuration
 
-Once a day we will incremental backups of our data, encrypting them with our public PGP key. Once a week we will do  afull backup of our data, encrypting with a public PGP key.
-
-### Nodes
-
-Nodes will be running the golang reference implementation of the IPFS spec, and the golang implementation and will run on Ubuntu 16.04.3LTS.
+OS: Ubuntu 16.04.3LTS
+CPU: 4 cores
+RAM: 8GB
+Disks:
+    OS = 64GB
+    IPFS Repo Size = 1TB
 
 ### Security
 
@@ -45,17 +57,6 @@ For more details on this see `https://cluster.ipfs.io/documentation/security/#ht
 
 IPFS Cluster peers communicate with the IPFS daemon using unauthenticated HTTP auth. In order to ensure that access to the IPFS HTTP API remains only accessible through localhost, we take advantage of the HTTPS IPFS Proxy endpoint provided by the IPFS cluster service, configurable with `ipfshttp.proxy_listen_multiaddress` which we will overide from the default `/ip4/127.0.0.1/tcp/9095` to `/ip4/0.0.0.0/tcp/1337`
 
-### How It Works
-
-When a file upload, or pin request is made to the system, we check to ensure that the file was paid for (we do this by looking up a sha256 hash of the file) in our smart contract, along with the ethereum address of the uploader. If it is a pin request, then we look up the pinned hash and the uploaders ethereum address and make sure it was paid for. If everything checks out the content is added to our system.
-
-Hold up a minute, files, hashes? I thought IPFS was a content addressed data storage system. It is! However we make use of IPFS for two different purposes. One is to ensure that content people want pinned and accessible, but may not be able to pin regularly themselves is still accessibl; In this model you could be the primary storer of your data, and simply want us to act as a secondary host, backup of your content or we could be the primary provider of the content hash, and you the secondary. The possibilities are endless! The second way we make use of IPFS, is for the data storage, and replication of files that people upload to our storage farms. We decided to  go with IPFS due to it's immense capabilities, promising future, and ease of integration into our infrastructure due to a majority of the protocol being built with golang. 
-
-To prevent abuse of the pricing system, even if a file or hash is already pinned on the system, a subsequent pin request from a different user will incur data charges according to how long that file or hash is to be pinned in our system, since that user is also requesting data persistence. In terms of files remaining in our system, the longest pin request is what we follow. 
-
-In order to prevent issues with pinning large files to clusters, and timeouts we first pin to an ipfs node locally, followed by adding that pin to the cluster pinset.
-
-Since IPFS Cluster is itself still a working product, we first pin locally to ensure immediate availability, followed by cluster pinning
 
 ### Pricing
 
@@ -72,7 +73,7 @@ The reason pins (and unpin) requests are queued is because ipfs only performs on
 
 This is an on-going considering for us, and we are always analyzing how to ensure we can scale as much as possible
 
-## Private Networks: TODO
+### Private Networks: TODO
 
 ### Scalability Concerns
 
@@ -92,6 +93,18 @@ On the peer to be bootstrapped,
 Default is `~/.ipfs-cluster/ipfs-cluster-data`
 
 The IPFS Cluster Data Directory will be stored on (decide what RAID levels)
+
+Daily ryncs to a non IPFS storage node will be done
+
+## Smart Contracts
+
+We use smart contracts to faciliate the transparent disclosure and verification of files or hashes in our system. We also use smart contracts to facilitate payment for our services in a manner that ensures all parties are happy with the charges, and so that you won't have any unexpected fees/charges.
+
+We use smart contracts to fulfill the following requirements:
+    > User Account
+    > File Repository
+
+
 
 
 
