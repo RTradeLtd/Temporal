@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/RTradeLtd/RTC-IPFS/api"
+	"github.com/RTradeLtd/RTC-IPFS/database"
 )
 
 func main() {
+	database.RunMigrations()
 	router := api.Setup()
 	router.Run(":6767")
 }
