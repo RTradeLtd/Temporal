@@ -25,6 +25,17 @@ Since the endpoint used by cluster peers to communicate is controlled by the `cl
 
 #### HTTP API Endpoints
 
+HTTP API endpoints will be configured with SSL. We are considering adding LibP2P API endpoint support 
+
+These endpints are controlled with `restapi.http_listen_multiaddress` configured to `/ip4/127.0.0.1/tcp/9094` by defaut, however we alter to `/ip4/0.0.0.0/tcp/9094` and use port forwarding and ip filtering to restrict access.
+
+We use SSL and Basic Auth for access to these endpoints.
+
+For more details on this see `https://cluster.ipfs.io/documentation/security/#http-api-endpoints`
+
+#### IPFS and IPFS Proxy Endpoints
+
+IPFS Cluster peers communicate with the IPFS daemon using unauthenticated HTTP auth. In order to ensure that access to the IPFS HTTP API remains only accessible through localhost, we take advantage of the HTTPS IPFS Proxy endpoint provided by the IPFS cluster service, configurable with `ipfshttp.proxy_listen_multiaddress` which we will overide from the default `/ip4/127.0.0.1/tcp/9095` to `/ip4/0.0.0.0/tcp/1337`
 
 ### How It Works
 
@@ -51,3 +62,66 @@ The reason pins (and unpin) requests are queued is because ipfs only performs on
 ```
 
 This is an on-going considering for us, and we are always analyzing how to ensure we can scale as much as possible
+
+### Cluster Configuration
+
+`cluster.listen_on_multiaddress = /ip4/0.0.0.0/9096`
+`cluster.bootstrap = [....]`
+`cluster.state_sync_interval = 0m45s`
+`cluster.ipfs_sync_interval = 1m30s`
+`cluster.monitor_ping_interval = 10s`
+
+we increase to 30s to allow for proper peer init
+`cluster.consensus.raft.wait_for_leader_timeout = 30s`
+`cluster.consensus.raft.network_timeout = 5s`
+`cluster.consensus.raft.commit_retries = 2`
+`cluster.consensus.raft.snapshot_interval = 1m0s`
+
+`cluster.api.restapi.listen_multiaddress = /ip4/0.0.0.0/9094`
+`cluster.ipfs_connector.ipfshttp.proxy_listen_multiaddress = /ip4/0.0.0.0/1337`
+
+`concurrent_pins = 2` default is 1, maybe set to 2?
+
+leaving `peers` and `bootstrap` to none will cause a single peer mode cluser
+
+#### using `peers`
+
+`peers` should be filled in the following circumstances:
+    Working with stable cluster peers, running in known locations
+    Working with an automated deployment tools
+    You are able to trigger start/stop/restarts for all peers in the cluster with ease
+
+Each entry is a valid peer multiaddress like `/ip4/192.168.1.103/tcp/9096/ipfs/QmQHKLBXfS7hf8o2acj7FGADoJDLat3UazucbHrgxqisim`
+
+Once the peers have booted for the first time, the current peerset will be maintaned by the consensus component and can only be updated by:
+
+    adding new peers, using the bootstrap method
+    removing new peers, using the ipfs-cluster-ctl peers rm method
+
+
+#### using `bootstrap`
+
+`bootstrap` can be used by leaving the `peers` key empty and providing one, or more bootstrap peers
+
+
+Each entry is a valid peer multiaddress like
+`/ip4/192.168.1.103/tcp/9096/ipfs/QmQHKLBXfS7hf8o2acj7FGADoJDLat3UazucbHrgxqisim`
+
+Bootstrap can only be performed with a clean cluster state (ipfs-cluster-service state clean does it)
+
+Bootstrap can only be performed when all the existing cluster-peers are running
+
+You will want to use bootstrap when:
+
+    You are building your cluster manually, starting one single-cluster peer first and boostrapping each node consecutively to it
+
+    You don’t know the IPs or ports your peers will listen to (other than the first)
+
+    Do not manually modify the `peers` (by adding or removing peers) key after the peer has been sucessfully bootstrapped. This will result in startup errors.
+
+`leave_on_shutdown`
+
+The cluster.leave_on_shutdown option allows a peer to remove itself from the peerset when shutting down cleanly:
+
+    The state will be cleaned up automatically when the peer is cleanly shutdown.
+    All known peers will be set as bootstrap values and peers will be emptied. Thus, the peer can be started and it will attempt to re-join the cluster it left by bootstrapping to one of the previous peers.
