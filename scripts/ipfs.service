@@ -1,0 +1,11 @@
+[Unit]
+Description=Starts the ipfs daemon
+After=network.target
+
+[Service]
+Type=simple
+PIDFile=/var/run/ipfs_daemon.pid
+ExecStart=/boot_scripts/ipfs_manager_script.sh
+
+[Install]
+WantedBy=multi-user.target
