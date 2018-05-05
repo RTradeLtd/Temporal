@@ -6,11 +6,9 @@ case "$1" in
 
     # used by a node to add itself to a cluster
     bootstrap)
-        echo "enter ip of node"
-        read -r ip
-        echo "enter  cluster peer id"
-        read -r peerID
-        ipfs-cluster-service --bootstrap "/ip4/$ip/9096/ipfs/$peerID"
+        echo "enter existing peer multiaddr"
+        read -r multiADDR
+        ipfs-cluster-service --bootstrap "$multiADDR"
         ;;
     # used to list peers in a cluster
     peer-list)
@@ -37,8 +35,11 @@ case "$1" in
         ;;
     # used to recover and repin  hashes marked as ERROR in cluster ctl status
     pin-recover)
-        ecccho "etner pid cid"
+        echo "etner pid cid"
         read -r pinCID
         ipfs-cluster-ctl recover "$pinCID"
+        ;;
+    state-clean)
+        ipfs-cluster-service state clean
         ;;
 esac

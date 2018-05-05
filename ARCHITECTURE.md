@@ -7,6 +7,14 @@ We will operate an IPFS cluster initially consisting of three nodes, two at HQ o
 
 Everytime content is uploaded to our system, we add the hashes to our database to create a easily indexable, and backupable listing of file in our system. Periodically we will parse through this database to ensure the files in our clusters are still there. If we notice any discrepancies, missing files will be re-inserted into the cluster
 
+### Deployment
+
+Currently we aren't using any special deployment techniques, although this is under works.
+
+Current idea is to use:
+
+https://github.com/hsanjuan/ansible-ipfs-cluster
+
 ### Data Backup (expand on)
 
 Once a day we will incremental backups of our data, encrypting them with our public PGP key. Once a week we will do  afull backup of our data, encrypting with a public PGP key.
@@ -43,10 +51,11 @@ When a file upload, or pin request is made to the system, we check to ensure tha
 
 Hold up a minute, files, hashes? I thought IPFS was a content addressed data storage system. It is! However we make use of IPFS for two different purposes. One is to ensure that content people want pinned and accessible, but may not be able to pin regularly themselves is still accessibl; In this model you could be the primary storer of your data, and simply want us to act as a secondary host, backup of your content or we could be the primary provider of the content hash, and you the secondary. The possibilities are endless! The second way we make use of IPFS, is for the data storage, and replication of files that people upload to our storage farms. We decided to  go with IPFS due to it's immense capabilities, promising future, and ease of integration into our infrastructure due to a majority of the protocol being built with golang. 
 
-
 To prevent abuse of the pricing system, even if a file or hash is already pinned on the system, a subsequent pin request from a different user will incur data charges according to how long that file or hash is to be pinned in our system, since that user is also requesting data persistence. In terms of files remaining in our system, the longest pin request is what we follow. 
 
 In order to prevent issues with pinning large files to clusters, and timeouts we first pin to an ipfs node locally, followed by adding that pin to the cluster pinset.
+
+Since IPFS Cluster is itself still a working product, we first pin locally to ensure immediate availability, followed by cluster pinning
 
 ### Pricing
 
@@ -63,7 +72,77 @@ The reason pins (and unpin) requests are queued is because ipfs only performs on
 
 This is an on-going considering for us, and we are always analyzing how to ensure we can scale as much as possible
 
-### Cluster Configuration
+## Private Networks: TODO
+
+### Scalability Concerns
+
+https://github.com/ipfs/ipfs-cluster/issues/160
+
+### Cluster Boot Strapping Process
+
+First clear pre-existing state data:
+`ipfs-cluster-service state clean`
+
+On the peer to be bootstrapped,
+`ipfs-cluster-service --bootstrap <existing-peer-multiaddress>`
+
+
+### Data Persistence And Backups
+
+Default is `~/.ipfs-cluster/ipfs-cluster-data`
+
+The IPFS Cluster Data Directory will be stored on (decide what RAID levels)
+
+
+
+## Architecture Configuration 
+
+### IPFS Configuration
+
+Initilaize IPFS with the server profile
+`ipfs init --profile=server`
+
+For larger repos use Bader datastore:
+    > backup ~/.ipfs
+    > `ipfs config profile apply badgerds`
+    > `ipfs-ds-convert convert`
+
+If using `refs` pinning method disable automatic GC. This id done by default
+
+Increase maximum number of connections using `Swarm.ConnMgr.HighWater`
+
+Reduce `GracePeriod` to 20s
+
+Increase `DataStore.BloomFilterSize` according to repo size (size in bytes)
+
+Set `DataStore.StorageMax` to the appropriate amount of disk you want to dedicate to ipfs repo
+
+### IPFS-Cluster Configuration 
+
+#### Config Tweaks
+
+As the amount of pis  we deal with increase, we will need to increase `cluster.state_sync_interval` and `cluster.ipfs_sync_interval`
+
+Repinning can be very expensive, ad if this becomes and issue (along with taking a cluster to realize a peer is not respodning, thus triggering repins) adjust `monitor.monbasic.check_interval`
+
+To allow peers to have ample time to be restarted and come online, adjust `raft.wait_for_leader_timeout` (30s, 1m)
+
+If network becomes unstable, increase `raft.commit_retries` and `raft.commit_retry_delay` however this can lead to slower failures
+
+
+for large pinsets increase `raft.snapshot_interval`
+for many operations increase `raft.snapshot_threshold`
+
+Set `pin_method`to `refs`
+    increase `pin_tracker.maptracker.concurrent_pins` 3->15
+            this is how many thigns ipfs should download at the same time
+
+Disable  auto-GC in `go-ipfs`
+
+increase `informer.disk.metric_ttl` as ipfs datastore sizes increase (`5m` or more for larger repos)
+    if using `-1` for replication factor, set to a very high number since informers arent used in this case
+
+#### Config Defaults
 
 `cluster.listen_on_multiaddress = /ip4/0.0.0.0/9096`
 
