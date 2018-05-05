@@ -96,6 +96,8 @@ The IPFS Cluster Data Directory will be stored on (decide what RAID levels)
 
 Daily ryncs to a non IPFS storage node will be done
 
+
+
 ## Smart Contracts
 
 We use smart contracts to faciliate the transparent disclosure and verification of files or hashes in our system. We also use smart contracts to facilitate payment for our services in a manner that ensures all parties are happy with the charges, and so that you won't have any unexpected fees/charges.
@@ -103,6 +105,29 @@ We use smart contracts to faciliate the transparent disclosure and verification 
 We use smart contracts to fulfill the following requirements:
     > User Account
     > File Repository
+    > Payment Contract
+
+
+### Smart Contract - User Account
+
+We use keccak256 hashes of files pinned in our system so that users can verify their hashes without us having to expose the content that is stored in our system (all about dat privacy)
+
+This contract will track users in our system, each user will be identified by the following fiels:
+    > eth address
+    > rtc balance (balance held in contract, allocated to paying for storage)
+    > bytes32 array (keccak256(hashes))
+    > mapping (bytes32 => bool) keeps track of files they uploaded
+
+
+The smart contract will perform the following functions:
+    > Allow users to deposit any amount of RTC
+    > Allow users to withdraw any RTC that isn't locked
+    > When user purchases data storage, lock the total amount of RTC required for the duration. No more, no less
+    > Expose getters to read various data
+    > Allow file repository, to modify data
+    > Allow payment contract to modify data
+
+### Smart Contract - File Repository
 
 
 
