@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/RTradeLtd/RTC-IPFS/database"
 	"github.com/RTradeLtd/RTC-IPFS/rtfs"
 	"github.com/gin-gonic/gin"
 )
@@ -16,7 +17,8 @@ func Setup() *gin.Engine {
 
 func setupRoutes(g *gin.Engine) {
 
-	g.POST("/api/v1/ipfs/pin-hash/:hash", pinHash)
+	g.PUT("/api/v1/ipfs/pin/:hash", pinHash)
+	g.POST("/api/v1/ipfs/pin/:hash", pinHash)
 	g.POST("/api/v1/ipfs/add-file", addFile)
 }
 
@@ -27,6 +29,7 @@ func pinHash(c *gin.Context) {
 	if err != nil {
 		c.JSON(404, nil)
 	}
+	database.AddHash(c)
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
 
@@ -44,5 +47,6 @@ func addFile(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
+	database.AddFileHash(resp)
 	c.JSON(http.StatusOK, gin.H{"response": resp})
 }

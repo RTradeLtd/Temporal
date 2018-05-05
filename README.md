@@ -23,7 +23,7 @@ IPFS Cluster Go API https://godoc.org/github.com/ipfs/ipfs-cluster
 https://cluster.ipfs.io/developer/api/
 
 https://cluster.ipfs.io/guides/quickstart/
-
+https://github.com/gin-gonic/gin/issues/774
 
 # HOW TO:
 
