@@ -25,4 +25,20 @@ case "$1" in
     cluster-status)
         ipfs-cluster-ctl status
         ;;
+    pin-details)
+        echo "enter pin cid"
+        read -r pinCID
+        ipfs-cluster-ctl pin ls "$pinCID"
+        ;;
+    pin-status)
+        echo "enter pin cid"
+        read -r pinCID
+        ipfs-cluster-ctl status "$pinCID"
+        ;;
+    # used to recover and repin  hashes marked as ERROR in cluster ctl status
+    pin-recover)
+        ecccho "etner pid cid"
+        read -r pinCID
+        ipfs-cluster-ctl recover "$pinCID"
+        ;;
 esac
