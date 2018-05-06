@@ -39,28 +39,31 @@ func getUploads(c *gin.Context) {
 
 func pinHash(c *gin.Context) {
 	hash := c.Param("hash")
-	manager := rtfs.Initialize()
-	err := manager.Shell.Pin(hash)
+	err := database.AddHash(c)
 	if err != nil {
-		c.JSON(404, gin.H{"error": err})
+		return
 	}
-	database.AddHash(c)
+	manager := rtfs.Initialize()
+	err = manager.Shell.Pin(hash)
+	if err != nil {
+		c.Error(err)
+	}
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
 
 func addFile(c *gin.Context) {
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(err)
 	}
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(err)
 	}
 	manager := rtfs.Initialize()
 	resp, err := manager.Shell.Add(openFile)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(err)
 	}
 	database.AddFileHash(c, resp)
 	c.JSON(http.StatusOK, gin.H{"response": resp})

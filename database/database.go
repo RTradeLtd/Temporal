@@ -1,8 +1,10 @@
 package database
 
 import (
+	"errors"
+	"fmt"
 	"log"
-	"os"
+	"net/http"
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -11,7 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	rollbar "github.com/rollbar/rollbar-go"
 )
 
 /*
@@ -34,14 +35,6 @@ import (
 */
 var db *gorm.DB
 
-func rollbarError(err error) {
-	token := os.Getenv("ROLLBAR_TOKEN")
-	rollbar.SetToken(token)
-	rollbar.SetServerRoot("github.com/RTradeLtd/RTC-IPFS")
-	rollbar.Error(err)
-	rollbar.Wait()
-}
-
 func RunMigrations() {
 	var uploads models.Upload
 	db := OpenDBConnection()
@@ -52,7 +45,6 @@ func RunMigrations() {
 func OpenDBConnection() *gorm.DB {
 	db, err := gorm.Open("sqlite3", "./ipfs_database.db")
 	if err != nil {
-		rollbarError(err)
 		log.Fatal(err)
 	}
 	return db
@@ -72,31 +64,42 @@ func GetUploads() []*models.Upload {
 }
 
 // AddHash his used to add a hash to our database
-func AddHash(c *gin.Context) {
+func AddHash(c *gin.Context) error {
 	var upload models.Upload
 	hash := c.Param("hash")
-	address := common.HexToAddress(c.Param("uploadAddress"))
-	holdTime := c.Param("holdTime")
+	if len(hash) < 10 {
+		//c.Error(errors.New("hash param does not exist"))
+		c.AbortWithError(http.StatusBadRequest, errors.New("hash param does not exist"))
+		return errors.New("hash param does not exist")
+	}
+	address, exists := c.Get("uploadAddress")
+	if !exists {
+		c.AbortWithError(http.StatusBadRequest, errors.New("uploadAddress param des not exist"))
+		return errors.New("uploadAddress param des not exist")
+	}
+	holdTime := c.PostForm("holdTime")
 	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
 	if err != nil {
-		rollbarError(err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return err
 	}
-	upload.Hash = hash
+	upload.Hash = fmt.Sprintf("%s", hash)
 	upload.Type = "pin"
 	upload.HoldTimeInMonths = holdTimeInt
-	upload.UploadAddress = address
+	upload.UploadAddress = common.HexToAddress(fmt.Sprintf("%s", address))
 	db := OpenDBConnection()
 	db.Create(&upload)
 	db.Close()
+	return nil
 }
 
 // AddFileHash is used to add the hash of a file to our database
 func AddFileHash(c *gin.Context, hash string) {
 	var upload models.Upload
-	address := common.HexToAddress(c.Param("uploadAddress"))
-	holdTimeInt, err := strconv.ParseInt(c.Param("holdTime"), 10, 64)
+	address := common.HexToAddress(c.PostForm("uploadAddress"))
+	holdTimeInt, err := strconv.ParseInt(c.PostForm("holdTime"), 10, 64)
 	if err != nil {
-		rollbarError(err)
+		c.Error(err)
 	}
 	upload.HoldTimeInMonths = holdTimeInt
 	upload.UploadAddress = address

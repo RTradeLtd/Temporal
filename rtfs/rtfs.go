@@ -26,7 +26,7 @@ func establishShellWithCluster(url string) *ipfsapi.Shell {
 
 func establishShellWithNode(url string) *ipfsapi.Shell {
 	if len(url) < 10 {
-		shell := ipfsapi.NewShell("/ip4/127.0.0.1/5001")
+		shell := ipfsapi.NewLocalShell()
 		return shell
 	}
 	shell := ipfsapi.NewShell(url)
