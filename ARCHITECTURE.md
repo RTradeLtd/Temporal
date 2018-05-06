@@ -66,6 +66,8 @@ Should you wish to pay for these services without RTC and use other cryptos, tha
 
 ### Scalability
 
+RabbitMQ will be used to send pin requests to, first it will pin local then pin to cluster. Add information how rabbitmq will be spec'd out
+
 TODO: Need to formulate a better method of pinning files from local node to cluster as per this from the cluster docs:
 ```
 The reason pins (and unpin) requests are queued is because ipfs only performs one pin at a time, while any other requests are hanging in the meantime. All in all, pinning items which are unavailable in the network may create significants bottlenecks (this is a problem that comes from ipfs), as the pin request takes very long to time out. Facing this problem involves restarting the ipfs node.
