@@ -4,6 +4,10 @@
 
 ### TODO
 
+## Use Cases
+
+### TODO
+
 ## IPFS
 
 We will operate an IPFS cluster initially consisting of three nodes, two at HQ one off-site. The two nodes at HQ will exist on physically seperated devices to ensure protection against hardware failures. The third node will exist off-site, in case of network or environmental failures data availability will still exist for our customers while we work on bringing back the failed clusters.
