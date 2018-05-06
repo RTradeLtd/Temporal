@@ -146,6 +146,15 @@ The smart contract will perform the following functions:
 
 Payment system architecture design WIP
 
+
+## Backend Architecture
+
+## Frontend Architecture
+
+When ever someone who hosts files with us, wants to see their decrypted hash names, files uploaded, etc.. We must authenticate them first. To do so, we request a signed messaged from them ,which we must verify. If the signature passes, they can see the files
+
+
+
 ## Architecture Configuration 
 
 ### IPFS Configuration

@@ -3,6 +3,9 @@ package database
 import (
 	"log"
 	"os"
+	"strconv"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/RTradeLtd/RTC-IPFS/models"
 	"github.com/gin-gonic/gin"
@@ -72,16 +75,31 @@ func GetUploads() []*models.Upload {
 func AddHash(c *gin.Context) {
 	var upload models.Upload
 	hash := c.Param("hash")
+	address := common.HexToAddress(c.Param("uploadAddress"))
+	holdTime := c.Param("holdTime")
+	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	if err != nil {
+		rollbarError(err)
+	}
 	upload.Hash = hash
 	upload.Type = "pin"
+	upload.HoldTimeInMonths = holdTimeInt
+	upload.UploadAddress = address
 	db := OpenDBConnection()
 	db.Create(&upload)
 	db.Close()
 }
 
 // AddFileHash is used to add the hash of a file to our database
-func AddFileHash(hash string) {
+func AddFileHash(c *gin.Context, hash string) {
 	var upload models.Upload
+	address := common.HexToAddress(c.Param("uploadAddress"))
+	holdTimeInt, err := strconv.ParseInt(c.Param("holdTime"), 10, 64)
+	if err != nil {
+		rollbarError(err)
+	}
+	upload.HoldTimeInMonths = holdTimeInt
+	upload.UploadAddress = address
 	upload.Hash = hash
 	upload.Type = "file"
 	db := OpenDBConnection()

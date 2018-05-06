@@ -11,7 +11,7 @@ type IpfsManager struct {
 func Initialize() *IpfsManager {
 	url := ""
 	manager := IpfsManager{}
-	manager.Shell = establishShellWithCluster(url)
+	manager.Shell = establishShellWithNode(url)
 	return &manager
 }
 
@@ -24,4 +24,11 @@ func establishShellWithCluster(url string) *ipfsapi.Shell {
 	return shell
 }
 
-func establishShellWithNode(url string) {}
+func establishShellWithNode(url string) *ipfsapi.Shell {
+	if len(url) < 10 {
+		shell := ipfsapi.NewShell("/ip4/127.0.0.1/5001")
+		return shell
+	}
+	shell := ipfsapi.NewShell(url)
+	return shell
+}

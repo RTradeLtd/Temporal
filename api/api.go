@@ -62,6 +62,6 @@ func addFile(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
-	database.AddFileHash(resp)
+	database.AddFileHash(c, resp)
 	c.JSON(http.StatusOK, gin.H{"response": resp})
 }
