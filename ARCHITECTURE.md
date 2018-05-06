@@ -1,5 +1,8 @@
 # Architecture
 
+## Data Privacy Laws
+
+### TODO
 
 ## IPFS
 
