@@ -50,9 +50,9 @@ func pinHash(c *gin.Context) {
 	}
 	upload := database.GetUpload(hash, c.PostForm("uploadAddress"))
 	c.JSON(http.StatusOK, gin.H{
-		"hash":                upload.Hash,
-		"uploader":            upload.UploadAddress,
-		"hold_time_in_months": upload.HoldTimeInMonths})
+		"hash":      upload.Hash,
+		"uploader":  upload.UploadAddress,
+		"retention": upload.HoldTimeInMonths})
 }
 
 func addFile(c *gin.Context) {
