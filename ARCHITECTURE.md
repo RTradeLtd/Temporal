@@ -1,8 +1,8 @@
 # Architecture
 
-## Data Privacy Laws
+## Data Privacy
 
-### TODO
+We do not perform analytics, or analyzation of content of files uploaded to our system. We will however track file size, file types, and other non-identifying information that is essential to the performance of our service.
 
 ## Use Cases
 
@@ -24,6 +24,8 @@ To prevent abuse of the pricing system, even if a file or hash is already pinned
 
 In order to prevent issues with pinning large files to clusters, and timeouts we first pin to an ipfs node locally, followed by adding that pin to the cluster pinset. Since IPFS Cluster is itself still a working product, we first pin locally to ensure immediate availability, followed by cluster pinning
 
+
+For now, data uploaded to our system is stored as is. In in interm should you wish for the data to be encrypted and protected against even us accessing your data (which we would absolutely not do to begin wtih) please encrypt the files before upload, or ensure that the content your hash refers to is encrypted. That being said, our IPFS repo exists on encrypted drives, and all backups we do are encryupted.
 
 ### Deployment
 

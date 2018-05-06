@@ -27,10 +27,19 @@ func setupRoutes(g *gin.Engine) {
 	g.POST("/api/v1/ipfs/pin/:hash", pinHash)
 	g.POST("/api/v1/ipfs/add-file", addFile)
 	g.GET("/api/v1/ipfs/uploads", getUploads)
+	g.GET("/api/v1/ipfs/uploads/:address", getUploadsForAddress)
 }
 
 func getUploads(c *gin.Context) {
 	uploads := database.GetUploads()
+	if uploads == nil {
+		c.JSON(http.StatusNotFound, nil)
+	}
+	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
+}
+
+func getUploadsForAddress(c *gin.Context) {
+	uploads := database.GetUploadsForAddress(c.Param("address"))
 	if uploads == nil {
 		c.JSON(http.StatusNotFound, nil)
 	}

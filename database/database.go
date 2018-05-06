@@ -71,6 +71,13 @@ func GetUploads() []*models.Upload {
 	return uploads
 }
 
+func GetUploadsForAddress(address string) []*models.Upload {
+	var uploads []*models.Upload
+	db = OpenDBConnection()
+	db.Where("upload_address = ?", address).Find(&uploads)
+	return uploads
+}
+
 // AddHash his used to add a hash to our database
 func AddHash(c *gin.Context) error {
 	var upload models.Upload

@@ -27,6 +27,35 @@ However, three provinces have their own privacy laws in place that supersede PIP
 
 By keeping your data stored on Canadian servers, you are only subject to Canadian privacy laws. If you were to store your data in a cloud platform operated out of the United States for example, then your information would be subject to the US Patriot Act. The US Patriot Act gives government and law enforcement agencies the ability to search data retained by service providers.
 
+To further safeguard privacy, organizations are required to destroy or get rid of personal data when it’s no longer needed.
+
+
+Overall, the law is governed by the 10 basic principles of fair information practices:
+
+    >1 Recourse: Complaint procedures used should be simple, understandable and accessible to everyone.
+    
+    >2 Individual Access: You have the right to request and gain access to private or personal data collected by an organization
+
+    >3 Openness: All terms and conditions should be available, understandable and easily accessible
+
+    >4 Safeguards: Organizations are obliged to implement security measures to protect your data
+
+    >5 Accuracy: Data collected should be up to date, accurate and complete
+
+    >6 Limiting Use: Data should strictly be used only for the purpose it was collected
+
+    >7 Limiting Collection: Only necessary personal information can be collected by an organization
+
+    >8 Consent: Organizations must explicitly inform you why they are collecting your data and how they’ll use it
+
+    >9 Identifying Purposes: Organizations should identify the purposes of data collection ahead of actual collecting it.
+
+    >10 Accountability: Organizations should dedicate sufficient resources, to oversee privacy issues
+
 # Resources
 
 https://www.osler.com/osler/media/Osler/reports/privacy-data/Data-Protection-Canada-2017.pdf
+
+https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/02_05_d_15/
+
+http://www.bclaws.ca/EPLibraries/bclaws_new/document/ID/freeside/00_03063_01
