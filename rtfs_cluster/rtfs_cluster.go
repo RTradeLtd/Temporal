@@ -1,33 +1,38 @@
 package rtfs_cluster
 
 import (
-	"context"
-	"fmt"
-	"log"
-
-	ipfsc "github.com/ipfs/ipfs-cluster"
-	host "github.com/libp2p/go-libp2p-host"
+	"github.com/ipfs/ipfs-cluster/api/rest/client"
+	//"github.com/ipfs/ipfs-cluster/api/rest/client"
 )
 
-func L() {
-	cfg := ipfsc.Config{}
-	cfg.Default()
-	fmt.Println(cfg)
+// ClusterManager is a helper interface to interact with the cluster apis
+type ClusterManager struct {
+	ClusterConfig *client.Config
+	ClusterClient *client.Client
 }
 
-func parseJsonConfig(rawJson []byte) {
-	cfg := ipfsc.Config{}
-	cfg.LoadJSON(rawJson)
+// Initialize is used to init, and return a cluster manager object
+func Initialize() *ClusterManager {
+	cm := ClusterManager{}
+	cm.GenRestAPIConfig()
+	cm.GenClient()
+	return &cm
 }
 
-func BuildClusterHost() (*host.Host, *ipfsc.Config) {
-	cfg := ipfsc.Config{}
-	cfg.Default()
-	host, err := ipfsc.NewClusterHost(context.TODO(), &cfg)
+// GenRestAPIConfig is used to generate the api cfg
+// needed to interact with the cluster
+func (cm *ClusterManager) GenRestAPIConfig() {
+	cm.ClusterConfig = &client.Config{}
+}
+
+// GenClient is used to generate a client to interact with the cluster
+func (cm *ClusterManager) GenClient() error {
+	cl, err := client.NewClient(cm.ClusterConfig)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	return &host, &cfg
+	cm.ClusterClient = cl
+	return nil
 }
 
 /*
