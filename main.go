@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/RTradeLtd/RTC-IPFS/api"
@@ -15,7 +16,15 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "cluster":
-		rtfs_cluster.BuildClusterHost()
+		cm := rtfs_cluster.Initialize()
+		cm.GenRestAPIConfig()
+		cm.GenClient()
+		cm.ParseLocalStatusAllAndSync()
+		cid := cm.DecodeHashString("QmXXSSQpbYhGRMPqqZ4gF1SjqBkBjpnb44JuR1frwL1RiA")
+		err := cm.Pin(cid)
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "api":
 		database.RunMigrations()
 		router := api.Setup()
