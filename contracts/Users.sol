@@ -1,10 +1,15 @@
 pragma solidity 0.4.23;
 
+import "./Modules/UsersAdministration.sol";
+import "./Math/SafeMath.sol";
+
 interface ERC20I {
     function transferFrom(address _owner, address _recipient, uint256 _amount) external returns (bool);
+    function transfer(address _recipient, uint256 _amount) external returns (bool);
 }
 
-contract Users {
+contract Users  is UsersAdministration {
+    using SafeMath for uint256;
 
     ERC20I public rtI = ERC20I(address(0));
 
@@ -33,6 +38,7 @@ contract Users {
         address _uploader)
         public
         notRegistered(_uploader)
+        onlyAdmin(msg.sender)
         returns (bool)
     {
         users[_uploader].registered = true;
@@ -45,6 +51,31 @@ contract Users {
         isRegistered(msg.sender)
         returns (bool)
     {
+        users[msg.sender].availableBalance = _amount;
+        require(rtI.transferFrom(msg.sender, address(this), _amount));
+        return true;
+    }
+
+    function lockFunds(
+        uint256 _amount)
+        public
+        isRegistered(msg.sender)
+        returns (bool)
+    {
+        require(users[msg.sender].availableBalance >= _amount);
+        users[msg.sender].availableBalance = users[msg.sender].availableBalance.sub(_amount);
+        users[msg.sender].lockedBalance = users[msg.sender].lockedBalance.add(_amount);
+        return true;
+    }
+
+    function withdrawAvailableFunds()
+        public
+        isRegistered(msg.sender)
+        returns (bool)
+    {
+        uint256 deposit = users[msg.sender].availableBalance;
+        users[msg.sender].availableBalance = 0;
+        require(rtI.transfer(msg.sender, deposit));
         return true;
     }
 }
