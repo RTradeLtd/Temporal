@@ -31,8 +31,11 @@ func main() {
 		router := api.Setup()
 		router.Run(":6767")
 	case "swarm":
-		sm, _ := rtswarm.Initialize()
-		fmt.Println(sm.Config)
+		sm, err := rtswarm.NewSwarmManager()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%+v\n", sm)
 	default:
 		fmt.Println("idiot")
 	}

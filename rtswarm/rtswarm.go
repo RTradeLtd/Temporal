@@ -15,21 +15,24 @@ type SwarmManager struct {
 	PrivateKey *ecdsa.PrivateKey
 }
 
-// Initialize is used to initialize the swarm manager
-func Initialize() (*SwarmManager, error) {
+// NewSwarmManager is used to generate our swarm manager helper interface
+func NewSwarmManager() (*SwarmManager, error) {
 	sm := &SwarmManager{}
-	sm.GenDefaultConfig()
-	sm.GenPrivateKey()
+	sm.GenSwarmAPIConfig()
+	if err := sm.GenSwarmPrivateKeys(); err != nil {
+		return nil, err
+	}
+	sm.GenSwarmClient()
 	return sm, nil
 }
 
-// GenDefaultConfig is used to generate default swarm config
-func (sm SwarmManager) GenDefaultConfig() {
+// GenSwarmAPIConfig is used to generate a default swarm api configuration
+func (sm *SwarmManager) GenSwarmAPIConfig() {
 	sm.Config = api.NewDefaultConfig()
 }
 
-// GenPrivateKey is used to generate a private key pair
-func (sm SwarmManager) GenPrivateKey() error {
+// GenSwarmPrivateKeys is used to generate our swarm private keys
+func (sm *SwarmManager) GenSwarmPrivateKeys() error {
 	key, err := crypto.GenerateKey()
 	if err != nil {
 		return err
@@ -38,18 +41,7 @@ func (sm SwarmManager) GenPrivateKey() error {
 	return nil
 }
 
-// InitializeConfiguration is used to finalize the config build process
-// TODO: Add info and research waht this all entails
-func (sm SwarmManager) InitializeConfiguration() {
-	sm.Config.Init(sm.PrivateKey)
-}
-
-// GenerateAPIClient is used to generate an api client for swarm
-func (sm SwarmManager) GenerateAPIClient(gateway string) {
-
-	if gateway == "" {
-		sm.Client = client.NewClient(client.DefaultGateway)
-	} else {
-		sm.Client = client.NewClient(gateway)
-	}
+// GenSwarmClient is used to generate our swarm client
+func (sm *SwarmManager) GenSwarmClient() {
+	sm.Client = client.NewClient(client.DefaultGateway)
 }
