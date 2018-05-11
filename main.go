@@ -13,7 +13,7 @@ import (
 
 func main() {
 	if len(os.Args) > 2 || len(os.Args) < 2 {
-		fmt.Println("idiot")
+		log.Fatal("idiot")
 	}
 	switch os.Args[1] {
 	case "cluster":
@@ -31,8 +31,8 @@ func main() {
 		router := api.Setup()
 		router.Run(":6767")
 	case "swarm":
-		swarmConfig := rtswarm.GenDefaultConfig()
-		fmt.Println(swarmConfig)
+		sm, _ := rtswarm.Initialize()
+		fmt.Println(sm.Config)
 	default:
 		fmt.Println("idiot")
 	}
