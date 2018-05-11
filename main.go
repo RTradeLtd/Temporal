@@ -8,6 +8,7 @@ import (
 	"github.com/RTradeLtd/RTC-IPFS/api"
 	"github.com/RTradeLtd/RTC-IPFS/database"
 	"github.com/RTradeLtd/RTC-IPFS/rtfs_cluster"
+	"github.com/RTradeLtd/RTC-IPFS/rtswarm"
 )
 
 func main() {
@@ -29,6 +30,9 @@ func main() {
 		database.RunMigrations()
 		router := api.Setup()
 		router.Run(":6767")
+	case "swarm":
+		swarmConfig := rtswarm.GenDefaultConfig()
+		fmt.Println(swarmConfig)
 	default:
 		fmt.Println("idiot")
 	}
