@@ -1,5 +1,6 @@
-# RTC-IPFS [![Build Status](https://travis-ci.com/RTradeLtd/RTC-IPFS.svg?token=gDSF5EBqJK8E2W8NbsUS&branch=master)](https://travis-ci.com/RTradeLtd/RTC-IPFS)
-Proffesional, enterprise IPFS file hosting paid for in RTC
+# Temporal [![Build Status](https://travis-ci.com/RTradeLtd/RTC-IPFS.svg?token=gDSF5EBqJK8E2W8NbsUS&branch=master)](https://travis-ci.com/RTradeLtd/RTC-IPFS)
+
+Temporal is RTrade's 
 
 ![](https://i.imgflip.com/29m9ch.jpg)
 
