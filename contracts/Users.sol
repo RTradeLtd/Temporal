@@ -68,6 +68,21 @@ contract Users  is UsersAdministration {
         return true;
     }
 
+    function withdrawLockedFundsForPayment(
+        address _user,
+        uint256 _amount)
+        public
+        onlyAdmin(msg.sender)
+        returns (bool)
+    {
+        require(users[_user].lockedBalance >= _amount);
+        uint256 remainingAmount = users[_user].lockedBalance.sub(_amount);
+        users[_user].lockedBalance = remainingAmount;
+        require(rtI.transfer(msg.sender, _amount));
+        return true;
+    }
+
+
     function withdrawAvailableFunds()
         public
         isRegistered(msg.sender)
