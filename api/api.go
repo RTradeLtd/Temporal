@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
+	gocid "github.com/ipfs/go-cid"
 
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -29,11 +30,37 @@ func setupRoutes(g *gin.Engine) {
 	g.POST("/api/v1/ipfs/pin/:hash", pinHashLocally)
 	g.POST("/api/v1/ipfs/add-file", addFileLocally)
 	g.POST("/api/v1/ipfs-cluster/pin/:hash", pinHashToCluster)
-	g.GET("/api/v1/ipfs-cluster/status-local/:hash", getLocalStatusForClusterPin)
-	g.GET("/api/v1/ipfs-cluster/status-global/:hash", getGlobalStatusForClusterPin)
+	g.POST("/api/v1/ipfs-cluster/sync-errors-local", syncErrorsLocally)
+	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", getLocalStatusForClusterPin)
+	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", getGlobalStatusForClusterPin)
+	g.GET("/api/v1/ipfs-cluster/status-local", fetchLocalStatus)
 	g.GET("/api/v1/ipfs/pins", getLocalPins)
 	g.GET("/api/v1/database/uploads", getUploads)
 	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
+}
+
+func fetchLocalStatus(c *gin.Context) {
+	var cids []*gocid.Cid
+	var statuses []string
+	manager := rtfs_cluster.Initialize()
+	maps, err := manager.FetchLocalStatus()
+	if err != nil {
+		c.Error(err)
+	}
+	for k, v := range maps {
+		cids = append(cids, k)
+		statuses = append(statuses, v)
+	}
+	c.JSON(http.StatusOK, gin.H{"cids": cids, "statuses": statuses})
+}
+
+func syncErrorsLocally(c *gin.Context) {
+	manager := rtfs_cluster.Initialize()
+	syncedCids, err := manager.ParseLocalStatusAllAndSync()
+	if err != nil {
+		c.Error(err)
+	}
+	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
 }
 
 func getUploads(c *gin.Context) {

@@ -44,20 +44,23 @@ func (cm *ClusterManager) GenClient() error {
 
 // ParseStatusAllSyncErrors is used to parse through any errors
 // and resync them
-func (cm *ClusterManager) ParseLocalStatusAllAndSync() error {
+func (cm *ClusterManager) ParseLocalStatusAllAndSync() ([]*gocid.Cid, error) {
+	var syncedCids []*gocid.Cid
 	pinInfo, err := cm.Client.StatusAll(true)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, v := range pinInfo {
 		cid := v.Cid
 		peermap := v.PeerMap
 		id, err := cm.Client.ID()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		globalPinInfo := peermap[id.ID]
 		errString := globalPinInfo.Error
+		fmt.Println(globalPinInfo)
+		fmt.Println(errString)
 		if errString == "" {
 			continue
 		}
@@ -65,10 +68,30 @@ func (cm *ClusterManager) ParseLocalStatusAllAndSync() error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		syncedCids = append(syncedCids, cid)
 	}
-	return nil
+	return syncedCids, nil
 }
 
+func (cm *ClusterManager) FetchLocalStatus() (map[*gocid.Cid]string, error) {
+	var response = make(map[*gocid.Cid]string)
+	pinInfo, err := cm.Client.StatusAll(true)
+	if err != nil {
+		return response, err
+	}
+	for _, v := range pinInfo {
+		cid := v.Cid
+		peermap := v.PeerMap
+		id, err := cm.Client.ID()
+		if err != nil {
+			return response, err
+		}
+		globalPinInfo := peermap[id.ID]
+		errString := globalPinInfo.Error
+		response[cid] = errString
+	}
+	return response, nil
+}
 func (cm *ClusterManager) GetStatusForCidLocally(cidString string) (*api.GlobalPinInfo, error) {
 	decoded := cm.DecodeHashString(cidString)
 	status, err := cm.Client.Status(decoded, true)
