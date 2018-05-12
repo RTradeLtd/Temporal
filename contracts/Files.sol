@@ -14,5 +14,17 @@ contract FileRepository {
         mapping (address => bool) uploaders;
     }
 
+    struct UserUploads {
+        string ipfsHash;
+        uint256 releaseDate;
+    }
+
     mapping (bytes32 => FileUpload) public uploads;
+    mapping (address => []UserUploads) public userUploads;
+    mapping (address => mapping (string => uint256)) private userUploadIndexes;
 }
+
+/**
+
+    I've spec'd out the file upload struct, i'd like you to write functions to update it
+ */
