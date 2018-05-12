@@ -21,6 +21,7 @@ type ClusterManager struct {
 func Initialize() *ClusterManager {
 	cm := ClusterManager{}
 	cm.GenRestAPIConfig()
+	// modify default config with infrastructure specific settings
 	cm.GenClient()
 	return &cm
 }

@@ -1,46 +1,15 @@
 # Temporal [![Build Status](https://travis-ci.com/RTradeLtd/RTC-IPFS.svg?token=gDSF5EBqJK8E2W8NbsUS&branch=master)](https://travis-ci.com/RTradeLtd/RTC-IPFS)
 
-Temporal is RTrade's 
 
 ![](https://i.imgflip.com/29m9ch.jpg)
 
 
-# Dependencies
+# Temporal
 
-> github.com/ipfs/go-ipfs-addr
+Temporal is an enterprise-grade file hosting service backed by IPFS, Swarm, and Ethereum. Until it's complete, this repository will serve as a teaser.
+Initially targeting the public IPFS network, it will be expanded to included Swarm support for the Ethereum mainnet, as well as support for private IPFS networks. 
 
-> https://dist.ipfs.io/#ipfs-cluster-service
-
-> https://dist.ipfs.io/#ipfs-cluster-ctl
-
-> https://github.com/whyrusleeping/ipfs-key
-
-> https://github.com/ipfs/go-ipfs-api
-
-> github.com/gin-gonic/gin
-
-IPFS Cluster Go API https://godoc.org/github.com/ipfs/ipfs-cluster
-
-https://cluster.ipfs.io/developer/api/
-
-https://cluster.ipfs.io/guides/quickstart/
-https://github.com/gin-gonic/gin/issues/774
-
-https://cluster.ipfs.io/documentation/internals/
-
-# HOW TO:
-
-Upload file with curl:
-curl http://localhost:6767/api/v1/ipfs/add-file -F "file=@/home/solidity/go/src/github.com/RTradeLtd/Temporal/README.md" -H "Content-Type: multipart/form-data"
+Smart contracts are used to faciliate mangement of the temporal user base, as well as for payment of storing files. Finally, they will be used as an immutable record of files stored on our service, such that anyone may independently audit that we store the data we say we store, and for the time we say we store it for. Files can be stored in intervals of 1 month periods.
 
 
-# TO DO:
 
-Virus scan files that are uploaded before storage onto ipfs
-
-Write smart contract fo facilitate storage:
-    > must contain user accounts
-        > each user account must contain a valid balance
-        > when uploading a file specify duration, the user accoun must contain enough RTC to pay for the entire duration
-
-Optimize RAFT consensus, and other cluster factors

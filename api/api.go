@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/RTradeLtd/Temporal/rtfs_cluster"
+
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-contrib/rollbar"
@@ -24,10 +26,11 @@ func Setup() *gin.Engine {
 
 func setupRoutes(g *gin.Engine) {
 
-	g.POST("/api/v1/ipfs/pin/:hash", pinHash)
-	g.POST("/api/v1/ipfs/add-file", addFile)
-	g.GET("/api/v1/ipfs/uploads", getUploads)
-	g.GET("/api/v1/ipfs/uploads/:address", getUploadsForAddress)
+	g.POST("/api/v1/ipfs/pin/:hash", pinHashLocally)
+	g.POST("/api/v1/ipfs/add-file", addFileLocally)
+	g.POST("/api/v1/ipfs-cluster/pin/:hash", pinHashToCluster)
+	g.GET("/api/v1/database/uploads", getUploads)
+	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
 }
 
 func getUploads(c *gin.Context) {
@@ -46,7 +49,18 @@ func getUploadsForAddress(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
-func pinHash(c *gin.Context) {
+func pinHashToCluster(c *gin.Context) {
+	hash := c.Param("hash")
+	err := database.AddHash(c)
+	if err != nil {
+		return
+	}
+	manager := rtfs_cluster.Initialize()
+	contentIdentifier := manager.DecodeHashString(hash)
+	manager.Client.Pin(contentIdentifier, -1, -1, hash)
+}
+
+func pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")
 	err := database.AddHash(c)
 	if err != nil {
@@ -64,7 +78,7 @@ func pinHash(c *gin.Context) {
 		"retention": upload.HoldTimeInMonths})
 }
 
-func addFile(c *gin.Context) {
+func addFileLocally(c *gin.Context) {
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		c.Error(err)
