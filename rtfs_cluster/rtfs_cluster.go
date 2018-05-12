@@ -59,6 +59,26 @@ func (cm *ClusterManager) ParseLocalStatusAllAndSync() error {
 	return nil
 }
 
+func (cm *ClusterManager) GetStatusForCidLocally(cidString string) (*api.GlobalPinInfo, error) {
+	decoded := cm.DecodeHashString(cidString)
+	status, err := cm.Client.Status(decoded, true)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(status)
+	return &status, nil
+}
+
+func (cm *ClusterManager) GetStatusForCidGlobally(cidString string) (*api.GlobalPinInfo, error) {
+	decoded := cm.DecodeHashString(cidString)
+	status, err := cm.Client.Status(decoded, false)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(status)
+	return &status, nil
+}
+
 func (cm *ClusterManager) ListPeers() ([]api.ID, error) {
 	peers, err := cm.Client.Peers()
 	if err != nil {

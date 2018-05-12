@@ -26,5 +26,7 @@ contract FileRepository {
 
 /**
 
-    I've spec'd out the file upload struct, i'd like you to write functions to update it
+    I've spec'd out the file upload struct, i'd like you to write functions to update the structs, for the moment we don't need any authorization checks, etc..
+    Just need the functions that allow the structs to be updated.  `userUploadIndexes` will be used to keep track of the order in which uploads are inserted.
+    The "string" is the ipfs content hash
  */
