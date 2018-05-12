@@ -20,7 +20,7 @@ contract FileRepository {
     }
 
     mapping (bytes32 => FileUpload) public uploads;
-    mapping (address => []UserUploads) public userUploads;
+    mapping (address => UserUploads[]) public userUploads;
     mapping (address => mapping (string => uint256)) private userUploadIndexes;
 }
 
