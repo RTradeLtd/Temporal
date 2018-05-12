@@ -73,6 +73,16 @@ func (cm *ClusterManager) ParseLocalStatusAllAndSync() ([]*gocid.Cid, error) {
 	return syncedCids, nil
 }
 
+// not currently working
+func (cm *ClusterManager) RemovePinFromCluster(cidString string) error {
+	decoded := cm.DecodeHashString(cidString)
+	err := cm.Client.Unpin(decoded)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (cm *ClusterManager) FetchLocalStatus() (map[*gocid.Cid]string, error) {
 	var response = make(map[*gocid.Cid]string)
 	pinInfo, err := cm.Client.StatusAll(true)

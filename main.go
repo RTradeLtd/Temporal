@@ -15,6 +15,10 @@ func main() {
 	if len(os.Args) > 2 || len(os.Args) < 2 {
 		log.Fatal("idiot")
 	}
+	token := os.Getenv("ROLLBAR_TOKEN")
+	if token == "" {
+		os.Exit(1)
+	}
 	switch os.Args[1] {
 	case "cluster":
 		cm := rtfs_cluster.Initialize()

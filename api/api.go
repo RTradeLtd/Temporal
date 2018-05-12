@@ -31,12 +31,24 @@ func setupRoutes(g *gin.Engine) {
 	g.POST("/api/v1/ipfs/add-file", addFileLocally)
 	g.POST("/api/v1/ipfs-cluster/pin/:hash", pinHashToCluster)
 	g.POST("/api/v1/ipfs-cluster/sync-errors-local", syncErrorsLocally)
+	g.DELETE("/api/v1/ipfs-cluster/remove-pin/:hash")
 	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", getLocalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", getGlobalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-local", fetchLocalStatus)
 	g.GET("/api/v1/ipfs/pins", getLocalPins)
 	g.GET("/api/v1/database/uploads", getUploads)
 	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
+}
+
+// not currently working
+func removePinFromCluster(c *gin.Context) {
+	hash := c.Param("hash")
+	manager := rtfs_cluster.Initialize()
+	err := manager.RemovePinFromCluster(hash)
+	if err != nil {
+		c.Error(err)
+	}
+	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
 func fetchLocalStatus(c *gin.Context) {
