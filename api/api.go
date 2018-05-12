@@ -29,6 +29,7 @@ func setupRoutes(g *gin.Engine) {
 	g.POST("/api/v1/ipfs/pin/:hash", pinHashLocally)
 	g.POST("/api/v1/ipfs/add-file", addFileLocally)
 	g.POST("/api/v1/ipfs-cluster/pin/:hash", pinHashToCluster)
+	g.GET("/api/v1/ipfs/pins", getLocalPins)
 	g.GET("/api/v1/database/uploads", getUploads)
 	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
 }
@@ -47,6 +48,15 @@ func getUploadsForAddress(c *gin.Context) {
 		c.JSON(http.StatusNotFound, nil)
 	}
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
+}
+
+func getLocalPins(c *gin.Context) {
+	manager := rtfs.Initialize()
+	pinInfo, err := manager.Shell.Pins()
+	if err != nil {
+		c.Error(err)
+	}
+	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
 func pinHashToCluster(c *gin.Context) {
