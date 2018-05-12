@@ -4,6 +4,9 @@ import (
 	"github.com/streadway/amqp"
 )
 
+var ipfsQueue = "ipfs"
+var ipfsClusterQueue = "ipfs-cluster"
+
 type QueueManager struct {
 	Connection *amqp.Connection
 }
@@ -18,4 +21,8 @@ func Setup() (*amqp.Connection, error) {
 
 func (qm *QueueManager) Close() {
 	qm.Connection.Close()
+}
+
+func (qm *QueueManager) DeclareQueue(queueName string) {
+
 }
