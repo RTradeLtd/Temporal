@@ -5,7 +5,9 @@ import (
 	"log"
 
 	gocid "github.com/ipfs/go-cid"
+	"github.com/ipfs/ipfs-cluster/api"
 	"github.com/ipfs/ipfs-cluster/api/rest/client"
+	ma "github.com/multiformats/go-multiaddr"
 	//"github.com/ipfs/ipfs-cluster/api/rest/client"
 )
 
@@ -54,6 +56,20 @@ func (cm *ClusterManager) ParseLocalStatusAllAndSync() error {
 		}
 	}
 	return nil
+}
+
+func (cm *ClusterManager) ListPeers() ([]api.ID, error) {
+	peers, err := cm.Client.Peers()
+	if err != nil {
+		return nil, err
+	}
+	return peers, nil
+}
+
+// AddPeerToCluster is used to add a peer to the cluster
+// TODO: still needs to be completed
+func (cm *ClusterManager) AddPeerToCluster(addr ma.Multiaddr) {
+	cm.Client.PeerAdd(addr)
 }
 
 func (cm *ClusterManager) DecodeHashString(cidString string) *gocid.Cid {
