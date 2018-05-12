@@ -31,7 +31,7 @@ func setupRoutes(g *gin.Engine) {
 	g.POST("/api/v1/ipfs/add-file", addFileLocally)
 	g.POST("/api/v1/ipfs-cluster/pin/:hash", pinHashToCluster)
 	g.POST("/api/v1/ipfs-cluster/sync-errors-local", syncErrorsLocally)
-	g.DELETE("/api/v1/ipfs-cluster/remove-pin/:hash")
+	//g.DELETE("/api/v1/ipfs-cluster/remove-pin/:hash")
 	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", getLocalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", getGlobalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-local", fetchLocalStatus)
