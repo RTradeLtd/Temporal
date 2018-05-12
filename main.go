@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/RTradeLtd/RTC-IPFS/api"
-	"github.com/RTradeLtd/RTC-IPFS/database"
-	"github.com/RTradeLtd/RTC-IPFS/rtfs_cluster"
-	"github.com/RTradeLtd/RTC-IPFS/rtswarm"
+	"github.com/RTradeLtd/Temporal/api"
+	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/rtfs_cluster"
+	"github.com/RTradeLtd/Temporal/rtswarm"
 )
 
 func main() {

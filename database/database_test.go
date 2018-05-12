@@ -4,14 +4,14 @@ import (
 	"log"
 	"testing"
 
-	"github.com/RTradeLtd/RTC-IPFS/models"
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
 	rollbar "github.com/rollbar/rollbar-go"
 )
 
 func rollbarError(err error) {
 	rollbar.SetToken("046baf3d0cd4422c8801891f5f79b65d")
-	rollbar.SetServerRoot("github.com/RTradeLtd/RTC-IPFS")
+	rollbar.SetServerRoot("github.com/RTradeLtd/Temporal")
 	rollbar.Error(err)
 	rollbar.Wait()
 }

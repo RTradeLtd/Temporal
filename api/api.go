@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/RTradeLtd/RTC-IPFS/database"
-	"github.com/RTradeLtd/RTC-IPFS/rtfs"
+	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-contrib/rollbar"
 	"github.com/gin-gonic/gin"
 	"github.com/stvp/roll"

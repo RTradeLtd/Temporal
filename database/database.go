@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/RTradeLtd/RTC-IPFS/models"
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -24,7 +24,7 @@ import (
 	func l(err error) {
 	token := os.Getenv("ROLLBAR_TOKEN")
 	rollbar.SetToken(token)
-	rollbar.SetServerRoot("github.com/RTradeLtd/RTC-IPFS") // path of project (required for GitHub integration and non-project stacktrace collapsing)
+	rollbar.SetServerRoot("github.com/RTradeLtd/Temporal") // path of project (required for GitHub integration and non-project stacktrace collapsing)
 
 	rollbar.Error(err)
 

@@ -20,9 +20,20 @@ contract Users  is UsersAdministration {
         bytes32[] uploadsArray;
         mapping (bytes32 => bool) uploads;
         bool registered;
+        bool lockedForWithdrawal;
     }
 
     mapping (address => UserStruct) public users;
+
+    modifier isLockedForWithdrawal(address _user) {
+        require(users[_user].lockedForWithdrawal);
+        _;
+    }
+
+    modifier notLockedForWithdrawal(address _user) {
+        require(!users[_user].lockedForWithdrawal);
+        _;
+    }
 
     modifier isRegistered(address _addr) {
         require(users[_addr].registered);
@@ -56,7 +67,7 @@ contract Users  is UsersAdministration {
         return true;
     }
 
-    function lockFunds(
+    function userLockFunds(
         uint256 _amount)
         public
         isRegistered(msg.sender)
@@ -65,6 +76,21 @@ contract Users  is UsersAdministration {
         require(users[msg.sender].availableBalance >= _amount);
         users[msg.sender].availableBalance = users[msg.sender].availableBalance.sub(_amount);
         users[msg.sender].lockedBalance = users[msg.sender].lockedBalance.add(_amount);
+        return true;
+    }
+
+    function paymentLockFunds(
+        address _user,
+        uint256 _amount)
+        public
+        notLockedForWithdrawal(_user)
+        returns (bool)
+    {
+        // placeholder check, will need to be the payment channelcontract
+        require(msg.sender == address(0));
+        require(users[_user].availableBalance >= _amount);
+        users[_user].availableBalance = users[_user].availableBalance.sub(_amount);
+        users[_user].lockedBalance = users[_user].lockedBalance.add(_amount);
         return true;
     }
 
@@ -82,7 +108,6 @@ contract Users  is UsersAdministration {
         return true;
     }
 
-
     function withdrawAvailableFunds()
         public
         isRegistered(msg.sender)
@@ -92,5 +117,23 @@ contract Users  is UsersAdministration {
         users[msg.sender].availableBalance = 0;
         require(rtI.transfer(msg.sender, deposit));
         return true;
+    }
+
+    function getLockedBalance(
+        address _user)
+        public
+        view
+        returns (uint256)
+    {
+        return users[_user].lockedBalance;
+    }
+
+    function getAvailableBalance(
+        address _user)
+        public
+        view
+        returns (uint256)
+    {
+        return users[_user].availableBalance;
     }
 }
