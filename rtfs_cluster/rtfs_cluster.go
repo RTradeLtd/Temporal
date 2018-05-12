@@ -51,7 +51,17 @@ func (cm *ClusterManager) ParseLocalStatusAllAndSync() error {
 	}
 	for _, v := range pinInfo {
 		cid := v.Cid
-		_, err := cm.Client.Sync(cid, true)
+		peermap := v.PeerMap
+		id, err := cm.Client.ID()
+		if err != nil {
+			return err
+		}
+		globalPinInfo := peermap[id.ID]
+		errString := globalPinInfo.Error
+		if errString == "" {
+			continue
+		}
+		_, err = cm.Client.Sync(cid, true)
 		if err != nil {
 			log.Fatal(err)
 		}

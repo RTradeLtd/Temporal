@@ -29,7 +29,8 @@ func setupRoutes(g *gin.Engine) {
 	g.POST("/api/v1/ipfs/pin/:hash", pinHashLocally)
 	g.POST("/api/v1/ipfs/add-file", addFileLocally)
 	g.POST("/api/v1/ipfs-cluster/pin/:hash", pinHashToCluster)
-	g.GET("/api/v1/ipfs-cluster/status/:hash", getLocalStatusForClusterPin)
+	g.GET("/api/v1/ipfs-cluster/status-local/:hash", getLocalStatusForClusterPin)
+	g.GET("/api/v1/ipfs-cluster/status-global/:hash", getGlobalStatusForClusterPin)
 	g.GET("/api/v1/ipfs/pins", getLocalPins)
 	g.GET("/api/v1/database/uploads", getUploads)
 	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
@@ -70,6 +71,16 @@ func pinHashToCluster(c *gin.Context) {
 	contentIdentifier := manager.DecodeHashString(hash)
 	manager.Client.Pin(contentIdentifier, -1, -1, hash)
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
+}
+
+func getGlobalStatusForClusterPin(c *gin.Context) {
+	hash := c.Param("hash")
+	manager := rtfs_cluster.Initialize()
+	status, err := manager.GetStatusForCidGlobally(hash)
+	if err != nil {
+		c.Error(err)
+	}
+	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
 func getLocalStatusForClusterPin(c *gin.Context) {
