@@ -37,8 +37,8 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Printf("%+v\n", sm)
-	case "queue":
-		qm, err := queue.Initialize("pin-requests")
+	case "queue-ipfs":
+		qm, err := queue.Initialize(queue.IpfsQueue)
 		if err != nil {
 			log.Fatal(err)
 		}

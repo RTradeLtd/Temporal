@@ -6,8 +6,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
-var ipfsQueue = "ipfs"
-var ipfsClusterQueue = "ipfs-cluster"
+var IpfsQueue = "ipfs"
+var IpfsClusterQueue = "ipfs-cluster"
 
 type QueueManager struct {
 	Connection *amqp.Connection

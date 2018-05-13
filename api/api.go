@@ -9,6 +9,7 @@ import (
 	gocid "github.com/ipfs/go-cid"
 
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-contrib/rollbar"
 	"github.com/gin-gonic/gin"
@@ -52,6 +53,12 @@ func removePinFromLocalHost(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs.Initialize()
 	err := manager.Shell.Unpin(hash)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	qm.PublishMessage(hash)
 	if err != nil {
 		c.Error(err)
 		return
