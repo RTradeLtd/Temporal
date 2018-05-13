@@ -47,6 +47,7 @@ func setupRoutes(g *gin.Engine) {
 	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
 }
 
+// removePinFromLocalHost is used to remove a pin from the ipfs instance
 func removePinFromLocalHost(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs.Initialize()
@@ -58,6 +59,8 @@ func removePinFromLocalHost(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
+// removePinFromCluster is used to remove a pin from the cluster global state
+// this will mean that all nodes in the cluster will no longer track the pin
 func removePinFromCluster(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs_cluster.Initialize()
@@ -69,6 +72,8 @@ func removePinFromCluster(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
+// fetchLocalClusterStatus is used to fetch the status of the localhost's
+// cluster state, and not the rest of the cluster
 func fetchLocalClusterStatus(c *gin.Context) {
 	var cids []*gocid.Cid
 	var statuses []string
@@ -85,6 +90,8 @@ func fetchLocalClusterStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"cids": cids, "statuses": statuses})
 }
 
+// syncCluserErrorsLocally is used to parse through the local cluster state
+// and sync any errors that are detected.
 func syncClusterErrorsLocally(c *gin.Context) {
 	manager := rtfs_cluster.Initialize()
 	syncedCids, err := manager.ParseLocalStatusAllAndSync()
@@ -95,6 +102,7 @@ func syncClusterErrorsLocally(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
 }
 
+// getUploads is used to read a list of uploads from our database
 func getUploads(c *gin.Context) {
 	uploads := database.GetUploads()
 	if uploads == nil {
@@ -103,6 +111,8 @@ func getUploads(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
+// getUploadsForAddress is used to read a list of uploads from a particular
+// eth address
 func getUploadsForAddress(c *gin.Context) {
 	uploads := database.GetUploadsForAddress(c.Param("address"))
 	if uploads == nil {
@@ -111,6 +121,7 @@ func getUploadsForAddress(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
+// getLocalPins is used to get the pins tracked by the local ipfs node
 func getLocalPins(c *gin.Context) {
 	manager := rtfs.Initialize()
 	pinInfo, err := manager.Shell.Pins()
@@ -121,6 +132,7 @@ func getLocalPins(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
+// getGlobalStatusForClusterPin is used to get the global cluster status for a particular pin
 func getGlobalStatusForClusterPin(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs_cluster.Initialize()
@@ -132,6 +144,7 @@ func getGlobalStatusForClusterPin(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
+// getLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
 func getLocalStatusForClusterPin(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs_cluster.Initialize()
@@ -143,6 +156,7 @@ func getLocalStatusForClusterPin(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
+// pinHashToCluster is used to pin a hash to the global cluster state
 func pinHashToCluster(c *gin.Context) {
 	hash := c.Param("hash")
 	err := database.AddHash(c)
@@ -156,6 +170,7 @@ func pinHashToCluster(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
 
+// pinHashLocally is used to pin a hash to the local ipfs node
 func pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")
 	err := database.AddHash(c)
@@ -173,6 +188,8 @@ func pinHashLocally(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"hash": upload.Hash})
 }
 
+// addFileLocally is used to add a file to our local ipfs node
+// this will have to be done first before pushing any file's to the cluster
 func addFileLocally(c *gin.Context) {
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
