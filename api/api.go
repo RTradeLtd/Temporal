@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -58,11 +59,11 @@ func removePinFromLocalHost(c *gin.Context) {
 		return
 	}
 	qm, err := queue.Initialize(queue.IpfsQueue)
-	qm.PublishMessage(hash)
 	if err != nil {
 		c.Error(err)
 		return
 	}
+	qm.PublishMessage(hash)
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
@@ -76,6 +77,12 @@ func removePinFromCluster(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(hash)
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
@@ -90,10 +97,17 @@ func fetchLocalClusterStatus(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
 	for k, v := range maps {
 		cids = append(cids, k)
 		statuses = append(statuses, v)
 	}
+	qm.PublishMessage(fmt.Sprintf("%v", cids))
+	qm.PublishMessage(fmt.Sprintf("%v", statuses))
 	c.JSON(http.StatusOK, gin.H{"cids": cids, "statuses": statuses})
 }
 
@@ -106,6 +120,12 @@ func syncClusterErrorsLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(fmt.Sprintf("%v", syncedCids))
 	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
 }
 
@@ -115,6 +135,12 @@ func getUploads(c *gin.Context) {
 	if uploads == nil {
 		c.JSON(http.StatusNotFound, nil)
 	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(fmt.Sprintf("%v", uploads))
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
@@ -125,6 +151,12 @@ func getUploadsForAddress(c *gin.Context) {
 	if uploads == nil {
 		c.JSON(http.StatusNotFound, nil)
 	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(fmt.Sprintf("%v", uploads))
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
@@ -136,6 +168,12 @@ func getLocalPins(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(fmt.Sprintf("%v", pinInfo))
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
@@ -148,6 +186,12 @@ func getGlobalStatusForClusterPin(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(fmt.Sprintf("%v", status))
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
@@ -160,6 +204,12 @@ func getLocalStatusForClusterPin(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(fmt.Sprintf("%v", status))
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
@@ -174,6 +224,12 @@ func pinHashToCluster(c *gin.Context) {
 	manager := rtfs_cluster.Initialize()
 	contentIdentifier := manager.DecodeHashString(hash)
 	manager.Client.Pin(contentIdentifier, -1, -1, hash)
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(hash)
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
 
@@ -192,6 +248,12 @@ func pinHashLocally(c *gin.Context) {
 		return
 	}
 	upload := database.GetUpload(hash, c.PostForm("uploadAddress"))
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(fmt.Sprintf("%+v", upload))
 	c.JSON(http.StatusOK, gin.H{"hash": upload.Hash})
 }
 
@@ -215,5 +277,11 @@ func addFileLocally(c *gin.Context) {
 		return
 	}
 	database.AddFileHash(c, resp)
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(resp)
 	c.JSON(http.StatusOK, gin.H{"response": resp})
 }

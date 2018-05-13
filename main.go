@@ -42,7 +42,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(qm)
+		qm.ConsumeMessage("")
 	default:
 		fmt.Println("idiot")
 	}
