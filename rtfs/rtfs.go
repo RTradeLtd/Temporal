@@ -9,10 +9,14 @@ type IpfsManager struct {
 }
 
 func Initialize() *IpfsManager {
-	url := ""
 	manager := IpfsManager{}
-	manager.Shell = establishShellWithNode(url)
+	manager.Shell = establishBackendLocalShell()
 	return &manager
+}
+
+func establishBackendLocalShell() *ipfsapi.Shell {
+	shell := ipfsapi.NewShell("localhost:25769")
+	return shell
 }
 
 func establishShellWithNode(url string) *ipfsapi.Shell {
