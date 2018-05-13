@@ -48,9 +48,11 @@ func (qm *QueueManager) OpenChannel() error {
 }
 
 func (qm *QueueManager) DeclareQueue(queueName string) error {
+	// we declare the queue as durable so that even if rabbitmq server stops
+	// our messages won't be lost
 	q, err := qm.Channel.QueueDeclare(
 		queueName, // name
-		false,     // durable
+		true,      // durable
 		false,     // delete when unused
 		false,     // exclusive
 		false,     // no-wait
@@ -63,6 +65,7 @@ func (qm *QueueManager) DeclareQueue(queueName string) error {
 	return nil
 }
 
+// ConsumeMessage is used to consume messages that are sent to the queue
 func (qm *QueueManager) ConsumeMessage(consumer string) error {
 	// we use a false flag for auto-ack since we will use
 	// manually acknowledgemnets to ensure message delivery
@@ -91,7 +94,9 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 	return nil
 }
 
+// PublishMessage is used to produce messages that are sent to the queue
 func (qm *QueueManager) PublishMessage(msg string) {
+	// we use a persistent delivery mode to combine with the durable queue
 	body := msg
 	err := qm.Channel.Publish(
 		"",            // exchange
@@ -99,8 +104,9 @@ func (qm *QueueManager) PublishMessage(msg string) {
 		false,         // mandatory
 		false,         //immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "text/plain",
+			Body:         []byte(body),
 		},
 	)
 	if err != nil {
