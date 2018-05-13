@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"os"
 
@@ -14,9 +15,13 @@ import (
 	"github.com/stvp/roll"
 )
 
-// Setup is used to build our routes
+// Setup is used to initialize our api.
+// it invokes all  non exported function to setup the api.
 func Setup() *gin.Engine {
 	token := os.Getenv("ROLLBAR_TOKEN")
+	if token == "" {
+		log.Fatal("invalid token")
+	}
 	roll.Token = token
 	roll.Environment = "development"
 	r := gin.Default()
@@ -25,12 +30,13 @@ func Setup() *gin.Engine {
 	return r
 }
 
+// setupRoutes is used to setup all of our api routes
 func setupRoutes(g *gin.Engine) {
 
 	g.POST("/api/v1/ipfs/pin/:hash", pinHashLocally)
 	g.POST("/api/v1/ipfs/add-file", addFileLocally)
 	g.POST("/api/v1/ipfs-cluster/pin/:hash", pinHashToCluster)
-	g.POST("/api/v1/ipfs-cluster/sync-errors-local", syncErrorsLocally)
+	g.POST("/api/v1/ipfs-cluster/sync-errors-local", syncClusterErrorsLocally)
 	g.DELETE("/api/v1/ipfs/remove-pin/:hash", removePinFromLocalHost)
 	g.DELETE("/api/v1/ipfs-cluster/remove-pin/:hash", removePinFromCluster)
 	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", getLocalStatusForClusterPin)
@@ -79,7 +85,7 @@ func fetchLocalClusterStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"cids": cids, "statuses": statuses})
 }
 
-func syncErrorsLocally(c *gin.Context) {
+func syncClusterErrorsLocally(c *gin.Context) {
 	manager := rtfs_cluster.Initialize()
 	syncedCids, err := manager.ParseLocalStatusAllAndSync()
 	if err != nil {
@@ -115,19 +121,6 @@ func getLocalPins(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
-func pinHashToCluster(c *gin.Context) {
-	hash := c.Param("hash")
-	err := database.AddHash(c)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	manager := rtfs_cluster.Initialize()
-	contentIdentifier := manager.DecodeHashString(hash)
-	manager.Client.Pin(contentIdentifier, -1, -1, hash)
-	c.JSON(http.StatusOK, gin.H{"hash": hash})
-}
-
 func getGlobalStatusForClusterPin(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs_cluster.Initialize()
@@ -148,6 +141,19 @@ func getLocalStatusForClusterPin(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusFound, gin.H{"status": status})
+}
+
+func pinHashToCluster(c *gin.Context) {
+	hash := c.Param("hash")
+	err := database.AddHash(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	manager := rtfs_cluster.Initialize()
+	contentIdentifier := manager.DecodeHashString(hash)
+	manager.Client.Pin(contentIdentifier, -1, -1, hash)
+	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
 
 func pinHashLocally(c *gin.Context) {

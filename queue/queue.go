@@ -15,7 +15,22 @@ type QueueManager struct {
 	Queue      *amqp.Queue
 }
 
-func Setup() (*amqp.Connection, error) {
+func Initialize(queueName string) (*QueueManager, error) {
+	conn, err := setupConnection()
+	if err != nil {
+		return nil, err
+	}
+	qm := QueueManager{Connection: conn}
+	if err := qm.OpenChannel(); err != nil {
+		return nil, err
+	}
+	if err := qm.DeclareQueue(queueName); err != nil {
+		return nil, err
+	}
+	return &qm, nil
+}
+
+func setupConnection() (*amqp.Connection, error) {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		return nil, err
@@ -23,27 +38,29 @@ func Setup() (*amqp.Connection, error) {
 	return conn, nil
 }
 
-func (qm *QueueManager) OpenChannel() {
+func (qm *QueueManager) OpenChannel() error {
 	ch, err := qm.Connection.Channel()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	qm.Channel = ch
+	return nil
 }
 
-func (qm *QueueManager) DeclareQueue() {
+func (qm *QueueManager) DeclareQueue(queueName string) error {
 	q, err := qm.Channel.QueueDeclare(
-		"name", // name
-		false,  // durable
-		false,  // delete when unused
-		false,  // exclusive
-		false,  // no-wait
-		nil,    // arguments
+		queueName, // name
+		false,     // durable
+		false,     // delete when unused
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	qm.Queue = &q
+	return nil
 }
 
 func (qm *QueueManager) PublishMessage(msg string) {

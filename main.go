@@ -7,6 +7,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/rtswarm"
 )
@@ -14,10 +15,6 @@ import (
 func main() {
 	if len(os.Args) > 2 || len(os.Args) < 2 {
 		log.Fatal("idiot")
-	}
-	token := os.Getenv("ROLLBAR_TOKEN")
-	if token == "" {
-		os.Exit(1)
 	}
 	switch os.Args[1] {
 	case "cluster":
@@ -40,6 +37,12 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Printf("%+v\n", sm)
+	case "queue":
+		qm, err := queue.Initialize("pin-requests")
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(qm)
 	default:
 		fmt.Println("idiot")
 	}
