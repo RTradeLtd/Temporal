@@ -98,9 +98,6 @@ func (cm *ClusterManager) FetchLocalStatus() (map[*gocid.Cid]string, error) {
 		}
 		globalPinInfo := peermap[id.ID]
 		errString := globalPinInfo.Error
-		if errString == "" {
-			continue
-		}
 		response[cid] = errString
 	}
 	return response, nil
