@@ -47,6 +47,7 @@ func removePinFromLocalHost(c *gin.Context) {
 	err := manager.Shell.Unpin(hash)
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
@@ -58,6 +59,7 @@ func removePinFromCluster(c *gin.Context) {
 	err := manager.RemovePinFromCluster(hash)
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
@@ -69,6 +71,7 @@ func fetchLocalClusterStatus(c *gin.Context) {
 	maps, err := manager.FetchLocalStatus()
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	for k, v := range maps {
 		cids = append(cids, k)
@@ -82,6 +85,7 @@ func syncErrorsLocally(c *gin.Context) {
 	syncedCids, err := manager.ParseLocalStatusAllAndSync()
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
 }
@@ -107,6 +111,7 @@ func getLocalPins(c *gin.Context) {
 	pinInfo, err := manager.Shell.Pins()
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
@@ -130,6 +135,7 @@ func getGlobalStatusForClusterPin(c *gin.Context) {
 	status, err := manager.GetStatusForCidGlobally(hash)
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
@@ -140,6 +146,7 @@ func getLocalStatusForClusterPin(c *gin.Context) {
 	status, err := manager.GetStatusForCidLocally(hash)
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
@@ -148,12 +155,14 @@ func pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")
 	err := database.AddHash(c)
 	if err != nil {
+		c.Error(err)
 		return
 	}
 	manager := rtfs.Initialize()
 	err = manager.Shell.Pin(hash)
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	upload := database.GetUpload(hash, c.PostForm("uploadAddress"))
 	c.JSON(http.StatusOK, gin.H{
@@ -166,15 +175,18 @@ func addFileLocally(c *gin.Context) {
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	manager := rtfs.Initialize()
 	resp, err := manager.Shell.Add(openFile)
 	if err != nil {
 		c.Error(err)
+		return
 	}
 	database.AddFileHash(c, resp)
 	c.JSON(http.StatusOK, gin.H{"response": resp})
