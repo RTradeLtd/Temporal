@@ -22,6 +22,8 @@ https://github.com/gin-gonic/gin/issues/774
 
 https://cluster.ipfs.io/documentation/internals/
 
+https://www.rabbitmq.com/tutorials/tutorial-two-go.html
+
 # HOW TO:
 
 Upload file with curl:

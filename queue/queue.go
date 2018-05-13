@@ -64,10 +64,13 @@ func (qm *QueueManager) DeclareQueue(queueName string) error {
 }
 
 func (qm *QueueManager) ConsumeMessage(consumer string) error {
+	// we use a false flag for auto-ack since we will use
+	// manually acknowledgemnets to ensure message delivery
+	// even if a worker dies
 	msgs, err := qm.Channel.Consume(
 		qm.Queue.Name, // queue
 		consumer,      // consumer
-		true,          // auto-ack
+		false,         // auto-ack
 		false,         // exclusive
 		false,         // no-local
 		false,         // no-wait
@@ -80,6 +83,8 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 	go func() {
 		for d := range msgs {
 			log.Printf("receive a message: %s", d.Body)
+			// submit message acknowledgement
+			d.Ack(false)
 		}
 	}()
 	<-forever
