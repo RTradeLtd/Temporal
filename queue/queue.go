@@ -63,6 +63,29 @@ func (qm *QueueManager) DeclareQueue(queueName string) error {
 	return nil
 }
 
+func (qm *QueueManager) ConsumeMessage(consumer string) error {
+	msgs, err := qm.Channel.Consume(
+		qm.Queue.Name, // queue
+		consumer,      // consumer
+		true,          // auto-ack
+		false,         // exclusive
+		false,         // no-local
+		false,         // no-wait
+		nil,           // args
+	)
+	if err != nil {
+		return err
+	}
+	forever := make(chan bool)
+	go func() {
+		for d := range msgs {
+			log.Printf("receive a message: %s", d.Body)
+		}
+	}()
+	<-forever
+	return nil
+}
+
 func (qm *QueueManager) PublishMessage(msg string) {
 	body := msg
 	err := qm.Channel.Publish(
