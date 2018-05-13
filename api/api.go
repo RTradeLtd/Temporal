@@ -52,7 +52,6 @@ func removePinFromLocalHost(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
-// not currently working
 func removePinFromCluster(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs_cluster.Initialize()
