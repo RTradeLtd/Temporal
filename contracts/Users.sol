@@ -25,6 +25,11 @@ contract Users  is UsersAdministration {
 
     mapping (address => UserStruct) public users;
 
+    event UserLockedFunds(address indexed _user, uint256 _amount);
+    event FundsDeposited(address indexed _depositer, uint256 _amount);
+    event UploaderRegistered(address indexed _uploaderAddress);
+    event PaymentContractLockedFunds(address indexed _user, uint256 _amount);
+
     modifier isLockedForWithdrawal(address _user) {
         require(users[_user].lockedForWithdrawal);
         _;
@@ -53,8 +58,10 @@ contract Users  is UsersAdministration {
         returns (bool)
     {
         users[_uploader].registered = true;
+        emit UploaderRegistered(_uploader);
         return true;
     }
+
 
     function depositFunds(
         uint256 _amount)
@@ -63,6 +70,7 @@ contract Users  is UsersAdministration {
         returns (bool)
     {
         users[msg.sender].availableBalance = _amount;
+        emit FundsDeposited(msg.sender, _amount);
         require(rtI.transferFrom(msg.sender, address(this), _amount));
         return true;
     }
@@ -76,8 +84,10 @@ contract Users  is UsersAdministration {
         require(users[msg.sender].availableBalance >= _amount);
         users[msg.sender].availableBalance = users[msg.sender].availableBalance.sub(_amount);
         users[msg.sender].lockedBalance = users[msg.sender].lockedBalance.add(_amount);
+        emit UserLockedFunds(msg.sender, _amount);
         return true;
     }
+
 
     function paymentLockFunds(
         address _user,
@@ -91,8 +101,11 @@ contract Users  is UsersAdministration {
         require(users[_user].availableBalance >= _amount);
         users[_user].availableBalance = users[_user].availableBalance.sub(_amount);
         users[_user].lockedBalance = users[_user].lockedBalance.add(_amount);
+        emit PaymentContractLockedFunds(_user, _amount);
         return true;
     }
+
+    
 
     function withdrawLockedFundsForPayment(
         address _user,
