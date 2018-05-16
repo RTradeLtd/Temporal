@@ -103,24 +103,28 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 		return err
 	}
 
-	for d := range msgs {
-		if d.Body != nil {
-			dpa := DatabasePinAdd{}
-			upload := models.Upload{}
-			log.Printf("receive a message: %s", d.Body)
-			err := json.Unmarshal(d.Body, &dpa)
-			if err != nil {
-				continue
+	forever := make(chan bool)
+	go func() {
+		for d := range msgs {
+			if d.Body != nil {
+				dpa := DatabasePinAdd{}
+				upload := models.Upload{}
+				log.Printf("receive a message: %s", d.Body)
+				err := json.Unmarshal(d.Body, &dpa)
+				if err != nil {
+					continue
+				}
+				upload.Hash = dpa.Hash
+				upload.HoldTimeInMonths = dpa.HoldTimeInMonths
+				upload.Type = "pin"
+				upload.UploadAddress = dpa.UploaderAddress
+				db.Create(&upload)
+				// submit message acknowledgement
+				d.Ack(false)
 			}
-			upload.Hash = dpa.Hash
-			upload.HoldTimeInMonths = dpa.HoldTimeInMonths
-			upload.Type = "pin"
-			upload.UploadAddress = dpa.UploaderAddress
-			db.Create(&upload)
-			// submit message acknowledgement
-			d.Ack(false)
 		}
-	}
+	}()
+	<-forever
 	return nil
 }
 
