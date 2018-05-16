@@ -26,6 +26,12 @@ type DatabaseFileAdd struct {
 	UploaderAddress  string `json:"uploader_address"`
 }
 
+type DatabasePinAdd struct {
+	Hash             string `json:"hash"`
+	HoldTimeInMonths int64  `json:"hold_time_in_months"`
+	UploaderAddress  string `json:"uploader_address"`
+}
+
 func Initialize(queueName string) (*QueueManager, error) {
 	conn, err := setupConnection()
 	if err != nil {
