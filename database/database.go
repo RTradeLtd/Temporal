@@ -31,18 +31,25 @@ import (
 	rollbar.Wait()
 }
 */
+
+var uploadObj *models.Upload
+var userObj *models.User
+
 type DatabaseManager struct {
-	DB *gorm.DB
+	DB     *gorm.DB
+	Upload *models.UploadManager
 }
 
 func Initialize() *DatabaseManager {
 	dbm := DatabaseManager{}
 	dbm.OpenDBConnection()
+	dbm.RunMigrations()
 	return &dbm
 }
 
-func (dbm *DatabaseManager) RunMigrations(value interface{}) {
-	dbm.DB.AutoMigrate(value)
+func (dbm *DatabaseManager) RunMigrations() {
+	dbm.DB.AutoMigrate(uploadObj)
+	dbm.DB.AutoMigrate(userObj)
 }
 
 // OpenDBConnection is used to create a database connection
@@ -59,14 +66,10 @@ func CloseDBConnection(db *gorm.DB) {
 	db.Close()
 }
 
-func GetUpload(hash string, uploader string) *models.Upload {
-	var upload models.Upload
-	upload.Hash = hash
-	upload.UploadAddress = uploader
-	db = OpenDBConnection()
-	db.First(&upload)
-	CloseDBConnection(db)
-	return &upload
+func (dbm *DatabaseManager) GetUpload(hash string, uploaderAddress string) []*models.Upload {
+	var uploads []*models.Upload
+	dbm.DB.Find(&uploads).Where("hash = ? AND uploader_address = ?", hash, uploaderAddress)
+	return uploads
 }
 
 // GetUploads is used to retrieve all uploads
