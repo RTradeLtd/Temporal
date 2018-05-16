@@ -1,8 +1,6 @@
 package models
 
 import (
-	"log"
-
 	"github.com/jinzhu/gorm"
 )
 
@@ -73,13 +71,4 @@ func (um *UploadManager) AddFileHash(hash string, uploaderAddress string, holdTi
 	upload.Hash = hash
 	upload.Type = "file"
 	um.DB.Create(&upload)
-}
-
-// OpenDBConnection is used to open a database connection
-func OpenDBConnection() *gorm.DB {
-	db, err := gorm.Open("sqlite3", "./ipfs_database.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	return db
 }
