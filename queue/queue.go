@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/RTradeLtd/Temporal/database"
 	"github.com/streadway/amqp"
 )
 
@@ -84,6 +85,7 @@ func (qm *QueueManager) DeclareQueue(queueName string) error {
 
 // ConsumeMessage is used to consume messages that are sent to the queue
 func (qm *QueueManager) ConsumeMessage(consumer string) error {
+	dbm := database.Initialize()
 	// we use a false flag for auto-ack since we will use
 	// manually acknowledgemnets to ensure message delivery
 	// even if a worker dies
@@ -102,9 +104,17 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 	forever := make(chan bool)
 	go func() {
 		for d := range msgs {
+			dpa := &DatabasePinAdd{}
 			log.Printf("receive a message: %s", d.Body)
-			// submit message acknowledgement
-			d.Ack(false)
+			err := json.Unmarshal(d.Body, &dpa)
+			if err != nil {
+				continue
+			}
+			if d.Body != nil {
+				dbm.Upload.AddPinHash(dpa.Hash, dpa.UploaderAddress, dpa.HoldTimeInMonths)
+				// submit message acknowledgement
+				d.Ack(false)
+			}
 		}
 	}()
 	<-forever

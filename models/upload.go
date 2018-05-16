@@ -10,7 +10,7 @@ type Upload struct {
 	gorm.Model
 	Hash             string `gorm:not null;`
 	Type             string `gorm:not null;` //  file, pin
-	HoldTimeInMonths int    `gorm:not null;`
+	HoldTimeInMonths int64  `gorm:not null;`
 	UploadAddress    string `gorm:not null;`
 }
 
@@ -56,7 +56,7 @@ func (um *UploadManager) GetUploadsForAddress(address string) []*Upload {
 }
 
 // AddPinHash is used to upload a pin hash to our database
-func (um *UploadManager) AddPinHash(hash string, uploaderAddress string, holdTimeInMonths int) {
+func (um *UploadManager) AddPinHash(hash string, uploaderAddress string, holdTimeInMonths int64) {
 	var upload Upload
 	upload.HoldTimeInMonths = holdTimeInMonths
 	upload.UploadAddress = uploaderAddress
@@ -66,7 +66,7 @@ func (um *UploadManager) AddPinHash(hash string, uploaderAddress string, holdTim
 }
 
 // AddFileHash is used to add the hash of a file to our database
-func (um *UploadManager) AddFileHash(hash string, uploaderAddress string, holdTimeInMonths int) {
+func (um *UploadManager) AddFileHash(hash string, uploaderAddress string, holdTimeInMonths int64) {
 	var upload Upload
 	upload.HoldTimeInMonths = holdTimeInMonths
 	upload.UploadAddress = uploaderAddress

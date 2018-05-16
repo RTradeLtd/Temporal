@@ -40,7 +40,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		qm.ConsumeMessage("")
+		err = qm.ConsumeMessage("")
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "queue-ipfs":
 		qm, err := queue.Initialize(queue.IpfsQueue)
 		if err != nil {
