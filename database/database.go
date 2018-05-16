@@ -31,21 +31,27 @@ import (
 	rollbar.Wait()
 }
 */
-var db *gorm.DB
+type DatabaseManager struct {
+	DB *gorm.DB
+}
 
-func RunMigrations() {
-	var uploads models.Upload
-	db := OpenDBConnection()
-	db.AutoMigrate(uploads)
+func Initialize() *DatabaseManager {
+	dbm := DatabaseManager{}
+	dbm.OpenDBConnection()
+	return &dbm
+}
+
+func (dbm *DatabaseManager) RunMigrations(value interface{}) {
+	dbm.DB.AutoMigrate(value)
 }
 
 // OpenDBConnection is used to create a database connection
-func OpenDBConnection() *gorm.DB {
+func (dbm *DatabaseManager) OpenDBConnection() {
 	db, err := gorm.Open("sqlite3", "./ipfs_database.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	return db
+	dbm.DB = db
 }
 
 // CloseDBConnection is used to close a db
