@@ -1,13 +1,8 @@
 package models
 
 import (
-	"errors"
-	"fmt"
 	"log"
-	"net/http"
-	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 )
 
@@ -15,7 +10,7 @@ type Upload struct {
 	gorm.Model
 	Hash             string `gorm:not null;`
 	Type             string `gorm:not null;` //  file, pin
-	HoldTimeInMonths int64  `gorm:not null;`
+	HoldTimeInMonths int    `gorm:not null;`
 	UploadAddress    string `gorm:not null;`
 }
 
@@ -60,51 +55,24 @@ func (um *UploadManager) GetUploadsForAddress(address string) []*Upload {
 	return uploads
 }
 
-// AddHash his used to add a hash to our database
-func AddHash(c *gin.Context) error {
+// AddPinHash is used to upload a pin hash to our database
+func (um *UploadManager) AddPinHash(hash string, uploaderAddress string, holdTimeInMonths int) {
 	var upload Upload
-	hash := c.Param("hash")
-	address, exists := c.GetPostForm("uploadAddress")
-	if !exists {
-		c.AbortWithError(http.StatusBadRequest, errors.New("uploadAddress param des not exist"))
-		return errors.New("holdTime param does not exist")
-	}
-	holdTime, exists := c.GetPostForm("holdTime")
-	if !exists {
-		c.AbortWithError(http.StatusBadRequest, errors.New("holdTime param does not exist"))
-		return errors.New("holdTime param does not exist")
-	}
-	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return err
-	}
-	upload.Hash = fmt.Sprintf("%s", hash)
+	upload.HoldTimeInMonths = holdTimeInMonths
+	upload.UploadAddress = uploaderAddress
+	upload.Hash = hash
 	upload.Type = "pin"
-	upload.HoldTimeInMonths = holdTimeInt
-	upload.UploadAddress = address
-	db := OpenDBConnection()
-	db.Create(&upload)
-	db.Close()
-	return nil
+	um.DB.Create(&upload)
 }
 
 // AddFileHash is used to add the hash of a file to our database
-func AddFileHash(c *gin.Context, hash string) {
+func (um *UploadManager) AddFileHash(hash string, uploaderAddress string, holdTimeInMonths int) {
 	var upload Upload
-	address := c.PostForm("uploadAddress")
-	holdTimeInt, err := strconv.ParseInt(c.PostForm("holdTime"), 10, 64)
-	if err != nil {
-		c.Error(err)
-	}
-	upload.HoldTimeInMonths = holdTimeInt
-	upload.UploadAddress = address
+	upload.HoldTimeInMonths = holdTimeInMonths
+	upload.UploadAddress = uploaderAddress
 	upload.Hash = hash
 	upload.Type = "file"
-	db := OpenDBConnection()
-	db.AutoMigrate(&upload)
-	db.Create(&upload)
-	db.Close()
+	um.DB.Create(&upload)
 }
 
 // OpenDBConnection is used to open a database connection

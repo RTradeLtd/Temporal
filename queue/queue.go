@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"encoding/json"
 	"log"
 
 	"github.com/streadway/amqp"
@@ -8,11 +9,21 @@ import (
 
 var IpfsQueue = "ipfs"
 var IpfsClusterQueue = "ipfs-cluster"
+var DatabaseFileAddQueue = "dfa-queue"
+var DatabasePinAddQueue = "dpa-queue"
 
 type QueueManager struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
 	Queue      *amqp.Queue
+}
+
+type IpfsClusterPin struct{}
+
+type DatabaseFileAdd struct {
+	Hash             string `json:"hash"`
+	HoldTimeInMonths int64  `json:"hold_time_in_months"`
+	UploaderAddress  string `json:"uploader_address"`
 }
 
 func Initialize(queueName string) (*QueueManager, error) {
@@ -95,10 +106,13 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 }
 
 // PublishMessage is used to produce messages that are sent to the queue
-func (qm *QueueManager) PublishMessage(msg string) {
+func (qm *QueueManager) PublishMessage(body interface{}) error {
 	// we use a persistent delivery mode to combine with the durable queue
-	body := msg
-	err := qm.Channel.Publish(
+	bodyMarshaled, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	err = qm.Channel.Publish(
 		"",            // exchange
 		qm.Queue.Name, // routing key
 		false,         // mandatory
@@ -106,12 +120,13 @@ func (qm *QueueManager) PublishMessage(msg string) {
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
 			ContentType:  "text/plain",
-			Body:         []byte(body),
+			Body:         bodyMarshaled,
 		},
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
 func (qm *QueueManager) Close() {

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	gocid "github.com/ipfs/go-cid"
@@ -236,7 +237,25 @@ func pinHashToCluster(c *gin.Context) {
 // pinHashLocally is used to pin a hash to the local ipfs node
 func pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")
-	err := database.AddHash(c)
+	uploadAddress := c.PostForm("uploadAddress")
+	holdTimeInMonths := c.PostForm("holdTime")
+	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	dfa := queue.DatabaseFileAdd{
+		Hash:             hash,
+		UploaderAddress:  uploadAddress,
+		HoldTimeInMonths: holdTimeInt,
+	}
+
+	qm, err := queue.Initialize(queue.DatabasePinAddQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
 	if err != nil {
 		c.Error(err)
 		return
@@ -247,14 +266,7 @@ func pinHashLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	upload := database.GetUpload(hash, c.PostForm("uploadAddress"))
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	qm.PublishMessage(fmt.Sprintf("%+v", upload))
-	c.JSON(http.StatusOK, gin.H{"hash": upload.Hash})
+	c.JSON(http.StatusOK, gin.H{"upload": dfa})
 }
 
 // addFileLocally is used to add a file to our local ipfs node

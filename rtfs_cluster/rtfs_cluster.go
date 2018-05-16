@@ -73,7 +73,6 @@ func (cm *ClusterManager) ParseLocalStatusAllAndSync() ([]*gocid.Cid, error) {
 	return syncedCids, nil
 }
 
-// not currently working
 func (cm *ClusterManager) RemovePinFromCluster(cidString string) error {
 	decoded := cm.DecodeHashString(cidString)
 	err := cm.Client.Unpin(decoded)
@@ -158,9 +157,3 @@ func (cm *ClusterManager) Pin(cid *gocid.Cid) error {
 	fmt.Printf("%+v\n", stat)
 	return nil
 }
-
-/*
-func BuildCluster() {
-	host, cfg := BuildClusterHost()
-	ipfsc.NewCluster(host, cfg)
-}*/
