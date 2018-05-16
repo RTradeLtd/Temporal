@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/RTradeLtd/Temporal/rtfs_cluster"
+
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/streadway/amqp"
@@ -124,6 +126,12 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					// submit message acknowledgement
 					d.Ack(false)
 					// TODO: add cluster pin event
+					cm := rtfs_cluster.Initialize()
+					decoded := cm.DecodeHashString(dpa.Hash)
+					err = cm.Pin(decoded)
+					if err != nil {
+						log.Fatal(err)
+					}
 				}
 			case DatabaseFileAddQueue:
 				if d.Body != nil {
