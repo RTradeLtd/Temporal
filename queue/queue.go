@@ -106,21 +106,26 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 	forever := make(chan bool)
 	go func() {
 		for d := range msgs {
-			if d.Body != nil {
-				dpa := DatabasePinAdd{}
-				upload := models.Upload{}
-				log.Printf("receive a message: %s", d.Body)
-				err := json.Unmarshal(d.Body, &dpa)
-				if err != nil {
-					continue
+			switch qm.Queue.Name {
+			case DatabasePinAddQueue:
+				if d.Body != nil {
+					dpa := DatabasePinAdd{}
+					upload := models.Upload{}
+					log.Printf("receive a message: %s", d.Body)
+					err := json.Unmarshal(d.Body, &dpa)
+					if err != nil {
+						continue
+					}
+					upload.Hash = dpa.Hash
+					upload.HoldTimeInMonths = dpa.HoldTimeInMonths
+					upload.Type = "pin"
+					upload.UploadAddress = dpa.UploaderAddress
+					db.Create(&upload)
+					// submit message acknowledgement
+					d.Ack(false)
 				}
-				upload.Hash = dpa.Hash
-				upload.HoldTimeInMonths = dpa.HoldTimeInMonths
-				upload.Type = "pin"
-				upload.UploadAddress = dpa.UploaderAddress
-				db.Create(&upload)
-				// submit message acknowledgement
-				d.Ack(false)
+			default:
+				log.Fatal("invalid queue name")
 			}
 		}
 	}()
