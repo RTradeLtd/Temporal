@@ -39,7 +39,7 @@ func Initialize() *DatabaseManager {
 	dbm := DatabaseManager{}
 	db := OpenDBConnection()
 	dbm.DB = db
-	//	dbm.RunMigrations()
+	//dbm.RunMigrations()
 	return &dbm
 }
 

@@ -62,7 +62,7 @@ func (um *UploadManager) AddPinHash(hash string, uploaderAddress string, holdTim
 	upload.UploadAddress = uploaderAddress
 	upload.Hash = hash
 	upload.Type = "pin"
-	um.DB.Create(&upload)
+	um.DB.Create(upload)
 }
 
 // AddFileHash is used to add the hash of a file to our database
