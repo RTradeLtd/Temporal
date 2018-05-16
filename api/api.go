@@ -217,11 +217,6 @@ func getLocalStatusForClusterPin(c *gin.Context) {
 // pinHashToCluster is used to pin a hash to the global cluster state
 func pinHashToCluster(c *gin.Context) {
 	hash := c.Param("hash")
-	err := database.AddHash(c)
-	if err != nil {
-		c.Error(err)
-		return
-	}
 	manager := rtfs_cluster.Initialize()
 	contentIdentifier := manager.DecodeHashString(hash)
 	manager.Client.Pin(contentIdentifier, -1, -1, hash)
