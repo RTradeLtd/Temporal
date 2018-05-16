@@ -123,6 +123,27 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					db.Create(&upload)
 					// submit message acknowledgement
 					d.Ack(false)
+					// TODO: add cluster pin event
+				}
+			case DatabaseFileAddQueue:
+				if d.Body != nil {
+					if d.Body != nil {
+						dfa := DatabaseFileAdd{}
+						upload := models.Upload{}
+						log.Printf("receive a message: %s", d.Body)
+						err := json.Unmarshal(d.Body, &dfa)
+						if err != nil {
+							continue
+						}
+						upload.Hash = dfa.Hash
+						upload.HoldTimeInMonths = dfa.HoldTimeInMonths
+						upload.Type = "file"
+						upload.UploadAddress = dfa.UploaderAddress
+						db.Create(&upload)
+						// submit message acknowledgement
+						d.Ack(false)
+						// TODO: add cluster pin event
+					}
 				}
 			default:
 				log.Fatal("invalid queue name")
