@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/RTradeLtd/Temporal/api"
-	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/rtswarm"
@@ -28,7 +27,6 @@ func main() {
 			log.Fatal(err)
 		}
 	case "api":
-		database.RunMigrations()
 		router := api.Setup()
 		router.Run(":6767")
 	case "swarm":
@@ -37,6 +35,12 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Printf("%+v\n", sm)
+	case "queue-dpa":
+		qm, err := queue.Initialize(queue.DatabasePinAddQueue)
+		if err != nil {
+			log.Fatal(err)
+		}
+		qm.ConsumeMessage("")
 	case "queue-ipfs":
 		qm, err := queue.Initialize(queue.IpfsQueue)
 		if err != nil {
