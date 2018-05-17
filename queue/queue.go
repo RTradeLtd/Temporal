@@ -136,11 +136,16 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						continue
 					}
 					gcd := currTime.AddDate(0, holdTime, 0)
+					lastUpload := models.Upload{
+						Hash: dpa.Hash,
+					}
+					db.Last(&lastUpload)
+					fmt.Printf("%+v\n", lastUpload)
 					upload.GarbageCollectDate = gcd
 					db.Create(&upload)
 					// submit message acknowledgement
 					d.Ack(false)
-					// TODO: add cluster pin event
+					// TODO: change this to an async process
 					cm := rtfs_cluster.Initialize()
 					decoded := cm.DecodeHashString(dpa.Hash)
 					err = cm.Pin(decoded)

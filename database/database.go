@@ -5,7 +5,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 var uploadObj *models.Upload
@@ -31,7 +31,7 @@ func (dbm *DatabaseManager) RunMigrations() {
 
 // OpenDBConnection is used to create a database connection
 func OpenDBConnection() *gorm.DB {
-	db, err := gorm.Open("sqlite3", "./ipfs_database.db")
+	db, err := gorm.Open("postgres", "host=127.0.0.1 port=5432 user=postgres dbname=temporal password=password123")
 	if err != nil {
 		log.Fatal(err)
 	}

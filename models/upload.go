@@ -8,11 +8,11 @@ import (
 
 type Upload struct {
 	gorm.Model
-	Hash               string    `gorm:"type:varchar(255);not null;"`
-	Type               string    `gorm:"type:varchar(255);not null;"` //  file, pin
-	HoldTimeInMonths   int64     `gorm:"type:integer;not null;"`
-	UploadAddress      string    `gorm:"type:varchar(255);not null;"`
-	GarbageCollectDate time.Time `gorm:"type:timestamptz"`
+	Hash               string `gorm:"type:varchar(255);not null;"`
+	Type               string `gorm:"type:varchar(255);not null;"` //  file, pin
+	HoldTimeInMonths   int64  `gorm:"type:integer;not null;"`
+	UploadAddress      string `gorm:"type:varchar(255);not null;"`
+	GarbageCollectDate time.Time
 }
 
 type UploadManager struct {
