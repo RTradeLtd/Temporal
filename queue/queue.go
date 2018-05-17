@@ -90,6 +90,8 @@ func (qm *QueueManager) DeclareQueue(queueName string) error {
 }
 
 // ConsumeMessage is used to consume messages that are sent to the queue
+// Question, do we really want to ack messages that fail to be processed?
+// Perhaps the error was temporary, and we allow it to be retried?
 func (qm *QueueManager) ConsumeMessage(consumer string) error {
 	db := database.OpenDBConnection()
 	// we use a false flag for auto-ack since we will use
@@ -119,6 +121,7 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					log.Printf("receive a message: %s", d.Body)
 					err := json.Unmarshal(d.Body, &dpa)
 					if err != nil {
+						d.Ack(false)
 						continue
 					}
 					upload.Hash = dpa.Hash
@@ -128,6 +131,7 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					currTime := time.Now()
 					holdTime, err := strconv.Atoi(fmt.Sprint(dpa.HoldTimeInMonths))
 					if err != nil {
+						d.Ack(false)
 						continue
 					}
 					gcd := currTime.AddDate(0, holdTime, 0)
@@ -135,7 +139,13 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						Hash: dpa.Hash,
 					}
 					db.Last(&lastUpload)
-					fmt.Printf("%+v\n", lastUpload)
+					// check to see whether or not the file will be garbage collected before the last upload
+					// if so we'll skip
+					if lastUpload.GarbageCollectDate.Unix() >= gcd.Unix() {
+						fmt.Println("skipping since we already have an instance that will be GC'd later")
+						d.Ack(false)
+						continue
+					}
 					upload.GarbageCollectDate = gcd
 					db.Create(&upload)
 					// submit message acknowledgement
@@ -158,6 +168,7 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						log.Printf("receive a message: %s", d.Body)
 						err := json.Unmarshal(d.Body, &dfa)
 						if err != nil {
+							d.Ack(false)
 							continue
 						}
 						upload.Hash = dfa.Hash

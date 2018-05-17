@@ -95,7 +95,7 @@ In order to protect the data of our clients, we only store keccak-256 of ipfs co
 
 ## High Level Architecture
 
-* We use an Sqlite database to store user account information, and content hashes off-chain, to allow for easy manipulation, indexing, management, and other critical systems administration operations, for which we may not want to incur the latency of blockchain data access for.
+* We use a Postgresql database to store user account information, and content hashes off-chain, to allow for easy manipulation, indexing, management, and other critical systems administration operations, for which we may not want to incur the latency of blockchain data access for.
 
 * Gin-Gonic is used to create our API
 
