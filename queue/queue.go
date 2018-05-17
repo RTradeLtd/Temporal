@@ -14,11 +14,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-/*
-NOTES:
-	For 1 month we use 730 hours
-*/
-
 var IpfsQueue = "ipfs"
 var IpfsClusterQueue = "ipfs-cluster"
 var DatabaseFileAddQueue = "dfa-queue"
