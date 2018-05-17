@@ -28,6 +28,7 @@ func main() {
 			log.Fatal(err)
 		}
 	case "api":
+		database.RunMigrations()
 		router := api.Setup()
 		router.Run(":6767")
 	case "swarm":
@@ -36,24 +37,12 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Printf("%+v\n", sm)
-	case "queue-dpa":
-		qm, err := queue.Initialize(queue.DatabasePinAddQueue)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = qm.ConsumeMessage("")
-		if err != nil {
-			log.Fatal(err)
-		}
 	case "queue-ipfs":
 		qm, err := queue.Initialize(queue.IpfsQueue)
 		if err != nil {
 			log.Fatal(err)
 		}
 		qm.ConsumeMessage("")
-	case "migrate":
-		dbm := database.Initialize()
-		dbm.RunMigrations()
 	default:
 		fmt.Println("idiot")
 	}

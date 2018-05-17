@@ -5,11 +5,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	gocid "github.com/ipfs/go-cid"
 
+	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-contrib/rollbar"
@@ -45,9 +45,8 @@ func setupRoutes(g *gin.Engine) {
 	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", getGlobalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-local", fetchLocalClusterStatus)
 	g.GET("/api/v1/ipfs/pins", getLocalPins)
-	/*
-		g.GET("/api/v1/database/uploads", getUploads)
-		g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)*/
+	g.GET("/api/v1/database/uploads", getUploads)
+	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
 }
 
 // removePinFromLocalHost is used to remove a pin from the ipfs instance
@@ -130,7 +129,6 @@ func syncClusterErrorsLocally(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
 }
 
-/*TODO
 // getUploads is used to read a list of uploads from our database
 func getUploads(c *gin.Context) {
 	uploads := database.GetUploads()
@@ -145,7 +143,6 @@ func getUploads(c *gin.Context) {
 	qm.PublishMessage(fmt.Sprintf("%v", uploads))
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
-
 
 // getUploadsForAddress is used to read a list of uploads from a particular
 // eth address
@@ -162,7 +159,7 @@ func getUploadsForAddress(c *gin.Context) {
 	qm.PublishMessage(fmt.Sprintf("%v", uploads))
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
-*/
+
 // getLocalPins is used to get the pins tracked by the local ipfs node
 func getLocalPins(c *gin.Context) {
 	manager := rtfs.Initialize()
@@ -171,6 +168,12 @@ func getLocalPins(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(fmt.Sprintf("%v", pinInfo))
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
@@ -213,6 +216,11 @@ func getLocalStatusForClusterPin(c *gin.Context) {
 // pinHashToCluster is used to pin a hash to the global cluster state
 func pinHashToCluster(c *gin.Context) {
 	hash := c.Param("hash")
+	err := database.AddHash(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
 	manager := rtfs_cluster.Initialize()
 	contentIdentifier := manager.DecodeHashString(hash)
 	manager.Client.Pin(contentIdentifier, -1, -1, hash)
@@ -228,26 +236,7 @@ func pinHashToCluster(c *gin.Context) {
 // pinHashLocally is used to pin a hash to the local ipfs node
 func pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")
-	uploadAddress := c.PostForm("uploadAddress")
-	holdTimeInMonths := c.PostForm("holdTime")
-	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	dpa := queue.DatabasePinAdd{
-		Hash:             hash,
-		UploaderAddress:  uploadAddress,
-		HoldTimeInMonths: holdTimeInt,
-	}
-
-	qm, err := queue.Initialize(queue.DatabasePinAddQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	err = qm.PublishMessage(dpa)
+	err := database.AddHash(c)
 	if err != nil {
 		c.Error(err)
 		return
@@ -258,21 +247,20 @@ func pinHashLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"upload": dpa})
-}
-
-// addFileLocally is used to add a file to our local ipfs node
-// this will have to be done first before pushing any file's to the cluster
-// this needs to be optimized so that the process doesn't "hang" while uploading
-func addFileLocally(c *gin.Context) {
-	fileHandler, err := c.FormFile("file")
+	upload := database.GetUpload(hash, c.PostForm("uploadAddress"))
+	qm, err := queue.Initialize(queue.IpfsQueue)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	uploaderAddress := c.PostForm("uploaderAddress")
-	holdTimeinMonths := c.PostForm("holdTime")
-	holdTimeinMonthsInt, err := strconv.ParseInt(holdTimeinMonths, 10, 64)
+	qm.PublishMessage(fmt.Sprintf("%+v", upload))
+	c.JSON(http.StatusOK, gin.H{"hash": upload.Hash})
+}
+
+// addFileLocally is used to add a file to our local ipfs node
+// this will have to be done first before pushing any file's to the cluster
+func addFileLocally(c *gin.Context) {
+	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		c.Error(err)
 		return
@@ -288,22 +276,12 @@ func addFileLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-
-	dfa := queue.DatabaseFileAdd{
-		Hash:             resp,
-		HoldTimeInMonths: holdTimeinMonthsInt,
-		UploaderAddress:  uploaderAddress,
-	}
-
-	qm, err := queue.Initialize(queue.DatabaseFileAddQueue)
+	database.AddFileHash(c, resp)
+	qm, err := queue.Initialize(queue.IpfsQueue)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	err = qm.PublishMessage(dfa)
-	if err != nil {
-		c.Error(err)
-		return
-	}
+	qm.PublishMessage(resp)
 	c.JSON(http.StatusOK, gin.H{"response": resp})
 }

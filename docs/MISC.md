@@ -40,8 +40,3 @@ Write smart contract fo facilitate storage:
         > when uploading a file specify duration, the user accoun must contain enough RTC to pay for the entire duration
 
 Optimize RAFT consensus, and other cluster factors
-
-
-# NOTES:
-
-If people give us content hashes, they must be accessible via the internet, otherwise the content will not be able to be pinned
