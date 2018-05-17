@@ -2,7 +2,10 @@ package queue
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"strconv"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 
@@ -10,6 +13,11 @@ import (
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/streadway/amqp"
 )
+
+/*
+NOTES:
+	For 1 month we use 730 hours
+*/
 
 var IpfsQueue = "ipfs"
 var IpfsClusterQueue = "ipfs-cluster"
@@ -122,6 +130,13 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					upload.HoldTimeInMonths = dpa.HoldTimeInMonths
 					upload.Type = "pin"
 					upload.UploadAddress = dpa.UploaderAddress
+					currTime := time.Now()
+					holdTime, err := strconv.Atoi(fmt.Sprint(dpa.HoldTimeInMonths))
+					if err != nil {
+						continue
+					}
+					gcd := currTime.AddDate(0, holdTime, 0)
+					fmt.Println(gcd.Date())
 					db.Create(&upload)
 					// submit message acknowledgement
 					d.Ack(false)

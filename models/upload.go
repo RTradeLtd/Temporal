@@ -1,15 +1,18 @@
 package models
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 )
 
 type Upload struct {
 	gorm.Model
-	Hash             string `gorm:not null;`
-	Type             string `gorm:not null;` //  file, pin
-	HoldTimeInMonths int64  `gorm:not null;`
-	UploadAddress    string `gorm:not null;`
+	Hash               string    `gorm:"type:varchar(255);not null;"`
+	Type               string    `gorm:"type:varchar(255);not null;"` //  file, pin
+	HoldTimeInMonths   int64     `gorm:"type:integer;not null;"`
+	UploadAddress      string    `gorm:"type:varchar(255);not null;"`
+	GarbageCollectDate time.Time `gorm:"type:timestamptz"`
 }
 
 type UploadManager struct {
