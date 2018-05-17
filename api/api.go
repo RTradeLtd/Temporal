@@ -48,8 +48,7 @@ func setupRoutes(g *gin.Engine) {
 	g.GET("/api/v1/ipfs-cluster/status-local", fetchLocalClusterStatus)
 	g.GET("/api/v1/ipfs/pins", getLocalPins)
 	g.GET("/api/v1/database/uploads", getUploadsFromDatabase)
-	/*
-		g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)*/
+	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
 }
 
 // removePinFromLocalHost is used to remove a pin from the ipfs instance
@@ -145,23 +144,21 @@ func getUploadsFromDatabase(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
-/*
-
 // getUploadsForAddress is used to read a list of uploads from a particular
 // eth address
 func getUploadsForAddress(c *gin.Context) {
-	uploads := database.GetUploadsForAddress(c.Param("address"))
+
+	db := database.OpenDBConnection()
+	defer db.Close()
+	um := models.NewUploadManager(db)
+	// TODO: Make this more robust
+	uploads := um.GetUploadsForAddress(c.Param("address"))
 	if uploads == nil {
 		c.JSON(http.StatusNotFound, nil)
 	}
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	qm.PublishMessage(fmt.Sprintf("%v", uploads))
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
-}*/
+}
+
 // getLocalPins is used to get the pins tracked by the local ipfs node
 func getLocalPins(c *gin.Context) {
 	manager := rtfs.Initialize()

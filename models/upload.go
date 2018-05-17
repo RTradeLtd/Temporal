@@ -50,10 +50,10 @@ func (um *UploadManager) GetUploads() *[]Upload {
 }
 
 // GetUploadsForAddress is used to retrieve all uploads by an address
-func (um *UploadManager) GetUploadsForAddress(address string) []*Upload {
-	var uploads []*Upload
+func (um *UploadManager) GetUploadsForAddress(address string) *[]Upload {
+	var uploads []Upload
 	um.DB.Where("upload_address = ?", address).Find(&uploads)
-	return uploads
+	return &uploads
 }
 
 // AddPinHash is used to upload a pin hash to our database
