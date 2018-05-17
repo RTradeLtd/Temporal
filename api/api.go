@@ -134,9 +134,10 @@ func syncClusterErrorsLocally(c *gin.Context) {
 
 // getUploadsFromDatabase is used to read a list of uploads from our database
 func getUploadsFromDatabase(c *gin.Context) {
-	uploads := []models.Upload{}
 	db := database.OpenDBConnection()
-	db.Find(&uploads)
+	defer db.Close()
+	um := models.NewUploadManager(db)
+	uploads := um.GetUploads()
 	if uploads == nil {
 		c.JSON(http.StatusNotFound, nil)
 		return

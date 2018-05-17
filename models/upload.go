@@ -43,10 +43,10 @@ func (um *UploadManager) GetUploadByHashForUploader(hash string, uploaderAddress
 }
 
 // GetUploads is used to return all  uploads
-func (um *UploadManager) GetUploads() []*Upload {
-	var uploads []*Upload
-	um.DB.Find(uploads)
-	return uploads
+func (um *UploadManager) GetUploads() *[]Upload {
+	var uploads []Upload
+	um.DB.Find(&uploads)
+	return &uploads
 }
 
 // GetUploadsForAddress is used to retrieve all uploads by an address
