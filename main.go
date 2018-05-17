@@ -6,9 +6,9 @@ import (
 	"os"
 
 	"github.com/RTradeLtd/Temporal/api"
+	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/rtswarm"
 )
 

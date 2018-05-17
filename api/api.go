@@ -7,13 +7,13 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
-	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	gocid "github.com/ipfs/go-cid"
 
+	"github.com/RTradeLtd/Temporal/api/rtfs"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-contrib/rollbar"
 	"github.com/gin-gonic/gin"
 	"github.com/stvp/roll"

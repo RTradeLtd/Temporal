@@ -40,6 +40,8 @@ We provide no direct (internet) access to any of the IPFS and IPFS cluster endpo
 
 Currently we aren't implementing SSL or basic auth on our IPFS and IFPS Cluster endpoints, however since they don't have direct access to the internet, and all communication occurs on a local network we have not deemd this a concern for now.
 
+The interface between the website frontend, and our backend which receives the actual storage requests will be encrypted to prevent traffic sniffing.
+
 #### Internal Endpoints
 
 We never exchange unencrypted secrets, even through encrypted communication channels (ssh, https, etc..) we always encrypt the secret prior to transmission with PGP.
@@ -47,7 +49,7 @@ We never exchange unencrypted secrets, even through encrypted communication chan
 Since the endpoint used by cluster peers to communicate is controlled by the `cluster.listen_multiaddress` and defaults to `/ip4/0.0.0.0/tcp/9096` we use port forwarding, and ip filtering to restrict which remote hosts can access this api.
 
 #### HTTP API Endpoints
-t 
+
 
 These endpints are controlled with `restapi.http_listen_multiaddress` configured to `/ip4/127.0.0.1/tcp/9094` by defaut so we do not implement any special protection measures for now.
 
@@ -59,22 +61,19 @@ For more details on this see `https://cluster.ipfs.io/documentation/security/#ht
 
 IPFS Cluster peers communicate with the IPFS daemon using unauthenticated HTTP auth. The HTTPS IPFS Proxy endpoint provided by the IPFS cluster service, which communicates with the local ipfs node, configurable with `ipfshttp.proxy_listen_multiaddress` which defaults to`/ip4/127.0.0.1/tcp/9095`, will not have any special configurations.
 
-
-### Pricing
-
-RTC and Ether are supported, however for Ether payments this will incur a 5% markup.
-
 ### Scalability
 
-RabbitMQ is used to distribute workloads in our backend, and will add more nodes to our IPFS clusters as needed. Currently we are not experiencing any scalability issues, however we expect to experience them at some point due to the still relatively new nature of IPFS, and the even newer nature of IFPS Cluster.
+RabbitMQ is used to distribute workloads in our backend, and will add more nodes to our IPFS clusters as needed. The main issues with IPFS scalability at this point in time exist with very large amount of pins, and data sizes for both ipfs, and ipfs cluster. 
+
+In order to mitigate this, once our clusters begin showing signs of poor performance, sister clusters will be spun up to distribute the workload for new pins, content, etc.. to new clusters.
+
 
 Scalability Concerns:
 * https://github.com/ipfs/ipfs-cluster/issues/160
 
 ### Private IPFS Swarms
 
-Initially we will not be supporting private ipfs swarm, however this is something we intend to support shortly after relase.
-
+Details coming soon
 
 ### Data Persistence And Backups
 
@@ -88,12 +87,7 @@ We use smart contracts to fullfil the following roles:
 * File Repository
 
 
-### Smart Contracts - File Repository
-
-In order to protect the data of our clients, we only store keccak-256 of ipfs content hashes on chain. This is to allow the rightful data owner, or anyone with knowledge of the content hashes to verify it's existence in our records. If the content hash is listed as still in our system, then you will be able to check whether 
-
-
-## High Level Architecture
+## High Level Systems Architecture
 
 * We use a Postgresql database to store user account information, and content hashes off-chain, to allow for easy manipulation, indexing, management, and other critical systems administration operations, for which we may not want to incur the latency of blockchain data access for.
 

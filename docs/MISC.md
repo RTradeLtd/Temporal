@@ -13,6 +13,9 @@
 
 > github.com/gin-gonic/gin
 
+
+https://github.com/ipfs/ipfs-cluster/blob/0.4.0/changelog/CHANGELOG.md
+
 IPFS Cluster Go API https://godoc.org/github.com/ipfs/ipfs-cluster
 
 https://cluster.ipfs.io/developer/api/
