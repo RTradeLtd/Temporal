@@ -163,9 +163,14 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						upload.Type = "file"
 						upload.UploadAddress = dfa.UploaderAddress
 						db.Create(&upload)
-						// submit message acknowledgement
 						d.Ack(false)
-						// TODO: add cluster pin event
+						// TODO: change this to be async
+						cm := rtfs_cluster.Initialize()
+						decoded := cm.DecodeHashString(dfa.Hash)
+						err = cm.Pin(decoded)
+						if err != nil {
+							log.Fatal(err)
+						}
 					}
 				}
 			default:
