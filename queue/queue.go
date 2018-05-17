@@ -136,7 +136,7 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						continue
 					}
 					gcd := currTime.AddDate(0, holdTime, 0)
-					fmt.Println(gcd.Date())
+					upload.GarbageCollectDate = gcd
 					db.Create(&upload)
 					// submit message acknowledgement
 					d.Ack(false)
