@@ -110,9 +110,9 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 
 	forever := make(chan bool)
 	go func() {
-		for d := range msgs {
-			switch qm.Queue.Name {
-			case DatabasePinAddQueue:
+		switch qm.Queue.Name {
+		case DatabasePinAddQueue:
+			for d := range msgs {
 				if d.Body != nil {
 					dpa := DatabasePinAdd{}
 					upload := models.Upload{}
@@ -148,7 +148,9 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						log.Fatal(err)
 					}
 				}
-			case DatabaseFileAddQueue:
+			}
+		case DatabaseFileAddQueue:
+			for d := range msgs {
 				if d.Body != nil {
 					if d.Body != nil {
 						dfa := DatabaseFileAdd{}
@@ -173,9 +175,9 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						}
 					}
 				}
-			default:
-				log.Fatal("invalid queue name")
 			}
+		default:
+			log.Fatal("invalid queue name")
 		}
 	}()
 	<-forever
