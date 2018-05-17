@@ -44,9 +44,10 @@ func setupRoutes(g *gin.Engine) {
 	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", getLocalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", getGlobalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-local", fetchLocalClusterStatus)
-	/*TODO	g.GET("/api/v1/ipfs/pins", getLocalPins)
-	g.GET("/api/v1/database/uploads", getUploads)
-	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)*/
+	g.GET("/api/v1/ipfs/pins", getLocalPins)
+	/*
+		g.GET("/api/v1/database/uploads", getUploads)
+		g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)*/
 }
 
 // removePinFromLocalHost is used to remove a pin from the ipfs instance
@@ -170,12 +171,6 @@ func getLocalPins(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	qm.PublishMessage(fmt.Sprintf("%v", pinInfo))
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
