@@ -149,13 +149,13 @@ func getUploadsFromDatabase(c *gin.Context) {
 func getUploadsForAddress(c *gin.Context) {
 
 	db := database.OpenDBConnection()
-	defer db.Close()
 	um := models.NewUploadManager(db)
 	// TODO: Make this more robust
 	uploads := um.GetUploadsForAddress(c.Param("address"))
 	if uploads == nil {
 		c.JSON(http.StatusNotFound, nil)
 	}
+	um.DB.Close()
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
