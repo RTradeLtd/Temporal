@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	gocid "github.com/ipfs/go-cid"
 
@@ -45,8 +47,8 @@ func setupRoutes(g *gin.Engine) {
 	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", getGlobalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-local", fetchLocalClusterStatus)
 	g.GET("/api/v1/ipfs/pins", getLocalPins)
+	g.GET("/api/v1/database/uploads", getUploadsFromDatabase)
 	/*
-		g.GET("/api/v1/database/uploads", getUploads)
 		g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)*/
 }
 
@@ -130,22 +132,19 @@ func syncClusterErrorsLocally(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
 }
 
-/*TODO
-// getUploads is used to read a list of uploads from our database
-func getUploads(c *gin.Context) {
-	uploads := database.GetUploads()
+// getUploadsFromDatabase is used to read a list of uploads from our database
+func getUploadsFromDatabase(c *gin.Context) {
+	uploads := []models.Upload{}
+	db := database.OpenDBConnection()
+	db.Find(&uploads)
 	if uploads == nil {
 		c.JSON(http.StatusNotFound, nil)
-	}
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
 		return
 	}
-	qm.PublishMessage(fmt.Sprintf("%v", uploads))
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
+/*
 
 // getUploadsForAddress is used to read a list of uploads from a particular
 // eth address
@@ -161,8 +160,7 @@ func getUploadsForAddress(c *gin.Context) {
 	}
 	qm.PublishMessage(fmt.Sprintf("%v", uploads))
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
-}
-*/
+}*/
 // getLocalPins is used to get the pins tracked by the local ipfs node
 func getLocalPins(c *gin.Context) {
 	manager := rtfs.Initialize()
