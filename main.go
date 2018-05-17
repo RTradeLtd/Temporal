@@ -45,6 +45,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+	case "queue-dfa":
+		qm, err := queue.Initialize(queue.DatabaseFileAddQueue)
+		if err != nil {
+			log.Fatal(err)
+		}
+		qm.ConsumeMessage("")
 	case "queue-ipfs":
 		qm, err := queue.Initialize(queue.IpfsQueue)
 		if err != nil {

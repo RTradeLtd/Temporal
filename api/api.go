@@ -271,6 +271,7 @@ func addFileLocally(c *gin.Context) {
 		return
 	}
 	uploaderAddress := c.PostForm("uploaderAddress")
+	fmt.Println(uploaderAddress)
 	holdTimeinMonths := c.PostForm("holdTime")
 	holdTimeinMonthsInt, err := strconv.ParseInt(holdTimeinMonths, 10, 64)
 	if err != nil {
