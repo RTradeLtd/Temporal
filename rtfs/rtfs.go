@@ -15,7 +15,7 @@ func Initialize() *IpfsManager {
 }
 
 func establishShellWithNode(url string) *ipfsapi.Shell {
-	if len(url) < 10 {
+	if url == "" {
 		shell := ipfsapi.NewLocalShell()
 		return shell
 	}
