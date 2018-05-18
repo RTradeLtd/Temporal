@@ -19,26 +19,31 @@ var IpfsClusterQueue = "ipfs-cluster"
 var DatabaseFileAddQueue = "dfa-queue"
 var DatabasePinAddQueue = "dpa-queue"
 
+// QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
 	Queue      *amqp.Queue
 }
 
+// TODO: cluster pinning will be moved to a rabbitmq system shortly
 type IpfsClusterPin struct{}
 
+// DatabaseFileAdd is a struct used when sending data to rabbitmq
 type DatabaseFileAdd struct {
 	Hash             string `json:"hash"`
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 	UploaderAddress  string `json:"uploader_address"`
 }
 
+// DatabasePinAdd is a struct used wehn sending data to rabbitmq
 type DatabasePinAdd struct {
 	Hash             string `json:"hash"`
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 	UploaderAddress  string `json:"uploader_address"`
 }
 
+// Initialize is used to connect to the given queue, for publishing or consuming purposes
 func Initialize(queueName string) (*QueueManager, error) {
 	conn, err := setupConnection()
 	if err != nil {
@@ -71,6 +76,7 @@ func (qm *QueueManager) OpenChannel() error {
 	return nil
 }
 
+// DeclareQueue is used to declare a queue for which messages will be sent to
 func (qm *QueueManager) DeclareQueue(queueName string) error {
 	// we declare the queue as durable so that even if rabbitmq server stops
 	// our messages won't be lost
@@ -111,15 +117,21 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 	}
 
 	forever := make(chan bool)
+	// So we don't cause hanging prcesses when consuming messages, it is processed in a goroutine
 	go func() {
+		// check the queue name
 		switch qm.Queue.Name {
+		// only parse database pin requests
 		case DatabasePinAddQueue:
 			for d := range msgs {
 				if d.Body != nil {
 					dpa := DatabasePinAdd{}
 					upload := models.Upload{}
 					log.Printf("receive a message: %s", d.Body)
+					// unmarshal the message into the struct
+					// if it can't be decoded into dpa struct, acknowledge message receival and continue to the nextm essage
 					err := json.Unmarshal(d.Body, &dpa)
+					// make this system more robust
 					if err != nil {
 						d.Ack(false)
 						continue
@@ -128,12 +140,15 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					upload.HoldTimeInMonths = dpa.HoldTimeInMonths
 					upload.Type = "pin"
 					upload.UploadAddress = dpa.UploaderAddress
+					// get current time
 					currTime := time.Now()
+					// get the hold time from in64 and convert to int
 					holdTime, err := strconv.Atoi(fmt.Sprint(dpa.HoldTimeInMonths))
 					if err != nil {
 						d.Ack(false)
 						continue
 					}
+					// get the date the file wiill be garbage collected by adding the number of months
 					gcd := currTime.AddDate(0, holdTime, 0)
 					lastUpload := models.Upload{
 						Hash: dpa.Hash,
@@ -159,28 +174,59 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					}
 				}
 			}
+		// only parse datbase file requests
 		case DatabaseFileAddQueue:
 			for d := range msgs {
 				if d.Body != nil {
 					if d.Body != nil {
 						dfa := DatabaseFileAdd{}
 						upload := models.Upload{}
-						log.Printf("receive a message: %s", d.Body)
+						// unmarshal the message body into the dfa struct
 						err := json.Unmarshal(d.Body, &dfa)
 						if err != nil {
 							d.Ack(false)
 							continue
 						}
+						// convert the int64 to an int. We need to make sure to add a check that we won't overflow
+						holdTime, err := strconv.Atoi(fmt.Sprintf("%v", dfa.HoldTimeInMonths))
+						if err != nil {
+							d.Ack(false)
+							continue
+						}
+						// we will take the current time, and add the number of months to get the date
+						// that we will garbage collect this from our repo
+						gcd := time.Now().AddDate(0, holdTime, 0)
 						upload.Hash = dfa.Hash
 						upload.HoldTimeInMonths = dfa.HoldTimeInMonths
 						upload.Type = "file"
 						upload.UploadAddress = dfa.UploaderAddress
+						upload.GarbageCollectDate = gcd
+						lastUpload := models.Upload{
+							Hash: dfa.Hash,
+						}
+						// retrieve the last upload matching this hash.
+						// this upload will have the latest Garbage Collect Date
+						db.Last(&lastUpload)
+						// check the garbage collect dates, if the current upload to be pinned will be
+						// GCd before the latest one from the database, we will skip it
+						// however if it will be GCd at a later date, we will keep it
+						// and update the database
+						if lastUpload.GarbageCollectDate.Unix() >= upload.GarbageCollectDate.Unix() {
+							d.Ack(false)
+							// skip the rest of the message, preventing a database record from being created
+							continue
+						}
+						// we have a valid upload request, so lets store it to the database
 						db.Create(&upload)
 						d.Ack(false)
 						// TODO: change this to be async
+						// connect to the cluster
 						cm := rtfs_cluster.Initialize()
+						// decoded hash to multihash
 						decoded := cm.DecodeHashString(dfa.Hash)
+						// pin to cluster
 						err = cm.Pin(decoded)
+						// TODO change to be more resiliant
 						if err != nil {
 							log.Fatal(err)
 						}
