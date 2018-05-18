@@ -8,14 +8,29 @@ import (
 )
 
 type IpfsManager struct {
-	Shell  *ipfsapi.Shell
-	PubSub *ipfsapi.PubSubSubscription
+	Shell    *ipfsapi.Shell
+	PubSub   *ipfsapi.PubSubSubscription
+	PinTopic string
 }
 
 func Initialize() *IpfsManager {
 	manager := IpfsManager{}
 	manager.Shell = establishShellWithNode("")
+	manager.PinTopic = "pin"
 	return &manager
+}
+
+// Pin is a wrapper method to pin a hash to the local node,
+// but also alert the rest of the local nodes to pin
+// after which the pin will be sent to the cluster
+func (im *IpfsManager) Pin(hash string) error {
+	err := im.Shell.Pin(hash)
+	if err != nil {
+		// TODO: add error reporting
+		return err
+	}
+	im.PublishPubSubMessage(im.PinTopic, hash)
+	return nil
 }
 
 func establishShellWithNode(url string) *ipfsapi.Shell {
@@ -32,14 +47,18 @@ func (im *IpfsManager) SubscribeToPubSubTopic(topic string) error {
 	if topic == "" {
 		return errors.New("invalid topic name")
 	}
+	// create a pubsub subscription according to topic name
 	subscription, err := im.Shell.PubSubSubscribe(topic)
 	if err != nil {
 		return err
 	}
+	// store the pubsub scription
 	im.PubSub = subscription
 	return nil
 }
 
+// ConsumeSubscription is used to consume a pubsub subscription
+// note that it will automatically exit after receiving and processing all the messages
 func (im *IpfsManager) ConsumeSubscription(sub *ipfsapi.PubSubSubscription) error {
 	count := 0
 	for {

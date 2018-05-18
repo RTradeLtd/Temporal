@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -272,15 +273,13 @@ func pinHashLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	// initialize a connection to teh local ipfs node
-	manager := rtfs.Initialize()
-	// pin the file to the node
-	// TODO: we need to make this more robust so we can handle errors gracefully, attempting to re-pin later on
-	err = manager.Shell.Pin(hash)
-	if err != nil {
-		c.Error(err)
-		return
-	}
+	go func() {
+		manager := rtfs.Initialize()
+		err := manager.Pin(hash)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 	c.JSON(http.StatusOK, gin.H{"upload": dpa})
 }
 
