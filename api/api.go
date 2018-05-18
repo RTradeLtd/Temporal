@@ -2,12 +2,10 @@ package api
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
@@ -58,7 +56,7 @@ func setupRoutes(g *gin.Engine) {
 
 func ipfsPubSubConsume(c *gin.Context) {
 	topic := c.Param("topic")
-	manager := rtfs.Initialize()
+	manager := rtfs.Initialize("")
 	manager.SubscribeToPubSubTopic(topic)
 	manager.ConsumeSubscription(manager.PubSub)
 }
@@ -66,7 +64,7 @@ func ipfsPubSubConsume(c *gin.Context) {
 func ipfsPubSubPublish(c *gin.Context) {
 	topic := c.Param("topic")
 	message := c.PostForm("message")
-	manager := rtfs.Initialize()
+	manager := rtfs.Initialize("")
 	err := manager.PublishPubSubMessage(topic, message)
 	if err != nil {
 		c.Error(err)
@@ -81,7 +79,7 @@ func removePinFromLocalHost(c *gin.Context) {
 	// fetch hash param
 	hash := c.Param("hash")
 	// initialise a connetion to the local ipfs node
-	manager := rtfs.Initialize()
+	manager := rtfs.Initialize("")
 	// remove the file from the local ipfs state
 	err := manager.Shell.Unpin(hash)
 	if err != nil {
@@ -196,7 +194,7 @@ func getUploadsForAddress(c *gin.Context) {
 // getLocalPins is used to get the pins tracked by the local ipfs node
 func getLocalPins(c *gin.Context) {
 	// initialize a connection toe the local ipfs node
-	manager := rtfs.Initialize()
+	manager := rtfs.Initialize("")
 	// get all the known local pins
 	// WARNING: THIS COULD BE A VERY LARGE LIST
 	pinInfo, err := manager.Shell.Pins()
@@ -277,7 +275,7 @@ func pinHashLocally(c *gin.Context) {
 	}
 	go func() {
 		// currently after it is pinned, it is sent to the cluster to be pinned
-		manager := rtfs.Initialize()
+		manager := rtfs.Initialize("")
 		// before exiting, it is pinned to the cluster
 		err := manager.Pin(hash)
 		if err != nil {
@@ -310,28 +308,20 @@ func addFileLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	fileByteData, err := ioutil.ReadAll(openFile)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	fmt.Println(fileByteData)
 	//respCalc, err := gocid.Parse(fileByteData)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 	// initialize a connection to the local ipfs node
-	manager := rtfs.Initialize()
+	manager := rtfs.Initialize("")
 	// pin the file
 	resp, err := manager.Shell.Add(openFile)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	//	fmt.Println("calculated file hash is ", respCalc)
-	fmt.Println("returned hash is ", resp)
-	time.Sleep(30 * time.Second)
+
 	// construct a message to rabbitmq to upad the database
 	dfa := queue.DatabaseFileAdd{
 		Hash:             resp,

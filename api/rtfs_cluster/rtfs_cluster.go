@@ -1,7 +1,6 @@
 package rtfs_cluster
 
 import (
-	"fmt"
 	"log"
 
 	gocid "github.com/ipfs/go-cid"
@@ -120,7 +119,6 @@ func (cm *ClusterManager) GetStatusForCidLocally(cidString string) (*api.GlobalP
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(status)
 	return &status, nil
 }
 
@@ -131,7 +129,6 @@ func (cm *ClusterManager) GetStatusForCidGlobally(cidString string) (*api.Global
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(status)
 	return &status, nil
 }
 
@@ -156,7 +153,6 @@ func (cm *ClusterManager) DecodeHashString(cidString string) *gocid.Cid {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(cid)
 	return cid
 }
 
@@ -166,11 +162,9 @@ func (cm *ClusterManager) Pin(cid *gocid.Cid) error {
 	if err != nil {
 		return err
 	}
-	stat, err := cm.Client.Status(cid, true)
+	_, err = cm.Client.Status(cid, true)
 	if err != nil {
 		return err
 	}
-	fmt.Println(stat)
-	fmt.Printf("%+v\n", stat)
 	return nil
 }

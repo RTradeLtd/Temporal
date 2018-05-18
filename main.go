@@ -9,6 +9,7 @@ import (
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
+	ipfsQ "github.com/RTradeLtd/Temporal/queue/ipfs"
 	"github.com/RTradeLtd/Temporal/rtswarm"
 )
 
@@ -52,11 +53,7 @@ func main() {
 		}
 		qm.ConsumeMessage("")
 	case "queue-ipfs":
-		qm, err := queue.Initialize(queue.IpfsQueue)
-		if err != nil {
-			log.Fatal(err)
-		}
-		qm.ConsumeMessage("")
+		ipfsQ.Initialize()
 	case "migrate":
 		dbm := database.Initialize()
 		dbm.RunMigrations()

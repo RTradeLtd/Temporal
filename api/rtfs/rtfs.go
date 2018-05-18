@@ -15,10 +15,13 @@ type IpfsManager struct {
 	PinTopic string
 }
 
-func Initialize() *IpfsManager {
+func Initialize(pinTopic string) *IpfsManager {
+	if pinTopic == "" {
+		pinTopic = "ipfs-pins"
+	}
 	manager := IpfsManager{}
 	manager.Shell = establishShellWithNode("")
-	manager.PinTopic = "pin"
+	manager.PinTopic = pinTopic
 	return &manager
 }
 
@@ -73,22 +76,14 @@ func (im *IpfsManager) SubscribeToPubSubTopic(topic string) error {
 // ConsumeSubscription is used to consume a pubsub subscription
 // note that it will automatically exit after receiving and processing all the messages
 func (im *IpfsManager) ConsumeSubscription(sub *ipfsapi.PubSubSubscription) error {
-	count := 0
 	for {
-		if count == 1000 {
-			break
-		}
+		// we should try and add some logic to unmarshal this data instead
 		subRecord, err := sub.Next()
 		if err != nil {
-			return err
-		}
-		if subRecord == nil {
 			continue
 		}
-		count++
-		fmt.Println(subRecord)
+		fmt.Println(string(subRecord.Data()))
 	}
-	return nil
 }
 
 // PublishPubSubMessage is used to publish a message to the given topic
