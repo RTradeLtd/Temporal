@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
+	"github.com/RTradeLtd/Temporal/models"
 
 	ipfsapi "github.com/ipfs/go-ipfs-api"
 )
@@ -74,7 +75,6 @@ func (im *IpfsManager) SubscribeToPubSubTopic(topic string) error {
 }
 
 // ConsumeSubscription is used to consume a pubsub subscription
-// note that it will automatically exit after receiving and processing all the messages
 func (im *IpfsManager) ConsumeSubscription(sub *ipfsapi.PubSubSubscription) error {
 	for {
 		// we should try and add some logic to unmarshal this data instead
@@ -87,7 +87,6 @@ func (im *IpfsManager) ConsumeSubscription(sub *ipfsapi.PubSubSubscription) erro
 }
 
 // ConsumeSubscriptionToPin is used to consume a pubsub subscription, with the intent of pinning the content referred to on the local ipfs node
-// note that it will automatically exit after receiving and processing all the messages
 func (im *IpfsManager) ConsumeSubscriptionToPin(sub *ipfsapi.PubSubSubscription) error {
 	for {
 		// we should try and add some logic to unmarshal this data instead
@@ -112,6 +111,19 @@ func (im *IpfsManager) PublishPubSubMessage(topic string, data string) error {
 		return errors.New("invalid topic and data")
 	}
 	err := im.Shell.PubSubPublish(topic, data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (im *IpfsManager) PublishPubSubTest(topic string) error {
+	upload := models.Upload{
+		Hash:          "hash",
+		UploadAddress: "address",
+	}
+
+	err := im.Shell.PubSubPublish(topic, fmt.Sprint(upload))
 	if err != nil {
 		return err
 	}

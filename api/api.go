@@ -43,6 +43,7 @@ func setupRoutes(g *gin.Engine) {
 	g.POST("/api/v1/ipfs-cluster/pin/:hash", pinHashToCluster)
 	g.POST("/api/v1/ipfs-cluster/sync-errors-local", syncClusterErrorsLocally)
 	g.POST("/api/v1/ipfs/pubsub/publish/:topic", ipfsPubSubPublish)
+	g.POST("/api/v1/ipfs/pubsub/publish-test/:topic", ipfsPubSubTest)
 	g.GET("/api/v1/ipfs/pubsub/consume/:topic", ipfsPubSubConsume)
 	g.DELETE("/api/v1/ipfs/remove-pin/:hash", removePinFromLocalHost)
 	g.DELETE("/api/v1/ipfs-cluster/remove-pin/:hash", removePinFromCluster)
@@ -52,6 +53,16 @@ func setupRoutes(g *gin.Engine) {
 	g.GET("/api/v1/ipfs/pins", getLocalPins)
 	g.GET("/api/v1/database/uploads", getUploadsFromDatabase)
 	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
+}
+
+func ipfsPubSubTest(c *gin.Context) {
+	manager := rtfs.Initialize("")
+	err := manager.PublishPubSubTest(manager.PinTopic)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
 }
 
 func ipfsPubSubConsume(c *gin.Context) {
