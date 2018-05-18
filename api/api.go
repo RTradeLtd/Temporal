@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -172,7 +171,10 @@ func getUploadsForAddress(c *gin.Context) {
 
 // getLocalPins is used to get the pins tracked by the local ipfs node
 func getLocalPins(c *gin.Context) {
+	// initialize a connection toe the local ipfs node
 	manager := rtfs.Initialize()
+	// get all the known local pins
+	// WARNING: THIS COULD BE A VERY LARGE LIST
 	pinInfo, err := manager.Shell.Pins()
 	if err != nil {
 		c.Error(err)
@@ -184,36 +186,28 @@ func getLocalPins(c *gin.Context) {
 // getGlobalStatusForClusterPin is used to get the global cluster status for a particular pin
 func getGlobalStatusForClusterPin(c *gin.Context) {
 	hash := c.Param("hash")
+	// initialize a connection to the cluster
 	manager := rtfs_cluster.Initialize()
+	// get teh cluster wide status for this particular pin
 	status, err := manager.GetStatusForCidGlobally(hash)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	qm.PublishMessage(fmt.Sprintf("%v", status))
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
 // getLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
 func getLocalStatusForClusterPin(c *gin.Context) {
 	hash := c.Param("hash")
+	// initialize a connection to the cluster
 	manager := rtfs_cluster.Initialize()
+	// get the cluster status for the cid only asking the local cluster node
 	status, err := manager.GetStatusForCidLocally(hash)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	qm.PublishMessage(fmt.Sprintf("%v", status))
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
@@ -221,18 +215,15 @@ func getLocalStatusForClusterPin(c *gin.Context) {
 func pinHashToCluster(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs_cluster.Initialize()
+	// decode the hash
 	contentIdentifier := manager.DecodeHashString(hash)
+	// pin the hash to the cluster, using -1 for replication factor, indicating to pin EVERYWHERE in the cluster
 	manager.Client.Pin(contentIdentifier, -1, -1, hash)
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	qm.PublishMessage(hash)
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
 
 // pinHashLocally is used to pin a hash to the local ipfs node
+// TODO: add in the cluster pin event, optimize
 func pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")
 	uploadAddress := c.PostForm("uploadAddress")
@@ -242,24 +233,28 @@ func pinHashLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	// construct the rabbitmq message to add this entry to the database
 	dpa := queue.DatabasePinAdd{
 		Hash:             hash,
 		UploaderAddress:  uploadAddress,
 		HoldTimeInMonths: holdTimeInt,
 	}
-
+	// initialize the queue
 	qm, err := queue.Initialize(queue.DatabasePinAddQueue)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-
+	// publish the message, if there was an error finish processing
 	err = qm.PublishMessage(dpa)
 	if err != nil {
 		c.Error(err)
 		return
 	}
+	// initialize a connection to teh local ipfs node
 	manager := rtfs.Initialize()
+	// pin the file to the node
+	// TODO: we need to make this more robust so we can handle errors gracefully, attempting to re-pin later on
 	err = manager.Shell.Pin(hash)
 	if err != nil {
 		c.Error(err)
@@ -272,42 +267,46 @@ func pinHashLocally(c *gin.Context) {
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
 func addFileLocally(c *gin.Context) {
+	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		c.Error(err)
 		return
 	}
 	uploaderAddress := c.PostForm("uploaderAddress")
-	fmt.Println(uploaderAddress)
 	holdTimeinMonths := c.PostForm("holdTime")
 	holdTimeinMonthsInt, err := strconv.ParseInt(holdTimeinMonths, 10, 64)
 	if err != nil {
 		c.Error(err)
 		return
 	}
+	// open the file
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		c.Error(err)
 		return
 	}
+	// initialize a connection to the local ipfs node
 	manager := rtfs.Initialize()
+	// pin the file
 	resp, err := manager.Shell.Add(openFile)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-
+	// construct a message to rabbitmq to upad the database
 	dfa := queue.DatabaseFileAdd{
 		Hash:             resp,
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		UploaderAddress:  uploaderAddress,
 	}
-
+	// initialize a connectino to rabbitmq
 	qm, err := queue.Initialize(queue.DatabaseFileAddQueue)
 	if err != nil {
 		c.Error(err)
 		return
 	}
+	// publish the message
 	err = qm.PublishMessage(dfa)
 	if err != nil {
 		c.Error(err)
