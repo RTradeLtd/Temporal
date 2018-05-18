@@ -158,7 +158,7 @@ func (cm *ClusterManager) DecodeHashString(cidString string) *gocid.Cid {
 
 // Pin is used to add a pin to the cluster
 func (cm *ClusterManager) Pin(cid *gocid.Cid) error {
-	err := cm.Client.Pin(cid, -1, -1, "test")
+	err := cm.Client.Pin(cid, -1, -1, cid.String())
 	if err != nil {
 		return err
 	}
