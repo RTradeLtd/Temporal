@@ -41,6 +41,7 @@ func setupRoutes(g *gin.Engine) {
 	g.POST("/api/v1/ipfs/add-file", addFileLocally)
 	g.POST("/api/v1/ipfs-cluster/pin/:hash", pinHashToCluster)
 	g.POST("/api/v1/ipfs-cluster/sync-errors-local", syncClusterErrorsLocally)
+	g.POST("/api/v1/ipfs/pubsub/publish/:topic", ipfsPubSubPublish)
 	g.DELETE("/api/v1/ipfs/remove-pin/:hash", removePinFromLocalHost)
 	g.DELETE("/api/v1/ipfs-cluster/remove-pin/:hash", removePinFromCluster)
 	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", getLocalStatusForClusterPin)
@@ -49,6 +50,18 @@ func setupRoutes(g *gin.Engine) {
 	g.GET("/api/v1/ipfs/pins", getLocalPins)
 	g.GET("/api/v1/database/uploads", getUploadsFromDatabase)
 	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
+}
+
+func ipfsPubSubPublish(c *gin.Context) {
+	topic := c.Param("topic")
+	message := c.PostForm("message")
+	manager := rtfs.Initialize()
+	err := manager.PublishPubSubMessage(topic, message)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"topic": topic, "message": message})
 }
 
 // removePinFromLocalHost is used to remove a pin from the ipfs instance
