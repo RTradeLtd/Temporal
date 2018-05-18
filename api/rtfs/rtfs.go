@@ -2,6 +2,7 @@ package rtfs
 
 import (
 	"errors"
+	"fmt"
 
 	ipfsapi "github.com/ipfs/go-ipfs-api"
 )
@@ -36,6 +37,25 @@ func (im *IpfsManager) SubscribeToPubSubTopic(topic string) error {
 		return err
 	}
 	im.PubSub = subscription
+	return nil
+}
+
+func (im *IpfsManager) ConsumeSubscription(sub *ipfsapi.PubSubSubscription) error {
+	count := 0
+	for {
+		if count == 1000 {
+			break
+		}
+		subRecord, err := sub.Next()
+		if err != nil {
+			return err
+		}
+		if subRecord == nil {
+			continue
+		}
+		count++
+		fmt.Println(subRecord)
+	}
 	return nil
 }
 
