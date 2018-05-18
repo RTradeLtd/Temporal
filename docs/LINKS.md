@@ -18,6 +18,16 @@ https://dist.ipfs.io/#ipfs-cluster-ctl
 https://cluster.ipfs.io/developer/architecture/
 
 
+https://github.com/ipfs/notes/issues/212
+
+https://github.com/INFURA/tutorials/wiki/Local-IPFS-Daemon-Basic-Usage
+https://github.com/ipfs/go-ipfs/blob/master/docs/config.md#datastore
+
+
+https://github.com/ipfs/go-ipfs/blob/master/docs/datastores.md
+https://github.com/ipfs/go-ipfs/issues/3119
+https://stackoverflow.com/questions/47450007/where-does-ipfs-store-all-the-data
+
 # API 
 
 IPFS Cluster Go API https://godoc.org/github.com/ipfs/ipfs-cluster
