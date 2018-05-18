@@ -2,10 +2,12 @@ package api
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
@@ -274,7 +276,9 @@ func pinHashLocally(c *gin.Context) {
 		return
 	}
 	go func() {
+		// currently after it is pinned, it is sent to the cluster to be pinned
 		manager := rtfs.Initialize()
+		// before exiting, it is pinned to the cluster
 		err := manager.Pin(hash)
 		if err != nil {
 			fmt.Println(err)
@@ -306,6 +310,17 @@ func addFileLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	fileByteData, err := ioutil.ReadAll(openFile)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	fmt.Println(fileByteData)
+	//respCalc, err := gocid.Parse(fileByteData)
+	if err != nil {
+		c.Error(err)
+		return
+	}
 	// initialize a connection to the local ipfs node
 	manager := rtfs.Initialize()
 	// pin the file
@@ -314,6 +329,9 @@ func addFileLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	//	fmt.Println("calculated file hash is ", respCalc)
+	fmt.Println("returned hash is ", resp)
+	time.Sleep(30 * time.Second)
 	// construct a message to rabbitmq to upad the database
 	dfa := queue.DatabaseFileAdd{
 		Hash:             resp,

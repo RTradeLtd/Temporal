@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
-
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/streadway/amqp"
@@ -165,13 +163,6 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					db.Create(&upload)
 					// submit message acknowledgement
 					d.Ack(false)
-					// TODO: change this to an async process
-					cm := rtfs_cluster.Initialize()
-					decoded := cm.DecodeHashString(dpa.Hash)
-					err = cm.Pin(decoded)
-					if err != nil {
-						log.Fatal(err)
-					}
 				}
 			}
 		// only parse datbase file requests
@@ -219,17 +210,6 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						// we have a valid upload request, so lets store it to the database
 						db.Create(&upload)
 						d.Ack(false)
-						// TODO: change this to be async
-						// connect to the cluster
-						cm := rtfs_cluster.Initialize()
-						// decoded hash to multihash
-						decoded := cm.DecodeHashString(dfa.Hash)
-						// pin to cluster
-						err = cm.Pin(decoded)
-						// TODO change to be more resiliant
-						if err != nil {
-							log.Fatal(err)
-						}
 					}
 				}
 			}

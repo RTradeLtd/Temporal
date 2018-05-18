@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
+
 	ipfsapi "github.com/ipfs/go-ipfs-api"
 )
 
@@ -30,6 +32,17 @@ func (im *IpfsManager) Pin(hash string) error {
 		return err
 	}
 	im.PublishPubSubMessage(im.PinTopic, hash)
+	cm := rtfs_cluster.Initialize()
+	decoded := cm.DecodeHashString(hash)
+	err = cm.Pin(decoded)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Add is a wrapper used to add a file to the node
+func (im *IpfsManager) Add(file string) error {
 	return nil
 }
 
