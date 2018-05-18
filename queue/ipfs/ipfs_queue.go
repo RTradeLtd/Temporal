@@ -12,5 +12,5 @@ import (
 func Initialize() {
 	manager := rtfs.Initialize("")
 	manager.SubscribeToPubSubTopic(manager.PinTopic)
-	manager.ConsumeSubscription(manager.PubSub)
+	manager.ConsumeSubscriptionToPin(manager.PubSub)
 }

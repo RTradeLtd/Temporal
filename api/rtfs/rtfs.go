@@ -86,6 +86,26 @@ func (im *IpfsManager) ConsumeSubscription(sub *ipfsapi.PubSubSubscription) erro
 	}
 }
 
+// ConsumeSubscriptionToPin is used to consume a pubsub subscription, with the intent of pinning the content referred to on the local ipfs node
+// note that it will automatically exit after receiving and processing all the messages
+func (im *IpfsManager) ConsumeSubscriptionToPin(sub *ipfsapi.PubSubSubscription) error {
+	for {
+		// we should try and add some logic to unmarshal this data instead
+		subRecord, err := sub.Next()
+		if err != nil {
+			continue
+		}
+		cidString := string(subRecord.Data())
+		fmt.Println("pinning ", cidString)
+		err = im.Shell.Pin(cidString)
+		if err != nil {
+			fmt.Println("pin failed")
+			continue
+		}
+		fmt.Println("pin succeeded")
+	}
+}
+
 // PublishPubSubMessage is used to publish a message to the given topic
 func (im *IpfsManager) PublishPubSubMessage(topic string, data string) error {
 	if topic == "" && data == "" {
