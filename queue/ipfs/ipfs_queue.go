@@ -1,6 +1,8 @@
 package ipfs
 
 import (
+	"fmt"
+
 	"github.com/RTradeLtd/Temporal/api/rtfs"
 )
 
@@ -12,5 +14,15 @@ import (
 func Initialize() {
 	manager := rtfs.Initialize("")
 	manager.SubscribeToPubSubTopic(manager.PinTopic)
-	manager.ConsumeSubscriptionToPin(manager.PubSub)
+	pubSub := manager.PubSub
+	for {
+		subRecord, err := pubSub.Next()
+		if err != nil {
+			fmt.Println("erorr detected")
+			fmt.Println(err)
+			continue
+		}
+		dataString := string(subRecord.Data())
+		fmt.Println(dataString)
+	}
 }
