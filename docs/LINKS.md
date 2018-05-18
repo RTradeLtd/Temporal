@@ -27,7 +27,9 @@ https://github.com/ipfs/go-ipfs/blob/master/docs/config.md#datastore
 https://github.com/ipfs/go-ipfs/blob/master/docs/datastores.md
 https://github.com/ipfs/go-ipfs/issues/3119
 https://stackoverflow.com/questions/47450007/where-does-ipfs-store-all-the-data
-
+https://medium.com/coinmonks/setting-up-your-first-distributed-private-storage-network-on-ipfs-part-2-4b6f96712bae
+https://github.com/textileio/textile-go
+https://github.com/ipfs/go-ds-flatfs
 # API 
 
 IPFS Cluster Go API https://godoc.org/github.com/ipfs/ipfs-cluster
