@@ -3,6 +3,8 @@ package ipfs
 import (
 	"fmt"
 
+	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
+
 	"github.com/RTradeLtd/Temporal/api/rtfs"
 )
 
@@ -15,6 +17,7 @@ func Initialize() {
 	manager := rtfs.Initialize("")
 	manager.SubscribeToPubSubTopic(manager.PinTopic)
 	pubSub := manager.PubSub
+	clusterManager := rtfs_cluster.Initialize()
 	for {
 		subRecord, err := pubSub.Next()
 		if err != nil {
@@ -23,6 +26,13 @@ func Initialize() {
 			continue
 		}
 		dataString := string(subRecord.Data())
-		fmt.Println(dataString)
+		fmt.Printf("Pinning %s to cluster\n", dataString)
+		decodedDataString := clusterManager.DecodeHashString(dataString)
+		err = clusterManager.Pin(decodedDataString)
+		if err != nil {
+			fmt.Println("error detected")
+			fmt.Println(err)
+			continue
+		}
 	}
 }

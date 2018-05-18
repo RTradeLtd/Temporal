@@ -30,6 +30,9 @@ https://stackoverflow.com/questions/47450007/where-does-ipfs-store-all-the-data
 https://medium.com/coinmonks/setting-up-your-first-distributed-private-storage-network-on-ipfs-part-2-4b6f96712bae
 https://github.com/textileio/textile-go
 https://github.com/ipfs/go-ds-flatfs
+https://blog.dgraph.io/post/badger-lmdb-boltdb/
+
+https://github.com/ipfs/faq/issues/160
 # API 
 
 IPFS Cluster Go API https://godoc.org/github.com/ipfs/ipfs-cluster
