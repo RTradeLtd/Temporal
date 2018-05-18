@@ -22,6 +22,7 @@ import (
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
 func Setup() *gin.Engine {
+	// we use rollbar for logging errors
 	token := os.Getenv("ROLLBAR_TOKEN")
 	if token == "" {
 		log.Fatal("invalid token")
@@ -52,14 +53,20 @@ func setupRoutes(g *gin.Engine) {
 }
 
 // removePinFromLocalHost is used to remove a pin from the ipfs instance
+// TODO: fully implement
 func removePinFromLocalHost(c *gin.Context) {
+	// fetch hash param
 	hash := c.Param("hash")
+	// initialise a connetion to the local ipfs node
 	manager := rtfs.Initialize()
+	// remove the file from the local ipfs state
 	err := manager.Shell.Unpin(hash)
 	if err != nil {
 		c.Error(err)
 		return
 	}
+	// TODO:
+	// change to send a message to the cluster to depin
 	qm, err := queue.Initialize(queue.IpfsQueue)
 	if err != nil {
 		c.Error(err)
@@ -71,6 +78,7 @@ func removePinFromLocalHost(c *gin.Context) {
 
 // removePinFromCluster is used to remove a pin from the cluster global state
 // this will mean that all nodes in the cluster will no longer track the pin
+// TODO: fully implement
 func removePinFromCluster(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs_cluster.Initialize()
@@ -90,70 +98,73 @@ func removePinFromCluster(c *gin.Context) {
 
 // fetchLocalClusterStatus is used to fetch the status of the localhost's
 // cluster state, and not the rest of the cluster
+// TODO: cleanup
 func fetchLocalClusterStatus(c *gin.Context) {
+	// this will hold all the retrieved content hashes
 	var cids []*gocid.Cid
+	// this will hold all the statuses of the content hashes
 	var statuses []string
+	// initialize a connection to the cluster
 	manager := rtfs_cluster.Initialize()
+	// fetch a map of all the statuses
 	maps, err := manager.FetchLocalStatus()
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
+	// parse the maps
 	for k, v := range maps {
 		cids = append(cids, k)
 		statuses = append(statuses, v)
 	}
-	qm.PublishMessage(fmt.Sprintf("%v", cids))
-	qm.PublishMessage(fmt.Sprintf("%v", statuses))
 	c.JSON(http.StatusOK, gin.H{"cids": cids, "statuses": statuses})
 }
 
 // syncCluserErrorsLocally is used to parse through the local cluster state
 // and sync any errors that are detected.
 func syncClusterErrorsLocally(c *gin.Context) {
+	// initialize a conection to the cluster
 	manager := rtfs_cluster.Initialize()
+	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
 	syncedCids, err := manager.ParseLocalStatusAllAndSync()
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	qm.PublishMessage(fmt.Sprintf("%v", syncedCids))
 	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
 }
 
 // getUploadsFromDatabase is used to read a list of uploads from our database
+// TODO: cleanup
 func getUploadsFromDatabase(c *gin.Context) {
+	// open a connection to the database
 	db := database.OpenDBConnection()
-	defer db.Close()
+	// create an upload manager interface
 	um := models.NewUploadManager(db)
+	// fetch the uplaods
 	uploads := um.GetUploads()
 	if uploads == nil {
+		um.DB.Close()
 		c.JSON(http.StatusNotFound, nil)
 		return
 	}
+	um.DB.Close()
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
-// getUploadsForAddress is used to read a list of uploads from a particular
-// eth address
+// getUploadsForAddress is used to read a list of uploads from a particular eth address
+// TODO: cleanup
 func getUploadsForAddress(c *gin.Context) {
-
+	// open connection to the database
 	db := database.OpenDBConnection()
+	// establish a new upload manager
 	um := models.NewUploadManager(db)
-	// TODO: Make this more robust
+	// fetch all uploads for that address
 	uploads := um.GetUploadsForAddress(c.Param("address"))
 	if uploads == nil {
+		um.DB.Close()
 		c.JSON(http.StatusNotFound, nil)
+		return
 	}
 	um.DB.Close()
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
