@@ -19,7 +19,7 @@ contract Payment {
         uint256 date;
         uint256 numRTC;
         uint256 fileRetentionDurationInMonths;
-        string fileHash; // if directory, refers to parent directory hash
+        bytes32 encryptedIpfsHash; // if directory, refers to parent directory hash
     }
 
     mapping (bytes32 => PaymentStruct) payments;
@@ -27,7 +27,7 @@ contract Payment {
     function payForUpload(
         uint256 _retentionPeriodInMonths,
         uint256 _paymentAmount,
-        string _fileHash)
+        bytes32 _encryptedIpfsHash)
         public
         returns (bool)
     {
@@ -35,22 +35,22 @@ contract Payment {
         ps.date = now;
         ps.numRTC = _paymentAmount;
         ps.fileRetentionDurationInMonths = _retentionPeriodInMonths;
-        ps.fileHash = _fileHash;
-        payments[keccak256(msg.sender, _fileHash, now)] = ps;
+        ps.encryptedIpfsHash = _encryptedIpfsHash;
+        payments[keccak256(msg.sender, _encryptedIpfsHash, now)] = ps;
         require(utI.paymentLockFunds(msg.sender, _paymentAmount));
         return true;
     }
 
     function constructPreimage(
         address _addr,
-        string _ipfsHash,
+        bytes32 _encryptedFileHash,
         uint256 _durationInMonths,
         uint256 _chargeAmount)
         public
         pure
         returns (bytes32)
     {
-        return keccak256(_addr, _ipfsHash, _durationInMonths, _chargeAmount);
+        return keccak256(_addr, _encryptedFileHash, _durationInMonths, _chargeAmount);
     }
 
     function constructH(

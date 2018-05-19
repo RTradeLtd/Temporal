@@ -12,7 +12,7 @@ contract FileRepository {
         pin request will persist longer than the current one, update release date
     */
     struct FileUpload {
-        string ipfsHash; // the actual content hash of the file, if a directory it will be the parent directory hash
+        bytes32 encryptedIpfsHash; // the actual content hash of the file, if a directory it will be the parent directory hash
         uint256 releaseDate; 
         mapping (address => bool) uploaders;
     }
@@ -26,15 +26,15 @@ contract FileRepository {
 
     function addUpload(
         address _uploader,
-        string _ipfsHash,
+        bytes32 _encryptedIpfsHash,
         uint256 _releaseDate)
         public
         onlyPaymentProcessor
         returns (bool)
     {
-        uploads[keccak256(_ipfsHash)].uploaders[_uploader] = true;
-        if (uploads[keccak256(_ipfsHash)].releaseDate < _releaseDate) {
-            uploads[keccak256(_ipfsHash)].releaseDate = _releaseDate;
+        uploads[keccak256(_encryptedIpfsHash)].uploaders[_uploader] = true;
+        if (uploads[keccak256(_encryptedIpfsHash)].releaseDate < _releaseDate) {
+            uploads[keccak256(_encryptedIpfsHash)].releaseDate = _releaseDate;
         }
         // event placeholder
         return true;
