@@ -36,3 +36,8 @@ scrape_configs:
 
     static_configs:
        - targets: ['localhost:6768']
+
+  - job_name: 'ipfs_test'
+    metrics_path: '/debug/metrics/prometheus'
+    static_configs:
+       - targets: ['localhost:5001']
