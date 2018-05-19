@@ -17,6 +17,7 @@ import (
 	"github.com/gin-contrib/rollbar"
 	"github.com/gin-gonic/gin"
 	"github.com/stvp/roll"
+	"github.com/zsais/go-gin-prometheus"
 )
 
 // Setup is used to initialize our api.
@@ -30,6 +31,8 @@ func Setup() *gin.Engine {
 	roll.Token = token
 	roll.Environment = "development"
 	r := gin.Default()
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(r)
 	r.Use(rollbar.Recovery(false))
 	setupRoutes(r)
 	return r
