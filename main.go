@@ -49,7 +49,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		qm.ConsumeMessage("")
+		err = qm.ConsumeMessage("")
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "ipfs-cluster-queue":
 		psm, err := ipfsQ.Initialize(rtfs.ClusterPubSubTopic)
 		if err != nil {

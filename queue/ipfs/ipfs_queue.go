@@ -38,14 +38,12 @@ func Initialize(topic string) (*PubSubQueueManager, error) {
 
 // ParseClusterPinTopic is used to parse through any pubsub cluster pin topics, and pin the contained data
 func (pm *PubSubQueueManager) ParseClusterPinTopic() {
-	fmt.Println("test")
 	if pm.QueueTopic != rtfs.ClusterPubSubTopic {
 		fmt.Println("pubsub queue manager is not configured to listen and parse cluster pins")
 		return
 	}
 	cm := rtfs_cluster.Initialize()
 	for {
-		fmt.Println("test 1")
 		record, err := pm.PubSub.Next()
 		if err != nil {
 			fmt.Println(err)
@@ -62,6 +60,7 @@ func (pm *PubSubQueueManager) ParseClusterPinTopic() {
 			fmt.Println(err)
 			continue
 		}
+		fmt.Printf("Pinning %s to cluster\n", dataString)
 		fmt.Println("pin succeeded")
 	}
 }
