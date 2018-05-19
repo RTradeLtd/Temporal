@@ -32,6 +32,7 @@ func Setup() *gin.Engine {
 	roll.Environment = "development"
 	r := gin.Default()
 	p := ginprometheus.NewPrometheus("gin")
+	p.SetListenAddress("127.0.0.1:6768")
 	p.Use(r)
 	r.Use(rollbar.Recovery(false))
 	setupRoutes(r)
