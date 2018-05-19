@@ -4,25 +4,26 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/models"
 
 	ipfsapi "github.com/ipfs/go-ipfs-api"
 )
 
+var ClusterPubSubTopic = "ipfs-cluster"
+
 type IpfsManager struct {
 	Shell    *ipfsapi.Shell
 	PubSub   *ipfsapi.PubSubSubscription
-	PinTopic string
+	PubTopic string
 }
 
-func Initialize(pinTopic string) *IpfsManager {
-	if pinTopic == "" {
-		pinTopic = "ipfs-pins"
+func Initialize(pubTopic string) *IpfsManager {
+	if pubTopic == "" {
+		pubTopic = ClusterPubSubTopic
 	}
 	manager := IpfsManager{}
 	manager.Shell = establishShellWithNode("")
-	manager.PinTopic = pinTopic
+	manager.PubTopic = pubTopic
 	return &manager
 }
 
@@ -35,13 +36,8 @@ func (im *IpfsManager) Pin(hash string) error {
 		// TODO: add error reporting
 		return err
 	}
-	im.PublishPubSubMessage(im.PinTopic, hash)
-	cm := rtfs_cluster.Initialize()
-	decoded := cm.DecodeHashString(hash)
-	err = cm.Pin(decoded)
-	if err != nil {
-		return err
-	}
+	// after pinning the message, publish a msg to the cluster puubsub topic
+	im.PublishPubSubMessage(ClusterPubSubTopic, hash)
 	return nil
 }
 

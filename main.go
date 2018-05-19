@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/RTradeLtd/Temporal/api"
-	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
 	ipfsQ "github.com/RTradeLtd/Temporal/queue/ipfs"
@@ -15,19 +14,17 @@ import (
 
 func main() {
 	if len(os.Args) > 2 || len(os.Args) < 2 {
-		log.Fatal("idiot")
+		fmt.Println("incorrect invocation")
+		fmt.Println("./Temporal [api | swarm | queue-dpa | queue-dfa | ipfs-cluster-queue | migrate]")
+		fmt.Println("api: run the api, used to interact with temporal")
+		fmt.Println("swarm: run the ethereum swarm mode of tempora")
+		fmt.Println("queue-dpa: listen to pin requests, and store them in the database")
+		fmt.Println("queue-dfa: listen to file add requests, and add to the database")
+		fmt.Println("ipfs-cluster-queue: listen to pubsub topics indicating a file has been pinned locally, and pin it to the cluster")
+		fmt.Println("migrate: migrate the database")
+		os.Exit(1)
 	}
 	switch os.Args[1] {
-	case "cluster":
-		cm := rtfs_cluster.Initialize()
-		cm.GenRestAPIConfig()
-		cm.GenClient()
-		cm.ParseLocalStatusAllAndSync()
-		cid := cm.DecodeHashString("QmXXSSQpbYhGRMPqqZ4gF1SjqBkBjpnb44JuR1frwL1RiA")
-		err := cm.Pin(cid)
-		if err != nil {
-			log.Fatal(err)
-		}
 	case "api":
 		router := api.Setup()
 		router.Run(":6767")
@@ -52,8 +49,8 @@ func main() {
 			log.Fatal(err)
 		}
 		qm.ConsumeMessage("")
-	case "queue-ipfs":
-		ipfsQ.Initialize()
+	case "ipfs-cluster-queue":
+		ipfsQ.ListenToClusterPinTopic()
 	case "migrate":
 		dbm := database.Initialize()
 		dbm.RunMigrations()

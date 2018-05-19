@@ -55,206 +55,6 @@ func setupRoutes(g *gin.Engine) {
 	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
 }
 
-func ipfsPubSubTest(c *gin.Context) {
-	manager := rtfs.Initialize("")
-	err := manager.PublishPubSubTest(manager.PinTopic)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	c.JSON(http.StatusOK, nil)
-}
-
-func ipfsPubSubConsume(c *gin.Context) {
-	topic := c.Param("topic")
-	manager := rtfs.Initialize("")
-	manager.SubscribeToPubSubTopic(topic)
-	manager.ConsumeSubscription(manager.PubSub)
-}
-
-func ipfsPubSubPublish(c *gin.Context) {
-	topic := c.Param("topic")
-	message := c.PostForm("message")
-	manager := rtfs.Initialize("")
-	err := manager.PublishPubSubMessage(topic, message)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"topic": topic, "message": message})
-}
-
-// removePinFromLocalHost is used to remove a pin from the ipfs instance
-// TODO: fully implement
-func removePinFromLocalHost(c *gin.Context) {
-	// fetch hash param
-	hash := c.Param("hash")
-	// initialise a connetion to the local ipfs node
-	manager := rtfs.Initialize("")
-	// remove the file from the local ipfs state
-	err := manager.Shell.Unpin(hash)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	// TODO:
-	// change to send a message to the cluster to depin
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	qm.PublishMessage(hash)
-	c.JSON(http.StatusOK, gin.H{"deleted": hash})
-}
-
-// removePinFromCluster is used to remove a pin from the cluster global state
-// this will mean that all nodes in the cluster will no longer track the pin
-// TODO: fully implement
-func removePinFromCluster(c *gin.Context) {
-	hash := c.Param("hash")
-	manager := rtfs_cluster.Initialize()
-	err := manager.RemovePinFromCluster(hash)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	qm, err := queue.Initialize(queue.IpfsQueue)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	qm.PublishMessage(hash)
-	c.JSON(http.StatusOK, gin.H{"deleted": hash})
-}
-
-// fetchLocalClusterStatus is used to fetch the status of the localhost's
-// cluster state, and not the rest of the cluster
-// TODO: cleanup
-func fetchLocalClusterStatus(c *gin.Context) {
-	// this will hold all the retrieved content hashes
-	var cids []*gocid.Cid
-	// this will hold all the statuses of the content hashes
-	var statuses []string
-	// initialize a connection to the cluster
-	manager := rtfs_cluster.Initialize()
-	// fetch a map of all the statuses
-	maps, err := manager.FetchLocalStatus()
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	// parse the maps
-	for k, v := range maps {
-		cids = append(cids, k)
-		statuses = append(statuses, v)
-	}
-	c.JSON(http.StatusOK, gin.H{"cids": cids, "statuses": statuses})
-}
-
-// syncCluserErrorsLocally is used to parse through the local cluster state
-// and sync any errors that are detected.
-func syncClusterErrorsLocally(c *gin.Context) {
-	// initialize a conection to the cluster
-	manager := rtfs_cluster.Initialize()
-	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
-	syncedCids, err := manager.ParseLocalStatusAllAndSync()
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
-}
-
-// getUploadsFromDatabase is used to read a list of uploads from our database
-// TODO: cleanup
-func getUploadsFromDatabase(c *gin.Context) {
-	// open a connection to the database
-	db := database.OpenDBConnection()
-	// create an upload manager interface
-	um := models.NewUploadManager(db)
-	// fetch the uplaods
-	uploads := um.GetUploads()
-	if uploads == nil {
-		um.DB.Close()
-		c.JSON(http.StatusNotFound, nil)
-		return
-	}
-	um.DB.Close()
-	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
-}
-
-// getUploadsForAddress is used to read a list of uploads from a particular eth address
-// TODO: cleanup
-func getUploadsForAddress(c *gin.Context) {
-	// open connection to the database
-	db := database.OpenDBConnection()
-	// establish a new upload manager
-	um := models.NewUploadManager(db)
-	// fetch all uploads for that address
-	uploads := um.GetUploadsForAddress(c.Param("address"))
-	if uploads == nil {
-		um.DB.Close()
-		c.JSON(http.StatusNotFound, nil)
-		return
-	}
-	um.DB.Close()
-	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
-}
-
-// getLocalPins is used to get the pins tracked by the local ipfs node
-func getLocalPins(c *gin.Context) {
-	// initialize a connection toe the local ipfs node
-	manager := rtfs.Initialize("")
-	// get all the known local pins
-	// WARNING: THIS COULD BE A VERY LARGE LIST
-	pinInfo, err := manager.Shell.Pins()
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
-}
-
-// getGlobalStatusForClusterPin is used to get the global cluster status for a particular pin
-func getGlobalStatusForClusterPin(c *gin.Context) {
-	hash := c.Param("hash")
-	// initialize a connection to the cluster
-	manager := rtfs_cluster.Initialize()
-	// get teh cluster wide status for this particular pin
-	status, err := manager.GetStatusForCidGlobally(hash)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	c.JSON(http.StatusFound, gin.H{"status": status})
-}
-
-// getLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
-func getLocalStatusForClusterPin(c *gin.Context) {
-	hash := c.Param("hash")
-	// initialize a connection to the cluster
-	manager := rtfs_cluster.Initialize()
-	// get the cluster status for the cid only asking the local cluster node
-	status, err := manager.GetStatusForCidLocally(hash)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-	c.JSON(http.StatusFound, gin.H{"status": status})
-}
-
-// pinHashToCluster is used to pin a hash to the global cluster state
-func pinHashToCluster(c *gin.Context) {
-	hash := c.Param("hash")
-	manager := rtfs_cluster.Initialize()
-	// decode the hash
-	contentIdentifier := manager.DecodeHashString(hash)
-	// pin the hash to the cluster, using -1 for replication factor, indicating to pin EVERYWHERE in the cluster
-	manager.Client.Pin(contentIdentifier, -1, -1, hash)
-	c.JSON(http.StatusOK, gin.H{"hash": hash})
-}
-
 // pinHashLocally is used to pin a hash to the local ipfs node
 // TODO: add in the cluster pin event, optimize
 func pinHashLocally(c *gin.Context) {
@@ -352,4 +152,204 @@ func addFileLocally(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"response": resp})
+}
+
+// pinHashToCluster is used to pin a hash to the global cluster state
+func pinHashToCluster(c *gin.Context) {
+	hash := c.Param("hash")
+	manager := rtfs_cluster.Initialize()
+	// decode the hash
+	contentIdentifier := manager.DecodeHashString(hash)
+	// pin the hash to the cluster, using -1 for replication factor, indicating to pin EVERYWHERE in the cluster
+	manager.Client.Pin(contentIdentifier, -1, -1, hash)
+	c.JSON(http.StatusOK, gin.H{"hash": hash})
+}
+
+// syncCluserErrorsLocally is used to parse through the local cluster state
+// and sync any errors that are detected.
+func syncClusterErrorsLocally(c *gin.Context) {
+	// initialize a conection to the cluster
+	manager := rtfs_cluster.Initialize()
+	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
+	syncedCids, err := manager.ParseLocalStatusAllAndSync()
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
+}
+
+func ipfsPubSubPublish(c *gin.Context) {
+	topic := c.Param("topic")
+	message := c.PostForm("message")
+	manager := rtfs.Initialize("")
+	err := manager.PublishPubSubMessage(topic, message)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"topic": topic, "message": message})
+}
+
+func ipfsPubSubTest(c *gin.Context) {
+	manager := rtfs.Initialize("")
+	err := manager.PublishPubSubTest(manager.PubTopic)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
+}
+
+func ipfsPubSubConsume(c *gin.Context) {
+	topic := c.Param("topic")
+	manager := rtfs.Initialize("")
+	manager.SubscribeToPubSubTopic(topic)
+	manager.ConsumeSubscription(manager.PubSub)
+}
+
+// removePinFromLocalHost is used to remove a pin from the ipfs instance
+// TODO: fully implement
+func removePinFromLocalHost(c *gin.Context) {
+	// fetch hash param
+	hash := c.Param("hash")
+	// initialise a connetion to the local ipfs node
+	manager := rtfs.Initialize("")
+	// remove the file from the local ipfs state
+	err := manager.Shell.Unpin(hash)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	// TODO:
+	// change to send a message to the cluster to depin
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(hash)
+	c.JSON(http.StatusOK, gin.H{"deleted": hash})
+}
+
+// removePinFromCluster is used to remove a pin from the cluster global state
+// this will mean that all nodes in the cluster will no longer track the pin
+// TODO: fully implement
+func removePinFromCluster(c *gin.Context) {
+	hash := c.Param("hash")
+	manager := rtfs_cluster.Initialize()
+	err := manager.RemovePinFromCluster(hash)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm, err := queue.Initialize(queue.IpfsQueue)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	qm.PublishMessage(hash)
+	c.JSON(http.StatusOK, gin.H{"deleted": hash})
+}
+
+// getLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
+func getLocalStatusForClusterPin(c *gin.Context) {
+	hash := c.Param("hash")
+	// initialize a connection to the cluster
+	manager := rtfs_cluster.Initialize()
+	// get the cluster status for the cid only asking the local cluster node
+	status, err := manager.GetStatusForCidLocally(hash)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusFound, gin.H{"status": status})
+}
+
+// getGlobalStatusForClusterPin is used to get the global cluster status for a particular pin
+func getGlobalStatusForClusterPin(c *gin.Context) {
+	hash := c.Param("hash")
+	// initialize a connection to the cluster
+	manager := rtfs_cluster.Initialize()
+	// get teh cluster wide status for this particular pin
+	status, err := manager.GetStatusForCidGlobally(hash)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusFound, gin.H{"status": status})
+}
+
+// fetchLocalClusterStatus is used to fetch the status of the localhost's
+// cluster state, and not the rest of the cluster
+// TODO: cleanup
+func fetchLocalClusterStatus(c *gin.Context) {
+	// this will hold all the retrieved content hashes
+	var cids []*gocid.Cid
+	// this will hold all the statuses of the content hashes
+	var statuses []string
+	// initialize a connection to the cluster
+	manager := rtfs_cluster.Initialize()
+	// fetch a map of all the statuses
+	maps, err := manager.FetchLocalStatus()
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	// parse the maps
+	for k, v := range maps {
+		cids = append(cids, k)
+		statuses = append(statuses, v)
+	}
+	c.JSON(http.StatusOK, gin.H{"cids": cids, "statuses": statuses})
+}
+
+// getLocalPins is used to get the pins tracked by the local ipfs node
+func getLocalPins(c *gin.Context) {
+	// initialize a connection toe the local ipfs node
+	manager := rtfs.Initialize("")
+	// get all the known local pins
+	// WARNING: THIS COULD BE A VERY LARGE LIST
+	pinInfo, err := manager.Shell.Pins()
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
+}
+
+// getUploadsFromDatabase is used to read a list of uploads from our database
+// TODO: cleanup
+func getUploadsFromDatabase(c *gin.Context) {
+	// open a connection to the database
+	db := database.OpenDBConnection()
+	// create an upload manager interface
+	um := models.NewUploadManager(db)
+	// fetch the uplaods
+	uploads := um.GetUploads()
+	if uploads == nil {
+		um.DB.Close()
+		c.JSON(http.StatusNotFound, nil)
+		return
+	}
+	um.DB.Close()
+	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
+}
+
+// getUploadsForAddress is used to read a list of uploads from a particular eth address
+// TODO: cleanup
+func getUploadsForAddress(c *gin.Context) {
+	// open connection to the database
+	db := database.OpenDBConnection()
+	// establish a new upload manager
+	um := models.NewUploadManager(db)
+	// fetch all uploads for that address
+	uploads := um.GetUploadsForAddress(c.Param("address"))
+	if uploads == nil {
+		um.DB.Close()
+		c.JSON(http.StatusNotFound, nil)
+		return
+	}
+	um.DB.Close()
+	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
