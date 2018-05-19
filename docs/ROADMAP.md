@@ -28,3 +28,14 @@ Temporal Enterprise (see later section)
 # Temporal Enterprise
 
 Temporal enterprise will be our fully ready enterprise storage solution backed by IPFS. It will feature complete private IPFS swarms,and Clusters ,as well as support for private blockchains running the EVM and swarm protocol
+
+
+# Unscheduled Features
+
+## SIA API
+
+Provide an easy to consume API for non technicals to use the SIA network
+
+## STORJ API
+
+Provide an easy to consume API for non technicals to use the STORJ network
