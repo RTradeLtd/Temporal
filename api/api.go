@@ -53,6 +53,8 @@ func setupRoutes(g *gin.Engine) {
 	g.GET("/api/v1/ipfs/pins", getLocalPins)
 	g.GET("/api/v1/database/uploads", getUploadsFromDatabase)
 	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
+	g.GET("/api/v1/ipfs/object-stat/:key", getObjectStatForIpfs)
+	g.GET("/api/v1/ipfs/check-for-pin/:hash", checkLocalNodeForPin)
 }
 
 // pinHashLocally is used to pin a hash to the local ipfs node
@@ -352,4 +354,26 @@ func getUploadsForAddress(c *gin.Context) {
 	}
 	um.DB.Close()
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
+}
+
+func getObjectStatForIpfs(c *gin.Context) {
+	key := c.Param("key")
+	manager := rtfs.Initialize("")
+	stats, err := manager.ObjectStat(key)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"stats": stats})
+}
+
+func checkLocalNodeForPin(c *gin.Context) {
+	hash := c.Param("hash")
+	manager := rtfs.Initialize("")
+	present, err := manager.ParseLocalPinsForHash(hash)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"present": present})
 }

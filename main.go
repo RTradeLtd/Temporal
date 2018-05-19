@@ -20,7 +20,7 @@ func main() {
 		fmt.Println("swarm: run the ethereum swarm mode of tempora")
 		fmt.Println("queue-dpa: listen to pin requests, and store them in the database")
 		fmt.Println("queue-dfa: listen to file add requests, and add to the database")
-		fmt.Println("ipfs-cluster-queue: listen to pubsub topics indicating a file has been pinned locally, and pin it to the cluster")
+		fmt.Println("ipfs-cluster-queue: listen to cluster pin pubsub topic")
 		fmt.Println("migrate: migrate the database")
 		os.Exit(1)
 	}

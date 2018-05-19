@@ -41,6 +41,29 @@ func (im *IpfsManager) Pin(hash string) error {
 	return nil
 }
 
+// ObjectStat is used to retrieve the stats about an object
+func (im *IpfsManager) ObjectStat(key string) (*ipfsapi.ObjectStats, error) {
+	stat, err := im.Shell.ObjectStat(key)
+	if err != nil {
+		return nil, err
+	}
+	return stat, nil
+}
+
+// ParseLocalPinsForHash checks whether or not a pin is present
+func (im *IpfsManager) ParseLocalPinsForHash(hash string) (bool, error) {
+	pins, err := im.Shell.Pins()
+	if err != nil {
+		return false, err
+	}
+	info := pins[hash]
+
+	if info.Type != "" {
+		return true, nil
+	}
+	return false, nil
+}
+
 // Add is a wrapper used to add a file to the node
 func (im *IpfsManager) Add(file string) error {
 	return nil
