@@ -14,3 +14,4 @@ tar zxvf ipfs-cluster-service*.tar.gz
 rm *gz
 cd ipfs-cluster-service
 ./ipfs-cluster-service init
+cp ipfs-cluster-service /usr/local/bin
