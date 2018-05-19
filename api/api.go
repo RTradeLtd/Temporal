@@ -31,8 +31,11 @@ func Setup() *gin.Engine {
 	roll.Token = token
 	roll.Environment = "development"
 	r := gin.Default()
+	// create gin middleware instance for prom
 	p := ginprometheus.NewPrometheus("gin")
+	// set the address for prometheus to collect metrics
 	p.SetListenAddress("127.0.0.1:6768")
+	// load in prom to gin
 	p.Use(r)
 	r.Use(rollbar.Recovery(false))
 	setupRoutes(r)
