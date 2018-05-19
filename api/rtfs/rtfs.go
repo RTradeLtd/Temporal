@@ -22,7 +22,7 @@ func Initialize(pubTopic string) *IpfsManager {
 		pubTopic = ClusterPubSubTopic
 	}
 	manager := IpfsManager{}
-	manager.Shell = establishShellWithNode("")
+	manager.Shell = EstablishShellWithNode("")
 	manager.PubTopic = pubTopic
 	return &manager
 }
@@ -31,17 +31,12 @@ func Initialize(pubTopic string) *IpfsManager {
 // but also alert the rest of the local nodes to pin
 // after which the pin will be sent to the cluster
 func (im *IpfsManager) Pin(hash string) error {
-	present, err := im.ParseLocalPinsForHash(hash)
-	if err != nil {
-		//TODO: add error reporting
-		return err
-	}
-	if present {
-		return errors.New("hash already pinned")
-	}
-	err = im.Shell.Pin(hash)
+	fmt.Println("pinning hash locally")
+	err := im.Shell.Pin(hash)
+	fmt.Println("hash pinned locally")
 	if err != nil {
 		// TODO: add error reporting
+		fmt.Println(err)
 		return err
 	}
 	// after pinning the message, publish a msg to the cluster puubsub topic
@@ -77,7 +72,7 @@ func (im *IpfsManager) Add(file string) error {
 	return nil
 }
 
-func establishShellWithNode(url string) *ipfsapi.Shell {
+func EstablishShellWithNode(url string) *ipfsapi.Shell {
 	if url == "" {
 		shell := ipfsapi.NewLocalShell()
 		return shell

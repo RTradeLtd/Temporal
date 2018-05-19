@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/RTradeLtd/Temporal/api"
+	"github.com/RTradeLtd/Temporal/api/rtfs"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
 	ipfsQ "github.com/RTradeLtd/Temporal/queue/ipfs"
@@ -50,7 +51,12 @@ func main() {
 		}
 		qm.ConsumeMessage("")
 	case "ipfs-cluster-queue":
-		ipfsQ.ListenToClusterPinTopic()
+		psm, err := ipfsQ.Initialize(rtfs.ClusterPubSubTopic)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		psm.ParseClusterPinTopic()
 	case "migrate":
 		dbm := database.Initialize()
 		dbm.RunMigrations()

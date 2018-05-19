@@ -66,6 +66,7 @@ func pinHashLocally(c *gin.Context) {
 	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
 		c.Error(err)
+		fmt.Println(err)
 		return
 	}
 	// construct the rabbitmq message to add this entry to the database
@@ -78,12 +79,15 @@ func pinHashLocally(c *gin.Context) {
 	qm, err := queue.Initialize(queue.DatabasePinAddQueue)
 	if err != nil {
 		c.Error(err)
+		fmt.Println(err)
+
 		return
 	}
 	// publish the message, if there was an error finish processing
 	err = qm.PublishMessage(dpa)
 	if err != nil {
 		c.Error(err)
+		fmt.Println(err)
 		return
 	}
 	go func() {

@@ -1,39 +1,68 @@
 package ipfs
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 
 	"github.com/RTradeLtd/Temporal/api/rtfs"
+	ipfsapi "github.com/ipfs/go-ipfs-api"
 )
 
-/*
-	This is the IPFS queue which listens for pubsub messages on the pic topic, and then pins that to the local node
-*/
+// PubSubQueueManager is a helper struct used to create a queue system that uses ipfs pubsub
+type PubSubQueueManager struct {
+	Shell      *ipfsapi.Shell
+	PubSub     *ipfsapi.PubSubSubscription
+	QueueTopic string
+}
 
-// Initialize is used to intiialize the ifps queue
-func Initialize() {
-	manager := rtfs.Initialize("")
-	manager.SubscribeToPubSubTopic(manager.PubTopic)
-	pubSub := manager.PubSub
-	clusterManager := rtfs_cluster.Initialize()
+// Initialize is used to intiialize the ifps queue smanager
+func Initialize(topic string) (*PubSubQueueManager, error) {
+	psm := PubSubQueueManager{
+		QueueTopic: topic,
+	}
+	shell := rtfs.EstablishShellWithNode("")
+	psm.Shell = shell
+	online := psm.Shell.IsUp()
+	if !online {
+		return nil, errors.New("node is not online")
+	}
+	subscription, err := psm.Shell.PubSubSubscribe(psm.QueueTopic)
+	if err != nil {
+		return nil, err
+	}
+	psm.PubSub = subscription
+	return &psm, nil
+}
+
+// ParseClusterPinTopic is used to parse through any pubsub cluster pin topics, and pin the contained data
+func (pm *PubSubQueueManager) ParseClusterPinTopic() {
+	fmt.Println("test")
+	if pm.QueueTopic != rtfs.ClusterPubSubTopic {
+		fmt.Println("pubsub queue manager is not configured to listen and parse cluster pins")
+		return
+	}
+	cm := rtfs_cluster.Initialize()
 	for {
-		subRecord, err := pubSub.Next()
+		fmt.Println("test 1")
+		record, err := pm.PubSub.Next()
 		if err != nil {
-			fmt.Println("erorr detected")
+			fmt.Println(err)
+			// todo: add error handling
+			continue
+		}
+		fmt.Println("record detected")
+		dataString := string(record.Data())
+		decodedDataString := cm.DecodeHashString(dataString)
+		err = cm.Pin(decodedDataString)
+		if err != nil {
+			// todo: add errror handling
+			fmt.Println("error pinning hash to cluster")
 			fmt.Println(err)
 			continue
 		}
-		dataString := string(subRecord.Data())
-		fmt.Printf("Pinning %s to cluster\n", dataString)
-		decodedDataString := clusterManager.DecodeHashString(dataString)
-		err = clusterManager.Pin(decodedDataString)
-		if err != nil {
-			fmt.Println("error detected")
-			fmt.Println(err)
-			continue
-		}
+		fmt.Println("pin succeeded")
 	}
 }
 
