@@ -7,4 +7,4 @@ tar zxvf go-ipfs*.gz
 rm *gz
 cd go-ipfs
 sudo ./install.sh
-ipfs init >> ~/ipfs_init_log.txt
+ipfs init --profile=server,badgerds >> ~/ipfs_init_log.txt

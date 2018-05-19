@@ -19,6 +19,23 @@ type UploadManager struct {
 	DB *gorm.DB
 }
 
+// RunDatabaseGarbageCollection is used to parse through the database
+// and delete all objects whose GCD has passed
+// TODO: Maybe move this to the database file?
+func (um *UploadManager) RunDatabaseGarbageCollection() *[]Upload {
+	var uploads []Upload
+	var deletedUploads []Upload
+
+	um.DB.Find(&uploads)
+	for _, v := range uploads {
+		if time.Now().Unix() > v.GarbageCollectDate.Unix() {
+			um.DB.Delete(v)
+			deletedUploads = append(deletedUploads, v)
+		}
+	}
+	return &deletedUploads
+}
+
 // NewUploadManager is used to generate an upload manager interface
 func NewUploadManager(db *gorm.DB) *UploadManager {
 	return &UploadManager{DB: db}

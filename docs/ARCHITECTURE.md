@@ -1,8 +1,10 @@
-# Architecture
+# Architecture WIP
 
 ## Data Privacy
 
 We do not perform analytics, or analyzation of content of files uploaded to our system. We will however track file size, file types, and other non-identifying information that is essential to the performance of our service.
+
+TODO: add more details
 
 ## Use Cases
 
@@ -22,7 +24,7 @@ We will operate an IPFS cluster initially consisting of two nodes, with immediat
 
 ### How It Works
 
-Payment Orchestration is done using smart contracts. File hosting will be paid for using the Rally Trade Coin (RTC), or with ether for a 5% markup. Everytime you wish to pay for data storage, you must submit the necessary payment to a smart contract, along with inputting the name of the hash you wish to pin, or uploading the file through our web interface. After confirming that we have received the payment, we will pin the file to on of our local IPFS nodes. After the file is successfully pin, we pin the hash cluster wide. The reason for doing is that currently the ipfs cluster service is in development, as has some issues with long pin times timing out. By pinning to the local node first, we ensure a high bandwidth low-latency connection between ifps, and the cluster to avoid any delays that might occur due to pinning a hash whose only providing node is located across the globe, and similar situations.
+Payment Orchestration is done using smart contracts. File hosting will be paid for using the Rally Trade Coin (RTC), or with ether. Everytime you wish to pay for data storage, you must submit the necessary payment to a smart contract, along with inputting the name of the hash you wish to pin, or uploading the file through our web interface. After confirming that we have received the payment, we will pin the file to on of our local IPFS nodes. After the file is successfully pin, we pin the hash cluster wide. The reason for doing is that currently the ipfs cluster service is in development, as has some issues with long pin times timing out. By pinning to the local node first, we ensure a high bandwidth low-latency connection between ifps, and the cluster to avoid any delays that might occur due to pinning a hash whose only providing node is located across the globe, and similar situations.
 
 To prevent abuse of the pricing system, even if a file or hash is already pinned on the system, a subsequent pin request from a different user will incur data charges according to how long that file or hash is to be pinned in our system, since that user is also requesting data persistence. In terms of files remaining in our system, the longest pin request is what we follow. 
 

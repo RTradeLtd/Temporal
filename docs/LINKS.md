@@ -38,9 +38,6 @@ https://github.com/ipfs/faq/issues/160
 IPFS Cluster Go API https://godoc.org/github.com/ipfs/ipfs-cluster
 
 
-# Possible Concerns
-
-How to calculate file/directory hash? - Help - discuss.ipfs.io
 
 # Difference between trickle dag and merkle dag
 

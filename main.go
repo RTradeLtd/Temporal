@@ -55,7 +55,7 @@ func main() {
 		dbm := database.Initialize()
 		dbm.RunMigrations()
 	default:
-		fmt.Println("idiot")
+		fmt.Println("noop")
 	}
 
 }
