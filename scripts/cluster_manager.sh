@@ -1,7 +1,8 @@
 #! /bin/bash
 
 # Commonly used cluster management commands
-
+IPFS_CLUSTER_PATH=/srv/dev-disk-by-label-Data/ipfs-data/cluster-data
+export IPFS_CLUSTER_PATH=/srv/dev-disk-by-label-Data/ipfs-data/cluster-data
 case "$1" in
     daemon)
         ipfs-cluster-service daemon | tee --append /var/log/ipfs/ipfs_cluster_daemon.log
