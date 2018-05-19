@@ -26,6 +26,13 @@ Storage technologies Temporal will support (this is always under evaluation for 
 * STORJ
 * Filecoin
 
+# Goals
+
+* Provide an easy to use interface with IPFS for both personal and business purposes.
+* Introduce IPFS to people who may have otherwise not been able to use the technology
+* Educate about decentralized and distributed storage technologies
+* Provide an easy-to-use API for different decentralized and distributed storage technologies
+
 # Data Privacy
 
 This is a huge issue and concern for any form of cloud storage. But is seldom mentioned by any of the projects promising revolutionary storage systems, global in scope. They'll talk about all the technical benefits, and features of their storage solutions which use IPFS, but data privacy isn't discussed. Data privacy is an extreme focus of RTrade, and we will not be releasing Temporal until we are absolutely certain that all data privacy laws we need to abide by, are met. This is currently one of our primary areas of focus.
