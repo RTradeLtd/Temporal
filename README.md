@@ -9,6 +9,9 @@
 It was decided to open-source Temporal sooner rather than later, to help receive feedback, constructive criticism, and to create the Temporal that everyone wants to use.
 Until such time as Temporal is released, anything in this repository (docs, readme, code, etc...) is likely to change. 
 
+The repository is loosely formatted, and any issues and notes, project tracking methods, etc... may or may not appear complete, or even tangible/understandable and at some point will change. Soon :P
+
+
 Questions? Send an email to postables@rtradetechnologies.com and I'll reply as soon as I can.
 
 # Temporal
