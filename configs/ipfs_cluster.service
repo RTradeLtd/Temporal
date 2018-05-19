@@ -1,6 +1,6 @@
 [Unit]
 Description=Starts the ipfs cluster daemon
-After=network.target
+After=network.target ipfs.service
 
 [Service]
 Type=simple
