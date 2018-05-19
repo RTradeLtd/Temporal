@@ -31,7 +31,15 @@ func Initialize(pubTopic string) *IpfsManager {
 // but also alert the rest of the local nodes to pin
 // after which the pin will be sent to the cluster
 func (im *IpfsManager) Pin(hash string) error {
-	err := im.Shell.Pin(hash)
+	present, err := im.ParseLocalPinsForHash(hash)
+	if err != nil {
+		//TODO: add error reporting
+		return err
+	}
+	if present {
+		return errors.New("hash already pinned")
+	}
+	err = im.Shell.Pin(hash)
 	if err != nil {
 		// TODO: add error reporting
 		return err
