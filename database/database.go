@@ -26,6 +26,7 @@ func Initialize() *DatabaseManager {
 
 func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(uploadObj)
+	dbm.DB.AutoMigrate(userObj)
 }
 
 // OpenDBConnection is used to create a database connection

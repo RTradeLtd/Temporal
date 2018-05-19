@@ -11,6 +11,8 @@ interface UserInterface {
 
 contract Payment {
 
+    bytes private prefix = "\x19Ethereum Signed Message:\n32";
+
     UserInterface public utI;
 
     struct PaymentStruct {
@@ -38,4 +40,31 @@ contract Payment {
         require(utI.paymentLockFunds(msg.sender, _paymentAmount));
         return true;
     }
+
+    function constructPreimage(
+        address _addr,
+        string _ipfsHash,
+        uint256 _durationInMonths,
+        uint256 _chargeAmount)
+        public
+        pure
+        returns (bytes32)
+    {
+        return keccak256(_addr, _ipfsHash, _durationInMonths, _chargeAmount);
+    }
+
+    function constructH(
+        bytes32 _preimage)
+        public
+        view
+        returns (bytes32)
+    {
+        return keccak256(prefix, _preimage);
+    }
+    
 }
+/* Submitting a payment, IDEAS
+
+When the user submits a payment, they must provide a signed message, to ensure they can't game the pay system.
+
+*/

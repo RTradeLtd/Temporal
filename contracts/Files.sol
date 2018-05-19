@@ -7,26 +7,36 @@ pragma solidity 0.4.23;
 contract FileRepository {
 
 
+    /*
+        Whenever a file is uploaded, the release date will be checked, if the  processing
+        pin request will persist longer than the current one, update release date
+    */
     struct FileUpload {
         string ipfsHash; // the actual content hash of the file, if a directory it will be the parent directory hash
-        uint256 releaseDate; // refers to the time at which we will no longer pin the file in our syste
-        address[] uploadersArray;
+        uint256 releaseDate; 
         mapping (address => bool) uploaders;
     }
 
-    struct UserUploads {
-        string ipfsHash;
-        uint256 releaseDate;
+    mapping (bytes32 => FileUpload) public uploads;
+    
+    modifier onlyPaymentProcessor() {
+        require(msg.sender == address(0)); // placeholder
+        _;
     }
 
-    mapping (bytes32 => FileUpload) public uploads;
-    mapping (address => UserUploads[]) public userUploads;
-    mapping (address => mapping (string => uint256)) private userUploadIndexes;
+    function addUpload(
+        address _uploader,
+        string _ipfsHash,
+        uint256 _releaseDate)
+        public
+        onlyPaymentProcessor
+        returns (bool)
+    {
+        uploads[keccak256(_ipfsHash)].uploaders[_uploader] = true;
+        if (uploads[keccak256(_ipfsHash)].releaseDate < _releaseDate) {
+            uploads[keccak256(_ipfsHash)].releaseDate = _releaseDate;
+        }
+        // event placeholder
+        return true;
+    }
 }
-
-/**
-
-    I've spec'd out the file upload struct, i'd like you to write functions to update the structs, for the moment we don't need any authorization checks, etc..
-    Just need the functions that allow the structs to be updated.  `userUploadIndexes` will be used to keep track of the order in which uploads are inserted.
-    The "string" is the ipfs content hash
- */
