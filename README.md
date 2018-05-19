@@ -16,8 +16,7 @@ Questions? Send an email to postables@rtradetechnologies.com and I'll reply as s
 
 # Temporal
 
-Temporal is an enterprise-grade file hosting service backed by IPFS, Swarm, and Ethereum. Until it's complete, this repository will serve as a teaser.
-Initially targeting the public IPFS network, it will be expanded to included Swarm support for the Ethereum mainnet, as well as support for private IPFS networks. 
+Temporal is an enterprise-grade file hosting service backed by IPFS, Swarm, and Ethereum. Initially targeting the public IPFS network, it will be expanded to included Swarm support for the Ethereum mainnet, as well as support for private IPFS networks. Afterwards integration with SIA and STORJ will be done to provide an easy to consume API to interact with those networks.
 
 Smart contracts are used to faciliate mangement of the temporal user base, as well as for payment of storing files. Finally, they will be used as an immutable record of files stored on our service, such that anyone may independently audit that we store the data we say we store, and for the time we say we store it for. Files can be stored in intervals of 1 month periods.
 
