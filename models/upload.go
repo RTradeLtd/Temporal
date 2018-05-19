@@ -15,6 +15,8 @@ type Upload struct {
 	GarbageCollectDate time.Time
 }
 
+const dev = true
+
 type UploadManager struct {
 	DB *gorm.DB
 }
@@ -32,6 +34,23 @@ func (um *UploadManager) RunDatabaseGarbageCollection() *[]Upload {
 			um.DB.Delete(v)
 			deletedUploads = append(deletedUploads, v)
 		}
+	}
+	return &deletedUploads
+}
+
+// RunTestDatabaseGarbageCollection is used to run a test garbage collection run.
+// NOTE that this will delete literally every single object it detects.
+func (um *UploadManager) RunTestDatabaseGarbageCollection() *[]Upload {
+	var foundUploads []Upload
+	var deletedUploads []Upload
+	if !dev {
+		return nil
+	}
+	// get all uploads
+	um.DB.Find(&foundUploads)
+	for _, v := range foundUploads {
+		um.DB.Delete(v)
+		deletedUploads = append(deletedUploads, v)
 	}
 	return &deletedUploads
 }

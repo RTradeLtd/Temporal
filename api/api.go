@@ -54,6 +54,7 @@ func setupRoutes(g *gin.Engine) {
 	g.GET("/api/v1/ipfs/pubsub/consume/:topic", ipfsPubSubConsume)
 	g.DELETE("/api/v1/ipfs/remove-pin/:hash", removePinFromLocalHost)
 	g.DELETE("/api/v1/ipfs-cluster/remove-pin/:hash", removePinFromCluster)
+	g.DELETE("/api/v1/database/garbage-collect/test", runTestGarbageCollection)
 	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", getLocalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", getGlobalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-local", fetchLocalClusterStatus)
@@ -263,6 +264,13 @@ func removePinFromCluster(c *gin.Context) {
 	}
 	qm.PublishMessage(hash)
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
+}
+
+func runTestGarbageCollection(c *gin.Context) {
+	db := database.OpenDBConnection()
+	um := models.NewUploadManager(db)
+	deletedUploads := um.RunTestDatabaseGarbageCollection()
+	c.JSON(http.StatusOK, gin.H{"deleted": deletedUploads})
 }
 
 // getLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
