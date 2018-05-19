@@ -18,6 +18,13 @@ TODO: add more details
 
 TODO
 
+## Monitoring
+
+For monitoring of the Temporal service, we utilize prometheus as the collection engine, which will plug into Grafana.
+For system monitoring two products are being explored:
+    * Grafana
+    * Zabbix
+
 ## IPFS
 
 We will operate an IPFS cluster initially consisting of two nodes, with immediate expansion to three nodes. Each of these ipfs nodes will exist on the pubilc IPFS swarm, however they will only be configured to pin content that is submitted to us. After launch we will be expanding to include private IPFS networks for us, and for clients should you not wish to store your data on the public swarm. Both public and private swarms will be backed by clusters to ensure data availability, and replication.
