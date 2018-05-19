@@ -3,7 +3,9 @@
 # Commonly used cluster management commands
 
 case "$1" in
-
+    daemon)
+        ipfs-cluster-service daemon | tee --append /var/log/ipfs/ipfs_cluster_daemon.log
+        ;;
     # used by a node to add itself to a cluster
     bootstrap)
         echo "enter existing peer multiaddr"
