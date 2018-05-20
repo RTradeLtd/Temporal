@@ -11,7 +11,7 @@ case "$1" in
     api)
         LISTEN_ADDRESS="192.168.1.252"
         export LISTEN_ADDRESS="$LISTEN_ADDRESS"
-        Temporal api 2>&1 | tee --append /var/log/tempral/api.log
+        Temporal api 2>&1 | tee --append /var/log/temporal/api.log
         ;;
     queue-dpa)
         Temporal queue-dpa 2>&1 | tee --append /var/log/temporal/queue_dpa.log
