@@ -115,6 +115,7 @@ func pinHashLocally(c *gin.Context) {
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
 func addFileLocally(c *gin.Context) {
+	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
@@ -128,26 +129,24 @@ func addFileLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	fmt.Println("opening file")
 	// open the file
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	//respCalc, err := gocid.Parse(fileByteData)
-	if err != nil {
-		c.Error(err)
-		return
-	}
+	fmt.Println("initializing manager")
 	// initialize a connection to the local ipfs node
 	manager := rtfs.Initialize("")
 	// pin the file
+	fmt.Println("adding file")
 	resp, err := manager.Shell.Add(openFile)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-
+	fmt.Println("file added")
 	// construct a message to rabbitmq to upad the database
 	dfa := queue.DatabaseFileAdd{
 		Hash:             resp,
