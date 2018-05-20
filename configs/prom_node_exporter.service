@@ -1,0 +1,11 @@
+[Unit]
+Description=Starts the prometheus server
+After=network.target ipfs_cluster.service
+
+[Service]
+Type=simple
+PIDFile=/var/run/prometheus_exporter_daemon.pid
+ExecStart=/boot_scripts/prom_exporter_start.sh
+
+[Install]
+WantedBy=multi-user.target
