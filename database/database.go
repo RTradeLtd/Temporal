@@ -31,7 +31,8 @@ func (dbm *DatabaseManager) RunMigrations() {
 
 // OpenDBConnection is used to create a database connection
 func OpenDBConnection() *gorm.DB {
-	db, err := gorm.Open("postgres", "host=127.0.0.1 port=5432 user=postgres dbname=temporal password=password123")
+	// we will not disable this in production
+	db, err := gorm.Open("postgres", "host=127.0.0.1 port=5432 user=postgres dbname=temporal password=password123 sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
