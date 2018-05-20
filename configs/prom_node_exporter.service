@@ -1,6 +1,6 @@
 [Unit]
 Description=Starts the prometheus server
-After=network.target ipfs_cluster.service
+After=network.target prometheus_server.service
 
 [Service]
 Type=simple

@@ -10,3 +10,5 @@ mkdir /usr/local/bin/prom_node_exporter
 mv ~/node_exporter*/* /usr/local/bin/prom_node_exporter
 cp ~/Temporal/scripts/prom_exporter_start.sh /boot_scripts/prom_exporter_start.sh
 chmod a+x /boot_scripts/prom_exporter_start.sh
+cp ~/Temporal/configs/prom_node_exporter.service /etc/systemd/system
+systemctl enable prom_node_exporter.service
