@@ -1,6 +1,7 @@
 package rtfs_cluster
 
 import (
+	"fmt"
 	"log"
 
 	gocid "github.com/ipfs/go-cid"
@@ -162,9 +163,12 @@ func (cm *ClusterManager) Pin(cid *gocid.Cid) error {
 	if err != nil {
 		return err
 	}
-	_, err = cm.Client.Status(cid, true)
+	status, err := cm.Client.Status(cid, true)
 	if err != nil {
+		fmt.Println("error pinning hash to cluster")
 		return err
 	}
+	fmt.Println("status")
+	fmt.Println(status)
 	return nil
 }
