@@ -99,15 +99,15 @@ func pinHashLocally(c *gin.Context) {
 		return
 	}
 	qm.Close()
-	/*go func() {*/
-	// currently after it is pinned, it is sent to the cluster to be pinned
-	manager := rtfs.Initialize("")
-	// before exiting, it is pinned to the cluster
-	err = manager.Pin(hash)
-	if err != nil {
-		fmt.Println(err)
-	}
-	/*}()*/
+	go func() {
+		// currently after it is pinned, it is sent to the cluster to be pinned
+		manager := rtfs.Initialize("")
+		// before exiting, it is pinned to the cluster
+		err = manager.Pin(hash)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 	c.JSON(http.StatusOK, gin.H{"upload": dpa})
 }
 
