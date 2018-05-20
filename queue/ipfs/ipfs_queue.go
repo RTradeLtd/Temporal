@@ -24,7 +24,7 @@ func Initialize(topic string) (*PubSubQueueManager, error) {
 	}
 	shell := rtfs.EstablishShellWithNode("")
 	psm.Shell = shell
-	online := psm.Shell.IsUp()
+	online := psm.Shell.IsUp() // THIS is hte problem
 	if !online {
 		return nil, errors.New("node is not online")
 	}
