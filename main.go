@@ -27,8 +27,14 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "api":
+		listenAddress := os.Getenv("LISTEN_ADDRESS")
+		if listenAddress == "" {
+			fmt.Println("invalid address")
+			fmt.Println("Please set LISTEN_ADDRESS env to a valid ip address")
+			os.Exit(1)
+		}
 		router := api.Setup()
-		router.Run(":6767")
+		router.Run(fmt.Sprintf("%s:6767", listenAddress))
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
 		if err != nil {
