@@ -98,6 +98,7 @@ func pinHashLocally(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
+	qm.Close()
 	/*go func() {*/
 	// currently after it is pinned, it is sent to the cluster to be pinned
 	manager := rtfs.Initialize("")
