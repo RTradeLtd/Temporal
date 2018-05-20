@@ -1,7 +1,6 @@
 package ipfs
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
@@ -24,10 +23,10 @@ func Initialize(topic string) (*PubSubQueueManager, error) {
 	}
 	shell := rtfs.EstablishShellWithNode("")
 	psm.Shell = shell
-	online := psm.Shell.IsUp() // THIS is hte problem
-	if !online {
-		return nil, errors.New("node is not online")
-	}
+	/*	online := psm.Shell.IsUp() // THIS is hte problem
+		if !online {
+			return nil, errors.New("node is not online")
+		}*/
 	subscription, err := psm.Shell.PubSubSubscribe(psm.QueueTopic)
 	if err != nil {
 		return nil, err
