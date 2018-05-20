@@ -4,8 +4,8 @@ After=network.target ipfs.service
 
 [Service]
 Type=simple
-PIDFile=/var/run/ipfs_daemon.pid
-ExecStart=/boot_scripts/cluster_manager.sh 
+PIDFile=/var/run/ipfs_cluster_daemon.pid
+ExecStart=/boot_scripts/cluster_manager.sh daemon
 
 [Install]
 WantedBy=multi-user.target
