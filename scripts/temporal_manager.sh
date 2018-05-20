@@ -3,7 +3,7 @@
 
 # Used to handle system launching of temporal
 
-IPFS_PATH="....."
+IPFS_PATH"/srv/dev-disk-by-label-Data/ipfs-data"
 export IPFS_PATH="$IPFS_PATH"
 
 case "$1" in
