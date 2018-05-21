@@ -8,6 +8,7 @@ import (
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/api/rtfs"
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	ipfsQ "github.com/RTradeLtd/Temporal/queue/ipfs"
 	"github.com/RTradeLtd/Temporal/rtswarm"
@@ -71,6 +72,12 @@ func main() {
 	case "migrate":
 		dbm := database.Initialize()
 		dbm.RunMigrations()
+	case "lookup-address":
+		db := database.OpenDBConnection()
+		um := models.NewUserManager(db)
+		mdl := um.FindByAddress("0xbF43d80dA01332b28cEE39644E8e08AD02a289F5")
+		fmt.Println(mdl)
+		db.Close()
 	default:
 		fmt.Println("noop")
 	}
