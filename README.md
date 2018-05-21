@@ -1,9 +1,6 @@
 # Temporal [![Build Status](https://travis-ci.com/RTradeLtd/Temporal.svg?token=gDSF5EBqJK8E2W8NbsUS&branch=master)](https://travis-ci.com/RTradeLtd/Temporal)
 
 
-![](https://i.imgflip.com/29m9ch.jpg)
-
-
 # NOTE
 
 It was decided to open-source Temporal sooner rather than later, to help receive feedback, constructive criticism, and to create the Temporal that everyone wants to use.
