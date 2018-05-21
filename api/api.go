@@ -83,9 +83,10 @@ func setupRoutes(g *gin.Engine) {
 // pinHashLocally is used to pin a hash to the local ipfs node
 // TODO: add in the cluster pin event, optimize
 func pinHashLocally(c *gin.Context) {
-	hash := c.Param("hash")
-	uploadAddress := c.PostForm("uploadAddress")
-	holdTimeInMonths := c.PostForm("holdTime")
+	contextCopy := c.Copy()
+	hash := contextCopy.Param("hash")
+	uploadAddress := contextCopy.PostForm("uploadAddress")
+	holdTimeInMonths := contextCopy.PostForm("holdTime")
 	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
 		c.Error(err)
