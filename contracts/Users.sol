@@ -21,7 +21,7 @@ contract Users is UsersAdministration, Utils {
 
     ERC20I public rtcI = ERC20I(address(0));
     address public hotWallet;
-    address public paymentContractAddress;
+    address public paymentProcessorAddress;
     address[] public uploaders;
 
     enum UserStateEnum { nil, registered, disabled }
@@ -44,9 +44,15 @@ contract Users is UsersAdministration, Utils {
     event EthDeposited(address indexed _uploader, uint256 _amount);
     event EthWithdrawn(address indexed _uploader, uint256 _amount);
     event EthLocked(address indexed _uploader, uint256 _amount);
+    event EthPaymentWithdrawnForUpload(address indexed _uploader, uint256 _amount, bytes32 _hashedCID);
 
     modifier nonRegisteredUser(address _uploaderAddress) {
         require(users[_uploaderAddress].state == UserStateEnum.nil);
+        _;
+    }
+
+    modifier onlyPaymentProcessor(address _sender) {
+        require(_sender == paymentProcessorAddress);
         _;
     }
 
@@ -75,17 +81,21 @@ contract Users is UsersAdministration, Utils {
         _;
     }
 
-    function paymentWithdrawEthForUploader(
+    function paymentProcessorWithdrawEthForUploader(
         address _uploaderAddress,
-        uint256 _amount)
+        uint256 _amount,
+        bytes32 _hashedCID)
         public
         isRegistered(_uploaderAddress)
         validLockedEthBalance(_uploaderAddress, _amount)
         greaterThanZeroU(_amount)
+        onlyPaymentProcessor(msg.sender)
         returns (bool)
     {
+        uint256 remaining = users[msg.sender].lockedEthBalance.sub(_amount);
+        users[msg.sender].lockedEthBalance = remaining;
+        emit EthPaymentWithdrawnForUpload(_uploaderAddress, _amount, _hashedCID);
         hotWallet.transfer(_amount);
-        // placeholder
         return true;
     }
     
