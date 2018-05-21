@@ -30,8 +30,6 @@ contract Users is UsersAdministration, Utils {
         address uploaderAddress;
         uint256 availableEthBalance;
         uint256 availableRtcBalance;
-        uint256 lockedEthBalance;
-        uint256 lockedRtcBalance;
         UserStateEnum state;
     }
 
@@ -66,34 +64,25 @@ contract Users is UsersAdministration, Utils {
         _;
     }
 
-    modifier validLockedEthBalance(address _uploaderAddress, uint256 _amount) {
-        require(users[_uploaderAddress].lockedEthBalance >= _amount);
-        _;
-    }
-
     modifier validAvailableRtcBalance(address _uploaderAddress, uint256 _amount) {
         require(users[_uploaderAddress].availableRtcBalance >= _amount);
         _;
     }
 
-    modifier validLockedRtcBalance(address _uploaderAddress, uint256 _amount) {
-        require(users[_uploaderAddress].lockedRtcBalance >= _amount);
-        _;
-    }
-
+    //TODO: fix
     function paymentProcessorWithdrawEthForUploader(
         address _uploaderAddress,
         uint256 _amount,
         bytes32 _hashedCID)
         public
         isRegistered(_uploaderAddress)
-        validLockedEthBalance(_uploaderAddress, _amount)
         greaterThanZeroU(_amount)
         onlyPaymentProcessor(msg.sender)
+        validAvailableEthBalance(_uploaderAddress, _amount)
         returns (bool)
     {
-        uint256 remaining = users[msg.sender].lockedEthBalance.sub(_amount);
-        users[msg.sender].lockedEthBalance = remaining;
+        uint256 remaining = users[_uploaderAddress].availableEthBalance.sub(_amount);
+        users[_uploaderAddress].availableEthBalance = remaining;
         emit EthPaymentWithdrawnForUpload(_uploaderAddress, _amount, _hashedCID);
         hotWallet.transfer(_amount);
         return true;
@@ -124,35 +113,6 @@ contract Users is UsersAdministration, Utils {
         return true;
     }
 
-    function withdrawFromAvailableEthBalance(
-        uint256 _amount)
-        public
-        isRegistered(msg.sender)
-        validAvailableEthBalance(msg.sender, _amount)
-        greaterThanZeroU(_amount)
-        returns (bool)
-    {
-        uint256 remaining = users[msg.sender].availableEthBalance.sub(_amount);
-        users[msg.sender].availableEthBalance = remaining;
-        emit EthWithdrawn(msg.sender, _amount);
-        msg.sender.transfer(remaining);
-        return true;
-    }
-
-    function lockPortionOfAvailableEthBalance(
-        uint256 _amount)
-        public
-        isRegistered(msg.sender)
-        validAvailableEthBalance(msg.sender, _amount)
-        greaterThanZeroU(_amount)
-        returns (bool)
-    {
-        uint256 remaining = users[msg.sender].availableEthBalance.sub(_amount);
-        users[msg.sender].availableEthBalance = remaining;
-        users[msg.sender].lockedEthBalance = users[msg.sender].lockedEthBalance.add(_amount);
-        emit EthLocked(msg.sender, _amount);
-        return true;
-    }
 
     function depositRtc(
         uint256 _amount)
@@ -167,33 +127,4 @@ contract Users is UsersAdministration, Utils {
         return true;
     }
 
-    function lockPortionOfAvailableRtcBalance(
-        uint256 _amount)
-        public
-        isRegistered(msg.sender)
-        greaterThanZeroU(_amount)
-        validAvailableRtcBalance(msg.sender, _amount)
-        returns (bool)
-    {
-        uint256 remaining = users[msg.sender].availableRtcBalance.sub(_amount);
-        users[msg.sender].availableRtcBalance = remaining;
-        users[msg.sender].lockedRtcBalance = users[msg.sender].lockedRtcBalance.add(_amount);
-        emit RtcLocked(msg.sender, _amount);
-        return true;
-    }
-
-    function withdrawFromAvailableRtcBalance(
-        uint256 _amount)
-        public
-        isRegistered(msg.sender)
-        greaterThanZeroU(_amount)
-        validAvailableRtcBalance(msg.sender, _amount)
-        returns (bool)
-    {
-        uint256 remaining = users[msg.sender].availableRtcBalance.sub(_amount);
-        users[msg.sender].availableRtcBalance = remaining;
-        emit RtcWithdrawn(msg.sender, _amount);
-        require(rtcI.transfer(msg.sender, _amount));
-        return true;
-    }
 }
