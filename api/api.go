@@ -186,12 +186,15 @@ func addFileLocally(c *gin.Context) {
 
 // pinHashToCluster is used to pin a hash to the global cluster state
 func pinHashToCluster(c *gin.Context) {
-	hash := c.Param("hash")
+	contextCopy := c.Copy()
+	hash := contextCopy.Param("hash")
 	manager := rtfs_cluster.Initialize()
 	// decode the hash
 	contentIdentifier := manager.DecodeHashString(hash)
 	// pin the hash to the cluster, using -1 for replication factor, indicating to pin EVERYWHERE in the cluster
-	manager.Client.Pin(contentIdentifier, -1, -1, hash)
+	go func() {
+		manager.Client.Pin(contentIdentifier, -1, -1, hash)
+	}()
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
 
