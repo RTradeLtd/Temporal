@@ -27,10 +27,10 @@ func NewUserManager(db *gorm.DB) *UserManager {
 
 func (um *UserManager) FindByAddress(address string) *User {
 	u := User{}
-
-	um.DB.Find(&u).Where("eth_address = ?", address)
+	um.DB.Where("eth_address = ?", address).Find(&u)
 	fmt.Println(u)
 	if u.CreatedAt == nilTime {
+		fmt.Print("invalid record")
 		um.createIfNotFound(address)
 	}
 	return &u
