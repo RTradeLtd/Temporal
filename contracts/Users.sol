@@ -20,6 +20,9 @@ contract Users is UsersAdministration, Utils {
     using SafeMath for uint256;
 
     ERC20I public rtcI = ERC20I(address(0));
+    address public hotWallet;
+    address public paymentContractAddress;
+    address[] public uploaders;
 
     enum UserStateEnum { nil, registered, disabled }
 
@@ -57,11 +60,34 @@ contract Users is UsersAdministration, Utils {
         _;
     }
 
+    modifier validLockedEthBalance(address _uploaderAddress, uint256 _amount) {
+        require(users[_uploaderAddress].lockedEthBalance >= _amount);
+        _;
+    }
+
     modifier validAvailableRtcBalance(address _uploaderAddress, uint256 _amount) {
         require(users[_uploaderAddress].availableRtcBalance >= _amount);
         _;
     }
 
+    modifier validLockedRtcBalance(address _uploaderAddress, uint256 _amount) {
+        require(users[_uploaderAddress].lockedRtcBalance >= _amount);
+        _;
+    }
+
+    function paymentWithdrawEthForUploader(
+        address _uploaderAddress,
+        uint256 _amount)
+        public
+        isRegistered(_uploaderAddress)
+        validLockedEthBalance(_uploaderAddress, _amount)
+        greaterThanZeroU(_amount)
+        returns (bool)
+    {
+        hotWallet.transfer(_amount);
+        // placeholder
+        return true;
+    }
     
     function registerUser()
         public
@@ -70,6 +96,7 @@ contract Users is UsersAdministration, Utils {
     {
         users[msg.sender].state = UserStateEnum.registered;
         users[msg.sender].uploaderAddress = msg.sender;
+        uploaders.push(msg.sender);
         emit UserRegistered(msg.sender);
         return true;
     }
