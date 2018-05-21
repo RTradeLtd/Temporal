@@ -10,6 +10,8 @@ import (
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
+
+	"github.com/aviddiviner/gin-limit"
 	"github.com/dvwright/xss-mw"
 	gocid "github.com/ipfs/go-cid"
 
@@ -35,6 +37,7 @@ func Setup() *gin.Engine {
 	roll.Environment = "development"
 	r := gin.Default()
 	r.Use(xssMdlwr.RemoveXss())
+	r.Use(limit.MaxAllowed(20)) // limit to 20 con-current connections
 	// create gin middleware instance for prom
 	p := ginprometheus.NewPrometheus("gin")
 	// set the address for prometheus to collect metrics
