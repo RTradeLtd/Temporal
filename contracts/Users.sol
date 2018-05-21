@@ -8,145 +8,100 @@ interface ERC20I {
     function transfer(address _recipient, uint256 _amount) external returns (bool);
 }
 
-contract Users  is UsersAdministration {
+
+/**
+    Current Limitations:
+        Locked balance can't be unlocked, it can't only be spent (this will change)
+*/
+
+contract Users is UsersAdministration {
+
     using SafeMath for uint256;
 
-    ERC20I public rtI = ERC20I(address(0));
+    enum UserStateEnum { nil, registered, disabled }
 
     struct UserStruct {
-        address ethAddress;
-        uint256 availableBalance;
-        uint256 lockedBalance;
-        bytes32[] uploadsArray;
-        mapping (bytes32 => bool) uploads;
-        bool registered;
-        bool lockedForWithdrawal;
+        address uploaderAddress;
+        uint256 availableEthBalance;
+        uint256 availableRtcBalance;
+        uint256 lockedEthBalance;
+        uint256 lockedRtcBalance;
+        UserStateEnum state;
     }
 
     mapping (address => UserStruct) public users;
 
-    event UserLockedFunds(address indexed _user, uint256 _amount);
-    event FundsDeposited(address indexed _depositer, uint256 _amount);
-    event UploaderRegistered(address indexed _uploaderAddress);
-    event PaymentContractLockedFunds(address indexed _user, uint256 _amount);
+    event UserRegistered(address indexed _uploader);
+    event EthDeposited(address indexed _uploader, uint256 _amount);
+    event EthWithdrawn(address indexed _uploader, uint256 _amount);
+    event EthLocked(address indexed _uploader, uint256 _amount);
 
-    modifier isLockedForWithdrawal(address _user) {
-        require(users[_user].lockedForWithdrawal);
+    modifier nonRegisteredUser(address _uploaderAddress) {
+        require(users[_uploaderAddress].state == UserStateEnum.nil);
         _;
     }
 
-    modifier notLockedForWithdrawal(address _user) {
-        require(!users[_user].lockedForWithdrawal);
+    modifier isRegistered(address _uploaderAddress) {
+        require(users[_uploaderAddress].state == UserStateEnum.registered);
         _;
     }
 
-    modifier isRegistered(address _addr) {
-        require(users[_addr].registered);
+    modifier validAvailableEthBalance(address _uploaderAddress, uint256 _amount) {
+        require(users[_uploaderAddress].availableEthBalance >= _amount);
         _;
     }
-
-    modifier notRegistered(address _addr) {
-        require(!users[_addr].registered);
-        _;
-    }
-
-    function registerUploader(
-        address _uploader)
-        public
-        notRegistered(_uploader)
-        onlyAdmin(msg.sender)
-        returns (bool)
-    {
-        users[_uploader].registered = true;
-        emit UploaderRegistered(_uploader);
-        return true;
-    }
-
-
-    function depositFunds(
-        uint256 _amount)
-        public
-        isRegistered(msg.sender)
-        returns (bool)
-    {
-        users[msg.sender].availableBalance = _amount;
-        emit FundsDeposited(msg.sender, _amount);
-        require(rtI.transferFrom(msg.sender, address(this), _amount));
-        return true;
-    }
-
-    function userLockFunds(
-        uint256 _amount)
-        public
-        isRegistered(msg.sender)
-        returns (bool)
-    {
-        require(users[msg.sender].availableBalance >= _amount);
-        users[msg.sender].availableBalance = users[msg.sender].availableBalance.sub(_amount);
-        users[msg.sender].lockedBalance = users[msg.sender].lockedBalance.add(_amount);
-        emit UserLockedFunds(msg.sender, _amount);
-        return true;
-    }
-
-
-    function paymentLockFunds(
-        address _user,
-        uint256 _amount)
-        public
-        notLockedForWithdrawal(_user)
-        returns (bool)
-    {
-        // placeholder check, will need to be the payment channelcontract
-        require(msg.sender == address(0));
-        require(users[_user].availableBalance >= _amount);
-        users[_user].availableBalance = users[_user].availableBalance.sub(_amount);
-        users[_user].lockedBalance = users[_user].lockedBalance.add(_amount);
-        emit PaymentContractLockedFunds(_user, _amount);
-        return true;
-    }
-
     
-
-    function withdrawLockedFundsForPayment(
-        address _user,
-        uint256 _amount)
+    function registerUser()
         public
-        onlyAdmin(msg.sender)
+        nonRegisteredUser(msg.sender)
         returns (bool)
     {
-        require(users[_user].lockedBalance >= _amount);
-        uint256 remainingAmount = users[_user].lockedBalance.sub(_amount);
-        users[_user].lockedBalance = remainingAmount;
-        require(rtI.transfer(msg.sender, _amount));
+        users[msg.sender].state = UserStateEnum.registered;
+        users[msg.sender].uploaderAddress = msg.sender;
+        emit UserRegistered(msg.sender);
         return true;
     }
 
-    function withdrawAvailableFunds()
+
+    function depositEther()
         public
+        payable
         isRegistered(msg.sender)
         returns (bool)
     {
-        uint256 deposit = users[msg.sender].availableBalance;
-        users[msg.sender].availableBalance = 0;
-        require(rtI.transfer(msg.sender, deposit));
+        require(msg.value > 0);
+        users[msg.sender].availableEthBalance = users[msg.sender].availableEthBalance.add(msg.value);
+        emit EthDeposited(msg.sender, msg.value);
         return true;
     }
 
-    function getLockedBalance(
-        address _user)
+    function withdrawFromAvailableBalance(
+        uint256 _amount)
         public
-        view
-        returns (uint256)
+        isRegistered(msg.sender)
+        validAvailableEthBalance(msg.sender, _amount)
+        returns (bool)
     {
-        return users[_user].lockedBalance;
+        uint256 remaining = users[msg.sender].availableEthBalance.sub(_amount);
+        users[msg.sender].availableEthBalance = remaining;
+        emit EthWithdrawn(msg.sender, _amount);
+        msg.sender.transfer(remaining);
+        return true;
     }
 
-    function getAvailableBalance(
-        address _user)
+    function lockPortionOfAvailableEthBalance(
+        uint256 _amount)
         public
-        view
-        returns (uint256)
+        isRegistered(msg.sender)
+        validAvailableEthBalance(msg.sender, _amount)
+        returns (bool)
     {
-        return users[_user].availableBalance;
+        uint256 remaining = users[msg.sender].availableEthBalance.sub(_amount);
+        users[msg.sender].availableEthBalance = remaining;
+        users[msg.sender].lockedEthBalance = users[msg.sender].lockedEthBalance.add(_amount);
+        emit EthLocked(msg.sender, _amount);
+        return true;
     }
+
+
 }
