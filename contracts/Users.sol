@@ -1,6 +1,7 @@
 pragma solidity 0.4.23;
 
 import "./Modules/UsersAdministration.sol";
+import "./Modules/Utils.sol";
 import "./Math/SafeMath.sol";
 
 interface ERC20I {
@@ -14,9 +15,11 @@ interface ERC20I {
         Locked balance can't be unlocked, it can't only be spent (this will change)
 */
 
-contract Users is UsersAdministration {
+contract Users is UsersAdministration, Utils {
 
     using SafeMath for uint256;
+
+    ERC20I public rtcI = ERC20I(address(0));
 
     enum UserStateEnum { nil, registered, disabled }
 
@@ -32,6 +35,9 @@ contract Users is UsersAdministration {
     mapping (address => UserStruct) public users;
 
     event UserRegistered(address indexed _uploader);
+    event RtcDeposited(address indexed _uploader, uint256 _amount);
+    event RtcLocked(address indexed _uploader, uint256 _amount);
+    event RtcWithdrawn(address indexed _uploader, uint256 _amount);
     event EthDeposited(address indexed _uploader, uint256 _amount);
     event EthWithdrawn(address indexed _uploader, uint256 _amount);
     event EthLocked(address indexed _uploader, uint256 _amount);
@@ -50,6 +56,12 @@ contract Users is UsersAdministration {
         require(users[_uploaderAddress].availableEthBalance >= _amount);
         _;
     }
+
+    modifier validAvailableRtcBalance(address _uploaderAddress, uint256 _amount) {
+        require(users[_uploaderAddress].availableRtcBalance >= _amount);
+        _;
+    }
+
     
     function registerUser()
         public
@@ -67,19 +79,20 @@ contract Users is UsersAdministration {
         public
         payable
         isRegistered(msg.sender)
+        greaterThanZeroU(msg.value)
         returns (bool)
     {
-        require(msg.value > 0);
         users[msg.sender].availableEthBalance = users[msg.sender].availableEthBalance.add(msg.value);
         emit EthDeposited(msg.sender, msg.value);
         return true;
     }
 
-    function withdrawFromAvailableBalance(
+    function withdrawFromAvailableEthBalance(
         uint256 _amount)
         public
         isRegistered(msg.sender)
         validAvailableEthBalance(msg.sender, _amount)
+        greaterThanZeroU(_amount)
         returns (bool)
     {
         uint256 remaining = users[msg.sender].availableEthBalance.sub(_amount);
@@ -94,6 +107,7 @@ contract Users is UsersAdministration {
         public
         isRegistered(msg.sender)
         validAvailableEthBalance(msg.sender, _amount)
+        greaterThanZeroU(_amount)
         returns (bool)
     {
         uint256 remaining = users[msg.sender].availableEthBalance.sub(_amount);
@@ -103,5 +117,46 @@ contract Users is UsersAdministration {
         return true;
     }
 
+    function depositRtc(
+        uint256 _amount)
+        public
+        isRegistered(msg.sender)
+        greaterThanZeroU(_amount)
+        returns (bool)
+    {
+        users[msg.sender].availableRtcBalance = users[msg.sender].availableRtcBalance.add(_amount);
+        emit RtcDeposited(msg.sender, _amount);
+        require(rtcI.transferFrom(msg.sender, address(this), _amount));
+        return true;
+    }
 
+    function lockPortionOfAvailableRtcBalance(
+        uint256 _amount)
+        public
+        isRegistered(msg.sender)
+        greaterThanZeroU(_amount)
+        validAvailableRtcBalance(msg.sender, _amount)
+        returns (bool)
+    {
+        uint256 remaining = users[msg.sender].availableRtcBalance.sub(_amount);
+        users[msg.sender].availableRtcBalance = remaining;
+        users[msg.sender].lockedRtcBalance = users[msg.sender].lockedRtcBalance.add(_amount);
+        emit RtcLocked(msg.sender, _amount);
+        return true;
+    }
+
+    function withdrawFromAvailableRtcBalance(
+        uint256 _amount)
+        public
+        isRegistered(msg.sender)
+        greaterThanZeroU(_amount)
+        validAvailableRtcBalance(msg.sender, _amount)
+        returns (bool)
+    {
+        uint256 remaining = users[msg.sender].availableRtcBalance.sub(_amount);
+        users[msg.sender].availableRtcBalance = remaining;
+        emit RtcWithdrawn(msg.sender, _amount);
+        require(rtcI.transfer(msg.sender, _amount));
+        return true;
+    }
 }
