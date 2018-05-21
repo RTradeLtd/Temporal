@@ -28,6 +28,19 @@ var xssMdlwr xss.XssMw
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
 func Setup() *gin.Engine {
+
+	adminUser := os.Getenv("ADMIN_USER")
+	adminPass := os.Getenv("ADMIN_PASS")
+
+	if adminUser == "" {
+		fmt.Println("ADMIN_USER env var not set")
+		os.Exit(1)
+	}
+	if adminPass == "" {
+		fmt.Println("ADMIN_PASS env var not set")
+		os.Exit(1)
+	}
+
 	// we use rollbar for logging errors
 	token := os.Getenv("ROLLBAR_TOKEN")
 	if token == "" {
@@ -45,24 +58,12 @@ func Setup() *gin.Engine {
 	// load in prom to gin
 	p.Use(r)
 	r.Use(rollbar.Recovery(false))
-	setupRoutes(r)
+	setupRoutes(r, adminUser, adminPass)
 	return r
 }
 
 // setupRoutes is used to setup all of our api routes
-func setupRoutes(g *gin.Engine) {
-
-	adminUser := os.Getenv("ADMIN_USER")
-	adminPass := os.Getenv("ADMIN_PASS")
-
-	if adminUser == "" {
-		fmt.Println("ADMIN_USER env var not set")
-		os.Exit(1)
-	}
-	if adminPass == "" {
-		fmt.Println("ADMIN_PASS env var not set")
-		os.Exit(1)
-	}
+func setupRoutes(g *gin.Engine, adminUser string, adminPass string) {
 
 	// PROTECTED ROUTES -- BEGIN
 	ipfsProtected := g.Group("/api/v1/ipfs", gin.BasicAuth(gin.Accounts{adminUser: adminPass}))
