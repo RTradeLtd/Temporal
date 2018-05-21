@@ -51,8 +51,10 @@ func Setup() *gin.Engine {
 
 // setupRoutes is used to setup all of our api routes
 func setupRoutes(g *gin.Engine) {
+
 	adminUser := os.Getenv("ADMIN_USER")
 	adminPass := os.Getenv("ADMIN_PASS")
+
 	if adminUser == "" {
 		fmt.Println("ADMIN_USER env var not set")
 		os.Exit(1)
@@ -61,30 +63,42 @@ func setupRoutes(g *gin.Engine) {
 		fmt.Println("ADMIN_PASS env var not set")
 		os.Exit(1)
 	}
+
+	// PROTECTED ROUTES -- BEGIN
 	ipfsProtected := g.Group("/api/v1/ipfs", gin.BasicAuth(gin.Accounts{adminUser: adminPass}))
 	ipfsProtected.POST("/pin/:hash", pinHashLocally)
 	ipfsProtected.POST("/add-file", addFileLocally)
 	ipfsProtected.DELETE("/remove-pin/:hash", removePinFromLocalHost)
-
 	clusterProtected := g.Group("/api/v1/ipfs-cluster")
 	clusterProtected.POST("/pin/:hash", pinHashToCluster)
 	clusterProtected.POST("/sync-errors-local", syncClusterErrorsLocally)
 	clusterProtected.DELETE("/remove-pin/:hash", removePinFromCluster)
-
 	databaseProtected := g.Group("/api/v1/database")
 	databaseProtected.DELETE("/api/v1/database/garbage-collect/test", runTestGarbageCollection)
+	// PROTECTED ROUTES -- END
 
+	// IPFS ROUTES [POST] -- BEGIN
 	g.POST("/api/v1/ipfs/pubsub/publish/:topic", ipfsPubSubPublish)
 	g.POST("/api/v1/ipfs/pubsub/publish-test/:topic", ipfsPubSubTest)
+	// IPFS ROUTES [POST] -- END
+
+	// IPFS ROUTES [GET] -- BEGIN
 	g.GET("/api/v1/ipfs/pubsub/consume/:topic", ipfsPubSubConsume)
+	g.GET("/api/v1/ipfs/pins", getLocalPins)
+	g.GET("/api/v1/ipfs/object-stat/:key", getObjectStatForIpfs)
+	g.GET("/api/v1/ipfs/check-for-pin/:hash", checkLocalNodeForPin)
+	// IPFS ROUTES [GET] -- END
+
+	// IPFS CLUSTER ROUTES [GET] -- BEGIN
 	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", getLocalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", getGlobalStatusForClusterPin)
 	g.GET("/api/v1/ipfs-cluster/status-local", fetchLocalClusterStatus)
-	g.GET("/api/v1/ipfs/pins", getLocalPins)
+	// IPFS CLUSTER ROUTES [GET] -- END
+
+	// DATABASE ROUTES [GET] -- BEGIN
 	g.GET("/api/v1/database/uploads", getUploadsFromDatabase)
 	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
-	g.GET("/api/v1/ipfs/object-stat/:key", getObjectStatForIpfs)
-	g.GET("/api/v1/ipfs/check-for-pin/:hash", checkLocalNodeForPin)
+	// DATABASE ROUTES [GET] -- END
 }
 
 // pinHashLocally is used to pin a hash to the local ipfs node
