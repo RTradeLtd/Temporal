@@ -2,41 +2,54 @@ pragma solidity 0.4.23;
 
 /**
     This contract is used to act as a central, immmutable record of the files stored in our system, allowing independent audits of our data storage
+
+current limitations:
+    date calculate will be off, this is temporarily.
+        when removing files from our system we will infer to an internal record
+        this will be changed in subsequent releases
 */
+
+import "./Math/SafeMath.sol";
 
 contract FileRepository {
 
+    using SafeMath for uint256;
 
-    /*
-        Whenever a file is uploaded, the release date will be checked, if the  processing
-        pin request will persist longer than the current one, update release date
-    */
-    struct FileUpload {
-        bytes32 encryptedIpfsHash; // the actual content hash of the file, if a directory it will be the parent directory hash
-        uint256 releaseDate; 
+    address public paymentProcessor;
+
+    struct CidStruct{
+        bytes32 hashedCID;
+        uint256 numberOfTimesUploaded;
+        uint256 removalDate;
         mapping (address => bool) uploaders;
+        address[] uploaderArray;
     }
 
-    mapping (bytes32 => FileUpload) public uploads;
-    
+    mapping (bytes32 => CidStruct) public cids;
+
     modifier onlyPaymentProcessor() {
-        require(msg.sender == address(0)); // placeholder
+        require(msg.sender == paymentProcessor);
         _;
     }
 
-    function addUpload(
+    function addUploaderForCid(
         address _uploader,
-        bytes32 _encryptedIpfsHash,
-        uint256 _releaseDate)
+        bytes32 _hashedCID,
+        uint256 _retentionPeriodInMonths)
         public
         onlyPaymentProcessor
         returns (bool)
     {
-        uploads[keccak256(_encryptedIpfsHash)].uploaders[_uploader] = true;
-        if (uploads[keccak256(_encryptedIpfsHash)].releaseDate < _releaseDate) {
-            uploads[keccak256(_encryptedIpfsHash)].releaseDate = _releaseDate;
+        uint256 numDays = _retentionPeriodInMonths.mul(30);
+        uint256 newRemovalDate = now.add((numDays.mul(1 days)));
+        if (newRemovalDate > cids[_hashedCID].removalDate) {
+            cids[_hashedCID].removalDate = newRemovalDate;
         }
-        // event placeholder
+        if (!cids[_hashedCID].uploaders[_uploader]) {
+            cids[_hashedCID].uploaders[_uploader] = true;
+            cids[_hashedCID].uploaderArray.push(_uploader);
+        }
+        cids[_hashedCID].numberOfTimesUploaded = cids[_hashedCID].numberOfTimesUploaded.add(1);
         return true;
     }
 }

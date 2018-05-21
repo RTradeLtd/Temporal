@@ -15,6 +15,9 @@ interface UserInterface {
     function paymentProcessorWithdrawEthForUploader(address _uploaderAddress, uint256 _amount, bytes32 _hashedCID) external returns (bool);
 }
 
+interface FilesInterface {
+        function addUploaderForCid(address _uploader, bytes32 _hashedCID, uint256 _retentionPeriodInMonths) external returns (bool);
+}
 contract Payment is PaymentAdministration, Utils {
 
     using SafeMath for uint256;
@@ -22,6 +25,7 @@ contract Payment is PaymentAdministration, Utils {
     bytes private prefix = "\x19Ethereum Signed Message:\n32";
 
     UserInterface public utI;
+    FilesInterface public fI;
 
     enum PaymentState{ nil, pending, paid }
     enum PaymentMethod{ RTC, ETH }
@@ -107,6 +111,7 @@ contract Payment is PaymentAdministration, Utils {
     {
         payments[_paymentID].state = PaymentState.paid;
         emit EthPaymentDeposited(msg.sender, _paymentID, msg.value);
+        require(fI.addUploaderForCid(msg.sender, payments[_paymentID].hashedCID, payments[_paymentID].retentionPeriodInMonths));
         return true;
     }
 
