@@ -235,25 +235,32 @@ func ipfsPubSubTest(c *gin.Context) {
 }
 
 func ipfsPubSubConsume(c *gin.Context) {
-	topic := c.Param("topic")
-	manager := rtfs.Initialize("")
-	manager.SubscribeToPubSubTopic(topic)
-	manager.ConsumeSubscription(manager.PubSub)
+	contextCopy := c.Copy()
+	topic := contextCopy.Param("topic")
+
+	go func() {
+		manager := rtfs.Initialize("")
+		manager.SubscribeToPubSubTopic(topic)
+		manager.ConsumeSubscription(manager.PubSub)
+	}()
+
+	c.JSON(http.StatusOK, gin.H{"status": "consuming messages in background"})
 }
 
 // removePinFromLocalHost is used to remove a pin from the ipfs instance
 // TODO: fully implement
 func removePinFromLocalHost(c *gin.Context) {
+	contextCopy := c.Copy()
 	// fetch hash param
-	hash := c.Param("hash")
-	// initialise a connetion to the local ipfs node
-	manager := rtfs.Initialize("")
-	// remove the file from the local ipfs state
-	err := manager.Shell.Unpin(hash)
-	if err != nil {
-		c.Error(err)
-		return
-	}
+	hash := contextCopy.Param("hash")
+
+	go func() {
+		// initialise a connetion to the local ipfs node
+		manager := rtfs.Initialize("")
+		// remove the file from the local ipfs state
+		// TODO: implement some kind of error handling and notification
+		manager.Shell.Unpin(hash)
+	}()
 	// TODO:
 	// change to send a message to the cluster to depin
 	qm, err := queue.Initialize(queue.IpfsQueue)
@@ -261,13 +268,15 @@ func removePinFromLocalHost(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	// TODO:
+	// add in appropriate rabbitmq processing to delete from database
 	qm.PublishMessage(hash)
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
 // removePinFromCluster is used to remove a pin from the cluster global state
 // this will mean that all nodes in the cluster will no longer track the pin
-// TODO: fully implement
+// TODO: fully implement, add in goroutines
 func removePinFromCluster(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs_cluster.Initialize()
