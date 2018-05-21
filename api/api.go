@@ -10,6 +10,7 @@ import (
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
+	"github.com/dvwright/xss-mw"
 	gocid "github.com/ipfs/go-cid"
 
 	"github.com/RTradeLtd/Temporal/api/rtfs"
@@ -19,6 +20,8 @@ import (
 	"github.com/stvp/roll"
 	"github.com/zsais/go-gin-prometheus"
 )
+
+var xssMdlwr xss.XssMw
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
@@ -31,6 +34,7 @@ func Setup() *gin.Engine {
 	roll.Token = token
 	roll.Environment = "development"
 	r := gin.Default()
+	r.Use(xssMdlwr.RemoveXss())
 	// create gin middleware instance for prom
 	p := ginprometheus.NewPrometheus("gin")
 	// set the address for prometheus to collect metrics
