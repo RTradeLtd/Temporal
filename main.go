@@ -75,8 +75,9 @@ func main() {
 	case "lookup-address":
 		db := database.OpenDBConnection()
 		um := models.NewUserManager(db)
-		mdl := um.FindByAddress("0xb459fe0A90e70dBAa060B5537db9d5bd58C22e88")
+		mdl := um.FindByAddress("0xbF43d80dA01332b28cEE39644E8e08AD02a289F5")
 		fmt.Println(mdl)
+		db.Close()
 	default:
 		fmt.Println("noop")
 	}

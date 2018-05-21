@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -9,7 +8,7 @@ import (
 
 type User struct {
 	gorm.Model
-	EthAddress string   `gorm:"type:varchar(255);"`
+	EthAddress string   `gorm:"type:varchar(255);unique"`
 	Uploads    []Upload `gorm:"many2many:user_uploads;"`
 }
 
@@ -28,9 +27,7 @@ func NewUserManager(db *gorm.DB) *UserManager {
 func (um *UserManager) FindByAddress(address string) *User {
 	u := User{}
 	um.DB.Where("eth_address = ?", address).Find(&u)
-	fmt.Println(u)
 	if u.CreatedAt == nilTime {
-		fmt.Print("invalid record")
 		um.createIfNotFound(address)
 	}
 	return &u

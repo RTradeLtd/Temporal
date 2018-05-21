@@ -138,6 +138,9 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					upload.HoldTimeInMonths = dpa.HoldTimeInMonths
 					upload.Type = "pin"
 					upload.UploadAddress = dpa.UploaderAddress
+					upload.Users = []models.User{
+						models.User{EthAddress: dpa.UploaderAddress},
+					}
 					// get current time
 					currTime := time.Now()
 					// get the hold time from in64 and convert to int
@@ -191,6 +194,9 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						upload.HoldTimeInMonths = dfa.HoldTimeInMonths
 						upload.Type = "file"
 						upload.UploadAddress = dfa.UploaderAddress
+						upload.Users = []models.User{
+							models.User{EthAddress: dfa.UploaderAddress},
+						}
 						upload.GarbageCollectDate = gcd
 						lastUpload := models.Upload{
 							Hash: dfa.Hash,
