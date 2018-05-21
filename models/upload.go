@@ -13,6 +13,7 @@ type Upload struct {
 	HoldTimeInMonths   int64  `gorm:"type:integer;not null;"`
 	UploadAddress      string `gorm:"type:varchar(255);not null;"`
 	GarbageCollectDate time.Time
+	Users              []User `gorm:"many2many:user_uploads;"`
 }
 
 const dev = true
