@@ -1,6 +1,7 @@
 pragma solidity 0.4.23;
 
 import "./Modules/UsersAdministration.sol";
+import "./Modules/Utils.sol";
 import "./Math/SafeMath.sol";
 
 interface ERC20I {
@@ -8,145 +9,138 @@ interface ERC20I {
     function transfer(address _recipient, uint256 _amount) external returns (bool);
 }
 
-contract Users  is UsersAdministration {
+
+/**
+    Current Limitations:
+        Locked balance can't be unlocked, it can't only be spent (this will change)
+*/
+
+contract Users is UsersAdministration, Utils {
+
     using SafeMath for uint256;
 
-    ERC20I public rtI = ERC20I(address(0));
+    ERC20I public rtcI = ERC20I(address(0));
+    address public hotWallet;
+    address public paymentProcessorAddress;
+    address[] public uploaders;
+
+    enum UserStateEnum { nil, registered, disabled }
 
     struct UserStruct {
-        address ethAddress;
-        uint256 availableBalance;
-        uint256 lockedBalance;
-        bytes32[] uploadsArray;
-        mapping (bytes32 => bool) uploads;
-        bool registered;
-        bool lockedForWithdrawal;
+        address uploaderAddress;
+        uint256 availableEthBalance;
+        uint256 availableRtcBalance;
+        UserStateEnum state;
     }
 
     mapping (address => UserStruct) public users;
 
-    event UserLockedFunds(address indexed _user, uint256 _amount);
-    event FundsDeposited(address indexed _depositer, uint256 _amount);
-    event UploaderRegistered(address indexed _uploaderAddress);
-    event PaymentContractLockedFunds(address indexed _user, uint256 _amount);
+    event UserRegistered(address indexed _uploader);
 
-    modifier isLockedForWithdrawal(address _user) {
-        require(users[_user].lockedForWithdrawal);
+    event RtcDeposited(address indexed _uploader, uint256 _amount);
+    event RtcPaymentWithdrawnForUploader(address indexed _uploader, uint256 _amount, bytes32 _hashedCID);
+
+    event EthDeposited(address indexed _uploader, uint256 _amount);
+    event EthPaymentWithdrawnForUpload(address indexed _uploader, uint256 _amount, bytes32 _hashedCID);
+
+    modifier nonRegisteredUser(address _uploaderAddress) {
+        require(users[_uploaderAddress].state == UserStateEnum.nil);
         _;
     }
 
-    modifier notLockedForWithdrawal(address _user) {
-        require(!users[_user].lockedForWithdrawal);
+    modifier onlyPaymentProcessor(address _sender) {
+        require(_sender == paymentProcessorAddress);
         _;
     }
 
-    modifier isRegistered(address _addr) {
-        require(users[_addr].registered);
+    modifier isRegistered(address _uploaderAddress) {
+        require(users[_uploaderAddress].state == UserStateEnum.registered);
         _;
     }
 
-    modifier notRegistered(address _addr) {
-        require(!users[_addr].registered);
+    modifier validAvailableEthBalance(address _uploaderAddress, uint256 _amount) {
+        require(users[_uploaderAddress].availableEthBalance >= _amount);
         _;
     }
 
-    function registerUploader(
-        address _uploader)
+    modifier validAvailableRtcBalance(address _uploaderAddress, uint256 _amount) {
+        require(users[_uploaderAddress].availableRtcBalance >= _amount);
+        _;
+    }
+
+    function paymentProcessorWithdrawRtcForUploader(
+        address _uploaderAddress,
+        uint256 _amount,
+        bytes32 _hashedCID)
         public
-        notRegistered(_uploader)
-        onlyAdmin(msg.sender)
+        isRegistered(_uploaderAddress)
+        greaterThanZeroU(_amount)
+        onlyPaymentProcessor(msg.sender)
+        validAvailableRtcBalance(_uploaderAddress, _amount)
         returns (bool)
     {
-        users[_uploader].registered = true;
-        emit UploaderRegistered(_uploader);
+        uint256 remaining = users[_uploaderAddress].availableRtcBalance.sub(_amount);
+        users[_uploaderAddress].availableRtcBalance = remaining;
+        emit RtcPaymentWithdrawnForUploader(_uploaderAddress, _amount, _hashedCID);
+        require(rtcI.transfer(hotWallet, _amount));
         return true;
     }
 
-
-    function depositFunds(
-        uint256 _amount)
+    function paymentProcessorWithdrawEthForUploader(
+        address _uploaderAddress,
+        uint256 _amount,
+        bytes32 _hashedCID)
         public
-        isRegistered(msg.sender)
+        isRegistered(_uploaderAddress)
+        greaterThanZeroU(_amount)
+        onlyPaymentProcessor(msg.sender)
+        validAvailableEthBalance(_uploaderAddress, _amount)
         returns (bool)
     {
-        users[msg.sender].availableBalance = _amount;
-        emit FundsDeposited(msg.sender, _amount);
-        require(rtI.transferFrom(msg.sender, address(this), _amount));
+        uint256 remaining = users[_uploaderAddress].availableEthBalance.sub(_amount);
+        users[_uploaderAddress].availableEthBalance = remaining;
+        emit EthPaymentWithdrawnForUpload(_uploaderAddress, _amount, _hashedCID);
+        hotWallet.transfer(_amount);
         return true;
     }
-
-    function userLockFunds(
-        uint256 _amount)
-        public
-        isRegistered(msg.sender)
-        returns (bool)
-    {
-        require(users[msg.sender].availableBalance >= _amount);
-        users[msg.sender].availableBalance = users[msg.sender].availableBalance.sub(_amount);
-        users[msg.sender].lockedBalance = users[msg.sender].lockedBalance.add(_amount);
-        emit UserLockedFunds(msg.sender, _amount);
-        return true;
-    }
-
-
-    function paymentLockFunds(
-        address _user,
-        uint256 _amount)
-        public
-        notLockedForWithdrawal(_user)
-        returns (bool)
-    {
-        // placeholder check, will need to be the payment channelcontract
-        require(msg.sender == address(0));
-        require(users[_user].availableBalance >= _amount);
-        users[_user].availableBalance = users[_user].availableBalance.sub(_amount);
-        users[_user].lockedBalance = users[_user].lockedBalance.add(_amount);
-        emit PaymentContractLockedFunds(_user, _amount);
-        return true;
-    }
-
     
+    function registerUser()
+        public
+        nonRegisteredUser(msg.sender)
+        returns (bool)
+    {
+        users[msg.sender].state = UserStateEnum.registered;
+        users[msg.sender].uploaderAddress = msg.sender;
+        uploaders.push(msg.sender);
+        emit UserRegistered(msg.sender);
+        return true;
+    }
 
-    function withdrawLockedFundsForPayment(
-        address _user,
+
+    function depositEther()
+        public
+        payable
+        isRegistered(msg.sender)
+        greaterThanZeroU(msg.value)
+        returns (bool)
+    {
+        users[msg.sender].availableEthBalance = users[msg.sender].availableEthBalance.add(msg.value);
+        emit EthDeposited(msg.sender, msg.value);
+        return true;
+    }
+
+
+    function depositRtc(
         uint256 _amount)
         public
-        onlyAdmin(msg.sender)
-        returns (bool)
-    {
-        require(users[_user].lockedBalance >= _amount);
-        uint256 remainingAmount = users[_user].lockedBalance.sub(_amount);
-        users[_user].lockedBalance = remainingAmount;
-        require(rtI.transfer(msg.sender, _amount));
-        return true;
-    }
-
-    function withdrawAvailableFunds()
-        public
         isRegistered(msg.sender)
+        greaterThanZeroU(_amount)
         returns (bool)
     {
-        uint256 deposit = users[msg.sender].availableBalance;
-        users[msg.sender].availableBalance = 0;
-        require(rtI.transfer(msg.sender, deposit));
+        users[msg.sender].availableRtcBalance = users[msg.sender].availableRtcBalance.add(_amount);
+        emit RtcDeposited(msg.sender, _amount);
+        require(rtcI.transferFrom(msg.sender, address(this), _amount));
         return true;
     }
 
-    function getLockedBalance(
-        address _user)
-        public
-        view
-        returns (uint256)
-    {
-        return users[_user].lockedBalance;
-    }
-
-    function getAvailableBalance(
-        address _user)
-        public
-        view
-        returns (uint256)
-    {
-        return users[_user].availableBalance;
-    }
 }
