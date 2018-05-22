@@ -36,12 +36,11 @@ contract Users is UsersAdministration, Utils {
     mapping (address => UserStruct) public users;
 
     event UserRegistered(address indexed _uploader);
+
     event RtcDeposited(address indexed _uploader, uint256 _amount);
-    event RtcLocked(address indexed _uploader, uint256 _amount);
-    event RtcWithdrawn(address indexed _uploader, uint256 _amount);
+    event RtcPaymentWithdrawnForUploader(address indexed _uploader, uint256 _amount, bytes32 _hashedCID);
+
     event EthDeposited(address indexed _uploader, uint256 _amount);
-    event EthWithdrawn(address indexed _uploader, uint256 _amount);
-    event EthLocked(address indexed _uploader, uint256 _amount);
     event EthPaymentWithdrawnForUpload(address indexed _uploader, uint256 _amount, bytes32 _hashedCID);
 
     modifier nonRegisteredUser(address _uploaderAddress) {
@@ -69,7 +68,24 @@ contract Users is UsersAdministration, Utils {
         _;
     }
 
-    //TODO: fix
+    function paymentProcessorWithdrawRtcForUploader(
+        address _uploaderAddress,
+        uint256 _amount,
+        bytes32 _hashedCID)
+        public
+        isRegistered(_uploaderAddress)
+        greaterThanZeroU(_amount)
+        onlyPaymentProcessor(msg.sender)
+        validAvailableRtcBalance(_uploaderAddress, _amount)
+        returns (bool)
+    {
+        uint256 remaining = users[_uploaderAddress].availableRtcBalance.sub(_amount);
+        users[_uploaderAddress].availableRtcBalance = remaining;
+        emit RtcPaymentWithdrawnForUploader(_uploaderAddress, _amount, _hashedCID);
+        require(rtcI.transfer(hotWallet, _amount));
+        return true;
+    }
+
     function paymentProcessorWithdrawEthForUploader(
         address _uploaderAddress,
         uint256 _amount,

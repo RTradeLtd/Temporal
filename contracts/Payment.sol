@@ -13,6 +13,8 @@ import "./Math/SafeMath.sol";
 
 interface UserInterface {
     function paymentProcessorWithdrawEthForUploader(address _uploaderAddress, uint256 _amount, bytes32 _hashedCID) external returns (bool);
+
+    function paymentProcessorWithdrawRtcForUploader(address _uploaderAddress, uint256 _amount, bytes32 _hashedCID) external returns (bool);
 }
 
 interface FilesInterface {
@@ -24,7 +26,7 @@ contract Payment is PaymentAdministration, Utils {
 
     bytes private prefix = "\x19Ethereum Signed Message:\n32";
 
-    UserInterface public utI;
+    UserInterface public uI;
     FilesInterface public fI;
 
     enum PaymentState{ nil, pending, paid }
@@ -44,7 +46,8 @@ contract Payment is PaymentAdministration, Utils {
     mapping (address => uint256) public numPayments;
 
     event PaymentRegistered(address indexed _uploader, bytes32 _hashedCID, uint256 _retentionPeriodInMonths, uint256 _amount);
-    event EthPaymentDeposited(address indexed _uploader, bytes32 _paymentID, uint256 _amount);
+    event EthPaymentReceived(address indexed _uploader, bytes32 _paymentID, uint256 _amount);
+    event RtcPaymentReceived(address indexed _uploader, bytes32 _paymentID, uint256 _amount);
 
     modifier isUploader(bytes32 _paymentID, address _uploader) {
         require(payments[_paymentID].uploader == _uploader);
@@ -100,19 +103,36 @@ contract Payment is PaymentAdministration, Utils {
     }
 
     function payEthForPaymentID(
-        bytes32 _paymentID)
+        bytes32 _paymentID,
+        uint256 _amount)
         public
-        payable
         isPendingPayment(_paymentID)
         isUploader(_paymentID, msg.sender)
-        validPaymentAmount(_paymentID, msg.value)
+        validPaymentAmount(_paymentID, _amount)
         validPaymentMethod(_paymentID, PaymentMethod.ETH)
         returns (bool)
     {
         payments[_paymentID].state = PaymentState.paid;
-        emit EthPaymentDeposited(msg.sender, _paymentID, msg.value);
+        emit EthPaymentReceived(msg.sender, _paymentID, _amount);
         require(fI.addUploaderForCid(msg.sender, payments[_paymentID].hashedCID, payments[_paymentID].retentionPeriodInMonths));
+        require(uI.paymentProcessorWithdrawEthForUploader(msg.sender, _amount, payments[_paymentID].hashedCID));
         return true;
     }
 
+    function payRtcForPaymentID(
+        bytes32 _paymentID,
+        uint256 _amount)
+        public
+        isPendingPayment(_paymentID)
+        isUploader(_paymentID, msg.sender)
+        validPaymentAmount(_paymentID, _amount)
+        validPaymentMethod(_paymentID, PaymentMethod.RTC)
+        returns (bool)
+    {
+        payments[_paymentID].state = PaymentState.paid;
+        emit RtcPaymentReceived(msg.sender, _paymentID, _amount);
+        require(fI.addUploaderForCid(msg.sender, payments[_paymentID].hashedCID, payments[_paymentID].retentionPeriodInMonths));
+        require(uI.paymentProcessorWithdrawRtcForUploader(msg.sender, _amount, payments[_paymentID].hashedCID));
+        return true;
+    }
 }
