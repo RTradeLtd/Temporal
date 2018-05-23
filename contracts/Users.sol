@@ -36,6 +36,8 @@ contract Users is UsersAdministration, Utils {
 
     mapping (address => UserStruct) public users;
 
+    event PaymentProcessorSet(address _paymentProcessor);
+
     event HotWalletSet(address _wallet);
 
     event RTCInterfaceSet(address _tokenContractAddress);
@@ -169,6 +171,18 @@ contract Users is UsersAdministration, Utils {
     {
         hotWallet = _hotWalletAddress;
         emit HotWalletSet(_hotWalletAddress);
+        return true;
+    }
+
+    function setPaymentProcessorAddress(
+        address _paymentProcessorAddress)
+        public
+        onlyAdmin(msg.sender)
+        nonZeroAddress(_paymentProcessorAddress)
+        returns (bool)
+    {
+        paymentProcessorAddress = _paymentProcessorAddress;
+        emit PaymentProcessorSet(_paymentProcessorAddress);
         return true;
     }
 }
