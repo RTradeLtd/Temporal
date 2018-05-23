@@ -61,14 +61,20 @@ func main() {
 			log.Fatal(err)
 		}
 	case "ipfs-cluster-queue":
-		fmt.Println("initializing ipfs queue")
 		psm, err := ipfsQ.Initialize(rtfs.ClusterPubSubTopic)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
-		fmt.Println("parsing pubsub topics")
 		psm.ParseClusterPinTopic()
+	case "payment-register-queue":
+		qm, err := queue.Initialize(queue.PaymentRegisterQueue)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = qm.ConsumeMessage("")
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "migrate":
 		dbm := database.Initialize()
 		dbm.RunMigrations()
