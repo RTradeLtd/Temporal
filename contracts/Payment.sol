@@ -44,6 +44,7 @@ contract Payment is PaymentAdministration, Utils {
 
     mapping (bytes32 => PaymentStruct) public payments;
     mapping (address => uint256) public numPayments;
+    mapping (address => mapping (uint256 => bytes32)) public paymentIDs;
 
     event FilesContractSet(address _filesContractAddress);
     event UsersContractSet(address _usersContractAddress);
@@ -98,6 +99,8 @@ contract Payment is PaymentAdministration, Utils {
             state: PaymentState.pending,
             method: PaymentMethod(_method)
         });
+        numPayments[_uploader] = numPayments[_uploader].add(1);
+        paymentIDs[_uploader][numPayments[_uploader]] = paymentID;
         emit PaymentRegistered(msg.sender, _hashedCID, _retentionPeriodInMonths, _amount, paymentID);
         return true;
     }

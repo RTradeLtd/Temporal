@@ -6,6 +6,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/bindings/payments"
 	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -39,10 +40,19 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 	if err != nil {
 		return nil, err
 	}
+	numPayments, err := sm.PaymentsContract.NumPayments(&bind.CallOpts{Pending: true}, common.HexToAddress(uploaderAddress))
+	if err != nil {
+		return tx, err
+	}
+	paymentID, err := sm.PaymentsContract.PaymentIDs(&bind.CallOpts{Pending: true}, common.HexToAddress(uploaderAddress), numPayments)
+	if err != nil {
+		return tx, err
+	}
 	pr := queue.PaymentRegister{
 		UploaderAddress: uploaderAddress,
 		CID:             contentHash,
 		HashedCID:       hashedCID.String(),
+		PaymentID:       string(paymentID[:]), // this converts the paymentID byte array to a string
 	}
 	qm, err := queue.Initialize(queue.PaymentRegisterQueue)
 	if err != nil {
