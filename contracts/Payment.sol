@@ -74,7 +74,7 @@ contract Payment is PaymentAdministration, Utils {
         bytes32 _hashedCID,
         uint256 _retentionPeriodInMonths,
         uint256 _amount,
-        uint8   _method)
+        uint8   _method) // 0 = RTC, 1 = ETH
         public
         onlyAdmin(msg.sender)
         greaterThanZeroU(_amount)
@@ -82,6 +82,9 @@ contract Payment is PaymentAdministration, Utils {
         nonZeroAddress(_uploader)
         returns (bool)
     {
+        if (_method > 1 || _method < 0) { // _method can only be 0 or 1
+            revert();
+        }
         bytes32 paymentID = keccak256(_uploader, _hashedCID, _retentionPeriodInMonths, numPayments[_uploader]);
         require(payments[paymentID].state == PaymentState.nil);
         payments[paymentID] = PaymentStruct({
