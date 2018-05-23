@@ -8,7 +8,7 @@ type Payment struct {
 	CID             string `gorm:"type:varchar(255);"`
 	HashedCID       string `gorm:"type:varchar(255);"`
 	PaymentID       string `gorm:"type:varchar(255);"`
-	Paid            string `gorm:"type:boolean;"`
+	Paid            bool   `gorm:"type:boolean;"`
 }
 
 type PaymentManager struct {

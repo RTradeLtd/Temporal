@@ -229,6 +229,28 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					}
 				}
 			}
+		case PaymentRegisterQueue:
+			for d := range msgs {
+				var nullTime time.Time
+				var payment models.Payment
+				pr := PaymentRegister{}
+				err := json.Unmarshal(d.Body, &pr)
+				if err != nil {
+					d.Ack(false)
+					continue
+				}
+				db.First(&payment).Where("payment_id = ?", pr.PaymentID)
+				if payment.CreatedAt == nullTime {
+					d.Ack(false)
+					continue
+				}
+				payment.CID = pr.CID
+				payment.HashedCID = pr.HashedCID
+				payment.PaymentID = pr.PaymentID
+				payment.Paid = false
+				db.Create(&payment)
+				d.Ack(false)
+			}
 		default:
 			log.Fatal("invalid queue name")
 		}
