@@ -33,9 +33,26 @@ contract Users is UsersAdministration, Utils {
         UserStateEnum state;
     }
 
+
+    function setHotWallet(
+        address _hotWalletAddress)
+        public
+        onlyAdmin(msg.sender)
+        nonZeroAddress(_hotWalletAddress)
+        returns (bool)
+    {
+        hotWallet = _hotWalletAddress;
+        emit HotWalletSet(_hotWalletAddress)
+        return true;
+    }
+
     mapping (address => UserStruct) public users;
 
-    event UserRegistered(address indexed _uploader);
+    event HotWalletSet(address _wallet);
+
+    event RTCInterfaceSet(address _tokenContractAddress);
+
+    event UserRegistered(address _uploader);
 
     event RtcDeposited(address indexed _uploader, uint256 _amount);
     event RtcPaymentWithdrawnForUploader(address indexed _uploader, uint256 _amount, bytes32 _hashedCID);
@@ -143,4 +160,14 @@ contract Users is UsersAdministration, Utils {
         return true;
     }
 
+    function setRTCInterface(
+        address _tokenContractAddress)
+        public
+        onlyAdmin(msg.sender)
+        returns (bool)
+    {
+        rtcI = ERC20I(_tokenContractAddress);
+        emit RTCInterfaceSet(_tokenContractAddress);
+        return true;
+    }
 }
