@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 import "./Modules/UsersAdministration.sol";
 import "./Modules/Utils.sol";

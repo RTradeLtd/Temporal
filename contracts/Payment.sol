@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 /**
  Used by a user to pay for a file upload
@@ -45,6 +45,8 @@ contract Payment is PaymentAdministration, Utils {
     mapping (bytes32 => PaymentStruct) public payments;
     mapping (address => uint256) public numPayments;
 
+    event FilesContractSet(address _filesContractAddress);
+    event UsersContractSet(address _usersContractAddress);
     event PaymentRegistered(address indexed _uploader, bytes32 _hashedCID, uint256 _retentionPeriodInMonths, uint256 _amount);
     event EthPaymentReceived(address indexed _uploader, bytes32 _paymentID, uint256 _amount);
     event RtcPaymentReceived(address indexed _uploader, bytes32 _paymentID, uint256 _amount);
@@ -131,6 +133,29 @@ contract Payment is PaymentAdministration, Utils {
         emit RtcPaymentReceived(msg.sender, _paymentID, _amount);
         require(fI.addUploaderForCid(msg.sender, payments[_paymentID].hashedCID, payments[_paymentID].retentionPeriodInMonths));
         require(uI.paymentProcessorWithdrawRtcForUploader(msg.sender, _amount, payments[_paymentID].hashedCID));
+        return true;
+    }
+
+    function setFilesInterface(
+        address _filesContractAddress)
+        public
+        onlyAdmin(msg.sender)
+        nonZeroAddress(_filesContractAddress)
+        returns (bool)
+    {
+        fI = FilesInterface(_filesContractAddress);
+        emit FilesContractSet(_filesContractAddress);
+        return true;
+    }
+
+    function setUsersInterface(
+        address _usersContractAddress)
+        public
+        onlyAdmin(msg.sender)
+        returns (bool)
+    {
+        uI = UserInterface(_usersContractAddress);
+        emit UsersContractSet(_usersContractAddress);
         return true;
     }
 }
