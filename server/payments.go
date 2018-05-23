@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/RTradeLtd/Temporal/bindings/payments"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -21,7 +22,7 @@ func (sm *ServerManager) NewPaymentsContract(address common.Address) error {
 }
 
 // RegisterPaymentForUploader is used to register a payment for the given uploader
-func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress common.Address, contentHash string, retentionPeriodInMonths *big.Int, chargeAmountInWei *big.Int, method uint8) (*types.Transaction, error) {
+func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, contentHash string, retentionPeriodInMonths *big.Int, chargeAmountInWei *big.Int, method uint8) (*types.Transaction, error) {
 	if method > 1 || method < 0 {
 		return nil, errors.New("invalid payment method. 0 = RTC, 1 = ETH")
 	}
@@ -34,9 +35,22 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress common.Addre
 	hashedCID := common.BytesToHash(hashedCIDByte)
 	// convert byte slice to byte array
 	copy(b[:], hashedCID.Bytes()[:32])
-	tx, err := sm.PaymentsContract.RegisterPayment(sm.Auth, uploaderAddress, b, retentionPeriodInMonths, chargeAmountInWei, method)
+	tx, err := sm.PaymentsContract.RegisterPayment(sm.Auth, common.HexToAddress(uploaderAddress), b, retentionPeriodInMonths, chargeAmountInWei, method)
 	if err != nil {
 		return nil, err
+	}
+	pr := queue.PaymentRegister{
+		UploaderAddress: uploaderAddress,
+		CID:             contentHash,
+		HashedCID:       hashedCID.String(),
+	}
+	qm, err := queue.Initialize(queue.PaymentRegisterQueue)
+	if err != nil {
+		return tx, err
+	}
+	err = qm.PublishMessage(pr)
+	if err != nil {
+		return tx, err
 	}
 	return tx, nil
 }

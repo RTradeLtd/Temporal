@@ -16,6 +16,7 @@ var IpfsQueue = "ipfs"
 var IpfsClusterQueue = "ipfs-cluster"
 var DatabaseFileAddQueue = "dfa-queue"
 var DatabasePinAddQueue = "dpa-queue"
+var PaymentRegisterQueue = "payment-register-queue"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
@@ -39,6 +40,15 @@ type DatabasePinAdd struct {
 	Hash             string `json:"hash"`
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 	UploaderAddress  string `json:"uploader_address"`
+}
+
+// PaymentRegister is a struct used when a payment has been regsitered and needs
+// to be added to the database
+type PaymentRegister struct {
+	UploaderAddress string `json:"uploader_address"`
+	CID             string `json:"cid"`
+	HashedCID       string `json:"hash_cid"`
+	PaymentID       string `json:"payment_id"`
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
