@@ -9,13 +9,15 @@ current limitations:
         this will be changed in subsequent releases
 */
 
+import "./Modules/Utils.sol";
 import "./Math/SafeMath.sol";
 
-contract FileRepository {
+contract FileRepository is Utils {
 
     using SafeMath for uint256;
 
     address public paymentProcessor;
+    address public owner;
 
     struct CidStruct{
         bytes32 hashedCID;
@@ -27,9 +29,31 @@ contract FileRepository {
 
     mapping (bytes32 => CidStruct) public cids;
 
+    event PaymentProcessorSet(address _paymentProcessorAddress);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
     modifier onlyPaymentProcessor() {
         require(msg.sender == paymentProcessor);
         _;
+    }
+
+    constructor() public {
+        owner = msg.sender;
+    }
+
+    function setPaymentProcessor(
+        address _paymentProcessorAddress)
+        public
+        onlyOwner
+        returns (bool)
+    {
+        paymentProcessor = _paymentProcessorAddress;
+        emit PaymentProcessorSet(_paymentProcessorAddress);
+        return true;
     }
 
     function addUploaderForCid(

@@ -47,7 +47,7 @@ contract Payment is PaymentAdministration, Utils {
 
     event FilesContractSet(address _filesContractAddress);
     event UsersContractSet(address _usersContractAddress);
-    event PaymentRegistered(address indexed _uploader, bytes32 _hashedCID, uint256 _retentionPeriodInMonths, uint256 _amount);
+    event PaymentRegistered(address indexed _uploader, bytes32 _hashedCID, uint256 _retentionPeriodInMonths, uint256 _amount, bytes32 _paymentID);
     event EthPaymentReceived(address indexed _uploader, bytes32 _paymentID, uint256 _amount);
     event RtcPaymentReceived(address indexed _uploader, bytes32 _paymentID, uint256 _amount);
 
@@ -98,7 +98,7 @@ contract Payment is PaymentAdministration, Utils {
             state: PaymentState.pending,
             method: PaymentMethod(_method)
         });
-        emit PaymentRegistered(msg.sender, _hashedCID, _retentionPeriodInMonths, _amount);
+        emit PaymentRegistered(msg.sender, _hashedCID, _retentionPeriodInMonths, _amount, paymentID);
         return true;
     }
 
