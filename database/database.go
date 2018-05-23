@@ -10,6 +10,7 @@ import (
 
 var uploadObj *models.Upload
 var userObj *models.User
+var paymentObj *models.Payment
 
 type DatabaseManager struct {
 	DB     *gorm.DB
@@ -27,6 +28,7 @@ func Initialize() *DatabaseManager {
 func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(uploadObj)
 	dbm.DB.AutoMigrate(userObj)
+	dbm.DB.AutoMigrate(paymentObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
 
