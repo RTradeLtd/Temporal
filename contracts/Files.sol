@@ -74,6 +74,7 @@ contract FileRepository is Utils {
             cids[_hashedCID].uploaderArray.push(_uploader);
         }
         cids[_hashedCID].numberOfTimesUploaded = cids[_hashedCID].numberOfTimesUploaded.add(1);
+        cids[_hashedCID].hashedCID = _hashedCID;
         return true;
     }
 }
