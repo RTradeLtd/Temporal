@@ -74,19 +74,14 @@ contract Payment is PaymentAdministration, Utils {
         bytes32 _hashedCID,
         uint256 _retentionPeriodInMonths,
         uint256 _amount,
-        bool   _rtc)
+        uint8   _method)
         public
         onlyAdmin(msg.sender)
         greaterThanZeroU(_amount)
         greaterThanZeroU(_retentionPeriodInMonths)
+        nonZeroAddress(_uploader)
         returns (bool)
     {
-        PaymentMethod m;
-        if (_rtc == true) {
-            m = PaymentMethod.RTC;
-        } else {
-            m = PaymentMethod.ETH;
-        }
         bytes32 paymentID = keccak256(_uploader, _hashedCID, _retentionPeriodInMonths, numPayments[_uploader]);
         require(payments[paymentID].state == PaymentState.nil);
         payments[paymentID] = PaymentStruct({
@@ -96,7 +91,7 @@ contract Payment is PaymentAdministration, Utils {
             retentionPeriodInMonths:_retentionPeriodInMonths,
             paymentAmount: _amount,
             state: PaymentState.pending,
-            method: m
+            method: PaymentMethod(_method)
         });
         emit PaymentRegistered(msg.sender, _hashedCID, _retentionPeriodInMonths, _amount);
         return true;

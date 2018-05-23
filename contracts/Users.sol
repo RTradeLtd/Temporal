@@ -34,18 +34,6 @@ contract Users is UsersAdministration, Utils {
     }
 
 
-    function setHotWallet(
-        address _hotWalletAddress)
-        public
-        onlyAdmin(msg.sender)
-        nonZeroAddress(_hotWalletAddress)
-        returns (bool)
-    {
-        hotWallet = _hotWalletAddress;
-        emit HotWalletSet(_hotWalletAddress)
-        return true;
-    }
-
     mapping (address => UserStruct) public users;
 
     event HotWalletSet(address _wallet);
@@ -164,10 +152,23 @@ contract Users is UsersAdministration, Utils {
         address _tokenContractAddress)
         public
         onlyAdmin(msg.sender)
+        nonZeroAddress(_tokenContractAddress)
         returns (bool)
     {
         rtcI = ERC20I(_tokenContractAddress);
         emit RTCInterfaceSet(_tokenContractAddress);
+        return true;
+    }
+
+    function setHotWallet(
+        address _hotWalletAddress)
+        public
+        onlyAdmin(msg.sender)
+        nonZeroAddress(_hotWalletAddress)
+        returns (bool)
+    {
+        hotWallet = _hotWalletAddress;
+        emit HotWalletSet(_hotWalletAddress);
         return true;
     }
 }
