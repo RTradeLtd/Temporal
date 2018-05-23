@@ -1,7 +1,9 @@
 package database
 
 import (
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
@@ -35,7 +37,12 @@ func (dbm *DatabaseManager) RunMigrations() {
 // OpenDBConnection is used to create a database connection
 func OpenDBConnection() *gorm.DB {
 	// we will not disable this in production
-	db, err := gorm.Open("postgres", "host=127.0.0.1 port=5432 user=postgres dbname=temporal password=password123 sslmode=disable")
+	dbPass := os.Getenv("DB_PASS")
+	if dbPass == "" {
+		log.Fatal("DB_PASS environment variable not set")
+	}
+	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5432 user=postgres dbname=temporal password=%s sslmode=disable", dbPass)
+	db, err := gorm.Open("postgres", dbConnURL)
 	if err != nil {
 		log.Fatal(err)
 	}

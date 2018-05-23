@@ -1,17 +1,4 @@
-# Temporal [![Build Status](https://travis-ci.com/RTradeLtd/Temporal.svg?token=gDSF5EBqJK8E2W8NbsUS&branch=master)](https://travis-ci.com/RTradeLtd/Temporal)
-
-
-# NOTE
-
-It was decided to open-source Temporal sooner rather than later, to help receive feedback, constructive criticism, and to create the Temporal that everyone wants to use.
-Until such time as Temporal is released, anything in this repository (docs, readme, code, etc...) is likely to change. 
-
-The repository is loosely formatted, and any issues and notes, project tracking methods, etc... may or may not appear complete, or even tangible/understandable and at some point will change. Soon :P
-
-
-Questions? Send an email to postables@rtradetechnologies.com and I'll reply as soon as I can.
-
-# Temporal
+# Temporal 
 
 Temporal is an enterprise-grade file hosting service backed by IPFS, Swarm, and Ethereum. Initially targeting the public IPFS network, it will be expanded to included Swarm support for the Ethereum mainnet, as well as support for private IPFS networks. Afterwards integration with SIA and STORJ will be done to provide an easy to consume API to interact with those networks.
 
@@ -22,6 +9,7 @@ Storage technologies Temporal will support (this is always under evaluation for 
 * SIA
 * STORJ
 * Filecoin
+
 
 # Goals
 
