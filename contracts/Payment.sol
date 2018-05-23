@@ -29,9 +29,12 @@ contract Payment is PaymentAdministration, Utils {
     UserInterface public uI;
     FilesInterface public fI;
 
+    // PaymentState will keep track of the state of a payment, nil means we havent seen th payment before
     enum PaymentState{ nil, pending, paid }
+    // How payments can be made, RTC or eth
     enum PaymentMethod{ RTC, ETH }
 
+    // This will contain all the information related to a particular payment
     struct PaymentStruct {
         address uploader;
         bytes32 paymentID;
@@ -42,41 +45,59 @@ contract Payment is PaymentAdministration, Utils {
         PaymentMethod method;
     }
 
+    // every payment ID and its associates contents
     mapping (bytes32 => PaymentStruct) public payments;
+    // total number of payments for a user
     mapping (address => uint256) public numPayments;
+    // mapping of total number of payments to payment IDs.
+    // we start at 1 for the uint256 index
+    // when payment number is 2, the index will be 2, and so on
     mapping (address => mapping (uint256 => bytes32)) public paymentIDs;
 
     event FilesContractSet(address _filesContractAddress);
     event UsersContractSet(address _usersContractAddress);
+
+    // this event is fired when a payment is registered
+    // we index the uploader addres so we can easily search evnent topics with their address as another filter
     event PaymentRegistered(
         address indexed _uploader,
         bytes32 _hashedCID,
         uint256 _retentionPeriodInMonths,
-        uint256 _amount, bytes32 _paymentID
+        uint256 _amount,
+        bytes32 _paymentID
     );
+
+    // this event is fired when a payment is received
     event EthPaymentReceived(address indexed _uploader, bytes32 _paymentID, uint256 _amount);
+    // this event is fired when a payment is received
     event RtcPaymentReceived(address indexed _uploader, bytes32 _paymentID, uint256 _amount);
 
+    // checks to see if the caller belogns to hte payment id
     modifier isUploader(bytes32 _paymentID, address _uploader) {
         require(payments[_paymentID].uploader == _uploader);
         _;
     }
 
+    // checks to see whether or not hte payment has been paid
     modifier isPendingPayment(bytes32 _paymentID) {
         require(payments[_paymentID].state == PaymentState.pending);
         _;
     }
 
+    // make sure they are paying enough
     modifier validPaymentAmount(bytes32 _paymentID, uint256 _payment) {
         require(payments[_paymentID].paymentAmount == _payment);
         _;
     }
 
+    // make sure its the right payment method
     modifier validPaymentMethod(bytes32 _paymentID, PaymentMethod _method) {
         require(payments[_paymentID].method == _method);
         _;
     }
 
+    // we will call this function to register their payment with the contract
+    // this will later be changed to use signatures so we dont have to sbumit the payment registration, saving gas
     function registerPayment(
         address _uploader,
         bytes32 _hashedCID,
@@ -93,8 +114,11 @@ contract Payment is PaymentAdministration, Utils {
         if (_method > 1 || _method < 0) { // _method can only be 0 or 1
             revert();
         }
-        bytes32 paymentID = keccak256(_uploader, _hashedCID, _retentionPeriodInMonths, numPayments[_uploader]);
+        // construct the paymetn id
+        bytes32 paymentID = keccak256(_uploader, _hashedCID, _retentionPeriodInMonths, numPayments[_uploader], now);
+        // ensure this payment id hasn't been submitted before
         require(payments[paymentID].state == PaymentState.nil);
+        // construct the payment struct and store it in the mapping
         payments[paymentID] = PaymentStruct({
             uploader: _uploader,
             paymentID: paymentID,
@@ -104,7 +128,9 @@ contract Payment is PaymentAdministration, Utils {
             state: PaymentState.pending,
             method: PaymentMethod(_method)
         });
+        // increase their number of pamyents
         numPayments[_uploader] = numPayments[_uploader].add(1);
+        // map the payment number to the payment id for easy off-chain fetching
         paymentIDs[_uploader][numPayments[_uploader]] = paymentID;
         emit PaymentRegistered(msg.sender, _hashedCID, _retentionPeriodInMonths, _amount, paymentID);
         return true;

@@ -27,6 +27,7 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 	if method > 1 || method < 0 {
 		return nil, errors.New("invalid payment method. 0 = RTC, 1 = ETH")
 	}
+	// since the contract function defines a fixed length byte array, we will need to convert a byte slice before calling the function
 	var b [32]byte
 	// convert hash to byte slice
 	data := []byte(contentHash)
@@ -36,28 +37,38 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 	hashedCID := common.BytesToHash(hashedCIDByte)
 	// convert byte slice to byte array
 	copy(b[:], hashedCID.Bytes()[:32])
+	// call the register payments function, indicating that we are expecting a user to upload the particular file
+	// we hash the content identifier hash before submitting to the blockchain such that we preserve users privacy
+	// but allow them to audit the contracts and data stores themselves, by hashing their plaintext content identifier hashes
 	tx, err := sm.PaymentsContract.RegisterPayment(sm.Auth, common.HexToAddress(uploaderAddress), b, retentionPeriodInMonths, chargeAmountInWei, method)
 	if err != nil {
 		return nil, err
 	}
+	// in order to get their latest payment id, we need to get the total number of payments
+	// since we just submitted the transaction, we will read off pending state
 	numPayments, err := sm.PaymentsContract.NumPayments(&bind.CallOpts{Pending: true}, common.HexToAddress(uploaderAddress))
 	if err != nil {
 		return tx, err
 	}
+	// having their total number of payments, get the payment ID associated with their latest payment
+	// again, isnce we just submitted the call, we will read off pending state
 	paymentID, err := sm.PaymentsContract.PaymentIDs(&bind.CallOpts{Pending: true}, common.HexToAddress(uploaderAddress), numPayments)
 	if err != nil {
 		return tx, err
 	}
+	// construct a message to rabbitmq so we can save this paymetn information to the database
 	pr := queue.PaymentRegister{
 		UploaderAddress: uploaderAddress,
 		CID:             contentHash,
 		HashedCID:       hashedCID.String(),
 		PaymentID:       string(paymentID[:]), // this converts the paymentID byte array to a string
 	}
+	// initialize a conenction to rabbitmq
 	qm, err := queue.Initialize(queue.PaymentRegisterQueue)
 	if err != nil {
 		return tx, err
 	}
+	// publish the message to rabbitmq
 	err = qm.PublishMessage(pr)
 	if err != nil {
 		return tx, err
