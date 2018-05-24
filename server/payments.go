@@ -92,7 +92,11 @@ func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent() {
 		case err := <-sub.Err():
 			fmt.Println("Error parsing event ", err)
 		case evLog := <-ch:
-			fmt.Println(evLog)
+			uploader := evLog.Uploader
+			paymentID := evLog.PaymentID
+			chargeAmountInWei := evLog.Amount
+			paymentMethod := evLog.Method
+			fmt.Println(uploader, paymentID, chargeAmountInWei, paymentMethod)
 		}
 	}
 }
