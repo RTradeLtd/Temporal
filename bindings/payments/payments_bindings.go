@@ -13,10 +13,10 @@ import (
 )
 
 // PaymentsABI is the input ABI used to generate the binding from.
-const PaymentsABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"payments\",\"outputs\":[{\"name\":\"uploader\",\"type\":\"address\"},{\"name\":\"paymentID\",\"type\":\"bytes32\"},{\"name\":\"hashedCID\",\"type\":\"bytes32\"},{\"name\":\"retentionPeriodInMonths\",\"type\":\"uint256\"},{\"name\":\"paymentAmount\",\"type\":\"uint256\"},{\"name\":\"state\",\"type\":\"uint8\"},{\"name\":\"method\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"}],\"name\":\"numPayments\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_filesContractAddress\",\"type\":\"address\"}],\"name\":\"setFilesInterface\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_paymentID\",\"type\":\"bytes32\"},{\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"payRtcForPaymentID\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_usersContractAddress\",\"type\":\"address\"}],\"name\":\"setUsersInterface\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_uploader\",\"type\":\"address\"},{\"name\":\"_hashedCID\",\"type\":\"bytes32\"},{\"name\":\"_retentionPeriodInMonths\",\"type\":\"uint256\"},{\"name\":\"_amount\",\"type\":\"uint256\"},{\"name\":\"_method\",\"type\":\"uint8\"}],\"name\":\"registerPayment\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_newAdmin\",\"type\":\"address\"}],\"name\":\"changeAdmin\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_paymentID\",\"type\":\"bytes32\"},{\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"payEthForPaymentID\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"},{\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"paymentIDs\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fI\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"uI\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"admin\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"_filesContractAddress\",\"type\":\"address\"}],\"name\":\"FilesContractSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"_usersContractAddress\",\"type\":\"address\"}],\"name\":\"UsersContractSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_uploader\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_hashedCID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"_retentionPeriodInMonths\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"_amount\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"_paymentID\",\"type\":\"bytes32\"}],\"name\":\"PaymentRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_uploader\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_paymentID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"EthPaymentReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_uploader\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_paymentID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"RtcPaymentReceived\",\"type\":\"event\"}]"
+const PaymentsABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"payments\",\"outputs\":[{\"name\":\"uploader\",\"type\":\"address\"},{\"name\":\"paymentID\",\"type\":\"bytes32\"},{\"name\":\"hashedCID\",\"type\":\"bytes32\"},{\"name\":\"retentionPeriodInMonths\",\"type\":\"uint256\"},{\"name\":\"paymentAmount\",\"type\":\"uint256\"},{\"name\":\"state\",\"type\":\"uint8\"},{\"name\":\"method\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"}],\"name\":\"numPayments\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_filesContractAddress\",\"type\":\"address\"}],\"name\":\"setFilesInterface\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_paymentID\",\"type\":\"bytes32\"},{\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"payRtcForPaymentID\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_usersContractAddress\",\"type\":\"address\"}],\"name\":\"setUsersInterface\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_uploader\",\"type\":\"address\"},{\"name\":\"_hashedCID\",\"type\":\"bytes32\"},{\"name\":\"_retentionPeriodInMonths\",\"type\":\"uint256\"},{\"name\":\"_amount\",\"type\":\"uint256\"},{\"name\":\"_method\",\"type\":\"uint8\"}],\"name\":\"registerPayment\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_newAdmin\",\"type\":\"address\"}],\"name\":\"changeAdmin\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_paymentID\",\"type\":\"bytes32\"},{\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"payEthForPaymentID\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"},{\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"paymentIDs\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"fI\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"uI\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"admin\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"_filesContractAddress\",\"type\":\"address\"}],\"name\":\"FilesContractSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"_usersContractAddress\",\"type\":\"address\"}],\"name\":\"UsersContractSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_uploader\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_hashedCID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"_retentionPeriodInMonths\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"_amount\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"_paymentID\",\"type\":\"bytes32\"}],\"name\":\"PaymentRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_uploader\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_paymentID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"_amount\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"_method\",\"type\":\"uint8\"}],\"name\":\"PaymentReceived\",\"type\":\"event\"}]"
 
 // PaymentsBin is the compiled bytecode used for deploying new contracts.
-const PaymentsBin = `60c0604052601c60808190527f19457468657265756d205369676e6564204d6573736167653a0a33320000000060a090815261003e9160029190610066565b506000805433600160a060020a03199182168117909255600180549091169091179055610101565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106100a757805160ff19168380011785556100d4565b828001600101855582156100d4579182015b828111156100d45782518255916020019190600101906100b9565b506100e09291506100e4565b5090565b6100fe91905b808211156100e057600081556001016100ea565b90565b610d1b806101106000396000f3006080604052600436106100c45763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416630716326d81146100c95780630858830b1461014a5780631308bb661461017d57806357a5d426146101b25780635b8e47af146101cd5780638da5cb5b146101ee5780638ebed58f1461021f5780638f2839701461024f5780639818acb9146102705780639c8d6ee21461028b578063db8ce76c146102af578063ebbec31e146102c4578063f851a440146102d9575b600080fd5b3480156100d557600080fd5b506100e16004356102ee565b60408051600160a060020a038916815260208101889052908101869052606081018590526080810184905260a0810183600281111561011c57fe5b60ff16815260200182600181111561013057fe5b60ff16815260200197505050505050505060405180910390f35b34801561015657600080fd5b5061016b600160a060020a0360043516610339565b60408051918252519081900360200190f35b34801561018957600080fd5b5061019e600160a060020a036004351661034b565b604080519115158252519081900360200190f35b3480156101be57600080fd5b5061019e6004356024356103fd565b3480156101d957600080fd5b5061019e600160a060020a036004351661068c565b3480156101fa57600080fd5b50610203610727565b60408051600160a060020a039092168252519081900360200190f35b34801561022b57600080fd5b5061019e600160a060020a036004351660243560443560643560ff60843516610736565b34801561025b57600080fd5b5061019e600160a060020a03600435166109f5565b34801561027c57600080fd5b5061019e600435602435610a44565b34801561029757600080fd5b5061016b600160a060020a0360043516602435610c8c565b3480156102bb57600080fd5b50610203610ca9565b3480156102d057600080fd5b50610203610cb8565b3480156102e557600080fd5b50610203610cc7565b6005602081905260009182526040909120805460018201546002830154600384015460048501549490950154600160a060020a03909316949193909260ff8082169161010090041687565b60066020526000908152604090205481565b600080543390600160a060020a03168114806103745750600154600160a060020a038281169116145b151561037f57600080fd5b82600160a060020a038116151561039557600080fd5b60048054600160a060020a03861673ffffffffffffffffffffffffffffffffffffffff19909116811790915560408051918252517f57df6050063bfc7245fb45847eab30542686438bc930cf2f1d0947158615071c9181900360200190a15060019392505050565b60008260016000828152600560208190526040909120015460ff16600281111561042357fe5b1461042d57600080fd5b60008481526005602052604090205484903390600160a060020a0316811461045457600080fd5b60008681526005602052604090206004015486908690811461047557600080fd5b8760008060008381526005602081905260409091200154610100900460ff16600181111561049f57fe5b146104a957600080fd5b60008a815260056020818152604092839020909101805460ff1916600217905581518c81529081018b9052815133927f71536f9dd7c4e8db4b8cb8226889aaea1c562bca1da233f3e0e7846f4e65d57b928290030190a26004805460008c8152600560209081526040808320600281015460039091015482517f6eb033f400000000000000000000000000000000000000000000000000000000815233978101979097526024870191909152604486015251600160a060020a0390931693636eb033f49360648083019491928390030190829087803b15801561058b57600080fd5b505af115801561059f573d6000803e3d6000fd5b505050506040513d60208110156105b557600080fd5b505115156105c257600080fd5b60035460008b81526005602090815260408083206002015481517f66a04e91000000000000000000000000000000000000000000000000000000008152336004820152602481018f905260448101919091529051600160a060020a03909416936366a04e9193606480840194938390030190829087803b15801561064557600080fd5b505af1158015610659573d6000803e3d6000fd5b505050506040513d602081101561066f57600080fd5b5051151561067c57600080fd5b5060019998505050505050505050565b600080543390600160a060020a03168114806106b55750600154600160a060020a038281169116145b15156106c057600080fd5b60038054600160a060020a03851673ffffffffffffffffffffffffffffffffffffffff19909116811790915560408051918252517f0c7303206058ab0e0d85e1f17933330be8aba69aa937a13044b6c10e40886e209181900360200190a150600192915050565b600054600160a060020a031681565b6000805481903390600160a060020a03168114806107615750600154600160a060020a038281169116145b151561076c57600080fd5b846000811161077a57600080fd5b866000811161078857600080fd5b89600160a060020a038116151561079e57600080fd5b60018760ff1611806107b3575060008760ff16105b156107bd57600080fd5b600160a060020a038b166000818152600660205260408082205481516c010000000000000000000000009094028452601484018e9052603484018d90526054840152519182900360740190912095506000868152600560208190526040909120015460ff16600281111561082d57fe5b1461083757600080fd5b6040805160e081018252600160a060020a038d168152602081018790529081018b9052606081018a90526080810189905260a08101600181526020018860ff16600181111561088257fe5b600181111561088d57fe5b90526000868152600560208181526040928390208451815473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a039091161781559084015160018083019190915592840151600280830191909155606085015160038301556080850151600483015560a085015192820180549294909260ff191691849081111561091657fe5b021790555060c082015160058201805461ff00191661010083600181111561093a57fe5b02179055505050600160a060020a038b1660009081526006602052604090205461096b90600163ffffffff610cd616565b600160a060020a038c166000908152600660209081526040808320849055600782528083209383529281529082902087905581518c81529081018b90528082018a905260608101879052905133917fcb6bac54d8308a9609a62a77e0389ef2b7d019f81686bfb4e556643f70110f7a919081900360800190a25060019a9950505050505050505050565b600080548290600160a060020a03808316911614610a1257600080fd5b60018054600160a060020a03851673ffffffffffffffffffffffffffffffffffffffff19909116178155915050919050565b60008260016000828152600560208190526040909120015460ff166002811115610a6a57fe5b14610a7457600080fd5b60008481526005602052604090205484903390600160a060020a03168114610a9b57600080fd5b600086815260056020526040902060040154869086908114610abc57600080fd5b8760018060008381526005602081905260409091200154610100900460ff166001811115610ae657fe5b14610af057600080fd5b60008a815260056020818152604092839020909101805460ff1916600217905581518c81529081018b9052815133927f9d04fb9b0795e110b6f4b206c3f8c1e6767ac5cf7fd560647ccf3ffd6c9dd5ee928290030190a26004805460008c8152600560209081526040808320600281015460039091015482517f6eb033f400000000000000000000000000000000000000000000000000000000815233978101979097526024870191909152604486015251600160a060020a0390931693636eb033f49360648083019491928390030190829087803b158015610bd257600080fd5b505af1158015610be6573d6000803e3d6000fd5b505050506040513d6020811015610bfc57600080fd5b50511515610c0957600080fd5b60035460008b81526005602090815260408083206002015481517f70b9c01e000000000000000000000000000000000000000000000000000000008152336004820152602481018f905260448101919091529051600160a060020a03909416936370b9c01e93606480840194938390030190829087803b15801561064557600080fd5b600760209081526000928352604080842090915290825290205481565b600454600160a060020a031681565b600354600160a060020a031681565b600154600160a060020a031681565b600082820183811015610ce857600080fd5b93925050505600a165627a7a72305820ab8a5cf1bfd910a82130963f48617ec769b5dcdb32d2b6548e1016523e9187dd0029`
+const PaymentsBin = `60c0604052601c60808190527f19457468657265756d205369676e6564204d6573736167653a0a33320000000060a090815261003e9160029190610066565b506000805433600160a060020a03199182168117909255600180549091169091179055610101565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106100a757805160ff19168380011785556100d4565b828001600101855582156100d4579182015b828111156100d45782518255916020019190600101906100b9565b506100e09291506100e4565b5090565b6100fe91905b808211156100e057600081556001016100ea565b90565b610d32806101106000396000f3006080604052600436106100c45763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416630716326d81146100c95780630858830b1461014a5780631308bb661461017d57806357a5d426146101b25780635b8e47af146101cd5780638da5cb5b146101ee5780638ebed58f1461021f5780638f2839701461024f5780639818acb9146102705780639c8d6ee21461028b578063db8ce76c146102af578063ebbec31e146102c4578063f851a440146102d9575b600080fd5b3480156100d557600080fd5b506100e16004356102ee565b60408051600160a060020a038916815260208101889052908101869052606081018590526080810184905260a0810183600281111561011c57fe5b60ff16815260200182600181111561013057fe5b60ff16815260200197505050505050505060405180910390f35b34801561015657600080fd5b5061016b600160a060020a0360043516610339565b60408051918252519081900360200190f35b34801561018957600080fd5b5061019e600160a060020a036004351661034b565b604080519115158252519081900360200190f35b3480156101be57600080fd5b5061019e6004356024356103fd565b3480156101d957600080fd5b5061019e600160a060020a0360043516610694565b3480156101fa57600080fd5b5061020361072f565b60408051600160a060020a039092168252519081900360200190f35b34801561022b57600080fd5b5061019e600160a060020a036004351660243560443560643560ff6084351661073e565b34801561025b57600080fd5b5061019e600160a060020a0360043516610a03565b34801561027c57600080fd5b5061019e600435602435610a52565b34801561029757600080fd5b5061016b600160a060020a0360043516602435610ca3565b3480156102bb57600080fd5b50610203610cc0565b3480156102d057600080fd5b50610203610ccf565b3480156102e557600080fd5b50610203610cde565b6005602081905260009182526040909120805460018201546002830154600384015460048501549490950154600160a060020a03909316949193909260ff8082169161010090041687565b60066020526000908152604090205481565b600080543390600160a060020a03168114806103745750600154600160a060020a038281169116145b151561037f57600080fd5b82600160a060020a038116151561039557600080fd5b60048054600160a060020a03861673ffffffffffffffffffffffffffffffffffffffff19909116811790915560408051918252517f57df6050063bfc7245fb45847eab30542686438bc930cf2f1d0947158615071c9181900360200190a15060019392505050565b60008260016000828152600560208190526040909120015460ff16600281111561042357fe5b1461042d57600080fd5b60008481526005602052604090205484903390600160a060020a0316811461045457600080fd5b60008681526005602052604090206004015486908690811461047557600080fd5b8760008060008381526005602081905260409091200154610100900460ff16600181111561049f57fe5b146104a957600080fd5b60008a8152600560208181526040808420909201805460ff1916600217905581518d81529081018c9052808201929092525133917ffa3ee50f898224e13a1d5371d4718d72c50302f72b86f3cff70b1173f3cfe158919081900360600190a26004805460008c8152600560209081526040808320600281015460039091015482517f6eb033f400000000000000000000000000000000000000000000000000000000815233978101979097526024870191909152604486015251600160a060020a0390931693636eb033f49360648083019491928390030190829087803b15801561059357600080fd5b505af11580156105a7573d6000803e3d6000fd5b505050506040513d60208110156105bd57600080fd5b505115156105ca57600080fd5b60035460008b81526005602090815260408083206002015481517f66a04e91000000000000000000000000000000000000000000000000000000008152336004820152602481018f905260448101919091529051600160a060020a03909416936366a04e9193606480840194938390030190829087803b15801561064d57600080fd5b505af1158015610661573d6000803e3d6000fd5b505050506040513d602081101561067757600080fd5b5051151561068457600080fd5b5060019998505050505050505050565b600080543390600160a060020a03168114806106bd5750600154600160a060020a038281169116145b15156106c857600080fd5b60038054600160a060020a03851673ffffffffffffffffffffffffffffffffffffffff19909116811790915560408051918252517f0c7303206058ab0e0d85e1f17933330be8aba69aa937a13044b6c10e40886e209181900360200190a150600192915050565b600054600160a060020a031681565b6000805481903390600160a060020a03168114806107695750600154600160a060020a038281169116145b151561077457600080fd5b846000811161078257600080fd5b866000811161079057600080fd5b89600160a060020a03811615156107a657600080fd5b60018760ff1611806107bb575060008760ff16105b156107c557600080fd5b600160a060020a038b166000818152600660205260408082205481516c010000000000000000000000009094028452601484018e9052603484018d90526054840152426074840152519182900360940190912095506000868152600560208190526040909120015460ff16600281111561083b57fe5b1461084557600080fd5b6040805160e081018252600160a060020a038d168152602081018790529081018b9052606081018a90526080810189905260a08101600181526020018860ff16600181111561089057fe5b600181111561089b57fe5b90526000868152600560208181526040928390208451815473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a039091161781559084015160018083019190915592840151600280830191909155606085015160038301556080850151600483015560a085015192820180549294909260ff191691849081111561092457fe5b021790555060c082015160058201805461ff00191661010083600181111561094857fe5b02179055505050600160a060020a038b1660009081526006602052604090205461097990600163ffffffff610ced16565b600160a060020a038c166000908152600660209081526040808320849055600782528083209383529281529082902087905581518c81529081018b90528082018a905260608101879052905133917fcb6bac54d8308a9609a62a77e0389ef2b7d019f81686bfb4e556643f70110f7a919081900360800190a25060019a9950505050505050505050565b600080548290600160a060020a03808316911614610a2057600080fd5b60018054600160a060020a03851673ffffffffffffffffffffffffffffffffffffffff19909116178155915050919050565b60008260016000828152600560208190526040909120015460ff166002811115610a7857fe5b14610a8257600080fd5b60008481526005602052604090205484903390600160a060020a03168114610aa957600080fd5b600086815260056020526040902060040154869086908114610aca57600080fd5b8760018060008381526005602081905260409091200154610100900460ff166001811115610af457fe5b14610afe57600080fd5b60008a815260056020818152604092839020909101805460ff1916600217905581518c81529081018b9052600181830152905133917ffa3ee50f898224e13a1d5371d4718d72c50302f72b86f3cff70b1173f3cfe158919081900360600190a26004805460008c8152600560209081526040808320600281015460039091015482517f6eb033f400000000000000000000000000000000000000000000000000000000815233978101979097526024870191909152604486015251600160a060020a0390931693636eb033f49360648083019491928390030190829087803b158015610be957600080fd5b505af1158015610bfd573d6000803e3d6000fd5b505050506040513d6020811015610c1357600080fd5b50511515610c2057600080fd5b60035460008b81526005602090815260408083206002015481517f70b9c01e000000000000000000000000000000000000000000000000000000008152336004820152602481018f905260448101919091529051600160a060020a03909416936370b9c01e93606480840194938390030190829087803b15801561064d57600080fd5b600760209081526000928352604080842090915290825290205481565b600454600160a060020a031681565b600354600160a060020a031681565b600154600160a060020a031681565b600082820183811015610cff57600080fd5b93925050505600a165627a7a7230582081e27f8daecb1ca8a7852e1d9128464924963c9a7c8ab2951b2cfc97b89f29530029`
 
 // DeployPayments deploys a new Ethereum contract, binding an instance of Payments to it.
 func DeployPayments(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *Payments, error) {
@@ -511,140 +511,6 @@ func (_Payments *PaymentsTransactorSession) SetUsersInterface(_usersContractAddr
 	return _Payments.Contract.SetUsersInterface(&_Payments.TransactOpts, _usersContractAddress)
 }
 
-// PaymentsEthPaymentReceivedIterator is returned from FilterEthPaymentReceived and is used to iterate over the raw logs and unpacked data for EthPaymentReceived events raised by the Payments contract.
-type PaymentsEthPaymentReceivedIterator struct {
-	Event *PaymentsEthPaymentReceived // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *PaymentsEthPaymentReceivedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(PaymentsEthPaymentReceived)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(PaymentsEthPaymentReceived)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *PaymentsEthPaymentReceivedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *PaymentsEthPaymentReceivedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// PaymentsEthPaymentReceived represents a EthPaymentReceived event raised by the Payments contract.
-type PaymentsEthPaymentReceived struct {
-	Uploader  common.Address
-	PaymentID [32]byte
-	Amount    *big.Int
-	Raw       types.Log // Blockchain specific contextual infos
-}
-
-// FilterEthPaymentReceived is a free log retrieval operation binding the contract event 0x9d04fb9b0795e110b6f4b206c3f8c1e6767ac5cf7fd560647ccf3ffd6c9dd5ee.
-//
-// Solidity: e EthPaymentReceived(_uploader indexed address, _paymentID bytes32, _amount uint256)
-func (_Payments *PaymentsFilterer) FilterEthPaymentReceived(opts *bind.FilterOpts, _uploader []common.Address) (*PaymentsEthPaymentReceivedIterator, error) {
-
-	var _uploaderRule []interface{}
-	for _, _uploaderItem := range _uploader {
-		_uploaderRule = append(_uploaderRule, _uploaderItem)
-	}
-
-	logs, sub, err := _Payments.contract.FilterLogs(opts, "EthPaymentReceived", _uploaderRule)
-	if err != nil {
-		return nil, err
-	}
-	return &PaymentsEthPaymentReceivedIterator{contract: _Payments.contract, event: "EthPaymentReceived", logs: logs, sub: sub}, nil
-}
-
-// WatchEthPaymentReceived is a free log subscription operation binding the contract event 0x9d04fb9b0795e110b6f4b206c3f8c1e6767ac5cf7fd560647ccf3ffd6c9dd5ee.
-//
-// Solidity: e EthPaymentReceived(_uploader indexed address, _paymentID bytes32, _amount uint256)
-func (_Payments *PaymentsFilterer) WatchEthPaymentReceived(opts *bind.WatchOpts, sink chan<- *PaymentsEthPaymentReceived, _uploader []common.Address) (event.Subscription, error) {
-
-	var _uploaderRule []interface{}
-	for _, _uploaderItem := range _uploader {
-		_uploaderRule = append(_uploaderRule, _uploaderItem)
-	}
-
-	logs, sub, err := _Payments.contract.WatchLogs(opts, "EthPaymentReceived", _uploaderRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(PaymentsEthPaymentReceived)
-				if err := _Payments.contract.UnpackLog(event, "EthPaymentReceived", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
 // PaymentsFilesContractSetIterator is returned from FilterFilesContractSet and is used to iterate over the raw logs and unpacked data for FilesContractSet events raised by the Payments contract.
 type PaymentsFilesContractSetIterator struct {
 	Event *PaymentsFilesContractSet // Event containing the contract specifics and raw log
@@ -747,6 +613,141 @@ func (_Payments *PaymentsFilterer) WatchFilesContractSet(opts *bind.WatchOpts, s
 				// New log arrived, parse the event and forward to the user
 				event := new(PaymentsFilesContractSet)
 				if err := _Payments.contract.UnpackLog(event, "FilesContractSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// PaymentsPaymentReceivedIterator is returned from FilterPaymentReceived and is used to iterate over the raw logs and unpacked data for PaymentReceived events raised by the Payments contract.
+type PaymentsPaymentReceivedIterator struct {
+	Event *PaymentsPaymentReceived // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *PaymentsPaymentReceivedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(PaymentsPaymentReceived)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(PaymentsPaymentReceived)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *PaymentsPaymentReceivedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *PaymentsPaymentReceivedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// PaymentsPaymentReceived represents a PaymentReceived event raised by the Payments contract.
+type PaymentsPaymentReceived struct {
+	Uploader  common.Address
+	PaymentID [32]byte
+	Amount    *big.Int
+	Method    uint8
+	Raw       types.Log // Blockchain specific contextual infos
+}
+
+// FilterPaymentReceived is a free log retrieval operation binding the contract event 0xfa3ee50f898224e13a1d5371d4718d72c50302f72b86f3cff70b1173f3cfe158.
+//
+// Solidity: e PaymentReceived(_uploader indexed address, _paymentID bytes32, _amount uint256, _method uint8)
+func (_Payments *PaymentsFilterer) FilterPaymentReceived(opts *bind.FilterOpts, _uploader []common.Address) (*PaymentsPaymentReceivedIterator, error) {
+
+	var _uploaderRule []interface{}
+	for _, _uploaderItem := range _uploader {
+		_uploaderRule = append(_uploaderRule, _uploaderItem)
+	}
+
+	logs, sub, err := _Payments.contract.FilterLogs(opts, "PaymentReceived", _uploaderRule)
+	if err != nil {
+		return nil, err
+	}
+	return &PaymentsPaymentReceivedIterator{contract: _Payments.contract, event: "PaymentReceived", logs: logs, sub: sub}, nil
+}
+
+// WatchPaymentReceived is a free log subscription operation binding the contract event 0xfa3ee50f898224e13a1d5371d4718d72c50302f72b86f3cff70b1173f3cfe158.
+//
+// Solidity: e PaymentReceived(_uploader indexed address, _paymentID bytes32, _amount uint256, _method uint8)
+func (_Payments *PaymentsFilterer) WatchPaymentReceived(opts *bind.WatchOpts, sink chan<- *PaymentsPaymentReceived, _uploader []common.Address) (event.Subscription, error) {
+
+	var _uploaderRule []interface{}
+	for _, _uploaderItem := range _uploader {
+		_uploaderRule = append(_uploaderRule, _uploaderItem)
+	}
+
+	logs, sub, err := _Payments.contract.WatchLogs(opts, "PaymentReceived", _uploaderRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(PaymentsPaymentReceived)
+				if err := _Payments.contract.UnpackLog(event, "PaymentReceived", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -883,140 +884,6 @@ func (_Payments *PaymentsFilterer) WatchPaymentRegistered(opts *bind.WatchOpts, 
 				// New log arrived, parse the event and forward to the user
 				event := new(PaymentsPaymentRegistered)
 				if err := _Payments.contract.UnpackLog(event, "PaymentRegistered", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// PaymentsRtcPaymentReceivedIterator is returned from FilterRtcPaymentReceived and is used to iterate over the raw logs and unpacked data for RtcPaymentReceived events raised by the Payments contract.
-type PaymentsRtcPaymentReceivedIterator struct {
-	Event *PaymentsRtcPaymentReceived // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *PaymentsRtcPaymentReceivedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(PaymentsRtcPaymentReceived)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(PaymentsRtcPaymentReceived)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *PaymentsRtcPaymentReceivedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *PaymentsRtcPaymentReceivedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// PaymentsRtcPaymentReceived represents a RtcPaymentReceived event raised by the Payments contract.
-type PaymentsRtcPaymentReceived struct {
-	Uploader  common.Address
-	PaymentID [32]byte
-	Amount    *big.Int
-	Raw       types.Log // Blockchain specific contextual infos
-}
-
-// FilterRtcPaymentReceived is a free log retrieval operation binding the contract event 0x71536f9dd7c4e8db4b8cb8226889aaea1c562bca1da233f3e0e7846f4e65d57b.
-//
-// Solidity: e RtcPaymentReceived(_uploader indexed address, _paymentID bytes32, _amount uint256)
-func (_Payments *PaymentsFilterer) FilterRtcPaymentReceived(opts *bind.FilterOpts, _uploader []common.Address) (*PaymentsRtcPaymentReceivedIterator, error) {
-
-	var _uploaderRule []interface{}
-	for _, _uploaderItem := range _uploader {
-		_uploaderRule = append(_uploaderRule, _uploaderItem)
-	}
-
-	logs, sub, err := _Payments.contract.FilterLogs(opts, "RtcPaymentReceived", _uploaderRule)
-	if err != nil {
-		return nil, err
-	}
-	return &PaymentsRtcPaymentReceivedIterator{contract: _Payments.contract, event: "RtcPaymentReceived", logs: logs, sub: sub}, nil
-}
-
-// WatchRtcPaymentReceived is a free log subscription operation binding the contract event 0x71536f9dd7c4e8db4b8cb8226889aaea1c562bca1da233f3e0e7846f4e65d57b.
-//
-// Solidity: e RtcPaymentReceived(_uploader indexed address, _paymentID bytes32, _amount uint256)
-func (_Payments *PaymentsFilterer) WatchRtcPaymentReceived(opts *bind.WatchOpts, sink chan<- *PaymentsRtcPaymentReceived, _uploader []common.Address) (event.Subscription, error) {
-
-	var _uploaderRule []interface{}
-	for _, _uploaderItem := range _uploader {
-		_uploaderRule = append(_uploaderRule, _uploaderItem)
-	}
-
-	logs, sub, err := _Payments.contract.WatchLogs(opts, "RtcPaymentReceived", _uploaderRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(PaymentsRtcPaymentReceived)
-				if err := _Payments.contract.UnpackLog(event, "RtcPaymentReceived", log); err != nil {
 					return err
 				}
 				event.Raw = log

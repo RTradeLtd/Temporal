@@ -14,9 +14,9 @@ import (
 	"github.com/RTradeLtd/Temporal/bindings/users"
 )
 
-var filesAddress common.Address
-var usersAddress common.Address
-var paymentsAddress common.Address
+var filesAddress = common.HexToAddress("0xb4452c00e62F8FE634AbCB8E1a8d7eC2aC42b796")
+var usersAddress = common.HexToAddress("0xC283BfEf5Eeb6A88d51Ddcf26E59a5e1A22C0280")
+var paymentsAddress = common.HexToAddress("0x492710A119dF8133aAdd72d0A1e37D63B5F2fdfA")
 
 // ServerManager is a helper struct for interact with the server
 type ServerManager struct {
