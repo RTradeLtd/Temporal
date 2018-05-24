@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	
+	helmet "github.com/danielkov/gin-helmet"
 
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
@@ -57,6 +59,8 @@ func Setup() *gin.Engine {
 	p.SetListenAddress("127.0.0.1:6768")
 	// load in prom to gin
 	p.Use(r)
+	r.Use(helmet.SetHSTS(true))
+	r.Use(helmet.NoSniff())
 	r.Use(rollbar.Recovery(false))
 	setupRoutes(r, adminUser, adminPass)
 	return r
