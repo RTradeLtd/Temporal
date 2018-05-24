@@ -2,6 +2,8 @@ package server
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"math/big"
 
 	"github.com/RTradeLtd/Temporal/bindings/payments"
@@ -74,4 +76,23 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 		return tx, err
 	}
 	return tx, nil
+}
+
+func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent() {
+	// create the channel for which we will receive payments on
+	var ch = make(chan *payments.PaymentsPaymentReceivedNoIndex)
+	// create a subscription for th eevent passing in messages to teh chanenl we just established
+	sub, err := sm.PaymentsContract.WatchPaymentReceivedNoIndex(nil, ch)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// loop forever, waiting for and processing events
+	for {
+		select {
+		case err := <-sub.Err():
+			fmt.Println("Error parsing event ", err)
+		case evLog := <-ch:
+			fmt.Println(evLog)
+		}
+	}
 }

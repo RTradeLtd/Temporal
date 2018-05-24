@@ -69,6 +69,7 @@ contract Payment is PaymentAdministration, Utils {
 
     // this event is fired when a payment is received
     event PaymentReceived(address indexed _uploader, bytes32 _paymentID, uint256 _amount, PaymentMethod _method);
+    event PaymentReceivedNoIndex(address _uploader, bytes32 _paymentID, uint256 _amount, PaymentMethod _method);
     // this event is fired when a payment is received
 
     // checks to see if the caller belogns to hte payment id
@@ -147,6 +148,7 @@ contract Payment is PaymentAdministration, Utils {
     {
         payments[_paymentID].state = PaymentState.paid;
         emit PaymentReceived(msg.sender, _paymentID, _amount, PaymentMethod.ETH);
+        emit PaymentReceivedNoIndex(msg.sender, _paymentID, _amount, PaymentMethod.ETH);
         require(fI.addUploaderForCid(msg.sender, payments[_paymentID].hashedCID, payments[_paymentID].retentionPeriodInMonths));
         require(uI.paymentProcessorWithdrawEthForUploader(msg.sender, _amount, payments[_paymentID].hashedCID));
         return true;
@@ -164,6 +166,7 @@ contract Payment is PaymentAdministration, Utils {
     {
         payments[_paymentID].state = PaymentState.paid;
         emit PaymentReceived(msg.sender, _paymentID, _amount, PaymentMethod.RTC);
+        emit PaymentReceivedNoIndex(msg.sender, _paymentID, _amount, PaymentMethod.RTC);
         require(fI.addUploaderForCid(msg.sender, payments[_paymentID].hashedCID, payments[_paymentID].retentionPeriodInMonths));
         require(uI.paymentProcessorWithdrawRtcForUploader(msg.sender, _amount, payments[_paymentID].hashedCID));
         return true;
