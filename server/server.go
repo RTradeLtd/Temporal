@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -32,12 +33,23 @@ type ServerManager struct {
 func Initialize() *ServerManager {
 	// helper interface
 	var manager ServerManager
-	// get the eth key (json file format)
-	key := os.Getenv("ETH_KEY")
 	// get the password to decrypt the key
+	keyFilePath := os.Getenv("KEY_FILE")
+
 	pass := os.Getenv("ETH_PASS")
+	if pass == "" {
+		log.Fatal("ETH_PASS environment variable not set")
+	}
+	if keyFilePath == "" {
+		log.Fatal("KEY_FILE environment variable not set")
+	}
+	file, err := ioutil.ReadFile("/tmp/key_file")
+	if err != nil {
+		log.Fatal("err")
+	}
+	key := string(file)
 	// connect  to the network
-	err := manager.ConnectToNetwork(connectionURL)
+	err = manager.ConnectToNetwork(connectionURL)
 	if err != nil {
 		log.Fatal(err)
 	}
