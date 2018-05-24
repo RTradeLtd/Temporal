@@ -16,7 +16,7 @@ import (
 	"github.com/RTradeLtd/Temporal/server"
 )
 
-var certFile = "/home/solidity/certificates/api.crt"
+var certFile = "/home/solidity/certificates/api.pem"
 var keyFile = "/home/solidity/certificates/api.key"
 
 func main() {
