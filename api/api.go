@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	
-	helmet "github.com/danielkov/gin-helmet"
 
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
+	jwt "github.com/appleboy/gin-jwt"
+	helmet "github.com/danielkov/gin-helmet"
 
 	"github.com/aviddiviner/gin-limit"
 	"github.com/dvwright/xss-mw"
@@ -23,9 +23,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stvp/roll"
 	"github.com/zsais/go-gin-prometheus"
+	"time"
 )
 
 var xssMdlwr xss.XssMw
+var realmName = "temporal-realm"
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
@@ -62,12 +64,59 @@ func Setup() *gin.Engine {
 	r.Use(helmet.SetHSTS(true))
 	r.Use(helmet.NoSniff())
 	r.Use(rollbar.Recovery(false))
-	setupRoutes(r, adminUser, adminPass)
+
+	authMiddleware := &jwt.GinJWTMiddleware{
+		Realm:      realmName,
+		Key:        []byte("super secret key"),
+		Timeout:    time.Hour,
+		MaxRefresh: time.Hour,
+		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {
+			if (userId == "admin" && password == "admin") || (userId == "test" && password == "test") {
+				return userId, true
+			}
+
+			return userId, false
+		},
+		Authorizator: func(userId string, c *gin.Context) bool {
+			if userId == "admin" {
+				return true
+			}
+
+			return false
+		},
+		Unauthorized: func(c *gin.Context, code int, message string) {
+			c.JSON(code, gin.H{
+				"code":    code,
+				"message": message,
+			})
+		},
+		// TokenLookup is a string in the form of "<source>:<name>" that is used
+		// to extract token from the request.
+		// Optional. Default value "header:Authorization".
+		// Possible values:
+		// - "header:<name>"
+		// - "query:<name>"
+		// - "cookie:<name>"
+		TokenLookup: "header:Authorization",
+		// TokenLookup: "query:token",
+		// TokenLookup: "cookie:token",
+
+		// TokenHeadName is a string in the header. Default value is "Bearer"
+		TokenHeadName: "Bearer",
+
+		// TimeFunc provides the current time. You can override it to use another time value. This is useful for testing or if your server uses a different time zone than your tokens.
+		TimeFunc: time.Now,
+	}
+
+	setupRoutes(r, adminUser, adminPass, authMiddleware)
 	return r
 }
 
 // setupRoutes is used to setup all of our api routes
-func setupRoutes(g *gin.Engine, adminUser string, adminPass string) {
+func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jwt.GinJWTMiddleware) {
+
+	// LOGIN
+	g.POST("/api/v1/login", authWare.LoginHandler)
 
 	// PROTECTED ROUTES -- BEGIN
 	ipfsProtected := g.Group("/api/v1/ipfs", gin.BasicAuth(gin.Accounts{adminUser: adminPass}))
