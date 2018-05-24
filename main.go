@@ -12,6 +12,7 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	ipfsQ "github.com/RTradeLtd/Temporal/queue/ipfs"
 	"github.com/RTradeLtd/Temporal/rtswarm"
+	"github.com/RTradeLtd/Temporal/server"
 )
 
 func main() {
@@ -78,6 +79,9 @@ func main() {
 	case "migrate":
 		dbm := database.Initialize()
 		dbm.RunMigrations()
+	case "contract-backend":
+		manager := server.Initialize()
+		fmt.Println(manager)
 	case "lookup-address":
 		db := database.OpenDBConnection()
 		um := models.NewUserManager(db)

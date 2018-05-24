@@ -17,6 +17,7 @@ import (
 var filesAddress = common.HexToAddress("0xb4452c00e62F8FE634AbCB8E1a8d7eC2aC42b796")
 var usersAddress = common.HexToAddress("0xC283BfEf5Eeb6A88d51Ddcf26E59a5e1A22C0280")
 var paymentsAddress = common.HexToAddress("0x492710A119dF8133aAdd72d0A1e37D63B5F2fdfA")
+var connectionURL = "http://127.0.0.1:8545"
 
 // ServerManager is a helper struct for interact with the server
 type ServerManager struct {
@@ -35,13 +36,8 @@ func Initialize() *ServerManager {
 	key := os.Getenv("ETH_KEY")
 	// get the password to decrypt the key
 	pass := os.Getenv("ETH_PASS")
-	// url to connect t ofor the backend
-	connURL := os.Getenv("CONN_URL")
-	if key == "" || pass == "" || connURL == "" {
-		log.Fatal("invalid key , password, or connection url")
-	}
 	// connect  to the network
-	err := manager.ConnectToNetwork(connURL)
+	err := manager.ConnectToNetwork(connectionURL)
 	if err != nil {
 		log.Fatal(err)
 	}
