@@ -7,6 +7,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/api/rtfs"
+	"github.com/RTradeLtd/Temporal/cli"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -82,6 +83,8 @@ func main() {
 	case "contract-backend":
 		manager := server.Initialize()
 		fmt.Println(manager)
+	case "shell":
+		cli.Initialize()
 	case "lookup-address":
 		db := database.OpenDBConnection()
 		um := models.NewUserManager(db)
