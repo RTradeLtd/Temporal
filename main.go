@@ -16,6 +16,9 @@ import (
 	"github.com/RTradeLtd/Temporal/server"
 )
 
+var certFile = "/home/solidity/certificates/api.crt"
+var keyFile = "/home/solidity/certificates/api.key"
+
 func main() {
 	if len(os.Args) > 2 || len(os.Args) < 2 {
 		fmt.Println("incorrect invocation")
@@ -37,7 +40,7 @@ func main() {
 			os.Exit(1)
 		}
 		router := api.Setup()
-		router.Run(fmt.Sprintf("%s:6767", listenAddress))
+		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFile, keyFile)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
 		if err != nil {
