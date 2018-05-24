@@ -33,6 +33,8 @@ https://github.com/ipfs/go-ds-flatfs
 https://blog.dgraph.io/post/badger-lmdb-boltdb/
 
 https://github.com/ipfs/faq/issues/160
+
+https://github.com/gin-gonic/gin/tree/master/examples/http2
 # API 
 
 IPFS Cluster Go API https://godoc.org/github.com/ipfs/ipfs-cluster
