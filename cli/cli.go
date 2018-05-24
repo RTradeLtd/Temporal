@@ -88,6 +88,7 @@ func (cl *CommandLine) SetupShell() {
 				return
 			}
 			fmt.Println(tx)
+			fmt.Printf("Transaction Hash 0x%x\n", tx.Hash())
 		},
 	})
 }
