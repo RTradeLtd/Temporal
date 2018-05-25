@@ -1,6 +1,7 @@
 package api
 
 import (
+	"crypto/rand"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,13 +18,14 @@ import (
 	"github.com/dvwright/xss-mw"
 	gocid "github.com/ipfs/go-cid"
 
+	"time"
+
 	"github.com/RTradeLtd/Temporal/api/rtfs"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/gin-contrib/rollbar"
 	"github.com/gin-gonic/gin"
 	"github.com/stvp/roll"
 	"github.com/zsais/go-gin-prometheus"
-	"time"
 )
 
 var xssMdlwr xss.XssMw
@@ -35,7 +37,7 @@ func Setup() *gin.Engine {
 
 	adminUser := os.Getenv("ADMIN_USER")
 	adminPass := os.Getenv("ADMIN_PASS")
-
+	jwtKey := os.Getenv("JWT_KEY")
 	if adminUser == "" {
 		fmt.Println("ADMIN_USER env var not set")
 		os.Exit(1)
@@ -44,7 +46,10 @@ func Setup() *gin.Engine {
 		fmt.Println("ADMIN_PASS env var not set")
 		os.Exit(1)
 	}
-
+	if jwtKey == "" {
+		fmt.Println("JWT_KEY environment variable is not set")
+		os.Exit(1)
+	}
 	// we use rollbar for logging errors
 	token := os.Getenv("ROLLBAR_TOKEN")
 	if token == "" {
@@ -61,24 +66,33 @@ func Setup() *gin.Engine {
 	p.SetListenAddress("127.0.0.1:6768")
 	// load in prom to gin
 	p.Use(r)
+	// enable HSTS on all domains including subdomains
 	r.Use(helmet.SetHSTS(true))
+	// prevent mine content sniffing
 	r.Use(helmet.NoSniff())
 	r.Use(rollbar.Recovery(false))
-
+	// read 1000 random numbers, used to help randomnize the JWT
+	c := 1000
+	b := make([]byte, c)
+	_, err := rand.Read(b)
+	if err != nil {
+		fmt.Println("error generating random number")
+		os.Exit(1)
+	}
 	authMiddleware := &jwt.GinJWTMiddleware{
 		Realm:      realmName,
-		Key:        []byte("super secret key"),
-		Timeout:    time.Hour,
-		MaxRefresh: time.Hour,
+		Key:        []byte(fmt.Sprintf("%v+%s", b, jwtKey)),
+		Timeout:    time.Hour * 24,
+		MaxRefresh: time.Hour * 24,
 		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {
-			if (userId == "admin" && password == "admin") || (userId == "test" && password == "test") {
+			if userId == adminUser && password == adminPass {
 				return userId, true
 			}
 
 			return userId, false
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {
-			if userId == "admin" {
+			if userId == adminUser {
 				return true
 			}
 
