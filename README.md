@@ -1,4 +1,4 @@
-# Temporal (Heavy WIP)
+# Temporal (Heavy WIP) [![GoDoc](https://godoc.org/github.com/RTradeLtd/Temporal/api?status.svg)](https://godoc.org/github.com/RTradeLtd/Temporal/api)
 
 Temporal is an enterprise-grade storage solution featuring an easy to consume API that can be re-used for a variety of applications, initially paid-for-pinning of IPFS content, and a personal cloud storage solution backed by IPFS. Soon after the MVP functionality will be expanded to connect into the Ethereum swarm network, and private IPFS swarms/clusters. Followed up plugging into STORJ and SIA. Ultimately the final product will be an enterprise ready API to allow organizations to use these distributed storage protocols in their own products. This API will be backed by a hosted version, allowing RTrade to take care of all the hard work in maintaining the necessary infrastructure, while you get to make beautiful applications using our API, which abstracts away all the nitty gritty details, and complications that come from using the new generation of storage protocols.
 
