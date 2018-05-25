@@ -1,0 +1,8 @@
+info:
+  contact: {}
+  description: This is the Temporal API
+  license: {}
+  title: Temporal API
+  version: "1.0"
+paths: {}
+swagger: "2.0"
