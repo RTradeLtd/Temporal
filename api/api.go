@@ -136,7 +136,7 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 
 	// PROTECTED ROUTES -- BEGIN
 	ipfsProtected := g.Group("/api/v1/ipfs", gin.BasicAuth(gin.Accounts{adminUser: adminPass}))
-	ipfsProtected.POST("/pin/:hash", pinHashLocally)
+	ipfsProtected.POST("/pin/:hash", PinHashLocally)
 	ipfsProtected.POST("/add-file", addFileLocally)
 	ipfsProtected.DELETE("/remove-pin/:hash", removePinFromLocalHost)
 	clusterProtected := g.Group("/api/v1/ipfs-cluster")
@@ -171,9 +171,8 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	// DATABASE ROUTES [GET] -- END
 }
 
-// pinHashLocally is used to pin a hash to the local ipfs node
-// TODO: add in the cluster pin event, optimize
-func pinHashLocally(c *gin.Context) {
+// PinHashLocally is used to pin a hash to the local ipfs node
+func PinHashLocally(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
 	uploadAddress := contextCopy.PostForm("uploadAddress")
