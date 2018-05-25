@@ -8,6 +8,8 @@ export IPFS_PATH="$IPFS_PATH"
 export DB_PASS="password123"
 export CERT_PATH="/root/certificates/api.pem"
 export KEY_PATH="/root/certificates/api.key"
+export ADMIN_USER="admin"
+export ADMIN_PASS="minutemaid"
 case "$1" in
 
     api)
