@@ -137,37 +137,37 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	// PROTECTED ROUTES -- BEGIN
 	ipfsProtected := g.Group("/api/v1/ipfs", gin.BasicAuth(gin.Accounts{adminUser: adminPass}))
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
-	ipfsProtected.POST("/add-file", addFileLocally)
-	ipfsProtected.DELETE("/remove-pin/:hash", removePinFromLocalHost)
+	ipfsProtected.POST("/add-file", AddFileLocally)
+	ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
 	clusterProtected := g.Group("/api/v1/ipfs-cluster")
-	clusterProtected.POST("/pin/:hash", pinHashToCluster)
-	clusterProtected.POST("/sync-errors-local", syncClusterErrorsLocally)
-	clusterProtected.DELETE("/remove-pin/:hash", removePinFromCluster)
+	clusterProtected.POST("/pin/:hash", PinHashToCluster)
+	clusterProtected.POST("/sync-errors-local", SyncClusterErrorsLocally)
+	clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster)
 	databaseProtected := g.Group("/api/v1/database")
-	databaseProtected.DELETE("/api/v1/database/garbage-collect/test", runTestGarbageCollection)
+	databaseProtected.DELETE("/api/v1/database/garbage-collect/test", RunTestGarbageCollection)
 	// PROTECTED ROUTES -- END
 
 	// IPFS ROUTES [POST] -- BEGIN
-	g.POST("/api/v1/ipfs/pubsub/publish/:topic", ipfsPubSubPublish)
-	g.POST("/api/v1/ipfs/pubsub/publish-test/:topic", ipfsPubSubTest)
+	g.POST("/api/v1/ipfs/pubsub/publish/:topic", IpfsPubSubPublish)
+	g.POST("/api/v1/ipfs/pubsub/publish-test/:topic", IpfsPubSubTest)
 	// IPFS ROUTES [POST] -- END
 
 	// IPFS ROUTES [GET] -- BEGIN
-	g.GET("/api/v1/ipfs/pubsub/consume/:topic", ipfsPubSubConsume)
-	g.GET("/api/v1/ipfs/pins", getLocalPins)
-	g.GET("/api/v1/ipfs/object-stat/:key", getObjectStatForIpfs)
-	g.GET("/api/v1/ipfs/check-for-pin/:hash", checkLocalNodeForPin)
+	g.GET("/api/v1/ipfs/pubsub/consume/:topic", IpfsPubSubConsume)
+	g.GET("/api/v1/ipfs/pins", GetLocalPins)
+	g.GET("/api/v1/ipfs/object-stat/:key", GetObjectStatForIpfs)
+	g.GET("/api/v1/ipfs/check-for-pin/:hash", CheckLocalNodeForPin)
 	// IPFS ROUTES [GET] -- END
 
 	// IPFS CLUSTER ROUTES [GET] -- BEGIN
-	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", getLocalStatusForClusterPin)
-	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", getGlobalStatusForClusterPin)
-	g.GET("/api/v1/ipfs-cluster/status-local", fetchLocalClusterStatus)
+	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", GetLocalStatusForClusterPin)
+	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", GetGlobalStatusForClusterPin)
+	g.GET("/api/v1/ipfs-cluster/status-local", FetchLocalClusterStatus)
 	// IPFS CLUSTER ROUTES [GET] -- END
 
 	// DATABASE ROUTES [GET] -- BEGIN
-	g.GET("/api/v1/database/uploads", getUploadsFromDatabase)
-	g.GET("/api/v1/database/uploads/:address", getUploadsForAddress)
+	g.GET("/api/v1/database/uploads", GetUploadsFromDatabase)
+	g.GET("/api/v1/database/uploads/:address", GetUploadsForAddress)
 	// DATABASE ROUTES [GET] -- END
 }
 
@@ -217,10 +217,10 @@ func PinHashLocally(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"upload": dpa})
 }
 
-// addFileLocally is used to add a file to our local ipfs node
+// AddFileLocally is used to add a file to our local ipfs node
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
-func addFileLocally(c *gin.Context) {
+func AddFileLocally(c *gin.Context) {
 	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
@@ -274,8 +274,8 @@ func addFileLocally(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"response": resp})
 }
 
-// pinHashToCluster is used to pin a hash to the global cluster state
-func pinHashToCluster(c *gin.Context) {
+// PinHashToCluster is used to pin a hash to the global cluster state
+func PinHashToCluster(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
 	manager := rtfs_cluster.Initialize()
@@ -288,9 +288,9 @@ func pinHashToCluster(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
 
-// syncCluserErrorsLocally is used to parse through the local cluster state
+// SyncClusterErrorsLocally is used to parse through the local cluster state
 // and sync any errors that are detected.
-func syncClusterErrorsLocally(c *gin.Context) {
+func SyncClusterErrorsLocally(c *gin.Context) {
 	// initialize a conection to the cluster
 	manager := rtfs_cluster.Initialize()
 	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
@@ -302,7 +302,8 @@ func syncClusterErrorsLocally(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
 }
 
-func ipfsPubSubPublish(c *gin.Context) {
+// IpfsPubSubPublish is used to publish a pubsub msg
+func IpfsPubSubPublish(c *gin.Context) {
 	topic := c.Param("topic")
 	message := c.PostForm("message")
 	manager := rtfs.Initialize("")
@@ -314,7 +315,8 @@ func ipfsPubSubPublish(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"topic": topic, "message": message})
 }
 
-func ipfsPubSubTest(c *gin.Context) {
+// IpfsPubSubTest runs a pubsub test
+func IpfsPubSubTest(c *gin.Context) {
 	manager := rtfs.Initialize("")
 	err := manager.PublishPubSubTest(manager.PubTopic)
 	if err != nil {
@@ -324,7 +326,8 @@ func ipfsPubSubTest(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-func ipfsPubSubConsume(c *gin.Context) {
+// IpfsPubSubConsume is used to consume pubsub messages
+func IpfsPubSubConsume(c *gin.Context) {
 	contextCopy := c.Copy()
 	topic := contextCopy.Param("topic")
 
@@ -337,9 +340,9 @@ func ipfsPubSubConsume(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "consuming messages in background"})
 }
 
-// removePinFromLocalHost is used to remove a pin from the ipfs instance
+// RemovePinFromLocalHost is used to remove a pin from the ipfs instance
 // TODO: fully implement
-func removePinFromLocalHost(c *gin.Context) {
+func RemovePinFromLocalHost(c *gin.Context) {
 	contextCopy := c.Copy()
 	// fetch hash param
 	hash := contextCopy.Param("hash")
@@ -364,10 +367,10 @@ func removePinFromLocalHost(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
-// removePinFromCluster is used to remove a pin from the cluster global state
+// RemovePinFromCluster is used to remove a pin from the cluster global state
 // this will mean that all nodes in the cluster will no longer track the pin
 // TODO: fully implement, add in goroutines
-func removePinFromCluster(c *gin.Context) {
+func RemovePinFromCluster(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs_cluster.Initialize()
 	err := manager.RemovePinFromCluster(hash)
@@ -384,15 +387,17 @@ func removePinFromCluster(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
-func runTestGarbageCollection(c *gin.Context) {
+// RunTestGarbageCollection is used to run a test
+// of our garbage collector
+func RunTestGarbageCollection(c *gin.Context) {
 	db := database.OpenDBConnection()
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunTestDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{"deleted": deletedUploads})
 }
 
-// getLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
-func getLocalStatusForClusterPin(c *gin.Context) {
+// GetLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
+func GetLocalStatusForClusterPin(c *gin.Context) {
 	hash := c.Param("hash")
 	// initialize a connection to the cluster
 	manager := rtfs_cluster.Initialize()
@@ -405,8 +410,8 @@ func getLocalStatusForClusterPin(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
-// getGlobalStatusForClusterPin is used to get the global cluster status for a particular pin
-func getGlobalStatusForClusterPin(c *gin.Context) {
+// GetGlobalStatusForClusterPin is used to get the global cluster status for a particular pin
+func GetGlobalStatusForClusterPin(c *gin.Context) {
 	hash := c.Param("hash")
 	// initialize a connection to the cluster
 	manager := rtfs_cluster.Initialize()
@@ -419,10 +424,10 @@ func getGlobalStatusForClusterPin(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
-// fetchLocalClusterStatus is used to fetch the status of the localhost's
+// FetchLocalClusterStatus is used to fetch the status of the localhost's
 // cluster state, and not the rest of the cluster
 // TODO: cleanup
-func fetchLocalClusterStatus(c *gin.Context) {
+func FetchLocalClusterStatus(c *gin.Context) {
 	// this will hold all the retrieved content hashes
 	var cids []*gocid.Cid
 	// this will hold all the statuses of the content hashes
@@ -443,8 +448,8 @@ func fetchLocalClusterStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"cids": cids, "statuses": statuses})
 }
 
-// getLocalPins is used to get the pins tracked by the local ipfs node
-func getLocalPins(c *gin.Context) {
+// GetLocalPins is used to get the pins tracked by the local ipfs node
+func GetLocalPins(c *gin.Context) {
 	// initialize a connection toe the local ipfs node
 	manager := rtfs.Initialize("")
 	// get all the known local pins
@@ -457,9 +462,9 @@ func getLocalPins(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
-// getUploadsFromDatabase is used to read a list of uploads from our database
+// GetUploadsFromDatabase is used to read a list of uploads from our database
 // TODO: cleanup
-func getUploadsFromDatabase(c *gin.Context) {
+func GetUploadsFromDatabase(c *gin.Context) {
 	// open a connection to the database
 	db := database.OpenDBConnection()
 	// create an upload manager interface
@@ -475,9 +480,9 @@ func getUploadsFromDatabase(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
-// getUploadsForAddress is used to read a list of uploads from a particular eth address
+// GetUploadsForAddress is used to read a list of uploads from a particular eth address
 // TODO: cleanup
-func getUploadsForAddress(c *gin.Context) {
+func GetUploadsForAddress(c *gin.Context) {
 	// open connection to the database
 	db := database.OpenDBConnection()
 	// establish a new upload manager
@@ -493,7 +498,10 @@ func getUploadsForAddress(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
-func getObjectStatForIpfs(c *gin.Context) {
+// GetObjectStatForIpfs is used to get the
+// particular object state from the local
+// ipfs node
+func GetObjectStatForIpfs(c *gin.Context) {
 	key := c.Param("key")
 	manager := rtfs.Initialize("")
 	stats, err := manager.ObjectStat(key)
@@ -504,7 +512,9 @@ func getObjectStatForIpfs(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"stats": stats})
 }
 
-func checkLocalNodeForPin(c *gin.Context) {
+// CheckLocalNodeForPin is used to check whether or not
+// the local node has pinned the content
+func CheckLocalNodeForPin(c *gin.Context) {
 	hash := c.Param("hash")
 	manager := rtfs.Initialize("")
 	present, err := manager.ParseLocalPinsForHash(hash)
