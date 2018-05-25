@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/api/rtfs"
+
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/streadway/amqp"
@@ -245,7 +247,8 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					continue
 				}
 				db.First(&payment).Where("payment_id = ?", pr.PaymentID)
-				if payment.CreatedAt == nullTime {
+				if payment.CreatedAt != nullTime {
+					fmt.Println("payment is already in the database")
 					d.Ack(false)
 					continue
 				}
@@ -257,8 +260,26 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 				d.Ack(false)
 			}
 		case PaymentReceivedQueue:
+			ipfsManager := rtfs.Initialize("")
 			for d := range msgs {
-				fmt.Println(string(d.Body))
+				var nullTime time.Time
+				var payment models.Payment
+				pr := PaymentReceived{}
+				err := json.Unmarshal(d.Body, &pr)
+				if err != nil {
+					d.Ack(false)
+					continue
+				}
+				db.First(&payment).Where("payment_id = ?", payment.PaymentID)
+				if payment.CreatedAt == nullTime {
+					fmt.Println("payment is not a valid payment")
+					d.Ack(false)
+					continue
+				}
+				payment.Paid = true
+				db.Update(&payment)
+				go ipfsManager.Pin(payment.CID)
+				d.Ack(false)
 			}
 		default:
 			log.Fatal("invalid queue name")
