@@ -1,0 +1,11 @@
+[Unit]
+Description=Starts the temporal service
+After=network.target ipfs_cluster.service
+
+[Service]
+Type=simple
+PIDFile=/var/run/temporal_service.pid
+ExecStart=/boot_scripts/temporal_service.sh
+
+[Install]
+WantedBy=multi-user.target

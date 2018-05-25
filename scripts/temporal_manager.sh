@@ -5,7 +5,9 @@
 
 IPFS_PATH="/srv/dev-disk-by-label-Data/ipfs-data"
 export IPFS_PATH="$IPFS_PATH"
-
+export DB_PASS="password123"
+export CERT_PATH="/root/certificates/api.pem"
+export KEY_PATH="/root/certificates/api.key"
 case "$1" in
 
     api)
