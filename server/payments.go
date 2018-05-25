@@ -86,6 +86,10 @@ func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	queueManager, err := queue.Initialize(queue.PaymentReceivedQueue)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// loop forever, waiting for and processing events
 	for {
 		select {
@@ -94,9 +98,10 @@ func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent() {
 		case evLog := <-ch:
 			uploader := evLog.Uploader
 			paymentID := evLog.PaymentID
-			chargeAmountInWei := evLog.Amount
-			paymentMethod := evLog.Method
-			fmt.Println(uploader, paymentID, chargeAmountInWei, paymentMethod)
+			pr := queue.PaymentReceived{}
+			pr.UploaderAddress = uploader.String()
+			pr.PaymentID = string(paymentID[:])
+			queueManager.PublishMessage(pr)
 		}
 	}
 }
