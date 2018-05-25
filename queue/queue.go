@@ -51,6 +51,14 @@ type PaymentRegister struct {
 	PaymentID       string `json:"payment_id"`
 }
 
+// PaymentReceived is used when we need to mark that
+// a payment has been received, and we will upload
+// the content
+type PaymentReceived struct {
+	UploaderAddress string `json:"uploader_address"`
+	PaymentID       string `json:"payment_id"`
+}
+
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
 func Initialize(queueName string) (*QueueManager, error) {
 	conn, err := setupConnection()

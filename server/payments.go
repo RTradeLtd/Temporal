@@ -86,6 +86,11 @@ func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	queueManager, err := queue.Initialize(queue.PaymentRegisterQueue)
+	if err != nil {
+		log.Fatal(err)
+	}
+	queueManager.PublishMessage("hello")
 	// loop forever, waiting for and processing events
 	for {
 		select {
@@ -96,6 +101,8 @@ func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent() {
 			paymentID := evLog.PaymentID
 			chargeAmountInWei := evLog.Amount
 			paymentMethod := evLog.Method
+			pr := queue.PaymentRegister{}
+			pr.UploaderAddress = uploader.String()
 			fmt.Println(uploader, paymentID, chargeAmountInWei, paymentMethod)
 		}
 	}
