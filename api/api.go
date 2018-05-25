@@ -1,3 +1,5 @@
+// Package api is the main package for Temporal's
+// http api
 package api
 
 import (
