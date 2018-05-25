@@ -33,6 +33,16 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "api":
+		certFilePath := os.Getenv("CERT_PATH")
+		keyFilePath := os.Getenv("KEY_PATH")
+		if certFilePath == "" {
+			fmt.Println("CERT_PATH environment variable not set")
+			os.Exit(1)
+		}
+		if keyFilePath == "" {
+			fmt.Println("KEY_PATH environment variable not set")
+			os.Exit(1)
+		}
 		listenAddress := os.Getenv("LISTEN_ADDRESS")
 		if listenAddress == "" {
 			fmt.Println("invalid address")
@@ -40,7 +50,7 @@ func main() {
 			os.Exit(1)
 		}
 		router := api.Setup()
-		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFile, keyFile)
+		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
 		if err != nil {
