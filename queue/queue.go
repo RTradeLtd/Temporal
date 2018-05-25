@@ -17,6 +17,7 @@ var IpfsClusterQueue = "ipfs-cluster"
 var DatabaseFileAddQueue = "dfa-queue"
 var DatabasePinAddQueue = "dpa-queue"
 var PaymentRegisterQueue = "payment-register-queue"
+var PaymentReceivedQueue = "payment-received-queue"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
@@ -254,6 +255,10 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 				payment.Paid = false
 				db.Create(&payment)
 				d.Ack(false)
+			}
+		case PaymentReceivedQueue:
+			for d := range msgs {
+				fmt.Println(string(d.Body))
 			}
 		default:
 			log.Fatal("invalid queue name")

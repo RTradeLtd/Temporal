@@ -26,6 +26,10 @@ This is a huge issue and concern for any form of cloud storage. But is seldom me
 
 We aren't doing an ICO,  and we're not wasting our development efforts on redesigning the wheel with some new fangled storage protocol, and blockchain solution. Although we're using bleeding edge technology, we're commited to using names, and open source software that is already tested, and that has a thriving development community behind them. And finally, results matter; It is far to common in this space for companies to ask you to hand over your hand earned cash on the fleeting promise that it will lead to something, but that something is either never delivered, or extremely lack in features, and is not the original idea which was sold.
 
+# User Auth
+
+
+
 # Contributing
 
 ## Contributing - Code

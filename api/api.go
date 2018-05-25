@@ -81,6 +81,9 @@ func Setup() *gin.Engine {
 		fmt.Println("error generating random number")
 		os.Exit(1)
 	}
+	// see appleboy package example, slightly modified
+	// will implement metamaks/msg signing with ethereum accounts
+	// as the authentication metho
 	authMiddleware := &jwt.GinJWTMiddleware{
 		Realm:      realmName,
 		Key:        []byte(fmt.Sprintf("%v+%s", b, jwtKey)),
@@ -106,22 +109,10 @@ func Setup() *gin.Engine {
 				"message": message,
 			})
 		},
-		// TokenLookup is a string in the form of "<source>:<name>" that is used
-		// to extract token from the request.
-		// Optional. Default value "header:Authorization".
-		// Possible values:
-		// - "header:<name>"
-		// - "query:<name>"
-		// - "cookie:<name>"
-		TokenLookup: "header:Authorization",
-		// TokenLookup: "query:token",
-		// TokenLookup: "cookie:token",
 
-		// TokenHeadName is a string in the header. Default value is "Bearer"
+		TokenLookup:   "header:Authorization",
 		TokenHeadName: "Bearer",
-
-		// TimeFunc provides the current time. You can override it to use another time value. This is useful for testing or if your server uses a different time zone than your tokens.
-		TimeFunc: time.Now,
+		TimeFunc:      time.Now,
 	}
 
 	setupRoutes(r, adminUser, adminPass, authMiddleware)
@@ -139,11 +130,11 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
 	ipfsProtected.POST("/add-file", AddFileLocally)
 	ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
-	clusterProtected := g.Group("/api/v1/ipfs-cluster")
+	clusterProtected := g.Group("/api/v1/ipfs-cluster", gin.BasicAuth(gin.Accounts{adminUser: adminPass}))
 	clusterProtected.POST("/pin/:hash", PinHashToCluster)
 	clusterProtected.POST("/sync-errors-local", SyncClusterErrorsLocally)
 	clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster)
-	databaseProtected := g.Group("/api/v1/database")
+	databaseProtected := g.Group("/api/v1/database", gin.BasicAuth(gin.Accounts{adminUser: adminPass}))
 	databaseProtected.DELETE("/api/v1/database/garbage-collect/test", RunTestGarbageCollection)
 	// PROTECTED ROUTES -- END
 
