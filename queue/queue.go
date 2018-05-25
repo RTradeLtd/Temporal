@@ -148,9 +148,6 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					upload.HoldTimeInMonths = dpa.HoldTimeInMonths
 					upload.Type = "pin"
 					upload.UploadAddress = dpa.UploaderAddress
-					upload.Users = []models.User{
-						models.User{EthAddress: dpa.UploaderAddress},
-					}
 					// get current time
 					currTime := time.Now()
 					// get the hold time from in64 and convert to int
@@ -172,6 +169,7 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						d.Ack(false)
 						continue
 					}
+					upload.UploaderAddresses = append(lastUpload.UploaderAddresses, dpa.UploaderAddress)
 					upload.GarbageCollectDate = gcd
 					db.Create(&upload)
 					// submit message acknowledgement
@@ -204,9 +202,6 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 						upload.HoldTimeInMonths = dfa.HoldTimeInMonths
 						upload.Type = "file"
 						upload.UploadAddress = dfa.UploaderAddress
-						upload.Users = []models.User{
-							models.User{EthAddress: dfa.UploaderAddress},
-						}
 						upload.GarbageCollectDate = gcd
 						lastUpload := models.Upload{
 							Hash: dfa.Hash,
@@ -223,6 +218,7 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 							// skip the rest of the message, preventing a database record from being created
 							continue
 						}
+						upload.UploaderAddresses = append(lastUpload.UploaderAddresses, dfa.UploaderAddress)
 						// we have a valid upload request, so lets store it to the database
 						db.Create(&upload)
 						d.Ack(false)
