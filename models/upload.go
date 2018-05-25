@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
+	"github.com/lib/pq"
 )
 
 type Upload struct {
@@ -13,7 +14,7 @@ type Upload struct {
 	HoldTimeInMonths   int64  `gorm:"type:integer;not null;"`
 	UploadAddress      string `gorm:"type:varchar(255);not null;"`
 	GarbageCollectDate time.Time
-	Users              []User `gorm:"many2many:user_uploads;"`
+	UploaderAddresses  pq.StringArray `gorm:"type:text[];not null;"`
 }
 
 const dev = true
