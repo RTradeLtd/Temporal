@@ -10,6 +10,7 @@ export CERT_PATH="/root/certificates/api.pem"
 export KEY_PATH="/root/certificates/api.key"
 export ADMIN_USER="admin"
 export ADMIN_PASS="minutemaid"
+export JWT_KEY="test key"
 case "$1" in
 
     api)
