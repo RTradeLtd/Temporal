@@ -8,8 +8,7 @@ import (
 
 type User struct {
 	gorm.Model
-	EthAddress string   `gorm:"type:varchar(255);unique"`
-	Uploads    []Upload `gorm:"many2many:user_uploads;"`
+	EthAddress string `gorm:"type:varchar(255);unique"`
 }
 
 type UserManager struct {
