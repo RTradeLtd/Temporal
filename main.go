@@ -15,16 +15,10 @@ import (
 	ipfsQ "github.com/RTradeLtd/Temporal/queue/ipfs"
 	"github.com/RTradeLtd/Temporal/rtswarm"
 	"github.com/RTradeLtd/Temporal/server"
-	"github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
 var certFile = "/home/solidity/certificates/api.pem"
 var keyFile = "/home/solidity/certificates/api.key"
-
-// @title Temporal API
-// @version 1.0
-// @description This is the Temporal API
 
 func main() {
 	if len(os.Args) > 2 || len(os.Args) < 2 {
@@ -57,9 +51,6 @@ func main() {
 			os.Exit(1)
 		}
 		router := api.Setup()
-		// Swag
-		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()

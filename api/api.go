@@ -32,6 +32,7 @@ var xssMdlwr xss.XssMw
 var realmName = "temporal-realm"
 
 // Setup is used to initialize our api.
+// it invokes all  non exported function to setup the api.
 func Setup() *gin.Engine {
 
 	adminUser := os.Getenv("ADMIN_USER")
