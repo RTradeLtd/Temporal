@@ -132,7 +132,7 @@ contract Payment is PaymentAdministration, Utils {
         numPayments[_uploader] = numPayments[_uploader].add(1);
         // map the payment number to the payment id for easy off-chain fetching
         paymentIDs[_uploader][numPayments[_uploader]] = paymentID;
-        emit PaymentRegistered(msg.sender, _hashedCID, _retentionPeriodInMonths, _amount, paymentID);
+        emit PaymentRegistered(_uploader, _hashedCID, _retentionPeriodInMonths, _amount, paymentID);
         return true;
     }
 
