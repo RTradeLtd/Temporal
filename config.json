@@ -1,0 +1,34 @@
+{
+	"database": {
+		"password": "password123"
+	},
+	"api": {
+		"admin": {
+		"username": "admin",
+		"password": "admin"
+		},
+		"connection": {
+			"certificates": {
+				"cert_path": "....",
+				"key_path": "...."
+			},
+			"listen_address": "127.0.0.1"
+		}
+	},
+	"ethereum": { 
+		"account": {
+			"address": "0x",
+			"key_file": "....",
+			"key_pass": "password123"
+		},
+		"connection": {
+			"rpc": {
+				"ip": "127.0.0.1",
+				"port": "8545"
+			},
+			"ipc": {
+				"path": "...."
+			}
+		}
+	}
+}
