@@ -26,10 +26,6 @@ This is a huge issue and concern for any form of cloud storage. But is seldom me
 
 We aren't doing an ICO,  and we're not wasting our development efforts on redesigning the wheel with some new fangled storage protocol, and blockchain solution. Although we're using bleeding edge technology, we're commited to using names, and open source software that is already tested, and that has a thriving development community behind them. And finally, results matter; It is far to common in this space for companies to ask you to hand over your hand earned cash on the fleeting promise that it will lead to something, but that something is either never delivered, or extremely lack in features, and is not the original idea which was sold.
 
-# User Auth
-
-
-
 # Contributing
 
 ## Contributing - Code
@@ -40,6 +36,18 @@ The only requirement is that all code submitted must include tests.
 ## Contributing - Ideas
 
 All ideas are welcome, open up and issue and state your ideas!
+
+# Usage
+
+Authentication is done with JWT, for testing with postman see this link https://medium.com/@codebyjeff/using-postman-environment-variables-auth-tokens-ea9c4fe9d3d7
+
+
+Setting up postman with the tests section:
+
+    var data = JSON.parse(responseBody); // parses the response body
+                                    // into json for us
+    console.log(data);
+    postman.setEnvironmentVariable("token", data.token);
 
 # Tips and Tricks
 
