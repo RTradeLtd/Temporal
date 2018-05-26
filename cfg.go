@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/RTradeLtd/ipd-config/ipdcfg"
 )
@@ -9,23 +11,19 @@ import (
 // TemporalConfig is a helper struct holding
 // our config values
 type TemporalConfig struct {
-	DatabasePassword       string `json:"database_password"`
-	APIAdminUser           string `json:"api_admin_user"`
-	APIAdminPass           string `json:"api_admin_pass"`
-	APIJwtKeystring        string `json:"api_jwt_key"`
-	APIListenAddress       string `json:"api_listen_address"`
-	APICertificateCertPath string `json:"api_certificate_cert_path"`
-	APICertificateKeyPath  string `json:"api_certificate_key_path"`
+	Database struct {
+		Password string `json:"password"`
+	} `json:"database"`
 }
 
 func config(cfgCid string) {
 	var tCfg TemporalConfig
 	configManager := ipdcfg.Initialize("")
 	config := configManager.LoadConfig(cfgCid)
-	for k, v := range config {
-		switch k {
-		case "database":
-			tCfg.DatabasePassword = fmt.Sprint(v)
-		}
+	fmt.Println(config)
+	err := json.Unmarshal(config, &tCfg)
+	if err != nil {
+		log.Fatal(err)
 	}
+	fmt.Println(tCfg)
 }
