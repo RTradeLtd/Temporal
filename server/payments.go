@@ -48,38 +48,7 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 		return nil, err
 	}
 	sm.RegisterWaitForAndProcessPaymentsReceivedEventForAddress(uploaderAddress, contentHash)
-	/*	//time.Sleep(time.Millisecond * 750)
-		// in order to get their latest payment id, we need to get the total number of payments
-		// since we just submitted the transaction, we will read off pending state
-		numPayments, err := sm.PaymentsContract.NumPayments(&bind.CallOpts{Pending: true}, common.HexToAddress(uploaderAddress))
-		if err != nil {
-			return tx, err
-		}
 
-		// having their total number of payments, get the payment ID associated with their latest payment
-		// again, isnce we just submitted the call, we will read off pending state
-		paymentID, err := sm.PaymentsContract.PaymentIDs(&bind.CallOpts{Pending: true}, common.HexToAddress(uploaderAddress), numPayments)
-		if err != nil {
-			return tx, err
-		}
-		fmt.Printf("0x%s", hex.EncodeToString(paymentID[:]))
-		// construct a message to rabbitmq so we can save this paymetn information to the database
-		pr := queue.PaymentRegister{
-			UploaderAddress: uploaderAddress,
-			CID:             contentHash,
-			HashedCID:       hashedCID.String(),
-			PaymentID:       fmt.Sprintf("0x%s", hex.EncodeToString(paymentID[:])), // this converts the paymentID byte array to a string
-		}
-		// initialize a conenction to rabbitmq
-		qm, err := queue.Initialize(queue.PaymentRegisterQueue)
-		if err != nil {
-			return tx, err
-		}
-		// publish the message to rabbitmq
-		err = qm.PublishMessage(pr)
-		if err != nil {
-			return tx, err
-		}*/
 	return tx, nil
 }
 

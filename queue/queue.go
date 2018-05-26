@@ -279,7 +279,7 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					continue
 				}
 				fmt.Println("data unmarshaled successfully")
-				db.First(&payment).Where("payment_id = ?", payment.PaymentID)
+				db.Where("payment_id = ?", payment.PaymentID).Last(&payment)
 				if payment.CreatedAt == nullTime {
 					fmt.Println("payment is not a valid payment")
 					d.Ack(false)
