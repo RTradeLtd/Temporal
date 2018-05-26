@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -33,6 +34,12 @@ func main() {
 		os.Exit(1)
 	}
 	switch os.Args[1] {
+	case "config-test":
+		scanner := bufio.NewScanner(os.Stdin)
+		fmt.Println("enter dag cid for the config file")
+		scanner.Scan()
+		configCid := scanner.Text()
+		config(configCid)
 	case "api":
 		certFilePath := os.Getenv("CERT_PATH")
 		keyFilePath := os.Getenv("KEY_PATH")
