@@ -241,12 +241,17 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 				var nullTime time.Time
 				var payment models.Payment
 				pr := PaymentRegister{}
+				fmt.Println("unmarshaling payment registered data")
 				err := json.Unmarshal(d.Body, &pr)
 				if err != nil {
+					fmt.Println("error unmarshaling data", err)
 					d.Ack(false)
 					continue
 				}
-				db.First(&payment).Where("payment_id = ?", pr.PaymentID)
+				fmt.Println("data unmarshaled successfully")
+				fmt.Println(pr.PaymentID)
+				db.Where("payment_id = ?", pr.PaymentID).Find(&payment)
+				fmt.Println(payment)
 				if payment.CreatedAt != nullTime {
 					fmt.Println("payment is already in the database")
 					d.Ack(false)
@@ -256,7 +261,10 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 				payment.HashedCID = pr.HashedCID
 				payment.PaymentID = pr.PaymentID
 				payment.Paid = false
+				fmt.Println(payment)
+				fmt.Println("creating payment in database")
 				db.Create(&payment)
+				fmt.Println("payment entry in database created")
 				d.Ack(false)
 			}
 		case PaymentReceivedQueue:
@@ -265,19 +273,24 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 				var nullTime time.Time
 				var payment models.Payment
 				pr := PaymentReceived{}
+				fmt.Println("unmarshaling payment received data")
 				err := json.Unmarshal(d.Body, &pr)
 				if err != nil {
+					fmt.Println("error unmarhsaling data", err)
 					d.Ack(false)
 					continue
 				}
+				fmt.Println("data unmarshaled successfully")
 				db.First(&payment).Where("payment_id = ?", payment.PaymentID)
 				if payment.CreatedAt == nullTime {
 					fmt.Println("payment is not a valid payment")
 					d.Ack(false)
 					continue
 				}
+				fmt.Println("updating database with payment received")
 				payment.Paid = true
 				db.Update(&payment)
+				fmt.Println("database updated successfully, pinning to node")
 				go ipfsManager.Pin(payment.CID)
 				d.Ack(false)
 			}

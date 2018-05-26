@@ -91,13 +91,22 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+	case "payment-received-queue":
+		qm, err := queue.Initialize(queue.PaymentReceivedQueue)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = qm.ConsumeMessage("")
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "migrate":
 		dbm := database.Initialize()
 		dbm.RunMigrations()
 	case "contract-backend":
 		manager := server.Initialize()
 		fmt.Println(manager)
-	case "shell":
+	case "cli":
 		cli.Initialize()
 	case "lookup-address":
 		db := database.OpenDBConnection()
@@ -105,6 +114,9 @@ func main() {
 		mdl := um.FindByAddress("0xbF43d80dA01332b28cEE39644E8e08AD02a289F5")
 		fmt.Println(mdl)
 		db.Close()
+	case "watch-payments":
+		sm := server.Initialize()
+		sm.WaitForAndProcessPaymentsReceivedEvent()
 	default:
 		fmt.Println("noop")
 	}

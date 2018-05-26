@@ -15,9 +15,9 @@ import (
 	"github.com/RTradeLtd/Temporal/bindings/users"
 )
 
-var filesAddress = common.HexToAddress("0xb4452c00e62F8FE634AbCB8E1a8d7eC2aC42b796")
-var usersAddress = common.HexToAddress("0xC283BfEf5Eeb6A88d51Ddcf26E59a5e1A22C0280")
-var paymentsAddress = common.HexToAddress("0x492710A119dF8133aAdd72d0A1e37D63B5F2fdfA")
+var filesAddress = common.HexToAddress("0x4863bc94E981AdcCA4627F56838079333f3D3700")
+var usersAddress = common.HexToAddress("0x1800fF6b7BFaa6223B90B1d791Bc6a8c582110CA")
+var paymentsAddress = common.HexToAddress("0x8Ed368f4e081cd55392e14EE6784FF5B32326247")
 var connectionURL = "http://127.0.0.1:8545"
 
 // ServerManager is a helper struct for interact with the server
@@ -43,9 +43,9 @@ func Initialize() *ServerManager {
 	if keyFilePath == "" {
 		log.Fatal("KEY_FILE environment variable not set")
 	}
-	file, err := ioutil.ReadFile("/tmp/key_file")
+	file, err := ioutil.ReadFile(keyFilePath)
 	if err != nil {
-		log.Fatal("err")
+		log.Fatal(err)
 	}
 	key := string(file)
 	// connect  to the network

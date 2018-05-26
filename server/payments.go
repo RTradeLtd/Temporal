@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
@@ -58,12 +59,13 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 	if err != nil {
 		return tx, err
 	}
+	fmt.Printf("0x%s", hex.EncodeToString(paymentID[:]))
 	// construct a message to rabbitmq so we can save this paymetn information to the database
 	pr := queue.PaymentRegister{
 		UploaderAddress: uploaderAddress,
 		CID:             contentHash,
 		HashedCID:       hashedCID.String(),
-		PaymentID:       string(paymentID[:]), // this converts the paymentID byte array to a string
+		PaymentID:       fmt.Sprintf("0x%s", hex.EncodeToString(paymentID[:])), // this converts the paymentID byte array to a string
 	}
 	// initialize a conenction to rabbitmq
 	qm, err := queue.Initialize(queue.PaymentRegisterQueue)

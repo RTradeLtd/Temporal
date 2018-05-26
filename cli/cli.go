@@ -81,6 +81,7 @@ func (cl *CommandLine) SetupShell() {
 			}
 			retentionPeriodBig := big.NewInt(retentionPeriodInt)
 			chargeAmountBig := big.NewInt(chargeAmountInt)
+			fmt.Println("test")
 			manager := server.Initialize()
 			tx, err := manager.RegisterPaymentForUploader(uploaderAddressString, contentHashString, retentionPeriodBig, chargeAmountBig, uint8(methodUint))
 			if err != nil {
