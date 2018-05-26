@@ -88,6 +88,8 @@ func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("test")
+
 	queueManager, err := queue.Initialize(queue.PaymentReceivedQueue)
 	if err != nil {
 		log.Fatal(err)

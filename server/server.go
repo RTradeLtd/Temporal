@@ -19,6 +19,7 @@ var filesAddress = common.HexToAddress("0x4863bc94E981AdcCA4627F56838079333f3D37
 var usersAddress = common.HexToAddress("0x1800fF6b7BFaa6223B90B1d791Bc6a8c582110CA")
 var paymentsAddress = common.HexToAddress("0x8Ed368f4e081cd55392e14EE6784FF5B32326247")
 var connectionURL = "http://127.0.0.1:8545"
+var ipcPath = "/media/solidity/fuck/Rinkeby/datadir/geth.ipc"
 
 // ServerManager is a helper struct for interact with the server
 type ServerManager struct {
@@ -30,16 +31,17 @@ type ServerManager struct {
 }
 
 // Initialize is used to init the server manager
-func Initialize() *ServerManager {
+func Initialize(useIPC bool) *ServerManager {
 	// helper interface
 	var manager ServerManager
 	// get the password to decrypt the key
-	keyFilePath := os.Getenv("KEY_FILE")
 
 	pass := os.Getenv("ETH_PASS")
 	if pass == "" {
 		log.Fatal("ETH_PASS environment variable not set")
 	}
+	keyFilePath := os.Getenv("KEY_FILE")
+
 	if keyFilePath == "" {
 		log.Fatal("KEY_FILE environment variable not set")
 	}
@@ -48,10 +50,18 @@ func Initialize() *ServerManager {
 		log.Fatal(err)
 	}
 	key := string(file)
-	// connect  to the network
-	err = manager.ConnectToNetwork(connectionURL)
-	if err != nil {
-		log.Fatal(err)
+
+	if useIPC {
+		// connect  to the network
+		err = manager.ConnectToNetwork(ipcPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		err = manager.ConnectToNetwork(connectionURL)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	// decrypt the key
 	err = manager.Authenticate(key, pass)

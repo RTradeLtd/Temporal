@@ -104,7 +104,7 @@ func main() {
 		dbm := database.Initialize()
 		dbm.RunMigrations()
 	case "contract-backend":
-		manager := server.Initialize()
+		manager := server.Initialize(false)
 		fmt.Println(manager)
 	case "cli":
 		cli.Initialize()
@@ -115,7 +115,7 @@ func main() {
 		fmt.Println(mdl)
 		db.Close()
 	case "watch-payments":
-		sm := server.Initialize()
+		sm := server.Initialize(true)
 		sm.WaitForAndProcessPaymentsReceivedEvent()
 	default:
 		fmt.Println("noop")

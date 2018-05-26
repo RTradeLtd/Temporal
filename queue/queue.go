@@ -289,7 +289,7 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 				}
 				fmt.Println("updating database with payment received")
 				payment.Paid = true
-				db.Update(&payment)
+				db.Model(&payment).Updates(map[string]interface{}{"paid": true})
 				fmt.Println("database updated successfully, pinning to node")
 				go ipfsManager.Pin(payment.CID)
 				d.Ack(false)

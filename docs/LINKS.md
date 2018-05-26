@@ -49,3 +49,8 @@ https://github.com/ipfs/js-ipfs/issues/1205
 # Prometheus
 
 https://www.slideshare.net/weaveworks/grafana-is-not-enough-diy-user-interfaces-for-prometheus
+
+# Tricks with geth
+
+`notifications not supported`:
+* https://github.com/ethereum/go-ethereum/issues/14341
