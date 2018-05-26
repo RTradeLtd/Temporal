@@ -110,7 +110,7 @@ func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent() {
 			paymentID := evLog.PaymentID
 			pr := queue.PaymentReceived{}
 			pr.UploaderAddress = uploader.String()
-			pr.PaymentID = string(paymentID[:])
+			pr.PaymentID = fmt.Sprintf("0x%s", hex.EncodeToString(paymentID[:]))
 			queueManager.PublishMessage(pr)
 		}
 	}
