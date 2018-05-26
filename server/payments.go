@@ -84,6 +84,7 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 }
 
 func (sm *ServerManager) RegisterWaitForAndProcessPaymentsReceivedEventForAddress(address string, cid string) {
+	var processed bool
 	var ch = make(chan *payments.PaymentsPaymentRegistered)
 	sub, err := sm.PaymentsContract.WatchPaymentRegistered(nil, ch, []common.Address{common.HexToAddress(address)})
 	if err != nil {
@@ -94,6 +95,9 @@ func (sm *ServerManager) RegisterWaitForAndProcessPaymentsReceivedEventForAddres
 		log.Fatal(err)
 	}
 	for {
+		if processed {
+			break
+		}
 		select {
 		case err := <-sub.Err():
 			fmt.Println("Error parsing event ", err)
@@ -108,6 +112,8 @@ func (sm *ServerManager) RegisterWaitForAndProcessPaymentsReceivedEventForAddres
 			pr.HashedCID = fmt.Sprintf("%s", hex.EncodeToString(hashedCID[:]))
 			pr.PaymentID = fmt.Sprintf("0x%s", hex.EncodeToString(paymentID[:]))
 			queueManager.PublishMessage(pr)
+			processed = true
+			break
 		}
 	}
 }

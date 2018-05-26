@@ -249,7 +249,6 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 					continue
 				}
 				fmt.Println("data unmarshaled successfully")
-				fmt.Println(pr.PaymentID)
 				db.Where("payment_id = ?", pr.PaymentID).Find(&payment)
 				fmt.Println(payment)
 				if payment.CreatedAt != nullTime {
@@ -261,7 +260,6 @@ func (qm *QueueManager) ConsumeMessage(consumer string) error {
 				payment.HashedCID = pr.HashedCID
 				payment.PaymentID = pr.PaymentID
 				payment.Paid = false
-				fmt.Println(payment)
 				fmt.Println("creating payment in database")
 				db.Create(&payment)
 				fmt.Println("payment entry in database created")

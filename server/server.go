@@ -17,7 +17,7 @@ import (
 
 var filesAddress = common.HexToAddress("0x4863bc94E981AdcCA4627F56838079333f3D3700")
 var usersAddress = common.HexToAddress("0x1800fF6b7BFaa6223B90B1d791Bc6a8c582110CA")
-var paymentsAddress = common.HexToAddress("0x8Ed368f4e081cd55392e14EE6784FF5B32326247")
+var paymentsAddress = common.HexToAddress("0x3b2fD241378a326Af998E4243aA76fE8b8414dEe")
 var connectionURL = "http://127.0.0.1:8545"
 var ipcPath = "/media/solidity/fuck/Rinkeby/datadir/geth.ipc"
 
