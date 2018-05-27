@@ -163,6 +163,15 @@ func PinHashLocally(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
+	go func() {
+		// currently after it is pinned, it is sent to the cluster to be pinned
+		manager := rtfs.Initialize("")
+		// before exiting, it is pinned to the cluster
+		err = manager.Pin(hash)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 	// construct the rabbitmq message to add this entry to the database
 	dpa := queue.DatabasePinAdd{
 		Hash:             hash,
@@ -187,15 +196,6 @@ func PinHashLocally(c *gin.Context) {
 		return
 	}
 	qm.Close()
-	go func() {
-		// currently after it is pinned, it is sent to the cluster to be pinned
-		manager := rtfs.Initialize("")
-		// before exiting, it is pinned to the cluster
-		err = manager.Pin(hash)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}()
 	c.JSON(http.StatusOK, gin.H{"upload": dpa})
 }
 
@@ -269,6 +269,18 @@ func PinHashToCluster(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
+	// we are going to pin first, since we want the data availableility immediately
+	// and dont want to depend on a failure, say adding to the database, preventing us from pinning
+	go func() {
+		// currently after it is pinned, it is sent to the cluster to be pinned
+		manager := rtfs_cluster.Initialize()
+		decodedHash := manager.DecodeHashString(hash)
+		// before exiting, it is pinned to the cluster
+		err = manager.Pin(decodedHash)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 	// construct the rabbitmq message to add this entry to the database
 	dpa := queue.DatabasePinAdd{
 		Hash:             hash,
@@ -293,16 +305,6 @@ func PinHashToCluster(c *gin.Context) {
 		return
 	}
 	qm.Close()
-	go func() {
-		// currently after it is pinned, it is sent to the cluster to be pinned
-		manager := rtfs_cluster.Initialize()
-		decodedHash := manager.DecodeHashString(hash)
-		// before exiting, it is pinned to the cluster
-		err = manager.Pin(decodedHash)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}()
 	c.JSON(http.StatusOK, gin.H{"upload": dpa})
 }
 
