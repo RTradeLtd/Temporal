@@ -3,8 +3,8 @@
 # used to install a single node ipfs cluster
 
 
-IPFS_CLUSTER_PATH=/srv/dev-disk-by-label-Data/ipfs-data/cluster-data
-export IPFS_CLUSTER_PATH=/srv/dev-disk-by-label-Data/ipfs-data/cluster-data
+IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
+export IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
 #CLUSTER_SECRET="....."
 #export CLUSTER_SECRET="....."
 
