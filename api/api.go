@@ -257,18 +257,53 @@ func AddFileLocally(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"response": resp})
 }
 
-// PinHashToCluster is used to pin a hash to the global cluster state
+// PinHashToCluster is used to pin a hash to the local ipfs node
 func PinHashToCluster(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
-	manager := rtfs_cluster.Initialize()
-	// decode the hash
-	contentIdentifier := manager.DecodeHashString(hash)
-	// pin the hash to the cluster, using -1 for replication factor, indicating to pin EVERYWHERE in the cluster
+	uploadAddress := contextCopy.PostForm("uploadAddress")
+	holdTimeInMonths := contextCopy.PostForm("holdTime")
+	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		c.Error(err)
+		fmt.Println(err)
+		return
+	}
+	// construct the rabbitmq message to add this entry to the database
+	dpa := queue.DatabasePinAdd{
+		Hash:             hash,
+		UploaderAddress:  uploadAddress,
+		HoldTimeInMonths: holdTimeInt,
+	}
+	// assert type assertion retrieving info from middleware
+	mqConnectionURL := c.MustGet("mq_conn_url").(string)
+	// initialize the queue
+	qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
+	if err != nil {
+		c.Error(err)
+		fmt.Println(err)
+
+		return
+	}
+	// publish the message, if there was an error finish processing
+	err = qm.PublishMessage(dpa)
+	if err != nil {
+		c.Error(err)
+		fmt.Println(err)
+		return
+	}
+	qm.Close()
 	go func() {
-		manager.Client.Pin(contentIdentifier, -1, -1, hash)
+		// currently after it is pinned, it is sent to the cluster to be pinned
+		manager := rtfs_cluster.Initialize()
+		decodedHash := manager.DecodeHashString(hash)
+		// before exiting, it is pinned to the cluster
+		err = manager.Pin(decodedHash)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}()
-	c.JSON(http.StatusOK, gin.H{"hash": hash})
+	c.JSON(http.StatusOK, gin.H{"upload": dpa})
 }
 
 // SyncClusterErrorsLocally is used to parse through the local cluster state
