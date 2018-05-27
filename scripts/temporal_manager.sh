@@ -3,8 +3,10 @@
 
 # Used to handle system launching of temporal
 
-IPFS_PATH="/srv/dev-disk-by-label-Data/ipfs-data"
+IPFS_PATH="/ipfs"
+IPFS_CLUSTER_PATH="/ipfs/ipfs-cluster"
 export IPFS_PATH="$IPFS_PATH"
+export IPFS_CLUSTER_PATH="$IPFS_CLUSTER_PATH"
 export DB_PASS="password123"
 export CERT_PATH="/root/certificates/api.pem"
 export KEY_PATH="/root/certificates/api.key"
