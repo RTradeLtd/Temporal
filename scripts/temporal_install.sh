@@ -15,5 +15,6 @@ sudo cp ~/go/src/github.com/RTradeLtd/Temporal/configs/ipfs.service /etc/systemd
 sudo cp ~/go/src/github.com/RTradeLtd/Temporal/configs/ipfs_cluster.service /etc/systemd/system
 sudo chmod a+x /boot_scripts/ipfs_manager_script.sh
 sudo chmod a+x /boot_scripts/cluster_manager.sh
+sudo chmod a+x /boot_scripts/temporal_manager.sh
 sudo systemctl enable ipfs.service
 sudo systemctl enable ipfs_cluster.service
