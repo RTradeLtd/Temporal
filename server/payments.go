@@ -25,7 +25,7 @@ func (sm *ServerManager) NewPaymentsContract(address common.Address) error {
 }
 
 // RegisterPaymentForUploader is used to register a payment for the given uploader
-func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, contentHash string, retentionPeriodInMonths *big.Int, chargeAmountInWei *big.Int, method uint8) (*types.Transaction, error) {
+func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, contentHash string, retentionPeriodInMonths *big.Int, chargeAmountInWei *big.Int, method uint8, mqConnectionURL string) (*types.Transaction, error) {
 	if method > 1 || method < 0 {
 		return nil, errors.New("invalid payment method. 0 = RTC, 1 = ETH")
 	}
@@ -47,19 +47,19 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 	if err != nil {
 		return nil, err
 	}
-	sm.RegisterWaitForAndProcessPaymentsReceivedEventForAddress(uploaderAddress, contentHash)
+	sm.RegisterWaitForAndProcessPaymentsReceivedEventForAddress(uploaderAddress, contentHash, mqConnectionURL)
 
 	return tx, nil
 }
 
-func (sm *ServerManager) RegisterWaitForAndProcessPaymentsReceivedEventForAddress(address string, cid string) {
+func (sm *ServerManager) RegisterWaitForAndProcessPaymentsReceivedEventForAddress(address, cid, mqConnectionURL string) {
 	var processed bool
 	var ch = make(chan *payments.PaymentsPaymentRegistered)
 	sub, err := sm.PaymentsContract.WatchPaymentRegistered(nil, ch, []common.Address{common.HexToAddress(address)})
 	if err != nil {
 		log.Fatal(err)
 	}
-	queueManager, err := queue.Initialize(queue.PaymentRegisterQueue)
+	queueManager, err := queue.Initialize(queue.PaymentRegisterQueue, mqConnectionURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func (sm *ServerManager) RegisterWaitForAndProcessPaymentsReceivedEventForAddres
 	}
 }
 
-func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent() {
+func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent(mqConnectionURL string) {
 	// create the channel for which we will receive payments on
 	var ch = make(chan *payments.PaymentsPaymentReceivedNoIndex)
 	// create a subscription for th eevent passing in messages to teh chanenl we just established
@@ -96,7 +96,7 @@ func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent() {
 		log.Fatal(err)
 	}
 
-	queueManager, err := queue.Initialize(queue.PaymentReceivedQueue)
+	queueManager, err := queue.Initialize(queue.PaymentReceivedQueue, mqConnectionURL)
 	if err != nil {
 		log.Fatal(err)
 	}

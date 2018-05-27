@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
@@ -34,7 +35,7 @@ var realmName = "temporal-realm"
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup(adminUser, adminPass, jwtKey, rollbarToken string) *gin.Engine {
+func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL string) *gin.Engine {
 
 	roll.Token = rollbarToken
 	roll.Environment = "development"
@@ -52,6 +53,7 @@ func Setup(adminUser, adminPass, jwtKey, rollbarToken string) *gin.Engine {
 	// prevent mine content sniffing
 	r.Use(helmet.NoSniff())
 	r.Use(rollbar.Recovery(false))
+	r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	// read 1000 random numbers, used to help randomnize the JWT
 	c := 1000
 	b := make([]byte, c)
@@ -167,8 +169,10 @@ func PinHashLocally(c *gin.Context) {
 		UploaderAddress:  uploadAddress,
 		HoldTimeInMonths: holdTimeInt,
 	}
+	// assert type assertion retrieving info from middleware
+	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	// initialize the queue
-	qm, err := queue.Initialize(queue.DatabasePinAddQueue)
+	qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
 	if err != nil {
 		c.Error(err)
 		fmt.Println(err)
@@ -237,8 +241,9 @@ func AddFileLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		UploaderAddress:  uploaderAddress,
 	}
+	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	// initialize a connectino to rabbitmq
-	qm, err := queue.Initialize(queue.DatabaseFileAddQueue)
+	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL)
 	if err != nil {
 		c.Error(err)
 		return
@@ -334,7 +339,8 @@ func RemovePinFromLocalHost(c *gin.Context) {
 	}()
 	// TODO:
 	// change to send a message to the cluster to depin
-	qm, err := queue.Initialize(queue.IpfsQueue)
+	mqConnectionURL := c.MustGet("mq_conn_url").(string)
+	qm, err := queue.Initialize(queue.IpfsQueue, mqConnectionURL)
 	if err != nil {
 		c.Error(err)
 		return
@@ -356,7 +362,8 @@ func RemovePinFromCluster(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	qm, err := queue.Initialize(queue.IpfsQueue)
+	mqConnectionURL := c.MustGet("mq_conn_url").(string)
+	qm, err := queue.Initialize(queue.IpfsQueue, mqConnectionURL)
 	if err != nil {
 		c.Error(err)
 		return

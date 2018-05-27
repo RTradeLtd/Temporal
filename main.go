@@ -56,7 +56,8 @@ func main() {
 		adminPass := tCfg.API.Admin.Password
 		jwtKey := tCfg.API.JwtKey
 		rollbarToken := tCfg.API.RollbarToken
-		router := api.Setup(adminUser, adminPass, jwtKey, rollbarToken)
+		rabbitMQConnectionURL := tCfg.RabbitMQ.URL
+		router := api.Setup(adminUser, adminPass, jwtKey, rollbarToken, rabbitMQConnectionURL)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
@@ -65,7 +66,8 @@ func main() {
 		}
 		fmt.Printf("%+v\n", sm)
 	case "queue-dpa":
-		qm, err := queue.Initialize(queue.DatabasePinAddQueue)
+		mqConnectionURL := tCfg.RabbitMQ.URL
+		qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -74,7 +76,8 @@ func main() {
 			log.Fatal(err)
 		}
 	case "queue-dfa":
-		qm, err := queue.Initialize(queue.DatabaseFileAddQueue)
+		mqConnectionURL := tCfg.RabbitMQ.URL
+		qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -89,7 +92,8 @@ func main() {
 		}
 		psm.ParseClusterPinTopic()
 	case "payment-register-queue":
-		qm, err := queue.Initialize(queue.PaymentRegisterQueue)
+		mqConnectionURL := tCfg.RabbitMQ.URL
+		qm, err := queue.Initialize(queue.PaymentRegisterQueue, mqConnectionURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -98,7 +102,8 @@ func main() {
 			log.Fatal(err)
 		}
 	case "payment-received-queue":
-		qm, err := queue.Initialize(queue.PaymentReceivedQueue)
+		mqConnectionURL := tCfg.RabbitMQ.URL
+		qm, err := queue.Initialize(queue.PaymentReceivedQueue, mqConnectionURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -113,7 +118,8 @@ func main() {
 		manager := server.Initialize(false)
 		fmt.Println(manager)
 	case "cli":
-		cli.Initialize()
+		mqConnectionURL := tCfg.RabbitMQ.URL
+		cli.Initialize(mqConnectionURL)
 	case "lookup-address":
 		db := database.OpenDBConnection()
 		um := models.NewUserManager(db)
@@ -121,8 +127,9 @@ func main() {
 		fmt.Println(mdl)
 		db.Close()
 	case "watch-payments":
+		mqConnectionURL := tCfg.RabbitMQ.URL
 		sm := server.Initialize(true)
-		sm.WaitForAndProcessPaymentsReceivedEvent()
+		sm.WaitForAndProcessPaymentsReceivedEvent(mqConnectionURL)
 	default:
 		fmt.Println("noop")
 	}

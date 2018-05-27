@@ -63,8 +63,8 @@ type PaymentReceived struct {
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
-func Initialize(queueName string) (*QueueManager, error) {
-	conn, err := setupConnection()
+func Initialize(queueName, connectionURL string) (*QueueManager, error) {
+	conn, err := setupConnection(connectionURL)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +78,8 @@ func Initialize(queueName string) (*QueueManager, error) {
 	return &qm, nil
 }
 
-func setupConnection() (*amqp.Connection, error) {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+func setupConnection(connectionURL string) (*amqp.Connection, error) {
+	conn, err := amqp.Dial(connectionURL)
 	if err != nil {
 		return nil, err
 	}
