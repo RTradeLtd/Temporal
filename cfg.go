@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/RTradeLtd/ipd-config/ipdcfg"
@@ -28,6 +27,8 @@ type TemporalConfig struct {
 			}
 			ListenAddress string `json:"listen_address"`
 		} `json:"connection"`
+		RollbarToken string `json:"rollbar_token"`
+		JwtKey       string `json:"jwt_key"`
 	} `json:"api"`
 	Ethereum struct {
 		Account struct {
@@ -46,19 +47,18 @@ type TemporalConfig struct {
 		} `json:"connection"`
 	} `json:"ethereum"`
 	RabbitMQ struct {
-		IP   string `json:"ip"`
-		Port string `json:"port"`
+		URL string `json:"url"`
 	} `json:"rabbitmq"`
 }
 
-func config(cfgCid string) {
+// LoadConfig is used to load a config object, from the cid
+func LoadConfig(cfgCid string) *TemporalConfig {
 	var tCfg TemporalConfig
 	configManager := ipdcfg.Initialize("")
 	config := configManager.LoadConfig(cfgCid)
-	fmt.Println(config)
 	err := json.Unmarshal(config, &tCfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%+v\n", tCfg)
+	return &tCfg
 }
