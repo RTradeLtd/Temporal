@@ -12,6 +12,8 @@ import (
 // our config values
 type TemporalConfig struct {
 	Database struct {
+		Name     string `json:"name"`
+		Username string `json:"username"`
 		Password string `json:"password"`
 	} `json:"database"`
 	API struct {
@@ -43,6 +45,10 @@ type TemporalConfig struct {
 			} `json:"ipc"`
 		} `json:"connection"`
 	} `json:"ethereum"`
+	RabbitMQ struct {
+		IP   string `json:"ip"`
+		Port string `json:"port"`
+	} `json:"rabbitmq"`
 }
 
 func config(cfgCid string) {
