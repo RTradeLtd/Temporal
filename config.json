@@ -1,24 +1,28 @@
 {
 	"database": {
+		"name": "temporal",
+		"username": "postgres",
 		"password": "password123"
 	},
 	"api": {
 		"admin": {
-		"username": "admin",
-		"password": "admin"
+			"username": "admin",
+			"password": "admin"
 		},
 		"connection": {
 			"certificates": {
-				"cert_path": "....",
-				"key_path": "...."
+				"cert_path": "/home/solidity/certificates/api.pem",
+				"key_path": "/home/solidity/certificates/api.key"
 			},
 			"listen_address": "127.0.0.1"
-		}
+		},
+		"rollbar_token": "....",
+		"jwt_key": "....."
 	},
 	"ethereum": { 
 		"account": {
-			"address": "0x",
-			"key_file": "....",
+			"address": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
+			"key_file": "/media/solidity/fuck/Rinkeby/keystore/UTC--2018-05-26T01-50-15.918578523Z--c6c35f43fdd71f86a2d8d4e3ca1ce32564c38bd9",
 			"key_pass": "password123"
 		},
 		"connection": {
@@ -27,8 +31,11 @@
 				"port": "8545"
 			},
 			"ipc": {
-				"path": "...."
+				"path": "/media/solidity/fuck/Rinkeby/datadir/geth.ipc"
 			}
 		}
+	},
+	"rabbitmq": {
+		"url": "amqp://guest:guest@localhost:5672/"
 	}
 }

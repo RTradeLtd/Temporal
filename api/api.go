@@ -5,7 +5,6 @@ package api
 import (
 	"crypto/rand"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -35,29 +34,9 @@ var realmName = "temporal-realm"
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup() *gin.Engine {
+func Setup(adminUser, adminPass, jwtKey, rollbarToken string) *gin.Engine {
 
-	adminUser := os.Getenv("ADMIN_USER")
-	adminPass := os.Getenv("ADMIN_PASS")
-	jwtKey := os.Getenv("JWT_KEY")
-	if adminUser == "" {
-		fmt.Println("ADMIN_USER env var not set")
-		os.Exit(1)
-	}
-	if adminPass == "" {
-		fmt.Println("ADMIN_PASS env var not set")
-		os.Exit(1)
-	}
-	if jwtKey == "" {
-		fmt.Println("JWT_KEY environment variable is not set")
-		os.Exit(1)
-	}
-	// we use rollbar for logging errors
-	token := os.Getenv("ROLLBAR_TOKEN")
-	if token == "" {
-		log.Fatal("invalid token")
-	}
-	roll.Token = token
+	roll.Token = rollbarToken
 	roll.Environment = "development"
 	r := gin.Default()
 	r.Use(xssMdlwr.RemoveXss())

@@ -20,6 +20,7 @@ import (
 
 var certFile = "/home/solidity/certificates/api.pem"
 var keyFile = "/home/solidity/certificates/api.key"
+var tCfg TemporalConfig
 
 func main() {
 	if len(os.Args) > 2 || len(os.Args) < 2 {
@@ -33,31 +34,29 @@ func main() {
 		fmt.Println("migrate: migrate the database")
 		os.Exit(1)
 	}
+	configDag := os.Getenv("CONFIG_DAG")
+	if configDag == "" {
+		log.Fatal("CONFIG_DAG is not set")
+	}
+	tCfg := LoadConfig(configDag)
+
 	switch os.Args[1] {
 	case "config-test":
 		scanner := bufio.NewScanner(os.Stdin)
 		fmt.Println("enter dag cid for the config file")
 		scanner.Scan()
 		configCid := scanner.Text()
-		config(configCid)
+		config := LoadConfig(configCid)
+		fmt.Printf("%+v\n", config)
 	case "api":
-		certFilePath := os.Getenv("CERT_PATH")
-		keyFilePath := os.Getenv("KEY_PATH")
-		if certFilePath == "" {
-			fmt.Println("CERT_PATH environment variable not set")
-			os.Exit(1)
-		}
-		if keyFilePath == "" {
-			fmt.Println("KEY_PATH environment variable not set")
-			os.Exit(1)
-		}
-		listenAddress := os.Getenv("LISTEN_ADDRESS")
-		if listenAddress == "" {
-			fmt.Println("invalid address")
-			fmt.Println("Please set LISTEN_ADDRESS env to a valid ip address")
-			os.Exit(1)
-		}
-		router := api.Setup()
+		certFilePath := tCfg.API.Connection.Certificates.CertPath
+		keyFilePath := tCfg.API.Connection.Certificates.KeyPath
+		listenAddress := tCfg.API.Connection.ListenAddress
+		adminUser := tCfg.API.Admin.Username
+		adminPass := tCfg.API.Admin.Password
+		jwtKey := tCfg.API.JwtKey
+		rollbarToken := tCfg.API.RollbarToken
+		router := api.Setup(adminUser, adminPass, jwtKey, rollbarToken)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
