@@ -108,22 +108,23 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 
 	apiV1 := g.Group("/api/v1")
 	apiV1.Use(authWare.MiddlewareFunc())
-	apiV1.GET("/hello", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"msg": "hello"})
-	})
-	// PROTECTED ROUTES -- BEGIN
 	ipfsProtected := g.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
+	clusterProtected := g.Group("/api/v1/ipfs-cluster")
+	databaseProtected := g.Group("/api/v1/database")
+	databaseProtected.Use(authWare.MiddlewareFunc())
+	clusterProtected.Use(authWare.MiddlewareFunc())
+
+	// PROTECTED ROUTES -- BEGIN
+
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
 	ipfsProtected.POST("/add-file", AddFileLocally)
 	ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
-	clusterProtected := g.Group("/api/v1/ipfs-cluster")
-	clusterProtected.Use(authWare.MiddlewareFunc())
+
 	clusterProtected.POST("/pin/:hash", PinHashToCluster)
 	clusterProtected.POST("/sync-errors-local", SyncClusterErrorsLocally)
 	clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster)
-	databaseProtected := g.Group("/api/v1/database")
-	databaseProtected.Use(authWare.MiddlewareFunc())
+
 	databaseProtected.DELETE("/api/v1/database/garbage-collect/test", RunTestGarbageCollection)
 	// PROTECTED ROUTES -- END
 
