@@ -27,17 +27,18 @@ scrape_configs:
 
     static_configs:
       - targets: ['localhost:9090']
+
   - job_name: 'local_node'
     
     static_configs:
        - targets: ['localhost:9100']
 
-  - job_name: 'gin_test'
+  - job_name: 'gin_api'
 
     static_configs:
-       - targets: ['localhost:6768']
+       - targets: ['192.168.1.250:6768', '192.168.1.249:6768']
 
-  - job_name: 'ipfs_test'
+  - job_name: 'ipfs_nodes'
     metrics_path: '/debug/metrics/prometheus'
     static_configs:
-       - targets: ['localhost:5001']
+       - targets: ['192.168.1.250:5001', '192.168.1.249:5001']
