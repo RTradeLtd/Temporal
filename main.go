@@ -8,12 +8,12 @@ import (
 
 	//_ "./docs"
 	"github.com/RTradeLtd/Temporal/api"
-	"github.com/RTradeLtd/Temporal/api/rtfs"
 	"github.com/RTradeLtd/Temporal/cli"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	ipfsQ "github.com/RTradeLtd/Temporal/queue/ipfs"
+	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/rtswarm"
 	"github.com/RTradeLtd/Temporal/server"
 )

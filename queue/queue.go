@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/api/rtfs"
+	"github.com/RTradeLtd/Temporal/rtfs"
 
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"

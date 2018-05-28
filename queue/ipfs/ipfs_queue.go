@@ -3,9 +3,9 @@ package ipfs
 import (
 	"fmt"
 
-	"github.com/RTradeLtd/Temporal/api/rtfs_cluster"
+	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 
-	"github.com/RTradeLtd/Temporal/api/rtfs"
+	"github.com/RTradeLtd/Temporal/rtfs"
 	ipfsapi "github.com/ipfs/go-ipfs-api"
 )
 
