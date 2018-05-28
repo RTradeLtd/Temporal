@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
@@ -50,10 +49,4 @@ func JwtConfigGenerate(jwtKey string, db *gorm.DB) *jwt.GinJWTMiddleware {
 	}
 
 	return authMiddleware
-}
-
-func GetAuthenticatedUser(c *gin.Context) {
-	claims := jwt.ExtractClaims(c)
-	c.JSON(http.StatusFound, gin.H{"claims-id": claims["id"]})
-	return
 }

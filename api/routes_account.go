@@ -5,6 +5,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
+	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -56,4 +57,10 @@ func RegisterEnterpriseUserAccount(c *gin.Context) {
 	userModel.HashedPassword = "scrubbed"
 	c.JSON(http.StatusCreated, gin.H{"user": userModel})
 	return
+}
+
+func GetAuthenticatedUserFromContext(c *gin.Context) string {
+	claims := jwt.ExtractClaims(c)
+	// this is their eth address
+	return claims["id"].(string)
 }

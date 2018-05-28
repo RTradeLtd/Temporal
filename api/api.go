@@ -18,6 +18,7 @@ import (
 )
 
 var xssMdlwr xss.XssMw
+var AdminAddress string
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
@@ -62,9 +63,6 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	apiV1.Use(authWare.MiddlewareFunc())
 
 	// PROTECTED ROUTES -- BEGIN
-	auth := g.Group("/api/v1/auth")
-	auth.Use(authWare.MiddlewareFunc())
-	auth.GET("/claims", middleware.GetAuthenticatedUser)
 	ipfsProtected := g.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)

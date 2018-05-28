@@ -18,8 +18,14 @@ func RunTestGarbageCollection(c *gin.Context) {
 }
 
 // GetUploadsFromDatabase is used to read a list of uploads from our database
-// TODO: cleanup
+// only usable by admin
 func GetUploadsFromDatabase(c *gin.Context) {
+	user := GetAuthenticatedUserFromContext(c)
+	if user != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden access, not an admin this will be reported"})
+		// trigger error report
+		return
+	}
 	// open a connection to the database
 	db := c.MustGet("db_connection").(*gorm.DB)
 	um := models.NewUploadManager(db)
@@ -35,13 +41,20 @@ func GetUploadsFromDatabase(c *gin.Context) {
 }
 
 // GetUploadsForAddress is used to read a list of uploads from a particular eth address
-// TODO: cleanup
+// If not admin, will retrieve all uploads for the current context account
 func GetUploadsForAddress(c *gin.Context) {
+	var queryAddress string
 	// open a connection to the database
 	db := c.MustGet("db_connection").(*gorm.DB)
 	um := models.NewUploadManager(db)
+	user := GetAuthenticatedUserFromContext(c)
+	if user == AdminAddress {
+		queryAddress = c.Param("address")
+	} else {
+		queryAddress = user
+	}
 	// fetch all uploads for that address
-	uploads := um.GetUploadsForAddress(c.Param("address"))
+	uploads := um.GetUploadsForAddress(queryAddress)
 	if uploads == nil {
 		um.DB.Close()
 		c.JSON(http.StatusNotFound, nil)
