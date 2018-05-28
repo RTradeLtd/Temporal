@@ -3,10 +3,8 @@
 package api
 
 import (
-	"crypto/rand"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
@@ -20,8 +18,6 @@ import (
 	"github.com/dvwright/xss-mw"
 	gocid "github.com/ipfs/go-cid"
 
-	"time"
-
 	"github.com/RTradeLtd/Temporal/api/rtfs"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/gin-contrib/rollbar"
@@ -31,7 +27,6 @@ import (
 )
 
 var xssMdlwr xss.XssMw
-var realmName = "temporal-realm"
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
@@ -54,47 +49,8 @@ func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL string) *
 	r.Use(helmet.NoSniff())
 	r.Use(rollbar.Recovery(false))
 	r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	// read 1000 random numbers, used to help randomnize the JWT
-	c := 1000
-	b := make([]byte, c)
-	_, err := rand.Read(b)
-	if err != nil {
-		fmt.Println("error generating random number")
-		os.Exit(1)
-	}
-	// see appleboy package example, slightly modified
-	// will implement metamaks/msg signing with ethereum accounts
-	// as the authentication metho
-	authMiddleware := &jwt.GinJWTMiddleware{
-		Realm:      realmName,
-		Key:        []byte(fmt.Sprintf("%v+%s", b, jwtKey)),
-		Timeout:    time.Hour * 24,
-		MaxRefresh: time.Hour * 24,
-		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {
-			if userId == adminUser && password == adminPass {
-				return userId, true
-			}
 
-			return userId, false
-		},
-		Authorizator: func(userId string, c *gin.Context) bool {
-			if userId == adminUser {
-				return true
-			}
-
-			return false
-		},
-		Unauthorized: func(c *gin.Context, code int, message string) {
-			c.JSON(code, gin.H{
-				"code":    code,
-				"message": message,
-			})
-		},
-
-		TokenLookup:   "header:Authorization",
-		TokenHeadName: "Bearer",
-		TimeFunc:      time.Now,
-	}
+	authMiddleware := middleware.JwtConfigGenerate(jwtKey, adminUser, adminPass)
 
 	setupRoutes(r, adminUser, adminPass, authMiddleware)
 	return r
