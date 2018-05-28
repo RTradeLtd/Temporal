@@ -21,7 +21,8 @@ var xssMdlwr xss.XssMw
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL string) *gin.Engine {
+func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass string) *gin.Engine {
+	db := database.OpenDBConnection(dbPass)
 
 	roll.Token = rollbarToken
 	roll.Environment = "development"
@@ -40,7 +41,7 @@ func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL string) *
 	r.Use(helmet.NoSniff())
 	r.Use(rollbar.Recovery(false))
 	r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	db := database.OpenDBConnection()
+	r.Use(middleware.DatabaseMiddleware(db))
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
 	setupRoutes(r, adminUser, adminPass, authMiddleware)
@@ -52,6 +53,10 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 
 	// LOGIN
 	g.POST("/api/v1/login", authWare.LoginHandler)
+
+	// REGISTER
+	g.POST("/api/v1/register", RegisterUserAccount)
+	g.POST("/api/v1/register-enterprise", RegisterEnterpriseUserAccount)
 
 	apiV1 := g.Group("/api/v1")
 	apiV1.Use(authWare.MiddlewareFunc())
