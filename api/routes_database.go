@@ -11,6 +11,10 @@ import (
 // RunTestGarbageCollection is used to run a test
 // of our garbage collector
 func RunTestGarbageCollection(c *gin.Context) {
+	user := GetAuthenticatedUserFromContext(c)
+	if user != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized access to test garbage collect"})
+	}
 	db := c.MustGet("db_connection").(*gorm.DB)
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunTestDatabaseGarbageCollection()
