@@ -1,9 +1,7 @@
 package middleware
 
 import (
-	"crypto/rand"
-	"fmt"
-	"os"
+	"net/http"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
@@ -16,19 +14,12 @@ var realmName = "temporal-realm"
 
 // JwtConfigGenerate is used to generate our JWT configuration
 func JwtConfigGenerate(jwtKey string, db *gorm.DB) *jwt.GinJWTMiddleware {
-	// read 1000 random numbers, used to help randomnize the JWT
-	c := 1000
-	b := make([]byte, c)
-	_, err := rand.Read(b)
-	if err != nil {
-		fmt.Println("error generating random number")
-		os.Exit(1)
-	}
+
 	// will implement metamaks/msg signing with ethereum accounts
 	// as the authentication metho
 	authMiddleware := &jwt.GinJWTMiddleware{
 		Realm:      realmName,
-		Key:        []byte(fmt.Sprintf("%v+%s", b, jwtKey)),
+		Key:        []byte(jwtKey),
 		Timeout:    time.Hour * 24,
 		MaxRefresh: time.Hour * 24,
 		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) { // userId = uploader address
@@ -44,7 +35,7 @@ func JwtConfigGenerate(jwtKey string, db *gorm.DB) *jwt.GinJWTMiddleware {
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {
 
-			return false
+			return true
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
@@ -59,4 +50,10 @@ func JwtConfigGenerate(jwtKey string, db *gorm.DB) *jwt.GinJWTMiddleware {
 	}
 
 	return authMiddleware
+}
+
+func GetAuthenticatedUser(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	c.JSON(http.StatusFound, gin.H{"claims-id": claims["id"]})
+	return
 }
