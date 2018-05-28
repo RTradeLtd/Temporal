@@ -76,6 +76,8 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	databaseProtected := g.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
 	databaseProtected.DELETE("/api/v1/database/garbage-collect/test", RunTestGarbageCollection)
+	databaseProtected.GET("/uploads", GetUploadsFromDatabase)
+	databaseProtected.GET("/uploads/:address", GetUploadsForAddress)
 	// PROTECTED ROUTES -- END
 
 	// IPFS ROUTES [POST] -- BEGIN
@@ -96,8 +98,4 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	g.GET("/api/v1/ipfs-cluster/status-local", FetchLocalClusterStatus)
 	// IPFS CLUSTER ROUTES [GET] -- END
 
-	// DATABASE ROUTES [GET] -- BEGIN
-	g.GET("/api/v1/database/uploads", GetUploadsFromDatabase)
-	g.GET("/api/v1/database/uploads/:address", GetUploadsForAddress)
-	// DATABASE ROUTES [GET] -- END
 }

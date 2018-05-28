@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 // RunTestGarbageCollection is used to run a test
@@ -14,8 +14,10 @@ func RunTestGarbageCollection(c *gin.Context) {
 	user := GetAuthenticatedUserFromContext(c)
 	if user != AdminAddress {
 		c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized access to test garbage collect"})
+		return
 	}
-	db := c.MustGet("db_connection").(*gorm.DB)
+	dbPass := c.MustGet("db_pass").(string)
+	db := database.OpenDBConnection(dbPass)
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunTestDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{"deleted": deletedUploads})
@@ -26,12 +28,11 @@ func RunTestGarbageCollection(c *gin.Context) {
 func GetUploadsFromDatabase(c *gin.Context) {
 	user := GetAuthenticatedUserFromContext(c)
 	if user != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden access, not an admin this will be reported"})
-		// trigger error report
+		c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized access to get uploads from database"})
 		return
 	}
-	// open a connection to the database
-	db := c.MustGet("db_connection").(*gorm.DB)
+	dbPass := c.MustGet("db_pass").(string)
+	db := database.OpenDBConnection(dbPass)
 	um := models.NewUploadManager(db)
 	// fetch the uplaods
 	uploads := um.GetUploads()
@@ -48,8 +49,8 @@ func GetUploadsFromDatabase(c *gin.Context) {
 // If not admin, will retrieve all uploads for the current context account
 func GetUploadsForAddress(c *gin.Context) {
 	var queryAddress string
-	// open a connection to the database
-	db := c.MustGet("db_connection").(*gorm.DB)
+	dbPass := c.MustGet("db_pass").(string)
+	db := database.OpenDBConnection(dbPass)
 	um := models.NewUploadManager(db)
 	user := GetAuthenticatedUserFromContext(c)
 	if user == AdminAddress {
