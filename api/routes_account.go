@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 func RegisterUserAccount(c *gin.Context) {
@@ -19,8 +19,9 @@ func RegisterUserAccount(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "password parameter does not exist"})
 		return
 	}
-	db := c.MustGet("db_connection").(gorm.DB)
-	userManager := models.NewUserManager(&db)
+	dbPass := c.MustGet("db_pass").(string)
+	db := database.OpenDBConnection(dbPass)
+	userManager := models.NewUserManager(db)
 	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
 	if err != nil {
 		c.Error(err)
@@ -43,8 +44,9 @@ func RegisterEnterpriseUserAccount(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "password parameter does not exist"})
 		return
 	}
-	db := c.MustGet("db_connection").(gorm.DB)
-	userManager := models.NewUserManager(&db)
+	dbPass := c.MustGet("db_pass").(string)
+	db := database.OpenDBConnection(dbPass)
+	userManager := models.NewUserManager(db)
 	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
 	if err != nil {
 		c.Error(err)

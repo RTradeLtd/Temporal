@@ -11,8 +11,8 @@ import (
 // RunTestGarbageCollection is used to run a test
 // of our garbage collector
 func RunTestGarbageCollection(c *gin.Context) {
-	db := c.MustGet("db_connection").(gorm.DB)
-	um := models.NewUploadManager(&db)
+	db := c.MustGet("db_connection").(*gorm.DB)
+	um := models.NewUploadManager(db)
 	deletedUploads := um.RunTestDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{"deleted": deletedUploads})
 }
@@ -21,8 +21,8 @@ func RunTestGarbageCollection(c *gin.Context) {
 // TODO: cleanup
 func GetUploadsFromDatabase(c *gin.Context) {
 	// open a connection to the database
-	db := c.MustGet("db_connection").(gorm.DB)
-	um := models.NewUploadManager(&db)
+	db := c.MustGet("db_connection").(*gorm.DB)
+	um := models.NewUploadManager(db)
 	// fetch the uplaods
 	uploads := um.GetUploads()
 	if uploads == nil {
@@ -38,8 +38,8 @@ func GetUploadsFromDatabase(c *gin.Context) {
 // TODO: cleanup
 func GetUploadsForAddress(c *gin.Context) {
 	// open a connection to the database
-	db := c.MustGet("db_connection").(gorm.DB)
-	um := models.NewUploadManager(&db)
+	db := c.MustGet("db_connection").(*gorm.DB)
+	um := models.NewUploadManager(db)
 	// fetch all uploads for that address
 	uploads := um.GetUploadsForAddress(c.Param("address"))
 	if uploads == nil {

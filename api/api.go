@@ -41,7 +41,7 @@ func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass s
 	r.Use(helmet.NoSniff())
 	r.Use(rollbar.Recovery(false))
 	r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	r.Use(middleware.DatabaseMiddleware(db))
+	r.Use(middleware.DatabaseMiddleware(dbPass))
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
 	setupRoutes(r, adminUser, adminPass, authMiddleware)
