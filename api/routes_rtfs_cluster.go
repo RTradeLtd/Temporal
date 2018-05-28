@@ -15,8 +15,8 @@ import (
 func PinHashToCluster(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
-	uploadAddress := contextCopy.PostForm("uploadAddress")
-	holdTimeInMonths := contextCopy.PostForm("holdTime")
+	uploadAddress := contextCopy.PostForm("eth_address")
+	holdTimeInMonths := contextCopy.PostForm("hold_time")
 	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
 		c.Error(err)

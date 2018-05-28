@@ -14,8 +14,8 @@ import (
 func PinHashLocally(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
-	uploadAddress := contextCopy.PostForm("uploadAddress")
-	holdTimeInMonths := contextCopy.PostForm("holdTime")
+	uploadAddress := contextCopy.PostForm("eth_address")
+	holdTimeInMonths := contextCopy.PostForm("hold_time")
 	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
 		c.Error(err)
@@ -69,8 +69,8 @@ func AddFileLocally(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	uploaderAddress := c.PostForm("uploaderAddress")
-	holdTimeinMonths := c.PostForm("holdTime")
+	uploaderAddress := c.PostForm("eth_ddress")
+	holdTimeinMonths := c.PostForm("hold_time")
 	holdTimeinMonthsInt, err := strconv.ParseInt(holdTimeinMonths, 10, 64)
 	if err != nil {
 		c.Error(err)
