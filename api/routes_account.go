@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -68,6 +67,7 @@ func GetAuthenticatedUserFromContext(c *gin.Context) string {
 	return claims["id"].(string)
 }
 
+/*
 func CheckForAPIAccess(c *gin.Context) (bool, error) {
 	var user models.User
 	ethAddress := GetAuthenticatedUserFromContext(c)
@@ -78,4 +78,4 @@ func CheckForAPIAccess(c *gin.Context) (bool, error) {
 		return false, errors.New("user account does not exist")
 	}
 	return user.APIAccess, nil
-}
+}*/
