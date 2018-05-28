@@ -25,7 +25,6 @@ func RegisterUserAccount(c *gin.Context) {
 	userManager := models.NewUserManager(db)
 	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
 	if err != nil {
-		c.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

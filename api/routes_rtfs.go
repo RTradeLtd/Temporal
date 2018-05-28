@@ -18,8 +18,7 @@ func PinHashLocally(c *gin.Context) {
 	holdTimeInMonths := contextCopy.PostForm("hold_time")
 	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
-		c.Error(err)
-		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	go func() {
@@ -42,16 +41,13 @@ func PinHashLocally(c *gin.Context) {
 	// initialize the queue
 	qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
 	if err != nil {
-		c.Error(err)
-		fmt.Println(err)
-
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	// publish the message, if there was an error finish processing
 	err = qm.PublishMessage(dpa)
 	if err != nil {
-		c.Error(err)
-		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	qm.Close()
@@ -66,21 +62,21 @@ func AddFileLocally(c *gin.Context) {
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	uploaderAddress := c.PostForm("eth_ddress")
 	holdTimeinMonths := c.PostForm("hold_time")
 	holdTimeinMonthsInt, err := strconv.ParseInt(holdTimeinMonths, 10, 64)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	fmt.Println("opening file")
 	// open the file
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	fmt.Println("initializing manager")
@@ -90,7 +86,7 @@ func AddFileLocally(c *gin.Context) {
 	fmt.Println("adding file")
 	resp, err := manager.Shell.Add(openFile)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	fmt.Println("file added")
@@ -104,13 +100,13 @@ func AddFileLocally(c *gin.Context) {
 	// initialize a connectino to rabbitmq
 	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	// publish the message
 	err = qm.PublishMessage(dfa)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"response": resp})
@@ -123,7 +119,7 @@ func IpfsPubSubPublish(c *gin.Context) {
 	manager := rtfs.Initialize("")
 	err := manager.PublishPubSubMessage(topic, message)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"topic": topic, "message": message})
@@ -134,7 +130,7 @@ func IpfsPubSubTest(c *gin.Context) {
 	manager := rtfs.Initialize("")
 	err := manager.PublishPubSubTest(manager.PubTopic)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, nil)
@@ -173,7 +169,7 @@ func RemovePinFromLocalHost(c *gin.Context) {
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	qm, err := queue.Initialize(queue.IpfsQueue, mqConnectionURL)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	// TODO:
@@ -190,7 +186,7 @@ func GetLocalPins(c *gin.Context) {
 	// WARNING: THIS COULD BE A VERY LARGE LIST
 	pinInfo, err := manager.Shell.Pins()
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
@@ -204,7 +200,7 @@ func GetObjectStatForIpfs(c *gin.Context) {
 	manager := rtfs.Initialize("")
 	stats, err := manager.ObjectStat(key)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"stats": stats})
@@ -217,7 +213,7 @@ func CheckLocalNodeForPin(c *gin.Context) {
 	manager := rtfs.Initialize("")
 	present, err := manager.ParseLocalPinsForHash(hash)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"present": present})

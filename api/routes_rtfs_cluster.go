@@ -19,8 +19,7 @@ func PinHashToCluster(c *gin.Context) {
 	holdTimeInMonths := contextCopy.PostForm("hold_time")
 	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
-		c.Error(err)
-		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	// we are going to pin first, since we want the data availableility immediately
@@ -33,6 +32,7 @@ func PinHashToCluster(c *gin.Context) {
 		err = manager.Pin(decodedHash)
 		if err != nil {
 			fmt.Println(err)
+			// log error
 		}
 	}()
 	// construct the rabbitmq message to add this entry to the database
@@ -46,16 +46,13 @@ func PinHashToCluster(c *gin.Context) {
 	// initialize the queue
 	qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
 	if err != nil {
-		c.Error(err)
-		fmt.Println(err)
-
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	// publish the message, if there was an error finish processing
 	err = qm.PublishMessage(dpa)
 	if err != nil {
-		c.Error(err)
-		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	qm.Close()
@@ -70,7 +67,7 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
 	syncedCids, err := manager.ParseLocalStatusAllAndSync()
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
@@ -84,13 +81,13 @@ func RemovePinFromCluster(c *gin.Context) {
 	manager := rtfs_cluster.Initialize()
 	err := manager.RemovePinFromCluster(hash)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	qm, err := queue.Initialize(queue.IpfsQueue, mqConnectionURL)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	qm.PublishMessage(hash)
@@ -105,7 +102,7 @@ func GetLocalStatusForClusterPin(c *gin.Context) {
 	// get the cluster status for the cid only asking the local cluster node
 	status, err := manager.GetStatusForCidLocally(hash)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusFound, gin.H{"status": status})
@@ -119,7 +116,7 @@ func GetGlobalStatusForClusterPin(c *gin.Context) {
 	// get teh cluster wide status for this particular pin
 	status, err := manager.GetStatusForCidGlobally(hash)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusFound, gin.H{"status": status})
@@ -138,7 +135,7 @@ func FetchLocalClusterStatus(c *gin.Context) {
 	// fetch a map of all the statuses
 	maps, err := manager.FetchLocalStatus()
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	// parse the maps
