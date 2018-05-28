@@ -3,15 +3,15 @@ package api
 import (
 	"net/http"
 
-	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
 // RunTestGarbageCollection is used to run a test
 // of our garbage collector
 func RunTestGarbageCollection(c *gin.Context) {
-	db := database.OpenDBConnection()
+	db := c.MustGet("db_connection").(*gorm.DB)
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunTestDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{"deleted": deletedUploads})
@@ -21,8 +21,7 @@ func RunTestGarbageCollection(c *gin.Context) {
 // TODO: cleanup
 func GetUploadsFromDatabase(c *gin.Context) {
 	// open a connection to the database
-	db := database.OpenDBConnection()
-	// create an upload manager interface
+	db := c.MustGet("db_connection").(*gorm.DB)
 	um := models.NewUploadManager(db)
 	// fetch the uplaods
 	uploads := um.GetUploads()
@@ -38,9 +37,8 @@ func GetUploadsFromDatabase(c *gin.Context) {
 // GetUploadsForAddress is used to read a list of uploads from a particular eth address
 // TODO: cleanup
 func GetUploadsForAddress(c *gin.Context) {
-	// open connection to the database
-	db := database.OpenDBConnection()
-	// establish a new upload manager
+	// open a connection to the database
+	db := c.MustGet("db_connection").(*gorm.DB)
 	um := models.NewUploadManager(db)
 	// fetch all uploads for that address
 	uploads := um.GetUploadsForAddress(c.Param("address"))

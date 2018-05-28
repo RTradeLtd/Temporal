@@ -4,6 +4,7 @@ package api
 
 import (
 	"github.com/RTradeLtd/Temporal/api/middleware"
+	"github.com/RTradeLtd/Temporal/database"
 	jwt "github.com/appleboy/gin-jwt"
 	helmet "github.com/danielkov/gin-helmet"
 
@@ -20,7 +21,8 @@ var xssMdlwr xss.XssMw
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL string) *gin.Engine {
+func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass string) *gin.Engine {
+	db := database.OpenDBConnection(dbPass)
 
 	roll.Token = rollbarToken
 	roll.Environment = "development"
@@ -39,8 +41,8 @@ func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL string) *
 	r.Use(helmet.NoSniff())
 	r.Use(rollbar.Recovery(false))
 	r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-
-	authMiddleware := middleware.JwtConfigGenerate(jwtKey, adminUser, adminPass)
+	r.Use(middleware.DatabaseMiddleware(dbPass))
+	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
 	setupRoutes(r, adminUser, adminPass, authMiddleware)
 	return r
@@ -51,6 +53,10 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 
 	// LOGIN
 	g.POST("/api/v1/login", authWare.LoginHandler)
+
+	// REGISTER
+	g.POST("/api/v1/register", RegisterUserAccount)
+	g.POST("/api/v1/register-enterprise", RegisterEnterpriseUserAccount)
 
 	apiV1 := g.Group("/api/v1")
 	apiV1.Use(authWare.MiddlewareFunc())

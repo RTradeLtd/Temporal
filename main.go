@@ -39,7 +39,15 @@ func main() {
 		log.Fatal("CONFIG_DAG is not set")
 	}
 	tCfg := LoadConfig(configDag)
-
+	certFilePath := tCfg.API.Connection.Certificates.CertPath
+	keyFilePath := tCfg.API.Connection.Certificates.KeyPath
+	listenAddress := tCfg.API.Connection.ListenAddress
+	adminUser := tCfg.API.Admin.Username
+	adminPass := tCfg.API.Admin.Password
+	jwtKey := tCfg.API.JwtKey
+	rollbarToken := tCfg.API.RollbarToken
+	rabbitMQConnectionURL := tCfg.RabbitMQ.URL
+	dbPass := tCfg.Database.Password
 	switch os.Args[1] {
 	case "config-test":
 		scanner := bufio.NewScanner(os.Stdin)
@@ -49,15 +57,8 @@ func main() {
 		config := LoadConfig(configCid)
 		fmt.Printf("%+v\n", config)
 	case "api":
-		certFilePath := tCfg.API.Connection.Certificates.CertPath
-		keyFilePath := tCfg.API.Connection.Certificates.KeyPath
-		listenAddress := tCfg.API.Connection.ListenAddress
-		adminUser := tCfg.API.Admin.Username
-		adminPass := tCfg.API.Admin.Password
-		jwtKey := tCfg.API.JwtKey
-		rollbarToken := tCfg.API.RollbarToken
-		rabbitMQConnectionURL := tCfg.RabbitMQ.URL
-		router := api.Setup(adminUser, adminPass, jwtKey, rollbarToken, rabbitMQConnectionURL)
+
+		router := api.Setup(adminUser, adminPass, jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
@@ -71,7 +72,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("")
+		err = qm.ConsumeMessage("", dbPass)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -81,7 +82,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("")
+		err = qm.ConsumeMessage("", dbPass)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -97,7 +98,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("")
+		err = qm.ConsumeMessage("", dbPass)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -107,12 +108,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("")
+		err = qm.ConsumeMessage("", dbPass)
 		if err != nil {
 			log.Fatal(err)
 		}
 	case "migrate":
-		dbm := database.Initialize()
+		dbm := database.Initialize(dbPass)
 		dbm.RunMigrations()
 	case "contract-backend":
 		manager := server.Initialize(false)
@@ -121,7 +122,7 @@ func main() {
 		mqConnectionURL := tCfg.RabbitMQ.URL
 		cli.Initialize(mqConnectionURL)
 	case "lookup-address":
-		db := database.OpenDBConnection()
+		db := database.OpenDBConnection(dbPass)
 		um := models.NewUserManager(db)
 		mdl := um.FindByAddress("0xbF43d80dA01332b28cEE39644E8e08AD02a289F5")
 		fmt.Println(mdl)

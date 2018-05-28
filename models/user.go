@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -12,6 +13,7 @@ type User struct {
 	gorm.Model
 	EthAddress        string `gorm:"type:varchar(255);unique"`
 	EnterpriseEnabled bool   `gorm:"type:boolean"`
+	AccountEnabled    bool   `gorm:"type:boolean"`
 	HashedPassword    string `gorm:"type:varchar(255)`
 }
 
@@ -20,6 +22,34 @@ type UserManager struct {
 }
 
 var nilTime time.Time
+
+func NewUserManager(db *gorm.DB) *UserManager {
+	um := UserManager{}
+	um.DB = db
+	return &um
+}
+
+func ReturnUserModelFromContext(db *gorm.DB, c *gin.Context) (*User, error) {
+	var user User
+	uploaderAddress, exists := c.GetPostForm("uploader_address")
+	if !exists {
+		return nil, errors.New("uploader_address parameter not present")
+	}
+	db.Where("eth_address = ?", uploaderAddress).First(&user)
+	if user.CreatedAt == nilTime {
+		return nil, errors.New("user account does not exist")
+	}
+	return &user, nil
+}
+
+func (um *UserManager) CheckIfUserAccountEnabled(ethAddress string, db *gorm.DB) (bool, error) {
+	var user User
+	db.Where("eth_address = ?", ethAddress).First(&user)
+	if user.CreatedAt == nilTime {
+		return false, errors.New("user account does not exist")
+	}
+	return user.AccountEnabled, nil
+}
 
 func (um *UserManager) NewUserAccount(ethAddress, password string, enterpriseEnabled bool) (*User, error) {
 	var user User
@@ -50,12 +80,6 @@ func (um *UserManager) ComparePlaintextPasswordToHash(ethAddress, password strin
 	}
 	return true, nil
 
-}
-
-func NewUserManager(db *gorm.DB) *UserManager {
-	um := UserManager{}
-	um.DB = db
-	return &um
 }
 
 func (um *UserManager) FindByAddress(address string) *User {
