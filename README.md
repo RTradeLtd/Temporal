@@ -10,7 +10,18 @@ Technologies that will be supported by our cloud storage, and API:
 * STORJ (planned)
 * SIA (planned)
 
-# Early Access Alpha
+# Hosted API 
+
+One of the main features of temporal we offer is hosted access to all the tools, and benefits that come with temporal, without having to run any of the services yourself.
+While the API is easy to use and consume, there still comes work with maintaining the underlying infrastructure which is not easy, and may not be something that is suitable for you to do an on-premise deployment of the infrastructure if you don't have the resources to support it. That is where the hosted API comes into place. 
+
+Your API infrastructure will be run on dedicated machines connected to our storage backend. At the moment since we don't support private IPFS integration with temporal currently, hosted API access for your own personal private IPFS swarms are not yet supported for on-demand registration through our web interface. Should you wish to have your own private IPFS network and still want hosted API access, please contact us privately as this is something we can setup on a case-by-case basis, but is not yet ready for automated registration.
+
+# On Premise Deployment
+
+There is no support offered for on-premise deployments, save for bugs that may be found in the temporal software suite itself in which case an issue may be opened up on the repository. We offer paid support for on-premise temporal deployments, as well as training to use the software to its fullest capabilities. If this is of interest to you, please contact us privately.
+
+# Early Access Hosted API Alpha
 
 An early access version of the hosted temporal API is online, letting you store files onto IPFS, and integrate IPFS storage into your own stack without having to run nodes. Email postables@rtradetechnologies.com for access.
 
@@ -20,6 +31,7 @@ An early access version of the hosted temporal API is online, letting you store 
 * Introduce IPFS to people who may have otherwise not been able to use the technology
 * Educate about decentralized and distributed storage technologies
 * Provide an easy-to-use API for different decentralized and distributed storage technologies
+
 
 # Data Privacy
 
@@ -49,7 +61,7 @@ Currently the project is paid for out of pocket, and we will *not* be doing an I
     * Ensure we meet regulatory needs
 * Media
     * Educational resources development
-* Hiring additional talent to bring project to completion
+* Hiring additional talent for Temporal enterprise to bring project to completion
 
 Should you wish to consider donations, or private investment email admin@rtradetechnologies.com
 
