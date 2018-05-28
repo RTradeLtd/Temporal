@@ -39,16 +39,16 @@ The only requirement is that all code submitted must include tests.
 Currently the project is paid for out of pocket, and we will *not* be doing an ICO. Any funding received through donations, or private investment will be put to the following:
 
 * Infrastructure
-    > Servers
-    > Hard drives
-    > Misc infrastructure (networking, etc..)
+    ** Servers
+    ** Hard drives
+    ** Misc infrastructure (networking, etc..)
 * Code Audits
 * Developer Tools
 * Legal
-    > Lawyers
-    > Ensure we meet regulatory needs
+    ** Lawyers
+    ** Ensure we meet regulatory needs
 * Media
-    > Educational resources development
+    ** Educational resources development
 * Hiring additional talent to bring project to completion
 
 Should you wish to consider donations, or private investment email admin@rtradetechnologies.com
