@@ -1,14 +1,18 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/jinzhu/gorm"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
 	gorm.Model
-	EthAddress string `gorm:"type:varchar(255);unique"`
+	EthAddress        string `gorm:"type:varchar(255);unique"`
+	EnterpriseEnabled bool   `gorm:"type:boolean"`
+	HashedPassword    string `gorm:"type:varchar(255)`
 }
 
 type UserManager struct {
@@ -16,6 +20,23 @@ type UserManager struct {
 }
 
 var nilTime time.Time
+
+func (um *UserManager) NewUserAccount(ethAddress, password string, enterpriseEnabled bool) (*User, error) {
+	var user User
+	um.DB.Where("eth_address = ?", ethAddress).First(&user)
+	if user.CreatedAt != nilTime {
+		return nil, errors.New("user account already created")
+	}
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	user.EthAddress = ethAddress
+	user.EnterpriseEnabled = enterpriseEnabled
+	user.HashedPassword = string(hashedPass)
+	um.DB.Create(&user)
+	return &user, nil
+}
 
 func NewUserManager(db *gorm.DB) *UserManager {
 	um := UserManager{}
@@ -27,11 +48,7 @@ func (um *UserManager) FindByAddress(address string) *User {
 	u := User{}
 	um.DB.Where("eth_address = ?", address).Find(&u)
 	if u.CreatedAt == nilTime {
-		um.createIfNotFound(address)
+		return nil
 	}
 	return &u
-}
-
-func (um *UserManager) createIfNotFound(address string) {
-	um.DB.Create(&User{EthAddress: address})
 }
