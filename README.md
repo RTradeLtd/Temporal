@@ -10,6 +10,9 @@ Technologies that will be supported by our cloud storage, and API:
 * STORJ (planned)
 * SIA (planned)
 
+# Early Access Alpha
+
+An early access version of the hosted temporal API is online, letting you store files onto IPFS, and integrate IPFS storage into your own stack without having to run nodes. Email postables@rtradetechnologies.com for access.
 
 # Goals
 
