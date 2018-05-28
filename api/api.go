@@ -89,6 +89,7 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	g.GET("/api/v1/ipfs/pubsub/consume/:topic", IpfsPubSubConsume)
 	g.GET("/api/v1/ipfs/pins", GetLocalPins)
 	g.GET("/api/v1/ipfs/object-stat/:key", GetObjectStatForIpfs)
+	g.GET("/api/v1/ipfs/object/size/:key", GetFileSizeInBytesForObject)
 	g.GET("/api/v1/ipfs/check-for-pin/:hash", CheckLocalNodeForPin)
 	// IPFS ROUTES [GET] -- END
 

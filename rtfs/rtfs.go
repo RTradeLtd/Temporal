@@ -44,6 +44,15 @@ func (im *IpfsManager) Pin(hash string) error {
 	return nil
 }
 
+// GetObjectFileSizeInBytes is used to retrieve the cumulative byte size of an object
+func (im *IpfsManager) GetObjectFileSizeInBytes(key string) (int, error) {
+	stat, err := im.Shell.ObjectStat(key)
+	if err != nil {
+		return 0, err
+	}
+	return stat.CumulativeSize, nil
+}
+
 // ObjectStat is used to retrieve the stats about an object
 func (im *IpfsManager) ObjectStat(key string) (*ipfsapi.ObjectStats, error) {
 	stat, err := im.Shell.ObjectStat(key)

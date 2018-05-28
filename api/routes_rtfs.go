@@ -54,6 +54,23 @@ func PinHashLocally(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"upload": dpa})
 }
 
+// GetFileSizeInBytesForObject is used to retrieve the size of an object in bytes
+func GetFileSizeInBytesForObject(c *gin.Context) {
+	key := c.Param("key")
+	manager := rtfs.Initialize("")
+	sizeInBytes, err := manager.GetObjectFileSizeInBytes(key)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"object":        key,
+		"size_in_bytes": sizeInBytes,
+	})
+
+}
+
 // AddFileLocally is used to add a file to our local ipfs node
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
