@@ -67,6 +67,37 @@ Should you wish to consider donations, or private investment email admin@rtradet
 
 # Usage (to do)
 
+## Usage: API
+
+* `/api/v1/login`
+    * This is used to login, and authenticate with temporal
+
+* `/api/v1/register`
+    * This is used to register a user account with temporal
+
+* `/api/v1/ipfs/pin/:hash`
+    * This is used to pin content to temporal
+    * Note: this only pins to a local node, but will trigger a cluster wide pin of the object after it is pinned to the local node
+
+* `/api/v1/ipfs/add-file`
+    * This is used to upload a file to IPFS through temporal
+    * Note: this adds it first to a local node, followed by a cluster pin 
+
+* `/api/v1/ipfs/remove-pin/:hash`
+    * This is used to remove a pin from the local ipfs node
+    * Note: only the admin of the temporal instance can call this route
+
+* `/api/v1/ipfs-cluster/pin/:hash`
+    * This is used to pin a hash to the cluster
+
+* `/api/v1/ipfs-cluster/sync-errors-local`
+    * This is used to parse through a local node cluster status, and sync all errors
+
+* `/api/v1/ipfs-cluster/remove-pin/:hash`
+    * This is used to remove a pin from the cluster
+    * Note: this is onyl usable by the admin of a temporal instance
+
+## Usage: Deploying Temporal
 Authentication is done with JWT, for testing with postman see this link https://medium.com/@codebyjeff/using-postman-environment-variables-auth-tokens-ea9c4fe9d3d7
 
 
