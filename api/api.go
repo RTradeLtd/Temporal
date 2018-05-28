@@ -78,6 +78,9 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	databaseProtected.DELETE("/api/v1/database/garbage-collect/test", RunTestGarbageCollection)
 	databaseProtected.GET("/uploads", GetUploadsFromDatabase)
 	databaseProtected.GET("/uploads/:address", GetUploadsForAddress)
+	paymentsProtected := g.Group("/api/v1/payments")
+	paymentsProtected.Use(authWare.MiddlewareFunc())
+	paymentsProtected.POST("/rtc/register", RegisterRtcPayment)
 	// PROTECTED ROUTES -- END
 
 	// IPFS ROUTES [POST] -- BEGIN
