@@ -4,6 +4,7 @@ package api
 
 import (
 	"github.com/RTradeLtd/Temporal/api/middleware"
+	"github.com/RTradeLtd/Temporal/database"
 	jwt "github.com/appleboy/gin-jwt"
 	helmet "github.com/danielkov/gin-helmet"
 
@@ -39,8 +40,8 @@ func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL string) *
 	r.Use(helmet.NoSniff())
 	r.Use(rollbar.Recovery(false))
 	r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-
-	authMiddleware := middleware.JwtConfigGenerate(jwtKey, adminUser, adminPass)
+	db := database.OpenDBConnection()
+	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
 	setupRoutes(r, adminUser, adminPass, authMiddleware)
 	return r
