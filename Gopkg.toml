@@ -1,0 +1,99 @@
+# Gopkg.toml example
+#
+# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
+# for detailed Gopkg.toml documentation.
+#
+# required = ["github.com/user/thing/cmd/thing"]
+# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
+#
+# [[constraint]]
+#   name = "github.com/user/project"
+#   version = "1.0.0"
+#
+# [[constraint]]
+#   name = "github.com/user/project2"
+#   branch = "dev"
+#   source = "github.com/myfork/project2"
+#
+# [[override]]
+#   name = "github.com/x/y"
+#   version = "2.4.0"
+#
+# [prune]
+#   non-go = false
+#   go-tests = true
+#   unused-packages = true
+
+ignored = ["github.com/karalabe/hid", "github.com/ethereum/go-ethereum"]
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/RTradeLtd/ipd-config"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/appleboy/gin-jwt"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/aviddiviner/gin-limit"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/danielkov/gin-helmet"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/dvwright/xss-mw"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/gin-contrib/rollbar"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/gin-gonic/gin"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/ipfs/go-cid"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/ipfs/go-ipfs-api"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/ipfs/ipfs-cluster"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/jinzhu/gorm"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/lib/pq"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/multiformats/go-multiaddr"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/streadway/amqp"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/stvp/roll"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/zsais/go-gin-prometheus"
+
+[[constraint]]
+  branch = "v2"
+  name = "gopkg.in/abiosoft/ishell.v2"
+
+[prune]
+  go-tests = true
+  unused-packages = true
