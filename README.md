@@ -40,7 +40,7 @@ The only requirement is that all code submitted must include tests.
 
 All ideas are welcome, open up and issue and state your ideas!
 
-# Usage
+# Usage (to do)
 
 Authentication is done with JWT, for testing with postman see this link https://medium.com/@codebyjeff/using-postman-environment-variables-auth-tokens-ea9c4fe9d3d7
 
@@ -52,6 +52,20 @@ Setting up postman with the tests section:
     console.log(data);
     postman.setEnvironmentVariable("token", data.token);
 
+
+1) install postgresql
+2) setup database tables
+3) run `scripts/temporal_install.sh`
+4) Setup `config.json`
+
+When running temporal the following services need to be ran:
+    1) api
+    2) queue-dpa
+    3) queue-dfa
+    4) ipfs-cluster-queue
+
+Before running temporal for the first time, and after changing any of the models run `Temporal migrate`
+
 # Tips and Tricks
 
-When running IPFS, since we specify a non-standard path for the IPFS repo, you must configure the proper repo environment path BEFORE running any service depending on IPFS
+Make sure you set the path to the ipfs repo, and ipfs-cluster directory in your `.bashrc` or other profile file.
