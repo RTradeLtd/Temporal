@@ -14,7 +14,8 @@ type User struct {
 	EthAddress        string `gorm:"type:varchar(255);unique"`
 	EnterpriseEnabled bool   `gorm:"type:boolean"`
 	AccountEnabled    bool   `gorm:"type:boolean"`
-	HashedPassword    string `gorm:"type:varchar(255)`
+	APIAccess         bool   `gorm:"type:boolean"`
+	HashedPassword    string `gorm:"type:varchar(255)"`
 }
 
 type UserManager struct {

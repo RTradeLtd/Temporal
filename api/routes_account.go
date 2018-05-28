@@ -1,13 +1,17 @@
 package api
 
 import (
+	"errors"
 	"net/http"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 )
+
+var nilTime time.Time
 
 func RegisterUserAccount(c *gin.Context) {
 	ethAddress, exists := c.GetPostForm("eth_address")
@@ -62,4 +66,16 @@ func GetAuthenticatedUserFromContext(c *gin.Context) string {
 	claims := jwt.ExtractClaims(c)
 	// this is their eth address
 	return claims["id"].(string)
+}
+
+func CheckForAPIAccess(c *gin.Context) (bool, error) {
+	var user models.User
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	dbPass := c.MustGet("db_pass").(string)
+	db := database.OpenDBConnection(dbPass)
+	db.Where("eth_address = ?", ethAddress).First(&user)
+	if user.CreatedAt == nilTime {
+		return false, errors.New("user account does not exist")
+	}
+	return user.APIAccess, nil
 }

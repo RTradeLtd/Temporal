@@ -12,6 +12,15 @@ import (
 
 // PinHashLocally is used to pin a hash to the local ipfs node
 func PinHashLocally(c *gin.Context) {
+	apiAccess, err := CheckForAPIAccess(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if !apiAccess {
+		c.JSON(http.StatusForbidden, gin.H{"error": "user account is not allowed api access"})
+		return
+	}
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
 	uploadAddress := contextCopy.PostForm("eth_address")
@@ -75,6 +84,15 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
 func AddFileLocally(c *gin.Context) {
+	apiAccess, err := CheckForAPIAccess(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if !apiAccess {
+		c.JSON(http.StatusForbidden, gin.H{"error": "user account is not allowed api access"})
+		return
+	}
 	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
