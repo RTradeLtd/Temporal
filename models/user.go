@@ -38,6 +38,20 @@ func (um *UserManager) NewUserAccount(ethAddress, password string, enterpriseEna
 	return &user, nil
 }
 
+func (um *UserManager) ComparePlaintextPasswordToHash(ethAddress, password string) (bool, error) {
+	var user User
+	um.DB.Where("eth_address = ?", ethAddress).First(&user)
+	if user.CreatedAt == nilTime {
+		return false, errors.New("user account does not exist")
+	}
+	err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(password))
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+
+}
+
 func NewUserManager(db *gorm.DB) *UserManager {
 	um := UserManager{}
 	um.DB = db
