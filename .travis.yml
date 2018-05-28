@@ -10,3 +10,5 @@ before_script:
 addons:
     apt:
        update: true
+dist: xenial
+sudo: required
