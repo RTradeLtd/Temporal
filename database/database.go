@@ -9,9 +9,9 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-var uploadObj *models.Upload
-var userObj *models.User
-var paymentObj *models.Payment
+var UploadObj *models.Upload
+var UserObj *models.User
+var PaymentObj *models.Payment
 
 type DatabaseManager struct {
 	DB     *gorm.DB
@@ -27,9 +27,9 @@ func Initialize(dbPass string) *DatabaseManager {
 }
 
 func (dbm *DatabaseManager) RunMigrations() {
-	dbm.DB.AutoMigrate(uploadObj)
-	dbm.DB.AutoMigrate(userObj)
-	dbm.DB.AutoMigrate(paymentObj)
+	dbm.DB.AutoMigrate(UploadObj)
+	dbm.DB.AutoMigrate(UserObj)
+	dbm.DB.AutoMigrate(PaymentObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
 
