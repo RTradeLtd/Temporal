@@ -77,7 +77,7 @@ Should you wish to consider donations, or private investment email admin@rtradet
 
 * `/api/v1/ipfs/pin/:hash`
     * This is used to pin content to temporal
-    * Note: this only pins to a local node, but will trigger a cluster wide pin of the object after it is pinned to the local node
+    * Note: this only pins to a local node
 
 * `/api/v1/ipfs/add-file`
     * This is used to upload a file to IPFS through temporal

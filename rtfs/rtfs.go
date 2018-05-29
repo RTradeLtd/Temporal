@@ -39,8 +39,6 @@ func (im *IpfsManager) Pin(hash string) error {
 		fmt.Println(err)
 		return err
 	}
-	// after pinning the message, publish a msg to the cluster puubsub topic
-	im.PublishPubSubMessage(ClusterPubSubTopic, hash)
 	return nil
 }
 
@@ -74,11 +72,6 @@ func (im *IpfsManager) ParseLocalPinsForHash(hash string) (bool, error) {
 		return true, nil
 	}
 	return false, nil
-}
-
-// Add is a wrapper used to add a file to the node
-func (im *IpfsManager) Add(file string) error {
-	return nil
 }
 
 func EstablishShellWithNode(url string) *ipfsapi.Shell {
