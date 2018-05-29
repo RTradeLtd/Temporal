@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/RTradeLtd/Temporal/models"
-
 	ipfsapi "github.com/ipfs/go-ipfs-api"
 )
 
@@ -135,19 +133,6 @@ func (im *IpfsManager) PublishPubSubMessage(topic string, data string) error {
 		return errors.New("invalid topic and data")
 	}
 	err := im.Shell.PubSubPublish(topic, data)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (im *IpfsManager) PublishPubSubTest(topic string) error {
-	upload := models.Upload{
-		Hash:          "hash",
-		UploadAddress: "address",
-	}
-
-	err := im.Shell.PubSubPublish(topic, fmt.Sprint(upload))
 	if err != nil {
 		return err
 	}

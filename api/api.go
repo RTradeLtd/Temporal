@@ -85,7 +85,6 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 
 	// IPFS ROUTES [POST] -- BEGIN
 	g.POST("/api/v1/ipfs/pubsub/publish/:topic", IpfsPubSubPublish)
-	g.POST("/api/v1/ipfs/pubsub/publish-test/:topic", IpfsPubSubTest)
 	// IPFS ROUTES [POST] -- END
 
 	// IPFS ROUTES [GET] -- BEGIN

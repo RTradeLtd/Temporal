@@ -142,17 +142,6 @@ func IpfsPubSubPublish(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"topic": topic, "message": message})
 }
 
-// IpfsPubSubTest runs a pubsub test
-func IpfsPubSubTest(c *gin.Context) {
-	manager := rtfs.Initialize("")
-	err := manager.PublishPubSubTest(manager.PubTopic)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, nil)
-}
-
 // IpfsPubSubConsume is used to consume pubsub messages
 func IpfsPubSubConsume(c *gin.Context) {
 	contextCopy := c.Copy()
