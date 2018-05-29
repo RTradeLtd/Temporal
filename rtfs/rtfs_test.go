@@ -26,3 +26,12 @@ func TestPin(t *testing.T) {
 	}
 	fmt.Println("pin test successful")
 }
+
+func TestGetObjectFileSizeInBytes(t *testing.T) {
+	im := rtfs.Initialize("")
+	size, err := im.GetObjectFileSizeInBytes(testPIN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println("file size in bytes ", size)
+}
