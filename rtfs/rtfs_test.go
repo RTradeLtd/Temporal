@@ -11,12 +11,11 @@ const testPIN = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
 
 func TestInitialize(t *testing.T) {
 	im := rtfs.Initialize("")
-	nodeInfo, err := im.Shell.ID()
+	_, err := im.Shell.ID()
 	if err != nil {
 		fmt.Println(err)
 		t.Fatal(err)
 	}
-	fmt.Println(nodeInfo)
 }
 
 /*
