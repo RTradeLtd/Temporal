@@ -3,13 +3,9 @@ go:
         - "1.10"
 services:
         - postgresql
-        - rabbitmq
 
 before_script:
         - psql -c 'create database temporal;' -U postgres
         - scripts/travis_build.sh
-addons:
-    apt:
-       update: true
 dist: xenial
 sudo: required
