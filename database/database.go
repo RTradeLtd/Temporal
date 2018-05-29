@@ -44,6 +44,15 @@ func OpenDBConnection(dbPass string) *gorm.DB {
 	return db
 }
 
+func OpenTestDBConnection(dbPass string) (*gorm.DB, error) {
+	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5432 user=postgres dbname=temporal password=%s sslmode=disable", dbPass)
+	db, err := gorm.Open("postgres", dbConnURL)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
 // CloseDBConnection is used to close a db
 func CloseDBConnection(db *gorm.DB) {
 	db.Close()
