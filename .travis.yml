@@ -7,5 +7,11 @@ services:
 before_script:
         - psql -c 'create database temporal;' -U postgres
         - scripts/travis_build.sh
+        - sudo cp config/ipfs.service /etc/systemd/system
+        - sudo mkdir /boot_scripts
+        - sudo cp scripts/ipfs_manager_script.sh /boot_scripts/ipfs_manager_script.sh
+        - sudo chmod a+x /boot_scripts/ipfs_manager_script.sh
+        - sudo systemctl enable ipfs.service
+        - sudo systemctl start ipfs.service
 dist: xenial
 sudo: required
