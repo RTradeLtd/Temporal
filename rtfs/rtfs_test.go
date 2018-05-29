@@ -18,6 +18,8 @@ func TestInitialize(t *testing.T) {
 	}
 	fmt.Println(nodeInfo)
 }
+
+/*
 func TestPin(t *testing.T) {
 	im := rtfs.Initialize("")
 	err := im.Pin(testPIN)
@@ -25,7 +27,7 @@ func TestPin(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println("pin test successful")
-}
+}*/
 
 func TestGetObjectFileSizeInBytes(t *testing.T) {
 	im := rtfs.Initialize("")
