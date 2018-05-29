@@ -56,3 +56,15 @@ func TestParseLocalPinsForHash(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestPubSub(t *testing.T) {
+	im := rtfs.Initialize("test topic")
+	err := im.SubscribeToPubSubTopic(im.PubTopic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = im.PublishPubSubMessage(im.PubTopic, "data")
+	if err != nil {
+		t.Fatal(err)
+	}
+}

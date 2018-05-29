@@ -3,7 +3,8 @@ go:
         - "1.10"
 services:
         - postgresql
-
+dist: xenial
+sudo: required
 before_script:
         - psql -c 'create database temporal;' -U postgres
         - scripts/travis_build.sh
@@ -13,5 +14,3 @@ before_script:
         - sudo chmod a+x /boot_scripts/ipfs_manager_script.sh
         - sudo systemctl enable ipfs.service
         - sudo systemctl start ipfs.service
-dist: xenial
-sudo: required
