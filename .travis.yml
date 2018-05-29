@@ -3,6 +3,7 @@ go:
         - "1.10"
 services:
         - postgresql
+        - rabbitmq
 
 before_script:
         - psql -c 'create database temporal;' -U postgres

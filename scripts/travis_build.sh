@@ -20,4 +20,4 @@ if [[ "$?" -ne 0 ]]; then
 fi
 
 sudo ipfs init --profile=server,badgerds
-sudo ipfs daemon --enable-pubsub-experiment &
+sudo ipfs daemon &
