@@ -19,5 +19,5 @@ if [[ "$?" -ne 0 ]]; then
     exit 1
 fi
 
-ipfs init --profile=server,badgerds
-ipfs daemon &
+sudo ipfs init --profile=server,badgerds
+sudo ipfs daemon &
