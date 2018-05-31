@@ -1,9 +1,11 @@
 package api
 
 import (
-	"fmt"
+	"math/big"
 	"net/http"
+	"strconv"
 
+	"github.com/RTradeLtd/Temporal/server"
 	"github.com/gin-gonic/gin"
 )
 
@@ -48,7 +50,32 @@ func RegisterRtcPayment(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"data": fmt.Sprint(ethAddress, contentHash, retentionPeriodInMonths, chargeAmountInWei),
+	chargeAmountInWeiInt, err := strconv.ParseInt(chargeAmountInWei, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to convert charge amount in wei to string",
+		})
+		return
+	}
+	retentionPeriodInMonthsInt, err := strconv.ParseInt(retentionPeriodInMonths, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to convert retention period in months string to int",
+		})
+		return
+	}
+	mqURL := c.MustGet("mq_conn_url").(string)
+	sm := server.Initialize(true)
+	tx, err := sm.RegisterPaymentForUploader(ethAddress, contentHash, big.NewInt(retentionPeriodInMonthsInt), big.NewInt(chargeAmountInWeiInt), 0, mqURL)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"error": "unable to process payment ofr uploader",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"tx_hash": tx.Hash().String(),
 	})
+	return
 }

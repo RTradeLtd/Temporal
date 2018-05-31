@@ -47,7 +47,7 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 	if err != nil {
 		return nil, err
 	}
-	sm.RegisterWaitForAndProcessPaymentsReceivedEventForAddress(uploaderAddress, contentHash, mqConnectionURL)
+	go sm.RegisterWaitForAndProcessPaymentsReceivedEventForAddress(uploaderAddress, contentHash, mqConnectionURL)
 
 	return tx, nil
 }
