@@ -36,7 +36,7 @@ func (dbm *DatabaseManager) RunMigrations() {
 // OpenDBConnection is used to create a database connection
 func OpenDBConnection(dbPass, dbURL string) *gorm.DB {
 	// look into whether or not we wil disable sslmode
-	dbConnURL := fmt.Sprintf("host=%s port=5432 user=postgres dbname=temporal password=%s sslmode=disable", dbURL, dbPass)
+	dbConnURL := fmt.Sprintf("host=%s port=5432 user=postgres dbname=temporal password=%s", dbURL, dbPass)
 	db, err := gorm.Open("postgres", dbConnURL)
 	if err != nil {
 		log.Fatal(err)
@@ -45,7 +45,7 @@ func OpenDBConnection(dbPass, dbURL string) *gorm.DB {
 }
 
 func OpenTestDBConnection(dbPass string) (*gorm.DB, error) {
-	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5432 user=postgres dbname=temporal password=%s sslmode=disable", dbPass)
+	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5432 user=postgres dbname=temporal password=%s", dbPass)
 	db, err := gorm.Open("postgres", dbConnURL)
 	if err != nil {
 		return nil, err
