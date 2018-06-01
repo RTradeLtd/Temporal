@@ -50,6 +50,7 @@ func main() {
 	rollbarToken := tCfg.API.RollbarToken
 	rabbitMQConnectionURL := tCfg.RabbitMQ.URL
 	dbPass := tCfg.Database.Password
+	dbURL := tCfg.Database.URL
 	ethKeyFilePath := tCfg.Ethereum.Account.KeyFile
 	ethKeyPass := tCfg.Ethereum.Account.KeyPass
 	switch os.Args[1] {
@@ -61,8 +62,7 @@ func main() {
 		config := LoadConfig(configCid)
 		fmt.Printf("%+v\n", config)
 	case "api":
-
-		router := api.Setup(adminUser, adminPass, jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, ethKeyFilePath, ethKeyPass)
+		router := api.Setup(adminUser, adminPass, jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
@@ -76,7 +76,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass)
+		err = qm.ConsumeMessage("", dbPass, dbURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -86,7 +86,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass)
+		err = qm.ConsumeMessage("", dbPass, dbURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -102,7 +102,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass)
+		err = qm.ConsumeMessage("", dbPass, dbURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -112,12 +112,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass)
+		err = qm.ConsumeMessage("", dbPass, dbURL)
 		if err != nil {
 			log.Fatal(err)
 		}
 	case "migrate":
-		dbm := database.Initialize(dbPass)
+		dbm := database.Initialize(dbPass, dbURL)
 		dbm.RunMigrations()
 	case "contract-backend":
 		manager := server.Initialize(false, ethKeyFilePath, ethKeyPass)
@@ -126,7 +126,7 @@ func main() {
 		mqConnectionURL := tCfg.RabbitMQ.URL
 		cli.Initialize(mqConnectionURL, ethKeyFilePath, ethKeyPass)
 	case "lookup-address":
-		db := database.OpenDBConnection(dbPass)
+		db := database.OpenDBConnection(dbPass, dbURL)
 		um := models.NewUserManager(db)
 		mdl := um.FindByAddress("0xbF43d80dA01332b28cEE39644E8e08AD02a289F5")
 		fmt.Println(mdl)

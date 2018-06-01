@@ -12,6 +12,7 @@ import (
 type TemporalConfig struct {
 	Database struct {
 		Name     string `json:"name"`
+		URL      string `json:"url"`
 		Username string `json:"username"`
 		Password string `json:"password"`
 	} `json:"database"`
