@@ -48,6 +48,8 @@ func main() {
 	rollbarToken := tCfg.API.RollbarToken
 	rabbitMQConnectionURL := tCfg.RabbitMQ.URL
 	dbPass := tCfg.Database.Password
+	ethKeyFilePath := tCfg.Ethereum.Account.KeyFile
+	ethKeyPass := tCfg.Ethereum.Account.KeyPass
 	switch os.Args[1] {
 	case "config-test":
 		scanner := bufio.NewScanner(os.Stdin)
@@ -58,7 +60,7 @@ func main() {
 		fmt.Printf("%+v\n", config)
 	case "api":
 
-		router := api.Setup(adminUser, adminPass, jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass)
+		router := api.Setup(adminUser, adminPass, jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, ethKeyFilePath, ethKeyPass)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
@@ -116,11 +118,11 @@ func main() {
 		dbm := database.Initialize(dbPass)
 		dbm.RunMigrations()
 	case "contract-backend":
-		manager := server.Initialize(false)
+		manager := server.Initialize(false, ethKeyFilePath, ethKeyPass)
 		fmt.Println(manager)
 	case "cli":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		cli.Initialize(mqConnectionURL)
+		cli.Initialize(mqConnectionURL, ethKeyFilePath, ethKeyPass)
 	case "lookup-address":
 		db := database.OpenDBConnection(dbPass)
 		um := models.NewUserManager(db)
@@ -129,7 +131,7 @@ func main() {
 		db.Close()
 	case "watch-payments":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		sm := server.Initialize(true)
+		sm := server.Initialize(true, ethKeyFilePath, ethKeyPass)
 		sm.WaitForAndProcessPaymentsReceivedEvent(mqConnectionURL)
 	default:
 		fmt.Println("noop")

@@ -3,7 +3,6 @@ package server
 import (
 	"io/ioutil"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -31,16 +30,16 @@ type ServerManager struct {
 }
 
 // Initialize is used to init the server manager
-func Initialize(useIPC bool) *ServerManager {
+func Initialize(useIPC bool, ethKey, ethPass string) *ServerManager {
 	// helper interface
 	var manager ServerManager
 	// get the password to decrypt the key
 
-	pass := os.Getenv("ETH_PASS")
+	pass := ethPass
 	if pass == "" {
 		log.Fatal("ETH_PASS environment variable not set")
 	}
-	keyFilePath := os.Getenv("KEY_FILE")
+	keyFilePath := ethKey
 
 	if keyFilePath == "" {
 		log.Fatal("KEY_FILE environment variable not set")

@@ -22,7 +22,7 @@ var AdminAddress string
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass string) *gin.Engine {
+func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass, ethKey, ethPass string) *gin.Engine {
 	db := database.OpenDBConnection(dbPass)
 
 	roll.Token = rollbarToken
@@ -43,6 +43,7 @@ func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass s
 	r.Use(rollbar.Recovery(false))
 	r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	r.Use(middleware.DatabaseMiddleware(dbPass))
+	r.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
 	setupRoutes(r, adminUser, adminPass, authMiddleware)

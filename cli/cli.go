@@ -16,18 +16,18 @@ type CommandLine struct {
 }
 
 // Initialize is used to init our command line app
-func Initialize(mqConnectionURL string) {
+func Initialize(mqConnectionURL, ethKey, ethPass string) {
 	var cli CommandLine
 	//  generate a new shell
 	shell := ishell.New()
 	cli.Shell = shell
 	// setup the shell
-	cli.SetupShell(mqConnectionURL)
+	cli.SetupShell(mqConnectionURL, ethKey, ethPass)
 	// run the shell
 	cli.Shell.Run()
 }
 
-func (cl *CommandLine) SetupShell(mqConnectionURL string) {
+func (cl *CommandLine) SetupShell(mqConnectionURL, ethKey, ethPass string) {
 	// print out some greeting information when the shell is ran
 	cl.Shell.Println("Temporal Command Line Interactive Shell")
 	cl.Shell.Println("Version 0.0.5alpha")
@@ -81,7 +81,7 @@ func (cl *CommandLine) SetupShell(mqConnectionURL string) {
 			}
 			retentionPeriodBig := big.NewInt(retentionPeriodInt)
 			chargeAmountBig := big.NewInt(chargeAmountInt)
-			manager := server.Initialize(true)
+			manager := server.Initialize(true, ethKey, ethPass)
 			tx, err := manager.RegisterPaymentForUploader(uploaderAddressString, contentHashString, retentionPeriodBig, chargeAmountBig, uint8(methodUint), mqConnectionURL)
 			if err != nil {
 				fmt.Println(err)

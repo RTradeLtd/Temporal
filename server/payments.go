@@ -47,12 +47,12 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 	if err != nil {
 		return nil, err
 	}
-	go sm.RegisterWaitForAndProcessPaymentsReceivedEventForAddress(uploaderAddress, contentHash, mqConnectionURL)
+	go sm.RegisterWaitForAndProcessPaymentsRegisteredEventForAddress(uploaderAddress, contentHash, mqConnectionURL)
 
 	return tx, nil
 }
 
-func (sm *ServerManager) RegisterWaitForAndProcessPaymentsReceivedEventForAddress(address, cid, mqConnectionURL string) {
+func (sm *ServerManager) RegisterWaitForAndProcessPaymentsRegisteredEventForAddress(address, cid, mqConnectionURL string) {
 	var processed bool
 	var ch = make(chan *payments.PaymentsPaymentRegistered)
 	sub, err := sm.PaymentsContract.WatchPaymentRegistered(nil, ch, []common.Address{common.HexToAddress(address)})
