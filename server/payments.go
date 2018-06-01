@@ -52,13 +52,20 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 	return tx, nil
 }
 
+// RegisterWaitForAndProcessPaymentsRegisteredEventForAddress is used tolisten for payment register events from the payments contract
+// for a particular user. It then sends a message to rabbit mq to update the database with the payment registration details. When
+// we detect that a payment has been received following a payment registration (this is done via a seperate listener), we update the database
+// as having received the payment, followed by uploading the particular content to ipfs
 func (sm *ServerManager) RegisterWaitForAndProcessPaymentsRegisteredEventForAddress(address, cid, mqConnectionURL string) {
 	var processed bool
+	// this channel will receive events from the smart contract
 	var ch = make(chan *payments.PaymentsPaymentRegistered)
+	// create a subscription handle for this particular event
 	sub, err := sm.PaymentsContract.WatchPaymentRegistered(nil, ch, []common.Address{common.HexToAddress(address)})
 	if err != nil {
 		log.Fatal(err)
 	}
+	// create a connection to rabbitmq
 	queueManager, err := queue.Initialize(queue.PaymentRegisterQueue, mqConnectionURL)
 	if err != nil {
 		log.Fatal(err)
@@ -78,15 +85,23 @@ func (sm *ServerManager) RegisterWaitForAndProcessPaymentsRegisteredEventForAddr
 			paymentID := evLog.PaymentID
 			pr.UploaderAddress = uploader.String()
 			pr.CID = cid
+			// the following is used to convert a byte-array into a byte-slice, followed by encoding to string
 			pr.HashedCID = fmt.Sprintf("%s", hex.EncodeToString(hashedCID[:]))
 			pr.PaymentID = fmt.Sprintf("0x%s", hex.EncodeToString(paymentID[:]))
+			// publish the message to rabbitmq.
+			// the rabbitmq worker will parse the event, and update the database
 			queueManager.PublishMessage(pr)
+			// set processed to true, allowing us to break out of the outer loop
 			processed = true
+			// break out of the inner loop
 			break
 		}
 	}
 }
 
+// WaitForAndProcessPaymentsReceivedEvent is used to watch for for a payment received event. It
+// then parses the data sending a message to rabbitmq. The rabbitmq worker will then mark the payment
+// as having been received in hte database, followed by triggering an upload to ipfs
 func (sm *ServerManager) WaitForAndProcessPaymentsReceivedEvent(mqConnectionURL string) {
 	// create the channel for which we will receive payments on
 	var ch = make(chan *payments.PaymentsPaymentReceivedNoIndex)
