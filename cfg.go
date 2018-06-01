@@ -2,9 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
-
-	"github.com/RTradeLtd/ipd-config/ipdcfg"
 )
 
 // TemporalConfig is a helper struct holding
@@ -52,6 +51,17 @@ type TemporalConfig struct {
 	} `json:"rabbitmq"`
 }
 
+func LoadConfig(configPath string) *TemporalConfig {
+	var tCfg TemporalConfig
+	raw, err := ioutil.ReadFile(configPath)
+	err = json.Unmarshal(raw, &tCfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &tCfg
+}
+
+/*
 // LoadConfig is used to load a config object, from the cid
 func LoadConfig(cfgCid string) *TemporalConfig {
 	var tCfg TemporalConfig
@@ -63,3 +73,4 @@ func LoadConfig(cfgCid string) *TemporalConfig {
 	}
 	return &tCfg
 }
+*/
