@@ -36,7 +36,25 @@ func SubmitPaymentRegistration(c *gin.Context) {
 		})
 		return
 	}
+	paymentMethod, exists := contextCopy.GetPostForm("payment_method")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "payment_method post form does not exist",
+		})
+		return
+	}
+	switch paymentMethod {
+	case "rtc":
+		break
+	case "eth":
+		break
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "provided payment does not exist, valid parameters are rtc or eth",
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"msg": fmt.Sprint(uploaderAddress, holdTime, contentHash),
+		"msg": fmt.Sprint(uploaderAddress, holdTime, contentHash, paymentMethod),
 	})
 }
