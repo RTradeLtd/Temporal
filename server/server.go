@@ -6,19 +6,13 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/RTradeLtd/Temporal/bindings/files"
 	"github.com/RTradeLtd/Temporal/bindings/payments"
 	"github.com/RTradeLtd/Temporal/bindings/users"
+	"github.com/RTradeLtd/Temporal/utils"
 )
-
-var filesAddress = common.HexToAddress("0x4863bc94E981AdcCA4627F56838079333f3D3700")
-var usersAddress = common.HexToAddress("0x1800fF6b7BFaa6223B90B1d791Bc6a8c582110CA")
-var paymentsAddress = common.HexToAddress("0x3b2fD241378a326Af998E4243aA76fE8b8414dEe")
-var connectionURL = "http://127.0.0.1:8545"
-var ipcPath = "/media/solidity/fuck/Rinkeby/datadir/geth.ipc"
 
 // ServerManager is a helper struct for interact with the server
 type ServerManager struct {
@@ -52,12 +46,12 @@ func Initialize(useIPC bool, ethKey, ethPass string) *ServerManager {
 
 	if useIPC {
 		// connect  to the network
-		err = manager.ConnectToNetwork(ipcPath)
+		err = manager.ConnectToNetwork(utils.IpcPath)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		err = manager.ConnectToNetwork(connectionURL)
+		err = manager.ConnectToNetwork(utils.ConnectionURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -68,17 +62,17 @@ func Initialize(useIPC bool, ethKey, ethPass string) *ServerManager {
 		log.Fatal(err)
 	}
 	// initiate a connection to the files contract
-	err = manager.NewFilesContract(filesAddress)
+	err = manager.NewFilesContract(utils.FilesAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	// initiate a connection to the users contract
-	err = manager.NewUsersContract(usersAddress)
+	err = manager.NewUsersContract(utils.UsersAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	// initiate a connection to the payments contract
-	err = manager.NewPaymentsContract(paymentsAddress)
+	err = manager.NewPaymentsContract(utils.PaymentsAddress)
 	if err != nil {
 		log.Fatal(err)
 	}

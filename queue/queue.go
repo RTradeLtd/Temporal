@@ -4,13 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/big"
 	"strconv"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/rtfs"
-
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/Temporal/payments"
+	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/streadway/amqp"
 )
 
@@ -58,10 +61,11 @@ type PaymentRegister struct {
 // PinPaymentRequest is used by the frontend to submit a payment request
 // to allow our authenticated backend to register a payment
 type PinPaymentRequest struct {
-	UploaderAddress  string `json:"uploader_address"`
-	CID              string `json:"cid"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
-	Method           uint8  `json:"method"`
+	UploaderAddress   string   `json:"uploader_address"`
+	CID               string   `json:"cid"`
+	HoldTimeInMonths  int64    `json:"hold_time_in_months"`
+	Method            uint8    `json:"method"`
+	ChargeAmountInWei *big.Int `json:"charge_amount_in_wei"`
 }
 
 // PaymentReceived is used when we need to mark that
@@ -127,7 +131,7 @@ func (qm *QueueManager) DeclareQueue(queueName string) error {
 // ConsumeMessage is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL string) error {
+func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethKeyPass string) error {
 	db := database.OpenDBConnection(dbPass, dbURL)
 	// we use a false flag for auto-ack since we will use
 	// manually acknowledgemnets to ensure message delivery
@@ -306,6 +310,42 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL string) error {
 				db.Model(&payment).Updates(map[string]interface{}{"paid": true})
 				fmt.Println("database updated successfully, pinning to node")
 				go ipfsManager.Pin(payment.CID)
+				d.Ack(false)
+			}
+		case PinPaymentRequestQueue:
+			if ethKeyFile == "" || ethKeyPass == "" {
+				log.Fatal("no valid key parameters passed")
+			}
+			pm, err := payments.NewPaymentManager(true, ethKeyFile, ethKeyPass)
+			if err != nil {
+				log.Fatal(err)
+			}
+			var b [32]byte
+			for d := range msgs {
+				var ppr PinPaymentRequest
+				fmt.Println("unmarshaling data")
+				err := json.Unmarshal(d.Body, &ppr)
+				if err != nil {
+					fmt.Println("error unmarshaling data ", err)
+					d.Ack(false)
+					continue
+				}
+				ethAddress := ppr.UploaderAddress
+				contentHash := ppr.CID
+				retentionPeriod := ppr.HoldTimeInMonths
+				chargeAmountInWei := ppr.ChargeAmountInWei
+				method := ppr.Method
+				data := []byte(contentHash)
+				hashedCIDByte := crypto.Keccak256(data)
+				hashedCID := common.BytesToHash(hashedCIDByte)
+				copy(b[:], hashedCID.Bytes()[:32])
+				tx, err := pm.Contract.RegisterPayment(pm.Auth, common.HexToAddress(ethAddress), b, big.NewInt(retentionPeriod), chargeAmountInWei, method)
+				if err != nil {
+					fmt.Println("error submitting payment ", err)
+					d.Ack(false)
+					continue
+				}
+				fmt.Printf("%+v\n", tx)
 				d.Ack(false)
 			}
 		default:

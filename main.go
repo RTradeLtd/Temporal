@@ -76,7 +76,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL)
+		err = qm.ConsumeMessage("", dbPass, dbURL, "", "")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -86,7 +86,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL)
+		err = qm.ConsumeMessage("", dbPass, dbURL, "", "")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -102,7 +102,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL)
+		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -112,7 +112,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL)
+		err = qm.ConsumeMessage("", dbPass, dbURL, "", "")
 		if err != nil {
 			log.Fatal(err)
 		}

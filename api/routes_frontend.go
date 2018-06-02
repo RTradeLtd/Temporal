@@ -65,7 +65,7 @@ func SubmitPinPaymentRegistration(c *gin.Context) {
 		})
 		return
 	}
-	mqURL := c.MustGet("mq_url").(string)
+	mqURL := c.MustGet("mq_conn_url").(string)
 	ppr := queue.PinPaymentRequest{
 		UploaderAddress:  uploaderAddress,
 		CID:              contentHash,
