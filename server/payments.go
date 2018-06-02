@@ -47,6 +47,7 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("Transaction hash for payment registration 0x%x\n", tx.Hash())
 	go sm.RegisterWaitForAndProcessPaymentsRegisteredEventForAddress(uploaderAddress, contentHash, mqConnectionURL)
 
 	return tx, nil
@@ -58,8 +59,10 @@ func (sm *ServerManager) RegisterPaymentForUploader(uploaderAddress string, cont
 // as having received the payment, followed by uploading the particular content to ipfs
 func (sm *ServerManager) RegisterWaitForAndProcessPaymentsRegisteredEventForAddress(address, cid, mqConnectionURL string) {
 	var processed bool
+	fmt.Println("registring channel")
 	// this channel will receive events from the smart contract
 	var ch = make(chan *payments.PaymentsPaymentRegistered)
+	fmt.Println("registring subscription")
 	// create a subscription handle for this particular event
 	sub, err := sm.PaymentsContract.WatchPaymentRegistered(nil, ch, []common.Address{common.HexToAddress(address)})
 	if err != nil {
@@ -70,6 +73,7 @@ func (sm *ServerManager) RegisterWaitForAndProcessPaymentsRegisteredEventForAddr
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("waiting for, and processing event")
 	for {
 		if processed {
 			break
@@ -79,6 +83,7 @@ func (sm *ServerManager) RegisterWaitForAndProcessPaymentsRegisteredEventForAddr
 			fmt.Println("Error parsing event ", err)
 			log.Fatal(err)
 		case evLog := <-ch:
+			fmt.Println("event received")
 			pr := queue.PaymentRegister{}
 			uploader := evLog.Uploader
 			hashedCID := evLog.HashedCID
@@ -88,9 +93,13 @@ func (sm *ServerManager) RegisterWaitForAndProcessPaymentsRegisteredEventForAddr
 			// the following is used to convert a byte-array into a byte-slice, followed by encoding to string
 			pr.HashedCID = fmt.Sprintf("%s", hex.EncodeToString(hashedCID[:]))
 			pr.PaymentID = fmt.Sprintf("0x%s", hex.EncodeToString(paymentID[:]))
+			fmt.Println("publishing message to rabbitmq")
 			// publish the message to rabbitmq.
 			// the rabbitmq worker will parse the event, and update the database
-			queueManager.PublishMessage(pr)
+			err := queueManager.PublishMessage(pr)
+			if err != nil {
+				fmt.Println("failed to publish message ", err)
+			}
 			// set processed to true, allowing us to break out of the outer loop
 			processed = true
 			// break out of the inner loop

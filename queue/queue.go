@@ -54,6 +54,14 @@ type PaymentRegister struct {
 	PaymentID       string `json:"payment_id"`
 }
 
+// PinPaymentRequest is used by the frontend to submit a payment request
+// to allow our authenticated backend to register a payment
+type PinPaymentRequest struct {
+	UploaderAddress  string `json:"uploader_address"`
+	CID              string `json:"cid"`
+	HoldTimeInMonths int64  `json:"hold_time_in_months"`
+}
+
 // PaymentReceived is used when we need to mark that
 // a payment has been received, and we will upload
 // the content

@@ -7,6 +7,7 @@ import (
 	"github.com/RTradeLtd/Temporal/database"
 	jwt "github.com/appleboy/gin-jwt"
 	helmet "github.com/danielkov/gin-helmet"
+	"github.com/jinzhu/gorm"
 
 	"github.com/aviddiviner/gin-limit"
 	"github.com/dvwright/xss-mw"
@@ -46,12 +47,12 @@ func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass, 
 	r.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
-	setupRoutes(r, adminUser, adminPass, authMiddleware)
+	setupRoutes(r, adminUser, adminPass, authMiddleware, db)
 	return r
 }
 
 // setupRoutes is used to setup all of our api routes
-func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jwt.GinJWTMiddleware) {
+func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 
 	// LOGIN
 	g.POST("/api/v1/login", authWare.LoginHandler)
@@ -66,6 +67,7 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	// PROTECTED ROUTES -- BEGIN
 	ipfsProtected := g.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
+	ipfsProtected.Use(middleware.APIRestrictionMiddleware(db))
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
 	ipfsProtected.POST("/add-file", AddFileLocally)
 	ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
