@@ -345,6 +345,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 					d.Ack(false)
 					continue
 				}
+				// TODO: add call to database
 				fmt.Printf("%+v\n", tx)
 				d.Ack(false)
 			}
