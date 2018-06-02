@@ -68,16 +68,3 @@ func GetAuthenticatedUserFromContext(c *gin.Context) string {
 	// this is their eth address
 	return claims["id"].(string)
 }
-
-/*
-func CheckForAPIAccess(c *gin.Context) (bool, error) {
-	var user models.User
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	dbPass := c.MustGet("db_pass").(string)
-	db := database.OpenDBConnection(dbPass)
-	db.Where("eth_address = ?", ethAddress).First(&user)
-	if user.CreatedAt == nilTime {
-		return false, errors.New("user account does not exist")
-	}
-	return user.APIAccess, nil
-}*/

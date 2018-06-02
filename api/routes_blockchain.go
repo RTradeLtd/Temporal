@@ -42,6 +42,7 @@ func RegisterRtcPayment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "retention_period_in_months post form param not found",
 		})
+		return
 	}
 	chargeAmountInWei, exists := c.GetPostForm("charge_amount_in_wei")
 	if !exists {
