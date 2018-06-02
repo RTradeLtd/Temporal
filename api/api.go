@@ -92,11 +92,15 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	databaseProtected.GET("/uploads", GetUploadsFromDatabase)
 	databaseProtected.GET("/uploads/:address", GetUploadsForAddress)
 
-	paymentsProtected := g.Group("/api/v1/payments")
+	paymentsProtected := g.Group("/api/v1/payments/")
 	paymentsProtected.Use(authWare.MiddlewareFunc())
-	paymentsProtected.Use(middleware.APIRestrictionMiddleware(db))
-	paymentsProtected.POST("/rtc/register", RegisterRtcPayment)
-	paymentsProtected.POST("/eth/register", RegisterEthPayment)
+	paymentsProtected.POST("/registration/request", SubmitPaymentRegistration)
+
+	paymentsAPIProtected := g.Group("/api/v1/payments-api")
+	paymentsAPIProtected.Use(authWare.MiddlewareFunc())
+	paymentsAPIProtected.Use(middleware.APIRestrictionMiddleware(db))
+	paymentsAPIProtected.POST("/rtc/register", RegisterRtcPayment)
+	paymentsAPIProtected.POST("/eth/register", RegisterEthPayment)
 	// PROTECTED ROUTES -- END
 
 }

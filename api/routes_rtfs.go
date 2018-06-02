@@ -14,8 +14,20 @@ import (
 func PinHashLocally(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
-	uploadAddress := contextCopy.PostForm("eth_address")
-	holdTimeInMonths := contextCopy.PostForm("hold_time")
+	uploadAddress, exists := contextCopy.GetPostForm("eth_address")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "eth_address post form does not exist",
+		})
+		return
+	}
+	holdTimeInMonths, exists := contextCopy.GetPostForm("hold_time")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "hold_time post form does not exist",
+		})
+		return
+	}
 	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -75,6 +87,9 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
 func AddFileLocally(c *gin.Context) {
+	//var dir string
+	// look into saving uploaded file
+	//c.SaveUploadedFile(fileHandler, dir)
 	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")

@@ -15,8 +15,20 @@ import (
 func PinHashToCluster(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
-	uploadAddress := contextCopy.PostForm("eth_address")
-	holdTimeInMonths := contextCopy.PostForm("hold_time")
+	uploadAddress, exists := contextCopy.GetPostForm("eth_address")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "eth_address post form does not exist",
+		})
+		return
+	}
+	holdTimeInMonths, exists := contextCopy.GetPostForm("hold_time")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "hold_time post form does not exist",
+		})
+		return
+	}
 	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
