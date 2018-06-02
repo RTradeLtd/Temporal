@@ -11,11 +11,6 @@ import (
 // RunTestGarbageCollection is used to run a test
 // of our garbage collector
 func RunTestGarbageCollection(c *gin.Context) {
-	user := GetAuthenticatedUserFromContext(c)
-	if user != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized access to test garbage collect"})
-		return
-	}
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
 	db := database.OpenDBConnection(dbPass, dbURL)
@@ -27,11 +22,6 @@ func RunTestGarbageCollection(c *gin.Context) {
 // GetUploadsFromDatabase is used to read a list of uploads from our database
 // only usable by admin
 func GetUploadsFromDatabase(c *gin.Context) {
-	user := GetAuthenticatedUserFromContext(c)
-	if user != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized access to get uploads from database"})
-		return
-	}
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
 	db := database.OpenDBConnection(dbPass, dbURL)

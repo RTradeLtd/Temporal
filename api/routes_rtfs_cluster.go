@@ -89,12 +89,6 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 // this will mean that all nodes in the cluster will no longer track the pin
 // TODO: fully implement, add in goroutines
 func RemovePinFromCluster(c *gin.Context) {
-	// this can only be done by admin
-	user := GetAuthenticatedUserFromContext(c)
-	if user != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized access to cluster pin removal"})
-		return
-	}
 	hash := c.Param("hash")
 	manager := rtfs_cluster.Initialize()
 	err := manager.RemovePinFromCluster(hash)

@@ -174,12 +174,6 @@ func IpfsPubSubConsume(c *gin.Context) {
 // RemovePinFromLocalHost is used to remove a pin from the ipfs instance
 // TODO: fully implement
 func RemovePinFromLocalHost(c *gin.Context) {
-	// this can only be done by the admin user
-	user := GetAuthenticatedUserFromContext(c)
-	if user != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{"error": "unauthorized access to pin removal"})
-		return
-	}
 	contextCopy := c.Copy()
 	// fetch hash param
 	hash := contextCopy.Param("hash")

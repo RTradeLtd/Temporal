@@ -16,13 +16,6 @@ import (
 // RegisterRtcPayment is used to register an RTC payment with
 // our smart contracts
 func RegisterRtcPayment(c *gin.Context) {
-	user := GetAuthenticatedUserFromContext(c)
-	if user != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access to register rtc payment",
-		})
-		return
-	}
 	ethAddress, exists := c.GetPostForm("eth_address")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -84,13 +77,6 @@ func RegisterRtcPayment(c *gin.Context) {
 }
 
 func RegisterEthPayment(c *gin.Context) {
-	user := GetAuthenticatedUserFromContext(c)
-	if user != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access to register eth payment",
-		})
-		return
-	}
 	ethAddress, exists := c.GetPostForm("eth_address")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
