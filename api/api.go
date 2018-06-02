@@ -94,7 +94,7 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 
 	paymentsProtected := g.Group("/api/v1/payments/")
 	paymentsProtected.Use(authWare.MiddlewareFunc())
-	paymentsProtected.POST("/registration/request", SubmitPaymentRegistration)
+	paymentsProtected.POST("/registration/request", SubmitPinPaymentRegistration)
 
 	paymentsAPIProtected := g.Group("/api/v1/payments-api")
 	paymentsAPIProtected.Use(authWare.MiddlewareFunc())

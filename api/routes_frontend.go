@@ -1,9 +1,10 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
+	"strconv"
 
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,9 +12,10 @@ import (
 Contains routes used for frontend operation
 */
 
-// SubmitPaymentRegistration is used to submit a payment registration
+// SubmitPinPaymentRegistration is used to submit a payment registration
 // request by an authenticated user
-func SubmitPaymentRegistration(c *gin.Context) {
+func SubmitPinPaymentRegistration(c *gin.Context) {
+	var method uint8
 	contextCopy := c.Copy()
 	uploaderAddress, exists := contextCopy.GetPostForm("eth_address")
 	if !exists {
@@ -45,8 +47,10 @@ func SubmitPaymentRegistration(c *gin.Context) {
 	}
 	switch paymentMethod {
 	case "rtc":
+		method = 0
 		break
 	case "eth":
+		method = 1
 		break
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -54,7 +58,35 @@ func SubmitPaymentRegistration(c *gin.Context) {
 		})
 		return
 	}
+	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to convert hold time to int",
+		})
+		return
+	}
+	mqURL := c.MustGet("mq_url").(string)
+	ppr := queue.PinPaymentRequest{
+		UploaderAddress:  uploaderAddress,
+		CID:              contentHash,
+		HoldTimeInMonths: holdTimeInt,
+		Method:           method,
+	}
+
+	qm, err := queue.Initialize(queue.PinPaymentRequestQueue, mqURL)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	err = qm.PublishMessage(ppr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"msg": fmt.Sprint(uploaderAddress, holdTime, contentHash, paymentMethod),
+		"status": "payment registration request sent",
 	})
 }

@@ -12,9 +12,11 @@ import (
 type User struct {
 	gorm.Model
 	EthAddress        string `gorm:"type:varchar(255);unique"`
+	EmailAddress      string `gorm:"type:varchar(255);unique"`
 	EnterpriseEnabled bool   `gorm:"type:boolean"`
 	AccountEnabled    bool   `gorm:"type:boolean"`
 	APIAccess         bool   `gorm:"type:boolean"`
+	EmailEnabled      bool   `gorm:"type:boolean"`
 	HashedPassword    string `gorm:"type:varchar(255)"`
 }
 
