@@ -18,7 +18,7 @@ import (
 )
 
 var xssMdlwr xss.XssMw
-var AdminAddress string
+var AdminAddress = "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9"
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
@@ -82,6 +82,7 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	paymentsProtected := g.Group("/api/v1/payments")
 	paymentsProtected.Use(authWare.MiddlewareFunc())
 	paymentsProtected.POST("/rtc/register", RegisterRtcPayment)
+	paymentsProtected.POST("/eth/register", RegisterEthPayment)
 	// PROTECTED ROUTES -- END
 
 	// IPFS ROUTES [POST] -- BEGIN
