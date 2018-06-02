@@ -61,48 +61,42 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	g.POST("/api/v1/register", RegisterUserAccount)
 	g.POST("/api/v1/register-enterprise", RegisterEnterpriseUserAccount)
 
-	apiV1 := g.Group("/api/v1")
-	apiV1.Use(authWare.MiddlewareFunc())
-
 	// PROTECTED ROUTES -- BEGIN
 	ipfsProtected := g.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
 	ipfsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	ipfsProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublish)
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
 	ipfsProtected.POST("/add-file", AddFileLocally)
+	ipfsProtected.GET("/pubsub/consume/:topic", IpfsPubSubConsume)
+	ipfsProtected.GET("/pins", GetLocalPins)
+	ipfsProtected.GET("/object-stat/:key", GetObjectStatForIpfs)
+	ipfsProtected.GET("/object/size/:key", GetFileSizeInBytesForObject)
+	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
 	ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
+
 	clusterProtected := g.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())
+	clusterProtected.Use(middleware.APIRestrictionMiddleware(db))
 	clusterProtected.POST("/pin/:hash", PinHashToCluster)
 	clusterProtected.POST("/sync-errors-local", SyncClusterErrorsLocally)
+	clusterProtected.GET("/status-local-pin/:hash", GetLocalStatusForClusterPin)
+	clusterProtected.GET("/status-global-pin/:hash", GetGlobalStatusForClusterPin)
+	clusterProtected.GET("/status-local", FetchLocalClusterStatus)
 	clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster)
+
 	databaseProtected := g.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
-	databaseProtected.DELETE("/api/v1/database/garbage-collect/test", RunTestGarbageCollection)
+	databaseProtected.Use(middleware.APIRestrictionMiddleware(db))
+	databaseProtected.DELETE("/garbage-collect/test", RunTestGarbageCollection)
 	databaseProtected.GET("/uploads", GetUploadsFromDatabase)
 	databaseProtected.GET("/uploads/:address", GetUploadsForAddress)
+
 	paymentsProtected := g.Group("/api/v1/payments")
 	paymentsProtected.Use(authWare.MiddlewareFunc())
+	paymentsProtected.Use(middleware.APIRestrictionMiddleware(db))
 	paymentsProtected.POST("/rtc/register", RegisterRtcPayment)
 	paymentsProtected.POST("/eth/register", RegisterEthPayment)
 	// PROTECTED ROUTES -- END
-
-	// IPFS ROUTES [POST] -- BEGIN
-	g.POST("/api/v1/ipfs/pubsub/publish/:topic", IpfsPubSubPublish)
-	// IPFS ROUTES [POST] -- END
-
-	// IPFS ROUTES [GET] -- BEGIN
-	g.GET("/api/v1/ipfs/pubsub/consume/:topic", IpfsPubSubConsume)
-	g.GET("/api/v1/ipfs/pins", GetLocalPins)
-	g.GET("/api/v1/ipfs/object-stat/:key", GetObjectStatForIpfs)
-	g.GET("/api/v1/ipfs/object/size/:key", GetFileSizeInBytesForObject)
-	g.GET("/api/v1/ipfs/check-for-pin/:hash", CheckLocalNodeForPin)
-	// IPFS ROUTES [GET] -- END
-
-	// IPFS CLUSTER ROUTES [GET] -- BEGIN
-	g.GET("/api/v1/ipfs-cluster/status-local-pin/:hash", GetLocalStatusForClusterPin)
-	g.GET("/api/v1/ipfs-cluster/status-global-pin/:hash", GetGlobalStatusForClusterPin)
-	g.GET("/api/v1/ipfs-cluster/status-local", FetchLocalClusterStatus)
-	// IPFS CLUSTER ROUTES [GET] -- END
 
 }
