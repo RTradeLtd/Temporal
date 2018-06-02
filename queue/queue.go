@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/rtfs_cluster"
+
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/payments"
@@ -203,6 +205,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			}
 		// only parse datbase file requests
 		case DatabaseFileAddQueue:
+			cm := rtfs_cluster.Initialize()
 			for d := range msgs {
 				if d.Body != nil {
 					if d.Body != nil {
@@ -246,6 +249,13 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 						upload.UploaderAddresses = append(lastUpload.UploaderAddresses, dfa.UploaderAddress)
 						// we have a valid upload request, so lets store it to the database
 						db.Create(&upload)
+						go func() {
+							decodedHash := cm.DecodeHashString(dfa.Hash)
+							err := cm.Pin(decodedHash)
+							if err != nil {
+								fmt.Println("error pinning to cluster")
+							}
+						}()
 						d.Ack(false)
 					}
 				}
