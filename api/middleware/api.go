@@ -25,9 +25,11 @@ func APIRestrictionMiddleware(db *gorm.DB) gin.HandlerFunc {
 		db.Where("eth_address = ?", ethAddress).First(&user)
 		if user.CreatedAt == nilTime {
 			c.AbortWithError(http.StatusBadRequest, errors.New("invalid user account"))
+			return
 		}
 		if !user.APIAccess {
 			c.AbortWithError(http.StatusForbidden, errors.New("unauthorized api access"))
+			return
 		}
 		c.Next()
 	}
