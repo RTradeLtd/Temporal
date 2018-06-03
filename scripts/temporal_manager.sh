@@ -7,17 +7,11 @@ IPFS_PATH="/ipfs"
 IPFS_CLUSTER_PATH="/ipfs/ipfs-cluster"
 export IPFS_PATH="$IPFS_PATH"
 export IPFS_CLUSTER_PATH="$IPFS_CLUSTER_PATH"
-export DB_PASS="password123"
-export CERT_PATH="/root/certificates/api.pem"
-export KEY_PATH="/root/certificates/api.key"
-export ADMIN_USER="admin"
-export ADMIN_PASS="minutemaid"
-export JWT_KEY="test key"
+export CONFIG_DAG="/home/rtrade/config.json"
+
 case "$1" in
 
     api)
-        LISTEN_ADDRESS="192.168.1.252"
-        export LISTEN_ADDRESS="$LISTEN_ADDRESS"
         Temporal api 2>&1 | tee --append /var/log/temporal/api.log
         ;;
     queue-dpa)
@@ -29,8 +23,17 @@ case "$1" in
     ipfs-cluster-queue)
         Temporal ipfs-cluster-queue 2>&1 | tee --append /var/log/temporal/ipfs_cluster_queue.log
         ;;
+    payment-register-queue)
+        Temporal payment-register-queue 2>&1 | tee --append /var/log/temporal/payment_register_queue.log
+        ;;
+    payment-received-queue)
+        Temporal payment-received-queue 2>&1 | tee --append /var/log/temporal/payment_received_queue.log
+        ;;
     migrate)
         Temporal migrate 2>&1 | tee --append /var/log/temporal/database_migrate.log
         ;;
-
+    *)
+        echo "[ERROR] Invalid command"
+        exit 1
+        ;;
 esac
