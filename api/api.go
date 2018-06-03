@@ -3,6 +3,8 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/database"
 	jwt "github.com/appleboy/gin-jwt"
@@ -23,9 +25,9 @@ var AdminAddress = "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9"
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass string) *gin.Engine {
+func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress string) *gin.Engine {
 	db := database.OpenDBConnection(dbPass, dbURL)
-
+	apiURL := fmt.Sprintf("%s:6767", listenAddress)
 	roll.Token = rollbarToken
 	roll.Environment = "development"
 	r := gin.Default()
@@ -34,7 +36,7 @@ func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass, 
 	// create gin middleware instance for prom
 	p := ginprometheus.NewPrometheus("gin")
 	// set the address for prometheus to collect metrics
-	p.SetListenAddress("127.0.0.1:6768")
+	p.SetListenAddress(apiURL)
 	// load in prom to gin
 	p.Use(r)
 	// enable HSTS on all domains including subdomains
