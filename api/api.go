@@ -27,7 +27,7 @@ var AdminAddress = "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9"
 // it invokes all  non exported function to setup the api.
 func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress string) *gin.Engine {
 	db := database.OpenDBConnection(dbPass, dbURL)
-	apiURL := fmt.Sprintf("%s:6767", listenAddress)
+	apiURL := fmt.Sprintf("%s:6768", listenAddress)
 	roll.Token = rollbarToken
 	roll.Environment = "development"
 	r := gin.Default()
