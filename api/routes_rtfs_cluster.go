@@ -39,7 +39,11 @@ func PinHashToCluster(c *gin.Context) {
 	go func() {
 		// currently after it is pinned, it is sent to the cluster to be pinned
 		manager := rtfs_cluster.Initialize()
-		decodedHash := manager.DecodeHashString(hash)
+		decodedHash, err := manager.DecodeHashString(hash)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		// before exiting, it is pinned to the cluster
 		err = manager.Pin(decodedHash)
 		if err != nil {

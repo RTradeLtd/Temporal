@@ -128,17 +128,25 @@ func AddFileLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		UploaderAddress:  uploaderAddress,
 	}
+	icp := queue.IpfsClusterPin{
+		CID: resp,
+	}
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	// initialize a connectino to rabbitmq
 	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error connectingto rabbitmq": err.Error()})
 		return
 	}
 	// publish the message
 	err = qm.PublishMessage(dfa)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error publishing database file add to rabbit mq": err.Error()})
+		return
+	}
+	err = qm.PublishMessage(icp)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error publishing ipfs cluster pin to rabbit mq": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"response": resp})
