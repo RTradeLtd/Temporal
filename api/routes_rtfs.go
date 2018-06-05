@@ -144,6 +144,11 @@ func AddFileLocally(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error publishing database file add to rabbit mq": err.Error()})
 		return
 	}
+	qm, err = queue.Initialize(queue.IpfsClusterQueue, mqConnectionURL)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error connectingto rabbitmq": err.Error()})
+		return
+	}
 	err = qm.PublishMessage(icp)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error publishing ipfs cluster pin to rabbit mq": err.Error()})

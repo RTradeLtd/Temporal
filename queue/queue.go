@@ -406,6 +406,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 
 // PublishMessage is used to produce messages that are sent to the queue
 func (qm *QueueManager) PublishMessage(body interface{}) error {
+	fmt.Println("publishing message")
 	// we use a persistent delivery mode to combine with the durable queue
 	bodyMarshaled, err := json.Marshal(body)
 	if err != nil {
@@ -425,6 +426,7 @@ func (qm *QueueManager) PublishMessage(body interface{}) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("message published")
 	return nil
 }
 

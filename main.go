@@ -12,8 +12,6 @@ import (
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
-	ipfsQ "github.com/RTradeLtd/Temporal/queue/ipfs"
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/rtswarm"
 	"github.com/RTradeLtd/Temporal/server"
 )
@@ -91,11 +89,15 @@ func main() {
 			log.Fatal(err)
 		}
 	case "ipfs-cluster-queue":
-		psm, err := ipfsQ.Initialize(rtfs.ClusterPubSubTopic)
+		mqConnectionURL := tCfg.RabbitMQ.URL
+		qm, err := queue.Initialize(queue.IpfsClusterQueue, mqConnectionURL)
 		if err != nil {
 			log.Fatal(err)
 		}
-		psm.ParseClusterPinTopic()
+		err = qm.ConsumeMessage("", dbPass, dbURL, "", "")
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "payment-register-queue":
 		mqConnectionURL := tCfg.RabbitMQ.URL
 		qm, err := queue.Initialize(queue.PaymentRegisterQueue, mqConnectionURL)

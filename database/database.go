@@ -12,6 +12,7 @@ import (
 var UploadObj *models.Upload
 var UserObj *models.User
 var PaymentObj *models.Payment
+var dbuser = "postgres"
 
 type DatabaseManager struct {
 	DB     *gorm.DB
@@ -36,7 +37,7 @@ func (dbm *DatabaseManager) RunMigrations() {
 // OpenDBConnection is used to create a database connection
 func OpenDBConnection(dbPass, dbURL string) *gorm.DB {
 	// look into whether or not we wil disable sslmode
-	dbConnURL := fmt.Sprintf("host=%s port=5432 user=temporal dbname=temporal password=%s", dbURL, dbPass)
+	dbConnURL := fmt.Sprintf("host=%s port=5432 user=%s dbname=temporal password=%s", dbURL, dbuser, dbPass)
 	db, err := gorm.Open("postgres", dbConnURL)
 	if err != nil {
 		log.Fatal(err)
