@@ -99,13 +99,7 @@ func SubmitPinPaymentRegistration(c *gin.Context) {
 // CalculatePinCost is used to calculate the cost of pinning something to temporal
 func CalculatePinCost(c *gin.Context) {
 	hash := c.Param("hash")
-	holdTime, present := c.GetPostForm("hold_time")
-	if !present {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "hold_time post form param not present",
-		})
-		return
-	}
+	holdTime := c.Param("holdtime")
 	manager := rtfs.Initialize("")
 	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
 	if err != nil {
