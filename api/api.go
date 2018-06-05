@@ -91,6 +91,7 @@ func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jw
 	databaseProtected.Use(authWare.MiddlewareFunc())
 	databaseProtected.Use(middleware.APIRestrictionMiddleware(db))
 	databaseProtected.DELETE("/garbage-collect/test", RunTestGarbageCollection)
+	databaseProtected.DELETE("/garbage-collect/run", RunDatabaseGarbageCollection)
 	databaseProtected.GET("/uploads", GetUploadsFromDatabase)
 	databaseProtected.GET("/uploads/:address", GetUploadsForAddress)
 

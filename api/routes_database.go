@@ -8,15 +8,38 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var dev = false
+
 // RunTestGarbageCollection is used to run a test
 // of our garbage collector
 func RunTestGarbageCollection(c *gin.Context) {
+	if !dev {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "attempting to run test database garbage colelction in non dev mode",
+		})
+	}
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
 	db := database.OpenDBConnection(dbPass, dbURL)
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunTestDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{"deleted": deletedUploads})
+}
+
+// RunDatabaseGarbageCollection is used to parse through our database
+// and remove them from the database. Note we do not remove from the cluster here
+// since that will be a pretty long call. We will have a script that parses through
+// the database once every 24 hours, looking for any deleted pins, and removing them
+// from the cluster
+func RunDatabaseGarbageCollection(c *gin.Context) {
+	dbPass := c.MustGet("db_pass").(string)
+	dbURL := c.MustGet("db_url").(string)
+	db := database.OpenDBConnection(dbPass, dbURL)
+	um := models.NewUploadManager(db)
+	deletedUploads := um.RunDatabaseGarbageCollection()
+	c.JSON(http.StatusOK, gin.H{
+		"deleted_uploads": deletedUploads,
+	})
 }
 
 // GetUploadsFromDatabase is used to read a list of uploads from our database
