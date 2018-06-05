@@ -1,8 +1,12 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/Temporal/utils"
 
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/gin-gonic/gin"
@@ -85,8 +89,38 @@ func SubmitPinPaymentRegistration(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"status": "payment registration request sent",
+	})
+}
+
+// CalculatePinCost is used to calculate the cost of pinning something to temporal
+func CalculatePinCost(c *gin.Context) {
+	hash := c.Param("hash")
+	holdTime, present := c.GetPostForm("hold_time")
+	if !present {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "hold_time post form param not present",
+		})
+		return
+	}
+	manager := rtfs.Initialize("")
+	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to convert hold time from string to int",
+		})
+		return
+	}
+	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("unable to calculate pin cost %s", err.Error()),
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"total_cost_usd": totalCost,
 	})
 }

@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"github.com/c2h5oh/datasize"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	ipfsapi "github.com/ipfs/go-ipfs-api"
 )
 
 // FilesAddress is the address of the files contract
@@ -20,6 +22,9 @@ var ConnectionURL = "http://127.0.0.1:8545"
 // IpcPath is the file path used to connect to geth via ipc
 var IpcPath = "/media/solidity/fuck/Rinkeby/datadir/geth.ipc"
 
+// this is a testing parameter for now, exact costs will be detailed at a later time
+var usdPerGigabytePerMonth = 0.134
+
 // GenerateKeccak256HashFromString is  used to generate a keccak256 hash
 // from string data into a format that is needed when making smart contract calls
 func GenerateKeccak256HashFromString(data string) [32]byte {
@@ -32,4 +37,20 @@ func GenerateKeccak256HashFromString(data string) [32]byte {
 	hash := common.BytesToHash(hashedDataByte)
 	copy(b[:], hash.Bytes()[:32])
 	return b
+}
+
+// CalculatePinCost is used to calculate the cost of pining a particular content hash
+func CalculatePinCost(contentHash string, holdTimeInMonths int64, shell *ipfsapi.Shell) (float64, error) {
+	objectStat, err := shell.ObjectStat(contentHash)
+	if err != nil {
+		return float64(0), err
+	}
+	sizeInBytes := objectStat.CumulativeSize
+	gigaInBytes := datasize.GB.Bytes()
+	gigabytesInt := int64(gigaInBytes)
+	sizeInBytesFloat := float64(sizeInBytes)
+	gigabytesFloat := float64(gigabytesInt)
+	objectSizeInGigabytesFloat := sizeInBytesFloat / gigabytesFloat
+	totalCostFloat := objectSizeInGigabytesFloat * float64(holdTimeInMonths)
+	return totalCostFloat, nil
 }
