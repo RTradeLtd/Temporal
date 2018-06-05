@@ -10,6 +10,10 @@ Technologies that will be supported by our cloud storage, and API:
 * STORJ (planned)
 * SIA (planned)
 
+# Hosted API Early Access
+
+We have an early access alpha of our hosted API for the public IPFS network, should you wish to test it please contact me at postables@rtradetechnologies.com
+
 # Hosted API 
 
 One of the main features of temporal we offer is hosted access to all the tools, and benefits that come with temporal, without having to run any of the services yourself.
@@ -21,9 +25,6 @@ Your API infrastructure will be run on dedicated machines connected to our stora
 
 There is no support offered for on-premise deployments, save for bugs that may be found in the temporal software suite itself in which case an issue may be opened up on the repository. We offer paid support for on-premise temporal deployments, as well as training to use the software to its fullest capabilities. If this is of interest to you, please contact us privately.
 
-# Early Access Hosted API Alpha
-
-An early access version of the hosted temporal API is online, letting you store files onto IPFS, and integrate IPFS storage into your own stack without having to run nodes. Email postables@rtradetechnologies.com for access.
 
 # Goals
 
