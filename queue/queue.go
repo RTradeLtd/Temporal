@@ -34,9 +34,6 @@ type QueueManager struct {
 	Queue      *amqp.Queue
 }
 
-// TODO: cluster pinning will be moved to a rabbitmq system shortly
-type IpfsClusterPin struct{}
-
 // DatabaseFileAdd is a struct used when sending data to rabbitmq
 type DatabaseFileAdd struct {
 	Hash             string `json:"hash"`
@@ -76,6 +73,12 @@ type PinPaymentRequest struct {
 type PaymentReceived struct {
 	UploaderAddress string `json:"uploader_address"`
 	PaymentID       string `json:"payment_id"`
+}
+
+// IpfsClusterPin is used to handle pinning items to the cluster
+// that have been pinned locally
+type IpfsClusterPin struct {
+	CID string `json:"content_hash"`
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
@@ -250,8 +253,12 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 						// we have a valid upload request, so lets store it to the database
 						db.Create(&upload)
 						go func() {
-							decodedHash := cm.DecodeHashString(dfa.Hash)
-							err := cm.Pin(decodedHash)
+							decodedHash, err := cm.DecodeHashString(dfa.Hash)
+							if err != nil {
+								fmt.Println("error decoding hash ", err)
+								return
+							}
+							err = cm.Pin(decodedHash)
 							if err != nil {
 								fmt.Println("error pinning to cluster")
 							}
@@ -358,6 +365,36 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 				// TODO: add call to database
 				fmt.Printf("%+v\n", tx)
 				d.Ack(false)
+			}
+		case IpfsClusterQueue:
+			var clusterPin IpfsClusterPin
+			clusterManager := rtfs_cluster.Initialize()
+			for d := range msgs {
+				err := json.Unmarshal(d.Body, &clusterPin)
+				if err != nil {
+					fmt.Println("error unmarshaling data ", err)
+					// TODO: handle error
+					d.Ack(false)
+					continue
+				}
+				contentHash := clusterPin.CID
+				decodedContentHash, err := clusterManager.DecodeHashString(contentHash)
+				if err != nil {
+					fmt.Println("error decoded content hash to cid ", err)
+					//TODO: handle error
+					d.Ack(false)
+					continue
+				}
+				err = clusterManager.Pin(decodedContentHash)
+				if err != nil {
+					fmt.Println("error pinning to cluster ", err)
+					//TODO: handle error
+					d.Ack(false)
+					continue
+				}
+				fmt.Println("content pinned to cluster ", contentHash)
+				d.Ack(false)
+
 			}
 		default:
 			log.Fatal("invalid queue name")

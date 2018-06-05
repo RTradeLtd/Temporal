@@ -47,7 +47,12 @@ func (pm *PubSubQueueManager) ParseClusterPinTopic() {
 		}
 		fmt.Println("record detected")
 		dataString := string(record.Data())
-		decodedDataString := cm.DecodeHashString(dataString)
+		decodedDataString, err := cm.DecodeHashString(dataString)
+		if err != nil {
+			fmt.Println("error encountered ", err)
+			//TODO handle error
+			continue
+		}
 		err = cm.Pin(decodedDataString)
 		if err != nil {
 			// todo: add errror handling
@@ -75,7 +80,11 @@ func ListenToClusterPinTopic() {
 			continue
 		}
 		dataString := string(subRecord.Data())
-		decodedDataString := clusterManager.DecodeHashString(dataString)
+		decodedDataString, err := clusterManager.DecodeHashString(dataString)
+		if err != nil {
+			fmt.Println("error encounted ", err)
+			continue
+		}
 		err = clusterManager.Pin(decodedDataString)
 		if err != nil {
 			fmt.Println("error detected")

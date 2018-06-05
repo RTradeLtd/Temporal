@@ -84,8 +84,11 @@ func (cm *ClusterManager) ParseLocalStatusAllAndSync() ([]*gocid.Cid, error) {
 
 // RemovePinFromCluster is used to remove a pin from the cluster
 func (cm *ClusterManager) RemovePinFromCluster(cidString string) error {
-	decoded := cm.DecodeHashString(cidString)
-	err := cm.Client.Unpin(decoded)
+	decoded, err := cm.DecodeHashString(cidString)
+	if err != nil {
+		return err
+	}
+	err = cm.Client.Unpin(decoded)
 	if err != nil {
 		return err
 	}
@@ -115,7 +118,10 @@ func (cm *ClusterManager) FetchLocalStatus() (map[*gocid.Cid]string, error) {
 
 // GetStatusForCidLocally is used to fetch the local status for a particular cid
 func (cm *ClusterManager) GetStatusForCidLocally(cidString string) (*api.GlobalPinInfo, error) {
-	decoded := cm.DecodeHashString(cidString)
+	decoded, err := cm.DecodeHashString(cidString)
+	if err != nil {
+		return nil, err
+	}
 	status, err := cm.Client.Status(decoded, true)
 	if err != nil {
 		return nil, err
@@ -125,7 +131,10 @@ func (cm *ClusterManager) GetStatusForCidLocally(cidString string) (*api.GlobalP
 
 // GetStatusForCidGlobally is used to fetch the global status for a particular cid
 func (cm *ClusterManager) GetStatusForCidGlobally(cidString string) (*api.GlobalPinInfo, error) {
-	decoded := cm.DecodeHashString(cidString)
+	decoded, err := cm.DecodeHashString(cidString)
+	if err != nil {
+		return nil, err
+	}
 	status, err := cm.Client.Status(decoded, false)
 	if err != nil {
 		return nil, err
@@ -149,12 +158,12 @@ func (cm *ClusterManager) AddPeerToCluster(addr ma.Multiaddr) {
 }
 
 // DecodeHashString is used to take a hash string, and turn it into a CID
-func (cm *ClusterManager) DecodeHashString(cidString string) *gocid.Cid {
+func (cm *ClusterManager) DecodeHashString(cidString string) (*gocid.Cid, error) {
 	cid, err := gocid.Decode(cidString)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return cid
+	return cid, nil
 }
 
 // Pin is used to add a pin to the cluster
