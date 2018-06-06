@@ -70,6 +70,37 @@ func SubmitPinPaymentRegistration(c *gin.Context) {
 		return
 	}
 	mqURL := c.MustGet("mq_conn_url").(string)
+	manager := rtfs.Initialize("")
+	pinCostUsd, err := utils.CalculatePinCost(contentHash, holdTimeInt, manager.Shell)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to calculate cost of pin",
+		})
+		return
+	}
+	var cost float64
+	// TODO: use a money/currency library for the math.
+	// this is a place holder
+	switch method {
+	case 0:
+		rtcUSD := float64(0.125)
+		cost = pinCostUsd / rtcUSD
+	case 1:
+		ethUSD, err := utils.RetrieveEthUsdPrice()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("error ", err),
+			})
+		}
+		cost = pinCostUsd / ethUSD
+		break
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid payment method, must be 0 or 1",
+		})
+		return
+	}
+	fmt.Println(cost)
 	ppr := queue.PinPaymentRequest{
 		UploaderAddress:  uploaderAddress,
 		CID:              contentHash,
@@ -92,7 +123,8 @@ func SubmitPinPaymentRegistration(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"status": "payment registration request sent",
+		"status":   "payment registration request sent",
+		"cost_usd": pinCostUsd,
 	})
 }
 
