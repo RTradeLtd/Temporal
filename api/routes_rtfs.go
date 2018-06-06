@@ -97,8 +97,20 @@ func AddFileLocally(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	uploaderAddress := c.PostForm("eth_ddress")
-	holdTimeinMonths := c.PostForm("hold_time")
+	uploaderAddress, present := c.GetPostForm("eth_ddress")
+	if !present {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "eth_address post form param not present",
+		})
+		return
+	}
+	holdTimeinMonths, present := c.GetPostForm("hold_time")
+	if !present {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "hold_time post form param not present",
+		})
+		return
+	}
 	holdTimeinMonthsInt, err := strconv.ParseInt(holdTimeinMonths, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -160,7 +172,13 @@ func AddFileLocally(c *gin.Context) {
 // IpfsPubSubPublish is used to publish a pubsub msg
 func IpfsPubSubPublish(c *gin.Context) {
 	topic := c.Param("topic")
-	message := c.PostForm("message")
+	message, present := c.GetPostForm("message")
+	if !present {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "message post form param is not present",
+		})
+		return
+	}
 	manager := rtfs.Initialize("")
 	err := manager.PublishPubSubMessage(topic, message)
 	if err != nil {

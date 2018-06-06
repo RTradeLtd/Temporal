@@ -25,7 +25,6 @@ Your API infrastructure will be run on dedicated machines connected to our stora
 
 There is no support offered for on-premise deployments, save for bugs that may be found in the temporal software suite itself in which case an issue may be opened up on the repository. We offer paid support for on-premise temporal deployments, as well as training to use the software to its fullest capabilities. If this is of interest to you, please contact us privately.
 
-
 # Goals
 
 * Provide an easy to use interface with IPFS for both personal and business purposes.
@@ -65,6 +64,10 @@ Currently the project is paid for out of pocket, and we will *not* be doing an I
 * Hiring additional talent for Temporal enterprise to bring project to completion
 
 Should you wish to consider donations, or private investment email admin@rtradetechnologies.com
+
+# Warnings
+
+Until V1 is released, do not expect backwards compatability between non V1 versions, and V1 versions. If you are going to use temporal, please use vendoring to prevent unexpected breaks before V1
 
 # Usage (to do)
 
