@@ -25,7 +25,7 @@ var AdminAddress = "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9"
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress string) *gin.Engine {
+func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress string) *gin.Engine {
 	db := database.OpenDBConnection(dbPass, dbURL)
 	apiURL := fmt.Sprintf("%s:6768", listenAddress)
 	roll.Token = rollbarToken
@@ -49,12 +49,12 @@ func Setup(adminUser, adminPass, jwtKey, rollbarToken, mqConnectionURL, dbPass, 
 	r.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
-	setupRoutes(r, adminUser, adminPass, authMiddleware, db)
+	setupRoutes(r, authMiddleware, db)
 	return r
 }
 
 // setupRoutes is used to setup all of our api routes
-func setupRoutes(g *gin.Engine, adminUser string, adminPass string, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
+func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 
 	// LOGIN
 	g.POST("/api/v1/login", authWare.LoginHandler)

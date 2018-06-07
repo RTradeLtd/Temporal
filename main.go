@@ -42,8 +42,6 @@ func main() {
 	certFilePath := tCfg.API.Connection.Certificates.CertPath
 	keyFilePath := tCfg.API.Connection.Certificates.KeyPath
 	listenAddress := tCfg.API.Connection.ListenAddress
-	adminUser := tCfg.API.Admin.Username
-	adminPass := tCfg.API.Admin.Password
 	jwtKey := tCfg.API.JwtKey
 	rollbarToken := tCfg.API.RollbarToken
 	rabbitMQConnectionURL := tCfg.RabbitMQ.URL
@@ -60,7 +58,7 @@ func main() {
 		config := LoadConfig(configCid)
 		fmt.Printf("%+v\n", config)
 	case "api":
-		router := api.Setup(adminUser, adminPass, jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass, listenAddress)
+		router := api.Setup(jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass, listenAddress)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
