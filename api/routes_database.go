@@ -20,7 +20,8 @@ func RunTestGarbageCollection(c *gin.Context) {
 	}
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
-	db := database.OpenDBConnection(dbPass, dbURL)
+	dbUser := c.MustGet("db_user").(string)
+	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunTestDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{"deleted": deletedUploads})
@@ -34,7 +35,8 @@ func RunTestGarbageCollection(c *gin.Context) {
 func RunDatabaseGarbageCollection(c *gin.Context) {
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
-	db := database.OpenDBConnection(dbPass, dbURL)
+	dbUser := c.MustGet("db_user").(string)
+	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{
@@ -47,7 +49,8 @@ func RunDatabaseGarbageCollection(c *gin.Context) {
 func GetUploadsFromDatabase(c *gin.Context) {
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
-	db := database.OpenDBConnection(dbPass, dbURL)
+	dbUser := c.MustGet("db_user").(string)
+	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	um := models.NewUploadManager(db)
 	// fetch the uplaods
 	uploads := um.GetUploads()
@@ -66,7 +69,8 @@ func GetUploadsForAddress(c *gin.Context) {
 	var queryAddress string
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
-	db := database.OpenDBConnection(dbPass, dbURL)
+	dbUser := c.MustGet("db_user").(string)
+	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	um := models.NewUploadManager(db)
 	user := GetAuthenticatedUserFromContext(c)
 	if user == AdminAddress {

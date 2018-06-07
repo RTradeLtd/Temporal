@@ -136,8 +136,8 @@ func (qm *QueueManager) DeclareQueue(queueName string) error {
 // ConsumeMessage is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethKeyPass string) error {
-	db := database.OpenDBConnection(dbPass, dbURL)
+func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethKeyPass, dbUser string) error {
+	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	// we use a false flag for auto-ack since we will use
 	// manually acknowledgemnets to ensure message delivery
 	// even if a worker dies

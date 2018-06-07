@@ -25,7 +25,8 @@ func RegisterUserAccount(c *gin.Context) {
 	}
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
-	db := database.OpenDBConnection(dbPass, dbURL)
+	dbUser := c.MustGet("db_user").(string)
+	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	userManager := models.NewUserManager(db)
 	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
 	if err != nil {
@@ -50,7 +51,8 @@ func RegisterEnterpriseUserAccount(c *gin.Context) {
 	}
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
-	db := database.OpenDBConnection(dbPass, dbURL)
+	dbUser := c.MustGet("db_user").(string)
+	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	userManager := models.NewUserManager(db)
 	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
 	if err != nil {
