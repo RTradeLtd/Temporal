@@ -117,6 +117,16 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+	case "pin-payment-request":
+		mqConnectionURL := tCfg.RabbitMQ.URL
+		qm, err := queue.Initialize(queue.PinPaymentRequestQueue, mqConnectionURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser)
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "migrate":
 		dbm := database.Initialize(dbPass, dbURL, dbUser)
 		dbm.RunMigrations()
