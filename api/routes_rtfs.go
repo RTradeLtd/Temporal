@@ -97,7 +97,7 @@ func AddFileLocally(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	uploaderAddress, present := c.GetPostForm("eth_ddress")
+	uploaderAddress, present := c.GetPostForm("eth_address")
 	if !present {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "eth_address post form param not present",
