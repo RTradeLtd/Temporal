@@ -1,0 +1,1196 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "id": 8,
+    "links": [],
+    "panels": [
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "description": "",
+        "fill": 1,
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "id": 8,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "application": {
+              "filter": ""
+            },
+            "expr": "geth_eth_db_chaindata_disk_write_avgRate15Min",
+            "format": "time_series",
+            "functions": [],
+            "group": {
+              "filter": ""
+            },
+            "host": {
+              "filter": ""
+            },
+            "intervalFactor": 1,
+            "item": {
+              "filter": ""
+            },
+            "legendFormat": "15Min",
+            "mode": 0,
+            "options": {
+              "showDisabledItems": false,
+              "skipEmptyValues": false
+            },
+            "refId": "A",
+            "resultFormat": "time_series",
+            "table": {
+              "skipEmptyValues": false
+            },
+            "triggers": {
+              "acknowledged": 2,
+              "count": true,
+              "minSeverity": 3
+            }
+          },
+          {
+            "expr": "geth_eth_db_chaindata_disk_write_avgRate05Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "5min",
+            "refId": "B"
+          },
+          {
+            "expr": "geth_eth_db_chaindata_disk_write_avgRate01Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "1Min",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Eth Chaindata Disk Write Avg",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "description": "",
+        "fill": 1,
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "id": 4,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "application": {
+              "filter": ""
+            },
+            "expr": "geth_eth_db_chaindata_disk_read_avgRate15Min",
+            "format": "time_series",
+            "functions": [],
+            "group": {
+              "filter": ""
+            },
+            "host": {
+              "filter": ""
+            },
+            "intervalFactor": 1,
+            "item": {
+              "filter": ""
+            },
+            "legendFormat": "15Min",
+            "mode": 0,
+            "options": {
+              "showDisabledItems": false,
+              "skipEmptyValues": false
+            },
+            "refId": "A",
+            "resultFormat": "time_series",
+            "table": {
+              "skipEmptyValues": false
+            },
+            "triggers": {
+              "acknowledged": 2,
+              "count": true,
+              "minSeverity": 3
+            }
+          },
+          {
+            "expr": "geth_eth_db_chaindata_disk_read_avgRate05Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "5Min",
+            "refId": "B"
+          },
+          {
+            "expr": "geth_eth_db_chaindata_disk_read_avgRate01Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "1Min",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Eth DB Chaindata Disk Read Average",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "description": "",
+        "fill": 1,
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 9
+        },
+        "id": 6,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "application": {
+              "filter": ""
+            },
+            "expr": "geth_eth_downloader_states_in_avgRate15Min",
+            "format": "time_series",
+            "functions": [],
+            "group": {
+              "filter": ""
+            },
+            "host": {
+              "filter": ""
+            },
+            "intervalFactor": 1,
+            "item": {
+              "filter": ""
+            },
+            "legendFormat": "15min",
+            "mode": 0,
+            "options": {
+              "showDisabledItems": false,
+              "skipEmptyValues": false
+            },
+            "refId": "A",
+            "resultFormat": "time_series",
+            "table": {
+              "skipEmptyValues": false
+            },
+            "triggers": {
+              "acknowledged": 2,
+              "count": true,
+              "minSeverity": 3
+            }
+          },
+          {
+            "expr": "geth_eth_downloader_states_in_avgRate05Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "5min",
+            "refId": "B"
+          },
+          {
+            "expr": "geth_eth_downloader_states_in_avgRate01Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "1min",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Geth Eth State Download Insertion Rate Average",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "description": "geth_eth_downloader_headers_in_avgRate15Min",
+        "fill": 1,
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 9
+        },
+        "id": 10,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "application": {
+              "filter": ""
+            },
+            "expr": "geth_eth_downloader_headers_in_avgRate15Min",
+            "format": "time_series",
+            "functions": [],
+            "group": {
+              "filter": ""
+            },
+            "host": {
+              "filter": ""
+            },
+            "intervalFactor": 1,
+            "item": {
+              "filter": ""
+            },
+            "legendFormat": "15Min",
+            "mode": 0,
+            "options": {
+              "showDisabledItems": false,
+              "skipEmptyValues": false
+            },
+            "refId": "A",
+            "resultFormat": "time_series",
+            "table": {
+              "skipEmptyValues": false
+            },
+            "triggers": {
+              "acknowledged": 2,
+              "count": true,
+              "minSeverity": 3
+            }
+          },
+          {
+            "expr": "geth_eth_downloader_headers_in_avgRate05Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "5min",
+            "refId": "B"
+          },
+          {
+            "expr": "geth_eth_downloader_headers_in_avgRate01Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "1Min",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Eth Header Download Insertion Rate Avg",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "description": "",
+        "fill": 1,
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 18
+        },
+        "id": 14,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "application": {
+              "filter": ""
+            },
+            "expr": "geth_p2p_outboundTraffic_avgRate15Min",
+            "format": "time_series",
+            "functions": [],
+            "group": {
+              "filter": ""
+            },
+            "host": {
+              "filter": ""
+            },
+            "intervalFactor": 1,
+            "item": {
+              "filter": ""
+            },
+            "legendFormat": "15Min",
+            "mode": 0,
+            "options": {
+              "showDisabledItems": false,
+              "skipEmptyValues": false
+            },
+            "refId": "A",
+            "resultFormat": "time_series",
+            "table": {
+              "skipEmptyValues": false
+            },
+            "triggers": {
+              "acknowledged": 2,
+              "count": true,
+              "minSeverity": 3
+            }
+          },
+          {
+            "expr": "geth_p2p_outboundTraffic_avgRate05Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "5Min",
+            "refId": "B"
+          },
+          {
+            "expr": "geth_p2p_outboundTraffic_avgRate01Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "1Min",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Geth P2P Outbound Traffic Rate Avg",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "description": "",
+        "fill": 1,
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 18
+        },
+        "id": 12,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "application": {
+              "filter": ""
+            },
+            "expr": "geth_p2p_inboundTraffic_avgRate15Min",
+            "format": "time_series",
+            "functions": [],
+            "group": {
+              "filter": ""
+            },
+            "host": {
+              "filter": ""
+            },
+            "intervalFactor": 1,
+            "item": {
+              "filter": ""
+            },
+            "legendFormat": "15Min",
+            "mode": 0,
+            "options": {
+              "showDisabledItems": false,
+              "skipEmptyValues": false
+            },
+            "refId": "A",
+            "resultFormat": "time_series",
+            "table": {
+              "skipEmptyValues": false
+            },
+            "triggers": {
+              "acknowledged": 2,
+              "count": true,
+              "minSeverity": 3
+            }
+          },
+          {
+            "expr": "geth_p2p_inboundTraffic_avgRate05Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "5Min",
+            "refId": "B"
+          },
+          {
+            "expr": "geth_p2p_inboundTraffic_avgRate01Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "1Min",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Geth P2P Inbound Traffic Rate Avg",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "description": "",
+        "fill": 1,
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 27
+        },
+        "id": 16,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "application": {
+              "filter": ""
+            },
+            "expr": "geth_discv5_outboundTraffic_avgRate15Min",
+            "format": "time_series",
+            "functions": [],
+            "group": {
+              "filter": ""
+            },
+            "host": {
+              "filter": ""
+            },
+            "intervalFactor": 1,
+            "item": {
+              "filter": ""
+            },
+            "legendFormat": "15Min",
+            "mode": 0,
+            "options": {
+              "showDisabledItems": false,
+              "skipEmptyValues": false
+            },
+            "refId": "A",
+            "resultFormat": "time_series",
+            "table": {
+              "skipEmptyValues": false
+            },
+            "triggers": {
+              "acknowledged": 2,
+              "count": true,
+              "minSeverity": 3
+            }
+          },
+          {
+            "expr": "geth_discv5_outboundTraffic_avgRate05Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "5Min",
+            "refId": "B"
+          },
+          {
+            "expr": "geth_discv5_outboundTraffic_avgRate01Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "1Min",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Geth V5 Discovery Outbound Traffic Rate Avg",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "fill": 1,
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 27
+        },
+        "id": 2,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "application": {
+              "filter": ""
+            },
+            "expr": "geth_discv5_inboundTraffic_avgRate15Min",
+            "format": "time_series",
+            "functions": [],
+            "group": {
+              "filter": ""
+            },
+            "host": {
+              "filter": ""
+            },
+            "interval": "",
+            "intervalFactor": 1,
+            "item": {
+              "filter": ""
+            },
+            "legendFormat": "15Min",
+            "mode": 0,
+            "options": {
+              "showDisabledItems": false,
+              "skipEmptyValues": false
+            },
+            "refId": "A",
+            "resultFormat": "time_series",
+            "table": {
+              "skipEmptyValues": false
+            },
+            "triggers": {
+              "acknowledged": 2,
+              "count": true,
+              "minSeverity": 3
+            }
+          },
+          {
+            "expr": "geth_discv5_inboundTraffic_avgRate05Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "5Min",
+            "refId": "B"
+          },
+          {
+            "expr": "geth_discv5_inboundTraffic_avgRate01Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "1Min",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Geth V5 Discovery Inbound Traffic Rate Avg",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "description": "",
+        "fill": 1,
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 36
+        },
+        "id": 18,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "application": {
+              "filter": ""
+            },
+            "expr": "geth_system_memory_allocs_avgRate15Min",
+            "format": "time_series",
+            "functions": [],
+            "group": {
+              "filter": ""
+            },
+            "host": {
+              "filter": ""
+            },
+            "intervalFactor": 1,
+            "item": {
+              "filter": ""
+            },
+            "legendFormat": "15Min",
+            "mode": 0,
+            "options": {
+              "showDisabledItems": false,
+              "skipEmptyValues": false
+            },
+            "refId": "A",
+            "resultFormat": "time_series",
+            "table": {
+              "skipEmptyValues": false
+            },
+            "triggers": {
+              "acknowledged": 2,
+              "count": true,
+              "minSeverity": 3
+            }
+          },
+          {
+            "expr": "geth_system_memory_allocs_avgRate05Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "5min",
+            "refId": "B"
+          },
+          {
+            "expr": "geth_system_memory_allocs_avgRate01Min",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "1Min",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Geth System Memory Allocation Rate Avg",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      }
+    ],
+    "refresh": false,
+    "schemaVersion": 16,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "2018-06-08T03:39:44.068Z",
+      "to": "2018-06-08T03:43:20.546Z"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ]
+    },
+    "timezone": "",
+    "title": "Geth-General",
+    "uid": "GHv7A1Iik",
+    "version": 1
+  }
