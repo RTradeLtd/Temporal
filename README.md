@@ -46,6 +46,43 @@ We aren't doing an ICO,  and we're not wasting our development efforts on redesi
 If you wish to contribute, create a new branch to do your work on, and submit a pull request to V2 branch.
 The only requirement is that all code submitted must include tests.
 
+# Repository Contents
+
+* `api/`
+    * This contains the API related code to temporal, as is the primary interface for interaction with temporal
+    * all web frontends, applications, etc... use this api
+* `api/middleware`
+    * This is middleware used by the API and handles common functionality such as database connection parameters, rabbitmq parameters, etc...
+* `bindings`
+    * This is the go-ethereum bindings for the smart contracts that temporal uses
+* `cli`
+    * basic terminal-based cli application
+* `configs`
+    * parent directory contains systemd service files
+* `configs/grafana`
+    * JSON files for our grafana graphs
+* `contracts`
+    * solidity source code files for temporal smart contracts
+* `database`
+    * this is the package used by temporal for interacting with our database backend
+* `docs`
+    * contains all non-readme documentation
+* `models`
+    * models used by temporal
+* `payments`
+    * golang code for interacting with the payments smart contract
+* `queue`
+    * all queue related code for rabbitmq and ipfs pubsub queue
+* `rtfs`
+    * contains temporal code for interacting with ipfs nodes
+* `rtfs_cluster`
+    * contains temporal code for interacting with the ipfs cluster
+* `server`
+    * contains server related code for interacting with the ethereum blockchain
+    * this will eventually be broken up into three seperate folders corresponding to each of the smart contracts
+* `utils`
+    * contains utility code used by temporal
+
 # Funding
 
 Currently the project is paid for out of pocket, and we will *not* be doing an ICO. Any funding received through donations, or private investment will be put to the following:
