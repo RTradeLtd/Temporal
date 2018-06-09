@@ -112,6 +112,10 @@ func (pm *PaymentManager) WaitForAndProcessMinedTransaction(tx *types.Transactio
 			fmt.Println("error retrieving tx receipt ", err)
 			return
 		}
+		if err != nil && err == ethereum.NotFound {
+			fmt.Println("tx not mined yet")
+			continue
+		}
 		// cumulative gas used is greater than 0 so it has been mined
 		if receipt.CumulativeGasUsed > 0 {
 			mined = true
@@ -121,7 +125,7 @@ func (pm *PaymentManager) WaitForAndProcessMinedTransaction(tx *types.Transactio
 	// read the total number of payments, so we can grab the latest payment id
 	numPayments, err := pm.Contract.NumPayments(nil, common.HexToAddress(uploaderAddress))
 	if err != nil {
-		fmt.Println("error retrieving num payments ", err)
+		fmt.Println("error retrieving num payments ")
 		return
 	}
 	fmt.Println("retrieving payment id")
