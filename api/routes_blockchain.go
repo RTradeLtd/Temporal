@@ -19,28 +19,29 @@ import (
 // RegisterRtcPayment is used to register an RTC payment with
 // our smart contracts
 func RegisterRtcPayment(c *gin.Context) {
-	ethAddress, exists := c.GetPostForm("eth_address")
+	contextCopy := c.Copy()
+	ethAddress, exists := contextCopy.GetPostForm("eth_address")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "eth_address post form param not found",
 		})
 		return
 	}
-	contentHash, exists := c.GetPostForm("content_hash")
+	contentHash, exists := contextCopy.GetPostForm("content_hash")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "content_hash post form param not found",
 		})
 		return
 	}
-	retentionPeriodInMonths, exists := c.GetPostForm("retention_period_in_months")
+	retentionPeriodInMonths, exists := contextCopy.GetPostForm("retention_period_in_months")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "retention_period_in_months post form param not found",
 		})
 		return
 	}
-	chargeAmountInWei, exists := c.GetPostForm("charge_amount_in_wei")
+	chargeAmountInWei, exists := contextCopy.GetPostForm("charge_amount_in_wei")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "charge_amount_in_wei post form param not found",
@@ -61,12 +62,12 @@ func RegisterRtcPayment(c *gin.Context) {
 		})
 		return
 	}
-	dbPass := c.MustGet("db_pass").(string)
-	dbURL := c.MustGet("db_url").(string)
-	dbUser := c.MustGet("db_user").(string)
+	dbPass := contextCopy.MustGet("db_pass").(string)
+	dbURL := contextCopy.MustGet("db_url").(string)
+	dbUser := contextCopy.MustGet("db_user").(string)
 	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
-	mqURL := c.MustGet("mq_conn_url").(string)
-	ethAccount := c.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
+	mqURL := contextCopy.MustGet("mq_conn_url").(string)
+	ethAccount := contextCopy.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
 	// since we aren't interacting with any contract events we dont need IPC
 	pm, err := payments.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)
 	if err != nil {
