@@ -1,4 +1,4 @@
-package payments
+package payment_server
 
 import (
 	"context"

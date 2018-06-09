@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/database"
-	"github.com/RTradeLtd/Temporal/payments"
+	"github.com/RTradeLtd/Temporal/payment_server"
 	"github.com/gin-gonic/gin"
 )
 
@@ -68,7 +68,7 @@ func RegisterRtcPayment(c *gin.Context) {
 	mqURL := contextCopy.MustGet("mq_conn_url").(string)
 	ethAccount := contextCopy.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
 	// since we aren't interacting with any contract events we dont need IPC
-	pm, err := payments.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)
+	pm, err := payment_server.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("unable to create payment manager %s", err.Error()),
@@ -138,7 +138,7 @@ func RegisterEthPayment(c *gin.Context) {
 	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	mqURL := c.MustGet("mq_conn_url").(string)
 	ethAccount := c.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
-	pm, err := payments.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)
+	pm, err := payment_server.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("unable to create payment manager %s", err.Error()),

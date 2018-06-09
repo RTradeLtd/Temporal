@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/payment_server"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
-	"github.com/RTradeLtd/Temporal/payments"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -333,7 +333,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			if ethKeyFile == "" || ethKeyPass == "" {
 				log.Fatal("no valid key parameters passed")
 			}
-			pm, err := payments.NewPaymentManager(true, ethKeyFile, ethKeyPass, db)
+			pm, err := payment_server.NewPaymentManager(true, ethKeyFile, ethKeyPass, db)
 			if err != nil {
 				log.Fatal(err)
 			}

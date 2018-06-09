@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/RTradeLtd/Temporal/payments"
+	"github.com/RTradeLtd/Temporal/payment_server"
 	"github.com/jinzhu/gorm"
 	ishell "gopkg.in/abiosoft/ishell.v2"
 )
@@ -86,7 +86,7 @@ func (cl *CommandLine) SetupShell(mqConnectionURL, ethKey, ethPass string) {
 			}
 			retentionPeriodBig := big.NewInt(retentionPeriodInt)
 			chargeAmountBig := big.NewInt(chargeAmountInt)
-			manager, err := payments.NewPaymentManager(true, ethKey, ethPass, db)
+			manager, err := payment_server.NewPaymentManager(true, ethKey, ethPass, db)
 			if err != nil {
 				fmt.Println(err)
 				return
