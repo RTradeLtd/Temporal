@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"time"
+
 	"github.com/c2h5oh/datasize"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -24,6 +26,9 @@ var IpcPath = "/media/solidity/fuck/Rinkeby/datadir/geth.ipc"
 
 // this is a testing parameter for now, exact costs will be detailed at a later time
 var usdPerGigabytePerMonth = 0.134
+
+// NilTime is used to compare empty time
+var NilTime time.Time
 
 // GenerateKeccak256HashFromString is  used to generate a keccak256 hash
 // from string data into a format that is needed when making smart contract calls

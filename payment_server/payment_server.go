@@ -136,6 +136,13 @@ func (pm *PaymentManager) WaitForAndProcessMinedTransaction(tx *types.Transactio
 		return
 	}
 
+	modelManager := models.NewPaymentManager(pm.DB)
+	paymentModel := modelManager.FindPaymentByPaymentID(fmt.Sprintf("%s", hex.EncodeToString(paymentID[:])))
+	if paymentModel.CreatedAt != utils.NilTime {
+		fmt.Println("payment id already exists in database")
+		return
+	}
+
 	payment := models.Payment{
 		UploaderAddress: uploaderAddress,
 		CID:             contentHash,
