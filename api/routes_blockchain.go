@@ -66,9 +66,9 @@ func RegisterRtcPayment(c *gin.Context) {
 	dbUser := c.MustGet("db_user").(string)
 	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	mqURL := c.MustGet("mq_conn_url").(string)
-	useIPC := c.MustGet("use_ipc").(bool)
 	ethAccount := c.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
-	pm, err := payments.NewPaymentManager(useIPC, ethAccount[0], ethAccount[1], db)
+	// since we aren't interacting with any contract events we dont need IPC
+	pm, err := payments.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("unable to create payment manager %s", err.Error()),
