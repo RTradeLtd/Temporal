@@ -143,9 +143,7 @@ func main() {
 		fmt.Println(mdl)
 		db.Close()
 	case "watch-payments":
-		mqConnectionURL := tCfg.RabbitMQ.URL
-		sm := server.Initialize(true, ethKeyFilePath, ethKeyPass)
-		sm.WaitForAndProcessPaymentsReceivedEvent(mqConnectionURL)
+		fmt.Println("TODO")
 	default:
 		fmt.Println("noop")
 	}

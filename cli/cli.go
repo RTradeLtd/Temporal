@@ -7,9 +7,14 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/RTradeLtd/Temporal/server"
+	"github.com/RTradeLtd/Temporal/payments"
+	"github.com/jinzhu/gorm"
 	ishell "gopkg.in/abiosoft/ishell.v2"
 )
+
+// OUT OF DATE
+
+var db *gorm.DB
 
 type CommandLine struct {
 	Shell *ishell.Shell
@@ -81,7 +86,11 @@ func (cl *CommandLine) SetupShell(mqConnectionURL, ethKey, ethPass string) {
 			}
 			retentionPeriodBig := big.NewInt(retentionPeriodInt)
 			chargeAmountBig := big.NewInt(chargeAmountInt)
-			manager := server.Initialize(true, ethKey, ethPass)
+			manager, err := payments.NewPaymentManager(true, ethKey, ethPass, db)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 			tx, err := manager.RegisterPaymentForUploader(uploaderAddressString, contentHashString, retentionPeriodBig, chargeAmountBig, uint8(methodUint), mqConnectionURL)
 			if err != nil {
 				fmt.Println(err)

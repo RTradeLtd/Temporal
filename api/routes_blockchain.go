@@ -8,7 +8,6 @@ import (
 
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/payments"
-	"github.com/RTradeLtd/Temporal/server"
 	"github.com/gin-gonic/gin"
 )
 
@@ -133,11 +132,21 @@ func RegisterEthPayment(c *gin.Context) {
 		})
 		return
 	}
+	dbPass := c.MustGet("db_pass").(string)
+	dbURL := c.MustGet("db_url").(string)
+	dbUser := c.MustGet("db_user").(string)
+	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	mqURL := c.MustGet("mq_conn_url").(string)
-	useIPC := c.MustGet("use_ipc").(bool)
-	ethAccount := c.MustGet("eth_account").([2]string)
-	sm := server.Initialize(useIPC, ethAccount[0], ethAccount[1])
-	tx, err := sm.RegisterPaymentForUploader(ethAddress, contentHash, big.NewInt(retentionPeriodInMonthsInt), big.NewInt(chargeAmountInWeiInt), 1, mqURL)
+	ethAccount := c.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
+	pm, err := payments.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("unable to create payment manager %s", err.Error()),
+		})
+		return
+	}
+
+	tx, err := pm.RegisterPaymentForUploader(ethAddress, contentHash, big.NewInt(retentionPeriodInMonthsInt), big.NewInt(chargeAmountInWeiInt), 1, mqURL)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"error": "unable to process payment ofr uploader",

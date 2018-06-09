@@ -9,18 +9,16 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/RTradeLtd/Temporal/bindings/files"
-	"github.com/RTradeLtd/Temporal/bindings/payments"
 	"github.com/RTradeLtd/Temporal/bindings/users"
 	"github.com/RTradeLtd/Temporal/utils"
 )
 
 // ServerManager is a helper struct for interact with the server
 type ServerManager struct {
-	Client           *ethclient.Client
-	Auth             *bind.TransactOpts
-	PaymentsContract *payments.Payments
-	UsersContract    *users.Users
-	FilesContract    *files.Files
+	Client        *ethclient.Client
+	Auth          *bind.TransactOpts
+	UsersContract *users.Users
+	FilesContract *files.Files
 }
 
 // Initialize is used to init the server manager
@@ -68,11 +66,6 @@ func Initialize(useIPC bool, ethKey, ethPass string) *ServerManager {
 	}
 	// initiate a connection to the users contract
 	err = manager.NewUsersContract(utils.UsersAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// initiate a connection to the payments contract
-	err = manager.NewPaymentsContract(utils.PaymentsAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
