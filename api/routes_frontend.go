@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/utils"
 
@@ -148,5 +150,47 @@ func CalculatePinCost(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"total_cost_usd": totalCost,
+	})
+}
+
+func ConfirmPayment(c *gin.Context) {
+	paymentID := c.Param("paymentID")
+	txHash, present := c.GetPostForm("tx_hash")
+	if !present {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "tx_hash post form param not present",
+		})
+		return
+	}
+
+	dbUser := c.MustGet("db_user").(string)
+	dbPass := c.MustGet("db_pass").(string)
+	dbURL := c.MustGet("db_url").(string)
+	ethAccount := c.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
+
+	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to open db connection",
+		})
+		return
+	}
+	paymentModelManager := models.NewPaymentManager(db)
+	payment := paymentModelManager.FindPaymentByPaymentID(paymentID)
+	if payment.CreatedAt == utils.NilTime {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "supplied payment ID does not exist in database",
+		})
+		return
+	}
+	if payment.Paid == true {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "supplied payment ID has already been paid for",
+		})
+		return
+	}
+	fmt.Println(txHash, ethAccount[0])
+	c.JSON(http.StatusOK, gin.H{
+		"status": "payment confirmed",
 	})
 }

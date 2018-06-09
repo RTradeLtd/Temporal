@@ -21,7 +21,13 @@ func RunTestGarbageCollection(c *gin.Context) {
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
 	dbUser := c.MustGet("db_user").(string)
-	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to open connection to database",
+		})
+		return
+	}
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunTestDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{"deleted": deletedUploads})
@@ -36,7 +42,13 @@ func RunDatabaseGarbageCollection(c *gin.Context) {
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
 	dbUser := c.MustGet("db_user").(string)
-	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to open connection to database",
+		})
+		return
+	}
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{
@@ -50,7 +62,13 @@ func GetUploadsFromDatabase(c *gin.Context) {
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
 	dbUser := c.MustGet("db_user").(string)
-	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to open connection to database",
+		})
+		return
+	}
 	um := models.NewUploadManager(db)
 	// fetch the uplaods
 	uploads := um.GetUploads()
@@ -70,7 +88,13 @@ func GetUploadsForAddress(c *gin.Context) {
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
 	dbUser := c.MustGet("db_user").(string)
-	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to open connection to database",
+		})
+		return
+	}
 	um := models.NewUploadManager(db)
 	user := GetAuthenticatedUserFromContext(c)
 	if user == AdminAddress {

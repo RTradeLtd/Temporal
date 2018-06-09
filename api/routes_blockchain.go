@@ -64,7 +64,13 @@ func RegisterRtcPayment(c *gin.Context) {
 	dbPass := contextCopy.MustGet("db_pass").(string)
 	dbURL := contextCopy.MustGet("db_url").(string)
 	dbUser := contextCopy.MustGet("db_user").(string)
-	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to open connection to database",
+		})
+		return
+	}
 	mqURL := contextCopy.MustGet("mq_conn_url").(string)
 	ethAccount := contextCopy.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
 	// since we aren't interacting with any contract events we dont need IPC
@@ -135,7 +141,13 @@ func RegisterEthPayment(c *gin.Context) {
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
 	dbUser := c.MustGet("db_user").(string)
-	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to open connection to database",
+		})
+		return
+	}
 	mqURL := c.MustGet("mq_conn_url").(string)
 	ethAccount := c.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
 	pm, err := payment_server.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)

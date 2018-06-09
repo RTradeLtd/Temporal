@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
@@ -18,12 +17,15 @@ type DatabaseManager struct {
 	Upload *models.UploadManager
 }
 
-func Initialize(dbPass, dbURL, dbUser string) *DatabaseManager {
+func Initialize(dbPass, dbURL, dbUser string) (*DatabaseManager, error) {
 	dbm := DatabaseManager{}
-	db := OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := OpenDBConnection(dbPass, dbURL, dbUser)
+	if err != nil {
+		return nil, err
+	}
 	dbm.DB = db
 	dbm.RunMigrations()
-	return &dbm
+	return &dbm, nil
 }
 
 func (dbm *DatabaseManager) RunMigrations() {
@@ -34,7 +36,7 @@ func (dbm *DatabaseManager) RunMigrations() {
 }
 
 // OpenDBConnection is used to create a database connection
-func OpenDBConnection(dbPass, dbURL, dbUser string) *gorm.DB {
+func OpenDBConnection(dbPass, dbURL, dbUser string) (*gorm.DB, error) {
 	if dbUser == "" {
 		dbUser = "postgres"
 	}
@@ -42,9 +44,9 @@ func OpenDBConnection(dbPass, dbURL, dbUser string) *gorm.DB {
 	dbConnURL := fmt.Sprintf("host=%s port=5432 user=%s dbname=temporal password=%s", dbURL, dbUser, dbPass)
 	db, err := gorm.Open("postgres", dbConnURL)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return db
+	return db, nil
 }
 
 func OpenTestDBConnection(dbPass string) (*gorm.DB, error) {

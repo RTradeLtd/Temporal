@@ -137,7 +137,10 @@ func (qm *QueueManager) DeclareQueue(queueName string) error {
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
 func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethKeyPass, dbUser string) error {
-	db := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	if err != nil {
+		return err
+	}
 	// we use a false flag for auto-ack since we will use
 	// manually acknowledgemnets to ensure message delivery
 	// even if a worker dies

@@ -128,7 +128,10 @@ func main() {
 			log.Fatal(err)
 		}
 	case "migrate":
-		dbm := database.Initialize(dbPass, dbURL, dbUser)
+		dbm, err := database.Initialize(dbPass, dbURL, dbUser)
+		if err != nil {
+			log.Fatal(err)
+		}
 		dbm.RunMigrations()
 	case "contract-backend":
 		manager := server.Initialize(false, ethKeyFilePath, ethKeyPass)
@@ -137,7 +140,10 @@ func main() {
 		mqConnectionURL := tCfg.RabbitMQ.URL
 		cli.Initialize(mqConnectionURL, ethKeyFilePath, ethKeyPass)
 	case "lookup-address":
-		db := database.OpenDBConnection(dbPass, dbURL, dbUser)
+		db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+		if err != nil {
+			log.Fatal(err)
+		}
 		um := models.NewUserManager(db)
 		mdl := um.FindByAddress("0xbF43d80dA01332b28cEE39644E8e08AD02a289F5")
 		fmt.Println(mdl)
