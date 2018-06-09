@@ -17,7 +17,7 @@ var UsersAddress = common.HexToAddress("0x1800fF6b7BFaa6223B90B1d791Bc6a8c582110
 var PaymentsAddress = common.HexToAddress("0x3b2fD241378a326Af998E4243aA76fE8b8414dEe")
 
 // ConnectionURL is the url used to connect to geth via rpc
-var ConnectionURL = "http://127.0.0.1:8545"
+var ConnectionURL = "http://192.168.1.245:8545"
 
 // IpcPath is the file path used to connect to geth via ipc
 var IpcPath = "/media/solidity/fuck/Rinkeby/datadir/geth.ipc"

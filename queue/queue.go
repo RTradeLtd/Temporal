@@ -333,7 +333,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			if ethKeyFile == "" || ethKeyPass == "" {
 				log.Fatal("no valid key parameters passed")
 			}
-			pm, err := payments.NewPaymentManager(true, ethKeyFile, ethKeyPass)
+			pm, err := payments.NewPaymentManager(true, ethKeyFile, ethKeyPass, db)
 			if err != nil {
 				log.Fatal(err)
 			}
