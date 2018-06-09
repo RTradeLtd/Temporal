@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/payment_server"
+
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -163,6 +165,9 @@ func ConfirmPayment(c *gin.Context) {
 		return
 	}
 
+	//TODO:  check to make sure the payment id belongs to the authenticated user
+	uploaderAddress := GetAuthenticatedUserFromContext(c)
+
 	dbUser := c.MustGet("db_user").(string)
 	dbPass := c.MustGet("db_pass").(string)
 	dbURL := c.MustGet("db_url").(string)
@@ -190,6 +195,77 @@ func ConfirmPayment(c *gin.Context) {
 		return
 	}
 	fmt.Println(txHash, ethAccount[0])
+
+	pm, err := payment_server.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to establish connection to payment contract",
+		})
+		return
+	}
+	var mined bool
+	confirmations := 12
+	currentConfirmations := 0
+	// we will cache the value in case we get an intermittent RPC error
+	currentBlockCache, err := pm.EthRPC.EthBlockNumber()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("unable to read block number %s", err.Error()),
+		})
+		return
+	}
+
+	for {
+		if mined {
+			break
+		}
+		receipt, err := pm.EthRPC.EthGetTransactionReceipt(txHash)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("error processing tx receipt %s", err.Error()),
+			})
+			return
+		}
+
+		if receipt.CumulativeGasUsed > 0 && receipt.BlockNumber > 0 {
+			blockMinedAt := receipt.BlockNumber
+			currentBlock, err := pm.EthRPC.EthBlockNumber()
+			// if there was an erro reading the block number, lets use our cached value
+			if err != nil {
+				currentBlock = currentBlockCache
+			}
+			currentConfirmations = currentBlock - blockMinedAt
+			if currentConfirmations >= confirmations {
+				mined = true
+			}
+		}
+	}
+
+	// payment has been confirmed so lets process this
+	mqURL := c.MustGet("mq_conn_url").(string)
+	qm, err := queue.Initialize(queue.PaymentReceivedQueue, mqURL)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("unable to open queue manager %s", err.Error()),
+		})
+		return
+	}
+
+	paymentReceived := queue.PaymentReceived{
+		UploaderAddress: uploaderAddress,
+		PaymentID:       paymentID,
+	}
+
+	// this will trigger a message to rabbitmq, prompting pinning of the content to temporal
+	err = qm.PublishMessage(paymentReceived)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("error publishing message to queue %s", err.Error()),
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "payment confirmed",
 	})

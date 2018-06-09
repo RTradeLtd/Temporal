@@ -19,11 +19,13 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jinzhu/gorm"
+	"github.com/onrik/ethrpc"
 )
 
 type PaymentManager struct {
 	Contract *payments.Payments
 	Client   *ethclient.Client
+	EthRPC   *ethrpc.EthRPC
 	Auth     *bind.TransactOpts
 	DB       *gorm.DB
 }
@@ -47,6 +49,12 @@ func NewPaymentManager(useIPC bool, ethKey, ethPass string, db *gorm.DB) (*Payme
 			return nil, err
 		}
 	}
+	rpcClient := ethrpc.NewEthRPC(utils.ConnectionURL)
+	_, err = rpcClient.Web3ClientVersion()
+	if err != nil {
+		return nil, err
+	}
+
 	auth, err := bind.NewTransactor(strings.NewReader(string(file)), ethPass)
 	if err != nil {
 		return nil, err
@@ -57,6 +65,7 @@ func NewPaymentManager(useIPC bool, ethKey, ethPass string, db *gorm.DB) (*Payme
 	}
 	pm.Contract = contract
 	pm.Client = client
+	pm.EthRPC = rpcClient
 	pm.Auth = auth
 	pm.DB = db
 	return &pm, nil
