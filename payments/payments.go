@@ -113,7 +113,7 @@ func (pm *PaymentManager) WaitForAndProcessMinedTransaction(tx *types.Transactio
 			return
 		}
 		if err != nil && err == ethereum.NotFound {
-			fmt.Println("tx not mined yet")
+			// transaction hasn't been mined yet, so skip processing
 			continue
 		}
 		// cumulative gas used is greater than 0 so it has been mined
