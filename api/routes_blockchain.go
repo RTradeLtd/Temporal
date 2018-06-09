@@ -79,7 +79,7 @@ func RegisterRtcPayment(c *gin.Context) {
 	tx, err := pm.RegisterPaymentForUploader(ethAddress, contentHash, big.NewInt(retentionPeriodInMonthsInt), big.NewInt(chargeAmountInWeiInt), 0, mqURL)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
-			"error": "unable to process payment for uploader",
+			"error": fmt.Sprintf("unable to process payment for uploader %s", err.Error()),
 		})
 		return
 	}
