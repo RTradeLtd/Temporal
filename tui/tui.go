@@ -6,6 +6,9 @@ import (
 	"github.com/rivo/tview"
 )
 
+var app *tview.Application
+var pages *tview.Pages
+
 // Initializes the Terminal User Interface
 func InitializeBox() {
 	box := tview.NewBox().SetBorder(true).SetTitle("Temporal Administrative Console")
@@ -16,7 +19,8 @@ func InitializeBox() {
 
 func InitializeApplication() {
 	// create the tview app
-	app := tview.NewApplication()
+	app = tview.NewApplication()
+	pages = tview.NewPages()
 	// list of possible commands
 	commandList := tview.NewList().
 		AddItem("Temporal", "Access the Temporal server commands", 'a', nil).
@@ -25,31 +29,35 @@ func InitializeApplication() {
 		AddItem("Quit", "Press to exit", 'q', func() {
 			app.Stop()
 		})
-	if err := app.SetRoot(commandList, true).SetFocus(commandList).Run(); err != nil {
+	pages.AddPage("Command List", commandList, false, true)
+	if err := app.SetRoot(pages, true).SetFocus(pages).Run(); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func client() {
-	app := tview.NewApplication()
 	blockchain := tview.NewList().ShowSecondaryText(false)
 	blockchain.SetBorder(true).SetTitle("Blockchain Client Commands")
+	blockchain.AddItem("Return", "Return to main menu", 'r', func() {
+		// this allows you to switch back to the main command listing
+		blockchain.Clear()
+		app.SetRoot(pages, true).SetFocus(pages.ShowPage("Command List"))
+	})
 	blockchain.AddItem("Quit", "Exit client", 'q', func() {
 		app.Stop()
 	})
+
 	database := tview.NewList().ShowSecondaryText(false)
 	database.SetBorder(true).SetTitle("Database Client Commands")
 	flex := tview.NewFlex().
 		AddItem(blockchain, 0, 1, true).
 		AddItem(database, 0, 1, false)
-	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
-		log.Fatal(err)
-	}
+	app.SetRoot(flex, true)
 }
 
 func box() {
 	box := tview.NewBox().SetBorder(true).SetTitle("Temporal Administrative Console")
-	if err := tview.NewApplication().SetRoot(box, true).Run(); err != nil {
+	if err := app.SetRoot(box, true).Run(); err != nil {
 		log.Fatal(err)
 	}
 }
