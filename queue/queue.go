@@ -5,15 +5,11 @@ import (
 	"fmt"
 	"log"
 	"math/big"
-	"strconv"
-	"time"
 
 	"github.com/RTradeLtd/Temporal/payment_server"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 
 	"github.com/RTradeLtd/Temporal/database"
-	"github.com/RTradeLtd/Temporal/models"
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/streadway/amqp"
@@ -167,130 +163,11 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			ProcessDatabasePinAdds(msgs, db)
 		// only parse datbase file requests
 		case DatabaseFileAddQueue:
-			cm := rtfs_cluster.Initialize()
-			for d := range msgs {
-				if d.Body != nil {
-					if d.Body != nil {
-						dfa := DatabaseFileAdd{}
-						upload := models.Upload{}
-						// unmarshal the message body into the dfa struct
-						err := json.Unmarshal(d.Body, &dfa)
-						if err != nil {
-							d.Ack(false)
-							continue
-						}
-						// convert the int64 to an int. We need to make sure to add a check that we won't overflow
-						holdTime, err := strconv.Atoi(fmt.Sprintf("%v", dfa.HoldTimeInMonths))
-						if err != nil {
-							d.Ack(false)
-							continue
-						}
-						// we will take the current time, and add the number of months to get the date
-						// that we will garbage collect this from our repo
-						gcd := time.Now().AddDate(0, holdTime, 0)
-						upload.Hash = dfa.Hash
-						upload.HoldTimeInMonths = dfa.HoldTimeInMonths
-						upload.Type = "file"
-						upload.UploadAddress = dfa.UploaderAddress
-						upload.GarbageCollectDate = gcd
-						lastUpload := models.Upload{
-							Hash: dfa.Hash,
-						}
-						// retrieve the last upload matching this hash.
-						// this upload will have the latest Garbage Collect Date
-						db.Last(&lastUpload)
-						// check the garbage collect dates, if the current upload to be pinned will be
-						// GCd before the latest one from the database, we will skip it
-						// however if it will be GCd at a later date, we will keep it
-						// and update the database
-						if lastUpload.GarbageCollectDate.Unix() >= upload.GarbageCollectDate.Unix() {
-							d.Ack(false)
-							// skip the rest of the message, preventing a database record from being created
-							continue
-						}
-						upload.UploaderAddresses = append(lastUpload.UploaderAddresses, dfa.UploaderAddress)
-						// we have a valid upload request, so lets store it to the database
-						db.Create(&upload)
-						go func() {
-							decodedHash, err := cm.DecodeHashString(dfa.Hash)
-							if err != nil {
-								fmt.Println("error decoding hash ", err)
-								return
-							}
-							err = cm.Pin(decodedHash)
-							if err != nil {
-								fmt.Println("error pinning to cluster")
-							}
-						}()
-						d.Ack(false)
-					}
-				}
-			}
+			ProcessDatabaseFileAdds(msgs, db)
 		case PaymentRegisterQueue:
-			for d := range msgs {
-				var nullTime time.Time
-				var payment models.Payment
-				pr := PaymentRegister{}
-				fmt.Println("unmarshaling payment registered data")
-				err := json.Unmarshal(d.Body, &pr)
-				if err != nil {
-					fmt.Println("error unmarshaling data", err)
-					d.Ack(false)
-					continue
-				}
-				fmt.Println("data unmarshaled successfully")
-				db.Where("payment_id = ?", pr.PaymentID).Find(&payment)
-				fmt.Println(payment)
-				if payment.CreatedAt != nullTime {
-					fmt.Println("payment is already in the database")
-					d.Ack(false)
-					continue
-				}
-				payment.CID = pr.CID
-				payment.HashedCID = pr.HashedCID
-				payment.PaymentID = pr.PaymentID
-				payment.Paid = false
-				fmt.Println("creating payment in database")
-				db.Create(&payment)
-				fmt.Println("payment entry in database created")
-				d.Ack(false)
-			}
+			ProcessPaymentRegisterQueue(msgs, db)
 		case PaymentReceivedQueue:
-			ipfsManager, err := rtfs.Initialize("")
-			if err != nil {
-				log.Fatal(err)
-			}
-			for d := range msgs {
-				var nullTime time.Time
-				var payment models.Payment
-				pr := PaymentReceived{}
-				fmt.Println("unmarshaling payment received data")
-				err := json.Unmarshal(d.Body, &pr)
-				if err != nil {
-					fmt.Println("error unmarhsaling data", err)
-					d.Ack(false)
-					continue
-				}
-				fmt.Printf("%+v\n", pr)
-				fmt.Println("data unmarshaled successfully")
-				db.Where("payment_id = ?", pr.PaymentID).Last(&payment)
-				if payment.CreatedAt == nullTime {
-					fmt.Println("payment is not a valid payment")
-					d.Ack(false)
-					continue
-				}
-				if payment.Paid {
-					fmt.Println("payment already paid for")
-					d.Ack(false)
-					continue
-				}
-				fmt.Println("updating database with payment received")
-				payment.Paid = true
-				db.Model(&payment).Updates(map[string]interface{}{"paid": true})
-				fmt.Println("database updated successfully, pinning to node")
-				go ipfsManager.Pin(payment.CID)
-				d.Ack(false)
-			}
+			ProcessPaymentReceivedQueue(msgs, db)
 		case PinPaymentRequestQueue:
 			if ethKeyFile == "" || ethKeyPass == "" {
 				log.Fatal("no valid key parameters passed")
