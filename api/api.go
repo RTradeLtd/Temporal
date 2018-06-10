@@ -102,8 +102,10 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 
 	paymentsProtected := g.Group("/api/v1/payments/")
 	paymentsProtected.Use(authWare.MiddlewareFunc())
+	databaseProtected.Use(middleware.APIRestrictionMiddleware(db))
 	paymentsProtected.POST("/registration/request", SubmitPinPaymentRegistration)
 	paymentsProtected.GET("/cost/calculate/:hash/:holdtime", CalculatePinCost)
+	paymentsProtected.GET("/confirm/:paymentID", ConfirmPayment)
 
 	paymentsAPIProtected := g.Group("/api/v1/payments-api")
 	paymentsAPIProtected.Use(authWare.MiddlewareFunc())
