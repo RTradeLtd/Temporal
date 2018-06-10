@@ -4,13 +4,58 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/big"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/Temporal/payment_server"
 	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
+
+// ProcessPinPaymentRequestQueue is used to process msgs sent to pin payment
+// request queue
+func ProcessPinPaymentRequestQueue(msgs <-chan amqp.Delivery, db *gorm.DB, ethKeyFile, ethKeyPass string) {
+	if ethKeyFile == "" || ethKeyPass == "" {
+		log.Fatal("no valid key parameters passed")
+	}
+	pm, err := payment_server.NewPaymentManager(true, ethKeyFile, ethKeyPass, db)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var b [32]byte
+	for d := range msgs {
+		var ppr PinPaymentRequest
+		fmt.Println("unmarshaling data")
+		err := json.Unmarshal(d.Body, &ppr)
+		if err != nil {
+			fmt.Println("error unmarshaling data ", err)
+			d.Ack(false)
+			continue
+		}
+		ethAddress := ppr.UploaderAddress
+		contentHash := ppr.CID
+		retentionPeriod := ppr.HoldTimeInMonths
+		chargeAmountInWei := ppr.ChargeAmountInWei
+		method := ppr.Method
+		data := []byte(contentHash)
+		hashedCIDByte := crypto.Keccak256(data)
+		hashedCID := common.BytesToHash(hashedCIDByte)
+		copy(b[:], hashedCID.Bytes()[:32])
+		tx, err := pm.Contract.RegisterPayment(pm.Auth, common.HexToAddress(ethAddress), b, big.NewInt(retentionPeriod), chargeAmountInWei, method)
+		if err != nil {
+			fmt.Println("error submitting payment ", err)
+			d.Ack(false)
+			continue
+		}
+		// TODO: add call to database
+		fmt.Printf("%+v\n", tx)
+		d.Ack(false)
+	}
+}
 
 // ProcessPaymentReceivedQueue is used to process payment received messages
 func ProcessPaymentReceivedQueue(msgs <-chan amqp.Delivery, db *gorm.DB) {

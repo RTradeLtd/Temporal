@@ -6,12 +6,7 @@ import (
 	"log"
 	"math/big"
 
-	"github.com/RTradeLtd/Temporal/payment_server"
-	"github.com/RTradeLtd/Temporal/rtfs_cluster"
-
 	"github.com/RTradeLtd/Temporal/database"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/streadway/amqp"
 )
 
@@ -169,72 +164,9 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		case PaymentReceivedQueue:
 			ProcessPaymentReceivedQueue(msgs, db)
 		case PinPaymentRequestQueue:
-			if ethKeyFile == "" || ethKeyPass == "" {
-				log.Fatal("no valid key parameters passed")
-			}
-			pm, err := payment_server.NewPaymentManager(true, ethKeyFile, ethKeyPass, db)
-			if err != nil {
-				log.Fatal(err)
-			}
-			var b [32]byte
-			for d := range msgs {
-				var ppr PinPaymentRequest
-				fmt.Println("unmarshaling data")
-				err := json.Unmarshal(d.Body, &ppr)
-				if err != nil {
-					fmt.Println("error unmarshaling data ", err)
-					d.Ack(false)
-					continue
-				}
-				ethAddress := ppr.UploaderAddress
-				contentHash := ppr.CID
-				retentionPeriod := ppr.HoldTimeInMonths
-				chargeAmountInWei := ppr.ChargeAmountInWei
-				method := ppr.Method
-				data := []byte(contentHash)
-				hashedCIDByte := crypto.Keccak256(data)
-				hashedCID := common.BytesToHash(hashedCIDByte)
-				copy(b[:], hashedCID.Bytes()[:32])
-				tx, err := pm.Contract.RegisterPayment(pm.Auth, common.HexToAddress(ethAddress), b, big.NewInt(retentionPeriod), chargeAmountInWei, method)
-				if err != nil {
-					fmt.Println("error submitting payment ", err)
-					d.Ack(false)
-					continue
-				}
-				// TODO: add call to database
-				fmt.Printf("%+v\n", tx)
-				d.Ack(false)
-			}
+			ProcessPinPaymentRequestQueue(msgs, db, ethKeyFile, ethKeyPass)
 		case IpfsClusterQueue:
-			var clusterPin IpfsClusterPin
-			clusterManager := rtfs_cluster.Initialize()
-			for d := range msgs {
-				err := json.Unmarshal(d.Body, &clusterPin)
-				if err != nil {
-					fmt.Println("error unmarshaling data ", err)
-					// TODO: handle error
-					d.Ack(false)
-					continue
-				}
-				contentHash := clusterPin.CID
-				decodedContentHash, err := clusterManager.DecodeHashString(contentHash)
-				if err != nil {
-					fmt.Println("error decoded content hash to cid ", err)
-					//TODO: handle error
-					d.Ack(false)
-					continue
-				}
-				err = clusterManager.Pin(decodedContentHash)
-				if err != nil {
-					fmt.Println("error pinning to cluster ", err)
-					//TODO: handle error
-					d.Ack(false)
-					continue
-				}
-				fmt.Println("content pinned to cluster ", contentHash)
-				d.Ack(false)
-
-			}
+			ProcessIpfsClusterQueue(msgs, db)
 		default:
 			log.Fatal("invalid queue name")
 		}
