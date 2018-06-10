@@ -134,8 +134,10 @@ func SubmitPinPaymentRequest(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"status":   "payment registration request sent",
-		"cost_usd": pinCostUsd,
+		"status":         "payment registration request sent",
+		"cost_usd":       pinCostUsd,
+		"currency_cost":  cost,
+		"payment_method": paymentMethod,
 	})
 }
 
