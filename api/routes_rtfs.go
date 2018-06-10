@@ -14,13 +14,8 @@ import (
 func PinHashLocally(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
-	uploadAddress, exists := contextCopy.GetPostForm("eth_address")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "eth_address post form does not exist",
-		})
-		return
-	}
+	uploadAddress := GetAuthenticatedUserFromContext(contextCopy)
+
 	holdTimeInMonths, exists := contextCopy.GetPostForm("hold_time")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -108,13 +103,9 @@ func AddFileLocally(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	uploaderAddress, present := c.GetPostForm("eth_address")
-	if !present {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "eth_address post form param not present",
-		})
-		return
-	}
+
+	uploaderAddress := GetAuthenticatedUserFromContext(c)
+
 	holdTimeinMonths, present := c.GetPostForm("hold_time")
 	if !present {
 		c.JSON(http.StatusBadRequest, gin.H{
