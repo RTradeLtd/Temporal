@@ -34,6 +34,7 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 		fmt.Println("failed to open db connection")
 		log.Fatal(err)
 	}
+
 	apiURL := fmt.Sprintf("%s:6768", listenAddress)
 	roll.Token = rollbarToken
 	roll.Environment = "development"

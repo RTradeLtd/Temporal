@@ -35,7 +35,11 @@ func PinHashLocally(c *gin.Context) {
 	}
 	go func() {
 		// currently after it is pinned, it is sent to the cluster to be pinned
-		manager := rtfs.Initialize("")
+		manager, err := rtfs.Initialize("")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		// before exiting, it is pinned to the cluster
 		err = manager.Pin(hash)
 		if err != nil {
@@ -69,7 +73,13 @@ func PinHashLocally(c *gin.Context) {
 // GetFileSizeInBytesForObject is used to retrieve the size of an object in bytes
 func GetFileSizeInBytesForObject(c *gin.Context) {
 	key := c.Param("key")
-	manager := rtfs.Initialize("")
+	manager, err := rtfs.Initialize("")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	sizeInBytes, err := manager.GetObjectFileSizeInBytes(key)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -125,7 +135,13 @@ func AddFileLocally(c *gin.Context) {
 	}
 	fmt.Println("initializing manager")
 	// initialize a connection to the local ipfs node
-	manager := rtfs.Initialize("")
+	manager, err := rtfs.Initialize("")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	// pin the file
 	fmt.Println("adding file")
 	resp, err := manager.Shell.Add(openFile)
@@ -179,8 +195,14 @@ func IpfsPubSubPublish(c *gin.Context) {
 		})
 		return
 	}
-	manager := rtfs.Initialize("")
-	err := manager.PublishPubSubMessage(topic, message)
+	manager, err := rtfs.Initialize("")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	err = manager.PublishPubSubMessage(topic, message)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -194,7 +216,11 @@ func IpfsPubSubConsume(c *gin.Context) {
 	topic := contextCopy.Param("topic")
 
 	go func() {
-		manager := rtfs.Initialize("")
+		manager, err := rtfs.Initialize("")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		manager.SubscribeToPubSubTopic(topic)
 		manager.ConsumeSubscription(manager.PubSub)
 	}()
@@ -211,7 +237,11 @@ func RemovePinFromLocalHost(c *gin.Context) {
 
 	go func() {
 		// initialise a connetion to the local ipfs node
-		manager := rtfs.Initialize("")
+		manager, err := rtfs.Initialize("")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		// remove the file from the local ipfs state
 		// TODO: implement some kind of error handling and notification
 		manager.Shell.Unpin(hash)
@@ -233,7 +263,13 @@ func RemovePinFromLocalHost(c *gin.Context) {
 // GetLocalPins is used to get the pins tracked by the local ipfs node
 func GetLocalPins(c *gin.Context) {
 	// initialize a connection toe the local ipfs node
-	manager := rtfs.Initialize("")
+	manager, err := rtfs.Initialize("")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	// get all the known local pins
 	// WARNING: THIS COULD BE A VERY LARGE LIST
 	pinInfo, err := manager.Shell.Pins()
@@ -249,7 +285,13 @@ func GetLocalPins(c *gin.Context) {
 // ipfs node
 func GetObjectStatForIpfs(c *gin.Context) {
 	key := c.Param("key")
-	manager := rtfs.Initialize("")
+	manager, err := rtfs.Initialize("")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	stats, err := manager.ObjectStat(key)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -262,7 +304,13 @@ func GetObjectStatForIpfs(c *gin.Context) {
 // the local node has pinned the content
 func CheckLocalNodeForPin(c *gin.Context) {
 	hash := c.Param("hash")
-	manager := rtfs.Initialize("")
+	manager, err := rtfs.Initialize("")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	present, err := manager.ParseLocalPinsForHash(hash)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

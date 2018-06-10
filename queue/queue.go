@@ -300,7 +300,10 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 				d.Ack(false)
 			}
 		case PaymentReceivedQueue:
-			ipfsManager := rtfs.Initialize("")
+			ipfsManager, err := rtfs.Initialize("")
+			if err != nil {
+				log.Fatal(err)
+			}
 			for d := range msgs {
 				var nullTime time.Time
 				var payment models.Payment

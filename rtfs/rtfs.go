@@ -15,14 +15,18 @@ type IpfsManager struct {
 	PubTopic string
 }
 
-func Initialize(pubTopic string) *IpfsManager {
+func Initialize(pubTopic string) (*IpfsManager, error) {
 	if pubTopic == "" {
 		pubTopic = ClusterPubSubTopic
 	}
 	manager := IpfsManager{}
 	manager.Shell = EstablishShellWithNode("")
+	isUp := manager.Shell.IsUp()
+	if !isUp {
+		return nil, errors.New("ipfs node is not online")
+	}
 	manager.PubTopic = pubTopic
-	return &manager
+	return &manager, nil
 }
 
 // Pin is a wrapper method to pin a hash to the local node,
