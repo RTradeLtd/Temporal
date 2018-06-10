@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/payment_server"
+	"github.com/jinzhu/gorm"
 
-	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/utils"
@@ -185,18 +185,10 @@ func ConfirmPayment(c *gin.Context) {
 	//TODO:  check to make sure the payment id belongs to the authenticated user
 	uploaderAddress := GetAuthenticatedUserFromContext(c)
 
-	dbUser := c.MustGet("db_user").(string)
-	dbPass := c.MustGet("db_pass").(string)
-	dbURL := c.MustGet("db_url").(string)
 	ethAccount := c.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
 
-	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to open db connection",
-		})
-		return
-	}
+	db := c.MustGet("db").(*gorm.DB)
+
 	paymentModelManager := models.NewPaymentManager(db)
 	payment := paymentModelManager.FindPaymentByPaymentID(paymentID)
 	if payment.CreatedAt == utils.NilTime {

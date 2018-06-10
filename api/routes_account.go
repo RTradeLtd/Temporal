@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
 var nilTime time.Time
@@ -25,16 +25,8 @@ func RegisterUserAccount(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "password parameter does not exist"})
 		return
 	}
-	dbPass := c.MustGet("db_pass").(string)
-	dbURL := c.MustGet("db_url").(string)
-	dbUser := c.MustGet("db_user").(string)
-	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to open connection to database",
-		})
-		return
-	}
+	db := c.MustGet("db").(*gorm.DB)
+
 	userManager := models.NewUserManager(db)
 	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
 	if err != nil {
@@ -58,16 +50,8 @@ func RegisterEnterpriseUserAccount(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "password parameter does not exist"})
 		return
 	}
-	dbPass := c.MustGet("db_pass").(string)
-	dbURL := c.MustGet("db_url").(string)
-	dbUser := c.MustGet("db_user").(string)
-	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to open connection to database",
-		})
-		return
-	}
+	db := c.MustGet("db").(*gorm.DB)
+
 	userManager := models.NewUserManager(db)
 	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
 	if err != nil {

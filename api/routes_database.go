@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
 var dev = false
@@ -18,16 +18,7 @@ func RunTestGarbageCollection(c *gin.Context) {
 			"error": "attempting to run test database garbage colelction in non dev mode",
 		})
 	}
-	dbPass := c.MustGet("db_pass").(string)
-	dbURL := c.MustGet("db_url").(string)
-	dbUser := c.MustGet("db_user").(string)
-	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to open connection to database",
-		})
-		return
-	}
+	db := c.MustGet("db").(*gorm.DB)
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunTestDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{"deleted": deletedUploads})
@@ -39,16 +30,8 @@ func RunTestGarbageCollection(c *gin.Context) {
 // the database once every 24 hours, looking for any deleted pins, and removing them
 // from the cluster
 func RunDatabaseGarbageCollection(c *gin.Context) {
-	dbPass := c.MustGet("db_pass").(string)
-	dbURL := c.MustGet("db_url").(string)
-	dbUser := c.MustGet("db_user").(string)
-	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to open connection to database",
-		})
-		return
-	}
+	db := c.MustGet("db").(*gorm.DB)
+
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{
@@ -59,16 +42,8 @@ func RunDatabaseGarbageCollection(c *gin.Context) {
 // GetUploadsFromDatabase is used to read a list of uploads from our database
 // only usable by admin
 func GetUploadsFromDatabase(c *gin.Context) {
-	dbPass := c.MustGet("db_pass").(string)
-	dbURL := c.MustGet("db_url").(string)
-	dbUser := c.MustGet("db_user").(string)
-	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to open connection to database",
-		})
-		return
-	}
+	db := c.MustGet("db").(*gorm.DB)
+
 	um := models.NewUploadManager(db)
 	// fetch the uplaods
 	uploads := um.GetUploads()
@@ -85,16 +60,8 @@ func GetUploadsFromDatabase(c *gin.Context) {
 // If not admin, will retrieve all uploads for the current context account
 func GetUploadsForAddress(c *gin.Context) {
 	var queryAddress string
-	dbPass := c.MustGet("db_pass").(string)
-	dbURL := c.MustGet("db_url").(string)
-	dbUser := c.MustGet("db_user").(string)
-	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to open connection to database",
-		})
-		return
-	}
+	db := c.MustGet("db").(*gorm.DB)
+
 	um := models.NewUploadManager(db)
 	user := GetAuthenticatedUserFromContext(c)
 	if user == AdminAddress {
