@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"math/big"
 	"time"
 
 	"github.com/c2h5oh/datasize"
@@ -58,4 +59,29 @@ func CalculatePinCost(contentHash string, holdTimeInMonths int64, shell *ipfsapi
 	objectSizeInGigabytesFloat := sizeInBytesFloat / gigabytesFloat
 	totalCostFloat := objectSizeInGigabytesFloat * float64(holdTimeInMonths)
 	return totalCostFloat, nil
+}
+
+// FloatToBigInt used to convert a float to big int
+func FloatToBigInt(val float64) *big.Int {
+	bigval := new(big.Float)
+	bigval.SetFloat64(val)
+	// Set precision if required.
+	// bigval.SetPrec(64)
+
+	coin := new(big.Float)
+	coin.SetInt(big.NewInt(1000000000000000000))
+
+	bigval.Mul(bigval, coin)
+
+	result := new(big.Int)
+	bigval.Int(result) // store converted number in result
+
+	return result
+}
+
+// ConvertNumberToBaseWei is used to take a number, and multiply it by 10^18
+func ConvertNumberToBaseWei(num *big.Int) *big.Int {
+	exp := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
+	baseWei := new(big.Int).Mul(num, exp)
+	return baseWei
 }

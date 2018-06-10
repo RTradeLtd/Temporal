@@ -20,9 +20,9 @@ import (
 Contains routes used for frontend operation
 */
 
-// SubmitPinPaymentRegistration is used to submit a payment registration
+// SubmitPinPaymentRequest is used to submit a payment registration
 // request by an authenticated user
-func SubmitPinPaymentRegistration(c *gin.Context) {
+func SubmitPinPaymentRequest(c *gin.Context) {
 	var method uint8
 	contextCopy := c.Copy()
 	uploaderAddress, exists := contextCopy.GetPostForm("eth_address")
