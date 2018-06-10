@@ -19,13 +19,26 @@ func InitializeApplication() {
 	app := tview.NewApplication()
 	// list of possible commands
 	commandList := tview.NewList().
-		AddItem("Run API", "Run the Temporal API software", 'a', nil).
-		AddItem("Run DPA Queue", "Run the Datapase Pin Add Queue", 'b', nil).
-		AddItem("Run box", "Run the box function", 'c', box).
+		AddItem("Temporal", "Access the Temporal server commands", 'a', nil).
+		AddItem("Client", "Access the Temporal text based user interface", 'c', client).
+		AddItem("Run box", "Run the box function", 'b', box).
 		AddItem("Quit", "Press to exit", 'q', func() {
 			app.Stop()
 		})
 	if err := app.SetRoot(commandList, true).SetFocus(commandList).Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func client() {
+	blockchain := tview.NewList().ShowSecondaryText(false)
+	blockchain.SetBorder(true).SetTitle("Blockchain Client Commands")
+	database := tview.NewList().ShowSecondaryText(false)
+	database.SetBorder(true).SetTitle("Database Client Commands")
+	flex := tview.NewFlex().
+		AddItem(blockchain, 0, 1, true).
+		AddItem(database, 0, 1, false)
+	if err := tview.NewApplication().SetRoot(flex, true).Run(); err != nil {
 		log.Fatal(err)
 	}
 }
