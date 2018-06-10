@@ -29,7 +29,7 @@ func InitializeApplication() {
 		AddItem("Quit", "Press to exit", 'q', func() {
 			app.Stop()
 		})
-	pages.AddPage("Command List", commandList, false, true)
+	pages.AddPage("Command List", commandList, true, true)
 	if err := app.SetRoot(pages, true).SetFocus(pages).Run(); err != nil {
 		log.Fatal(err)
 	}
