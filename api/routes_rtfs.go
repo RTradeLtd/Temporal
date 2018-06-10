@@ -44,6 +44,7 @@ func PinHashLocally(c *gin.Context) {
 		err = manager.Pin(hash)
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 	}()
 	// construct the rabbitmq message to add this entry to the database
@@ -235,17 +236,23 @@ func RemovePinFromLocalHost(c *gin.Context) {
 	// fetch hash param
 	hash := contextCopy.Param("hash")
 
-	go func() {
-		// initialise a connetion to the local ipfs node
-		manager, err := rtfs.Initialize("")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		// remove the file from the local ipfs state
-		// TODO: implement some kind of error handling and notification
-		manager.Shell.Unpin(hash)
-	}()
+	manager, err := rtfs.Initialize("")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	// remove the file from the local ipfs state
+	// TODO: implement some kind of error handling and notification
+	err = manager.Shell.Unpin(hash)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("error unpinning hash %s", err.Error()),
+		})
+		return
+	}
+
 	// TODO:
 	// change to send a message to the cluster to depin
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
