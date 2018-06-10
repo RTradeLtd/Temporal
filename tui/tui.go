@@ -31,14 +31,18 @@ func InitializeApplication() {
 }
 
 func client() {
+	app := tview.NewApplication()
 	blockchain := tview.NewList().ShowSecondaryText(false)
 	blockchain.SetBorder(true).SetTitle("Blockchain Client Commands")
+	blockchain.AddItem("Quit", "Exit client", 'q', func() {
+		app.Stop()
+	})
 	database := tview.NewList().ShowSecondaryText(false)
 	database.SetBorder(true).SetTitle("Database Client Commands")
 	flex := tview.NewFlex().
 		AddItem(blockchain, 0, 1, true).
 		AddItem(database, 0, 1, false)
-	if err := tview.NewApplication().SetRoot(flex, true).Run(); err != nil {
+	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
 		log.Fatal(err)
 	}
 }
