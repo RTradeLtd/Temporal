@@ -8,7 +8,6 @@ import (
 
 	//_ "./docs"
 	"github.com/RTradeLtd/Temporal/api"
-	"github.com/RTradeLtd/Temporal/cli"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -136,9 +135,6 @@ func main() {
 	case "contract-backend":
 		manager := server.Initialize(false, ethKeyFilePath, ethKeyPass)
 		fmt.Println(manager)
-	case "cli":
-		mqConnectionURL := tCfg.RabbitMQ.URL
-		cli.Initialize(mqConnectionURL, ethKeyFilePath, ethKeyPass)
 	case "lookup-address":
 		db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
 		if err != nil {
