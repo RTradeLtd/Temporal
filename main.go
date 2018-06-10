@@ -13,6 +13,7 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtswarm"
 	"github.com/RTradeLtd/Temporal/server"
+	"github.com/RTradeLtd/Temporal/tui"
 )
 
 var certFile = "/home/solidity/certificates/api.pem"
@@ -57,6 +58,8 @@ func main() {
 		configCid := scanner.Text()
 		config := LoadConfig(configCid)
 		fmt.Printf("%+v\n", config)
+	case "tui":
+		tui.InitializeApplication()
 	case "api":
 		router := api.Setup(jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass, listenAddress, dbUser)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
