@@ -22,6 +22,8 @@ import (
 )
 
 var xssMdlwr xss.XssMw
+
+// AdminAddress is the eth address of the admin account
 var AdminAddress = "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9"
 
 // Setup is used to initialize our api.
@@ -66,7 +68,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 
 	// REGISTER
 	g.POST("/api/v1/register", RegisterUserAccount)
-	g.POST("/api/v1/register-enterprise", RegisterEnterpriseUserAccount)
+	//g.POST("/api/v1/register-enterprise", RegisterEnterpriseUserAccount)
 
 	// PROTECTED ROUTES -- BEGIN
 	ipfsProtected := g.Group("/api/v1/ipfs")

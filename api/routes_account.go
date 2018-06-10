@@ -12,6 +12,8 @@ import (
 
 var nilTime time.Time
 
+// RegisterUserAccount is used to sign up with temporal and gain web interface access
+// you will not be granted API access however, as that needs to be done manually
 func RegisterUserAccount(c *gin.Context) {
 	ethAddress, exists := c.GetPostForm("eth_address")
 	if !exists {
@@ -44,6 +46,7 @@ func RegisterUserAccount(c *gin.Context) {
 	return
 }
 
+// RegisterEnterpriseUserAccount is used to register a user account marked as enterprise enabled
 func RegisterEnterpriseUserAccount(c *gin.Context) {
 	ethAddress, exists := c.GetPostForm("eth_address")
 	if !exists {
@@ -68,7 +71,6 @@ func RegisterEnterpriseUserAccount(c *gin.Context) {
 	userManager := models.NewUserManager(db)
 	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
 	if err != nil {
-		c.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -77,6 +79,7 @@ func RegisterEnterpriseUserAccount(c *gin.Context) {
 	return
 }
 
+// GetAuthenticatedUserFromContext is used to pull the eth address of hte user
 func GetAuthenticatedUserFromContext(c *gin.Context) string {
 	claims := jwt.ExtractClaims(c)
 	// this is their eth address

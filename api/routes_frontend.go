@@ -93,8 +93,9 @@ func SubmitPinPaymentRequest(c *gin.Context) {
 		ethUSD, err := utils.RetrieveEthUsdPrice()
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": fmt.Sprintf("error ", err),
+				"error": fmt.Sprintf("error %s", err.Error()),
 			})
+			return
 		}
 		cost = pinCostUsd / ethUSD
 		break
@@ -149,12 +150,14 @@ func CalculatePinCost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("unable to calculate pin cost %s", err.Error()),
 		})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"total_cost_usd": totalCost,
 	})
 }
 
+// ConfirmPayment is used to confirm a payment, initiating an upload to temporal
 func ConfirmPayment(c *gin.Context) {
 	paymentID := c.Param("paymentID")
 	txHash, present := c.GetPostForm("tx_hash")
