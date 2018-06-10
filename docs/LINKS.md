@@ -54,3 +54,8 @@ https://www.slideshare.net/weaveworks/grafana-is-not-enough-diy-user-interfaces-
 
 `notifications not supported`:
 * https://github.com/ethereum/go-ethereum/issues/14341
+
+
+# Swarm
+
+https://github.com/ethersphere/swarm/wiki/Swap-demo-instructions

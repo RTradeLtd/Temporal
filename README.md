@@ -2,37 +2,41 @@
 
 Temporal is an enterprise-grade storage solution featuring an easy to consume API that can be easily integrated into your existing application stack, providing all the benefits of the distributed web, without any of the overhead that comes with running distributed storage nodes.  Initially targetting the public IPFS network, the next release cycle will bring support for additional protocols such as Ethereum Swarm and Private IPFS network. Temporal won't stop there and will continue to evolve as the space itself evolves. At RTrade we understand that the Blockchain and Distributed technology space evolve at an extremely quick pace so we are designing Temporal with modularity in mind so that as the space evolves we can evolve seamlessly with it.
 
-Temporal's API comes in two flavours, hosted or on-site. Should you not have the resources to run your own distributed storage nodes and infrastructure, you can take advantage of our hosted API allowing us to manage all the storage nodes and infrastructure, so all that you have to worry about is your application and using our API; We deal with all the hardware and infrastructure failures so that you can spend your hard work focusing on releasing products, not troubleshooting infrastructure failures which drain critical development resources. If however you have the infrastructure, and technical resources you can take advantage of Temporal being open source and deploy your own Temporal infrastructure
+Temporal's API comes in two flavours, hosted or on-site. Should you not have the resources to run your own distributed storage nodes and infrastructure, you can take advantage of our hosted API allowing us to manage all the storage nodes and infrastructure, so all that you have to worry about is your application and using our API; We deal with all the hardware and infrastructure failures so that you can spend your hard work focusing on releasing products, not troubleshooting infrastructure failures which drain critical development resources. If however you have the infrastructure, and technical resources you can take advantage of Temporal being open source and deploy your own Temporal infrastructure. For on-site deployments we offer special paid for installations, maintenance, upgrades, and product usage information sessions allowing you to take full advantage of the power that comes with running your own Temporal infrastructure.
 
-Technologies that will be supported by our cloud storage, and API:
-* Public IPFS (current)
-* Private IPFS (planned)
-* Ethereum Swarm (planned)
-* STORJ (planned)
-* SIA (planned)
+
+# Supported Technologies
+
+Following is a list of distributed and decentralized storage technologies that Temporal currently, or plans on supporting.
+
+IPFS (50% complete):
+
+    Temporal supports integration with the public IPFS network, and will evolve to support new features added to IPFS so that you will have the most optimal experience possible, and never suffer from inability to access the latest and greatest features due to an API that fails to evolve as the underlying technology evolves.
+
+    Soon after release, support for Private IPFS networks will be integrated into Temporal, allowing you to get the same benefits of the public IPFS network, but with the data security and privacy that comes with running a private network. This is extremely useful to financial institutions, data archivers, and other industries to whom data security and privacy is one of the primary concerns when integrating with any new technology
+
+Swarm (5% complete):
+
+    Swarm blends the power of IPFS, with the power of Blockchain and is common place in protocols like Ethereum. Temporal will provide an interface into the Ethereum mainnet Swarm protocol, allowing you to store your data onto the Ethereum blockchain. You'll also take advantage of having that particular data persistently stored on our high quality Ethereum node infrastructure.  Currently the Swarm protocol isn't fully integrated yet with Ethereum, and as such, the SWAP accounting protocol isn't fully implemented yet, which means nodes in the network aren't guaranteed to persist your data which means it could dissapear into the Ether. Until SWAP is fully integrated we hope to offer increased utilizatinon and adoption of SWARM by taking advantage of the data persistence offered by Temporal, and our high quality Ethereum infrastructure
+
+STORJ (0% complete):
+
+    Details TBA
+
+SIA (0% complete):
+
+    Details TBA
 
 # Hosted API Early Access
 
 We have an early access alpha of our hosted API for the public IPFS network, should you wish to test it please contact me at postables@rtradetechnologies.com
 
-# Hosted API 
-
-One of the main features of temporal we offer is hosted access to all the tools, and benefits that come with temporal, without having to run any of the services yourself.
-While the API is easy to use and consume, there still comes work with maintaining the underlying infrastructure which is not easy, and may not be something that is suitable for you to do an on-premise deployment of the infrastructure if you don't have the resources to support it. That is where the hosted API comes into place. 
-
-Your API infrastructure will be run on dedicated machines connected to our storage backend. At the moment since we don't support private IPFS integration with temporal currently, hosted API access for your own personal private IPFS swarms are not yet supported for on-demand registration through our web interface. Should you wish to have your own private IPFS network and still want hosted API access, please contact us privately as this is something we can setup on a case-by-case basis, but is not yet ready for automated registration.
-
-# On Premise Deployment
-
-There is no support offered for on-premise deployments, save for bugs that may be found in the temporal software suite itself in which case an issue may be opened up on the repository. We offer paid support for on-premise temporal deployments, as well as training to use the software to its fullest capabilities. If this is of interest to you, please contact us privately.
-
 # Goals
 
-* Provide an easy to use interface with IPFS for both personal and business purposes.
-* Introduce IPFS to people who may have otherwise not been able to use the technology
+* Provide an easy to use interface into distributed and decentralized storage technologies.
 * Educate about decentralized and distributed storage technologies
-* Provide an easy-to-use API for different decentralized and distributed storage technologies
-
+* Introduce these new storage technologies to audiences who may have otherwise not heard of them
+* Help organizations make informed decisions about whether or not integrating distributed and decentralized storage technologies is the right thing to do for your business
 
 # Data Privacy
 
