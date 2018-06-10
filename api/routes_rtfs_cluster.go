@@ -15,13 +15,8 @@ import (
 func PinHashToCluster(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
-	uploadAddress, exists := contextCopy.GetPostForm("eth_address")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "eth_address post form does not exist",
-		})
-		return
-	}
+	uploadAddress := GetAuthenticatedUserFromContext(contextCopy)
+
 	holdTimeInMonths, exists := contextCopy.GetPostForm("hold_time")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{

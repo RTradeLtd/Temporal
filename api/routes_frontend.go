@@ -25,13 +25,8 @@ Contains routes used for frontend operation
 func SubmitPinPaymentRequest(c *gin.Context) {
 	var method uint8
 	contextCopy := c.Copy()
-	uploaderAddress, exists := contextCopy.GetPostForm("eth_address")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "eth_address post form does not exist",
-		})
-		return
-	}
+	uploaderAddress := GetAuthenticatedUserFromContext(contextCopy)
+
 	holdTime, exists := contextCopy.GetPostForm("hold_time")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
