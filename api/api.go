@@ -72,6 +72,11 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 	//g.POST("/api/v1/register-enterprise", RegisterEnterpriseUserAccount)
 
 	// PROTECTED ROUTES -- BEGIN
+
+	accountProtected := g.Group("/api/v1/account")
+	accountProtected.Use(authWare.MiddlewareFunc())
+	accountProtected.POST("password/change", ChangeAccountPassword)
+
 	ipfsProtected := g.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
 	ipfsProtected.Use(middleware.APIRestrictionMiddleware(db))
