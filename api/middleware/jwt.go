@@ -23,11 +23,11 @@ func JwtConfigGenerate(jwtKey string, db *gorm.DB) *jwt.GinJWTMiddleware {
 		MaxRefresh: time.Hour * 24,
 		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) { // userId = uploader address
 			userManager := models.NewUserManager(db)
-			validAuth, err := userManager.ComparePlaintextPasswordToHash(userId, password)
+			validLogin, err := userManager.SignIn(userId, password)
 			if err != nil {
 				return userId, false
 			}
-			if !validAuth {
+			if !validLogin {
 				return userId, false
 			}
 			return userId, true
