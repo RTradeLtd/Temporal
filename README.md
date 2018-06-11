@@ -31,6 +31,12 @@ SIA (0% complete):
 
 We have an early access alpha of our hosted API for the public IPFS network, should you wish to test it please contact me at postables@rtradetechnologies.com
 
+# System Monitoring
+
+System monitoring is done using a combination of Zabbix, and Grafana. Zabbix is used for operating system, and hardware metrics (network utilization, resource utilization, storage utilization, etc...) while Grafana is used for API and application level information for things like IPFS node statistics, API requests, etc...
+
+All templates, and grafana graphs, as well as necessary configuration filse and scripts to replicate our system monitoring backend are included in the `configs/` directory of this repository. The only configurations we don't include are our email configurations.
+
 # Goals
 
 * Provide an easy to use interface into distributed and decentralized storage technologies.
