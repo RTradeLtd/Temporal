@@ -40,6 +40,27 @@ func (um *UserManager) CheckIfUserAccountEnabled(ethAddress string, db *gorm.DB)
 	return user.AccountEnabled, nil
 }
 
+// ChangePassword is used to change a users password
+func (um *UserManager) ChangePassword(ethAddress, currentPassword, newPassword string) (bool, error) {
+	var user User
+	um.DB.Where("eth_address = ?", ethAddress).First(&user)
+	if user.CreatedAt == nilTime {
+		return false, errors.New("user account does not exist")
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(currentPassword)); err != nil {
+		return false, errors.New("invalid current password")
+	}
+	newHashedPass, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return false, err
+	}
+	check := um.DB.Model(&user).Update("hashed_password", string(newHashedPass))
+	if check.Error != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (um *UserManager) NewUserAccount(ethAddress, password string, enterpriseEnabled bool) (*User, error) {
 	var user User
 	um.DB.Where("eth_address = ?", ethAddress).First(&user)
