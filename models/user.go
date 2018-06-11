@@ -4,7 +4,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -32,19 +31,6 @@ func NewUserManager(db *gorm.DB) *UserManager {
 	return &um
 }
 
-func ReturnUserModelFromContext(db *gorm.DB, c *gin.Context) (*User, error) {
-	var user User
-	uploaderAddress, exists := c.GetPostForm("uploader_address")
-	if !exists {
-		return nil, errors.New("uploader_address parameter not present")
-	}
-	db.Where("eth_address = ?", uploaderAddress).First(&user)
-	if user.CreatedAt == nilTime {
-		return nil, errors.New("user account does not exist")
-	}
-	return &user, nil
-}
-
 func (um *UserManager) CheckIfUserAccountEnabled(ethAddress string, db *gorm.DB) (bool, error) {
 	var user User
 	db.Where("eth_address = ?", ethAddress).First(&user)
@@ -69,6 +55,27 @@ func (um *UserManager) NewUserAccount(ethAddress, password string, enterpriseEna
 	user.HashedPassword = string(hashedPass)
 	um.DB.Create(&user)
 	return &user, nil
+}
+
+// SignIn is used to authenticate a user, and check if their account is enabled.
+// Returns bool on succesful login, or false with an error on failure
+func (um *UserManager) SignIn(ethAddress, password string) (bool, error) {
+	var user User
+	um.DB.Where("eth_address = ?", ethAddress).First(&user)
+	if user.CreatedAt == nilTime {
+		return false, errors.New("user account does not exist")
+	}
+	if !user.AccountEnabled {
+		return false, errors.New("account is marked is disabled")
+	}
+	validPassword, err := um.ComparePlaintextPasswordToHash(ethAddress, password)
+	if err != nil {
+		return false, err
+	}
+	if !validPassword {
+		return false, errors.New("invalid password supplied")
+	}
+	return true, nil
 }
 
 func (um *UserManager) ComparePlaintextPasswordToHash(ethAddress, password string) (bool, error) {
