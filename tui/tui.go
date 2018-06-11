@@ -43,7 +43,13 @@ func temporal() {
 		temporalCMDList.Clear()
 		app.SetRoot(pages, true).SetFocus(pages.ShowPage("Command List"))
 	})
-	app.SetRoot(temporalCMDList, true)
+
+	flex := tview.NewFlex().
+		AddItem(temporalCMDList, 0, 1, true)
+	flex.SetBorder(true)
+	flex.SetTitle(title)
+
+	app.SetRoot(flex, true)
 }
 
 func client() {
@@ -71,7 +77,7 @@ func client() {
 }
 
 func box() {
-	box := tview.NewBox().SetBorder(true).SetTitle("Temporal Administrative Console")
+	box := tview.NewBox().SetBorder(true).SetTitle(title)
 	if err := app.SetRoot(box, true).Run(); err != nil {
 		log.Fatal(err)
 	}
