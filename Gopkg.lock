@@ -3,12 +3,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/RTradeLtd/ipd-config"
-  packages = ["ipdcfg"]
-  revision = "8ef4dc93b18bea1963bd869d475d3f03788d19dd"
-
-[[projects]]
-  branch = "master"
   name = "github.com/agl/ed25519"
   packages = [
     ".",
@@ -49,9 +43,9 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/chzyer/readline"
+  name = "github.com/c2h5oh/datasize"
   packages = ["."]
-  revision = "f6d7a1f6fbf35bbf9beb80dc63c56a29dcfb759f"
+  revision = "4eba002a5eaea69cf8d235a388fc6b65ae68d2dd"
 
 [[projects]]
   branch = "master"
@@ -162,12 +156,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/fatih/color"
-  packages = ["."]
-  revision = "2d684516a8861da43017284349b7e303e809ac21"
-
-[[projects]]
-  branch = "master"
   name = "github.com/fd/go-nat"
   packages = ["."]
   revision = "dcaf50131e4810440bed2cbb6f7f32c4f4cc95dd"
@@ -183,9 +171,18 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/flynn-archive/go-shlex"
+  name = "github.com/gdamore/encoding"
   packages = ["."]
-  revision = "3f9db97f856818214da2e1057f8ad84803971cff"
+  revision = "b23993cbb6353f0e6aa98d0ee318a34728f628b9"
+
+[[projects]]
+  name = "github.com/gdamore/tcell"
+  packages = [
+    ".",
+    "terminfo"
+  ]
+  revision = "061d51a604c546b48e92253cb65190d76cecf4c6"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -392,12 +389,6 @@
   packages = ["."]
   revision = "ca39e5af3ece67bbcda3d0f4f56a8e24d9f2dad4"
   version = "1.1.3"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/karalabe/hid"
-  packages = ["."]
-  revision = "2b4488a37358b7283de4f9622553e85ebbe73125"
 
 [[projects]]
   branch = "master"
@@ -618,6 +609,12 @@
   revision = "2c20090616127904f706139653cd40ecac600227"
 
 [[projects]]
+  name = "github.com/lucasb-eyer/go-colorful"
+  packages = ["."]
+  revision = "345fbb3dbcdb252d9985ee899a84963c0fa24c82"
+  version = "v1.0"
+
+[[projects]]
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
@@ -628,6 +625,12 @@
   packages = ["."]
   revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
   version = "v0.0.3"
+
+[[projects]]
+  name = "github.com/mattn/go-runewidth"
+  packages = ["."]
+  revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
+  version = "v0.0.2"
 
 [[projects]]
   branch = "master"
@@ -731,6 +734,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/onrik/ethrpc"
+  packages = ["."]
+  revision = "a38990194dea417644f4f383279ab737aa8abb4a"
+
+[[projects]]
+  branch = "master"
   name = "github.com/opentracing/opentracing-go"
   packages = [
     ".",
@@ -786,6 +795,12 @@
   packages = ["util/flock"]
   revision = "85f23d82a045d103ea7f3c89a91fba4a93e6367a"
   version = "v2.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/rivo/tview"
+  packages = ["."]
+  revision = "6ffb56ee2a2419f190043ff60003656530a9f0e2"
 
 [[projects]]
   branch = "master"
@@ -942,6 +957,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = [
+    "bcrypt",
     "blake2s",
     "blowfish",
     "pbkdf2",
@@ -1012,12 +1028,6 @@
   revision = "a5b4c53f6e8bdcafa95a94671bf2d1203365858b"
 
 [[projects]]
-  branch = "v2"
-  name = "gopkg.in/abiosoft/ishell.v2"
-  packages = ["."]
-  revision = "42a9bbfa0017d7243b50b8f542076ef3d5e7da6c"
-
-[[projects]]
   branch = "master"
   name = "gopkg.in/dgrijalva/jwt-go.v3"
   packages = ["."]
@@ -1062,6 +1072,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "241c80302d403875a974a6d81dca82f63bbc6efae9562e606a530bce473a54dc"
+  inputs-digest = "894a0c2b38560dfb8309d2817f7fffd0dc71f849e8eaf739512b54d3ce4bf69b"
   solver-name = "gps-cdcl"
   solver-version = 1
