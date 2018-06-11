@@ -105,7 +105,6 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 
 	frontendProtected := g.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
-	frontendProtected.Use(middleware.APIRestrictionMiddleware(db))
 	frontendProtected.POST("/registration/request", SubmitPinPaymentRequest)
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", CalculatePinCost)
 	frontendProtected.POST("/confirm/:paymentID", ConfirmPayment)
