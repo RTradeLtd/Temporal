@@ -24,7 +24,7 @@ func InitializeApplication() {
 	pages = tview.NewPages()
 	// list of possible commands
 	commandList := tview.NewList().
-		AddItem("Temporal", "Access the Temporal server commands", 'a', nil).
+		AddItem("Temporal", "Access the Temporal server commands", 'a', temporal).
 		AddItem("Client", "Access the Temporal text based user interface", 'c', client).
 		AddItem("Run box", "Run the box function", 'b', box).
 		AddItem("Quit", "Press to exit", 'q', func() {
@@ -35,6 +35,15 @@ func InitializeApplication() {
 	if err := app.SetRoot(pages, true).SetFocus(pages).Run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func temporal() {
+	temporalCMDList := tview.NewList().ShowSecondaryText(true)
+	temporalCMDList.AddItem("Start API", "Start the Temporal API", 'a', func() {
+		temporalCMDList.Clear()
+		app.SetRoot(pages, true).SetFocus(pages.ShowPage("Command List"))
+	})
+	app.SetRoot(temporalCMDList, true)
 }
 
 func client() {
