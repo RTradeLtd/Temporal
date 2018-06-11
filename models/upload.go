@@ -33,7 +33,7 @@ func (um *UploadManager) RunDatabaseGarbageCollection() *[]Upload {
 	um.DB.Find(&uploads)
 	for _, v := range uploads {
 		if time.Now().Unix() > v.GarbageCollectDate.Unix() {
-			um.DB.Delete(v)
+			um.DB.Delete(&v)
 			deletedUploads = append(deletedUploads, v)
 		}
 	}

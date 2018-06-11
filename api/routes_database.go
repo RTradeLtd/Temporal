@@ -17,6 +17,14 @@ func RunTestGarbageCollection(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "attempting to run test database garbage colelction in non dev mode",
 		})
+		return
+	}
+	authenticatedUser := GetAuthenticatedUserFromContext(c)
+	if authenticatedUser != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "unauthorized access",
+		})
+		return
 	}
 	db := c.MustGet("db").(*gorm.DB)
 	um := models.NewUploadManager(db)
@@ -30,8 +38,14 @@ func RunTestGarbageCollection(c *gin.Context) {
 // the database once every 24 hours, looking for any deleted pins, and removing them
 // from the cluster
 func RunDatabaseGarbageCollection(c *gin.Context) {
+	authenticatedUser := GetAuthenticatedUserFromContext(c)
+	if authenticatedUser != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "unauthorized access",
+		})
+		return
+	}
 	db := c.MustGet("db").(*gorm.DB)
-
 	um := models.NewUploadManager(db)
 	deletedUploads := um.RunDatabaseGarbageCollection()
 	c.JSON(http.StatusOK, gin.H{
@@ -42,8 +56,14 @@ func RunDatabaseGarbageCollection(c *gin.Context) {
 // GetUploadsFromDatabase is used to read a list of uploads from our database
 // only usable by admin
 func GetUploadsFromDatabase(c *gin.Context) {
+	authenticatedUser := GetAuthenticatedUserFromContext(c)
+	if authenticatedUser != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "unauthorized access",
+		})
+		return
+	}
 	db := c.MustGet("db").(*gorm.DB)
-
 	um := models.NewUploadManager(db)
 	// fetch the uplaods
 	uploads := um.GetUploads()
