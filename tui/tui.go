@@ -8,10 +8,11 @@ import (
 
 var app *tview.Application
 var pages *tview.Pages
+var title = "Temporal Administrative Console"
 
 // Initializes the Terminal User Interface
 func InitializeBox() {
-	box := tview.NewBox().SetBorder(true).SetTitle("Temporal Administrative Console")
+	box := tview.NewBox().SetBorder(true).SetTitle(title)
 	if err := tview.NewApplication().SetRoot(box, true).Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -29,7 +30,8 @@ func InitializeApplication() {
 		AddItem("Quit", "Press to exit", 'q', func() {
 			app.Stop()
 		})
-	pages.AddPage("Command List", commandList, true, true)
+
+	pages.AddPage("Command List", commandList, true, true).SetBorder(true).SetTitle(title)
 	if err := app.SetRoot(pages, true).SetFocus(pages).Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -49,6 +51,10 @@ func client() {
 
 	database := tview.NewList().ShowSecondaryText(false)
 	database.SetBorder(true).SetTitle("Database Client Commands")
+	database.AddItem("Return", "Return to main menu", 'r', func() {
+		database.Clear()
+		app.SetRoot(pages, true).SetFocus(pages.ShowPage("Command List"))
+	})
 	flex := tview.NewFlex().
 		AddItem(blockchain, 0, 1, true).
 		AddItem(database, 0, 1, false)
