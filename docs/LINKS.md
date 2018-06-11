@@ -59,3 +59,8 @@ https://www.slideshare.net/weaveworks/grafana-is-not-enough-diy-user-interfaces-
 # Swarm
 
 https://github.com/ethersphere/swarm/wiki/Swap-demo-instructions
+
+
+# CORS
+
+https://skarlso.github.io/2016/02/02/doing-cors-in-go-with-gin-and-json/
