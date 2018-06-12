@@ -798,6 +798,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/rcrowley/go-metrics"
+  packages = ["."]
+  revision = "e2704e165165ec55d062f5919b4b29494e9fa790"
+
+[[projects]]
+  branch = "master"
   name = "github.com/rivo/tview"
   packages = ["."]
   revision = "6ffb56ee2a2419f190043ff60003656530a9f0e2"
@@ -819,6 +825,12 @@
   name = "github.com/satori/go.uuid"
   packages = ["."]
   revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/semihalev/gin-stats"
+  packages = ["."]
+  revision = "30fdcbbd353327f4b95c2ce382a05ce003d96f7e"
 
 [[projects]]
   branch = "master"
@@ -1072,6 +1084,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "894a0c2b38560dfb8309d2817f7fffd0dc71f849e8eaf739512b54d3ce4bf69b"
+  inputs-digest = "4333cf26f67a464b1f3153cbee9e55f915b9778c9d3391a233a8eb14f0d1ecaf"
   solver-name = "gps-cdcl"
   solver-version = 1

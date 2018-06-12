@@ -24,8 +24,8 @@
 #   go-tests = true
 #   unused-packages = true
 
-ignored = ["github.com/karalabe/hid", "github.com/ethereum/go-ethereum"]
-
+# ignored = ["github.com/karalabe/hid", "github.com/ethereum/go-ethereum"]
+ignored = ["github.com/karalabe/hid"]
 [[constraint]]
   branch = "master"
   name = "github.com/RTradeLtd/ipd-config"
@@ -97,3 +97,7 @@ ignored = ["github.com/karalabe/hid", "github.com/ethereum/go-ethereum"]
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/semihalev/gin-stats"

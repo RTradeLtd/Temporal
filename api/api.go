@@ -5,6 +5,9 @@ package api
 import (
 	"fmt"
 	"log"
+	"net/http"
+
+	"github.com/semihalev/gin-stats"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/database"
@@ -39,6 +42,7 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 	roll.Token = rollbarToken
 	roll.Environment = "development"
 	r := gin.Default()
+	r.Use(stats.RequestStats())
 	r.Use(xssMdlwr.RemoveXss())
 	r.Use(limit.MaxAllowed(20)) // limit to 20 con-current connections
 	// create gin middleware instance for prom
@@ -58,6 +62,13 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
 	setupRoutes(r, authMiddleware, db)
+
+	r.Group("/api/v1/statistics")
+	r.Use(authMiddleware.MiddlewareFunc())
+	r.Use(middleware.APIRestrictionMiddleware(db))
+	r.GET("/stats", func(c *gin.Context) {
+		c.JSON(http.StatusOK, stats.Report())
+	})
 	return r
 }
 
