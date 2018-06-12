@@ -31,6 +31,14 @@ SIA (0% complete):
 
 We have an early access alpha of our hosted API for the public IPFS network, should you wish to test it please contact me at postables@rtradetechnologies.com
 
+# Temporal Administration
+
+Temporal will be administered by a text-based interface, which will allow full control over all parts of a temporal instance, including spinning up additional infrastructure nodes to scale up as user demand increases.  The Text Based User interface is currently under construction, and is located in the `tui` folder. After the text based user interface is complete, and fully functional work on a graphical interface for Temporal administration will be done.
+
+# Interacting with Temporal
+
+There are two ways of interacting with Temporal (currently only the API is supported). One consisting of an API intended to be used by application developers, programmers, or organizations who want to integrate Temporal with their application stack. Second is a web client that can be used as a cloud storage platform for personal, and enterprise use cases (this will be done in a later release).
+
 # System Monitoring
 
 System monitoring is done using a combination of Zabbix, and Grafana. Zabbix is used for operating system, and hardware metrics (network utilization, resource utilization, storage utilization, etc...) while Grafana is used for API and application level information for things like IPFS node statistics, API requests, etc...
