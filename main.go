@@ -8,6 +8,7 @@ import (
 
 	//_ "./docs"
 	"github.com/RTradeLtd/Temporal/api"
+	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -18,7 +19,7 @@ import (
 
 var certFile = "/home/solidity/certificates/api.pem"
 var keyFile = "/home/solidity/certificates/api.key"
-var tCfg TemporalConfig
+var tCfg config.TemporalConfig
 
 func main() {
 	if len(os.Args) > 2 || len(os.Args) < 2 {
@@ -38,7 +39,7 @@ func main() {
 	if configDag == "" {
 		log.Fatal("CONFIG_DAG is not set")
 	}
-	tCfg := LoadConfig(configDag)
+	tCfg := config.LoadConfig(configDag)
 	certFilePath := tCfg.API.Connection.Certificates.CertPath
 	keyFilePath := tCfg.API.Connection.Certificates.KeyPath
 	listenAddress := tCfg.API.Connection.ListenAddress
@@ -56,10 +57,10 @@ func main() {
 		fmt.Println("enter dag cid for the config file")
 		scanner.Scan()
 		configCid := scanner.Text()
-		config := LoadConfig(configCid)
+		config := config.LoadConfig(configCid)
 		fmt.Printf("%+v\n", config)
 	case "tui":
-		tui.InitializeApplication()
+		tui.InitializeApplication(tCfg)
 	case "api":
 		router := api.Setup(jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass, listenAddress, dbUser)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)

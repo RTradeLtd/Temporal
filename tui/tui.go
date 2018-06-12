@@ -1,14 +1,20 @@
 package tui
 
 import (
+	"errors"
+	"fmt"
 	"log"
+	"os"
 
+	"github.com/RTradeLtd/Temporal/api"
+	"github.com/RTradeLtd/Temporal/config"
 	"github.com/rivo/tview"
 )
 
 var app *tview.Application
 var pages *tview.Pages
 var title = "Temporal Administrative Console"
+var tCfg *config.TemporalConfig
 
 // Initializes the Terminal User Interface
 func InitializeBox() {
@@ -18,7 +24,8 @@ func InitializeBox() {
 	}
 }
 
-func InitializeApplication() {
+func InitializeApplication(tCfg *config.TemporalConfig) {
+
 	// create the tview app
 	app = tview.NewApplication()
 	pages = tview.NewPages()
@@ -38,10 +45,22 @@ func InitializeApplication() {
 }
 
 func temporal() {
+	configDag := os.Getenv("CONFIG_DAG")
+	if configDag == "" {
+		log.Fatal(errors.New("CONFIG_DAG env not present"))
+	}
+	tCfg := config.LoadConfig(configDag)
+	// jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser string
 	temporalCMDList := tview.NewList().ShowSecondaryText(true)
 	temporalCMDList.AddItem("Start API", "Start the Temporal API", 'a', func() {
-		temporalCMDList.Clear()
-		app.SetRoot(pages, true).SetFocus(pages.ShowPage("Command List"))
+		// jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser string
+		router := api.Setup(tCfg.API.JwtKey, tCfg.API.RollbarToken, tCfg.RabbitMQ.URL, tCfg.Database.Password, tCfg.Database.URL,
+			tCfg.Ethereum.Account.KeyFile, tCfg.Ethereum.Account.KeyPass, tCfg.API.Connection.ListenAddress, tCfg.Database.Username)
+		router.RunTLS(fmt.Sprintf("%s:6767", tCfg.API.Connection.ListenAddress),
+			tCfg.API.Connection.Certificates.CertPath, tCfg.API.Connection.Certificates.KeyPath)
+		/*
+			temporalCMDList.Clear()
+			app.SetRoot(pages, true).SetFocus(pages.ShowPage("Command List"))*/
 	})
 
 	flex := tview.NewFlex().
