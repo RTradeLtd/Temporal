@@ -63,10 +63,10 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 
 	setupRoutes(r, authMiddleware, db)
 
-	r.Group("/api/v1/statistics")
-	r.Use(authMiddleware.MiddlewareFunc())
-	r.Use(middleware.APIRestrictionMiddleware(db))
-	r.GET("/stats", func(c *gin.Context) {
+	statsProtected := r.Group("/api/v1/statistics")
+	statsProtected.Use(authMiddleware.MiddlewareFunc())
+	statsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	statsProtected.GET("/stats", func(c *gin.Context) {
 		c.JSON(http.StatusOK, stats.Report())
 	})
 	return r
