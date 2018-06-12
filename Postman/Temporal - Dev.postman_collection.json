@@ -1,0 +1,1086 @@
+{
+	"info": {
+		"_postman_id": "c58ffdf5-78d7-46de-b882-b8f2e41c4647",
+		"name": "Temporal - Dev",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "IPFS",
+			"description": "",
+			"item": [
+				{
+					"name": "ipfs add pin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f0897244-dce6-4305-9428-0830af27124f",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "eth_address",
+									"value": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "hold_time",
+									"value": "5",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs/pin/QmZyoUz4uFswaUfg9SXgNRKPXfYeQXmjuCr6oXX3EPnRPN",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"pin",
+								"QmZyoUz4uFswaUfg9SXgNRKPXfYeQXmjuCr6oXX3EPnRPN"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get local pins",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "192.168.1.252:6767/api/v1/ipfs/pins/",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"252"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"pins",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ipfs add file",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "",
+									"type": "file"
+								},
+								{
+									"key": "eth_address",
+									"value": "0x0b76544F6C413a555F309Bf76260d1E02377c02A",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "hold_time",
+									"value": "5",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs/add-file",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"add-file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ipfs pubsub publish msg",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "message",
+									"value": "aksjdklajsdkasjldjawsdkljsdjasldas",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "localhost:6767/api/v1/ipfs/pubsub/publish/foo",
+							"host": [
+								"localhost"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"pubsub",
+								"publish",
+								"foo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ipfs pubsub consume msg",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "localhost:6767/api/v1/ipfs/pubsub/consume/foo",
+							"host": [
+								"localhost"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"pubsub",
+								"consume",
+								"foo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ipfs object stat",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs/object-stat/QmRcFZCZmKEuMjy8yLjqKKsHmd1ZjeLSkFtTgRLdh98hM1",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"object-stat",
+								"QmRcFZCZmKEuMjy8yLjqKKsHmd1ZjeLSkFtTgRLdh98hM1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "object size",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs/object/size/Qmds7SXd3CUEptppBStWpAhA7S37Yf2sMGnE9U83GPaJN8",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"object",
+								"size",
+								"Qmds7SXd3CUEptppBStWpAhA7S37Yf2sMGnE9U83GPaJN8"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "remove pin from node",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs/remove-pin/Qm.....",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"remove-pin",
+								"Qm....."
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check for pin",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs/check-for-pin/Qm",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"check-for-pin",
+								"Qm"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "IPFS Cluster",
+			"description": "",
+			"item": [
+				{
+					"name": "add pin",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "eth_address",
+									"value": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "hold_time",
+									"value": "5",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs-cluster/pin/QmZyoUz4uFswaUfg9SXgNRKPXfYeQXmjuCr6oXX3EPnRPN",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs-cluster",
+								"pin",
+								"QmZyoUz4uFswaUfg9SXgNRKPXfYeQXmjuCr6oXX3EPnRPN"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "sync errors local",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs-cluster/sync-errors-local",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs-cluster",
+								"sync-errors-local"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "pin status local",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs-cluster/status-local-pin/Qm....",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs-cluster",
+								"status-local-pin",
+								"Qm...."
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "pin status global",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs-cluster/status-global-pin/Qm....",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs-cluster",
+								"status-global-pin",
+								"Qm...."
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "local status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs-cluster/status-local",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs-cluster",
+								"status-local"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "remove pin from cluster",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs-cluster/remove-pin/Qm...",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs-cluster",
+								"remove-pin",
+								"Qm..."
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "account",
+			"description": "",
+			"item": [
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "24c6ee38-2f15-457f-b1a4-0b8b5d35d21a",
+								"type": "text/javascript",
+								"exec": [
+									"var data = JSON.parse(responseBody); // parses the response body",
+									"                                    // into json for us",
+									"console.log(data);",
+									"postman.setEnvironmentVariable(\"token\", data.token);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"username\": \"0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9\",\n\t\"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/login",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "user account register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "eth_address",
+									"value": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password123",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/register",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "password change",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/account/password/change",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"account",
+								"password",
+								"change"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "blockchain",
+			"description": "",
+			"item": [
+				{
+					"name": "rtc payment register",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "eth_address",
+									"value": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "content_hash",
+									"value": "QmU6gZ4inTfKpNaDWRg5DKHdaQoYQkBYyMCQm6x86Lqb58",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "retention_period_in_months",
+									"value": "5",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "charge_amount_in_wei",
+									"value": "1",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/payments-api/rtc/register",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"payments-api",
+								"rtc",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "payment registration request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "eth_address",
+									"value": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "hold_time",
+									"value": "5",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "content_hash",
+									"value": "QmZyoUz4uFswaUfg9SXgNRKPXfYeQXmjuCr6oXX3EPnRPN",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "payment_method",
+									"value": "rtc",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/payments/registration/request",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"payments",
+								"registration",
+								"request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "confirm payment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/payments/confirm/08ac12f26bcec4d88d1a5bfa0d3b9ba7ebcb98c5c10ec97c3662a153ba37360b",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"payments",
+								"confirm",
+								"08ac12f26bcec4d88d1a5bfa0d3b9ba7ebcb98c5c10ec97c3662a153ba37360b"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "database",
+			"description": "",
+			"item": [
+				{
+					"name": "get uploads from database",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/database/uploads",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"database",
+								"uploads"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get uploads from database for address",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "u",
+								"value": ""
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "localhost:6767/api/v1/database/uploads/0xb459fe0A90e70dBAa060B5537db9d5bd58C22e88",
+							"host": [
+								"localhost"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"database",
+								"uploads",
+								"0xb459fe0A90e70dBAa060B5537db9d5bd58C22e88"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "database garbage collect test",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "localhost:6767/api/v1/database/garbage-collect/test",
+							"host": [
+								"localhost"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"database",
+								"garbage-collect",
+								"test"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "database garbage collection",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/database/garbage-collect/run",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"database",
+								"garbage-collect",
+								"run"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "frontend",
+			"description": "",
+			"item": [
+				{
+					"name": "pin payment registration request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "eth_address",
+									"value": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "content_hash",
+									"value": "Qmcz4Bud9ssoJ3CF5GJErf6ndXQrEyUXGgEbKXhNGwocPJ",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "hold_time",
+									"value": "88",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "payment_method",
+									"value": "rtc",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/frontend/registration/request",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"frontend",
+								"registration",
+								"request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "calculate pin cost",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/frontend/cost/calculate/Qmcz4Bud9ssoJ3CF5GJErf6ndXQrEyUXGgEbKXhNGwocPJ/88",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"frontend",
+								"cost",
+								"calculate",
+								"Qmcz4Bud9ssoJ3CF5GJErf6ndXQrEyUXGgEbKXhNGwocPJ",
+								"88"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "confirm payment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/frontend/confirm/PaymentIDDDD",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"frontend",
+								"confirm",
+								"PaymentIDDDD"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "payments",
+			"description": "",
+			"item": [
+				{
+					"name": "register payment (admin)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/payments-api/register",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"payments-api",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "193ef334-d776-46e5-a882-245bcbf63606",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "ee50c89c-ec50-4034-ad3d-2cfb0e706047",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
