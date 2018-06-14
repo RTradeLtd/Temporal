@@ -10,5 +10,11 @@ RUN apt-get install apt-utils -y
 # Run upgrade
 RUN apt-get upgrade -y
 
+# Run wget install
+RUN apt-get install wget -y
+
 # Copy build scripts
 COPY /build_scripts build_scripts
+
+# Run ipfs install
+RUN bash -x build_scripts/ipfs_install.sh
