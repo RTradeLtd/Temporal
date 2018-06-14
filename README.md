@@ -31,6 +31,8 @@ SIA (0% complete):
 
 We have an early access alpha of our hosted API for the public IPFS network, should you wish to test it please contact me at postables@rtradetechnologies.com
 
+There is also a telegram room you can join https://t.me/RTradeTEMPORAL
+
 # Temporal Administration
 
 Temporal will be administered by a text-based interface, which will allow full control over all parts of a temporal instance, including spinning up additional infrastructure nodes to scale up as user demand increases.  The Text Based User interface is currently under construction, and is located in the `tui` folder. After the text based user interface is complete, and fully functional work on a graphical interface for Temporal administration will be done.
