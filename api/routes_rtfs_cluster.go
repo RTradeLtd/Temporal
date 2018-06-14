@@ -73,6 +73,13 @@ func PinHashToCluster(c *gin.Context) {
 // SyncClusterErrorsLocally is used to parse through the local cluster state
 // and sync any errors that are detected.
 func SyncClusterErrorsLocally(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "unauthorized access",
+		})
+		return
+	}
 	// initialize a conection to the cluster
 	manager := rtfs_cluster.Initialize()
 	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
@@ -107,6 +114,13 @@ func RemovePinFromCluster(c *gin.Context) {
 
 // GetLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
 func GetLocalStatusForClusterPin(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "unauthorized access",
+		})
+		return
+	}
 	hash := c.Param("hash")
 	// initialize a connection to the cluster
 	manager := rtfs_cluster.Initialize()
@@ -137,6 +151,13 @@ func GetGlobalStatusForClusterPin(c *gin.Context) {
 // cluster state, and not the rest of the cluster
 // TODO: cleanup
 func FetchLocalClusterStatus(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "unauthorized access",
+		})
+		return
+	}
 	// this will hold all the retrieved content hashes
 	var cids []*gocid.Cid
 	// this will hold all the statuses of the content hashes

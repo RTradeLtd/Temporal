@@ -179,6 +179,13 @@ func AddFileLocally(c *gin.Context) {
 
 // IpfsPubSubPublish is used to publish a pubsub msg
 func IpfsPubSubPublish(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "unauthorized access",
+		})
+		return
+	}
 	topic := c.Param("topic")
 	message, present := c.GetPostForm("message")
 	if !present {
@@ -204,6 +211,13 @@ func IpfsPubSubPublish(c *gin.Context) {
 
 // IpfsPubSubConsume is used to consume pubsub messages
 func IpfsPubSubConsume(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "unauthorized access",
+		})
+		return
+	}
 	contextCopy := c.Copy()
 	topic := contextCopy.Param("topic")
 
@@ -260,6 +274,13 @@ func RemovePinFromLocalHost(c *gin.Context) {
 
 // GetLocalPins is used to get the pins tracked by the local ipfs node
 func GetLocalPins(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "unauthorized access",
+		})
+		return
+	}
 	// initialize a connection toe the local ipfs node
 	manager, err := rtfs.Initialize("")
 	if err != nil {

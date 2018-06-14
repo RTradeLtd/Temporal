@@ -66,7 +66,14 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 	statsProtected := r.Group("/api/v1/statistics")
 	statsProtected.Use(authMiddleware.MiddlewareFunc())
 	statsProtected.Use(middleware.APIRestrictionMiddleware(db))
-	statsProtected.GET("/stats", func(c *gin.Context) {
+	statsProtected.GET("/stats", func(c *gin.Context) { // admin locked
+		ethAddress := GetAuthenticatedUserFromContext(c)
+		if ethAddress != AdminAddress {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "unauthorized access",
+			})
+			return
+		}
 		c.JSON(http.StatusOK, stats.Report())
 	})
 	return r
@@ -91,11 +98,11 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 	ipfsProtected := g.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
 	ipfsProtected.Use(middleware.APIRestrictionMiddleware(db))
-	ipfsProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublish)
+	ipfsProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublish) // admin locked
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
 	ipfsProtected.POST("/add-file", AddFileLocally)
-	ipfsProtected.GET("/pubsub/consume/:topic", IpfsPubSubConsume)
-	ipfsProtected.GET("/pins", GetLocalPins)
+	ipfsProtected.GET("/pubsub/consume/:topic", IpfsPubSubConsume) // admin locked
+	ipfsProtected.GET("/pins", GetLocalPins)                       // admin locked
 	ipfsProtected.GET("/object-stat/:key", GetObjectStatForIpfs)
 	ipfsProtected.GET("/object/size/:key", GetFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
@@ -105,19 +112,19 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 	clusterProtected.Use(authWare.MiddlewareFunc())
 	clusterProtected.Use(middleware.APIRestrictionMiddleware(db))
 	clusterProtected.POST("/pin/:hash", PinHashToCluster)
-	clusterProtected.POST("/sync-errors-local", SyncClusterErrorsLocally)
-	clusterProtected.GET("/status-local-pin/:hash", GetLocalStatusForClusterPin)
-	clusterProtected.GET("/status-global-pin/:hash", GetGlobalStatusForClusterPin)
-	clusterProtected.GET("/status-local", FetchLocalClusterStatus)
+	clusterProtected.POST("/sync-errors-local", SyncClusterErrorsLocally)          // admin locked
+	clusterProtected.GET("/status-local-pin/:hash", GetLocalStatusForClusterPin)   // admin locked
+	clusterProtected.GET("/status-global-pin/:hash", GetGlobalStatusForClusterPin) // admin locked
+	clusterProtected.GET("/status-local", FetchLocalClusterStatus)                 // admin locked
 	//clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster)
 
 	databaseProtected := g.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
 	databaseProtected.Use(middleware.APIRestrictionMiddleware(db))
-	databaseProtected.DELETE("/garbage-collect/test", RunTestGarbageCollection)
-	databaseProtected.DELETE("/garbage-collect/run", RunDatabaseGarbageCollection)
-	databaseProtected.GET("/uploads", GetUploadsFromDatabase)
-	databaseProtected.GET("/uploads/:address", GetUploadsForAddress)
+	databaseProtected.DELETE("/garbage-collect/test", RunTestGarbageCollection)    // admin locked
+	databaseProtected.DELETE("/garbage-collect/run", RunDatabaseGarbageCollection) // admin locked
+	databaseProtected.GET("/uploads", GetUploadsFromDatabase)                      // admin locked
+	databaseProtected.GET("/uploads/:address", GetUploadsForAddress)               // partial admin locked
 
 	frontendProtected := g.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
@@ -128,7 +135,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 	paymentsAPIProtected := g.Group("/api/v1/payments-api")
 	paymentsAPIProtected.Use(authWare.MiddlewareFunc())
 	paymentsAPIProtected.Use(middleware.APIRestrictionMiddleware(db))
-	paymentsAPIProtected.POST("/register", RegisterPayment) // this route requires admin access
+	paymentsAPIProtected.POST("/register", RegisterPayment) // admin locked
 	// PROTECTED ROUTES -- END
 
 }
