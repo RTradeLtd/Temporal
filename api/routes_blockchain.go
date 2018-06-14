@@ -23,7 +23,12 @@ var method uint8
 func RegisterPayment(c *gin.Context) {
 	contextCopy := c.Copy()
 	ethAddress := GetAuthenticatedUserFromContext(contextCopy)
-
+	if ethAddress != AdminAddress {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "unauthorized access",
+		})
+		return
+	}
 	contentHash, exists := contextCopy.GetPostForm("content_hash")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{

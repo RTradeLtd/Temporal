@@ -99,7 +99,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 	ipfsProtected.GET("/object-stat/:key", GetObjectStatForIpfs)
 	ipfsProtected.GET("/object/size/:key", GetFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
-	ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
+	//ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
 
 	clusterProtected := g.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())
@@ -109,7 +109,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 	clusterProtected.GET("/status-local-pin/:hash", GetLocalStatusForClusterPin)
 	clusterProtected.GET("/status-global-pin/:hash", GetGlobalStatusForClusterPin)
 	clusterProtected.GET("/status-local", FetchLocalClusterStatus)
-	clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster)
+	//clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster)
 
 	databaseProtected := g.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
@@ -128,7 +128,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 	paymentsAPIProtected := g.Group("/api/v1/payments-api")
 	paymentsAPIProtected.Use(authWare.MiddlewareFunc())
 	paymentsAPIProtected.Use(middleware.APIRestrictionMiddleware(db))
-	paymentsAPIProtected.POST("/register", RegisterPayment)
+	paymentsAPIProtected.POST("/register", RegisterPayment) // this route requires admin access
 	// PROTECTED ROUTES -- END
 
 }
