@@ -15,7 +15,12 @@ case "$1" in
             temporal-net
         ;;
 
+    build-ipfs-container)
+        # used to build the ipfs container
+        sudo docker build -t ipfs .
+        ;;
+
     *)
-        echo "Usage: build.sh [network-create]"
+        echo "Usage: build.sh [network-create|build-ipfs-container]"
         exit 1
 esac
