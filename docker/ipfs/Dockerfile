@@ -1,5 +1,5 @@
 # Downlod golang 1.10 base image
-FROM golang:1.10
+FROM ubuntu:16.04
 
 # Run update
 RUN apt-get update -y
@@ -17,4 +17,8 @@ RUN apt-get install wget -y
 COPY /build_scripts build_scripts
 
 # Run ipfs install
-RUN bash -x build_scripts/ipfs_install.sh
+RUN /bin/bash -x build_scripts/ipfs_install.sh
+
+EXPOSE 5001
+
+ENTRYPOINT ["/bin/bash"]

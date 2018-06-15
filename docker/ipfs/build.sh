@@ -19,6 +19,15 @@ case "$1" in
         # used to build the ipfs container
         sudo docker build -t ipfs .
         ;;
+    run-ipfs)
+        sudo docker run -dit -p 9001:5001 ipfs:latest
+        ;;
+    ps)
+        sudo docker ps
+        ;;
+    ps-a)
+        sudo docker ps -a
+        ;;
 
     *)
         echo "Usage: build.sh [network-create|build-ipfs-container]"
