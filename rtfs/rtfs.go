@@ -15,12 +15,12 @@ type IpfsManager struct {
 	PubTopic string
 }
 
-func Initialize(pubTopic string) (*IpfsManager, error) {
+func Initialize(pubTopic, connectionURL string) (*IpfsManager, error) {
 	if pubTopic == "" {
 		pubTopic = ClusterPubSubTopic
 	}
 	manager := IpfsManager{}
-	manager.Shell = EstablishShellWithNode("")
+	manager.Shell = EstablishShellWithNode(connectionURL)
 	isUp := manager.Shell.IsUp()
 	if !isUp {
 		return nil, errors.New("ipfs node is not online")
