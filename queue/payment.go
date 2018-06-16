@@ -59,7 +59,7 @@ func ProcessPinPaymentRequestQueue(msgs <-chan amqp.Delivery, db *gorm.DB, ethKe
 
 // ProcessPaymentReceivedQueue is used to process payment received messages
 func ProcessPaymentReceivedQueue(msgs <-chan amqp.Delivery, db *gorm.DB) {
-	ipfsManager, err := rtfs.Initialize("")
+	ipfsManager, err := rtfs.Initialize("", "")
 	if err != nil {
 		log.Fatal(err)
 	}

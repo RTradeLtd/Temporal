@@ -69,7 +69,7 @@ func SubmitPinPaymentRequest(c *gin.Context) {
 		return
 	}
 	mqURL := c.MustGet("mq_conn_url").(string)
-	manager, err := rtfs.Initialize("")
+	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -140,7 +140,7 @@ func SubmitPinPaymentRequest(c *gin.Context) {
 func CalculatePinCost(c *gin.Context) {
 	hash := c.Param("hash")
 	holdTime := c.Param("holdtime")
-	manager, err := rtfs.Initialize("")
+	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

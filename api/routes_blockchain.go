@@ -72,7 +72,7 @@ func RegisterPayment(c *gin.Context) {
 		return
 	}
 
-	rtfs, err := rtfs.Initialize("")
+	rtfs, err := rtfs.Initialize("", "")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
