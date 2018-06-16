@@ -17,7 +17,7 @@ func TUSFileStore(c *gin.Context) {
 
 }
 
-func generateTUSHandler() (*http.Handler, error) {
+func generateTUSHandler() (http.Handler, error) {
 	store := filestore.FileStore{
 		Path: "./uploads",
 	}
@@ -34,5 +34,5 @@ func generateTUSHandler() (*http.Handler, error) {
 		return nil, err
 	}
 
-	return &handler.Handler, nil
+	return handler.Handler, nil
 }

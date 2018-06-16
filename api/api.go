@@ -29,6 +29,8 @@ var xssMdlwr xss.XssMw
 // AdminAddress is the eth address of the admin account
 var AdminAddress = "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9"
 
+const experimental = true
+
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
 func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser string) *gin.Engine {
@@ -137,5 +139,16 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 	paymentsAPIProtected.Use(middleware.APIRestrictionMiddleware(db))
 	paymentsAPIProtected.POST("/register", RegisterPayment) // admin locked
 	// PROTECTED ROUTES -- END
+
+	if experimental {
+		tusHandler, err := generateTUSHandler()
+		if err != nil {
+			log.Fatal(err)
+		}
+		tusProtected := g.Group("/api/v1/tus")
+		tusProtected.Use(authWare.MiddlewareFunc())
+		tusProtected.Use(middleware.APIRestrictionMiddleware(db))
+		tusProtected.Any("any/*w", gin.WrapH(tusHandler))
+	}
 
 }
