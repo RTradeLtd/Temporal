@@ -1,9 +1,6 @@
 package api
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 	"github.com/tus/tusd"
 	"github.com/tus/tusd/filestore"
 )
@@ -13,11 +10,7 @@ Experimental TUS implementation
 Initially it will be strictly to store files on disk but will expand to include IPFS as a backend
 */
 
-func TUSFileStore(c *gin.Context) {
-
-}
-
-func generateTUSHandler() (http.Handler, error) {
+func generateTUSHandler() (*tusd.Handler, error) {
 	store := filestore.FileStore{
 		Path: "./uploads",
 	}
@@ -34,5 +27,5 @@ func generateTUSHandler() (http.Handler, error) {
 		return nil, err
 	}
 
-	return handler.Handler, nil
+	return handler, nil
 }

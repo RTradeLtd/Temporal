@@ -148,7 +148,12 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 		tusProtected := g.Group("/api/v1/tus")
 		tusProtected.Use(authWare.MiddlewareFunc())
 		tusProtected.Use(middleware.APIRestrictionMiddleware(db))
-		tusProtected.Any("any/*w", gin.WrapH(tusHandler))
+		tusProtected.Any("/files", gin.WrapH(tusHandler))
+		tusProtected.GET("/metrics", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"metrics": tusHandler.Metrics,
+			})
+		})
 	}
 
 }
