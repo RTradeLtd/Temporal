@@ -10,6 +10,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func PublishToIPNS(c *gin.Context) {
+	contextCopy := c.Copy()
+	hash := contextCopy.Param("hash")
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+	fmt.Println("publishing to ipns")
+	err = manager.PublishToIPNS(hash)
+	if err != nil {
+		fmt.Println("error publishing to ipns", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+	fmt.Println("published to ipns")
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ipns publish",
+	})
+}
+
 // PinHashLocally is used to pin a hash to the local ipfs node
 func PinHashLocally(c *gin.Context) {
 	contextCopy := c.Copy()

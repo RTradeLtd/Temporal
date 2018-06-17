@@ -1,8 +1,10 @@
 package shell
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 )
 
 // Publish updates a mutable name to point to a given value
@@ -12,7 +14,7 @@ func (s *Shell) Publish(node string, value string) error {
 		args = []string{node, value}
 	}
 
-	resp, err := s.newRequest(context.Background(), "name/publish", args...).Send(s.httpcli)
+	resp, err := s.newRequest(context.TODO(), "name/publish", args...).Send(s.httpcli)
 	if err != nil {
 		return err
 	}
@@ -22,6 +24,10 @@ func (s *Shell) Publish(node string, value string) error {
 		return resp.Error
 	}
 
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Output)
+	newStr := buf.String()
+	fmt.Println(newStr)
 	return nil
 }
 
