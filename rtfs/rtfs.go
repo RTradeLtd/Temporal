@@ -37,6 +37,14 @@ func (im *IpfsManager) PublishToIPNS(contentHash string) (*ipfsapi.PublishRespon
 	return resp, nil
 }
 
+func (im *IpfsManager) PublishToIPNSDetails(contentHash string, lifetime string, ttl string, key string, resolve bool) (*ipfsapi.PublishResponse, error) {
+	resp, err := im.Shell.PublishWithResponse(contentHash, lifetime, ttl, key, resolve)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 // Pin is a wrapper method to pin a hash to the local node,
 // but also alert the rest of the local nodes to pin
 // after which the pin will be sent to the cluster

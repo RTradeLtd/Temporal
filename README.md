@@ -6,7 +6,7 @@ Temporal's API comes in two flavours, hosted or on-site. Should you not have the
 
 # Dependencies (WIP)
 
-We use a slightly modified vendored go-ipfs-api package to provide some additional functionality for publishing IPNS records.
+We use a slightly modified vendored go-ipfs-api package to provide some additional functionality for publishing IPNS records (one additional function, and a modified `Publish` function) see changes in `vendor/github.com/ipfs/go-ipfs-api/ipns.go`
 
 # Supported Technologies
 

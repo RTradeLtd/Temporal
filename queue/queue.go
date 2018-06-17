@@ -77,6 +77,7 @@ type IPNSUpdate struct {
 	LifeTime string `json:"life_time"`
 	TTL      string `json:"ttl"`
 	Key      string `json:"key"`
+	Resolve  string `json:"resolve"`
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
