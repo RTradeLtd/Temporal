@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"time"
 
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
@@ -22,8 +21,6 @@ type User struct {
 type UserManager struct {
 	DB *gorm.DB
 }
-
-var nilTime time.Time
 
 func NewUserManager(db *gorm.DB) *UserManager {
 	um := UserManager{}

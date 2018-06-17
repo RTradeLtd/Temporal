@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
@@ -33,6 +34,12 @@ func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(UploadObj)
 	dbm.DB.AutoMigrate(UserObj)
 	dbm.DB.AutoMigrate(PaymentObj)
+	check := dbm.DB.Table("ipns").CreateTable(IpnsObj)
+	errString := fmt.Sprintf("%s", check.Error)
+	if check.Error != nil && errString != `pq: relation "ipns" already exists` {
+		fmt.Printf("error encountered %T\n", check.Error)
+		log.Fatal(check.Error)
+	}
 	dbm.DB.AutoMigrate(IpnsObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
