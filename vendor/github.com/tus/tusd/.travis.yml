@@ -1,0 +1,52 @@
+language: go
+go:
+- 1.5
+- 1.6
+- 1.7
+- 1.8
+- 1.9
+sudo: required
+dist: trusty
+group: deprecated-2017Q4
+cache:
+  apt: true
+  directories:
+  - $HOME/.gimme
+  - "$HOME/google-cloud-sdk/"
+env:
+  global:
+  - GO15VENDOREXPERIMENT=1
+  - secure: Ls76vWCzitRPJ4gyIAj7SdAUkbp2hhYd0zsDjHXriZA+KmlrZLsr4L3QcOaX+MMjMyEURZMS43VVaygP6Y8oF5yv4wYBHKgYh0ZW96pWrIS++0B5lo+2U+JZtTKAfLnOLHUQfLL5h4fg9+oa4mlcuH+3FvaCwO0TJjLU1b0q3Fc=
+  - secure: aAfgsISNfOC/8FDZSctCJr/JnxxnPkd1o0Zcqc+mTw6NXUa4T3o+aqbaY/VK5lk7Pru9exs5j+HdaeGhQrLMZJca803Sg1r0m68+h/2bS58p9zjyPk7aULCSAF7EUlqT041QQ5UBJV7gpIxFW1nyD6vL0ZBW1wA1k1PpxTjznPA=
+matrix:
+  allow_failures:
+  - go: tip
+install:
+- true
+script:
+- ./.scripts/test_all.sh
+before_deploy:
+- if [[ "$TRAVIS_TAG" != "" ]]; then ./.scripts/build_all.sh; fi
+- if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; curl https://sdk.cloud.google.com | bash; fi
+- source /home/travis/google-cloud-sdk/path.bash.inc
+- gcloud --quiet version
+- gcloud --quiet components update
+- gcloud --quiet components update kubectl
+- curl https://raw.githubusercontent.com/kubernetes/helm/9476fcc10aaaf4bbcbeb6b7b9e62e9f03d312697/scripts/get | bash
+deploy:
+- provider: releases
+  api_key:
+    secure: dV3wr9ebEps3YrzIoqmkYc7fw0IECz7QLPRENPSxTJyd5TTYXGsnTS26cMe2LdGwYrXw0njt2GGovMyBZFTtxyYI3mMO4AZRwvZfx/yGzPWJBbVi6NjZVRg/bpyK+mQJ5BUlkPAYJmRpdc6qD+nvCGakBOxoByC5XDK+yM+bKFs=
+  file_glob: true
+  file: tusd_*.*
+  skip_cleanup: true
+  on:
+    tags: true
+    go: 1.8
+    repo: tus/tusd
+- provider: script
+  script: .scripts/deploy_gcloud.sh
+  on:
+    branch: master
+    go: 1.8
+    repo: tus/tusd

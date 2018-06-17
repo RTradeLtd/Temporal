@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/RTradeLtd/Temporal/rtns"
+
 	//_ "./docs"
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/config"
@@ -59,6 +61,12 @@ func main() {
 		configCid := scanner.Text()
 		config := config.LoadConfig(configCid)
 		fmt.Printf("%+v\n", config)
+	case "ipns-test":
+		manager, err := rtns.InitializeWithNewKey()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(manager)
 	case "tui":
 		tui.InitializeApplication(tCfg)
 	case "api":
