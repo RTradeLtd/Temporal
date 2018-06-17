@@ -21,7 +21,9 @@ IPFS (50% complete):
 
 IPNS (50% Complete):
 
-    IPNS allows for publishing of human readable names, and immutable links to changing content. IPNS integration is an optional feature with each upload to IPFS, and will allow for creation of dnslink records on our domain. Note that for the hosted API, IPNS usage will incur additional charges
+    IPNS allows for publishing of human readable names, and immutable links to changing content. IPNS integration is an optional feature with each upload to IPFS, and will allow for creation of dnslink records on our domain. Note that for the hosted API, IPNS usage alongside of IPFS pins or file uploads will incur additional charges.
+
+    As a special/unique feature, you can plug into Temporal's IPNS setup, and use us as a trusted signer of IPNS records, while also optionally taking care of the DNS configuration, storing the DNS record underneath our domain (rtradetechnologies.com) at a URL of your choice with a subdomain name of your choosing providing it is available. Should you desire that, you can tap into our automated configuration and have that all done automatically. Optionally, we can also build out a hosted, or on-premise automated solution for your own domain as well.
 
 TUS (Rhttps://tus.io/) Resumable Upload Protocol (5% complete):
 
