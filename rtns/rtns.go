@@ -6,9 +6,11 @@ IPNS related functinonality for temporal
 import (
 	"time"
 
-	ipns "github.com/ipfs/go-ipns"
-	pb "github.com/ipfs/go-ipns/pb"
-	lci "github.com/libp2p/go-libp2p-crypto"
+	lci "gx/ipfs/Qme1knMqwt1hKZbc1BmQFmnm9f36nyQGwXxPGVpVJ9rMK5/go-libp2p-crypto"
+
+	namesys "github.com/ipfs/go-ipfs/namesys"
+	pb "github.com/ipfs/go-ipfs/namesys/pb"
+	path "github.com/ipfs/go-ipfs/path"
 )
 
 // IpnsManager is used to interface with IPNS
@@ -39,6 +41,16 @@ func (im *IpnsManager) GenerateKeyPair(keyType, bits int) error {
 	return nil
 }
 
+func (im *IpnsManager) CreateRoutedEntryData(ipfsPath string, eol time.Time) (*pb.IpnsEntry, error) {
+	pathObject := path.FromString(ipfsPath)
+	entry, err := namesys.CreateRoutingEntryData(im.PrivateKey, pathObject, 1, eol)
+	if err != nil {
+		return nil, err
+	}
+	return entry, nil
+}
+
+/*
 func (im *IpnsManager) CreateIPNSEntry(ipfsPath string, eol time.Time) (*pb.IpnsEntry, error) {
 	pathByte := []byte(ipfsPath)
 	entry, err := ipns.Create(im.PrivateKey, pathByte, 1, eol)
@@ -47,3 +59,4 @@ func (im *IpnsManager) CreateIPNSEntry(ipfsPath string, eol time.Time) (*pb.Ipns
 	}
 	return entry, nil
 }
+*/

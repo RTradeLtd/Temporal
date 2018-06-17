@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/rtns"
 
@@ -66,7 +67,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("%+v\n", manager)
+		eol := time.Now().Add(time.Hour * 48)
+		entry, err := manager.CreateRoutedEntryData("/ipfs/QmfM2r8seH2GiRaC4esTjeraXEachRt8ZsSeGaWTPLyMoG", eol)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%+v\n", entry)
 	case "tui":
 		tui.InitializeApplication(tCfg)
 	case "api":
