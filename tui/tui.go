@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"log"
@@ -53,11 +54,18 @@ func temporal() {
 	// jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser string
 	temporalCMDList := tview.NewList().ShowSecondaryText(true)
 	temporalCMDList.AddItem("Start API", "Start the Temporal API", 'a', func() {
+		//https://stackoverflow.com/questions/35333302/how-to-write-the-output-of-this-statement-into-a-file-in-golang
+		file, err := os.Create("/tmp/tui.log")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+		w := bufio.NewWriter(file)
 		// jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser string
 		router := api.Setup(tCfg.API.JwtKey, tCfg.API.RollbarToken, tCfg.RabbitMQ.URL, tCfg.Database.Password, tCfg.Database.URL,
 			tCfg.Ethereum.Account.KeyFile, tCfg.Ethereum.Account.KeyPass, tCfg.API.Connection.ListenAddress, tCfg.Database.Username)
-		router.RunTLS(fmt.Sprintf("%s:6767", tCfg.API.Connection.ListenAddress),
-			tCfg.API.Connection.Certificates.CertPath, tCfg.API.Connection.Certificates.KeyPath)
+		fmt.Fprint(w, router.RunTLS(fmt.Sprintf("%s:6767", tCfg.API.Connection.ListenAddress),
+			tCfg.API.Connection.Certificates.CertPath, tCfg.API.Connection.Certificates.KeyPath))
 		/*
 			temporalCMDList.Clear()
 			app.SetRoot(pages, true).SetFocus(pages.ShowPage("Command List"))*/

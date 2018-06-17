@@ -72,6 +72,13 @@ type IpfsClusterPin struct {
 	CID string `json:"content_hash"`
 }
 
+type IPNSUpdate struct {
+	CID      string `json:"content_hash"`
+	LifeTime string `json:"life_time"`
+	TTL      string `json:"ttl"`
+	Key      string `json:"key"`
+}
+
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
 func Initialize(queueName, connectionURL string) (*QueueManager, error) {
 	conn, err := setupConnection(connectionURL)
