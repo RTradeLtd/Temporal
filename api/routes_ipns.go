@@ -1,14 +1,6 @@
 package api
 
-import (
-	"fmt"
-	"net/http"
-	"strconv"
-
-	"github.com/RTradeLtd/Temporal/rtfs"
-	"github.com/gin-gonic/gin"
-)
-
+/*
 // PublishToIPNS is used to publish a record to ipns
 // TODO: make sure the user owns the hash in question
 func PublishToIPNS(c *gin.Context) {
@@ -113,3 +105,4 @@ func PublishToIPNSDetails(c *gin.Context) {
 		"value": resp.Value,
 	})
 }
+*/

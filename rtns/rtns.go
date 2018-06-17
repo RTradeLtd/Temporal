@@ -6,17 +6,16 @@ IPNS related functinonality for temporal
 import (
 	"time"
 
-	lci "gx/ipfs/Qme1knMqwt1hKZbc1BmQFmnm9f36nyQGwXxPGVpVJ9rMK5/go-libp2p-crypto"
-
-	namesys "github.com/ipfs/go-ipfs/namesys"
-	pb "github.com/ipfs/go-ipfs/namesys/pb"
-	path "github.com/ipfs/go-ipfs/path"
+	ipns "github.com/ipfs/go-ipns"
+	pb "github.com/ipfs/go-ipns/pb"
+	lci "github.com/libp2p/go-libp2p-crypto"
 )
 
 // IpnsManager is used to interface with IPNS
 type IpnsManager struct {
 	PrivateKey lci.PrivKey
 	PublicKey  lci.PubKey
+	KeyType    int
 }
 
 // InitializeWithNewKey is used to generate our ipns manager
@@ -30,7 +29,7 @@ func InitializeWithNewKey() (*IpnsManager, error) {
 	return &manager, nil
 }
 
-// GenerateKeyPair is used to generate a public/private key
+// GenerateKeyPair is used to generate a public/private key of a non-specific type
 func (im *IpnsManager) GenerateKeyPair(keyType, bits int) error {
 	priv, pub, err := lci.GenerateKeyPair(keyType, bits)
 	if err != nil {
@@ -38,25 +37,35 @@ func (im *IpnsManager) GenerateKeyPair(keyType, bits int) error {
 	}
 	im.PrivateKey = priv
 	im.PublicKey = pub
+	im.KeyType = keyType
 	return nil
 }
 
-func (im *IpnsManager) CreateRoutedEntryData(ipfsPath string, eol time.Time) (*pb.IpnsEntry, error) {
-	pathObject := path.FromString(ipfsPath)
-	entry, err := namesys.CreateRoutingEntryData(im.PrivateKey, pathObject, 1, eol)
+// GenerateEDKeyPair is used to generate an ED25519 keypair
+func (im *IpnsManager) GenerateEDKeyPair(bits int) error {
+	priv, pub, err := lci.GenerateKeyPair(lci.Ed25519, bits)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return entry, nil
+	im.PrivateKey = priv
+	im.PublicKey = pub
+	im.KeyType = lci.Ed25519
+	return nil
 }
 
-/*
-func (im *IpnsManager) CreateIPNSEntry(ipfsPath string, eol time.Time) (*pb.IpnsEntry, error) {
-	pathByte := []byte(ipfsPath)
-	entry, err := ipns.Create(im.PrivateKey, pathByte, 1, eol)
+func (im *IpnsManager) CreateEntryAndEmbedPk(ipfsPath string, eol time.Time) (*pb.IpnsEntry, error) {
+	entry, err := ipns.Create(im.PrivateKey, []byte(ipfsPath), 1, eol)
+	if err != nil {
+		return nil, err
+	}
+	recordPubKeyByte := entry.GetPubKey()
+	recordPubKey, err := lci.UnmarshalEd25519PublicKey(recordPubKeyByte)
+	if err != nil {
+		return nil, err
+	}
+	err = ipns.EmbedPublicKey(recordPubKey, entry)
 	if err != nil {
 		return nil, err
 	}
 	return entry, nil
 }
-*/

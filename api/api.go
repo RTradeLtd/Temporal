@@ -109,13 +109,13 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 	ipfsProtected.GET("/object/size/:key", GetFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
 	//ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
-
-	ipnsProtected := g.Group("/api/v1/ipns")
-	ipnsProtected.Use(authWare.MiddlewareFunc())
-	ipnsProtected.Use(middleware.APIRestrictionMiddleware(db))
-	ipnsProtected.GET("/publish/:hash", PublishToIPNS)           // admin locked
-	ipnsProtected.POST("/publish/details", PublishToIPNSDetails) // admin locked
-
+	/*
+		ipnsProtected := g.Group("/api/v1/ipns")
+		ipnsProtected.Use(authWare.MiddlewareFunc())
+		ipnsProtected.Use(middleware.APIRestrictionMiddleware(db))
+		ipnsProtected.GET("/publish/:hash", PublishToIPNS)           // admin locked
+		ipnsProtected.POST("/publish/details", PublishToIPNSDetails) // admin locked
+	*/
 	clusterProtected := g.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())
 	clusterProtected.Use(middleware.APIRestrictionMiddleware(db))

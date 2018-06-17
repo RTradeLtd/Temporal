@@ -68,7 +68,7 @@ func main() {
 			log.Fatal(err)
 		}
 		eol := time.Now().Add(time.Hour * 48)
-		entry, err := manager.CreateRoutedEntryData("/ipfs/QmfM2r8seH2GiRaC4esTjeraXEachRt8ZsSeGaWTPLyMoG", eol)
+		entry, err := manager.CreateEntryAndEmbedPk("/ipfs/QmfM2r8seH2GiRaC4esTjeraXEachRt8ZsSeGaWTPLyMoG", eol)
 		if err != nil {
 			log.Fatal(err)
 		}

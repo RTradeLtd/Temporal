@@ -101,3 +101,7 @@ ignored = ["github.com/karalabe/hid"]
 [[constraint]]
   branch = "master"
   name = "github.com/semihalev/gin-stats"
+
+[[constraint]]
+  name = "github.com/ipfs/go-ipfs"
+  branch = "master"

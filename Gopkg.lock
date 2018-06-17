@@ -37,6 +37,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/bmizerany/pat"
+  packages = ["."]
+  revision = "6226ea591a40176dd3ff9cd8eff81ed6ca721a00"
+
+[[projects]]
+  branch = "master"
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
   revision = "1432d294a5b055c297457c25434efbf13384cc46"
@@ -304,9 +310,28 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/ipfs/go-ipfs"
+  packages = [
+    "blockservice",
+    "merkledag",
+    "merkledag/pb",
+    "merkledag/utils",
+    "namesys",
+    "namesys/opts",
+    "path",
+    "pin",
+    "pin/internal/pb",
+    "thirdparty/verifcid",
+    "unixfs",
+    "unixfs/pb"
+  ]
+  revision = "2a9de81e64d563c5bd86b058aa251cbe94faf86f"
+
+[[projects]]
+  branch = "master"
   name = "github.com/ipfs/go-ipfs-api"
   packages = ["."]
-  revision = "d204576299ddab1140d043d0abb0d9b60a8a5af4"
+  revision = "de157cafdf393f0c43f49351aeb42c5f528778b8"
 
 [[projects]]
   branch = "master"
@@ -319,6 +344,15 @@
   name = "github.com/ipfs/go-ipfs-util"
   packages = ["."]
   revision = "9ed527918c2f20abdf0adfab0553cd87db34f656"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/ipfs/go-ipns"
+  packages = [
+    ".",
+    "pb"
+  ]
+  revision = "130e692f65ae8bfa82c6d075bbed8f8993abd8dd"
 
 [[projects]]
   branch = "master"
@@ -531,6 +565,15 @@
   name = "github.com/libp2p/go-libp2p-pubsub"
   packages = ["pb"]
   revision = "a031ab4d1b8142714eec946acb7033abafade3d7"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/libp2p/go-libp2p-record"
+  packages = [
+    ".",
+    "pb"
+  ]
+  revision = "e1ffee3ceea9ca1e583965bea51bd7b35b543518"
 
 [[projects]]
   branch = "master"
@@ -876,6 +919,16 @@
   revision = "5d6fca44a948d2be89a9702de7717f0168403d3d"
 
 [[projects]]
+  name = "github.com/tus/tusd"
+  packages = [
+    ".",
+    "filestore",
+    "uid"
+  ]
+  revision = "966f1d51639d3405b630e4c94c0b1d76a0f7475c"
+  version = "0.10.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/ugorji/go"
   packages = ["codec"]
@@ -1040,6 +1093,12 @@
   revision = "a5b4c53f6e8bdcafa95a94671bf2d1203365858b"
 
 [[projects]]
+  name = "gopkg.in/Acconut/lockfile.v1"
+  packages = ["."]
+  revision = "ea910fd69bd541bb592c5729c94f595c696413ab"
+  version = "v1.1.0"
+
+[[projects]]
   branch = "master"
   name = "gopkg.in/dgrijalva/jwt-go.v3"
   packages = ["."]
@@ -1084,6 +1143,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4333cf26f67a464b1f3153cbee9e55f915b9778c9d3391a233a8eb14f0d1ecaf"
+  inputs-digest = "8b0dde2a618246f08fcb88680fa3909636659edd5344dea4fc6b7d57760b7ee0"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -29,6 +29,7 @@ func Initialize(pubTopic, connectionURL string) (*IpfsManager, error) {
 	return &manager, nil
 }
 
+/*
 func (im *IpfsManager) PublishToIPNS(contentHash string) (*ipfsapi.PublishResponse, error) {
 	resp, err := im.Shell.Publish("", contentHash)
 	if err != nil {
@@ -43,7 +44,7 @@ func (im *IpfsManager) PublishToIPNSDetails(contentHash string, lifetime string,
 		return nil, err
 	}
 	return resp, nil
-}
+}*/
 
 // Pin is a wrapper method to pin a hash to the local node,
 // but also alert the rest of the local nodes to pin
