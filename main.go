@@ -66,7 +66,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(manager)
+		fmt.Printf("%+v\n", manager)
 	case "tui":
 		tui.InitializeApplication(tCfg)
 	case "api":
