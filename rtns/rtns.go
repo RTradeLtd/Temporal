@@ -4,6 +4,7 @@ package rtns
 IPNS related functinonality for temporal
 */
 import (
+	"fmt"
 	"time"
 
 	ipns "github.com/ipfs/go-ipns"
@@ -22,10 +23,13 @@ type IpnsManager struct {
 // with a newly generated random key
 func InitializeWithNewKey() (*IpnsManager, error) {
 	manager := IpnsManager{}
-	err := manager.GenerateKeyPair(lci.RSA, 4192)
+	fmt.Println("generating key")
+	err := manager.GenerateEDKeyPair(4192)
 	if err != nil {
+		fmt.Println("error generating key")
 		return nil, err
 	}
+	fmt.Println("key generated")
 	return &manager, nil
 }
 
@@ -47,24 +51,24 @@ func (im *IpnsManager) GenerateEDKeyPair(bits int) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("private key ", priv)
+	fmt.Println("public key ", pub)
 	im.PrivateKey = priv
 	im.PublicKey = pub
 	im.KeyType = lci.Ed25519
 	return nil
 }
 
-func (im *IpnsManager) CreateEntryAndEmbedPk(ipfsPath string, eol time.Time) (*pb.IpnsEntry, error) {
+func (im *IpnsManager) CreateEntryWithEmbed(ipfsPath string, eol time.Time) (*pb.IpnsEntry, error) {
+	fmt.Println("generating ipns entry and embedding")
 	entry, err := ipns.Create(im.PrivateKey, []byte(ipfsPath), 1, eol)
 	if err != nil {
+		fmt.Println("error generating record ", err)
 		return nil, err
 	}
-	recordPubKeyByte := entry.GetPubKey()
-	recordPubKey, err := lci.UnmarshalEd25519PublicKey(recordPubKeyByte)
+	err = ipns.EmbedPublicKey(im.PublicKey, entry)
 	if err != nil {
-		return nil, err
-	}
-	err = ipns.EmbedPublicKey(recordPubKey, entry)
-	if err != nil {
+		fmt.Println("error embedding key")
 		return nil, err
 	}
 	return entry, nil

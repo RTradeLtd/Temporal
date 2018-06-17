@@ -76,7 +76,7 @@ func EmbedPublicKey(pk ic.PubKey, entry *pb.IpnsEntry) error {
 	if err != nil {
 		return err
 	}
-	if extraced != nil {
+	if extraced == nil {
 		return nil
 	}
 	pkBytes, err := pk.Bytes()
