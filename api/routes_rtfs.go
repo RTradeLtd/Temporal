@@ -10,9 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// PublishToIPNS is used to publish a record to ipns
+// TODO: make sure the user owns the hash in question
 func PublishToIPNS(c *gin.Context) {
-	contextCopy := c.Copy()
-	hash := contextCopy.Param("hash")
+	hash := c.Param("hash")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
