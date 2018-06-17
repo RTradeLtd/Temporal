@@ -21,7 +21,7 @@ func PublishToIPNS(c *gin.Context) {
 		return
 	}
 	fmt.Println("publishing to ipns")
-	err = manager.PublishToIPNS(hash)
+	resp, err := manager.PublishToIPNS(hash)
 	if err != nil {
 		fmt.Println("error publishing to ipns", err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -31,7 +31,9 @@ func PublishToIPNS(c *gin.Context) {
 	}
 	fmt.Println("published to ipns")
 	c.JSON(http.StatusOK, gin.H{
-		"status": "ipns publish",
+		"status": "published",
+		"name":   resp.Name,
+		"value":  resp.Value,
 	})
 }
 
