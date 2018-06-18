@@ -6,6 +6,7 @@ This provides access to create dnslink TXT records on AWS Route53 Domains
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/mitchellh/goamz/aws"
 	route53 "github.com/segmentio/go-route53"
@@ -15,6 +16,7 @@ type AwsLinkManager struct {
 	Auth   aws.Auth
 	Region aws.Region
 	Client *route53.Client
+	Zone   string
 }
 
 // GenerateAwsLinkManager is used to generate the configs needed to interact with Route53
@@ -51,5 +53,16 @@ func GenerateAwsLinkManager(authMethod, accessKey, secretKey, zone string, regio
 	alm.Auth = auth
 	alm.Region = region
 	alm.Client = dns
+	alm.Zone = zone
 	return &alm, nil
+}
+
+func (alm *AwsLinkManager) AddDNSLinkEntry(name, value string) error {
+	// TODO: add a filter to prevent NSFW words
+	resp, err := alm.Client.Zone(alm.Zone).Add("TXT", name, value)
+	if err != nil {
+		return err
+	}
+	fmt.Println(resp.ChangeInfo)
+	return nil
 }
