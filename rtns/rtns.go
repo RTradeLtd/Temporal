@@ -4,6 +4,7 @@ package rtns
 IPNS related functinonality for temporal
 */
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -24,7 +25,7 @@ type IpnsManager struct {
 func InitializeWithNewKey() (*IpnsManager, error) {
 	manager := IpnsManager{}
 	fmt.Println("generating key")
-	err := manager.GenerateEDKeyPair(4192)
+	err := manager.GenerateKeyPair(lci.RSA, 4192)
 	if err != nil {
 		fmt.Println("error generating key")
 		return nil, err
@@ -60,6 +61,11 @@ func (im *IpnsManager) GenerateEDKeyPair(bits int) error {
 }
 
 func (im *IpnsManager) CreateEntryWithEmbed(ipfsPath string, eol time.Time) (*pb.IpnsEntry, error) {
+	if im.KeyType == lci.Ed25519 {
+		// see https://github.com/ipfs/go-ipns/pull/5 for more information
+		// basically ed25519 public keys are so small they can embed into the peer id
+		return nil, errors.New("no need to embed pk when using ed25519")
+	}
 	fmt.Println("generating ipns entry and embedding")
 	entry, err := ipns.Create(im.PrivateKey, []byte(ipfsPath), 1, eol)
 	if err != nil {

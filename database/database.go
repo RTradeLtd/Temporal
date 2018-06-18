@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
@@ -36,14 +35,6 @@ func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(PaymentObj)
 	// gorm will default table to name of ip_ns
 	// so we will override with ipns
-	check := dbm.DB.Table("ipns").CreateTable(IpnsObj)
-	// get string representation of the error
-	errString := fmt.Sprintf("%s", check.Error)
-	// if the error is not nil, and the message isn't that table already exists, we can continue
-	if check.Error != nil && errString != `pq: relation "ipns" already exists` {
-		fmt.Printf("error encountered %T\n", check.Error)
-		log.Fatal(check.Error)
-	}
 	dbm.DB.AutoMigrate(IpnsObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }

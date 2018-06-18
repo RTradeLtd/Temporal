@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 type PublishResponse struct {
@@ -40,7 +41,7 @@ func (s *Shell) Publish(node string, value string) (*PublishResponse, error) {
 func (s *Shell) PublishWithResponse(contentHash string, lifetime string, ttl string, key string, resolve bool) (*PublishResponse, error) {
 	var pubResp PublishResponse
 	var resolveString string
-	if contentHash != "" || lifetime != "" || ttl != "" || key != "" {
+	if contentHash == "" || lifetime == "" || ttl == "" || key == "" {
 		return nil, errors.New("empty strings provided")
 	}
 	if resolve {
@@ -49,6 +50,7 @@ func (s *Shell) PublishWithResponse(contentHash string, lifetime string, ttl str
 		resolveString = "false"
 	}
 	args := []string{contentHash, resolveString, lifetime, ttl, key}
+	fmt.Println("publishing to ipns")
 	resp, err := s.newRequest(context.TODO(), "name/publish", args...).Send(s.httpcli)
 	if err != nil {
 		return nil, err
@@ -58,7 +60,7 @@ func (s *Shell) PublishWithResponse(contentHash string, lifetime string, ttl str
 	if resp.Error != nil {
 		return nil, resp.Error
 	}
-
+	fmt.Println("record published to ipns")
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Output)
 	json.Unmarshal(buf.Bytes(), &pubResp)

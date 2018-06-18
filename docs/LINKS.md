@@ -64,3 +64,8 @@ https://github.com/ethersphere/swarm/wiki/Swap-demo-instructions
 # CORS
 
 https://skarlso.github.io/2016/02/02/doing-cors-in-go-with-gin-and-json/
+
+
+# IPNS / DNSLink
+
+https://github.com/ipfs/go-dnslink

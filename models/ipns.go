@@ -10,10 +10,12 @@ import (
 // IPNS will hold all of the IPNS entries in our system
 type IPNS struct {
 	gorm.Model
-	ExpiryDateUnix  int64    `gorm:"type:integer" json:"expiry_date_unix"`
-	Sequence        int64    `gorm:"type:integer;not null;default:0" json:"sequence"`
-	IPNSHash        string   `gorm:"type:varchar(255);unique;column:ipns_hash" json:"ipns_hash"`
-	IPFSHash        []string `gorm:"type:text[];column:ipfs_hash" json:"ipfs_hash"`
+	ExpiryDateUnix int64 `gorm:"type:integer" json:"expiry_date_unix"`
+	Sequence       int64 `gorm:"type:integer;not null;default:0" json:"sequence"`
+	// the ipns hash, is the peer id of the peer used to sign the entry
+	IPNSHash string `gorm:"type:varchar(255);unique;column:ipns_hash" json:"ipns_hash"`
+	// List of content hashes this IPNS entry has pointed to
+	IPFSHashes      []string `gorm:"type:text[];column:ipfs_hash" json:"ipfs_hashes"`
 	CurrentIPFSHash string   `gorm:"type:varchar(255);column:current_ipfs_hash" json:"current_ipfs_hash"`
 	LifeTime        string   `gorm:"type:varchar(255)" json:"life_time"`
 	TTL             string   `gorm:"type:varchar(255)" json:"ttl"`
@@ -53,7 +55,7 @@ func (im *IpnsManager) UpdateIPNSEntry(expiryDateUnix int64, ipnsHash, ipfsHash,
 		return nil, errors.New("attempting to replace non-expired record, please wait for expiration or retry with a force upload")
 	}
 	entry.Sequence++
-	entry.IPFSHash = append(entry.IPFSHash, ipfsHash)
+	entry.IPFSHashes = append(entry.IPFSHashes, ipfsHash)
 	entry.CurrentIPFSHash = ipfsHash
 	entry.ExpiryDateUnix = expiryDateUnix
 	entry.LifeTime = lifetime
@@ -62,7 +64,7 @@ func (im *IpnsManager) UpdateIPNSEntry(expiryDateUnix int64, ipnsHash, ipfsHash,
 	// only update  changed fields
 	check := im.DB.Table("ipns").Model(&nilEntry).Updates(map[string]interface{}{
 		"sequence":          &entry.Sequence,
-		"ipfs_hash":         &entry.IPFSHash,
+		"ipfs_hashes":       &entry.IPFSHashes,
 		"current_ipfs_hash": &entry.CurrentIPFSHash,
 		"expiry_date_unix":  &entry.ExpiryDateUnix,
 		"lifeTime":          &entry.LifeTime,
