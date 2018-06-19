@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/mitchellh/goamz/aws"
+	r "github.com/mitchellh/goamz/route53"
 	route53 "github.com/segmentio/go-route53"
 )
 
@@ -57,12 +58,14 @@ func GenerateAwsLinkManager(authMethod, accessKey, secretKey, zone string, regio
 	return &alm, nil
 }
 
-func (alm *AwsLinkManager) AddDNSLinkEntry(name, value string) error {
+// AddDNSLinkEntry is used to a dnslink record
+func (alm *AwsLinkManager) AddDNSLinkEntry(name, value string) (*r.ChangeResourceRecordSetsResponse, error) {
 	// TODO: add a filter to prevent NSFW words
 	resp, err := alm.Client.Zone(alm.Zone).Add("TXT", name, value)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
 	fmt.Println(resp.ChangeInfo)
-	return nil
+	return nil, nil
 }

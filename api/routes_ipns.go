@@ -143,19 +143,49 @@ func GenerateDNSLinkEntry(c *gin.Context) {
 		FailNoExist(c, "aws_zone post form does not exist")
 		return
 	}
+
+	regionName, exists := c.GetPostForm("region_name")
+	if !exists {
+		FailNoExist(c, "region_name post form does not exist")
+		return
+	}
+
 	aKey := c.MustGet("aws_key").(string)
 	aSecret := c.MustGet("aws_secret").(string)
-	awsManager, err := dlink.GenerateAwsLinkManager("get", aKey, aSecret, awsZone, aws.Region{})
-	if err != nil {
+
+	var region aws.Region
+	switch regionName {
+	case "us-west-1":
+		region = aws.USWest
+	default:
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
+			"error": "region_name post form not valid",
 		})
 		return
 	}
+
+	awsManager, err := dlink.GenerateAwsLinkManager("get", aKey, aSecret, awsZone, region)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	resp, err := awsManager.AddDNSLinkEntry(recordName, recordValue)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"record_name":  recordName,
 		"record_value": recordValue,
 		"zone_name":    awsZone,
 		"manager":      fmt.Sprintf("%+v", awsManager),
+		"region":       aws.USWest.Name,
+		"resp":         resp,
 	})
 }
