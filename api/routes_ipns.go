@@ -6,7 +6,9 @@ import (
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/Temporal/rtns/dlink"
 	"github.com/gin-gonic/gin"
+	"github.com/mitchellh/goamz/aws"
 )
 
 // PublishToIPNS is used to publish a record to ipns
@@ -141,10 +143,19 @@ func GenerateDNSLinkEntry(c *gin.Context) {
 		FailNoExist(c, "aws_zone post form does not exist")
 		return
 	}
-
+	aKey := c.MustGet("aws_key").(string)
+	aSecret := c.MustGet("aws_secret").(string)
+	awsManager, err := dlink.GenerateAwsLinkManager("get", aKey, aSecret, awsZone, aws.Region{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"record_name":  recordName,
 		"record_value": recordValue,
 		"zone_name":    awsZone,
+		"manager":      fmt.Sprintf("%+v", awsManager),
 	})
 }
