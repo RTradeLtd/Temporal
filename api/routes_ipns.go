@@ -113,3 +113,31 @@ func PublishToIPNSDetails(c *gin.Context) {
 		"value": resp.Value,
 	})
 }
+
+// GenerateDNSLinkEntry is used to generate a DNS link entry
+func GenerateDNSLinkEntry(c *gin.Context) {
+	authUser := GetAuthenticatedUserFromContext(c)
+	if authUser != AdminAddress {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unauthorized access",
+		})
+		return
+	}
+
+	recordName, exists := c.GetPostForm("record_name")
+	if !exists {
+		FailNoExist(c, "record_name post form does not exist")
+		return
+	}
+
+	recordValue, exists := c.GetPostForm("record_value")
+	if !exists {
+		FailNoExist(c, "record_value post form does not exist")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"record_name":  recordName,
+		"record_value": recordValue,
+	})
+}
