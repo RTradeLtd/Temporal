@@ -33,7 +33,7 @@ const experimental = true
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser string) *gin.Engine {
+func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser, awsKey, awsSecret string) *gin.Engine {
 	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	if err != nil {
 		fmt.Println("failed to open db connection")
@@ -63,7 +63,7 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 	r.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
-	setupRoutes(r, authMiddleware, db)
+	setupRoutes(r, authMiddleware, db, awsKey, awsSecret)
 
 	statsProtected := r.Group("/api/v1/statistics")
 	statsProtected.Use(authMiddleware.MiddlewareFunc())
@@ -82,7 +82,7 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 }
 
 // setupRoutes is used to setup all of our api routes
-func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
+func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, awsKey, awsSecret string) {
 
 	// LOGIN
 	g.POST("/api/v1/login", authWare.LoginHandler)
@@ -113,6 +113,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB) {
 	ipnsProtected := g.Group("/api/v1/ipns")
 	ipnsProtected.Use(authWare.MiddlewareFunc())
 	ipnsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	ipnsProtected.Use(middleware.AWSMiddleware(awsKey, awsSecret))
 	ipnsProtected.GET("/publish/:hash", PublishToIPNS)           // admin locked
 	ipnsProtected.POST("/publish/details", PublishToIPNSDetails) // admin locked
 	ipnsProtected.POST("/dnslink/aws/add", GenerateDNSLinkEntry) // admin locked

@@ -63,7 +63,7 @@ func temporal() {
 		w := bufio.NewWriter(file)
 		// jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser string
 		router := api.Setup(tCfg.API.JwtKey, tCfg.API.RollbarToken, tCfg.RabbitMQ.URL, tCfg.Database.Password, tCfg.Database.URL,
-			tCfg.Ethereum.Account.KeyFile, tCfg.Ethereum.Account.KeyPass, tCfg.API.Connection.ListenAddress, tCfg.Database.Username)
+			tCfg.Ethereum.Account.KeyFile, tCfg.Ethereum.Account.KeyPass, tCfg.API.Connection.ListenAddress, tCfg.Database.Username, tCfg.AWS.KeyID, tCfg.AWS.Secret)
 		fmt.Fprint(w, router.RunTLS(fmt.Sprintf("%s:6767", tCfg.API.Connection.ListenAddress),
 			tCfg.API.Connection.Certificates.CertPath, tCfg.API.Connection.Certificates.KeyPath))
 		/*

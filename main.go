@@ -54,6 +54,8 @@ func main() {
 	dbUser := tCfg.Database.Username
 	ethKeyFilePath := tCfg.Ethereum.Account.KeyFile
 	ethKeyPass := tCfg.Ethereum.Account.KeyPass
+	awsKey := tCfg.AWS.KeyID
+	awsSecret := tCfg.AWS.Secret
 	switch os.Args[1] {
 	case "config-test":
 		scanner := bufio.NewScanner(os.Stdin)
@@ -76,7 +78,7 @@ func main() {
 	case "tui":
 		tui.InitializeApplication(tCfg)
 	case "api":
-		router := api.Setup(jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass, listenAddress, dbUser)
+		router := api.Setup(jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass, listenAddress, dbUser, awsKey, awsSecret)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
