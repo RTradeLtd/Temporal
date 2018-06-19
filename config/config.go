@@ -49,6 +49,10 @@ type TemporalConfig struct {
 	RabbitMQ struct {
 		URL string `json:"url"`
 	} `json:"rabbitmq"`
+	AWS struct {
+		KeyID  string `json:"key_id"`
+		Secret string `json:"secret"`
+	} `json:"aws"`
 }
 
 func LoadConfig(configPath string) *TemporalConfig {
