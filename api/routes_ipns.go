@@ -136,8 +136,15 @@ func GenerateDNSLinkEntry(c *gin.Context) {
 		return
 	}
 
+	awsZone, exists := c.GetPostForm("aws_zone")
+	if !exists {
+		FailNoExist(c, "aws_zone post form does not exist")
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"record_name":  recordName,
 		"record_value": recordValue,
+		"zone_name":    awsZone,
 	})
 }
