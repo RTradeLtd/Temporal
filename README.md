@@ -4,6 +4,10 @@ Temporal is an enterprise-grade storage solution featuring an easy to consume AP
 
 Temporal's API comes in two flavours, hosted or on-site. Should you not have the resources to run your own distributed storage nodes and infrastructure, you can take advantage of our hosted API allowing us to manage all the storage nodes and infrastructure, so all that you have to worry about is your application and using our API; We deal with all the hardware and infrastructure failures so that you can spend your hard work focusing on releasing products, not troubleshooting infrastructure failures which drain critical development resources. If however you have the infrastructure, and technical resources you can take advantage of Temporal being open source and deploy your own Temporal infrastructure. For on-site deployments we offer special paid for installations, maintenance, upgrades, and product usage information sessions allowing you to take full advantage of the power that comes with running your own Temporal infrastructure.
 
+# License
+
+The Temporal License is currently under-review
+
 # Dependencies (WIP)
 
 We use a slightly modified vendored go-ipfs-api package to provide some additional functionality for publishing IPNS records (one additional function, and a modified `Publish` function) see changes in `vendor/github.com/ipfs/go-ipfs-api/ipns.go`
