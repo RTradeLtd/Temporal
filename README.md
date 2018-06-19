@@ -4,9 +4,14 @@ Temporal is an enterprise-grade storage solution featuring an easy to consume AP
 
 Temporal's API comes in two flavours, hosted or on-site. Should you not have the resources to run your own distributed storage nodes and infrastructure, you can take advantage of our hosted API allowing us to manage all the storage nodes and infrastructure, so all that you have to worry about is your application and using our API; We deal with all the hardware and infrastructure failures so that you can spend your hard work focusing on releasing products, not troubleshooting infrastructure failures which drain critical development resources. If however you have the infrastructure, and technical resources you can take advantage of Temporal being open source and deploy your own Temporal infrastructure. For on-site deployments we offer special paid for installations, maintenance, upgrades, and product usage information sessions allowing you to take full advantage of the power that comes with running your own Temporal infrastructure.
 
+# Status
+
+Under development, pre version 1.
+MVP is testable and usable.
+
 # License
 
-The Temporal License is currently under-review
+The Temporal License is currently under-review, and as of commit https://github.com/RTradeLtd/Temporal/commit/c5442206ebc4808a60351b3f21f1c1342e2667cd is using a MIT license which will only apply to temporal code from that commit onwards. The license will likely change in the coming weeks as the licensing system for Temporal is worked out.
 
 # Dependencies (WIP)
 
