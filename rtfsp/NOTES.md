@@ -36,3 +36,22 @@ https://github.com/ipfs/notes/issues/177
 https://discuss.ipfs.io/t/how-to-create-a-private-network-of-ipfs/339
 
 https://discuss.ipfs.io/t/how-to-create-a-private-network-of-ipfs/339/6
+
+https://medium.com/a-weekend-with/a-weekend-with-ipfs-9f2647fc231
+
+https://medium.com/coinmonks/setting-up-your-first-distributed-private-storage-network-on-ipfs-part-3-48851488b8d8
+
+https://discuss.ipfs.io/t/go-ipfs-swarm-key-discussion/2992/2
+
+https://decentralized.blog/understanding-the-ipfs-white-paper-part-2.html
+
+https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#private-networks
+
+
+https://github.com/libp2p/specs/pull/10
+
+https://github.com/ipfs/blog/issues/114
+
+https://github.com/ipfs/go-ipfs/issues/2590
+
+https://github.com/ipfs/faq/issues/56
