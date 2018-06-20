@@ -18,3 +18,21 @@ https://github.com/ipfs/blog/issues/114
 https://github.com/ipfs/community/issues/199
 
 https://discuss.ipfs.io/t/private-personal-use-of-ipfs/350
+
+https://perkeep.org/
+
+https://github.com/ipfs/go-ipfs/issues/3397#issuecomment-284341649
+
+https://github.com/ipfs/go-ipfs/issues/3313
+
+http://ilpubs.stanford.edu:8090/626/1/2003-74.pdf
+
+https://github.com/ipfs/notes/issues/146
+
+https://github.com/ipfs/go-ipfs/issues/3404
+
+https://github.com/ipfs/notes/issues/177
+
+https://discuss.ipfs.io/t/how-to-create-a-private-network-of-ipfs/339
+
+https://discuss.ipfs.io/t/how-to-create-a-private-network-of-ipfs/339/6
