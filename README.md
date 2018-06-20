@@ -9,10 +9,6 @@ Temporal's API comes in two flavours, hosted or on-site. Should you not have the
 Under development, pre version 1.
 MVP is testable and usable.
 
-# License
-
-The Temporal License is currently under-review, and as of commit https://github.com/RTradeLtd/Temporal/commit/c5442206ebc4808a60351b3f21f1c1342e2667cd is using a MIT license which will only apply to temporal code from that commit onwards. The license will likely change in the coming weeks as the licensing system for Temporal is worked out.
-
 # Dependencies (WIP)
 
 We use a slightly modified vendored go-ipfs-api package to provide some additional functionality for publishing IPNS records (one additional function, and a modified `Publish` function) see changes in `vendor/github.com/ipfs/go-ipfs-api/ipns.go`
