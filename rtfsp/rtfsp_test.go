@@ -34,4 +34,16 @@ func TestPrivateConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(bpCfg)
+	fmt.Println(pcm.Config.Bootstrap)
+}
+
+func TestConfigGeneration(t *testing.T) {
+	pcm, err := rtfsp.GenerateConfigManager(rtfsp.ConfigFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = pcm.ParseConfigAndWrite()
+	if err != nil {
+		t.Fatal(err)
+	}
 }

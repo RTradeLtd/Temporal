@@ -2,6 +2,7 @@ package rtfsp
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	addrUtil "github.com/ipfs/go-ipfs-addr"
@@ -11,6 +12,13 @@ import (
 type PrivateConfigManager struct {
 	Config *cg.Config
 }
+
+const (
+	// ConfigFilePath is where the ipfs config file is located
+	ConfigFilePath = "/ipfs/config"
+	// SwarmKeyPath is the location of our swarm key
+	SwarmKeyPath = "/ipfs/swarm.key"
+)
 
 // GenerateConfigManager generates the config manager for our private
 func GenerateConfigManager(configFilePath string) (*PrivateConfigManager, error) {
@@ -53,4 +61,19 @@ func (pcm *PrivateConfigManager) ConfigureBootstrap(peers ...string) ([]cg.Boots
 	}
 	pcm.Config.SetBootstrapPeers(bpeers)
 	return bpeers, nil
+}
+
+// ParseConfigAndWrite is used to parse a configuration object and write it
+func (pcm *PrivateConfigManager) ParseConfigAndWrite() error {
+	// Create file, truncating if it exists
+	cFilePath, err := os.Create(ConfigFilePath)
+	if err != nil {
+		return err
+	}
+	cfg, err := cg.Init(cFilePath, 4192)
+	if err != nil {
+		return err
+	}
+	fmt.Println(cfg)
+	return nil
 }
