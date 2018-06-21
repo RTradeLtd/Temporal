@@ -51,5 +51,6 @@ func (pcm *PrivateConfigManager) ConfigureBootstrap(peers ...string) ([]cg.Boots
 		}
 		bpeers = append(bpeers, bpeer)
 	}
+	pcm.Config.SetBootstrapPeers(bpeers)
 	return bpeers, nil
 }
