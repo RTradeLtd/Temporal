@@ -31,3 +31,25 @@ func (pcm *PrivateConfigManager) GenerateIPFSMultiAddr(address string) (addrUtil
 	}
 	return ipfsAddr, nil
 }
+
+func (pcm *PrivateConfigManager) GenerateBootstrapPeer(address string) (cg.BootstrapPeer, error) {
+	bpeer, err := cg.ParseBootstrapPeer(address)
+	if err != nil {
+		return nil, err
+	}
+	return bpeer, nil
+}
+
+// ConfigureBootstrap is a variadic function used to generate a list of bootstrap peers
+// it will validate all provided peers, and fail if it detects an error
+func (pcm *PrivateConfigManager) ConfigureBootstrap(peers ...string) ([]cg.BootstrapPeer, error) {
+	var bpeers []cg.BootstrapPeer
+	for _, v := range peers {
+		bpeer, err := pcm.GenerateBootstrapPeer(v)
+		if err != nil {
+			return nil, err
+		}
+		bpeers = append(bpeers, bpeer)
+	}
+	return bpeers, nil
+}

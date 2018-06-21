@@ -1,6 +1,7 @@
 package rtfsp_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/rtfsp"
@@ -23,4 +24,14 @@ func TestPrivateConfig(t *testing.T) {
 	if peerID != expectedPeerID {
 		t.Fatal("unexpected peer id returned")
 	}
+
+	_, err = pcm.GenerateBootstrapPeer(testIpfsMultiAddrString)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bpCfg, err := pcm.ConfigureBootstrap(testIpfsMultiAddrString)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(bpCfg)
 }
