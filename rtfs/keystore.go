@@ -4,20 +4,23 @@ package rtfs
 Utilities for manipulating the IPFS fs-keystore
 
 consider adding a mutex keystore instead
+
+
+WARNING:
 */
 
 import (
-	ksm "github.com/ipfs/go-ipfs-keystore"
+	keystore "github.com/ipfs/go-ipfs-keystore"
 	ci "github.com/libp2p/go-libp2p-crypto"
 )
 
 type KeystoreManager struct {
-	FSKeystore *ksm.FSKeystore
+	FSKeystore *keystore.FSKeystore
 }
 
 func GenerateKeystoreManager() (*KeystoreManager, error) {
 	var km KeystoreManager
-	fsk, err := ksm.NewFSKeystore(DefaultFSKeystorePath)
+	fsk, err := keystore.NewFSKeystore(DefaultFSKeystorePath)
 	if err != nil {
 		return nil, err
 	}
@@ -30,10 +33,7 @@ func (km *KeystoreManager) CheckIfKeyIsPresent(keyName string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if !present {
-		return false, nil
-	}
-	return true, nil
+	return present, nil
 }
 
 func (km *KeystoreManager) GetPrivateKeyByName(keyName string) (ci.PrivKey, error) {

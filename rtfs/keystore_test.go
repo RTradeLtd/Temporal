@@ -25,7 +25,7 @@ func TestKeystoreManager(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, v := range keys {
-		pk, err := km.GetPrivateKeyByName(v)
+		_, err := km.GetPrivateKeyByName(v)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -39,9 +39,15 @@ func TestKeystoreManager(t *testing.T) {
 			t.Error("key not present when it should be")
 			continue
 		}
-		fmt.Println(pk)
 	}
 
+	present, err := km.CheckIfKeyIsPresent("thiskeyshouldreallynotexistwithsucharandomname")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if present {
+		t.Fatal("key found when it should'nt have been")
+	}
 	// DO NOT USE 1024 IN PRODUCTION, >= 2048
 	pk, _, err := ci.GenerateKeyPair(ci.RSA, 1024)
 	if err != nil {
@@ -55,9 +61,49 @@ func TestKeystoreManager(t *testing.T) {
 	}
 
 	hexed := hex.EncodeToString(b)
-	fmt.Println(hexed)
 	err = km.SavePrivateKey(hexed, pk)
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestGetKey(t *testing.T) {
+	k1 := "b6ec4a647a7738ef8eea3b21777ecf41630d6d0ac79dc36739d81e927f910a65"
+	k2 := "test1"
+
+	km, err := rtfs.GenerateKeystoreManager()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	present, err := km.CheckIfKeyIsPresent(k1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !present {
+		t.Error("key not present wehn it should be")
+	}
+
+	pk1, err := km.GetPrivateKeyByName(k1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%+v\n", pk1.GetPublic())
+
+	present, err = km.CheckIfKeyIsPresent(k2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !present {
+		t.Fatal("key not present when it should be")
+	}
+
+	pk2, err := km.GetPrivateKeyByName(k2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fmt.Printf("%+v\n", pk2.GetPublic())
 }
