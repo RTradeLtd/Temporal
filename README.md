@@ -6,8 +6,7 @@ Temporal's API comes in two flavours, hosted or on-site. Should you not have the
 
 # Status
 
-Under development, pre version 1.
-MVP is testable and usable.
+Currently under heavy development, and is pre version 1. There is an MVP "pre-release" which is a demo of Temporal. There will be breaking API changes before V1, and there have already been breaking changes between the MVP pre-release and the time this commit was pushed to git. Temporal is not intended for usage before V1 beyond testing of Temporal itself. 
 
 # Dependencies (WIP)
 
@@ -18,13 +17,13 @@ We use a slightly modified vendored go-ipfs-api package to provide some addition
 Following is a list of distributed and decentralized storage technologies that Temporal currently, or plans on supporting.
 
 
-IPFS (65% complete):
+IPFS (70% complete):
 
     Temporal supports integration with the public IPFS network, and will evolve to support new features added to IPFS so that you will have the most optimal experience possible, and never suffer from inability to access the latest and greatest features due to an API that fails to evolve as the underlying technology evolves.
 
     Soon after release, support for Private IPFS networks will be integrated into Temporal, allowing you to get the same benefits of the public IPFS network, but with the data security and privacy that comes with running a private network. This is extremely useful to financial institutions, data archivers, and other industries to whom data security and privacy is one of the primary concerns when integrating with any new technology
 
-IPNS (70% Complete):
+IPNS (75% Complete):
 
     IPNS allows for publishing of human readable names, and immutable links to changing content. IPNS integration is an optional feature with each upload to IPFS, and will allow for creation of dnslink records on our domain. Note that for the hosted API, IPNS usage alongside of IPFS pins or file uploads will incur additional charges.
 
