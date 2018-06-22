@@ -96,6 +96,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	accountProtected := g.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
 	accountProtected.POST("password/change", ChangeAccountPassword)
+	accountProtected.POST("/key/ipfs/new", CreateIPFSKey)
 
 	ipfsProtected := g.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())

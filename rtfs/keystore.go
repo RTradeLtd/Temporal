@@ -5,11 +5,11 @@ Utilities for manipulating the IPFS fs-keystore
 
 consider adding a mutex keystore instead
 
-
-WARNING:
 */
 
 import (
+	"errors"
+
 	keystore "github.com/ipfs/go-ipfs-keystore"
 	ci "github.com/libp2p/go-libp2p-crypto"
 )
@@ -57,5 +57,40 @@ func (km *KeystoreManager) SavePrivateKey(keyName string, pk ci.PrivKey) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (km *KeystoreManager) CreateAndSaveKey(keyName string, keyType, bits int) error {
+	var pk ci.PrivKey
+	var err error
+
+	present, err := km.FSKeystore.Has(keyName)
+	if err != nil {
+		return err
+	}
+	if present {
+		return errors.New("key name already exists")
+	}
+
+	switch keyType {
+	case ci.Ed25519:
+		pk, _, err = ci.GenerateKeyPair(keyType, 256)
+		if err != nil {
+			return err
+		}
+	case ci.RSA:
+		pk, _, err = ci.GenerateKeyPair(keyType, bits)
+		if err != nil {
+			return err
+		}
+	default:
+		return errors.New("key type provided not a valid key type")
+	}
+
+	err = km.SavePrivateKey(keyName, pk)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

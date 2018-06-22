@@ -112,3 +112,46 @@ func GetAuthenticatedUserFromContext(c *gin.Context) string {
 	// this is their eth address
 	return claims["id"].(string)
 }
+
+// CreateIPFSKey is used to create an IPFS key
+// TODO: encrypt key with provided password
+func CreateIPFSKey(c *gin.Context) {
+	cC := c.Copy()
+	ethAddress := GetAuthenticatedUserFromContext(cC)
+
+	keyType, exists := cC.GetPostForm("key_type")
+	if !exists {
+		FailNoExist(c, "key_type post form does not exist")
+		return
+	}
+	keyBits, exists := cC.GetPostForm("key_bits")
+	if !exists {
+		FailNoExist(c, "key_bits post form does not exist")
+		return
+	}
+
+	keyName, exists := cC.GetPostForm("key_name")
+	if !exists {
+		FailNoExist(c, "key_name post form does not exist")
+		return
+	}
+
+	switch keyType {
+	case "rsa":
+		break
+	case "ed25519":
+		break
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "key_type must be rsa or ed25519",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"key_type":    keyType,
+		"key_bits":    keyBits,
+		"key_name":    keyName,
+		"eth_address": ethAddress,
+	})
+}
