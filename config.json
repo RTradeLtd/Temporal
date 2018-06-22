@@ -1,14 +1,11 @@
 {
 	"database": {
 		"name": "temporal",
+		"url": "127.0.0.1",
 		"username": "postgres",
 		"password": "password123"
 	},
 	"api": {
-		"admin": {
-			"username": "admin",
-			"password": "admin"
-		},
 		"connection": {
 			"certificates": {
 				"cert_path": "/home/solidity/certificates/api.pem",
@@ -37,5 +34,9 @@
 	},
 	"rabbitmq": {
 		"url": "amqp://guest:guest@localhost:5672/"
+	},
+	"aws": {
+		"key_id": "......",
+		"secret": "......."
 	}
 }

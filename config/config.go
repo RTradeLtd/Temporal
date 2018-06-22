@@ -16,10 +16,6 @@ type TemporalConfig struct {
 		Password string `json:"password"`
 	} `json:"database"`
 	API struct {
-		Admin struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		} `json:"admin"`
 		Connection struct {
 			Certificates struct {
 				CertPath string `json:"cert_path"`
