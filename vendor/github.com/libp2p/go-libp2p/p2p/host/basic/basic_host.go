@@ -9,10 +9,8 @@ import (
 
 	logging "github.com/ipfs/go-log"
 	goprocess "github.com/jbenet/goprocess"
-	circuit "github.com/libp2p/go-libp2p-circuit"
+	goprocessctx "github.com/jbenet/goprocess/context"
 	ifconnmgr "github.com/libp2p/go-libp2p-interface-connmgr"
-	metrics "github.com/libp2p/go-libp2p-metrics"
-	mstream "github.com/libp2p/go-libp2p-metrics/stream"
 	inet "github.com/libp2p/go-libp2p-net"
 	peer "github.com/libp2p/go-libp2p-peer"
 	pstore "github.com/libp2p/go-libp2p-peerstore"
@@ -67,8 +65,6 @@ type BasicHost struct {
 	negtimeout time.Duration
 
 	proc goprocess.Process
-
-	bwc metrics.Reporter
 }
 
 // HostOpts holds options that can be passed to NewHost in order to
@@ -97,25 +93,14 @@ type HostOpts struct {
 
 	// NATManager takes care of setting NAT port mappings, and discovering external addresses.
 	// If omitted, this will simply be disabled.
-	NATManager NATManager
-
-	// BandwidthReporter is used for collecting aggregate metrics of the
-	// bandwidth used by various protocols.
-	BandwidthReporter metrics.Reporter
+	NATManager func(inet.Network) NATManager
 
 	// ConnManager is a libp2p connection manager
 	ConnManager ifconnmgr.ConnManager
-
-	// Relay indicates whether the host should use circuit relay transport
-	EnableRelay bool
-
-	// RelayOpts are options for the relay transport; only meaningful when Relay=true
-	RelayOpts []circuit.RelayOpt
 }
 
 // NewHost constructs a new *BasicHost and activates it by attaching its stream and connection handlers to the given inet.Network.
 func NewHost(ctx context.Context, net inet.Network, opts *HostOpts) (*BasicHost, error) {
-	ctx, cancel := context.WithCancel(ctx)
 	h := &BasicHost{
 		network:    net,
 		mux:        msmux.NewMultistreamMuxer(),
@@ -124,11 +109,10 @@ func NewHost(ctx context.Context, net inet.Network, opts *HostOpts) (*BasicHost,
 		maResolver: madns.DefaultResolver,
 	}
 
-	h.proc = goprocess.WithTeardown(func() error {
+	h.proc = goprocessctx.WithContextAndTeardown(ctx, func() error {
 		if h.natmgr != nil {
 			h.natmgr.Close()
 		}
-		cancel()
 		return h.Network().Close()
 	})
 
@@ -152,16 +136,11 @@ func NewHost(ctx context.Context, net inet.Network, opts *HostOpts) (*BasicHost,
 	}
 
 	if opts.NATManager != nil {
-		h.natmgr = opts.NATManager
+		h.natmgr = opts.NATManager(net)
 	}
 
 	if opts.MultiaddrResolver != nil {
 		h.maResolver = opts.MultiaddrResolver
-	}
-
-	if opts.BandwidthReporter != nil {
-		h.bwc = opts.BandwidthReporter
-		h.ids.Reporter = opts.BandwidthReporter
 	}
 
 	if opts.ConnManager == nil {
@@ -173,20 +152,16 @@ func NewHost(ctx context.Context, net inet.Network, opts *HostOpts) (*BasicHost,
 
 	net.SetConnHandler(h.newConnHandler)
 	net.SetStreamHandler(h.newStreamHandler)
-
-	if opts.EnableRelay {
-		err := circuit.AddRelayTransport(ctx, h, opts.RelayOpts...)
-		if err != nil {
-			h.Close()
-			return nil, err
-		}
-	}
-
 	return h, nil
 }
 
 // New constructs and sets up a new *BasicHost with given Network and options.
-// Three options can be passed: NATPortMap, AddrsFactory, and metrics.Reporter.
+// The following options can be passed:
+// * NATPortMap
+// * AddrsFactory
+// * ifconnmgr.ConnManager
+// * madns.Resolver
+//
 // This function is deprecated in favor of NewHost and HostOpts.
 func New(net inet.Network, opts ...interface{}) *BasicHost {
 	hostopts := &HostOpts{}
@@ -196,10 +171,8 @@ func New(net inet.Network, opts ...interface{}) *BasicHost {
 		case Option:
 			switch o {
 			case NATPortMap:
-				hostopts.NATManager = newNatManager(net)
+				hostopts.NATManager = NewNATManager
 			}
-		case metrics.Reporter:
-			hostopts.BandwidthReporter = o
 		case AddrsFactory:
 			hostopts.AddrsFactory = AddrsFactory(o)
 		case ifconnmgr.ConnManager:
@@ -270,10 +243,6 @@ func (h *BasicHost) newStreamHandler(s inet.Stream) {
 	}
 
 	s.SetProtocol(protocol.ID(protoID))
-
-	if h.bwc != nil {
-		s = mstream.WrapStream(s, h.bwc)
-	}
 	log.Debugf("protocol negotiation took %s", took)
 
 	go handle(protoID, s)
@@ -366,10 +335,6 @@ func (h *BasicHost) NewStream(ctx context.Context, p peer.ID, pids ...protocol.I
 	s.SetProtocol(selpid)
 	h.Peerstore().AddProtocols(p, selected)
 
-	if h.bwc != nil {
-		s = mstream.WrapStream(s, h.bwc)
-	}
-
 	return s, nil
 }
 
@@ -402,10 +367,6 @@ func (h *BasicHost) newStream(ctx context.Context, p peer.ID, pid protocol.ID) (
 	}
 
 	s.SetProtocol(pid)
-
-	if h.bwc != nil {
-		s = mstream.WrapStream(s, h.bwc)
-	}
 
 	lzcon := msmux.NewMSSelect(s, string(pid))
 	return &streamWrapper{
@@ -534,11 +495,6 @@ func (h *BasicHost) AllAddrs() []ma.Multiaddr {
 // Close shuts down the Host's services (network, etc).
 func (h *BasicHost) Close() error {
 	return h.proc.Close()
-}
-
-// GetBandwidthReporter exposes the Host's bandiwth metrics reporter
-func (h *BasicHost) GetBandwidthReporter() metrics.Reporter {
-	return h.bwc
 }
 
 type streamWrapper struct {

@@ -4,23 +4,16 @@ import (
 	"fmt"
 	"net"
 
-	ic "github.com/libp2p/go-libp2p-crypto"
-	iconn "github.com/libp2p/go-libp2p-interface-conn"
 	inet "github.com/libp2p/go-libp2p-net"
-	peer "github.com/libp2p/go-libp2p-peer"
 	pstore "github.com/libp2p/go-libp2p-peerstore"
-	tpt "github.com/libp2p/go-libp2p-transport"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr-net"
 )
 
 type Conn struct {
 	inet.Stream
-	remote    pstore.PeerInfo
-	transport tpt.Transport
+	remote pstore.PeerInfo
 }
-
-var _ iconn.Conn = (*Conn)(nil)
 
 type NetAddr struct {
 	Relay  string
@@ -61,28 +54,4 @@ func (c *Conn) LocalAddr() net.Addr {
 		return nil
 	}
 	return na
-}
-
-func (c *Conn) Transport() tpt.Transport {
-	return c.transport
-}
-
-func (c *Conn) LocalPeer() peer.ID {
-	return c.Conn().LocalPeer()
-}
-
-func (c *Conn) RemotePeer() peer.ID {
-	return c.remote.ID
-}
-
-func (c *Conn) LocalPrivateKey() ic.PrivKey {
-	return nil
-}
-
-func (c *Conn) RemotePublicKey() ic.PubKey {
-	return nil
-}
-
-func (c *Conn) ID() string {
-	return iconn.ID(c)
 }

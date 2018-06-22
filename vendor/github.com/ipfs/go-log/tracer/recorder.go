@@ -27,11 +27,14 @@ func NewLoggableRecorder() *LoggableSpanRecorder {
 
 // Loggable Representation of a span, treated as an event log
 type LoggableSpan struct {
-	Operation string         `json:"Operation"`
-	Start     time.Time      `json:"Start"`
-	Duration  time.Duration  `json:"Duration"`
-	Tags      opentrace.Tags `json:"Tags"`
-	Logs      []SpanLog      `json:"Logs"`
+	TraceID      uint64         `json:"TraceID"`
+	SpanID       uint64         `json:"SpanID"`
+	ParentSpanID uint64         `json:"ParentSpanID"`
+	Operation    string         `json:"Operation"`
+	Start        time.Time      `json:"Start"`
+	Duration     time.Duration  `json:"Duration"`
+	Tags         opentrace.Tags `json:"Tags"`
+	Logs         []SpanLog      `json:"Logs"`
 }
 
 type SpanLog struct {
@@ -63,11 +66,14 @@ func (r *LoggableSpanRecorder) RecordSpan(span RawSpan) {
 	}
 
 	spanlog := &LoggableSpan{
-		Operation: span.Operation,
-		Start:     span.Start,
-		Duration:  span.Duration,
-		Tags:      span.Tags,
-		Logs:      sl,
+		TraceID:      span.Context.TraceID,
+		SpanID:       span.Context.SpanID,
+		ParentSpanID: span.ParentSpanID,
+		Operation:    span.Operation,
+		Start:        span.Start,
+		Duration:     span.Duration,
+		Tags:         span.Tags,
+		Logs:         sl,
 	}
 
 	out, err := json.Marshal(spanlog)

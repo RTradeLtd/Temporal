@@ -49,6 +49,9 @@ func (s *varintWriter) WriteMsg(msg []byte) error {
 }
 
 func (s *varintWriter) Close() error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	if c, ok := s.W.(io.Closer); ok {
 		return c.Close()
 	}
@@ -72,7 +75,7 @@ type varintReader struct {
 // Varints read according to https://golang.org/pkg/encoding/binary/#ReadUvarint
 // Assumes an equivalent writer on the other side.
 func NewVarintReader(r io.Reader) ReadCloser {
-	return NewVarintReaderWithPool(r, mpool.ByteSlicePool)
+	return NewVarintReaderWithPool(r, &mpool.ByteSlicePool)
 }
 
 // NewVarintReaderWithPool wraps an io.Reader with a varint msgio framed reader.
@@ -159,6 +162,9 @@ func (s *varintReader) ReleaseMsg(msg []byte) {
 }
 
 func (s *varintReader) Close() error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	if c, ok := s.R.(io.Closer); ok {
 		return c.Close()
 	}

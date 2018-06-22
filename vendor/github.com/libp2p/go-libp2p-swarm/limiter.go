@@ -5,13 +5,13 @@ import (
 	"sync"
 
 	addrutil "github.com/libp2p/go-addr-util"
-	iconn "github.com/libp2p/go-libp2p-interface-conn"
 	peer "github.com/libp2p/go-libp2p-peer"
+	transport "github.com/libp2p/go-libp2p-transport"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
 type dialResult struct {
-	Conn iconn.Conn
+	Conn transport.Conn
 	Addr ma.Multiaddr
 	Err  error
 }
@@ -39,17 +39,17 @@ type dialLimiter struct {
 	fdLimit     int
 	waitingOnFd []*dialJob
 
-	dialFunc func(context.Context, peer.ID, ma.Multiaddr) (iconn.Conn, error)
+	dialFunc func(context.Context, peer.ID, ma.Multiaddr) (transport.Conn, error)
 
 	activePerPeer      map[peer.ID]int
 	perPeerLimit       int
 	waitingOnPeerLimit map[peer.ID][]*dialJob
 }
 
-type dialfunc func(context.Context, peer.ID, ma.Multiaddr) (iconn.Conn, error)
+type dialfunc func(context.Context, peer.ID, ma.Multiaddr) (transport.Conn, error)
 
 func newDialLimiter(df dialfunc) *dialLimiter {
-	return newDialLimiterWithParams(df, concurrentFdDials, defaultPerPeerRateLimit)
+	return newDialLimiterWithParams(df, ConcurrentFdDials, DefaultPerPeerRateLimit)
 }
 
 func newDialLimiterWithParams(df dialfunc, fdLimit, perPeerLimit int) *dialLimiter {

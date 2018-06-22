@@ -6,7 +6,7 @@ sudo: false
 language: go
 
 go:
-    - 1.10.0
+    - 1.10.x
 
 install:
   - make deps

@@ -223,8 +223,8 @@ func (el *eventLogger) SetTags(ctx context.Context, tags map[string]interface{})
 		log.Errorf("SetTags with no Span in context called on %s:%d", path.Base(file), line)
 		return
 	}
-	for k := range tags {
-		span.SetTag(k, tags[k])
+	for k, v := range tags {
+		span.SetTag(k, v)
 	}
 }
 

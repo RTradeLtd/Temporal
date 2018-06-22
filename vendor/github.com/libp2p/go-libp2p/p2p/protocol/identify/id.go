@@ -13,8 +13,6 @@ import (
 	ic "github.com/libp2p/go-libp2p-crypto"
 	host "github.com/libp2p/go-libp2p-host"
 	lgbl "github.com/libp2p/go-libp2p-loggables"
-	metrics "github.com/libp2p/go-libp2p-metrics"
-	mstream "github.com/libp2p/go-libp2p-metrics/stream"
 	inet "github.com/libp2p/go-libp2p-net"
 	peer "github.com/libp2p/go-libp2p-peer"
 	pstore "github.com/libp2p/go-libp2p-peerstore"
@@ -44,7 +42,6 @@ var ClientVersion = "go-libp2p/3.3.4"
 type IDService struct {
 	Host host.Host
 
-	Reporter metrics.Reporter
 	// connections undergoing identification
 	// for wait purposes
 	currid map[inet.Conn]chan struct{}
@@ -64,7 +61,7 @@ func NewIDService(h host.Host) *IDService {
 		Host:   h,
 		currid: make(map[inet.Conn]chan struct{}),
 	}
-	h.SetStreamHandler(ID, s.RequestHandler)
+	h.SetStreamHandler(ID, s.requestHandler)
 	h.Network().Notify((*netNotifiee)(s))
 	return s
 }
@@ -95,13 +92,9 @@ func (ids *IDService) IdentifyConn(c inet.Conn) {
 		c.Close()
 		return
 	}
-	defer s.Close()
+	defer inet.FullClose(s)
 
 	s.SetProtocol(ID)
-
-	if ids.Reporter != nil {
-		s = mstream.WrapStream(s, ids.Reporter)
-	}
 
 	// ok give the response to our handler.
 	if err := msmux.SelectProtoOrFail(ID, s); err != nil {
@@ -109,7 +102,7 @@ func (ids *IDService) IdentifyConn(c inet.Conn) {
 		return
 	}
 
-	ids.ResponseHandler(s)
+	ids.responseHandler(s)
 
 	ids.currmu.Lock()
 	_, found := ids.currid[c]
@@ -122,13 +115,9 @@ func (ids *IDService) IdentifyConn(c inet.Conn) {
 	}
 }
 
-func (ids *IDService) RequestHandler(s inet.Stream) {
-	defer s.Close()
+func (ids *IDService) requestHandler(s inet.Stream) {
+	defer inet.FullClose(s)
 	c := s.Conn()
-
-	if ids.Reporter != nil {
-		s = mstream.WrapStream(s, ids.Reporter)
-	}
 
 	w := ggio.NewDelimitedWriter(s)
 	mes := pb.Identify{}
@@ -139,8 +128,7 @@ func (ids *IDService) RequestHandler(s inet.Stream) {
 		c.RemotePeer(), c.RemoteMultiaddr())
 }
 
-func (ids *IDService) ResponseHandler(s inet.Stream) {
-	defer s.Close()
+func (ids *IDService) responseHandler(s inet.Stream) {
 	c := s.Conn()
 
 	r := ggio.NewDelimitedReader(s, 2048)

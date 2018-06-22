@@ -61,8 +61,6 @@ func Open(dialect string, args ...interface{}) (db *DB, err error) {
 		dbSQL, err = sql.Open(driver, source)
 	case SQLCommon:
 		dbSQL = value
-	default:
-		return nil, fmt.Errorf("invalid database source: %v is not a valid type", value)
 	}
 
 	db = &DB{
@@ -493,8 +491,7 @@ func (s *DB) Begin() *DB {
 
 // Commit commit a transaction
 func (s *DB) Commit() *DB {
-	var emptySQLTx *sql.Tx
-	if db, ok := s.db.(sqlTx); ok && db != nil && db != emptySQLTx {
+	if db, ok := s.db.(sqlTx); ok && db != nil {
 		s.AddError(db.Commit())
 	} else {
 		s.AddError(ErrInvalidTransaction)

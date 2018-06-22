@@ -6,23 +6,39 @@ This is a middleware for [Gin](https://github.com/gin-gonic/gin) framework.
 
 It uses [jwt-go](https://github.com/dgrijalva/jwt-go) to provide a jwt authentication middleware. It provides additional handler functions to provide the `login` api that will generate the token and an additional `refresh` handler that can be used to refresh tokens.
 
-## Usage
+## Install
 
-Download and install it:
+### v2 version
 
-```sh
-$ go get github.com/appleboy/gin-jwt
+Install gin-gwt [v2](http://gopkg.in/appleboy/gin-jwt.v2) version for `jwt-go` [v3](http://gopkg.in/dgrijalva/jwt-go.v3) version. To get the package, execute:
+
+```bash
+$ go get gopkg.in/appleboy/gin-jwt.v2
 ```
 
-Import it in your code:
+To import this package, add the following line to your code:
 
 ```go
-import "github.com/appleboy/gin-jwt"
+import "gopkg.in/appleboy/gin-jwt.v2"
+```
+
+### v1 version
+
+Install gin-gwt [v1](http://gopkg.in/appleboy/gin-jwt.v1) version for `jwt-go` [v2](http://gopkg.in/dgrijalva/jwt-go.v2) version. To get the package, execute:
+
+```bash
+$ go get gopkg.in/appleboy/gin-jwt.v1
+```
+
+To import this package, add the following line to your code:
+
+```go
+import "gopkg.in/appleboy/gin-jwt.v1"
 ```
 
 ## Example
 
-Please see [the example file](example/server.go) and you can use `ExtractClaims` to fetch user ID.
+Please see [server example file](example/server.go).
 
 [embedmd]:# (example/server.go go)
 ```go
@@ -38,10 +54,8 @@ import (
 )
 
 func helloHandler(c *gin.Context) {
-	claims := jwt.ExtractClaims(c)
 	c.JSON(200, gin.H{
-		"userID": claims["id"],
-		"text":   "Hello World.",
+		"text": "Hello World.",
 	})
 }
 
@@ -125,7 +139,7 @@ Download and install [httpie](https://github.com/jkbrzt/httpie) CLI HTTP client.
 ### Login API:
 
 ```bash
-$ http -v --json POST localhost:8000/login username=admin password=admin
+$ http -v --json POST localhost:8000/auth/login username=admin password=admin
 ```
 
 Output screenshot

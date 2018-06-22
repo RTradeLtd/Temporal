@@ -12,11 +12,9 @@
 
 ### Supported codecs
 
+- `/protobuf`
 - `/cbor`
 - `/json`
-- `/msgio`
-- `/msgpack`
-- `/protobuf`
 
 ## Table of Contents
 

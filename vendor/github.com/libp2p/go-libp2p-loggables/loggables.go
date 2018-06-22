@@ -32,9 +32,8 @@ func Error(e error) logging.Loggable {
 
 func Uuid(key string) logging.Metadata {
 	ids := "#UUID-ERROR#"
-	if id, err := uuid.NewV4(); err == nil {
-		ids = id.String()
-	}
+	id := uuid.NewV4()
+	ids = id.String()
 	return logging.Metadata{
 		key: ids,
 	}

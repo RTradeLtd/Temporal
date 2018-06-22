@@ -5,30 +5,28 @@ workspace:
 pipeline:
   build:
     image: appleboy/golang-testing:${GO_VERSION}
+    environment:
+      - GOPATH=/go
+      - CODECOV_TOKEN=${CODECOV_TOKEN}
     commands:
       - make install
       - make embedmd
       - make vet
       - make lint
-      - make fmt-check
       - coverage all
+      - make coverage
 
-  codecov:
-    image: robertstettner/drone-codecov
-    secrets: [ codecov_token ]
-    files:
-      - .cover/coverage.txt
-    when:
-      event: [ push, pull_request ]
-
-  discord:
-    image: appleboy/drone-discord
+  facebook:
+    image: appleboy/drone-facebook
     pull: true
-    secrets: [ discord_webhook_id, discord_webhook_token ]
+    to: 1234973386524610
+    fb_page_token: ${FB_PAGE_TOKEN}
+    fb_verify_token: ${FB_VERIFY_TOKEN}
     when:
       status: [ success, failure ]
 
 matrix:
   GO_VERSION:
-    - 1.8.4
-    - 1.9.1
+    - 1.6.4
+    - 1.7.5
+    - 1.8.0

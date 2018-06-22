@@ -105,6 +105,9 @@ func (s *writer) WriteMsg(msg []byte) (err error) {
 }
 
 func (s *writer) Close() error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	if c, ok := s.W.(io.Closer); ok {
 		return c.Close()
 	}
@@ -126,7 +129,7 @@ type reader struct {
 // will read whole messages at a time (using the length). Assumes an equivalent
 // writer on the other side.
 func NewReader(r io.Reader) ReadCloser {
-	return NewReaderWithPool(r, mpool.ByteSlicePool)
+	return NewReaderWithPool(r, &mpool.ByteSlicePool)
 }
 
 // NewReaderWithPool wraps an io.Reader with a msgio framed reader. The msgio.Reader
@@ -213,6 +216,9 @@ func (s *reader) ReleaseMsg(msg []byte) {
 }
 
 func (s *reader) Close() error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	if c, ok := s.R.(io.Closer); ok {
 		return c.Close()
 	}

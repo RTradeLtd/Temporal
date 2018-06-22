@@ -2,4 +2,3 @@ vendor/*
 !vendor/vendor.json
 coverage.out
 count.out
-test
