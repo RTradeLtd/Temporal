@@ -20,7 +20,7 @@ func GenerateKeystoreManager() (*KeystoreManager, error) {
 		return nil, err
 	}
 	km.FSKeystore = fsk
-	return nil, &km
+	return &km, nil
 }
 
 func (km *KeystoreManager) CheckIfKeyIsPresent(keyName string) (bool, error) {
