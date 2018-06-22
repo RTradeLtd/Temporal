@@ -1,7 +1,10 @@
 package rtfsp
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"os"
 
 	addrUtil "github.com/ipfs/go-ipfs-addr"
@@ -91,6 +94,31 @@ func (pcm *PrivateConfigManager) ParseConfigAndWrite(peers ...string) error {
 	if err != nil {
 		return err
 	}
+	outputSwarmKeyFile, err := os.Create(SwarmKeyPath)
+	if err != nil {
+		return err
+	}
+	swarmKey, err := genererateSwarmKey()
+	if err != nil {
+		return err
+	}
+
+	_, err = outputSwarmKeyFile.Write([]byte(swarmKey))
+	if err != nil {
+		return err
+	}
 	pcm.Config = cfg
 	return nil
+}
+
+func genererateSwarmKey() (string, error) {
+	var output string
+	key := make([]byte, 32)
+	_, err := rand.Read(key)
+	if err != nil {
+		return "", err
+	}
+	keyEncoded := hex.EncodeToString(key)
+	output = fmt.Sprintf("/key/swarm/psk/1.0.0/\n/base16/\n%s", keyEncoded)
+	return output, nil
 }
