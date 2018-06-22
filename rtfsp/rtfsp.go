@@ -2,7 +2,6 @@ package rtfsp
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 
 	addrUtil "github.com/ipfs/go-ipfs-addr"
@@ -64,9 +63,9 @@ func (pcm *PrivateConfigManager) ConfigureBootstrap(peers ...string) ([]cg.Boots
 }
 
 // ParseConfigAndWrite is used to parse a configuration object and write it
-func (pcm *PrivateConfigManager) ParseConfigAndWrite() error {
+func (pcm *PrivateConfigManager) ParseConfigAndWrite(peers ...string) error {
 	// Create file, truncating if it exists
-	cFilePath, err := os.Create(ConfigFilePath)
+	cFilePath, err := os.Open(ConfigFilePath)
 	if err != nil {
 		return err
 	}
@@ -74,6 +73,11 @@ func (pcm *PrivateConfigManager) ParseConfigAndWrite() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(cfg)
+	bootPeers, err := pcm.ConfigureBootstrap(peers...)
+	if err != nil {
+		return err
+	}
+	cfg.SetBootstrapPeers(bootPeers)
+	pcm.Config = cfg
 	return nil
 }
