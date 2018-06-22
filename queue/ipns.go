@@ -1,6 +1,14 @@
 package queue
 
-/*
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/jinzhu/gorm"
+	"github.com/streadway/amqp"
+)
+
 func ProcessIPNSPublishRequests(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	var ipnsUpdate IPNSUpdate
 	var resolve bool
@@ -53,4 +61,3 @@ func ProcessIPNSPublishRequests(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	}
 	return nil
 }
-*/
