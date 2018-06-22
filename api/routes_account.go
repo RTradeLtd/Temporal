@@ -3,12 +3,15 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/Temporal/rtfs"
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	ci "github.com/libp2p/go-libp2p-crypto"
 )
 
 var nilTime time.Time
@@ -116,42 +119,67 @@ func GetAuthenticatedUserFromContext(c *gin.Context) string {
 // CreateIPFSKey is used to create an IPFS key
 // TODO: encrypt key with provided password
 func CreateIPFSKey(c *gin.Context) {
-	cC := c.Copy()
-	ethAddress := GetAuthenticatedUserFromContext(cC)
-
-	keyType, exists := cC.GetPostForm("key_type")
+	keyType, exists := c.GetPostForm("key_type")
 	if !exists {
 		FailNoExist(c, "key_type post form does not exist")
 		return
 	}
-	keyBits, exists := cC.GetPostForm("key_bits")
+	keyBits, exists := c.GetPostForm("key_bits")
 	if !exists {
 		FailNoExist(c, "key_bits post form does not exist")
 		return
 	}
 
-	keyName, exists := cC.GetPostForm("key_name")
+	keyName, exists := c.GetPostForm("key_name")
 	if !exists {
 		FailNoExist(c, "key_name post form does not exist")
 		return
 	}
-
+	var keyTypeInt int
+	var bitsInt int
 	switch keyType {
 	case "rsa":
-		break
+		keyTypeInt = ci.RSA
+		bitsInt64, err := strconv.ParseInt(keyBits, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		bitsInt = int(bitsInt64)
 	case "ed25519":
-		break
+		keyTypeInt = ci.Ed25519
+		bitsInt = 256
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "key_type must be rsa or ed25519",
 		})
 		return
 	}
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	err = manager.CreateKeystoreManager()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 
+	err = manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"key_type":    keyType,
-		"key_bits":    keyBits,
-		"key_name":    keyName,
-		"eth_address": ethAddress,
+		"status": "key created",
 	})
 }

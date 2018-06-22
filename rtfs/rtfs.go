@@ -23,12 +23,21 @@ func Initialize(pubTopic, connectionURL string) (*IpfsManager, error) {
 	}
 	manager := IpfsManager{}
 	manager.Shell = EstablishShellWithNode(connectionURL)
-	isUp := manager.Shell.IsUp()
-	if !isUp {
-		return nil, errors.New("ipfs node is not online")
+	_, err := manager.Shell.ID()
+	if err != nil {
+		return nil, err
 	}
 	manager.PubTopic = pubTopic
 	return &manager, nil
+}
+
+func EstablishShellWithNode(url string) *ipfsapi.Shell {
+	if url == "" {
+		shell := ipfsapi.NewShell("localhost:5001")
+		return shell
+	}
+	shell := ipfsapi.NewShell(url)
+	return shell
 }
 
 func (im *IpfsManager) CreateKeystoreManager() error {
@@ -113,15 +122,6 @@ func (im *IpfsManager) ParseLocalPinsForHash(hash string) (bool, error) {
 		return true, nil
 	}
 	return false, nil
-}
-
-func EstablishShellWithNode(url string) *ipfsapi.Shell {
-	if url == "" {
-		shell := ipfsapi.NewLocalShell()
-		return shell
-	}
-	shell := ipfsapi.NewShell(url)
-	return shell
 }
 
 // SubscribeToPubSubTopic is used to subscribe to a pubsub topic
