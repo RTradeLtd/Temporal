@@ -58,18 +58,17 @@ func (pcm *PrivateConfigManager) ConfigureBootstrap(peers ...string) ([]cg.Boots
 		}
 		bpeers = append(bpeers, bpeer)
 	}
-	pcm.Config.SetBootstrapPeers(bpeers)
 	return bpeers, nil
 }
 
 // ParseConfigAndWrite is used to parse a configuration object and write it
 func (pcm *PrivateConfigManager) ParseConfigAndWrite(peers ...string) error {
 	// Create file, truncating if it exists
-	cFilePath, err := os.Open(ConfigFilePath)
+	cFilePath, err := os.Create("/tmp/tconfigfileforips")
 	if err != nil {
 		return err
 	}
-	cfg, err := cg.Init(cFilePath, 4192)
+	cfg, err := cg.Init(cFilePath, 2048)
 	if err != nil {
 		return err
 	}
@@ -78,6 +77,20 @@ func (pcm *PrivateConfigManager) ParseConfigAndWrite(peers ...string) error {
 		return err
 	}
 	cfg.SetBootstrapPeers(bootPeers)
+
+	// announce on 192.168.0.0
+	cfg.Addresses.Announce = []string{"/ip4/192.168.0.0/ipcidr/16"}
+	cfg.Ipns.ResolveCacheSize = 2048
+	marshaledCfg, err := cg.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+
+	outputFile, err := os.Create(ConfigFilePath)
+	_, err = outputFile.Write(marshaledCfg)
+	if err != nil {
+		return err
+	}
 	pcm.Config = cfg
 	return nil
 }

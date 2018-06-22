@@ -69,3 +69,7 @@ https://skarlso.github.io/2016/02/02/doing-cors-in-go-with-gin-and-json/
 # IPNS / DNSLink
 
 https://github.com/ipfs/go-dnslink
+
+
+IPFS Configuration Explanation:
+https://github.com/ipfs/go-ipfs/blob/master/docs/config.md
