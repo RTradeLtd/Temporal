@@ -119,6 +119,8 @@ func GetAuthenticatedUserFromContext(c *gin.Context) string {
 // CreateIPFSKey is used to create an IPFS key
 // TODO: encrypt key with provided password
 func CreateIPFSKey(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+
 	keyType, exists := c.GetPostForm("key_type")
 	if !exists {
 		FailNoExist(c, "key_type post form does not exist")
@@ -144,6 +146,12 @@ func CreateIPFSKey(c *gin.Context) {
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
+			})
+			return
+		}
+		if bitsInt64 > 4096 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "key bits must be 4096 or less. For larger keys contact your Temporal administrator",
 			})
 			return
 		}
@@ -173,6 +181,22 @@ func CreateIPFSKey(c *gin.Context) {
 	}
 
 	err = manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "error loading database middleware",
+		})
+		return
+	}
+	um := models.NewUserManager(db)
+	err = um.AddIPFSKeyForUser(ethAddress, keyName)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

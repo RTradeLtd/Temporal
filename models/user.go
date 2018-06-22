@@ -10,14 +10,15 @@ import (
 
 type User struct {
 	gorm.Model
-	EthAddress        string         `gorm:"type:varchar(255);unique"`
-	EmailAddress      string         `gorm:"type:varchar(255);unique"`
-	EnterpriseEnabled bool           `gorm:"type:boolean"`
-	AccountEnabled    bool           `gorm:"type:boolean"`
-	APIAccess         bool           `gorm:"type:boolean"`
-	EmailEnabled      bool           `gorm:"type:boolean"`
-	HashedPassword    string         `gorm:"type:varchar(255)"`
-	IPFSKeys          pq.StringArray `gorm:"type:text[]"`
+	EthAddress        string `gorm:"type:varchar(255);unique"`
+	EmailAddress      string `gorm:"type:varchar(255);unique"`
+	EnterpriseEnabled bool   `gorm:"type:boolean"`
+	AccountEnabled    bool   `gorm:"type:boolean"`
+	APIAccess         bool   `gorm:"type:boolean"`
+	EmailEnabled      bool   `gorm:"type:boolean"`
+	HashedPassword    string `gorm:"type:varchar(255)"`
+	// IPFSKeyNames is an array of IPFS keys this user has created
+	IPFSKeyNames pq.StringArray `gorm:"type:text[]"`
 }
 
 type UserManager struct {
@@ -28,6 +29,20 @@ func NewUserManager(db *gorm.DB) *UserManager {
 	um := UserManager{}
 	um.DB = db
 	return &um
+}
+
+func (um *UserManager) AddIPFSKeyForUser(ethAddress, keyName string) error {
+	var user User
+	if errCheck := um.DB.Where("eth_address = ?", ethAddress).First(&user); errCheck.Error != nil {
+		return errCheck.Error
+	}
+
+	if user.CreatedAt == nilTime {
+		return errors.New("user account does not exist")
+	}
+
+	user.IPFSKeyNames = append(user.IPFSKeyNames, keyName)
+	return nil
 }
 
 func (um *UserManager) CheckIfUserAccountEnabled(ethAddress string, db *gorm.DB) (bool, error) {
