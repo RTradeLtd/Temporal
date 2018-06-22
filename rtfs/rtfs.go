@@ -10,9 +10,10 @@ import (
 var ClusterPubSubTopic = "ipfs-cluster"
 
 type IpfsManager struct {
-	Shell    *ipfsapi.Shell
-	PubSub   *ipfsapi.PubSubSubscription
-	PubTopic string
+	Shell           *ipfsapi.Shell
+	PubSub          *ipfsapi.PubSubSubscription
+	KeystoreManager *KeystoreManager
+	PubTopic        string
 }
 
 func Initialize(pubTopic, connectionURL string) (*IpfsManager, error) {
@@ -25,6 +26,11 @@ func Initialize(pubTopic, connectionURL string) (*IpfsManager, error) {
 	if !isUp {
 		return nil, errors.New("ipfs node is not online")
 	}
+	km, err := GenerateKeystoreManager()
+	if err != nil {
+		return nil, err
+	}
+	manager.KeystoreManager = km
 	manager.PubTopic = pubTopic
 	return &manager, nil
 }

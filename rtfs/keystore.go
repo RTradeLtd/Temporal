@@ -2,6 +2,8 @@ package rtfs
 
 /*
 Utilities for manipulating the IPFS fs-keystore
+
+consider adding a mutex keystore instead
 */
 
 import (
