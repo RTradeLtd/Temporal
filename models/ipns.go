@@ -42,7 +42,9 @@ func (im *IpnsManager) FindByIPNSHash(ipnsHash string) (*IPNS, error) {
 
 func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, lifetime, ttl, key string) (*IPNS, error) {
 	var entry IPNS
+	// search for an IPNS entry that matches the given ipns hash
 	im.DB.Where("ipns_hash = ?", ipnsHash).First(&entry)
+	// if the returned model does not exist create it
 	if entry.CreatedAt == nilTime {
 		// Create the record
 		entry, err := im.CreateEntry(ipnsHash, ipfsHash, lifetime, ttl, key)
@@ -51,17 +53,21 @@ func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, lifetime, ttl, key st
 		}
 		return entry, nil
 	}
+	// increase the sequence number
 	entry.Sequence++
-	entry.IPNSHash = ipnsHash
+	// update the hashes it has pointed to
 	entry.IPFSHashes = append(entry.IPFSHashes, ipfsHash)
+	// update the current hash this record points to
 	entry.CurrentIPFSHash = ipfsHash
+	// update the lifetime
 	entry.LifeTime = lifetime
+	// update the ttl
 	entry.TTL = ttl
+	// update the key used to sign
 	entry.Key = key
 	// only update  changed fields
 	check := im.DB.Table("ip_ns").Model(&entry).Updates(map[string]interface{}{
 		"sequence":          &entry.Sequence,
-		"ipns_hash":         &entry.IPNSHash,
 		"ipfs_hashes":       &entry.IPFSHashes,
 		"current_ipfs_hash": &entry.CurrentIPFSHash,
 		"lifeTime":          &entry.LifeTime,
@@ -76,6 +82,7 @@ func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, lifetime, ttl, key st
 }
 
 func (im *IpnsManager) CreateEntry(ipnsHash, ipfsHash, lifetime, ttl, key string) (*IPNS, error) {
+	// See above UpdateEntry function for an explanation
 	var entry IPNS
 	_, err := im.FindByIPNSHash(ipnsHash)
 	if err == nil {

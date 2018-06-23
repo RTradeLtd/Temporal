@@ -139,9 +139,11 @@ func CreateIPFSKey(c *gin.Context) {
 	}
 	var keyTypeInt int
 	var bitsInt int
+	// currently we support generation of rsa or ed25519 keys
 	switch keyType {
 	case "rsa":
 		keyTypeInt = ci.RSA
+		// convert the string bits to int
 		bitsInt64, err := strconv.ParseInt(keyBits, 10, 64)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -149,6 +151,7 @@ func CreateIPFSKey(c *gin.Context) {
 			})
 			return
 		}
+		// right now we wont generate keys larger than 4096 in length
 		if bitsInt64 > 4096 {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "key bits must be 4096 or less. For larger keys contact your Temporal administrator",
@@ -157,6 +160,7 @@ func CreateIPFSKey(c *gin.Context) {
 		}
 		bitsInt = int(bitsInt64)
 	case "ed25519":
+		// ed25519 uses a 256bit key length, we just specify the length here for brevity
 		keyTypeInt = ci.Ed25519
 		bitsInt = 256
 	default:
@@ -165,6 +169,7 @@ func CreateIPFSKey(c *gin.Context) {
 		})
 		return
 	}
+	// initialize our connection to the ipfs node
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -172,6 +177,7 @@ func CreateIPFSKey(c *gin.Context) {
 		})
 		return
 	}
+	//  load the key store manager
 	err = manager.CreateKeystoreManager()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -179,7 +185,9 @@ func CreateIPFSKey(c *gin.Context) {
 		})
 		return
 	}
-
+	// prevent key name collision between different users
+	keyName = fmt.Sprintf("%s-%s", ethAddress, keyName)
+	// create a key and save it to disk
 	err = manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -187,7 +195,7 @@ func CreateIPFSKey(c *gin.Context) {
 		})
 		return
 	}
-
+	// load the database so we can update our models
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -196,6 +204,7 @@ func CreateIPFSKey(c *gin.Context) {
 		return
 	}
 	um := models.NewUserManager(db)
+	// update the user model with the new key
 	err = um.AddIPFSKeyForUser(ethAddress, keyName)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

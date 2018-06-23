@@ -23,6 +23,7 @@ var method uint8
 func RegisterPayment(c *gin.Context) {
 	contextCopy := c.Copy()
 	ethAddress := GetAuthenticatedUserFromContext(contextCopy)
+	// only allow the admin to access this function
 	if ethAddress != AdminAddress {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "unauthorized access",
@@ -79,7 +80,7 @@ func RegisterPayment(c *gin.Context) {
 		})
 		return
 	}
-
+	// calculate the pin cost, we do this by fetching the total object size and the number of months they want to store for
 	costUsdFloat, err := utils.CalculatePinCost(contentHash, retentionPeriodInMonthsInt, rtfs.Shell)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -87,11 +88,12 @@ func RegisterPayment(c *gin.Context) {
 		})
 		return
 	}
+	// format the data
 	costUsdBigInt := utils.FloatToBigInt(costUsdFloat)
 	chargeAmountInWei := utils.ConvertNumberToBaseWei(costUsdBigInt)
 
+	// load relevant connections
 	db := contextCopy.MustGet("db").(*gorm.DB)
-
 	mqURL := contextCopy.MustGet("mq_conn_url").(string)
 	ethAccount := contextCopy.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
 	// since we aren't interacting with any contract events we dont need IPC

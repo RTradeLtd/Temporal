@@ -33,10 +33,12 @@ type PaymentManager struct {
 func NewPaymentManager(useIPC bool, ethKey, ethPass string, db *gorm.DB) (*PaymentManager, error) {
 	var pm PaymentManager
 	var client *ethclient.Client
+	// create a file handler from the key file path
 	file, err := ioutil.ReadFile(ethKey)
 	if err != nil {
 		return nil, err
 	}
+	// check if they are using IPC or RPC, and create the appropriate connection
 	switch useIPC {
 	case true:
 		client, err = ethclient.Dial(utils.IpcPath)
@@ -49,6 +51,7 @@ func NewPaymentManager(useIPC bool, ethKey, ethPass string, db *gorm.DB) (*Payme
 			return nil, err
 		}
 	}
+	// create our RPC client
 	rpcClient := ethrpc.NewEthRPC(utils.ConnectionURL)
 	_, err = rpcClient.Web3ClientVersion()
 	if err != nil {
