@@ -186,7 +186,7 @@ func CreateIPFSKey(c *gin.Context) {
 		return
 	}
 	// prevent key name collision between different users
-	keyName = fmt.Sprintf("%s-%s", ethAddress, keyName)
+	//keyName = fmt.Sprintf("%s-%s", ethAddress, keyName)
 	// create a key and save it to disk
 	err = manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
 	if err != nil {
