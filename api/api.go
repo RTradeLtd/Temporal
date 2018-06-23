@@ -117,7 +117,6 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipnsProtected.Use(authWare.MiddlewareFunc())
 	ipnsProtected.Use(middleware.APIRestrictionMiddleware(db))
 	ipnsProtected.Use(middleware.AWSMiddleware(awsKey, awsSecret))
-	ipnsProtected.GET("/publish/:hash", PublishToIPNS)           // admin locked
 	ipnsProtected.POST("/publish/details", PublishToIPNSDetails) // admin locked
 	ipnsProtected.POST("/dnslink/aws/add", GenerateDNSLinkEntry) // admin locked
 

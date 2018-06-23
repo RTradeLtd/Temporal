@@ -11,41 +11,6 @@ import (
 	"github.com/mitchellh/goamz/aws"
 )
 
-// PublishToIPNS is used to publish a record to ipns
-// TODO: make sure the user owns the hash in question
-func PublishToIPNS(c *gin.Context) {
-	authUser := GetAuthenticatedUserFromContext(c)
-	if authUser != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
-		return
-	}
-	hash := c.Param("hash")
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
-		})
-		return
-	}
-	fmt.Println("publishing to ipns")
-	resp, err := manager.PublishToIPNS(hash)
-	if err != nil {
-		fmt.Println("error publishing to ipns", err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
-		})
-		return
-	}
-	fmt.Println("published to ipns")
-	c.JSON(http.StatusOK, gin.H{
-		"status": "published",
-		"name":   resp.Name,
-		"value":  resp.Value,
-	})
-}
-
 func PublishToIPNSDetails(c *gin.Context) {
 	authUser := GetAuthenticatedUserFromContext(c)
 	if authUser != AdminAddress {

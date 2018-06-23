@@ -4,10 +4,10 @@ import (
 	"math/big"
 	"time"
 
+	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/c2h5oh/datasize"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	ipfsapi "github.com/ipfs/go-ipfs-api"
 )
 
 // FilesAddress is the address of the files contract

@@ -24,8 +24,12 @@
 #   go-tests = true
 #   unused-packages = true
 
-ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid"]
+ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "github.com/satori/go.uuid"]
 
+[[constraint]]
+  name = "github.com/RTradeLtd/go-ipfs-api"
+  branch = "master"
+  
 [[constraint]]
   name = "github.com/appleboy/gin-jwt"
   version = "2.3.1"

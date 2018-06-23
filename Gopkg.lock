@@ -3,6 +3,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/RTradeLtd/go-ipfs-api"
+  packages = ["."]
+  revision = "1c2767ea525149c0d4a81d90a805bf19e8fd84ea"
+
+[[projects]]
+  branch = "master"
   name = "github.com/agl/ed25519"
   packages = [
     ".",
@@ -856,12 +862,6 @@
   version = "v1.4.0"
 
 [[projects]]
-  name = "github.com/satori/go.uuid"
-  packages = ["."]
-  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
-  version = "v1.2.0"
-
-[[projects]]
   name = "github.com/segmentio/go-route53"
   packages = ["."]
   revision = "c58e5d2cc6732704423ea200f7355ab76aa6a8ba"
@@ -1141,6 +1141,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e961c990539c8e18b4741c83a9eaba3b730e1f4154c74a7be3306105df1bc762"
+  inputs-digest = "621504e595339a7c6ba55ca7517e649b61002334972e86084811417ad4cd36fa"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	ipfsapi "github.com/ipfs/go-ipfs-api"
+	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 )
 
 var ClusterPubSubTopic = "ipfs-cluster"
@@ -50,14 +50,6 @@ func (im *IpfsManager) CreateKeystoreManager() error {
 	return nil
 }
 
-func (im *IpfsManager) PublishToIPNS(contentHash string) (*ipfsapi.PublishResponse, error) {
-	resp, err := im.Shell.Publish("", contentHash)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
-}
-
 // TODO: lock this down upstream. We will need to make sure that they own the key they are attempting to access
 func (im *IpfsManager) PublishToIPNSDetails(contentHash string, lifetime string, ttl string, key string, resolve bool) (*ipfsapi.PublishResponse, error) {
 	if !im.KeystoreEnabled {
@@ -70,7 +62,7 @@ func (im *IpfsManager) PublishToIPNSDetails(contentHash string, lifetime string,
 	if !keyPresent {
 		return nil, errors.New("attempting to sign with non existent key")
 	}
-	resp, err := im.Shell.PublishWithResponse(contentHash, lifetime, ttl, key, resolve)
+	resp, err := im.Shell.PublishWithDetails(contentHash, lifetime, ttl, key, resolve)
 	if err != nil {
 		return nil, err
 	}
