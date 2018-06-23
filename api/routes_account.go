@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	ci "github.com/libp2p/go-libp2p-crypto"
+	peer "github.com/libp2p/go-libp2p-peer"
 )
 
 var nilTime time.Time
@@ -188,7 +189,7 @@ func CreateIPFSKey(c *gin.Context) {
 	// prevent key name collision between different users
 	//keyName = fmt.Sprintf("%s-%s", ethAddress, keyName)
 	// create a key and save it to disk
-	err = manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
+	pk, err := manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -212,8 +213,16 @@ func CreateIPFSKey(c *gin.Context) {
 		})
 		return
 	}
+	id, err := peer.IDFromPrivateKey(pk)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"status": "key created",
+		"id":     id.Pretty(),
 	})
 }
 
