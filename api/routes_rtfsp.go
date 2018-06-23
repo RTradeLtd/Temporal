@@ -53,6 +53,12 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 	}
 	switch isHosted {
 	case "true":
+		if len(nodeAddresses) != len(bPeers) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "length of local_node_addresses and bootstrap_peers must be equal",
+			})
+			return
+		}
 		for k, v := range bPeers {
 			addr, err := utils.GenerateMultiAddrFromString(v)
 			if err != nil {
