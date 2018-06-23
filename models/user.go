@@ -62,6 +62,24 @@ func (um *UserManager) GetKeysForUser(ethAddress string) ([]string, error) {
 	return user.IPFSKeyNames, nil
 }
 
+func (um *UserManager) CheckIfKeyOwnedByUser(ethAddress, keyName string) (bool, error) {
+	var user User
+	if errCheck := um.DB.Where("eth_address = ?", ethAddress).First(&user); errCheck.Error != nil {
+		return false, errCheck.Error
+	}
+
+	if user.CreatedAt == nilTime {
+		return false, errors.New("user account does not exist")
+	}
+
+	for _, v := range user.IPFSKeyNames {
+		if v == keyName {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func (um *UserManager) CheckIfUserAccountEnabled(ethAddress string, db *gorm.DB) (bool, error) {
 	var user User
 	db.Where("eth_address = ?", ethAddress).First(&user)

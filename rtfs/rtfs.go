@@ -55,7 +55,7 @@ func (im *IpfsManager) PublishToIPNSDetails(contentHash string, lifetime string,
 	if !im.KeystoreEnabled {
 		return nil, errors.New("attempting to create ipns entry with dynamic keys keystore is not enabled/generated yet")
 	}
-	keyPresent, err := im.KeystoreManager.CheckIfKeyIsPresent(key)
+	keyPresent, err := im.KeystoreManager.CheckIfKeyExists(key)
 	if err != nil {
 		return nil, err
 	}

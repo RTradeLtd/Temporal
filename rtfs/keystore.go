@@ -28,7 +28,7 @@ func GenerateKeystoreManager() (*KeystoreManager, error) {
 	return &km, nil
 }
 
-func (km *KeystoreManager) CheckIfKeyIsPresent(keyName string) (bool, error) {
+func (km *KeystoreManager) CheckIfKeyExists(keyName string) (bool, error) {
 	present, err := km.FSKeystore.Has(keyName)
 	if err != nil {
 		return false, err

@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/models"
+	"github.com/jinzhu/gorm"
+
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/rtns/dlink"
 	"github.com/gin-gonic/gin"
@@ -12,13 +15,7 @@ import (
 )
 
 func PublishToIPNSDetails(c *gin.Context) {
-	authUser := GetAuthenticatedUserFromContext(c)
-	if authUser != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
-		return
-	}
+	ethAddress := GetAuthenticatedUserFromContext(c)
 	hash, present := c.GetPostForm("hash")
 	if !present {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -51,6 +48,30 @@ func PublishToIPNSDetails(c *gin.Context) {
 	if !present {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "resolve post form not present",
+		})
+		return
+	}
+
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "error loading db middleware",
+		})
+		return
+	}
+	um := models.NewUserManager(db)
+
+	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if !ownsKey {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "attempting to generate IPNS entry unowned key",
 		})
 		return
 	}

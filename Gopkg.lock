@@ -311,6 +311,12 @@
   revision = "6bd705eadef4f982a8936f53c613ac33f77d0d5a"
 
 [[projects]]
+  name = "github.com/ipfs/go-ipfs-addr"
+  packages = ["."]
+  revision = "25333b7bd949a92d00acb4e98f28dfe4999a0e9b"
+  version = "v0.1.13"
+
+[[projects]]
   name = "github.com/ipfs/go-ipfs-api"
   packages = ["."]
   revision = "3bb7e7436bb85d6e81e7ab8c87425ef6208706a8"
@@ -1141,6 +1147,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "621504e595339a7c6ba55ca7517e649b61002334972e86084811417ad4cd36fa"
+  inputs-digest = "d4e02c2d635d66b3299a7cc5c16adef00278ce605a0bcbf90225af5afb224a41"
   solver-name = "gps-cdcl"
   solver-version = 1
