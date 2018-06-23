@@ -43,10 +43,23 @@ func (um *UserManager) AddIPFSKeyForUser(ethAddress, keyName string) error {
 
 	user.IPFSKeyNames = append(user.IPFSKeyNames, keyName)
 	// The following only updates the specified column for the given model
-	if errCheck := um.DB.Model(&user).Update("ipfs_key_names", user.IPFSKeyNames); errCheck.Error != nil {
+	if errCheck := um.DB.Model(&user).Update("ip_fs_key_names", user.IPFSKeyNames); errCheck.Error != nil {
 		return errCheck.Error
 	}
 	return nil
+}
+
+func (um *UserManager) GetKeysForUser(ethAddress string) ([]string, error) {
+	var user User
+	if errCheck := um.DB.Where("eth_address = ?", ethAddress).First(&user); errCheck.Error != nil {
+		return nil, errCheck.Error
+	}
+
+	if user.CreatedAt == nilTime {
+		return nil, errors.New("user account does not exist")
+	}
+
+	return user.IPFSKeyNames, nil
 }
 
 func (um *UserManager) CheckIfUserAccountEnabled(ethAddress string, db *gorm.DB) (bool, error) {

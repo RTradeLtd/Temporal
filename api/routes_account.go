@@ -207,3 +207,27 @@ func CreateIPFSKey(c *gin.Context) {
 		"status": "key created",
 	})
 }
+
+func GetIPFSKeyNamesForAuthUser(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "error laoding database middleware",
+		})
+		return
+	}
+
+	um := models.NewUserManager(db)
+	keys, err := um.GetKeysForUser(ethAddress)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"keys": keys,
+	})
+}
