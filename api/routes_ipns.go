@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
@@ -97,6 +98,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 		})
 		return
 	}
+	prePubTime := time.Now()
 	fmt.Println("publishing to IPNS")
 	resp, err := manager.PublishToIPNSDetails(hash, lifetime, ttl, key, resolve)
 	if err != nil {
@@ -105,9 +107,12 @@ func PublishToIPNSDetails(c *gin.Context) {
 		})
 		return
 	}
+	postPubTime := time.Now()
+	timeDifference := postPubTime.Sub(prePubTime)
 	c.JSON(http.StatusCreated, gin.H{
-		"name":  resp.Name,
-		"value": resp.Value,
+		"name":           resp.Name,
+		"value":          resp.Value,
+		"time_to_create": timeDifference.Minutes(),
 	})
 }
 
