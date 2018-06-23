@@ -204,15 +204,6 @@ func CreateIPFSKey(c *gin.Context) {
 		})
 		return
 	}
-	um := models.NewUserManager(db)
-	// update the user model with the new key
-	err = um.AddIPFSKeyForUser(ethAddress, keyName)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
 	id, err := peer.IDFromPrivateKey(pk)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -220,6 +211,16 @@ func CreateIPFSKey(c *gin.Context) {
 		})
 		return
 	}
+	um := models.NewUserManager(db)
+	// update the user model with the new key
+	err = um.AddIPFSKeyForUser(ethAddress, keyName, id.Pretty())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "key created",
 		"id":     id.Pretty(),
