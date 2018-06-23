@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
@@ -39,14 +40,17 @@ func NewIPFSNetworkManager(db *gorm.DB) *IPFSNetworkManager {
 }
 
 // TODO: Add in multiformat address validation
-func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string, isHosted bool, arrayParameters map[string]*[]string, users []string) (*IPFSPrivateNetwork, error) {
+func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string, isHosted bool, arrayParameters map[string][]string, users []string) (*IPFSPrivateNetwork, error) {
 	var pnet IPFSPrivateNetwork
-	/*	if check := im.preload().Where("name = ?").First(&net); check.Error != nil {
+	fmt.Println(10.1)
+	if check := im.DB.Where("name = ?", name).First(&pnet); check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
-	}*/
+	}
+	fmt.Println(10.2)
 	if pnet.CreatedAt != nilTime {
 		return nil, errors.New("network already exists")
 	}
+	fmt.Println(10.3)
 	pnet.Name = name
 	pnet.APIURL = apiURL
 	// if we were passed in a list of users, then we will add them
@@ -55,11 +59,12 @@ func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string
 			pnet.Users = append(pnet.Users, v)
 		}
 	}
+	fmt.Println(10.4)
 	// if were hosting the network infrastructure ourselves set that up too
 	if isHosted {
 		pnet.IsHosted = true
-		bPeers := *arrayParameters["bootstrap_peers"]
-		nodeAddresses := *arrayParameters["local_node_addresses"]
+		bPeers := arrayParameters["bootstrap_peer_addresses"]
+		nodeAddresses := arrayParameters["local_node_addresses"]
 		if len(bPeers) != len(nodeAddresses) {
 			return nil, errors.New("bootstrap peers and node ip address are not equal length")
 		}
@@ -71,10 +76,11 @@ func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string
 		}
 	} else {
 		nodeAddresses := arrayParameters["local_node_addresses"]
-		for _, v := range *nodeAddresses {
+		for _, v := range nodeAddresses {
 			pnet.Network.LocalNodeAddresses = append(pnet.Network.LocalNodeAddresses, v)
 		}
 	}
+	fmt.Println(10.5)
 	if check := im.DB.Create(&pnet); check.Error != nil {
 		return nil, check.Error
 	}
@@ -83,5 +89,5 @@ func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string
 
 func (im *IPFSNetworkManager) preload() *gorm.DB {
 	// we do this so we can preload the HostedNetwork relations
-	return im.DB.Preload("Hosted")
+	return im.DB.Preload("Network")
 }
