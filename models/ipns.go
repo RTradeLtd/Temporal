@@ -90,7 +90,7 @@ func (im *IpnsManager) CreateEntry(ipnsHash, ipfsHash, lifetime, ttl, key string
 	}
 	entry.Sequence = 1
 	entry.IPNSHash = ipnsHash
-	entry.IPFSHashes = append(entry.IPFSHashes, ipfsHash)
+	entry.IPFSHashes = pq.StringArray{ipfsHash}
 	entry.LifeTime = lifetime
 	entry.TTL = ttl
 	entry.Key = key

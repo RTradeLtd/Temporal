@@ -51,17 +51,18 @@ func NewPaymentManager(useIPC bool, ethKey, ethPass string, db *gorm.DB) (*Payme
 			return nil, err
 		}
 	}
-	// create our RPC client
+	// create our RPC client, make sure we have a proper connection
 	rpcClient := ethrpc.NewEthRPC(utils.ConnectionURL)
 	_, err = rpcClient.Web3ClientVersion()
 	if err != nil {
 		return nil, err
 	}
-
+	// decrypt our key file
 	auth, err := bind.NewTransactor(strings.NewReader(string(file)), ethPass)
 	if err != nil {
 		return nil, err
 	}
+	// establish a connection with the payments contract
 	contract, err := payments.NewPayments(utils.PaymentsAddress, client)
 	if err != nil {
 		return nil, err
@@ -76,6 +77,7 @@ func NewPaymentManager(useIPC bool, ethKey, ethPass string, db *gorm.DB) (*Payme
 
 // RegisterPaymentForUploader is used to register a payment for the given uploader
 func (pm *PaymentManager) RegisterPaymentForUploader(uploaderAddress string, contentHash string, retentionPeriodInMonths *big.Int, chargeAmountInWei *big.Int, method uint8, mqConnectionURL string) (*types.Transaction, error) {
+	// make sure a valid payment method is being provided
 	if method > 1 || method < 0 {
 		return nil, errors.New("invalid payment method. 0 = RTC, 1 = ETH")
 	}
