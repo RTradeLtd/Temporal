@@ -67,6 +67,23 @@ func (um *UserManager) GetKeysForUser(ethAddress string) ([]string, error) {
 	return user.IPFSKeyNames, nil
 }
 
+func (um *UserManager) GetKeyIDByName(ethAddress, keyName string) (string, error) {
+	var user User
+	if errCheck := um.DB.Where("eth_address = ?", ethAddress).First(&user); errCheck.Error != nil {
+		return "", errCheck.Error
+	}
+
+	if user.CreatedAt == nilTime {
+		return "", errors.New("user account does not exist")
+	}
+	for k, v := range user.IPFSKeyNames {
+		if v == keyName {
+			return user.IPFSKeyIDList[k], nil
+		}
+	}
+	return "", errors.New("key not found")
+}
+
 func (um *UserManager) CheckIfKeyOwnedByUser(ethAddress, keyName string) (bool, error) {
 	var user User
 	if errCheck := um.DB.Where("eth_address = ?", ethAddress).First(&user); errCheck.Error != nil {

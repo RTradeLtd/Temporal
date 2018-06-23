@@ -51,18 +51,18 @@ func (im *IpfsManager) CreateKeystoreManager() error {
 }
 
 // TODO: lock this down upstream. We will need to make sure that they own the key they are attempting to access
-func (im *IpfsManager) PublishToIPNSDetails(contentHash string, lifetime string, ttl string, key string, resolve bool) (*ipfsapi.PublishResponse, error) {
+func (im *IpfsManager) PublishToIPNSDetails(contentHash string, lifetime string, ttl string, keyName, keyID string, resolve bool) (*ipfsapi.PublishResponse, error) {
 	if !im.KeystoreEnabled {
 		return nil, errors.New("attempting to create ipns entry with dynamic keys keystore is not enabled/generated yet")
 	}
-	keyPresent, err := im.KeystoreManager.CheckIfKeyExists(key)
+	keyPresent, err := im.KeystoreManager.CheckIfKeyExists(keyName)
 	if err != nil {
 		return nil, err
 	}
 	if !keyPresent {
 		return nil, errors.New("attempting to sign with non existent key")
 	}
-	resp, err := im.Shell.PublishWithDetails(contentHash, lifetime, ttl, key, resolve)
+	resp, err := im.Shell.PublishWithDetails(contentHash, lifetime, ttl, keyID, resolve)
 	if err != nil {
 		return nil, err
 	}

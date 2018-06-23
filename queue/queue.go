@@ -73,11 +73,12 @@ type IpfsClusterPin struct {
 }
 
 type IPNSUpdate struct {
-	CID      string `json:"content_hash"`
-	LifeTime string `json:"life_time"`
-	TTL      string `json:"ttl"`
-	Key      string `json:"key"`
-	Resolve  string `json:"resolve"`
+	CID        string `json:"content_hash"`
+	LifeTime   string `json:"life_time"`
+	TTL        string `json:"ttl"`
+	Key        string `json:"key"`
+	Resolve    string `json:"resolve"`
+	EthAddress string `json:"eth_address"`
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes

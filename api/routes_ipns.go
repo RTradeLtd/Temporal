@@ -99,8 +99,15 @@ func PublishToIPNSDetails(c *gin.Context) {
 		return
 	}
 	prePubTime := time.Now()
+	keyID, err := um.GetKeyIDByName(ethAddress, key)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	fmt.Println("publishing to IPNS")
-	resp, err := manager.PublishToIPNSDetails(hash, lifetime, ttl, key, resolve)
+	resp, err := manager.PublishToIPNSDetails(hash, lifetime, ttl, key, keyID, resolve)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("unable to create ipns record %s", err),

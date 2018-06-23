@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/RTradeLtd/Temporal/models"
+
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
@@ -14,6 +16,7 @@ func ProcessIPNSPublishRequests(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	var resolve bool
 	var switchErr bool
 	rtfs, err := rtfs.Initialize("", "")
+	um := models.NewUserManager(db)
 	if err != nil {
 		return err
 	}
@@ -28,9 +31,10 @@ func ProcessIPNSPublishRequests(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 		}
 		contentHash := ipnsUpdate.CID
 		ttl := ipnsUpdate.TTL
-		key := ipnsUpdate.Key
+		keyName := ipnsUpdate.Key
 		lifetime := ipnsUpdate.LifeTime
 		resolveStr := ipnsUpdate.Resolve
+		ethAddress := ipnsUpdate.EthAddress
 		switch resolveStr {
 		case "true":
 			resolve = true
@@ -47,8 +51,14 @@ func ProcessIPNSPublishRequests(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 			d.Ack(false)
 			continue
 		}
-
-		resp, err := rtfs.PublishToIPNSDetails(contentHash, lifetime, ttl, key, resolve)
+		keyID, err := um.GetKeyIDByName(ethAddress, keyName)
+		if err != nil {
+			//TODO: handle
+			fmt.Println("error", err.Error())
+			d.Ack(false)
+			continue
+		}
+		resp, err := rtfs.PublishToIPNSDetails(contentHash, lifetime, ttl, keyName, keyID, resolve)
 		if err != nil {
 			// TODO: handle
 			fmt.Println("error publishing to ipns ", err)
