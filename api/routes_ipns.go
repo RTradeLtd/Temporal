@@ -82,6 +82,14 @@ func PublishToIPNSDetails(c *gin.Context) {
 		})
 		return
 	}
+	fmt.Println("creating key store manager")
+	err = manager.CreateKeystoreManager()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
 	resolve, nil := strconv.ParseBool(resolveString)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -89,6 +97,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 		})
 		return
 	}
+	fmt.Println("publishing to IPNS")
 	resp, err := manager.PublishToIPNSDetails(hash, lifetime, ttl, key, resolve)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
