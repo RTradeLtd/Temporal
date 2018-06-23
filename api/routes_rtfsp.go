@@ -2,10 +2,11 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
-	ma "github.com/multiformats/go-multiaddr"
 )
 
 func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
@@ -53,12 +54,23 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 	switch isHosted {
 	case "true":
 		for k, v := range bPeers {
-			_, err := ma.NewMultiaddr(v)
+			addr, err := utils.GenerateMultiAddrFromString(v)
 			if err != nil {
 				FailOnError(c, err)
 				return
 			}
-			_, err = ma.NewMultiaddr(nodeIPAddresses[k])
+			valid, err := utils.ParseMultiAddrForBootstrap(addr)
+			if err != nil {
+				FailOnError(c, err)
+				return
+			}
+			if !valid {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": fmt.Sprintf("provided peer %s is not a valid bootstrap peer", addr),
+				})
+				return
+			}
+			_, err = utils.GenerateMultiAddrFromString(nodeIPAddresses[k])
 			if err != nil {
 				FailOnError(c, err)
 				return
