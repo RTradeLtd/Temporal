@@ -108,6 +108,7 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 		FailOnError(c, errors.New("is_hosted must be `true` or `false`"))
 		return
 	}
+	// previously we were initializing like `var args map[string]*[]string` which was causing some issues.
 	args := make(map[string]*[]string)
 	args["local_node_addresses"] = &localNodeAddresses
 	if len(bootstrapPeerAddresses) > 0 {
