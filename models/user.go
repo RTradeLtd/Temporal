@@ -42,6 +42,10 @@ func (um *UserManager) AddIPFSKeyForUser(ethAddress, keyName string) error {
 	}
 
 	user.IPFSKeyNames = append(user.IPFSKeyNames, keyName)
+	// The following only updates the specified column for the given model
+	if errCheck := um.DB.Model(&user).Update("ipfs_key_names", user.IPFSKeyNames); errCheck.Error != nil {
+		return errCheck.Error
+	}
 	return nil
 }
 
