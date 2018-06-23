@@ -11,3 +11,9 @@ func FailNoExist(c *gin.Context, message string) {
 		"error": message,
 	})
 }
+
+func FailNotAuthorized(c *gin.Context, message string) {
+	c.JSON(http.StatusForbidden, gin.H{
+		"error": message,
+	})
+}
