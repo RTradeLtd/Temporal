@@ -722,16 +722,16 @@
   revision = "4df4dc6e86a912614d09719d10cad427b087cbfb"
 
 [[projects]]
+  branch = "master"
   name = "github.com/multiformats/go-multiaddr"
   packages = ["."]
-  revision = "f36800afeb9c141e1adb7da099e6f010dfd4c419"
-  version = "v1.2.7"
+  revision = "96804982667ed1672985566d0d0c2a7ed6f10e1f"
 
 [[projects]]
+  branch = "master"
   name = "github.com/multiformats/go-multiaddr-dns"
   packages = ["."]
-  revision = "4c36f46414bba59a19ffe5154841f76d4a55b780"
-  version = "v0.2.3"
+  revision = "78f39e8892d4f8c5c9f18679cc06d0b40ecab8cf"
 
 [[projects]]
   name = "github.com/multiformats/go-multiaddr-net"
@@ -1147,6 +1147,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d4e02c2d635d66b3299a7cc5c16adef00278ce605a0bcbf90225af5afb224a41"
+  inputs-digest = "7bd033515704d96bdaff5c42d6b63afcd112083a7308e5f4480ef934c434c79a"
   solver-name = "gps-cdcl"
   solver-version = 1

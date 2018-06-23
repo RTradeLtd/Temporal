@@ -26,10 +26,52 @@
 
 ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "github.com/satori/go.uuid"]
 
+
+# IPFS
+
+[[override]]
+  name = "github.com/multiformats/go-multiaddr-dns"
+  branch = "master"
+
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
   branch = "master"
   
+[[constraint]]
+  name = "github.com/ipfs/go-cid"
+  version = "0.7.21"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/ipfs/go-dnslink"
+
+[[constraint]]
+  name = "github.com/ipfs/go-ipfs-api"
+  version = "1.2.7"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/ipfs/go-ipfs-keystore"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/ipfs/go-ipns"
+
+[[constraint]]
+  name = "github.com/ipfs/ipfs-cluster"
+  version = "0.4.0"
+
+[[constraint]]
+  name = "github.com/libp2p/go-libp2p-crypto"
+  version = "1.6.2"
+
+[[constraint]]
+  name = "github.com/multiformats/go-multiaddr"
+  branch = "master"
+
+
+# MISC
+
 [[constraint]]
   name = "github.com/appleboy/gin-jwt"
   version = "2.3.1"
@@ -62,29 +104,7 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
   name = "github.com/gin-gonic/gin"
   version = "1.2.0"
 
-[[constraint]]
-  name = "github.com/ipfs/go-cid"
-  version = "0.7.21"
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/ipfs/go-dnslink"
-
-[[constraint]]
-  name = "github.com/ipfs/go-ipfs-api"
-  version = "1.2.7"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/ipfs/go-ipfs-keystore"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/ipfs/go-ipns"
-
-[[constraint]]
-  name = "github.com/ipfs/ipfs-cluster"
-  version = "0.4.0"
 
 [[constraint]]
   name = "github.com/jinzhu/gorm"
@@ -95,16 +115,8 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
   name = "github.com/lib/pq"
 
 [[constraint]]
-  name = "github.com/libp2p/go-libp2p-crypto"
-  version = "1.6.2"
-
-[[constraint]]
   branch = "master"
   name = "github.com/mitchellh/goamz"
-
-[[constraint]]
-  name = "github.com/multiformats/go-multiaddr"
-  version = "1.2.7"
 
 [[constraint]]
   branch = "master"

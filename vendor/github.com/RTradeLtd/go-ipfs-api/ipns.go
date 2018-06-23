@@ -54,7 +54,7 @@ func (s *Shell) PublishWithDetails(contentHash string, lifetime string, ttl stri
 		resolveString = "false"
 	}
 	args := []string{contentHash, resolveString, lifetime, ttl, key}
-	resp, err := s.newRequest(context.Background(), "name/publish", args...).Send(s.httpcli)
+	resp, err := s.newRequest(context.TODO(), "name/publish", args...).Send(s.httpcli)
 	if err != nil {
 		return nil, err
 	}
