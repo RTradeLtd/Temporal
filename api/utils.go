@@ -17,3 +17,9 @@ func FailNotAuthorized(c *gin.Context, message string) {
 		"error": message,
 	})
 }
+
+func FailOnError(c *gin.Context, err error) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"error": err.Error(),
+	})
+}
