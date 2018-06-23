@@ -120,7 +120,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipnsProtected.Use(middleware.AWSMiddleware(awsKey, awsSecret))
 	ipnsProtected.POST("/dnslink/aws/add", GenerateDNSLinkEntry) // admin locked
 
-	ipfsPrivateProtected := g.Group("/api/v1/ipfs/private")
+	ipfsPrivateProtected := g.Group("/api/v1/ipfs-private")
 	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
 	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(db))
 	ipfsPrivateProtected.POST("/new/network", CreateIPFSNetworkEntryInDatabase)

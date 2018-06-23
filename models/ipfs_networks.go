@@ -39,7 +39,7 @@ func NewIPFSNetworkManager(db *gorm.DB) *IPFSNetworkManager {
 }
 
 // TODO: Add in multiformat address validation
-func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string, isHosted bool, arrayParameters map[string]interface{}, users []string) (*IPFSPrivateNetwork, error) {
+func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string, isHosted bool, arrayParameters map[string]*[]string, users []string) (*IPFSPrivateNetwork, error) {
 	var pnet IPFSPrivateNetwork
 	/*	if check := im.preload().Where("name = ?").First(&net); check.Error != nil {
 		return nil, check.Error
@@ -58,14 +58,8 @@ func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string
 	// if were hosting the network infrastructure ourselves set that up too
 	if isHosted {
 		pnet.IsHosted = true
-		bPeers, ok := arrayParameters["bootstrap_peers"].([]string)
-		if !ok {
-			return nil, errors.New("bootstrap_peers is not of type []string")
-		}
-		nodeAddresses, ok := arrayParameters["local_node_addresses"].([]string)
-		if !ok {
-			return nil, errors.New("local_node_address is not of type []string")
-		}
+		bPeers := *arrayParameters["bootstrap_peers"]
+		nodeAddresses := *arrayParameters["local_node_addresses"]
 		if len(bPeers) != len(nodeAddresses) {
 			return nil, errors.New("bootstrap peers and node ip address are not equal length")
 		}
@@ -76,11 +70,8 @@ func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string
 			//pnet.NetHosted.LocalNodeIPAddresses = append(net.Hosted.LocalNodeIPAddresses, nodeIPAddresses[k])
 		}
 	} else {
-		nodeAddresses, ok := arrayParameters["local_node_addresses"].([]string)
-		if !ok {
-			return nil, errors.New("local_node_address is not of type []string")
-		}
-		for _, v := range nodeAddresses {
+		nodeAddresses := arrayParameters["local_node_addresses"]
+		for _, v := range *nodeAddresses {
 			pnet.Network.LocalNodeAddresses = append(pnet.Network.LocalNodeAddresses, v)
 		}
 	}
