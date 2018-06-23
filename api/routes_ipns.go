@@ -109,10 +109,20 @@ func PublishToIPNSDetails(c *gin.Context) {
 	}
 	postPubTime := time.Now()
 	timeDifference := postPubTime.Sub(prePubTime)
+
+	im := models.NewIPNSManager(db)
+	ipnsEntry, err := im.UpdateIPNSEntry(resp.Name, resp.Value, lifetime, ttl, key)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	c.JSON(http.StatusCreated, gin.H{
-		"name":           resp.Name,
-		"value":          resp.Value,
-		"time_to_create": timeDifference.Minutes(),
+		"name":                   resp.Name,
+		"value":                  resp.Value,
+		"time_to_create_minutes": timeDifference.Minutes(),
+		"ipns_entry_model":       ipnsEntry,
 	})
 }
 
