@@ -46,9 +46,9 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 		FailNoExist(c, "boostrap_peers post form array does not exist")
 		return
 	}
-	nodeIPAddresses, exists := c.GetPostFormArray("local_node_ip_addresses")
+	nodeAddresses, exists := c.GetPostFormArray("local_node_addresses")
 	if !exists {
-		FailNoExist(c, "local_node_ip_addresses post form array does not exist")
+		FailNoExist(c, "local_node_addresses post form array does not exist")
 		return
 	}
 	switch isHosted {
@@ -70,7 +70,7 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 				})
 				return
 			}
-			_, err = utils.GenerateMultiAddrFromString(nodeIPAddresses[k])
+			_, err = utils.GenerateMultiAddrFromString(nodeAddresses[k])
 			if err != nil {
 				FailOnError(c, err)
 				return
@@ -83,11 +83,11 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{
-		"network_name":            networkName,
-		"api_url":                 apiURL,
-		"swarm_key":               swarmKey,
-		"is_hosted":               isHosted,
-		"bootstrap_peers":         bPeers,
-		"local_node_ip_addresses": nodeIPAddresses,
+		"network_name":         networkName,
+		"api_url":              apiURL,
+		"swarm_key":            swarmKey,
+		"is_hosted":            isHosted,
+		"bootstrap_peers":      bPeers,
+		"local_node_addresses": nodeAddresses,
 	})
 }
