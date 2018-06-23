@@ -4,13 +4,38 @@ Temporal is an enterprise-grade storage solution featuring an easy to consume AP
 
 Temporal's API comes in two flavours, hosted or on-site. Should you not have the resources to run your own distributed storage nodes and infrastructure, you can take advantage of our hosted API allowing us to manage all the storage nodes and infrastructure, so all that you have to worry about is your application and using our API; We deal with all the hardware and infrastructure failures so that you can spend your hard work focusing on releasing products, not troubleshooting infrastructure failures which drain critical development resources. If however you have the infrastructure, and technical resources you can take advantage of Temporal being open source and deploy your own Temporal infrastructure. For on-site deployments we offer special paid for installations, maintenance, upgrades, and product usage information sessions allowing you to take full advantage of the power that comes with running your own Temporal infrastructure.
 
-# Status
+# Project Status
 
 Currently under heavy development, and is pre version 1. There is an MVP "pre-release" which is a demo of Temporal. There will be breaking API changes before V1, and there have already been breaking changes between the MVP pre-release and the time this commit was pushed to git. Temporal is not intended for usage before V1 beyond testing of Temporal itself. 
+
+# Project Features
+
+* IPNS
+    * Full control over IPNS key creation (100%)
+    * Full control over DNSLink TXT Record Creation (100%)
+        * Currently only AWS Route53 is supported, more DNS providers will rolled out as needed
+    * Automated record republishing (0%)
+    * Record validation (0%)   
+<br>
+* IPFS
+    * IPFS Cluster Integration (100%)
+    * Public IPFS Integration (100%)
+    * IPFS Key Creation (66%)
+        * SECP Keys (0%)
+        * RSA Keys (100%)
+        * ED25519 Keys (100%)
+    * Private IPFS Integration (50%)
+        * Static Private Connectivity (100%)
+            * We currently support connections to any private IPFS network, however it requires a static configuration done on a network-by-network basis
+        * Dynamic Private IPFS (0%)
+            * This will allow people to provide configuration details through temporal, allowing for the dynamic joining of private IPFS networks
+    * Dynamic Content Cache Distributor (0%)
+        * Dynamic Content Cache Distributor (DCCD) will be a service that distributes content requests across all known public gateways, allowing for content to be easily spread through the network cache
 
 # Dependencies (WIP)
 
 We use a slightly modified vendored go-ipfs-api package to provide some additional functionality for publishing IPNS records (one additional function, and a modified `Publish` function) see changes in `vendor/github.com/ipfs/go-ipfs-api/ipns.go`
+
 
 # Supported Technologies
 
