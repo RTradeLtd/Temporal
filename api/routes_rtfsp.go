@@ -58,7 +58,6 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 		FailOnError(c, errors.New("is_hosted must be `true` or `false`"))
 		return
 	}
-
 	c.JSON(http.StatusCreated, gin.H{
 		"network_name":            networkName,
 		"api_url":                 apiURL,
