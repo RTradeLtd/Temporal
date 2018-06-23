@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	ma "github.com/multiformats/go-multiaddr"
 )
 
 func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
@@ -51,7 +52,18 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 	}
 	switch isHosted {
 	case "true":
-		break
+		for k, v := range bPeers {
+			_, err := ma.NewMultiaddr(v)
+			if err != nil {
+				FailOnError(c, err)
+				return
+			}
+			_, err = ma.NewMultiaddr(nodeIPAddresses[k])
+			if err != nil {
+				FailOnError(c, err)
+				return
+			}
+		}
 	case "false":
 		break
 	default:
