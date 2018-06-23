@@ -4,10 +4,10 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"io"
+	"net"
 
 	salsa20 "github.com/davidlazar/go-crypto/salsa20"
 	ipnet "github.com/libp2p/go-libp2p-interface-pnet"
-	tconn "github.com/libp2p/go-libp2p-transport"
 	mpool "github.com/libp2p/go-msgio/mpool"
 )
 
@@ -20,7 +20,7 @@ var (
 )
 
 type pskConn struct {
-	tconn.Conn
+	net.Conn
 	psk *[32]byte
 
 	writeS20 cipher.Stream
@@ -73,9 +73,9 @@ func (c *pskConn) Write(in []byte) (int, error) {
 	return c.Conn.Write(out) // send
 }
 
-var _ tconn.Conn = (*pskConn)(nil)
+var _ net.Conn = (*pskConn)(nil)
 
-func newPSKConn(psk *[32]byte, insecure tconn.Conn) (tconn.Conn, error) {
+func newPSKConn(psk *[32]byte, insecure net.Conn) (net.Conn, error) {
 	if insecure == nil {
 		return nil, errInsecureNil
 	}

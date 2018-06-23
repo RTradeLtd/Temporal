@@ -27,7 +27,7 @@ func (n *RelayNotifiee) OpenedStream(net inet.Network, s inet.Stream) {}
 func (n *RelayNotifiee) ClosedStream(net inet.Network, s inet.Stream) {}
 
 func (n *RelayNotifiee) Connected(s inet.Network, c inet.Conn) {
-	if n.Relay().Transport().Matches(c.RemoteMultiaddr()) {
+	if n.Relay().Matches(c.RemoteMultiaddr()) {
 		return
 	}
 

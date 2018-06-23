@@ -26,10 +26,12 @@ import (
 )
 
 // ByteSlicePool is a static Pool for reusing byteslices of various sizes.
-var ByteSlicePool = &Pool{
-	New: func(length int) interface{} {
+var ByteSlicePool Pool
+
+func init() {
+	ByteSlicePool.New = func(length int) interface{} {
 		return make([]byte, length)
-	},
+	}
 }
 
 // MaxLength is the maximum length of an element that can be added to the Pool.

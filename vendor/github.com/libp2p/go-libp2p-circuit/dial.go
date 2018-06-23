@@ -11,24 +11,16 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 )
 
-var _ tpt.Dialer = (*RelayDialer)(nil)
-
-type RelayDialer Relay
-
-func (d *RelayDialer) Relay() *Relay {
-	return (*Relay)(d)
+func (d *RelayTransport) Dial(ctx context.Context, a ma.Multiaddr, p peer.ID) (tpt.Conn, error) {
+	c, err := d.Relay().Dial(ctx, a)
+	if err != nil {
+		return nil, err
+	}
+	return d.upgrader.UpgradeOutbound(ctx, d, c, p)
 }
 
-func (r *Relay) Dialer() *RelayDialer {
-	return (*RelayDialer)(r)
-}
-
-func (d *RelayDialer) Dial(a ma.Multiaddr) (tpt.Conn, error) {
-	return d.DialContext(d.ctx, a)
-}
-
-func (d *RelayDialer) DialContext(ctx context.Context, a ma.Multiaddr) (tpt.Conn, error) {
-	if !d.Matches(a) {
+func (r *Relay) Dial(ctx context.Context, a ma.Multiaddr) (*Conn, error) {
+	if !r.Matches(a) {
 		return nil, fmt.Errorf("%s is not a relay address", a)
 	}
 	parts := ma.Split(a)
@@ -51,24 +43,25 @@ func (d *RelayDialer) DialContext(ctx context.Context, a ma.Multiaddr) (tpt.Conn
 
 	if len(relayaddr.Bytes()) == 0 {
 		// unspecific relay address, try dialing using known hop relays
-		return d.tryDialRelays(ctx, *dinfo)
+		return r.tryDialRelays(ctx, *dinfo)
 	}
 
-	rinfo, err := pstore.InfoFromP2pAddr(relayaddr)
+	var rinfo *pstore.PeerInfo
+	rinfo, err = pstore.InfoFromP2pAddr(relayaddr)
 	if err != nil {
 		return nil, err
 	}
 
-	return d.Relay().DialPeer(ctx, *rinfo, *dinfo)
+	return r.DialPeer(ctx, *rinfo, *dinfo)
 }
 
-func (d *RelayDialer) tryDialRelays(ctx context.Context, dinfo pstore.PeerInfo) (tpt.Conn, error) {
+func (r *Relay) tryDialRelays(ctx context.Context, dinfo pstore.PeerInfo) (*Conn, error) {
 	var relays []peer.ID
-	d.mx.Lock()
-	for p := range d.relays {
+	r.mx.Lock()
+	for p := range r.relays {
 		relays = append(relays, p)
 	}
-	d.mx.Unlock()
+	r.mx.Unlock()
 
 	// shuffle list of relays, avoid overloading a specific relay
 	for i := range relays {
@@ -77,12 +70,12 @@ func (d *RelayDialer) tryDialRelays(ctx context.Context, dinfo pstore.PeerInfo) 
 	}
 
 	for _, relay := range relays {
-		if len(d.host.Network().ConnsToPeer(relay)) == 0 {
+		if len(r.host.Network().ConnsToPeer(relay)) == 0 {
 			continue
 		}
 
 		rctx, cancel := context.WithTimeout(ctx, HopConnectTimeout)
-		c, err := d.Relay().DialPeer(rctx, pstore.PeerInfo{ID: relay}, dinfo)
+		c, err := r.DialPeer(rctx, pstore.PeerInfo{ID: relay}, dinfo)
 		cancel()
 
 		if err == nil {
@@ -93,9 +86,4 @@ func (d *RelayDialer) tryDialRelays(ctx context.Context, dinfo pstore.PeerInfo) 
 	}
 
 	return nil, fmt.Errorf("Failed to dial through %d known relay hosts", len(relays))
-}
-
-func (d *RelayDialer) Matches(a ma.Multiaddr) bool {
-	_, err := a.ValueForProtocol(P_CIRCUIT)
-	return err == nil
 }

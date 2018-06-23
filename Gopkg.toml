@@ -24,15 +24,11 @@
 #   go-tests = true
 #   unused-packages = true
 
-# ignored = ["github.com/karalabe/hid", "github.com/ethereum/go-ethereum"]
-ignored = ["github.com/karalabe/hid"]
-[[constraint]]
-  branch = "master"
-  name = "github.com/RTradeLtd/ipd-config"
+ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid"]
 
 [[constraint]]
-  branch = "master"
   name = "github.com/appleboy/gin-jwt"
+  version = "2.3.1"
 
 [[constraint]]
   branch = "master"
@@ -40,43 +36,87 @@ ignored = ["github.com/karalabe/hid"]
 
 [[constraint]]
   branch = "master"
-  name = "github.com/danielkov/gin-helmet"
+  name = "github.com/c2h5oh/datasize"
 
 [[constraint]]
   branch = "master"
+  name = "github.com/danielkov/gin-helmet"
+
+[[constraint]]
   name = "github.com/dvwright/xss-mw"
+  version = "1.0.0-Beta"
+
+[[constraint]]
+  name = "github.com/ethereum/go-ethereum"
+  version = "1.8.11"
 
 [[constraint]]
   branch = "master"
   name = "github.com/gin-contrib/rollbar"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/gin-gonic/gin"
+  version = "1.2.0"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/ipfs/go-cid"
+  version = "0.7.21"
 
 [[constraint]]
   branch = "master"
+  name = "github.com/ipfs/go-dnslink"
+
+[[constraint]]
   name = "github.com/ipfs/go-ipfs-api"
+  version = "1.2.7"
 
 [[constraint]]
   branch = "master"
+  name = "github.com/ipfs/go-ipfs-keystore"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/ipfs/go-ipns"
+
+[[constraint]]
   name = "github.com/ipfs/ipfs-cluster"
+  version = "0.4.0"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/jinzhu/gorm"
+  version = "1.9.1"
 
 [[constraint]]
   branch = "master"
   name = "github.com/lib/pq"
 
 [[constraint]]
+  name = "github.com/libp2p/go-libp2p-crypto"
+  version = "1.6.2"
+
+[[constraint]]
   branch = "master"
+  name = "github.com/mitchellh/goamz"
+
+[[constraint]]
   name = "github.com/multiformats/go-multiaddr"
+  version = "1.2.7"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/onrik/ethrpc"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/rivo/tview"
+
+[[constraint]]
+  name = "github.com/segmentio/go-route53"
+  version = "0.2.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/semihalev/gin-stats"
 
 [[constraint]]
   branch = "master"
@@ -87,21 +127,17 @@ ignored = ["github.com/karalabe/hid"]
   name = "github.com/stvp/roll"
 
 [[constraint]]
+  name = "github.com/tus/tusd"
+  version = "0.10.0"
+
+[[constraint]]
   branch = "master"
   name = "github.com/zsais/go-gin-prometheus"
 
 [[constraint]]
-  branch = "v2"
-  name = "gopkg.in/abiosoft/ishell.v2"
+  branch = "master"
+  name = "golang.org/x/crypto"
 
 [prune]
   go-tests = true
   unused-packages = true
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/semihalev/gin-stats"
-
-[[constraint]]
-  name = "github.com/ipfs/go-ipfs"
-  branch = "master"

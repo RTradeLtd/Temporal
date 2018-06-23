@@ -8,33 +8,27 @@
   },
   "gxDependencies": [
     {
-      "hash": "QmTG23dvpBCBjqQwyDxV8CQT6jmS4PSftNr1VqHhE3MLy7",
+      "hash": "Qmbi1CTJsbnBZjCEgc2otwu8cUFPsGpzWXG7edVCLZ7Gvk",
       "name": "go-log",
-      "version": "1.4.1"
+      "version": "1.5.2"
     },
     {
       "author": "jbenet",
-      "hash": "QmRK2LxanhK2gZq6k6R7vk5ZoYZk8ULSSTB7FzDsMUX6CB",
+      "hash": "QmNqRnejxJxjRroz7buhrjfU8i3yNBLa81hFtmf2pXEffN",
       "name": "go-multiaddr-net",
-      "version": "1.5.7"
+      "version": "1.6.1"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmTy17Jm1foTnvUS9JXRhLbRQ3XuC64jPTjUfpB4mHz2QM",
+      "hash": "QmYrE8ETPuzJYQuAbPwH512wcpvATJ9vK75jUz2twKdHMo",
       "name": "mafmt",
-      "version": "1.2.5"
-    },
-    {
-      "author": "whyrusleeping",
-      "hash": "QmU6Yf4jad9eAv9FmCqcYU2S7iN7aQwY2erG376ZDs1j7a",
-      "name": "go-ws-transport",
-      "version": "1.6.6"
+      "version": "1.2.6"
     },
     {
       "author": "multiformats",
-      "hash": "QmWWQ2Txc2c6tqjsBpzg5Ar652cHPGNsQQp2SejkNmkUMb",
+      "hash": "QmUxSEGbv2nmYNnfXi7839wwQqTN3kwQeUxe8dTjZWZs7J",
       "name": "go-multiaddr",
-      "version": "1.2.6"
+      "version": "1.2.7"
     }
   ],
   "gxVersion": "0.9.1",
@@ -42,6 +36,6 @@
   "license": "MIT",
   "name": "go-addr-util",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "1.2.7"
+  "version": "2.0.2"
 }
 

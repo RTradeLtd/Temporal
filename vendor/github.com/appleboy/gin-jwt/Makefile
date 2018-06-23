@@ -55,6 +55,11 @@ unconvert:
 	fi
 	for PKG in $(PACKAGES); do unconvert -v $$PKG || exit 1; done;
 
+coverage:
+	curl -s https://codecov.io/bash > .codecov && \
+	chmod +x .codecov && \
+	./.codecov -f .cover/coverage.txt
+
 clean:
 	rm -rf .cover
 	find . -name "coverage.txt"
