@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/models"
+	"github.com/jinzhu/gorm"
+
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -51,8 +54,15 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 		FailNoExist(c, "local_node_addresses post form array does not exist")
 		return
 	}
+	users := c.PostFormArray("users")
+
+	var args map[string]interface{}
+	var hosted bool
 	switch isHosted {
 	case "true":
+		hosted = true
+		var bootstrapPeerAddresses []string
+		var localNodeAddresses []string
 		if len(nodeAddresses) != len(bPeers) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "length of local_node_addresses and bootstrap_peers must be equal",
@@ -81,19 +91,44 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 				FailOnError(c, err)
 				return
 			}
+			bootstrapPeerAddresses = append(bootstrapPeerAddresses, v)
+			localNodeAddresses = append(localNodeAddresses, nodeAddresses[k])
 		}
+		args["bootstrap_peers"] = bootstrapPeerAddresses
+		args["local_node_addresses"] = localNodeAddresses
 	case "false":
-		break
+		var localNodeAddresses []string
+		hosted = false
+		for _, v := range localNodeAddresses {
+			_, err := utils.GenerateMultiAddrFromString(v)
+			if err != nil {
+				FailOnError(c, err)
+				return
+			}
+			localNodeAddresses = append(localNodeAddresses, v)
+		}
+		args["local_node_addresses"] = localNodeAddresses
 	default:
 		FailOnError(c, errors.New("is_hosted must be `true` or `false`"))
 		return
 	}
+
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to load database",
+		})
+		return
+	}
+
+	manager := models.NewIPFSNetworkManager(db)
+	network, err := manager.CreatePrivateNetwork(networkName, apiURL, swarmKey, hosted, args, users)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
 	c.JSON(http.StatusCreated, gin.H{
-		"network_name":         networkName,
-		"api_url":              apiURL,
-		"swarm_key":            swarmKey,
-		"is_hosted":            isHosted,
-		"bootstrap_peers":      bPeers,
-		"local_node_addresses": nodeAddresses,
+		"network": network,
 	})
 }
