@@ -18,8 +18,8 @@ type User struct {
 	EmailEnabled      bool   `gorm:"type:boolean"`
 	HashedPassword    string `gorm:"type:varchar(255)"`
 	// IPFSKeyNames is an array of IPFS keys this user has created
-	IPFSKeyNames  pq.StringArray `gorm:"type:text[]"`
-	IPFSKeyIDList pq.StringArray `gorm:"type:text[]"`
+	IPFSKeyNames pq.StringArray `gorm:"type:text[];column:ipfs_key_names"`
+	IPFSKeyIDs   pq.StringArray `gorm:"type:text[];column:ipfs_key_ids"`
 }
 
 type UserManager struct {
@@ -43,11 +43,11 @@ func (um *UserManager) AddIPFSKeyForUser(ethAddress, keyName, keyID string) erro
 	}
 
 	user.IPFSKeyNames = append(user.IPFSKeyNames, keyName)
-	user.IPFSKeyIDList = append(user.IPFSKeyIDList, keyID)
+	user.IPFSKeyIDs = append(user.IPFSKeyIDs, keyID)
 	// The following only updates the specified column for the given model
 	if errCheck := um.DB.Model(&user).Updates(map[string]interface{}{
-		"ip_fs_key_names":   user.IPFSKeyNames,
-		"ip_fs_key_id_list": user.IPFSKeyIDList,
+		"ipfs_key_names": user.IPFSKeyNames,
+		"ipfs_key_ids":   user.IPFSKeyIDs,
 	}); errCheck.Error != nil {
 		return errCheck.Error
 	}
@@ -78,7 +78,7 @@ func (um *UserManager) GetKeyIDByName(ethAddress, keyName string) (string, error
 	}
 	for k, v := range user.IPFSKeyNames {
 		if v == keyName {
-			return user.IPFSKeyIDList[k], nil
+			return user.IPFSKeyIDs[k], nil
 		}
 	}
 	return "", errors.New("key not found")
