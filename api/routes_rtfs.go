@@ -12,10 +12,15 @@ import (
 
 // PinHashLocally is used to pin a hash to the local ipfs node
 func PinHashLocally(c *gin.Context) {
+	// check if its for a private network
+	_, exists := c.GetPostForm("use_private_network")
+	if exists {
+		UploadToHostedIPFSNetwork(c)
+		return
+	}
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
 	uploadAddress := GetAuthenticatedUserFromContext(contextCopy)
-
 	holdTimeInMonths, exists := contextCopy.GetPostForm("hold_time")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{

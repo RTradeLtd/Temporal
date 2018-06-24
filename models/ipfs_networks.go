@@ -24,7 +24,7 @@ type IPFSNetworkManager struct {
 	DB *gorm.DB
 }
 
-func NewIPFSNetworkManager(db *gorm.DB) *IPFSNetworkManager {
+func NewHostedIPFSNetworkManager(db *gorm.DB) *IPFSNetworkManager {
 	return &IPFSNetworkManager{DB: db}
 }
 
@@ -34,6 +34,14 @@ func (im *IPFSNetworkManager) GetNetworkByName(name string) (*HostedIPFSPrivateN
 		return nil, check.Error
 	}
 	return &pnet, nil
+}
+
+func (im *IPFSNetworkManager) GetAPIURLByName(name string) (string, error) {
+	pnet, err := im.GetNetworkByName(name)
+	if err != nil {
+		return "", err
+	}
+	return pnet.APIURL, nil
 }
 
 // TODO: Validate swarm key and API url

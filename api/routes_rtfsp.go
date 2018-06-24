@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
@@ -10,6 +11,30 @@ import (
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 )
+
+func UploadToHostedIPFSNetwork(c *gin.Context) {
+	cC := c.Copy()
+	networkName, exists := cC.GetPostForm("network_name")
+	hash := cC.Param("hash")
+	ethAddress := GetAuthenticatedUserFromContext(cC)
+	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "hold_time post form does not exist",
+		})
+		return
+	}
+	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"hash":                hash,
+		"eth_address":         ethAddress,
+		"hold_time_in_months": holdTimeInt,
+	})
+}
 
 func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	// lock down as admin route for now
