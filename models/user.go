@@ -73,8 +73,9 @@ func (um *UserManager) AddIPFSKeyForUser(ethAddress, keyName, keyID string) erro
 	return nil
 }
 
-func (um *UserManager) GetKeysForUser(ethAddress string) ([]string, error) {
+func (um *UserManager) GetKeysForUser(ethAddress string) (map[string][]string, error) {
 	var user User
+	keys := make(map[string][]string)
 	if errCheck := um.DB.Where("eth_address = ?", ethAddress).First(&user); errCheck.Error != nil {
 		return nil, errCheck.Error
 	}
@@ -83,7 +84,9 @@ func (um *UserManager) GetKeysForUser(ethAddress string) ([]string, error) {
 		return nil, errors.New("user account does not exist")
 	}
 
-	return user.IPFSKeyNames, nil
+	keys["key_names"] = user.IPFSKeyNames
+	keys["key_ids"] = user.IPFSKeyIDs
+	return keys, nil
 }
 
 func (um *UserManager) GetKeyIDByName(ethAddress, keyName string) (string, error) {

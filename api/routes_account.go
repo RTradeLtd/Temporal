@@ -247,6 +247,7 @@ func GetIPFSKeyNamesForAuthUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"keys": keys,
+		"key_names": keys["key_names"],
+		"key_ids":   keys["key_ids"],
 	})
 }
