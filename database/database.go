@@ -12,7 +12,7 @@ var UploadObj *models.Upload
 var UserObj *models.User
 var PaymentObj *models.Payment
 var IpnsObj *models.IPNS
-var IpfsNetObj *models.IPFSPrivateNetwork
+var HostedIpfsNetObj *models.HostedIPFSPrivateNetwork
 
 type DatabaseManager struct {
 	DB     *gorm.DB
@@ -37,9 +37,7 @@ func (dbm *DatabaseManager) RunMigrations() {
 	// gorm will default table to name of ip_ns
 	// so we will override with ipns
 	dbm.DB.AutoMigrate(IpnsObj)
-	dbm.DB.AutoMigrate(IpfsNetObj)
-	dbm.DB.AutoMigrate(&models.Networks{})
-	dbm.DB.AutoMigrate(&models.HostedNetworks{})
+	dbm.DB.AutoMigrate(HostedIpfsNetObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
 

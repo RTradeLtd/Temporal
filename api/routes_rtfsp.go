@@ -62,7 +62,6 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 	var hosted bool
 	switch isHosted {
 	case "true":
-		fmt.Println(1)
 		hosted = true
 		if len(nodeAddresses) != len(bPeers) {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -70,7 +69,6 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 			})
 			return
 		}
-		fmt.Println(2)
 		for k, v := range bPeers {
 			addr, err := utils.GenerateMultiAddrFromString(v)
 			if err != nil {
@@ -110,14 +108,12 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 		FailOnError(c, errors.New("is_hosted must be `true` or `false`"))
 		return
 	}
-	fmt.Println(3)
 	// previously we were initializing like `var args map[string]*[]string` which was causing some issues.
 	args := make(map[string][]string)
 	args["local_node_addresses"] = localNodeAddresses
 	if len(bootstrapPeerAddresses) > 0 {
 		args["bootstrap_peer_addresses"] = bootstrapPeerAddresses
 	}
-	fmt.Println(4)
 	db, ok := cC.MustGet("db").(*gorm.DB)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -125,18 +121,18 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println(5)
 	manager := models.NewIPFSNetworkManager(db)
-	fmt.Println(6)
-	network, err := manager.CreatePrivateNetwork(networkName, apiURL, swarmKey, hosted, args, users)
-	if err != nil {
-		FailOnError(c, err)
-		return
+	if hosted {
+		network, err := manager.CreateHostedPrivateNetwork(networkName, apiURL, swarmKey, args, users)
+		if err != nil {
+			FailOnError(c, err)
+			return
+		}
+		c.JSON(http.StatusCreated, gin.H{
+			"network": network,
+		})
 	}
-	fmt.Println(7)
-	c.JSON(http.StatusCreated, gin.H{
-		"network": network,
-	})
+
 }
 
 func GetIPFSPrivateNetworkByName(c *gin.Context) {
