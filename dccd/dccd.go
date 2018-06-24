@@ -11,11 +11,9 @@ import (
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 )
 
-// This is a URL from which we can obtain a list of public gateways, taken from ipfg.sh
-var PublicGatewayList = "https://raw.githubusercontent.com/ipfs/public-gateway-checker/master/gateways.json"
-
 type DCCDManager struct {
-	Shell *ipfsapi.Shell
+	Shell    *ipfsapi.Shell
+	Gateways map[string]int
 }
 
 func NewDCCDManager(connectionURL string) *DCCDManager {
@@ -23,4 +21,13 @@ func NewDCCDManager(connectionURL string) *DCCDManager {
 		// load a default api
 		connectionURL = "localhost:5001"
 	}
+	return &DCCDManager{Shell: ipfsapi.NewShell(connectionURL)}
+}
+
+func (dc *DCCDManager) ParseGateways() {
+	indexes := make(map[string]int)
+	for k, v := range gateArrays {
+		indexes[v] = k
+	}
+	dc.Gateways = indexes
 }
