@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/gui"
 	"github.com/RTradeLtd/Temporal/rtns"
 
 	//_ "./docs"
@@ -75,6 +76,8 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Printf("%+v\n", entry)
+	case "gui":
+		gui.Run()
 	case "tui":
 		tui.InitializeApplication(tCfg)
 	case "api":
