@@ -51,12 +51,19 @@ func UploadToHostedIPFSNetwork(c *gin.Context) {
 		FailNotAuthorized(c, "unauthorized access to private ipfs network")
 		return
 	}
+	im := models.NewHostedIPFSNetworkManager(db)
+	pnet, err := im.GetNetworkByName(networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"hash":                hash,
 		"eth_address":         ethAddress,
 		"hold_time_in_months": holdTimeInt,
 		"network_name":        networkName,
 		"can_upload":          canUpload,
+		"private_net":         pnet,
 	})
 }
 
