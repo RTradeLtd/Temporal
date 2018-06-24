@@ -33,6 +33,7 @@ func UploadToHostedIPFSNetwork(c *gin.Context) {
 		"hash":                hash,
 		"eth_address":         ethAddress,
 		"hold_time_in_months": holdTimeInt,
+		"network_name":        networkName,
 	})
 }
 
@@ -132,7 +133,7 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		})
 		return
 	}
-	manager := models.NewIPFSNetworkManager(db)
+	manager := models.NewHostedIPFSNetworkManager(db)
 	network, err := manager.CreateHostedPrivateNetwork(networkName, apiURL, swarmKey, args, users)
 	if err != nil {
 		FailOnError(c, err)
@@ -180,7 +181,7 @@ func GetIPFSPrivateNetworkByName(c *gin.Context) {
 		FailNoExist(c, "network_name post form does not exist")
 		return
 	}
-	manager := models.NewIPFSNetworkManager(db)
+	manager := models.NewHostedIPFSNetworkManager(db)
 	net, err := manager.GetNetworkByName(netName)
 	if err != nil {
 		FailOnError(c, err)
