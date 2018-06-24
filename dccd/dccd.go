@@ -5,13 +5,16 @@ package dccd
 	DCCD is a utility used to request a particular content hash from all known IPFS gateways.
 	The intended purpose is to spread content throughout the IPFS network cache.
 	Additional features will be requesting content from user specified nodes as well, allowing for additional cache dispersion
+
+	The initial idea is taken from `ipfg.sh` whose developer is Joss Brown (pseud.): https://github.com/JayBrown
+	Source code for that script is in the `scripts` folder
 */
 
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"time"
 
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/jinzhu/gorm"
@@ -49,21 +52,21 @@ func (dc *DCCDManager) DisperseContent(contentHash string) (map[string]bool, err
 	if len(dc.Gateways) < 1 {
 		return nil, errors.New("please parse gateways before dispersing content")
 	}
-	//var err error
+	var netClient = &http.Client{
+		Timeout: time.Minute * 1,
+	}
 	for k := range dc.Gateways {
 		url := fmt.Sprintf("%s/%s", k, contentHash)
-		resp, err := http.Get(url)
+		resp, err := netClient.Get(url)
 		if err != nil {
+			fmt.Println("Dispersal failed for", k)
 			dispersals[k] = false
 			continue
 		}
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
+		if resp.StatusCode != 200 {
+			fmt.Println("Dispersal failed for", k)
 			dispersals[k] = false
 			continue
-		}
-		if string(body) != "Hello from IPFS Gateway Checker" {
-			dispersals[k] = false
 		}
 		dispersals[k] = true
 	}

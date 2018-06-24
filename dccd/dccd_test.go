@@ -7,7 +7,7 @@ import (
 	"github.com/RTradeLtd/Temporal/dccd"
 )
 
-var testHash = "Qmaisz6NMhDB51cCvNWa1GMS7LU1pAxdF4Ld6Ft9kZEP2a"
+var testHash = "Qmbu7x6gJbsKDcseQv66pSbUcAA3Au6f7MfTYVXwvBxN2K"
 
 func TestDCCD(t *testing.T) {
 	manager := dccd.NewDCCDManager("")
@@ -17,5 +17,17 @@ func TestDCCD(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(dispersals)
+	var failureCount int
+	var successCount int
+	for k, v := range dispersals {
+		if v == false {
+			fmt.Printf("dispersal for %s failed\n", k)
+			failureCount++
+			continue
+		}
+		fmt.Printf("dispersal for %s passed", k)
+		successCount++
+	}
+	fmt.Println("Number of failures", failureCount)
+	fmt.Println("Number of successes", successCount)
 }
