@@ -13,7 +13,7 @@ type HostedIPFSPrivateNetwork struct {
 	APIURL                 string         `gorm:"type:varchar(255)"`
 	SwarmKey               string         `gorm:"type:varchar(255)"`
 	Users                  pq.StringArray `gorm:"type:text[]"` // these are the users to which this IPFS network connection applies to specified by eth address
-	LocalNodeAddresses     pq.StringArray `gorm:"type:text[]"` // these are the nodes whichwe run, and can connect to
+	LocalNodePeerAddresses pq.StringArray `gorm:"type:text[]"` // these are the nodes whichwe run, and can connect to
 	LocalNodePeerIDs       pq.StringArray `gorm:"type:text[];column:local_node_peer_ids"`
 	BootstrapPeerAddresses pq.StringArray `gorm:"type:text[]"`
 	BootstrapPeerIDs       pq.StringArray `gorm:"type:text[];column:bootstrap_peer_ids"`
@@ -47,13 +47,17 @@ func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, apiURL, swarmKey 
 	}
 
 	bPeers := arrayParameters["bootstrap_peer_addresses"]
-	nodeAddresses := arrayParameters["local_node_addresses"]
+	bPeerIDs := arrayParameters["bootstrap_peer_ids"]
+	nodeAddresses := arrayParameters["local_node_peer_addresses"]
+	nodeIDs := arrayParameters["local_node_peer_ids"]
 	if len(bPeers) != len(nodeAddresses) {
 		return nil, errors.New("bootstrap_peer_address and local_node_address length not equal")
 	}
 	for k, v := range bPeers {
-		pnet.LocalNodeAddresses = append(pnet.LocalNodeAddresses, nodeAddresses[k])
 		pnet.BootstrapPeerAddresses = append(pnet.BootstrapPeerAddresses, v)
+		pnet.BootstrapPeerIDs = append(pnet.BootstrapPeerIDs, bPeerIDs[k])
+		pnet.LocalNodePeerAddresses = append(pnet.LocalNodePeerAddresses, nodeAddresses[k])
+		pnet.LocalNodePeerIDs = append(pnet.LocalNodePeerIDs, nodeIDs[k])
 	}
 	pnet.Name = name
 	pnet.APIURL = apiURL

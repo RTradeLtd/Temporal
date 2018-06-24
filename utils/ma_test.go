@@ -1,6 +1,7 @@
 package utils_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/utils"
@@ -29,4 +30,10 @@ func TestMultiAddrValidator(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	pretty, err := utils.ParsePeerIDFromIPFSMultiAddr(addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(pretty)
 }
