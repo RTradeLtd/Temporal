@@ -9,7 +9,7 @@
 
 LANG=en_US.UTF-8
 export PATH=/usr/local/bin:$PATH
-export IPFS_PATH=/ipfs
+export IPFS_PATH=/ipfs # This is a modification from Postables @RTrdadeLtd
 export HISTIGNORE='*ipfs config show*'
 echoerr() {
 	echo "$1" 1>&2
