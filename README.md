@@ -30,8 +30,8 @@ Currently under heavy development, and is pre version 1. There is an MVP "pre-re
             * We currently support connections to any private IPFS network, however it requires a static configuration done on a network-by-network basis
         * Dynamic Private IPFS (0%)
             * This will allow people to provide configuration details through temporal, allowing for the dynamic joining of private IPFS networks
-    * Dynamic Content Cache Distributor (0%)
-        * Dynamic Content Cache Distributor (DCCD) will be a service that distributes content requests across all known public gateways, allowing for content to be easily spread through the network cache
+    * Dynamic Content Cache Dispersion (20%)
+        * Dynamic Content Cache Dispersion (DCCD) will be a service that distributes content requests across all known public gateways, allowing for content to be easily spread through the network cache
 
 # Dependencies (WIP)
 
