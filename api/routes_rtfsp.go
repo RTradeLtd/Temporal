@@ -15,6 +15,10 @@ import (
 func UploadToHostedIPFSNetwork(c *gin.Context) {
 	cC := c.Copy()
 	networkName, exists := cC.GetPostForm("network_name")
+	if !exists {
+		FailNoExist(c, "network_name post form does not exist")
+		return
+	}
 	hash := cC.Param("hash")
 	ethAddress := GetAuthenticatedUserFromContext(cC)
 	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
@@ -29,11 +33,30 @@ func UploadToHostedIPFSNetwork(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	db, ok := cC.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to load database",
+		})
+		return
+	}
+
+	um := models.NewUserManager(db)
+	canUpload, err := um.CheckIfUserHasAccessToNetwork(ethAddress, networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	if !canUpload {
+		FailNotAuthorized(c, "unauthorized access to private ipfs network")
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"hash":                hash,
 		"eth_address":         ethAddress,
 		"hold_time_in_months": holdTimeInt,
 		"network_name":        networkName,
+		"can_upload":          canUpload,
 	})
 }
 

@@ -33,6 +33,18 @@ func NewUserManager(db *gorm.DB) *UserManager {
 	return &um
 }
 
+func (um *UserManager) CheckIfUserHasAccessToNetwork(ethAddress, networkName string) (bool, error) {
+	u := &User{}
+	if check := um.DB.Where("eth_address = ?", ethAddress).First(u); check.Error != nil {
+		return false, check.Error
+	}
+	for _, v := range u.IPFSNetworkNames {
+		if v == networkName {
+			return true, nil
+		}
+	}
+	return false, nil
+}
 func (um *UserManager) AddIPFSNetworkForUser(ethAddress, networkName string) error {
 	u := &User{}
 	if check := um.DB.Where("eth_address = ?", ethAddress).First(u); check.Error != nil {
