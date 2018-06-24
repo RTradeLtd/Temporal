@@ -25,11 +25,14 @@ Currently under heavy development, and is pre version 1. There is an MVP "pre-re
         * SECP Keys (0%)
         * RSA Keys (100%)
         * ED25519 Keys (100%)
-    * Private IPFS Integration (50%)
+    * Private IPFS Integration (66%)
         * Static Private Connectivity (100%)
             * We currently support connections to any private IPFS network, however it requires a static configuration done on a network-by-network basis
-        * Dynamic Private IPFS (0%)
+        * Dynamic Private IPFS (50%)
             * This will allow people to provide configuration details through temporal, allowing for the dynamic joining of private IPFS networks
+        * Cluster Support (50%)
+            * This will back our connection to a hosted or non hosted private IPFS network with IPFS Cluster support
+            * Cluster support is already built into Temporal, we just need to integrate it with the Private IPFS feature
     * Dynamic Content Cache Dispersion (50%)
         * Dynamic Content Cache Dispersion (DCCD) will be a service that distributes content requests across all known public gateways, allowing for content to be easily spread through the network cache
 
