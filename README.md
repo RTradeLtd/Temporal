@@ -12,13 +12,13 @@ Currently under heavy development, and is pre version 1. There is an MVP "pre-re
 
 # Project Features
 
-* IPNS
+* IPNS (50%)
     * Full control over IPNS key creation (100%)
     * Full control over DNSLink TXT Record Creation (100%)
         * Currently only AWS Route53 is supported, more DNS providers will rolled out as needed
     * Automated record republishing (0%)
-    * Record validation (0%)   
-* IPFS
+    * Record validation (0%)
+* IPFS (76%)
     * IPFS Cluster Integration (100%)
     * Public IPFS Integration (100%)
     * IPFS Key Creation (66%)
