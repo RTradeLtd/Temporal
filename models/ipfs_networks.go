@@ -15,18 +15,20 @@ type IPFSPrivateNetwork struct {
 	SwarmKey string         `gorm:"type:varchar(255)"`
 	Users    pq.StringArray `gorm:"type:text[]"` // these are the users to which this IPFS network connection applies to specified by eth address
 	IsHosted bool           `gorm:"type:boolean"`
-	Network  Network
+	Network  Networks
 }
 
-type Network struct {
+type Networks struct {
 	gorm.Model
+	Name               string         `gorm:"type:varchar(255)"`
 	LocalNodeAddresses pq.StringArray `gorm:"type:text[]"` // these are the nodes whichwe run, and can connect to
 	LocalNodePeerIDs   pq.StringArray `gorm:"type:text[];column:local_node_peer_ids"`
-	Hosted             Hosted
+	HostedNetwork      HostedNetworks
 }
 
-type Hosted struct {
+type HostedNetworks struct {
 	gorm.Model
+	Name             string         `gorm:"type:varchar(255)"`
 	BootstrapPeers   pq.StringArray `gorm:"type:text[]"` // these are the boostrap peers which we run
 	BootstrapPeerIDs pq.StringArray `gorm:"type:text[];column:bootstrap_peer_ids"`
 }
@@ -54,6 +56,8 @@ func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string
 	if check := im.DB.Where("name = ?", name).First(&pnet); check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
+	im.DB.Model(&pnet).Related(&pnet.Network, "Networks")
+	im.DB.Model(&pnet.Network).Related(&pnet.Network.HostedNetwork, "HostedNetworks")
 	fmt.Println(10.2)
 	if pnet.CreatedAt != nilTime {
 		return nil, errors.New("network already exists")
@@ -77,11 +81,13 @@ func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string
 			return nil, errors.New("bootstrap peers and node ip address are not equal length")
 		}
 		for k, v := range bPeers {
-			pnet.Network.Hosted.BootstrapPeers = append(pnet.Network.Hosted.BootstrapPeers, v)
+			pnet.Network.HostedNetwork.BootstrapPeers = append(pnet.Network.HostedNetwork.BootstrapPeers, v)
 			pnet.Network.LocalNodeAddresses = append(pnet.Network.LocalNodeAddresses, nodeAddresses[k])
 			//pnet.Hosted.BootstrapPeers = append(net.Hosted.BootstrapPeers, v)
 			//pnet.NetHosted.LocalNodeIPAddresses = append(net.Hosted.LocalNodeIPAddresses, nodeIPAddresses[k])
 		}
+		pnet.Network.Name = name
+		pnet.Network.HostedNetwork.Name = name
 	} else {
 		nodeAddresses := arrayParameters["local_node_addresses"]
 		for _, v := range nodeAddresses {
@@ -89,6 +95,17 @@ func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string
 		}
 	}
 	fmt.Println(10.5)
+	var mn Networks
+	var hn HostedNetworks
+	mn.Name = name
+	hn.Name = name
+	// we need to create the data in the database in order save, and link the mdoels
+	if check := im.DB.Save(&mn); check.Error != nil {
+		return nil, check.Error
+	}
+	if check := im.DB.Save(&hn); check.Error != nil {
+		return nil, check.Error
+	}
 	if check := im.DB.Create(&pnet); check.Error != nil {
 		return nil, check.Error
 	}

@@ -38,6 +38,8 @@ func (dbm *DatabaseManager) RunMigrations() {
 	// so we will override with ipns
 	dbm.DB.AutoMigrate(IpnsObj)
 	dbm.DB.AutoMigrate(IpfsNetObj)
+	dbm.DB.AutoMigrate(&models.Networks{})
+	dbm.DB.AutoMigrate(&models.HostedNetworks{})
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
 
