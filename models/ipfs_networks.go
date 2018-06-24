@@ -15,7 +15,7 @@ type IPFSPrivateNetwork struct {
 	SwarmKey string         `gorm:"type:varchar(255)"`
 	Users    pq.StringArray `gorm:"type:text[]"` // these are the users to which this IPFS network connection applies to specified by eth address
 	IsHosted bool           `gorm:"type:boolean"`
-	Network  Networks
+	Network  Networks       `gorm:"ForeignKey:Name"`
 }
 
 type Networks struct {
@@ -23,7 +23,7 @@ type Networks struct {
 	Name               string         `gorm:"type:varchar(255)"`
 	LocalNodeAddresses pq.StringArray `gorm:"type:text[]"` // these are the nodes whichwe run, and can connect to
 	LocalNodePeerIDs   pq.StringArray `gorm:"type:text[];column:local_node_peer_ids"`
-	HostedNetwork      HostedNetworks
+	HostedNetwork      HostedNetworks `gorm:"ForeignKey:Name"`
 }
 
 type HostedNetworks struct {
@@ -43,7 +43,9 @@ func NewIPFSNetworkManager(db *gorm.DB) *IPFSNetworkManager {
 
 func (im *IPFSNetworkManager) GetNetworkByName(name string) (*IPFSPrivateNetwork, error) {
 	var pnet IPFSPrivateNetwork
-	if check := im.DB.Where("name = ?", name).First(&pnet); check.Error != nil {
+	if check := im.DB.Model(&pnet).Where("name = ?", name).First(&pnet).Model(&pnet.Network).
+		Where("name = ?", name).First(&pnet.Network).Model(&pnet.Network.HostedNetwork).
+		Where("name = ?", name).First(&pnet.Network.HostedNetwork); check.Error != nil {
 		return nil, check.Error
 	}
 	return &pnet, nil
@@ -52,17 +54,14 @@ func (im *IPFSNetworkManager) GetNetworkByName(name string) (*IPFSPrivateNetwork
 // TODO: Add in multiformat address validation
 func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string, isHosted bool, arrayParameters map[string][]string, users []string) (*IPFSPrivateNetwork, error) {
 	var pnet IPFSPrivateNetwork
-	fmt.Println(10.1)
 	if check := im.DB.Where("name = ?", name).First(&pnet); check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
-	im.DB.Model(&pnet).Related(&pnet.Network, "Networks")
-	im.DB.Model(&pnet.Network).Related(&pnet.Network.HostedNetwork, "HostedNetworks")
-	fmt.Println(10.2)
 	if pnet.CreatedAt != nilTime {
 		return nil, errors.New("network already exists")
 	}
-	fmt.Println(10.3)
+	im.DB.Model(&pnet).Association("Network")
+	im.DB.Model(&pnet.Network).Association("HostedNetwork")
 	pnet.Name = name
 	pnet.APIURL = apiURL
 	// if we were passed in a list of users, then we will add them
@@ -71,7 +70,8 @@ func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string
 			pnet.Users = append(pnet.Users, v)
 		}
 	}
-	fmt.Println(10.4)
+	hostedName := fmt.Sprintf("hosted+%s", name)
+	privateName := fmt.Sprintf("private+%s", name)
 	// if were hosting the network infrastructure ourselves set that up too
 	if isHosted {
 		pnet.IsHosted = true
@@ -86,26 +86,30 @@ func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string
 			//pnet.Hosted.BootstrapPeers = append(net.Hosted.BootstrapPeers, v)
 			//pnet.NetHosted.LocalNodeIPAddresses = append(net.Hosted.LocalNodeIPAddresses, nodeIPAddresses[k])
 		}
-		pnet.Network.Name = name
-		pnet.Network.HostedNetwork.Name = name
+		pnet.Network.HostedNetwork.Name = privateName
 	} else {
 		nodeAddresses := arrayParameters["local_node_addresses"]
 		for _, v := range nodeAddresses {
 			pnet.Network.LocalNodeAddresses = append(pnet.Network.LocalNodeAddresses, v)
 		}
 	}
-	fmt.Println(10.5)
-	var mn Networks
+	pnet.Network.Name = hostedName
+	/*var mn Networks
 	var hn HostedNetworks
 	mn.Name = name
 	hn.Name = name
+	fmt.Println(name)
 	// we need to create the data in the database in order save, and link the mdoels
 	if check := im.DB.Save(&mn); check.Error != nil {
 		return nil, check.Error
 	}
 	if check := im.DB.Save(&hn); check.Error != nil {
 		return nil, check.Error
-	}
+	}*/
+	// Relate the Network field of the model, to the networks table
+	im.DB.Model(&pnet).Related(&pnet.Network, "Network")
+	// Relate the hosted network field of the model to the hosted networks table
+	im.DB.Model(&pnet.Network).Related(&pnet.Network.HostedNetwork, "HostedNetwork")
 	if check := im.DB.Create(&pnet); check.Error != nil {
 		return nil, check.Error
 	}
