@@ -138,3 +138,33 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 		"network": network,
 	})
 }
+
+func GetIPFSPrivateNetworkByName(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access")
+		return
+	}
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to load database",
+		})
+		return
+	}
+
+	netName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailNoExist(c, "network_name post form does not exist")
+		return
+	}
+	manager := models.NewIPFSNetworkManager(db)
+	net, err := manager.GetNetworkByName(netName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"network": net,
+	})
+}

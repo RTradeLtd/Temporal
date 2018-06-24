@@ -39,6 +39,14 @@ func NewIPFSNetworkManager(db *gorm.DB) *IPFSNetworkManager {
 	return &IPFSNetworkManager{DB: db}
 }
 
+func (im *IPFSNetworkManager) GetNetworkByName(name string) (*IPFSPrivateNetwork, error) {
+	var pnet IPFSPrivateNetwork
+	if check := im.DB.Where("name = ?", name).First(&pnet); check.Error != nil {
+		return nil, check.Error
+	}
+	return &pnet, nil
+}
+
 // TODO: Add in multiformat address validation
 func (im *IPFSNetworkManager) CreatePrivateNetwork(name, apiURL, swarmKey string, isHosted bool, arrayParameters map[string][]string, users []string) (*IPFSPrivateNetwork, error) {
 	var pnet IPFSPrivateNetwork
