@@ -16,7 +16,7 @@ func TestMultiAddrValidator(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = utils.ParseMultiAddrForBootstrap(addr)
+	_, err = utils.ParseMultiAddrForIPFSPeer(addr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +26,7 @@ func TestMultiAddrValidator(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = utils.ParseMultiAddrForBootstrap(addr)
+	_, err = utils.ParseMultiAddrForIPFSPeer(addr)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -75,7 +75,7 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 				FailOnError(c, err)
 				return
 			}
-			valid, err := utils.ParseMultiAddrForBootstrap(addr)
+			valid, err := utils.ParseMultiAddrForIPFSPeer(addr)
 			if err != nil {
 				FailOnError(c, err)
 				return
@@ -86,9 +86,20 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 				})
 				return
 			}
-			_, err = utils.GenerateMultiAddrFromString(nodeAddresses[k])
+			addr, err = utils.GenerateMultiAddrFromString(nodeAddresses[k])
 			if err != nil {
 				FailOnError(c, err)
+				return
+			}
+			valid, err = utils.ParseMultiAddrForIPFSPeer(addr)
+			if err != nil {
+				FailOnError(c, err)
+				return
+			}
+			if !valid {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": fmt.Sprintf("provided peer %s is not a valid ipfs peer", addr),
+				})
 				return
 			}
 			bootstrapPeerAddresses = append(bootstrapPeerAddresses, v)
@@ -110,7 +121,7 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 	}
 	// previously we were initializing like `var args map[string]*[]string` which was causing some issues.
 	args := make(map[string][]string)
-	args["local_node_addresses"] = localNodeAddresses
+	args["local_node_peer_addresses"] = localNodeAddresses
 	if len(bootstrapPeerAddresses) > 0 {
 		args["bootstrap_peer_addresses"] = bootstrapPeerAddresses
 	}

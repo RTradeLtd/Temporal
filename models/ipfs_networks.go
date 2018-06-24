@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 
+	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 )
@@ -35,7 +36,7 @@ func (im *IPFSNetworkManager) GetNetworkByName(name string) (*HostedIPFSPrivateN
 	return &pnet, nil
 }
 
-// TODO: Add in multiformat address validation
+// TODO: Validate swarm key and API url
 func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, apiURL, swarmKey string, arrayParameters map[string][]string, users []string) (*HostedIPFSPrivateNetwork, error) {
 	pnet := &HostedIPFSPrivateNetwork{}
 	if check := im.DB.Where("name = ?", name).First(pnet); check.Error != nil && check.Error != gorm.ErrRecordNotFound {
@@ -47,17 +48,38 @@ func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, apiURL, swarmKey 
 	}
 
 	bPeers := arrayParameters["bootstrap_peer_addresses"]
-	bPeerIDs := arrayParameters["bootstrap_peer_ids"]
 	nodeAddresses := arrayParameters["local_node_peer_addresses"]
-	nodeIDs := arrayParameters["local_node_peer_ids"]
 	if len(bPeers) != len(nodeAddresses) {
 		return nil, errors.New("bootstrap_peer_address and local_node_address length not equal")
 	}
 	for k, v := range bPeers {
 		pnet.BootstrapPeerAddresses = append(pnet.BootstrapPeerAddresses, v)
-		pnet.BootstrapPeerIDs = append(pnet.BootstrapPeerIDs, bPeerIDs[k])
+		formattedBAddr, err := utils.GenerateMultiAddrFromString(v)
+		if err != nil {
+			return nil, err
+		}
+		parsedBPeerID, err := utils.ParsePeerIDFromIPFSMultiAddr(formattedBAddr)
+		if err != nil {
+			return nil, err
+		}
+		pnet.BootstrapPeerIDs = append(pnet.BootstrapPeerIDs, parsedBPeerID)
 		pnet.LocalNodePeerAddresses = append(pnet.LocalNodePeerAddresses, nodeAddresses[k])
-		pnet.LocalNodePeerIDs = append(pnet.LocalNodePeerIDs, nodeIDs[k])
+		formattedNAddr, err := utils.GenerateMultiAddrFromString(nodeAddresses[k])
+		if err != nil {
+			return nil, err
+		}
+		parsedNPeerID, err := utils.ParsePeerIDFromIPFSMultiAddr(formattedNAddr)
+		if err != nil {
+			return nil, err
+		}
+		pnet.LocalNodePeerIDs = append(pnet.LocalNodePeerIDs, parsedNPeerID)
+	}
+	if len(users) > 0 {
+		for _, v := range users {
+			pnet.Users = append(pnet.Users, v)
+		}
+	} else {
+		pnet.Users = append(pnet.Users, AdminAddress)
 	}
 	pnet.Name = name
 	pnet.APIURL = apiURL

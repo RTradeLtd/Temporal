@@ -19,7 +19,7 @@ func GenerateMultiAddrFromString(addr string) (ma.Multiaddr, error) {
 	return maddr, nil
 }
 
-func ParseMultiAddrForBootstrap(address ma.Multiaddr) (bool, error) {
+func ParseMultiAddrForIPFSPeer(address ma.Multiaddr) (bool, error) {
 	protocols := address.Protocols()
 	for _, v := range protocols {
 		if v.Name == "ipfs" || v.Name == "p2p" {
