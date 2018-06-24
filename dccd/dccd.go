@@ -10,6 +10,8 @@ package dccd
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/jinzhu/gorm"
@@ -43,13 +45,29 @@ func (dc *DCCDManager) ParseGateways() {
 
 func (dc *DCCDManager) DisperseContent(contentHash string) (bool, error) {
 	var dispersed bool
+	success := make(map[string]bool)
+
 	if len(dc.Gateways) < 1 {
 		return false, errors.New("please parse gateways before dispersing content")
 	}
 	//var err error
 	for k := range dc.Gateways {
 		url := fmt.Sprintf("%s/%s", k, contentHash)
-		fmt.Println(url)
+		resp, err := http.Get(url)
+		if err != nil {
+			success[k] = false
+			fmt.Println("error request through gateway ", k)
+			fmt.Println(err.Error())
+			continue
+		}
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			success[k] = false
+			fmt.Println("error decoding resposne from gateway ", k)
+			fmt.Println(err.Error())
+			continue
+		}
+		fmt.Println(string(body))
 	}
 	return dispersed, nil
 }
