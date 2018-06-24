@@ -43,31 +43,29 @@ func (dc *DCCDManager) ParseGateways() {
 	dc.Gateways = indexes
 }
 
-func (dc *DCCDManager) DisperseContent(contentHash string) (bool, error) {
-	var dispersed bool
-	success := make(map[string]bool)
+func (dc *DCCDManager) DisperseContent(contentHash string) (map[string]bool, error) {
+	dispersals := make(map[string]bool)
 
 	if len(dc.Gateways) < 1 {
-		return false, errors.New("please parse gateways before dispersing content")
+		return nil, errors.New("please parse gateways before dispersing content")
 	}
 	//var err error
 	for k := range dc.Gateways {
 		url := fmt.Sprintf("%s/%s", k, contentHash)
 		resp, err := http.Get(url)
 		if err != nil {
-			success[k] = false
-			fmt.Println("error request through gateway ", k)
-			fmt.Println(err.Error())
+			dispersals[k] = false
 			continue
 		}
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			success[k] = false
-			fmt.Println("error decoding resposne from gateway ", k)
-			fmt.Println(err.Error())
+			dispersals[k] = false
 			continue
 		}
-		fmt.Println(string(body))
+		if string(body) != "Hello from IPFS Gateway Checker" {
+			dispersals[k] = false
+		}
+		dispersals[k] = true
 	}
-	return dispersed, nil
+	return dispersals, nil
 }

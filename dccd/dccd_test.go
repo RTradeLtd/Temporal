@@ -1,6 +1,7 @@
 package dccd_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/dccd"
@@ -12,8 +13,9 @@ func TestDCCD(t *testing.T) {
 	manager := dccd.NewDCCDManager("")
 	// Parse gateway array
 	manager.ParseGateways()
-	_, err := manager.DisperseContent(testHash)
+	dispersals, err := manager.DisperseContent(testHash)
 	if err != nil {
 		t.Fatal(err)
 	}
+	fmt.Println(dispersals)
 }
