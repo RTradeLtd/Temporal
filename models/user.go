@@ -18,8 +18,9 @@ type User struct {
 	EmailEnabled      bool   `gorm:"type:boolean"`
 	HashedPassword    string `gorm:"type:varchar(255)"`
 	// IPFSKeyNames is an array of IPFS keys this user has created
-	IPFSKeyNames pq.StringArray `gorm:"type:text[];column:ipfs_key_names"`
-	IPFSKeyIDs   pq.StringArray `gorm:"type:text[];column:ipfs_key_ids"`
+	IPFSKeyNames     pq.StringArray `gorm:"type:text[];column:ipfs_key_names"`
+	IPFSKeyIDs       pq.StringArray `gorm:"type:text[];column:ipfs_key_ids"`
+	IPFSNetworkNames pq.StringArray `gorm:"type:text[];column:ipfs_network_names"`
 }
 
 type UserManager struct {
@@ -30,6 +31,24 @@ func NewUserManager(db *gorm.DB) *UserManager {
 	um := UserManager{}
 	um.DB = db
 	return &um
+}
+
+func (um *UserManager) AddIPFSNetworkForUser(ethAddress, networkName string) error {
+	u := &User{}
+	if check := um.DB.Where("eth_address = ?", ethAddress).First(u); check.Error != nil {
+		return check.Error
+	}
+	for _, v := range u.IPFSNetworkNames {
+		if v == networkName {
+			return errors.New("network already configured for user")
+		}
+	}
+	u.IPFSNetworkNames = append(u.IPFSNetworkNames, networkName)
+	if check := um.DB.Model(u).Update("ipfs_network_names", u.IPFSNetworkNames); check.Error != nil {
+		return check.Error
+	}
+
+	return nil
 }
 
 func (um *UserManager) AddIPFSKeyForUser(ethAddress, keyName, keyID string) error {

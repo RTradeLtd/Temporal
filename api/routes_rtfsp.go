@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -12,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
+func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	// lock down as admin route for now
 	cC := c.Copy()
 	ethAddress := GetAuthenticatedUserFromContext(cC)
@@ -39,12 +38,6 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 		return
 	}
 
-	isHosted, exists := cC.GetPostForm("is_hosted")
-	if !exists {
-		FailNoExist(c, "is_hosted post form does not exist")
-		return
-	}
-
 	bPeers, exists := cC.GetPostFormArray("bootstrap_peers")
 	if !exists {
 		FailNoExist(c, "boostrap_peers post form array does not exist")
@@ -59,65 +52,47 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 	var localNodeAddresses []string
 	var bootstrapPeerAddresses []string
 
-	var hosted bool
-	switch isHosted {
-	case "true":
-		hosted = true
-		if len(nodeAddresses) != len(bPeers) {
+	if len(nodeAddresses) != len(bPeers) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "length of local_node_addresses and bootstrap_peers must be equal",
+		})
+		return
+	}
+	for k, v := range bPeers {
+		addr, err := utils.GenerateMultiAddrFromString(v)
+		if err != nil {
+			FailOnError(c, err)
+			return
+		}
+		valid, err := utils.ParseMultiAddrForIPFSPeer(addr)
+		if err != nil {
+			FailOnError(c, err)
+			return
+		}
+		if !valid {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "length of local_node_addresses and bootstrap_peers must be equal",
+				"error": fmt.Sprintf("provided peer %s is not a valid bootstrap peer", addr),
 			})
 			return
 		}
-		for k, v := range bPeers {
-			addr, err := utils.GenerateMultiAddrFromString(v)
-			if err != nil {
-				FailOnError(c, err)
-				return
-			}
-			valid, err := utils.ParseMultiAddrForIPFSPeer(addr)
-			if err != nil {
-				FailOnError(c, err)
-				return
-			}
-			if !valid {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"error": fmt.Sprintf("provided peer %s is not a valid bootstrap peer", addr),
-				})
-				return
-			}
-			addr, err = utils.GenerateMultiAddrFromString(nodeAddresses[k])
-			if err != nil {
-				FailOnError(c, err)
-				return
-			}
-			valid, err = utils.ParseMultiAddrForIPFSPeer(addr)
-			if err != nil {
-				FailOnError(c, err)
-				return
-			}
-			if !valid {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"error": fmt.Sprintf("provided peer %s is not a valid ipfs peer", addr),
-				})
-				return
-			}
-			bootstrapPeerAddresses = append(bootstrapPeerAddresses, v)
-			localNodeAddresses = append(localNodeAddresses, nodeAddresses[k])
+		addr, err = utils.GenerateMultiAddrFromString(nodeAddresses[k])
+		if err != nil {
+			FailOnError(c, err)
+			return
 		}
-	case "false":
-		hosted = false
-		for _, v := range nodeAddresses {
-			_, err := utils.GenerateMultiAddrFromString(v)
-			if err != nil {
-				FailOnError(c, err)
-				return
-			}
-			localNodeAddresses = append(localNodeAddresses, v)
+		valid, err = utils.ParseMultiAddrForIPFSPeer(addr)
+		if err != nil {
+			FailOnError(c, err)
+			return
 		}
-	default:
-		FailOnError(c, errors.New("is_hosted must be `true` or `false`"))
-		return
+		if !valid {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("provided peer %s is not a valid ipfs peer", addr),
+			})
+			return
+		}
+		bootstrapPeerAddresses = append(bootstrapPeerAddresses, v)
+		localNodeAddresses = append(localNodeAddresses, nodeAddresses[k])
 	}
 	// previously we were initializing like `var args map[string]*[]string` which was causing some issues.
 	args := make(map[string][]string)
@@ -133,16 +108,31 @@ func CreateIPFSNetworkEntryInDatabase(c *gin.Context) {
 		return
 	}
 	manager := models.NewIPFSNetworkManager(db)
-	if hosted {
-		network, err := manager.CreateHostedPrivateNetwork(networkName, apiURL, swarmKey, args, users)
+	network, err := manager.CreateHostedPrivateNetwork(networkName, apiURL, swarmKey, args, users)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	um := models.NewUserManager(db)
+
+	if len(users) > 0 {
+		for _, v := range users {
+			err := um.AddIPFSNetworkForUser(v, networkName)
+			if err != nil {
+				FailOnError(c, err)
+				return
+			}
+		}
+	} else {
+		err := um.AddIPFSNetworkForUser(AdminAddress, networkName)
 		if err != nil {
 			FailOnError(c, err)
 			return
 		}
-		c.JSON(http.StatusCreated, gin.H{
-			"network": network,
-		})
 	}
+	c.JSON(http.StatusCreated, gin.H{
+		"network": network,
+	})
 
 }
 

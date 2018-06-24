@@ -81,6 +81,7 @@ func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, apiURL, swarmKey 
 	} else {
 		pnet.Users = append(pnet.Users, AdminAddress)
 	}
+
 	pnet.Name = name
 	pnet.APIURL = apiURL
 	pnet.SwarmKey = swarmKey
