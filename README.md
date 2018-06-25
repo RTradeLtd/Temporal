@@ -58,10 +58,6 @@ IPNS (75% Complete):
 
     As a special/unique feature, you can plug into Temporal's IPNS setup, and use us as a trusted signer of IPNS records, while also optionally taking care of the DNS configuration, storing the DNS record underneath our domain (rtradetechnologies.com) at a URL of your choice with a subdomain name of your choosing providing it is available. Should you desire that, you can tap into our automated configuration and have that all done automatically. Optionally, we can also build out a hosted, or on-premise automated solution for your own domain as well.
 
-TUS (Rhttps://tus.io/) Resumable Upload Protocol (5% complete):
-
-    TUS is a protocol allowing for file uploads through our system to be paused, and resumed at will, without reuploading data that was already transferred. When complete this will be overlayed ontop of all files uploaded through Temporal, so that should the upload process be interrupted for any reason, you can resume it later without losing any progress.
-    
 Swarm (5% complete):
 
     Swarm blends the power of IPFS, with the power of Blockchain and is common place in protocols like Ethereum. Temporal will provide an interface into the Ethereum mainnet Swarm protocol, allowing you to store your data onto the Ethereum blockchain. You'll also take advantage of having that particular data persistently stored on our high quality Ethereum node infrastructure.  Currently the Swarm protocol isn't fully integrated yet with Ethereum, and as such, the SWAP accounting protocol isn't fully implemented yet, which means nodes in the network aren't guaranteed to persist your data which means it could dissapear into the Ether. Until SWAP is fully integrated we hope to offer increased utilizatinon and adoption of SWARM by taking advantage of the data persistence offered by Temporal, and our high quality Ethereum infrastructure
