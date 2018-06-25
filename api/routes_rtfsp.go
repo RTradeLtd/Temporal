@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/rtfs"
+
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
 
@@ -23,12 +25,10 @@ func UploadToHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(cC)
 	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "hold_time post form does not exist",
-		})
+		FailNoExist(c, "hold_time post form param not present")
 		return
 	}
-	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	_, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -57,13 +57,23 @@ func UploadToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	apiURL := pnet.APIURL
+	manager, err := rtfs.Initialize("", apiURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	go func() {
+		err := manager.Pin(hash)
+		if err != nil {
+			//TODO log and handle
+			fmt.Println("Error encountered pinning content to private ipfs node", err.Error())
+			return
+		}
+	}()
 	c.JSON(http.StatusOK, gin.H{
-		"hash":                hash,
-		"eth_address":         ethAddress,
-		"hold_time_in_months": holdTimeInt,
-		"network_name":        networkName,
-		"can_upload":          canUpload,
-		"private_net":         pnet,
+		"status": "content pin request sent",
 	})
 }
 

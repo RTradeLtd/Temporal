@@ -1,4 +1,4 @@
-package gui
+package gui_gtk
 
 import (
 	"log"
@@ -23,15 +23,19 @@ func Run() {
 			log.Fatal(err)
 		}
 		appWindow.SetTitle("Basic Application")
-		appWindow.Add(generateAndSetupGrid())
 		appWindow.SetDefaultSize(400, 400)
+		appWindow.Add(generateAndSetupGrid())
 		appWindow.ShowAll()
 
 	})
 	application.Run(nil)
 }
 
-func generateAndSetupGrid() *gtk.Grid {
+func generateAndSetupGrid() *gtk.Box {
+	box, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
 	grid, err := gtk.GridNew()
 	if err != nil {
 		log.Fatal(err)
@@ -41,6 +45,7 @@ func generateAndSetupGrid() *gtk.Grid {
 	if err != nil {
 		log.Fatal(err)
 	}
-	grid.Add(buttonAbout)
-	return grid
+	grid.Attach(buttonAbout, 100, 200, 200, 200)
+	box.Add(grid)
+	return box
 }
