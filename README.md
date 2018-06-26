@@ -6,7 +6,7 @@ Temporal's API comes in two flavours, hosted or on-site. Should you not have the
 
 Temporal is being designed with a "Plug and Play" style design such that the underlying storage protocols it connects to can be swapped in and out with other protocols at will, without having to change the overall Temporal architecture, you simply need to write the interface for whatever storage protocol you want to use and it will support it. Using your new storage protocol will be as a simple as indicating a parameter in the API call for which storage networks it should plug into. In this manner, the API itself will never have to change to support new protocols.
 
-We have a telegram chat, feel free to join and ask any questions you may have that could not be answered by reading the documentation here. The documentation contained is fairly detailed, as all my notes are public, however it is fairly scattered and unorganized for now.
+We have a telegram chat https://t.me/RTradeTEMPORAL, feel free to join and ask any questions you may have that could not be answered by reading the documentation here. The documentation contained is fairly detailed, as all my notes are public, however it is fairly scattered and unorganized for now.
 
 # Project Features
 
