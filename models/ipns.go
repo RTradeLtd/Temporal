@@ -33,7 +33,7 @@ func NewIPNSManager(db *gorm.DB) *IpnsManager {
 
 func (im *IpnsManager) FindByIPNSHash(ipnsHash string) (*IPNS, error) {
 	var entry IPNS
-	im.DB.Table("ip_ns").Where("ipns_hash = ?").First(&entry)
+	im.DB.Table("ip_ns").Where("ipns_hash = ?", ipnsHash).First(&entry)
 	if entry.CreatedAt == nilTime {
 		return nil, errors.New("ipns hash does not exist")
 	}
