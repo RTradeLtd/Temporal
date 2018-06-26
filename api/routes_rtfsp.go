@@ -259,6 +259,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	}
 	prePubTime := time.Now()
 	keyID, err := um.GetKeyIDByName(ethAddress, key)
+	fmt.Println("using key id of ", keyID)
 	if err != nil {
 		FailOnError(c, err)
 		return
