@@ -6,9 +6,7 @@ Temporal's API comes in two flavours, hosted or on-site. Should you not have the
 
 Temporal is being designed with a "Plug and Play" style design such that the underlying storage protocols it connects to can be swapped in and out with other protocols at will, without having to change the overall Temporal architecture, you simply need to write the interface for whatever storage protocol you want to use and it will support it. Using your new storage protocol will be as a simple as indicating a parameter in the API call for which storage networks it should plug into. In this manner, the API itself will never have to change to support new protocols.
 
-# Project Status
-
-Currently under heavy development, and is pre version 1. There is an MVP "pre-release" which is a demo of Temporal. There will be breaking API changes before V1, and there have already been breaking changes between the MVP pre-release and the time this commit was pushed to git. Temporal is not intended for usage before V1 beyond testing of Temporal itself. 
+We have a telegram chat, feel free to join and ask any questions you may have that could not be answered by reading the documentation here. The documentation contained is fairly detailed, as all my notes are public, however it is fairly scattered and unorganized for now.
 
 # Project Features
 
@@ -36,23 +34,18 @@ Currently under heavy development, and is pre version 1. There is an MVP "pre-re
     * Dynamic Content Cache Dispersion (50%)
         * Dynamic Content Cache Dispersion (DCCD) will be a service that distributes content requests across all known public gateways, allowing for content to be easily spread through the network cache
 
-# Dependencies (WIP)
-
-We use a slightly modified vendored go-ipfs-api package to provide some additional functionality for publishing IPNS records (one additional function, and a modified `Publish` function) see changes in `vendor/github.com/ipfs/go-ipfs-api/ipns.go`
-
-
 # Supported Technologies
 
 Following is a list of distributed and decentralized storage technologies that Temporal currently, or plans on supporting.
 
 
-IPFS (70% complete):
+IPFS (80% complete):
 
     Temporal supports integration with the public IPFS network, and will evolve to support new features added to IPFS so that you will have the most optimal experience possible, and never suffer from inability to access the latest and greatest features due to an API that fails to evolve as the underlying technology evolves.
 
     Soon after release, support for Private IPFS networks will be integrated into Temporal, allowing you to get the same benefits of the public IPFS network, but with the data security and privacy that comes with running a private network. This is extremely useful to financial institutions, data archivers, and other industries to whom data security and privacy is one of the primary concerns when integrating with any new technology
 
-IPNS (75% Complete):
+IPNS (80% Complete):
 
     IPNS allows for publishing of human readable names, and immutable links to changing content. IPNS integration is an optional feature with each upload to IPFS, and will allow for creation of dnslink records on our domain. Note that for the hosted API, IPNS usage alongside of IPFS pins or file uploads will incur additional charges.
 
@@ -74,15 +67,7 @@ SIA (0% complete):
 
 We have an early access alpha of our hosted API for the public IPFS network, should you wish to test it please contact me at postables@rtradetechnologies.com
 
-There is also a telegram room you can join https://t.me/RTradeTEMPORAL
-
-# Temporal Administration
-
-Temporal will be administered by a text-based interface, which will allow full control over all parts of a temporal instance, including spinning up additional infrastructure nodes to scale up as user demand increases.  The Text Based User interface is currently under construction, and is located in the `tui` folder. After the text based user interface is complete, and fully functional work on a graphical interface for Temporal administration will be done.
-
-# Interacting with Temporal
-
-There are two ways of interacting with Temporal (currently only the API is supported). One consisting of an API intended to be used by application developers, programmers, or organizations who want to integrate Temporal with their application stack. Second is a web client that can be used as a cloud storage platform for personal, and enterprise use cases (this will be done in a later release).
+There is also a telegram room you can join 
 
 # System Monitoring
 
@@ -105,10 +90,9 @@ This is a huge issue and concern for any form of cloud storage. But is seldom me
 
 We aren't doing an ICO,  and we're not wasting our development efforts on redesigning the wheel with some new fangled storage protocol, and blockchain solution. Although we're using bleeding edge technology, we're commited to using names, and open source software that is already tested, and that has a thriving development community behind them. And finally, results matter; It is far to common in this space for companies to ask you to hand over your hand earned cash on the fleeting promise that it will lead to something, but that something is either never delivered, or extremely lack in features, and is not the original idea which was sold.
 
-# Contributing Code
+# API Usage
 
-If you wish to contribute, create a new branch to do your work on, and submit a pull request to V2 branch.
-The only requirement is that all code submitted must include tests.
+Currently there is no detailed API documentation beyond what is available on godoc, or in the code comments. However, there is an up to date (as of this commit) Postman collection of all the API calls that Temporal has, and can be used to interact with a Temporal cluster.
 
 # Repository Contents
 
@@ -165,71 +149,6 @@ Currently the project is paid for out of pocket, and we will *not* be doing an I
 * Hiring additional talent for Temporal enterprise to bring project to completion
 
 Should you wish to consider donations, or private investment email admin@rtradetechnologies.com
-
-# Warnings
-
-Until V1 is released, do not expect backwards compatability between non V1 versions, and V1 versions. If you are going to use temporal, please use vendoring to prevent unexpected breaks before V1
-
-# Usage (to do)
-
-## Usage: API
-
-* `/api/v1/login`
-    * This is used to login, and authenticate with temporal
-
-* `/api/v1/register`
-    * This is used to register a user account with temporal
-
-* `/api/v1/ipfs/pin/:hash`
-    * This is used to pin content to temporal
-    * Note: this only pins to a local node
-
-* `/api/v1/ipfs/add-file`
-    * This is used to upload a file to IPFS through temporal
-    * Note: this adds it first to a local node, followed by a cluster pin 
-
-* `/api/v1/ipfs/remove-pin/:hash`
-    * This is used to remove a pin from the local ipfs node
-    * Note: only the admin of the temporal instance can call this route
-
-* `/api/v1/ipfs-cluster/pin/:hash`
-    * This is used to pin a hash to the cluster
-
-* `/api/v1/ipfs-cluster/sync-errors-local`
-    * This is used to parse through a local node cluster status, and sync all errors
-
-* `/api/v1/ipfs-cluster/remove-pin/:hash`
-    * This is used to remove a pin from the cluster
-    * Note: this is onyl usable by the admin of a temporal instance
-
-## Usage: Deploying Temporal
-Authentication is done with JWT, for testing with postman see this link https://medium.com/@codebyjeff/using-postman-environment-variables-auth-tokens-ea9c4fe9d3d7
-
-
-Setting up postman with the tests section:
-
-    var data = JSON.parse(responseBody); // parses the response body
-                                    // into json for us
-    console.log(data);
-    postman.setEnvironmentVariable("token", data.token);
-
-
-1) install postgresql
-2) setup database tables
-3) run `scripts/temporal_install.sh`
-4) Setup `config.json`
-
-When running temporal the following services need to be ran:
-    1) api
-    2) queue-dpa
-    3) queue-dfa
-    4) ipfs-cluster-queue
-
-Before running temporal for the first time, and after changing any of the models run `Temporal migrate`
-
-# Tips and Tricks
-
-Make sure you set the path to the ipfs repo, and ipfs-cluster directory in your `.bashrc` or other profile file.
 
 # Media
 
