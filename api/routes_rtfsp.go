@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/rtfs"
 
@@ -153,6 +154,137 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 	fmt.Println("file uploaded")
 	c.JSON(http.StatusOK, gin.H{
 		"status": resp,
+	})
+}
+
+func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
+
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailNoExist(c, "network_name post form does not exist")
+		return
+	}
+
+	ethAddress := GetAuthenticatedUserFromContext(c)
+
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to load database",
+		})
+		return
+	}
+	um := models.NewUserManager(db)
+	canUpload, err := um.CheckIfUserHasAccessToNetwork(ethAddress, networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	if !canUpload {
+		FailNotAuthorized(c, "unauthorized access to private network")
+		return
+	}
+	hash, present := c.GetPostForm("hash")
+	if !present {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "hash post form not present",
+		})
+		return
+	}
+	lifetime, present := c.GetPostForm("life_time")
+	if !present {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "life_time post form not present",
+		})
+		return
+	}
+	ttl, present := c.GetPostForm("ttl")
+	if !present {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ttl post form not present",
+		})
+		return
+	}
+	key, present := c.GetPostForm("key")
+	if !present {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "key post form not present",
+		})
+		return
+	}
+	resolveString, present := c.GetPostForm("resolve")
+	if !present {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "resolve post form not present",
+		})
+		return
+	}
+
+	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if !ownsKey {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "attempting to generate IPNS entry unowned key",
+		})
+		return
+	}
+
+	im := models.NewHostedIPFSNetworkManager(db)
+	apiURL, err := im.GetAPIURLByName(networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	manager, err := rtfs.Initialize("", apiURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("creating key store manager")
+	err = manager.CreateKeystoreManager()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	resolve, err := strconv.ParseBool(resolveString)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	prePubTime := time.Now()
+	keyID, err := um.GetKeyIDByName(ethAddress, key)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("publishing to IPNS")
+	resp, err := manager.PublishToIPNSDetails(hash, lifetime, ttl, key, keyID, resolve)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	postPubTime := time.Now()
+	timeDifference := postPubTime.Sub(prePubTime)
+
+	ipnsManager := models.NewIPNSManager(db)
+	ipnsEntry, err := ipnsManager.UpdateIPNSEntry(resp.Name, resp.Value, lifetime, ttl, key)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"name":                   resp.Name,
+		"value":                  resp.Value,
+		"time_to_create_minutes": timeDifference.Minutes(),
+		"ipns_entry_model":       ipnsEntry,
 	})
 }
 

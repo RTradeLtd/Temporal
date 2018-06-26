@@ -16,6 +16,11 @@ import (
 )
 
 func PublishToIPNSDetails(c *gin.Context) {
+	_, exists := c.GetPostForm("network_name")
+	if exists {
+		PublishDetailedIPNSToHostedIPFSNetwork(c)
+		return
+	}
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	hash, present := c.GetPostForm("hash")
 	if !present {
