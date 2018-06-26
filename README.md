@@ -230,3 +230,7 @@ Before running temporal for the first time, and after changing any of the models
 # Tips and Tricks
 
 Make sure you set the path to the ipfs repo, and ipfs-cluster directory in your `.bashrc` or other profile file.
+
+# Media
+
+https://steemit.com/cryptocurrency/@rtrade/temporal-a-distributed-platform-and-storage-infrastructure-service

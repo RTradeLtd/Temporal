@@ -52,19 +52,31 @@
 								{
 									"key": "eth_address",
 									"value": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
-									"description": "",
+									"description": "required",
 									"type": "text"
 								},
 								{
 									"key": "hold_time",
 									"value": "5",
-									"description": "",
+									"description": "required",
+									"type": "text"
+								},
+								{
+									"key": "use_private_network",
+									"value": "yes",
+									"description": "option",
+									"type": "text"
+								},
+								{
+									"key": "network_name",
+									"value": "private_net_1",
+									"description": "option",
 									"type": "text"
 								}
 							]
 						},
 						"url": {
-							"raw": "https://{{api_url}}:6767/api/v1/ipfs/pin/QmZyoUz4uFswaUfg9SXgNRKPXfYeQXmjuCr6oXX3EPnRPN",
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs/pin/QmX7efCRGubzTssGTkZdgE4MGoV8CE2LrGf76VzARGahKf",
 							"protocol": "https",
 							"host": [
 								"{{api_url}}"
@@ -75,7 +87,7 @@
 								"v1",
 								"ipfs",
 								"pin",
-								"QmZyoUz4uFswaUfg9SXgNRKPXfYeQXmjuCr6oXX3EPnRPN"
+								"QmX7efCRGubzTssGTkZdgE4MGoV8CE2LrGf76VzARGahKf"
 							]
 						}
 					},
@@ -132,6 +144,7 @@
 							"formdata": [
 								{
 									"key": "file",
+									"value": "",
 									"description": "",
 									"type": "file"
 								},
@@ -182,7 +195,6 @@
 								{
 									"key": "message",
 									"value": "aksjdklajsdkasjldjawsdkljsdjasldas",
-									"description": "",
 									"type": "text"
 								}
 							]
@@ -331,6 +343,122 @@
 								"ipfs",
 								"check-for-pin",
 								"Qm"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "IPFS - Private",
+			"description": null,
+			"item": [
+				{
+					"name": "create private network in database",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "network_name",
+									"value": "private_net_1",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "api_url",
+									"value": "192.168.1.243:5001",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "swarm_key",
+									"value": "1f875f7f0d732bfa62e2ee2ac133905921e62ffa90653c66ef3971f0c6aa9861",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "is_hosted",
+									"value": "true",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "bootstrap_peers",
+									"value": "/ip4/192.168.1.243/tcp/4001/ipfs/QmW99cDa7RLgH1HqCiqXWMp5Wt8XbxtoRdfJck2Cj81npm",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "local_node_addresses",
+									"value": "/ip4/192.168.1.243/tcp/4001/ipfs/QmW99cDa7RLgH1HqCiqXWMp5Wt8XbxtoRdfJck2Cj81npm",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767//api/v1/ipfs-private/new/network",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"",
+								"api",
+								"v1",
+								"ipfs-private",
+								"new",
+								"network"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ipfs network by name",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "network_name",
+									"value": "new_net_6",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767//api/v1/ipfs-private/network/name",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"",
+								"api",
+								"v1",
+								"ipfs-private",
+								"network",
+								"name"
 							]
 						}
 					},
@@ -513,6 +641,150 @@
 			]
 		},
 		{
+			"name": "IPNS",
+			"description": "",
+			"item": [
+				{
+					"name": "dnslink",
+					"description": "",
+					"item": [
+						{
+							"name": "aws add",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "record_name",
+											"value": "ipfs1.rtradetechnologies.com.",
+											"description": "",
+											"type": "text"
+										},
+										{
+											"key": "record_value",
+											"value": "dnslink=/ipns/QmRsmNudZo1fvugmSVZYh2J54DX1e7ci4H6toDqT6rbGHi",
+											"description": "",
+											"type": "text"
+										},
+										{
+											"key": "aws_zone",
+											"value": "Z3HEZWZ7D3EZRG",
+											"description": "",
+											"type": "text"
+										},
+										{
+											"key": "region_name",
+											"value": "us-west-1",
+											"description": "",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://{{api_url}}:6767/api/v1/ipns/dnslink/aws/add",
+									"protocol": "https",
+									"host": [
+										"{{api_url}}"
+									],
+									"port": "6767",
+									"path": [
+										"api",
+										"v1",
+										"ipns",
+										"dnslink",
+										"aws",
+										"add"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "publish ipns - details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "hash",
+									"value": "QmWvtHAZkT7uopyXGkRhQs13BWCMk1DR6Kq6Q8746fV3Cd",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "life_time",
+									"value": "1h",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "ttl",
+									"value": "1h",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "key",
+									"value": "key1",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "resolve",
+									"value": "false",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipns/publish/details",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipns",
+								"publish",
+								"details"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "account",
 			"description": "",
 			"item": [
@@ -543,7 +815,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"username\": \"0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9\",\n\t\"password\": \"password123\"\n}"
+							"raw": "{\n  \"username\": \"0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9\",\n  \"password\": \"\"\n}"
 						},
 						"url": {
 							"raw": "https://{{api_url}}:6767/api/v1/login",
@@ -577,9 +849,16 @@
 								},
 								{
 									"key": "password",
-									"value": "password123",
+									"value": "",
 									"description": "",
 									"type": "text"
+								},
+								{
+									"key": "",
+									"value": "",
+									"description": "",
+									"type": "text",
+									"disabled": true
 								}
 							]
 						},
@@ -602,9 +881,35 @@
 				{
 					"name": "password change",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
-						"body": {},
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "old_password",
+									"value": "password123",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "new_password",
+									"value": "lalvodeltabravo@@@@",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
 						"url": {
 							"raw": "https://{{api_url}}:6767/api/v1/account/password/change",
 							"protocol": "https",
@@ -618,6 +923,98 @@
 								"account",
 								"password",
 								"change"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "generate ipfs key",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "key_type",
+									"value": "rsa",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "key_bits",
+									"value": "2048",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "key_name",
+									"value": "key1",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/account/key/ipfs/new",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"account",
+								"key",
+								"ipfs",
+								"new"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get ipfs keys",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/account/key/ipfs/get",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"account",
+								"key",
+								"ipfs",
+								"get"
 							]
 						}
 					},
@@ -1000,7 +1397,17 @@
 					"request": {
 						"method": "POST",
 						"header": [],
-						"body": {},
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "tx_hash",
+									"value": "0x12312312",
+									"description": "tx hash of transaction in which the user paid their balance",
+									"type": "text"
+								}
+							]
+						},
 						"url": {
 							"raw": "https://{{api_url}}:6767/api/v1/frontend/confirm/PaymentIDDDD",
 							"protocol": "https",
@@ -1030,7 +1437,29 @@
 					"request": {
 						"method": "POST",
 						"header": [],
-						"body": {},
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "content_hash",
+									"value": "Qm....",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "retention_period_in_months",
+									"value": "5",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "payment_method",
+									"value": "eth",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
 						"url": {
 							"raw": "https://{{api_url}}:6767/api/v1/payments-api/register",
 							"protocol": "https",
