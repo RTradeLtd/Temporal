@@ -12,14 +12,12 @@ import (
 
 // PinHashLocally is used to pin a hash to the local ipfs node
 func PinHashLocally(c *gin.Context) {
-	fmt.Println(1)
 	// check if its for a private network
 	_, exists := c.GetPostForm("use_private_network")
 	if exists {
-		UploadToHostedIPFSNetwork(c)
+		PinToHostedIPFSNetwork(c)
 		return
 	}
-	fmt.Println(2)
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
 	uploadAddress := GetAuthenticatedUserFromContext(contextCopy)
@@ -100,9 +98,12 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
 func AddFileLocally(c *gin.Context) {
-	//var dir string
-	// look into saving uploaded file
-	//c.SaveUploadedFile(fileHandler, dir)
+	_, exists := c.GetPostForm("network_name")
+	if exists {
+		AddFileToHostedIPFSNetwork(c)
+		return
+	}
+
 	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")

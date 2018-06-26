@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UploadToHostedIPFSNetwork(c *gin.Context) {
+func PinToHostedIPFSNetwork(c *gin.Context) {
 	cC := c.Copy()
 	networkName, exists := cC.GetPostForm("network_name")
 	if !exists {
@@ -74,6 +74,85 @@ func UploadToHostedIPFSNetwork(c *gin.Context) {
 	}()
 	c.JSON(http.StatusOK, gin.H{
 		"status": "content pin request sent",
+	})
+}
+
+func AddFileToHostedIPFSNetwork(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to private network upload")
+		return
+	}
+
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailNoExist(c, "network_name post form does not exist")
+		return
+	}
+
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to load database",
+		})
+		return
+	}
+
+	um := models.NewUserManager(db)
+	canUpload, err := um.CheckIfUserHasAccessToNetwork(ethAddress, networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	if !canUpload {
+		FailNotAuthorized(c, "user not authorized to access network")
+		return
+	}
+	holdTimeinMonths, exists := c.GetPostForm("hold_time")
+	if !exists {
+		FailNoExist(c, "hold_time post form does not exist")
+		return
+	}
+	_, err = strconv.ParseInt(holdTimeinMonths, 10, 64)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	im := models.NewHostedIPFSNetworkManager(db)
+	apiURL, err := im.GetAPIURLByName(networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	ipfsManager, err := rtfs.Initialize("", apiURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	fmt.Println("fetching file")
+	// fetch the file, and create a handler to interact with it
+	fileHandler, err := c.FormFile("file")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	file, err := fileHandler.Open()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	resp, err := ipfsManager.Shell.Add(file)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("file uploaded")
+	c.JSON(http.StatusOK, gin.H{
+		"status": resp,
 	})
 }
 
