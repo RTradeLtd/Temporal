@@ -186,45 +186,33 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	}
 	hash, present := c.GetPostForm("hash")
 	if !present {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "hash post form not present",
-		})
+		FailNoExistPostForm(c, "hash")
 		return
 	}
-	lifetime, present := c.GetPostForm("life_time")
+	lifetimeStr, present := c.GetPostForm("life_time")
 	if !present {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "life_time post form not present",
-		})
+		FailNoExistPostForm(c, "lifetime")
 		return
 	}
-	ttl, present := c.GetPostForm("ttl")
+	ttlStr, present := c.GetPostForm("ttl")
 	if !present {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "ttl post form not present",
-		})
+		FailNoExistPostForm(c, "ttl")
 		return
 	}
 	key, present := c.GetPostForm("key")
 	if !present {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "key post form not present",
-		})
+		FailNoExistPostForm(c, "key")
 		return
 	}
 	resolveString, present := c.GetPostForm("resolve")
 	if !present {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "resolve post form not present",
-		})
+		FailNoExistPostForm(c, "resolve")
 		return
 	}
 
 	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 
@@ -257,6 +245,16 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	lifetime, err := time.ParseDuration(lifetimeStr)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	ttl, err := time.ParseDuration(ttlStr)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	prePubTime := time.Now()
 	keyID, err := um.GetKeyIDByName(ethAddress, key)
 	fmt.Println("using key id of ", keyID)
@@ -265,7 +263,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	fmt.Println("publishing to IPNS")
-	resp, err := manager.PublishToIPNSDetails(hash, lifetime, ttl, key, keyID, resolve)
+	resp, err := manager.PublishToIPNSDetails(hash, key, lifetime, ttl, resolve)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -274,7 +272,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	timeDifference := postPubTime.Sub(prePubTime)
 
 	ipnsManager := models.NewIPNSManager(db)
-	ipnsEntry, err := ipnsManager.UpdateIPNSEntry(resp.Name, resp.Value, lifetime, ttl, key)
+	ipnsEntry, err := ipnsManager.UpdateIPNSEntry(resp.Name, resp.Value, key, lifetime, ttl)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

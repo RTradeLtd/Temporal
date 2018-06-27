@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
@@ -40,14 +41,14 @@ func (im *IpnsManager) FindByIPNSHash(ipnsHash string) (*IPNS, error) {
 	return &entry, nil
 }
 
-func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, lifetime, ttl, key string) (*IPNS, error) {
+func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, key string, lifetime, ttl time.Duration) (*IPNS, error) {
 	var entry IPNS
 	// search for an IPNS entry that matches the given ipns hash
 	im.DB.Where("ipns_hash = ?", ipnsHash).First(&entry)
 	// if the returned model does not exist create it
 	if entry.CreatedAt == nilTime {
 		// Create the record
-		entry, err := im.CreateEntry(ipnsHash, ipfsHash, lifetime, ttl, key)
+		entry, err := im.CreateEntry(ipnsHash, ipfsHash, key, lifetime, ttl)
 		if err != nil {
 			return nil, err
 		}
@@ -60,9 +61,9 @@ func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, lifetime, ttl, key st
 	// update the current hash this record points to
 	entry.CurrentIPFSHash = ipfsHash
 	// update the lifetime
-	entry.LifeTime = lifetime
+	entry.LifeTime = lifetime.String()
 	// update the ttl
-	entry.TTL = ttl
+	entry.TTL = ttl.String()
 	// update the key used to sign
 	entry.Key = key
 	// only update  changed fields
@@ -81,7 +82,7 @@ func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, lifetime, ttl, key st
 	return &entry, nil
 }
 
-func (im *IpnsManager) CreateEntry(ipnsHash, ipfsHash, lifetime, ttl, key string) (*IPNS, error) {
+func (im *IpnsManager) CreateEntry(ipnsHash, ipfsHash, key string, lifetime, ttl time.Duration) (*IPNS, error) {
 	// See above UpdateEntry function for an explanation
 	var entry IPNS
 	_, err := im.FindByIPNSHash(ipnsHash)
@@ -91,8 +92,8 @@ func (im *IpnsManager) CreateEntry(ipnsHash, ipfsHash, lifetime, ttl, key string
 	entry.Sequence = 1
 	entry.IPNSHash = ipnsHash
 	entry.IPFSHashes = pq.StringArray{ipfsHash}
-	entry.LifeTime = lifetime
-	entry.TTL = ttl
+	entry.LifeTime = lifetime.String()
+	entry.TTL = ttl.String()
 	entry.Key = key
 	if check := im.DB.Create(&entry); check.Error != nil {
 		return nil, check.Error

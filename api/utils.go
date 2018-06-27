@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,11 @@ func FailNoExist(c *gin.Context, message string) {
 	})
 }
 
+func FailNoExistPostForm(c *gin.Context, formName string) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"error": fmt.Sprintf("%s post form not present", formName),
+	})
+}
 func FailNotAuthorized(c *gin.Context, message string) {
 	c.JSON(http.StatusForbidden, gin.H{
 		"error": message,
