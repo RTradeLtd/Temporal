@@ -3,6 +3,7 @@ package queue
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
 
@@ -30,9 +31,21 @@ func ProcessIPNSPublishRequests(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 			continue
 		}
 		contentHash := ipnsUpdate.CID
-		ttl := ipnsUpdate.TTL
+		ttl, err := time.ParseDuration(ipnsUpdate.TTL)
+		if err != nil {
+			fmt.Println("error parsing ttl ", err)
+			//TODO: handle
+			d.Ack(false)
+			continue
+		}
 		keyName := ipnsUpdate.Key
-		lifetime := ipnsUpdate.LifeTime
+		lifetime, err := time.ParseDuration(ipnsUpdate.LifeTime)
+		if err != nil {
+			fmt.Println("error parsing lifetime ", err)
+			//TODO: handle
+			d.Ack(false)
+			continue
+		}
 		resolveStr := ipnsUpdate.Resolve
 		ethAddress := ipnsUpdate.EthAddress
 		switch resolveStr {
@@ -58,7 +71,7 @@ func ProcessIPNSPublishRequests(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 			d.Ack(false)
 			continue
 		}
-		resp, err := rtfs.PublishToIPNSDetails(contentHash, lifetime, ttl, keyName, keyID, resolve)
+		resp, err := rtfs.PublishToIPNSDetails(contentHash, keyID, lifetime, ttl, resolve)
 		if err != nil {
 			// TODO: handle
 			fmt.Println("error publishing to ipns ", err)

@@ -111,6 +111,8 @@ func PublishToIPNSDetails(c *gin.Context) {
 		})
 		return
 	}
+	fmt.Println(key)
+	fmt.Println(keyID)
 	fmt.Println("publishing to IPNS")
 	resp, err := manager.PublishToIPNSDetails(hash, lifetime, ttl, key, keyID, resolve)
 	if err != nil {
