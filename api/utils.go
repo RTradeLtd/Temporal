@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
 func FailNoExist(c *gin.Context, message string) {
@@ -28,4 +30,17 @@ func FailOnError(c *gin.Context, err error) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"error": err.Error(),
 	})
+}
+
+func CheckAccessForPrivateNetwork(ethAddress, networkName string, db *gorm.DB) (bool, error) {
+	um := models.NewUserManager(db)
+	canUpload, err := um.CheckIfUserHasAccessToNetwork(ethAddress, networkName)
+	if err != nil {
+		return false, err
+	}
+
+	if !canUpload {
+		return false, nil
+	}
+	return true, nil
 }
