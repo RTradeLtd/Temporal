@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 
 	"github.com/RTradeLtd/Temporal/models"
@@ -77,7 +78,7 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
-// GetFileSizeInBytesForObject is used to retrieve the size of an object in bytes
+//TODO: NEED TO FINISH
 func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -205,7 +206,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
-// IpfsPubSubPublish is used to publish a pubsub msg
+//TODO: NEED TO FINISH
 func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
@@ -251,6 +252,218 @@ func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"topic": topic, "message": message})
+}
+
+///TODO: NEED TO FINISH
+func IpfsPubSubConsumeForHostedIPFSNetwork(c *gin.Context) {
+	cC := c.Copy()
+
+	ethAddress := GetAuthenticatedUserFromContext(cC)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+		return
+	}
+	networkName, exists := cC.GetPostForm("network_name")
+	if !exists {
+		FailNoExistPostForm(c, "network_name")
+		return
+	}
+
+	db, ok := cC.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to load database",
+		})
+		return
+	}
+	im := models.NewHostedIPFSNetworkManager(db)
+	apiURL, err := im.GetAPIURLByName(networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	topic := cC.Param("topic")
+
+	go func() {
+		manager, err := rtfs.Initialize("", apiURL)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		manager.SubscribeToPubSubTopic(topic)
+		manager.ConsumeSubscription(manager.PubSub)
+	}()
+
+	c.JSON(http.StatusOK, gin.H{"status": "consuming messages in background"})
+}
+
+//TODO: NEED TO FINISH
+func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
+	cC := c.Copy()
+	ethAddress := GetAuthenticatedUserFromContext(cC)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+		return
+	}
+	networkName, exists := cC.GetPostForm("network_name")
+	if !exists {
+		FailNoExistPostForm(c, "network_name")
+		return
+	}
+	db, ok := cC.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to load database",
+		})
+		return
+	}
+	im := models.NewHostedIPFSNetworkManager(db)
+	apiURL, err := im.GetAPIURLByName(networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// fetch hash param
+	hash := cC.Param("hash")
+
+	manager, err := rtfs.Initialize("", apiURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// remove the file from the local ipfs state
+	// TODO: implement some kind of error handling and notification
+	err = manager.Shell.Unpin(hash)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("error unpinning hash %s", err.Error()),
+		})
+		return
+	}
+
+	// TODO:
+	// change to send a message to the cluster to depin
+	mqConnectionURL := cC.MustGet("mq_conn_url").(string)
+	qm, err := queue.Initialize(queue.IpfsQueue, mqConnectionURL)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// TODO:
+	// add in appropriate rabbitmq processing to delete from database
+	qm.PublishMessage(hash)
+	c.JSON(http.StatusOK, gin.H{"deleted": hash})
+}
+
+//TODO: NEED TO FINISH
+func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+		return
+	}
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailNoExistPostForm(c, "network_name")
+		return
+	}
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to load database",
+		})
+		return
+	}
+	im := models.NewHostedIPFSNetworkManager(db)
+	apiURL, err := im.GetAPIURLByName(networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// initialize a connection toe the local ipfs node
+	manager, err := rtfs.Initialize("", apiURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// get all the known local pins
+	// WARNING: THIS COULD BE A VERY LARGE LIST
+	pinInfo, err := manager.Shell.Pins()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
+}
+
+// TODO: NEED TO FINISH
+func GetObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailNoExistPostForm(c, "network_name")
+		return
+	}
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to load database",
+		})
+		return
+	}
+	im := models.NewHostedIPFSNetworkManager(db)
+	apiURL, err := im.GetAPIURLByName(networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	key := c.Param("key")
+	manager, err := rtfs.Initialize("", apiURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	stats, err := manager.ObjectStat(key)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"stats": stats})
+}
+
+//TODO: NEED TO FINISH
+func CheckLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailNoExistPostForm(c, "network_name")
+		return
+	}
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to load database",
+		})
+		return
+	}
+	im := models.NewHostedIPFSNetworkManager(db)
+	apiURL, err := im.GetAPIURLByName(networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	hash := c.Param("hash")
+	manager, err := rtfs.Initialize("", apiURL)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	present, err := manager.ParseLocalPinsForHash(hash)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"present": present})
 }
 
 func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
