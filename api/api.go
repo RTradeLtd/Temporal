@@ -113,13 +113,6 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
 	//ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
 
-	ipnsProtected := g.Group("/api/v1/ipns")
-	ipnsProtected.Use(authWare.MiddlewareFunc())
-	ipnsProtected.Use(middleware.APIRestrictionMiddleware(db))
-	ipnsProtected.POST("/publish/details", PublishToIPNSDetails) // admin locked
-	ipnsProtected.Use(middleware.AWSMiddleware(awsKey, awsSecret))
-	ipnsProtected.POST("/dnslink/aws/add", GenerateDNSLinkEntry) // admin locked
-
 	ipfsPrivateProtected := g.Group("/api/v1/ipfs-private")
 	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
 	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(db))
@@ -128,9 +121,18 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", CheckLocalNodeForPinForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/ipfs/object-stat/:key", GetObjectStatForIpfsForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/ipfs/object/size/:key", GetFileSizeInBytesForObjectForHostedIPFSNetwork)
+	ipfsPrivateProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublishToHostedIPFSNetwork)
+	ipfsPrivateProtected.POST("/pubsub/consume/:topic", IpfsPubSubConsumeForHostedIPFSNetwork)
 	ipfsPrivateProtected.GET("/networks", GetAuthorizedPrivateNetworks)
 	ipfsPrivateProtected.POST("/pins", GetLocalPinsForHostedIPFSNetwork)
 	ipfsPrivateProtected.DELETE("/pin/remove/:hash", RemovePinFromLocalHostForHostedIPFSNetwork)
+
+	ipnsProtected := g.Group("/api/v1/ipns")
+	ipnsProtected.Use(authWare.MiddlewareFunc())
+	ipnsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	ipnsProtected.POST("/publish/details", PublishToIPNSDetails) // admin locked
+	ipnsProtected.Use(middleware.AWSMiddleware(awsKey, awsSecret))
+	ipnsProtected.POST("/dnslink/aws/add", GenerateDNSLinkEntry) // admin locked
 
 	clusterProtected := g.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())
