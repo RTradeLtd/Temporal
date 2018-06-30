@@ -21,14 +21,20 @@ func RunTestGarbageCollection(c *gin.Context) {
 	}
 	authenticatedUser := GetAuthenticatedUserFromContext(c)
 	if authenticatedUser != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
-	db := c.MustGet("db").(*gorm.DB)
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
 	um := models.NewUploadManager(db)
-	deletedUploads := um.RunTestDatabaseGarbageCollection()
+	deletedUploads, err := um.RunTestDatabaseGarbageCollection()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"deleted": deletedUploads})
 }
 
@@ -40,17 +46,21 @@ func RunTestGarbageCollection(c *gin.Context) {
 func RunDatabaseGarbageCollection(c *gin.Context) {
 	authenticatedUser := GetAuthenticatedUserFromContext(c)
 	if authenticatedUser != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
-	db := c.MustGet("db").(*gorm.DB)
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
 	um := models.NewUploadManager(db)
-	deletedUploads := um.RunDatabaseGarbageCollection()
-	c.JSON(http.StatusOK, gin.H{
-		"deleted_uploads": deletedUploads,
-	})
+	deletedUploads, err := um.RunDatabaseGarbageCollection()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"deleted_uploads": deletedUploads})
 }
 
 // GetUploadsFromDatabase is used to read a list of uploads from our database
@@ -58,21 +68,21 @@ func RunDatabaseGarbageCollection(c *gin.Context) {
 func GetUploadsFromDatabase(c *gin.Context) {
 	authenticatedUser := GetAuthenticatedUserFromContext(c)
 	if authenticatedUser != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
-	db := c.MustGet("db").(*gorm.DB)
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
 	um := models.NewUploadManager(db)
 	// fetch the uplaods
 	uploads := um.GetUploads()
 	if uploads == nil {
-		um.DB.Close()
 		c.JSON(http.StatusNotFound, nil)
 		return
 	}
-	um.DB.Close()
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
@@ -80,7 +90,11 @@ func GetUploadsFromDatabase(c *gin.Context) {
 // If not admin, will retrieve all uploads for the current context account
 func GetUploadsForAddress(c *gin.Context) {
 	var queryAddress string
-	db := c.MustGet("db").(*gorm.DB)
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
 
 	um := models.NewUploadManager(db)
 	user := GetAuthenticatedUserFromContext(c)
@@ -92,10 +106,8 @@ func GetUploadsForAddress(c *gin.Context) {
 	// fetch all uploads for that address
 	uploads := um.GetUploadsForAddress(queryAddress)
 	if uploads == nil {
-		um.DB.Close()
 		c.JSON(http.StatusNotFound, nil)
 		return
 	}
-	um.DB.Close()
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }

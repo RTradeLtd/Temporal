@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,33 +21,30 @@ func ChangeAccountPassword(c *gin.Context) {
 
 	oldPassword, exists := c.GetPostForm("old_password")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "old_password post form param does not exist",
-		})
+		FailNoExistPostForm(c, "old_password")
 		return
 	}
 
 	newPassword, exists := c.GetPostForm("new_password")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "new_password post form param does not exist",
-		})
+		FailNoExistPostForm(c, "new_password")
 		return
 	}
 
-	db := c.MustGet("db").(*gorm.DB)
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
 	um := models.NewUserManager(db)
 
 	suceeded, err := um.ChangePassword(ethAddress, oldPassword, newPassword)
-
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("error occured while changing password %s", err.Error()),
-		})
+		FailOnError(c, err)
 		return
 	}
 	if !suceeded {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"status": "password change failed but no error occured",
 		})
 		return
@@ -64,20 +60,23 @@ func ChangeAccountPassword(c *gin.Context) {
 func RegisterUserAccount(c *gin.Context) {
 	ethAddress, exists := c.GetPostForm("eth_address")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "eth_address parameter does not exist"})
-		return
+		FailNoExistPostForm(c, "eth_address")
 	}
 	password, exists := c.GetPostForm("password")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "password parameter does not exist"})
+		FailNoExistPostForm(c, "password")
 		return
 	}
-	db := c.MustGet("db").(*gorm.DB)
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
 
 	userManager := models.NewUserManager(db)
 	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	userModel.HashedPassword = "scrubbed"
@@ -89,20 +88,24 @@ func RegisterUserAccount(c *gin.Context) {
 func RegisterEnterpriseUserAccount(c *gin.Context) {
 	ethAddress, exists := c.GetPostForm("eth_address")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "eth_address parameter does not exist"})
+		FailNoExistPostForm(c, "eth_address")
 		return
 	}
 	password, exists := c.GetPostForm("password")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "password parameter does not exist"})
+		FailNoExistPostForm(c, "password")
 		return
 	}
-	db := c.MustGet("db").(*gorm.DB)
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
 
 	userManager := models.NewUserManager(db)
 	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	userModel.HashedPassword = "scrubbed"
@@ -124,18 +127,18 @@ func CreateIPFSKey(c *gin.Context) {
 
 	keyType, exists := c.GetPostForm("key_type")
 	if !exists {
-		FailNoExist(c, "key_type post form does not exist")
+		FailNoExistPostForm(c, "key_type")
 		return
 	}
 	keyBits, exists := c.GetPostForm("key_bits")
 	if !exists {
-		FailNoExist(c, "key_bits post form does not exist")
+		FailNoExistPostForm(c, "key_bits")
 		return
 	}
 
 	keyName, exists := c.GetPostForm("key_name")
 	if !exists {
-		FailNoExist(c, "key_name post form does not exist")
+		FailNoExistPostForm(c, "key_name")
 		return
 	}
 	var keyTypeInt int
@@ -147,9 +150,7 @@ func CreateIPFSKey(c *gin.Context) {
 		// convert the string bits to int
 		bitsInt64, err := strconv.ParseInt(keyBits, 10, 64)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
+			FailOnError(c, err)
 			return
 		}
 		// right now we wont generate keys larger than 4096 in length
@@ -173,17 +174,13 @@ func CreateIPFSKey(c *gin.Context) {
 	// initialize our connection to the ipfs node
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	//  load the key store manager
 	err = manager.CreateKeystoreManager()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	// prevent key name collision between different users
@@ -191,33 +188,25 @@ func CreateIPFSKey(c *gin.Context) {
 	// create a key and save it to disk
 	pk, err := manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	// load the database so we can update our models
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "error loading database middleware",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 	id, err := peer.IDFromPrivateKey(pk)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	um := models.NewUserManager(db)
 	// update the user model with the new key
 	err = um.AddIPFSKeyForUser(ethAddress, keyName, id.Pretty())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 
@@ -232,18 +221,14 @@ func GetIPFSKeyNamesForAuthUser(c *gin.Context) {
 
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "error laoding database middleware",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 
 	um := models.NewUserManager(db)
 	keys, err := um.GetKeysForUser(ethAddress)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"math/big"
 	"net/http"
 	"strconv"
@@ -25,39 +24,29 @@ func RegisterPayment(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(contextCopy)
 	// only allow the admin to access this function
 	if ethAddress != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
 	contentHash, exists := contextCopy.GetPostForm("content_hash")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "content_hash post form param not found",
-		})
+		FailNoExistPostForm(c, "content_hash")
 		return
 	}
 	retentionPeriodInMonths, exists := contextCopy.GetPostForm("retention_period_in_months")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "retention_period_in_months post form param not found",
-		})
+		FailNoExistPostForm(c, "retention_period_in_months")
 		return
 	}
 
 	retentionPeriodInMonthsInt, err := strconv.ParseInt(retentionPeriodInMonths, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to convert retention period in months string to int",
-		})
+		FailOnError(c, err)
 		return
 	}
 
 	paymentMethod, exists := contextCopy.GetPostForm("payment_method")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "payment_method post form param does not exist",
-		})
+		FailNoExistPostForm(c, "payment_method")
 		return
 	}
 
@@ -75,17 +64,13 @@ func RegisterPayment(c *gin.Context) {
 
 	rtfs, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	// calculate the pin cost, we do this by fetching the total object size and the number of months they want to store for
 	costUsdFloat, err := utils.CalculatePinCost(contentHash, retentionPeriodInMonthsInt, rtfs.Shell)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("unable to calcualte pin cost %s", err.Error()),
-		})
+		FailOnError(c, err)
 		return
 	}
 	// format the data
@@ -93,23 +78,23 @@ func RegisterPayment(c *gin.Context) {
 	chargeAmountInWei := utils.ConvertNumberToBaseWei(costUsdBigInt)
 
 	// load relevant connections
-	db := contextCopy.MustGet("db").(*gorm.DB)
+	db, ok := contextCopy.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
 	mqURL := contextCopy.MustGet("mq_conn_url").(string)
 	ethAccount := contextCopy.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
 	// since we aren't interacting with any contract events we dont need IPC
 	pm, err := payment_server.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("unable to create payment manager %s", err.Error()),
-		})
+		FailOnError(c, err)
 		return
 	}
 
 	tx, err := pm.RegisterPaymentForUploader(ethAddress, contentHash, big.NewInt(retentionPeriodInMonthsInt), chargeAmountInWei, method, mqURL)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"error": fmt.Sprintf("unable to process payment for uploader %s", err.Error()),
-		})
+		FailOnError(c, err)
 		return
 	}
 

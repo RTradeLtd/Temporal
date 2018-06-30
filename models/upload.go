@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -26,35 +27,43 @@ type UploadManager struct {
 // RunDatabaseGarbageCollection is used to parse through the database
 // and delete all objects whose GCD has passed
 // TODO: Maybe move this to the database file?
-func (um *UploadManager) RunDatabaseGarbageCollection() *[]Upload {
+func (um *UploadManager) RunDatabaseGarbageCollection() (*[]Upload, error) {
 	var uploads []Upload
 	var deletedUploads []Upload
 
-	um.DB.Find(&uploads)
+	if check := um.DB.Find(&uploads); check.Error != nil {
+		return nil, check.Error
+	}
 	for _, v := range uploads {
 		if time.Now().Unix() > v.GarbageCollectDate.Unix() {
-			um.DB.Delete(&v)
+			if check := um.DB.Delete(&v); check.Error != nil {
+				return nil, check.Error
+			}
 			deletedUploads = append(deletedUploads, v)
 		}
 	}
-	return &deletedUploads
+	return &deletedUploads, nil
 }
 
 // RunTestDatabaseGarbageCollection is used to run a test garbage collection run.
 // NOTE that this will delete literally every single object it detects.
-func (um *UploadManager) RunTestDatabaseGarbageCollection() *[]Upload {
+func (um *UploadManager) RunTestDatabaseGarbageCollection() (*[]Upload, error) {
 	var foundUploads []Upload
 	var deletedUploads []Upload
 	if !dev {
-		return nil
+		return nil, errors.New("not in dev mode")
 	}
 	// get all uploads
-	um.DB.Find(&foundUploads)
+	if check := um.DB.Find(&foundUploads); check.Error != nil {
+		return nil, check.Error
+	}
 	for _, v := range foundUploads {
-		um.DB.Delete(v)
+		if check := um.DB.Delete(v); check.Error != nil {
+			return nil, check.Error
+		}
 		deletedUploads = append(deletedUploads, v)
 	}
-	return &deletedUploads
+	return &deletedUploads, nil
 }
 
 // NewUploadManager is used to generate an upload manager interface
