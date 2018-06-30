@@ -16,17 +16,17 @@ We have a telegram chat https://t.me/RTradeTEMPORAL, feel free to join and ask a
         * Currently only AWS Route53 is supported, more DNS providers will rolled out as needed
     * Automated record republishing (0%)
     * Record validation (0%)
-* IPFS (76%)
+* IPFS (85%)
     * IPFS Cluster Integration (100%)
     * Public IPFS Integration (100%)
     * IPFS Key Creation (66%)
         * SECP Keys (0%)
         * RSA Keys (100%)
         * ED25519 Keys (100%)
-    * Private IPFS Integration (66%)
+    * Private IPFS Integration
         * Static Private Connectivity (100%)
             * We currently support connections to any private IPFS network, however it requires a static configuration done on a network-by-network basis
-        * Dynamic Private IPFS (50%)
+        * Dynamic Private IPFS (70%)
             * This will allow people to provide configuration details through temporal, allowing for the dynamic joining of private IPFS networks
         * Cluster Support (50%)
             * This will back our connection to a hosted or non hosted private IPFS network with IPFS Cluster support
