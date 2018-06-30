@@ -7,6 +7,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/gin-gonic/gin"
 )
 
@@ -98,6 +99,7 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
 func AddFileLocally(c *gin.Context) {
+	cC := c.Copy()
 	_, exists := c.GetPostForm("use_private_network")
 	if exists {
 		AddFileToHostedIPFSNetwork(c)
@@ -106,15 +108,15 @@ func AddFileLocally(c *gin.Context) {
 
 	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
-	fileHandler, err := c.FormFile("file")
+	fileHandler, err := cC.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	uploaderAddress := GetAuthenticatedUserFromContext(c)
+	uploaderAddress := GetAuthenticatedUserFromContext(cC)
 
-	holdTimeinMonths, present := c.GetPostForm("hold_time")
+	holdTimeinMonths, present := cC.GetPostForm("hold_time")
 	if !present {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "hold_time post form param not present",
@@ -166,6 +168,19 @@ func AddFileLocally(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error connectingto rabbitmq": err.Error()})
 		return
 	}
+	clusterManager := rtfs_cluster.Initialize()
+	decodedHash, err := clusterManager.DecodeHashString(resp)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	go func() {
+		err := clusterManager.Pin(decodedHash)
+		if err != nil {
+			//TODO: LOG IT
+			fmt.Println("error encountered pinning to cluster ", err)
+		}
+	}()
 	// publish the message
 	err = qm.PublishMessage(dfa)
 	if err != nil {
