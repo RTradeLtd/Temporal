@@ -24,28 +24,26 @@ func PinHashLocally(c *gin.Context) {
 	uploadAddress := GetAuthenticatedUserFromContext(contextCopy)
 	holdTimeInMonths, exists := contextCopy.GetPostForm("hold_time")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "hold_time post form does not exist",
-		})
+		FailNoExistPostForm(c, "hold_time")
 		return
 	}
 	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
+		return
+	}
+	// currently after it is pinned, it is sent to the cluster to be pinned
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		FailOnError(c, err)
 		return
 	}
 	go func() {
-		// currently after it is pinned, it is sent to the cluster to be pinned
-		manager, err := rtfs.Initialize("", "")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
 		// before exiting, it is pinned to the cluster
 		err = manager.Pin(hash)
 		if err != nil {
+			// TODO: log it
 			fmt.Println(err)
-			return
 		}
 	}()
 	// construct the rabbitmq message to add this entry to the database
@@ -59,16 +57,15 @@ func PinHashLocally(c *gin.Context) {
 	// initialize the queue
 	qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	// publish the message, if there was an error finish processing
 	err = qm.PublishMessage(dpa)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
-	qm.Close()
 	c.JSON(http.StatusOK, gin.H{"upload": dpa})
 }
 
@@ -77,14 +74,12 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 	key := c.Param("key")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	sizeInBytes, err := manager.GetObjectFileSizeInBytes(key)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 
@@ -110,7 +105,7 @@ func AddFileLocally(c *gin.Context) {
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := cC.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 
@@ -118,37 +113,33 @@ func AddFileLocally(c *gin.Context) {
 
 	holdTimeinMonths, present := cC.GetPostForm("hold_time")
 	if !present {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "hold_time post form param not present",
-		})
+		FailNoExistPostForm(c, "post_form")
 		return
 	}
 	holdTimeinMonthsInt, err := strconv.ParseInt(holdTimeinMonths, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	fmt.Println("opening file")
 	// open the file
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	fmt.Println("initializing manager")
 	// initialize a connection to the local ipfs node
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	// pin the file
 	fmt.Println("adding file")
 	resp, err := manager.Shell.Add(openFile)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	fmt.Println("file added")
@@ -158,14 +149,11 @@ func AddFileLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		UploaderAddress:  uploaderAddress,
 	}
-	icp := queue.IpfsClusterPin{
-		CID: resp,
-	}
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	// initialize a connectino to rabbitmq
 	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error connectingto rabbitmq": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	clusterManager := rtfs_cluster.Initialize()
@@ -174,6 +162,7 @@ func AddFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	// spawn a cluster pin as a go-routine
 	go func() {
 		err := clusterManager.Pin(decodedHash)
 		if err != nil {
@@ -181,20 +170,10 @@ func AddFileLocally(c *gin.Context) {
 			fmt.Println("error encountered pinning to cluster ", err)
 		}
 	}()
-	// publish the message
+	// publish the database file add message
 	err = qm.PublishMessage(dfa)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error publishing database file add to rabbit mq": err.Error()})
-		return
-	}
-	qm, err = queue.Initialize(queue.IpfsClusterQueue, mqConnectionURL)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error connectingto rabbitmq": err.Error()})
-		return
-	}
-	err = qm.PublishMessage(icp)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error publishing ipfs cluster pin to rabbit mq": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"response": resp})
@@ -204,57 +183,53 @@ func AddFileLocally(c *gin.Context) {
 func IpfsPubSubPublish(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
 	topic := c.Param("topic")
 	message, present := c.GetPostForm("message")
 	if !present {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "message post form param is not present",
-		})
+		FailNoExistPostForm(c, "message")
 		return
 	}
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	err = manager.PublishPubSubMessage(topic, message)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"topic": topic, "message": message})
+	c.JSON(http.StatusOK, gin.H{
+		"topic":   topic,
+		"message": message,
+	})
 }
 
 // IpfsPubSubConsume is used to consume pubsub messages
 func IpfsPubSubConsume(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
 	contextCopy := c.Copy()
 	topic := contextCopy.Param("topic")
-
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	go func() {
-		manager, err := rtfs.Initialize("", "")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
 		manager.SubscribeToPubSubTopic(topic)
 		manager.ConsumeSubscription(manager.PubSub)
 	}()
 
-	c.JSON(http.StatusOK, gin.H{"status": "consuming messages in background"})
+	c.JSON(http.StatusOK, gin.H{
+		"status": "consuming messages in background",
+	})
 }
 
 // RemovePinFromLocalHost is used to remove a pin from the ipfs instance
@@ -266,18 +241,14 @@ func RemovePinFromLocalHost(c *gin.Context) {
 
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	// remove the file from the local ipfs state
 	// TODO: implement some kind of error handling and notification
 	err = manager.Shell.Unpin(hash)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("error unpinning hash %s", err.Error()),
-		})
+		FailOnError(c, err)
 		return
 	}
 
@@ -286,12 +257,16 @@ func RemovePinFromLocalHost(c *gin.Context) {
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	qm, err := queue.Initialize(queue.IpfsQueue, mqConnectionURL)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	// TODO:
 	// add in appropriate rabbitmq processing to delete from database
-	qm.PublishMessage(hash)
+	err = qm.PublishMessage(hash)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
@@ -299,24 +274,20 @@ func RemovePinFromLocalHost(c *gin.Context) {
 func GetLocalPins(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
 	// initialize a connection toe the local ipfs node
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	// get all the known local pins
 	// WARNING: THIS COULD BE A VERY LARGE LIST
 	pinInfo, err := manager.Shell.Pins()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
@@ -329,14 +300,12 @@ func GetObjectStatForIpfs(c *gin.Context) {
 	key := c.Param("key")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	stats, err := manager.ObjectStat(key)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"stats": stats})
@@ -348,14 +317,12 @@ func CheckLocalNodeForPin(c *gin.Context) {
 	hash := c.Param("hash")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	present, err := manager.ParseLocalPinsForHash(hash)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"present": present})
