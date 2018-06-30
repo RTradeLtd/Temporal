@@ -35,7 +35,7 @@ func NewUserManager(db *gorm.DB) *UserManager {
 
 func (um *UserManager) GetPrivateIPFSNetworksForUser(ethAddress string) ([]string, error) {
 	u := &User{}
-	if check := um.DB.Where("eth_address = ?").First(u); check.Error != nil {
+	if check := um.DB.Where("eth_address = ?", ethAddress).First(u); check.Error != nil {
 		return nil, check.Error
 	}
 	return u.IPFSNetworkNames, nil
