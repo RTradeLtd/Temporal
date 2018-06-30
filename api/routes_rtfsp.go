@@ -201,6 +201,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
+// NEED TO ADD ROUTE
 func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -252,6 +253,7 @@ func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 }
 
 ///TODO: NEED TO FINISH
+// NEED TO ADD ROUTE
 func IpfsPubSubConsumeForHostedIPFSNetwork(c *gin.Context) {
 	cC := c.Copy()
 

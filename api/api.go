@@ -129,6 +129,8 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsPrivateProtected.POST("/ipfs/object-stat/:key", GetObjectStatForIpfsForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/ipfs/object/size/:key", GetFileSizeInBytesForObjectForHostedIPFSNetwork)
 	ipfsPrivateProtected.GET("/networks", GetAuthorizedPrivateNetworks)
+	ipfsPrivateProtected.POST("/pins", GetLocalPinsForHostedIPFSNetwork)
+	ipfsPrivateProtected.DELETE("/pin/remove/:hash", RemovePinFromLocalHostForHostedIPFSNetwork)
 
 	clusterProtected := g.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())
