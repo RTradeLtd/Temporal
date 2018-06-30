@@ -770,3 +770,22 @@ func GetIPFSPrivateNetworkByName(c *gin.Context) {
 		"network": net,
 	})
 }
+
+func GetAuthorizedPrivateNetworks(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
+
+	um := models.NewUserManager(db)
+	networks, err := um.GetPrivateIPFSNetworksForUser(ethAddress)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"networks": networks,
+	})
+}

@@ -32,6 +32,12 @@ func FailOnError(c *gin.Context, err error) {
 	})
 }
 
+func FailedToLoadDatabase(c *gin.Context) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"error": "failed to load database",
+	})
+}
+
 func CheckAccessForPrivateNetwork(ethAddress, networkName string, db *gorm.DB) (bool, error) {
 	um := models.NewUserManager(db)
 	canUpload, err := um.CheckIfUserHasAccessToNetwork(ethAddress, networkName)
