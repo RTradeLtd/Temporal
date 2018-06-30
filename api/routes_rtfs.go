@@ -98,7 +98,7 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
 func AddFileLocally(c *gin.Context) {
-	_, exists := c.GetPostForm("network_name")
+	_, exists := c.GetPostForm("use_private_network")
 	if exists {
 		AddFileToHostedIPFSNetwork(c)
 		return
