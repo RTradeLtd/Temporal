@@ -58,12 +58,11 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 	// prevent mine content sniffing
 	r.Use(helmet.NoSniff())
 	r.Use(rollbar.Recovery(false))
-	r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	r.Use(middleware.DatabaseMiddleware(db))
-	r.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
+
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
-	setupRoutes(r, authMiddleware, db, awsKey, awsSecret)
+	setupRoutes(r, authMiddleware, db, awsKey, awsSecret, ethKey, ethPass, mqConnectionURL)
 
 	statsProtected := r.Group("/api/v1/statistics")
 	statsProtected.Use(authMiddleware.MiddlewareFunc())
@@ -82,8 +81,9 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 }
 
 // setupRoutes is used to setup all of our api routes
-func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, awsKey, awsSecret string) {
-
+func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, awsKey, awsSecret, ethKey, ethPass, mqConnectionURL string) {
+	//r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
+	//r.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	// LOGIN
 	g.POST("/api/v1/login", authWare.LoginHandler)
 
@@ -104,13 +104,16 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsProtected.Use(authWare.MiddlewareFunc())
 	ipfsProtected.Use(middleware.APIRestrictionMiddleware(db))
 	ipfsProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublish) // admin locked
-	ipfsProtected.POST("/pin/:hash", PinHashLocally)
-	ipfsProtected.POST("/add-file", AddFileLocally)
-	ipfsProtected.GET("/pubsub/consume/:topic", IpfsPubSubConsume) // admin locked
-	ipfsProtected.GET("/pins", GetLocalPins)                       // admin locked
+	ipfsProtected.GET("/pubsub/consume/:topic", IpfsPubSubConsume)  // admin locked
+	ipfsProtected.GET("/pins", GetLocalPins)                        // admin locked
 	ipfsProtected.GET("/object-stat/:key", GetObjectStatForIpfs)
 	ipfsProtected.GET("/object/size/:key", GetFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
+	ipfsProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
+	ipfsProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
+	ipfsProtected.POST("/pin/:hash", PinHashLocally)
+	ipfsProtected.POST("/add-file", AddFileLocally)
+
 	//ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
 
 	ipfsPrivateProtected := g.Group("/api/v1/ipfs-private")
@@ -137,11 +140,12 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	clusterProtected := g.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())
 	clusterProtected.Use(middleware.APIRestrictionMiddleware(db))
-	clusterProtected.POST("/pin/:hash", PinHashToCluster)
 	clusterProtected.POST("/sync-errors-local", SyncClusterErrorsLocally)          // admin locked
 	clusterProtected.GET("/status-local-pin/:hash", GetLocalStatusForClusterPin)   // admin locked
 	clusterProtected.GET("/status-global-pin/:hash", GetGlobalStatusForClusterPin) // admin locked
 	clusterProtected.GET("/status-local", FetchLocalClusterStatus)                 // admin locked
+	clusterProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
+	clusterProtected.POST("/pin/:hash", PinHashToCluster)
 	//clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster)
 
 	databaseProtected := g.Group("/api/v1/database")
@@ -154,6 +158,8 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 
 	frontendProtected := g.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
+	frontendProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
+	frontendProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	frontendProtected.POST("/registration/request", SubmitPinPaymentRequest)
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", CalculatePinCost)
 	frontendProtected.POST("/confirm/:paymentID", ConfirmPayment)
@@ -161,6 +167,8 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	paymentsAPIProtected := g.Group("/api/v1/payments-api")
 	paymentsAPIProtected.Use(authWare.MiddlewareFunc())
 	paymentsAPIProtected.Use(middleware.APIRestrictionMiddleware(db))
+	paymentsAPIProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
+	paymentsAPIProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	paymentsAPIProtected.POST("/register", RegisterPayment) // admin locked
 	// PROTECTED ROUTES -- END
 
