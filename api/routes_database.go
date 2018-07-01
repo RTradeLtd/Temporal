@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/models"
@@ -14,9 +15,7 @@ var dev = false
 // of our garbage collector
 func RunTestGarbageCollection(c *gin.Context) {
 	if !dev {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "attempting to run test database garbage colelction in non dev mode",
-		})
+		FailOnError(c, errors.New("attempting to run test database garbage colelction in non dev mode"))
 		return
 	}
 	authenticatedUser := GetAuthenticatedUserFromContext(c)
@@ -80,7 +79,7 @@ func GetUploadsFromDatabase(c *gin.Context) {
 	// fetch the uplaods
 	uploads := um.GetUploads()
 	if uploads == nil {
-		c.JSON(http.StatusNotFound, nil)
+		FailOnError(c, errors.New("no uploads found"))
 		return
 	}
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
@@ -106,7 +105,7 @@ func GetUploadsForAddress(c *gin.Context) {
 	// fetch all uploads for that address
 	uploads := um.GetUploadsForAddress(queryAddress)
 	if uploads == nil {
-		c.JSON(http.StatusNotFound, nil)
+		FailOnError(c, errors.New("no uploads found"))
 		return
 	}
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})

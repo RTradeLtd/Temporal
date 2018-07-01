@@ -25,8 +25,10 @@ func (pm *PaymentManager) FindPaymentsByUploader(address string) *[]Payment {
 	return &payments
 }
 
-func (pm *PaymentManager) FindPaymentByPaymentID(paymentID string) *Payment {
+func (pm *PaymentManager) FindPaymentByPaymentID(paymentID string) (*Payment, error) {
 	var payment Payment
-	pm.DB.Find(&payment).Where("payment_id = ?", paymentID)
-	return &payment
+	if check := pm.DB.Find(&payment).Where("payment_id = ?", paymentID); check.Error != nil {
+		return nil, check.Error
+	}
+	return &payment, nil
 }

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -29,23 +30,17 @@ func SubmitPinPaymentRequest(c *gin.Context) {
 
 	holdTime, exists := contextCopy.GetPostForm("hold_time")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "hold_time post form does not exist",
-		})
+		FailNoExistPostForm(c, "hold_time")
 		return
 	}
 	contentHash, exists := contextCopy.GetPostForm("content_hash")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "content_hash post form does not exist",
-		})
+		FailNoExistPostForm(c, "content_hash")
 		return
 	}
 	paymentMethod, exists := contextCopy.GetPostForm("payment_method")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "payment_method post form does not exist",
-		})
+		FailNoExistPostForm(c, "payment_method")
 		return
 	}
 	switch paymentMethod {
@@ -56,31 +51,23 @@ func SubmitPinPaymentRequest(c *gin.Context) {
 		method = 1
 		break
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "provided payment does not exist, valid parameters are rtc or eth",
-		})
+		FailOnError(c, errors.New("provided payment does not exist, valid parameters are rtc or eth"))
 		return
 	}
 	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to convert hold time to int",
-		})
+		FailOnError(c, err)
 		return
 	}
 	mqURL := c.MustGet("mq_conn_url").(string)
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	pinCostUsd, err := utils.CalculatePinCost(contentHash, holdTimeInt, manager.Shell)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to calculate cost of pin",
-		})
+		FailOnError(c, err)
 		return
 	}
 	var cost float64
@@ -93,17 +80,13 @@ func SubmitPinPaymentRequest(c *gin.Context) {
 	case 1:
 		ethUSD, err := utils.RetrieveEthUsdPrice()
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": fmt.Sprintf("error %s", err.Error()),
-			})
+			FailOnError(c, err)
 			return
 		}
 		cost = pinCostUsd / ethUSD
 		break
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid payment method, must be 0 or 1",
-		})
+		FailOnError(c, errors.New("invalid payment method, must be 0 or 1"))
 		return
 	}
 	fmt.Println(cost)
@@ -116,16 +99,12 @@ func SubmitPinPaymentRequest(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.PinPaymentRequestQueue, mqURL)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	err = qm.PublishMessage(ppr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -142,23 +121,17 @@ func CalculatePinCost(c *gin.Context) {
 	holdTime := c.Param("holdtime")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to convert hold time from string to int",
-		})
+		FailOnError(c, err)
 		return
 	}
 	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("unable to calculate pin cost %s", err.Error()),
-		})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -171,40 +144,40 @@ func ConfirmPayment(c *gin.Context) {
 	paymentID := c.Param("paymentID")
 	txHash, present := c.GetPostForm("tx_hash")
 	if !present {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "tx_hash post form param not present",
-		})
+		FailNoExistPostForm(c, "tx_hash")
 		return
 	}
 
 	//TODO:  check to make sure the payment id belongs to the authenticated user
 	uploaderAddress := GetAuthenticatedUserFromContext(c)
 
-	ethAccount := c.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
+	ethAccount, ok := c.MustGet("eth_account").([2]string) // 0 = key, 1 = pass
+	if !ok {
+		FailOnError(c, errors.New("unable to load eth account"))
+		return
+	}
 
-	db := c.MustGet("db").(*gorm.DB)
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
 
 	paymentModelManager := models.NewPaymentManager(db)
-	payment := paymentModelManager.FindPaymentByPaymentID(paymentID)
-	if payment.CreatedAt == utils.NilTime {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "supplied payment ID does not exist in database",
-		})
+	payment, err := paymentModelManager.FindPaymentByPaymentID(paymentID)
+	if err != nil {
+		FailOnError(c, err)
 		return
 	}
 	if payment.Paid == true {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "supplied payment ID has already been paid for",
-		})
+		FailOnError(c, errors.New("supplied payment ID has already been paid for"))
 		return
 	}
 	fmt.Println(txHash, ethAccount[0])
 
 	pm, err := payment_server.NewPaymentManager(false, ethAccount[0], ethAccount[1], db)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to establish connection to payment contract",
-		})
+		FailOnError(c, err)
 		return
 	}
 	var mined bool
@@ -213,9 +186,7 @@ func ConfirmPayment(c *gin.Context) {
 	// we will cache the value in case we get an intermittent RPC error
 	currentBlockCache, err := pm.EthRPC.EthBlockNumber()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("unable to read block number %s", err.Error()),
-		})
+		FailOnError(c, err)
 		return
 	}
 
@@ -225,9 +196,7 @@ func ConfirmPayment(c *gin.Context) {
 		}
 		receipt, err := pm.EthRPC.EthGetTransactionReceipt(txHash)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": fmt.Sprintf("error processing tx receipt %s", err.Error()),
-			})
+			FailOnError(c, err)
 			return
 		}
 
@@ -249,9 +218,7 @@ func ConfirmPayment(c *gin.Context) {
 	mqURL := c.MustGet("mq_conn_url").(string)
 	qm, err := queue.Initialize(queue.PaymentReceivedQueue, mqURL)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("unable to open queue manager %s", err.Error()),
-		})
+		FailOnError(c, err)
 		return
 	}
 
@@ -262,11 +229,8 @@ func ConfirmPayment(c *gin.Context) {
 
 	// this will trigger a message to rabbitmq, prompting pinning of the content to temporal
 	err = qm.PublishMessage(paymentReceived)
-
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("error publishing message to queue %s", err.Error()),
-		})
+		FailOnError(c, err)
 		return
 	}
 

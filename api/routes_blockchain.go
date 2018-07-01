@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"math/big"
 	"net/http"
 	"strconv"
@@ -56,9 +57,7 @@ func RegisterPayment(c *gin.Context) {
 	case "eth":
 		method = 1
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "not a valid payment method, must be eth or rtc",
-		})
+		FailOnError(c, errors.New("not a valid payment method, must be eth or rtc"))
 		return
 	}
 
