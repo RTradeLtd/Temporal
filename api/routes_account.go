@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -155,9 +156,7 @@ func CreateIPFSKey(c *gin.Context) {
 		}
 		// right now we wont generate keys larger than 4096 in length
 		if bitsInt64 > 4096 {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "key bits must be 4096 or less. For larger keys contact your Temporal administrator",
-			})
+			FailOnError(c, errors.New("key bits must be 4096 or less. For larger keys contact your Temporal administrator"))
 			return
 		}
 		bitsInt = int(bitsInt64)
@@ -166,9 +165,7 @@ func CreateIPFSKey(c *gin.Context) {
 		keyTypeInt = ci.Ed25519
 		bitsInt = 256
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "key_type must be rsa or ed25519",
-		})
+		FailOnError(c, errors.New("key_type must be rsa or ed25519"))
 		return
 	}
 	// initialize our connection to the ipfs node

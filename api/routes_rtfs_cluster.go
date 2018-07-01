@@ -19,14 +19,12 @@ func PinHashToCluster(c *gin.Context) {
 
 	holdTimeInMonths, exists := contextCopy.GetPostForm("hold_time")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "hold_time post form does not exist",
-		})
+		FailNoExistPostForm(c, "hold_time")
 		return
 	}
 	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	// we are going to pin first, since we want the data availableility immediately
@@ -57,13 +55,13 @@ func PinHashToCluster(c *gin.Context) {
 	// initialize the queue
 	qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	// publish the message, if there was an error finish processing
 	err = qm.PublishMessage(dpa)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	qm.Close()
@@ -75,9 +73,7 @@ func PinHashToCluster(c *gin.Context) {
 func SyncClusterErrorsLocally(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
 	// initialize a conection to the cluster
@@ -85,7 +81,7 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
 	syncedCids, err := manager.ParseLocalStatusAllAndSync()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
@@ -99,13 +95,13 @@ func RemovePinFromCluster(c *gin.Context) {
 	manager := rtfs_cluster.Initialize()
 	err := manager.RemovePinFromCluster(hash)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	qm, err := queue.Initialize(queue.IpfsQueue, mqConnectionURL)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	qm.PublishMessage(hash)
@@ -116,9 +112,7 @@ func RemovePinFromCluster(c *gin.Context) {
 func GetLocalStatusForClusterPin(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
 	hash := c.Param("hash")
@@ -127,7 +121,7 @@ func GetLocalStatusForClusterPin(c *gin.Context) {
 	// get the cluster status for the cid only asking the local cluster node
 	status, err := manager.GetStatusForCidLocally(hash)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusFound, gin.H{"status": status})
@@ -141,7 +135,7 @@ func GetGlobalStatusForClusterPin(c *gin.Context) {
 	// get teh cluster wide status for this particular pin
 	status, err := manager.GetStatusForCidGlobally(hash)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusFound, gin.H{"status": status})
@@ -153,9 +147,7 @@ func GetGlobalStatusForClusterPin(c *gin.Context) {
 func FetchLocalClusterStatus(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
 	// this will hold all the retrieved content hashes
@@ -167,7 +159,7 @@ func FetchLocalClusterStatus(c *gin.Context) {
 	// fetch a map of all the statuses
 	maps, err := manager.FetchLocalStatus()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	// parse the maps

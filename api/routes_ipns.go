@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -50,9 +51,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "error loading db middleware",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 	um := models.NewUserManager(db)
@@ -64,9 +63,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 	}
 
 	if !ownsKey {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "attempting to generate IPNS entry unowned key",
-		})
+		FailOnError(c, errors.New("attempting to generate IPNS entry unowned key"))
 		return
 	}
 	manager, err := rtfs.Initialize("", "")
@@ -106,9 +103,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 	fmt.Println("publishing to IPNS")
 	resp, err := manager.PublishToIPNSDetails(hash, key, lifetime, ttl, resolve)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("unable to create ipns record %s", err),
-		})
+		FailOnError(c, err)
 		return
 	}
 	postPubTime := time.Now()
@@ -117,9 +112,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 	im := models.NewIPNSManager(db)
 	ipnsEntry, err := im.UpdateIPNSEntry(resp.Name, resp.Value, key, lifetime, ttl)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{
@@ -134,33 +127,31 @@ func PublishToIPNSDetails(c *gin.Context) {
 func GenerateDNSLinkEntry(c *gin.Context) {
 	authUser := GetAuthenticatedUserFromContext(c)
 	if authUser != AdminAddress {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unauthorized access",
-		})
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
 
 	recordName, exists := c.GetPostForm("record_name")
 	if !exists {
-		FailNoExist(c, "record_name post form does not exist")
+		FailNoExistPostForm(c, "record_name")
 		return
 	}
 
 	recordValue, exists := c.GetPostForm("record_value")
 	if !exists {
-		FailNoExist(c, "record_value post form does not exist")
+		FailNoExistPostForm(c, "record_value")
 		return
 	}
 
 	awsZone, exists := c.GetPostForm("aws_zone")
 	if !exists {
-		FailNoExist(c, "aws_zone post form does not exist")
+		FailNoExistPostForm(c, "aws_zone")
 		return
 	}
 
 	regionName, exists := c.GetPostForm("region_name")
 	if !exists {
-		FailNoExist(c, "region_name post form does not exist")
+		FailNoExistPostForm(c, "region_name")
 		return
 	}
 
@@ -172,25 +163,19 @@ func GenerateDNSLinkEntry(c *gin.Context) {
 	case "us-west-1":
 		region = aws.USWest
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "region_name post form not valid",
-		})
+		FailOnError(c, errors.New("invalid region_name"))
 		return
 	}
 
 	awsManager, err := dlink.GenerateAwsLinkManager("get", aKey, aSecret, awsZone, region)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 
 	resp, err := awsManager.AddDNSLinkEntry(recordName, recordValue)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 

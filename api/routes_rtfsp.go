@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -310,9 +311,7 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	}
 	db, ok := cC.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(db)
@@ -333,9 +332,7 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	// TODO: implement some kind of error handling and notification
 	err = manager.Shell.Unpin(hash)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("error unpinning hash %s", err.Error()),
-		})
+		FailOnError(c, err)
 		return
 	}
 
@@ -344,7 +341,7 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	mqConnectionURL := cC.MustGet("mq_conn_url").(string)
 	qm, err := queue.Initialize(queue.IpfsQueue, mqConnectionURL)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	// TODO:
@@ -363,9 +360,7 @@ func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	}
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 	canAccess, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
@@ -408,9 +403,7 @@ func GetObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 	}
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 	canAccess, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
@@ -451,9 +444,7 @@ func CheckLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	}
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 	canAccess, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
@@ -489,7 +480,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
-		FailNoExist(c, "network_name post form does not exist")
+		FailNoExistPostForm(c, "network_name")
 		return
 	}
 
@@ -497,9 +488,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 	canUpload, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
@@ -546,9 +535,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	}
 
 	if !ownsKey {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "attempting to generate IPNS entry unowned key",
-		})
+		FailOnError(c, errors.New("attempting to generate IPNS entry unowned key"))
 		return
 	}
 
@@ -603,9 +590,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	ipnsManager := models.NewIPNSManager(db)
 	ipnsEntry, err := ipnsManager.UpdateIPNSEntry(resp.Name, resp.Value, key, lifetime, ttl)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{
@@ -658,9 +643,7 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	var bootstrapPeerAddresses []string
 
 	if len(nodeAddresses) != len(bPeers) {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "length of local_node_addresses and bootstrap_peers must be equal",
-		})
+		FailOnError(c, errors.New("length of local_node_addresses and bootstrap_peers must be equal"))
 		return
 	}
 	for k, v := range bPeers {
@@ -675,9 +658,7 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 			return
 		}
 		if !valid {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": fmt.Sprintf("provided peer %s is not a valid bootstrap peer", addr),
-			})
+			FailOnError(c, errors.New(fmt.Sprintf("provided peer %s is not a valid bootstrap peer", addr)))
 			return
 		}
 		addr, err = utils.GenerateMultiAddrFromString(nodeAddresses[k])
@@ -691,9 +672,7 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 			return
 		}
 		if !valid {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": fmt.Sprintf("provided peer %s is not a valid ipfs peer", addr),
-			})
+			FailOnError(c, errors.New(fmt.Sprintf("provided peer %s is not a valid ipfs peer", addr)))
 			return
 		}
 		bootstrapPeerAddresses = append(bootstrapPeerAddresses, v)
@@ -707,9 +686,7 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	}
 	db, ok := cC.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 	manager := models.NewHostedIPFSNetworkManager(db)
@@ -749,15 +726,13 @@ func GetIPFSPrivateNetworkByName(c *gin.Context) {
 	}
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 
 	netName, exists := c.GetPostForm("network_name")
 	if !exists {
-		FailNoExist(c, "network_name post form does not exist")
+		FailNoExistPostForm(c, "network_name")
 		return
 	}
 	manager := models.NewHostedIPFSNetworkManager(db)
