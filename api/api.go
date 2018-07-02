@@ -18,9 +18,7 @@ import (
 	"github.com/aviddiviner/gin-limit"
 	"github.com/dvwright/xss-mw"
 
-	"github.com/gin-contrib/rollbar"
 	"github.com/gin-gonic/gin"
-	"github.com/stvp/roll"
 	"github.com/zsais/go-gin-prometheus"
 )
 
@@ -33,7 +31,7 @@ var AdminAddress = "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9"
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser, awsKey, awsSecret string) *gin.Engine {
+func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser, awsKey, awsSecret string) *gin.Engine {
 	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	if err != nil {
 		fmt.Println("failed to open db connection")
@@ -41,8 +39,6 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 	}
 	db.LogMode(true)
 	apiURL := fmt.Sprintf("%s:6768", listenAddress)
-	roll.Token = rollbarToken
-	roll.Environment = "development"
 	r := gin.Default()
 	r.Use(stats.RequestStats())
 	r.Use(xssMdlwr.RemoveXss())
@@ -57,7 +53,6 @@ func Setup(jwtKey, rollbarToken, mqConnectionURL, dbPass, dbURL, ethKey, ethPass
 	r.Use(helmet.SetHSTS(true))
 	// prevent mine content sniffing
 	r.Use(helmet.NoSniff())
-	r.Use(rollbar.Recovery(false))
 	r.Use(middleware.DatabaseMiddleware(db))
 
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)

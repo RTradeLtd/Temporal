@@ -40,7 +40,6 @@ func main() {
 	keyFilePath := tCfg.API.Connection.Certificates.KeyPath
 	listenAddress := tCfg.API.Connection.ListenAddress
 	jwtKey := tCfg.API.JwtKey
-	rollbarToken := tCfg.API.RollbarToken
 	rabbitMQConnectionURL := tCfg.RabbitMQ.URL
 	dbPass := tCfg.Database.Password
 	dbURL := tCfg.Database.URL
@@ -51,7 +50,7 @@ func main() {
 	awsSecret := tCfg.AWS.Secret
 	switch os.Args[1] {
 	case "api":
-		router := api.Setup(jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass, listenAddress, dbUser, awsKey, awsSecret)
+		router := api.Setup(jwtKey, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass, listenAddress, dbUser, awsKey, awsSecret)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
