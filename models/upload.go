@@ -25,6 +25,11 @@ type UploadManager struct {
 	DB *gorm.DB
 }
 
+// NewUploadManager is used to generate an upload manager interface
+func NewUploadManager(db *gorm.DB) *UploadManager {
+	return &UploadManager{DB: db}
+}
+
 // RunDatabaseGarbageCollection is used to parse through the database
 // and delete all objects whose GCD has passed
 // TODO: Maybe move this to the database file?
@@ -67,12 +72,14 @@ func (um *UploadManager) RunTestDatabaseGarbageCollection() (*[]Upload, error) {
 	return &deletedUploads, nil
 }
 
-// NewUploadManager is used to generate an upload manager interface
-func NewUploadManager(db *gorm.DB) *UploadManager {
-	return &UploadManager{DB: db}
+func (um *UploadManager) FindUploadsByNetwork(networkName string) ([]*Upload, error) {
+	uploads := []*Upload{}
+	if check := um.DB.Where("network_name = ?", networkName).Find(uploads); check.Error != nil {
+		return nil, check.Error
+	}
+	return uploads, nil
 }
-
-func (um *UserManager) FindUploadByHashAndNetwork(hash, networkName string) (*Upload, error) {
+func (um *UploadManager) FindUploadByHashAndNetwork(hash, networkName string) (*Upload, error) {
 	upload := &Upload{}
 	if check := um.DB.Where("hash = ? AND network_name = ?", hash, networkName).First(upload); check.Error != nil {
 		return nil, check.Error

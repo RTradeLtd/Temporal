@@ -771,3 +771,35 @@ func GetAuthorizedPrivateNetworks(c *gin.Context) {
 		"networks": networks,
 	})
 }
+
+func GetUploadsByNetworkName(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailNoExistPostForm(c, "network_name")
+		return
+	}
+
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
+
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	um := models.NewUploadManager(db)
+	uploads, err := um.FindUploadsByNetwork(networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"uploads": uploads,
+	})
+}
