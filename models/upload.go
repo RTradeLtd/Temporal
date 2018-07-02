@@ -72,8 +72,8 @@ func (um *UploadManager) RunTestDatabaseGarbageCollection() (*[]Upload, error) {
 	return &deletedUploads, nil
 }
 
-func (um *UploadManager) FindUploadsByNetwork(networkName string) ([]*Upload, error) {
-	uploads := []*Upload{}
+func (um *UploadManager) FindUploadsByNetwork(networkName string) (*[]Upload, error) {
+	uploads := &[]Upload{}
 	if check := um.DB.Where("network_name = ?", networkName).Find(uploads); check.Error != nil {
 		return nil, check.Error
 	}
@@ -89,13 +89,13 @@ func (um *UploadManager) FindUploadByHashAndNetwork(hash, networkName string) (*
 
 // FindUploadsByHash is used to return all instances of uploads matching the
 // given hash
-func (um *UploadManager) FindUploadsByHash(hash string) []*Upload {
+func (um *UploadManager) FindUploadsByHash(hash string) *[]Upload {
 
-	uploads := []*Upload{}
+	uploads := []Upload{}
 
 	um.DB.Find(&uploads).Where("hash = ?", hash)
 
-	return uploads
+	return &uploads
 }
 
 // GetUploadByHashForUploader is used to retrieve the last (most recent) upload for a user
