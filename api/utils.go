@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -38,15 +39,15 @@ func FailedToLoadDatabase(c *gin.Context) {
 	})
 }
 
-func CheckAccessForPrivateNetwork(ethAddress, networkName string, db *gorm.DB) (bool, error) {
+func CheckAccessForPrivateNetwork(ethAddress, networkName string, db *gorm.DB) error {
 	um := models.NewUserManager(db)
 	canUpload, err := um.CheckIfUserHasAccessToNetwork(ethAddress, networkName)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	if !canUpload {
-		return false, nil
+		return errors.New("unauthorized access to private network")
 	}
-	return true, nil
+	return nil
 }

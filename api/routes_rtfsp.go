@@ -17,40 +17,37 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//TODO NEED TO FINISH
+// NEEDS TO CALL QUEUE TO UPDATE THE DATABASE
+// NEED TO ADD ONE BUT FOR THE CLUSTER
 func PinToHostedIPFSNetwork(c *gin.Context) {
 	cC := c.Copy()
 	networkName, exists := cC.GetPostForm("network_name")
 	if !exists {
-		FailNoExist(c, "network_name post form does not exist")
+		FailNoExistPostForm(c, "network_name")
 		return
 	}
 	hash := cC.Param("hash")
 	ethAddress := GetAuthenticatedUserFromContext(cC)
 	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
 	if !exists {
-		FailNoExist(c, "hold_time post form param not present")
+		FailNoExistPostForm(c, "hold_time")
 		return
 	}
 	_, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		FailOnError(c, err)
 		return
 	}
 	db, ok := cC.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 
-	canUpload, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err = CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
-		return
-	}
-	if !canUpload {
-		FailNotAuthorized(c, "unauthorized access to private network")
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(db)
@@ -88,20 +85,15 @@ func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 	}
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
-	canUpload, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	if !canUpload {
-		FailNotAuthorized(c, "unauthorized access to private network")
-		return
-	}
+
 	im := models.NewHostedIPFSNetworkManager(db)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
@@ -128,36 +120,32 @@ func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 }
 
 // TODO: NEED TO FINISH
-// Need to add in calls to RabbitMQ after the file has been uploaded
+// NEED TO CALL QUEUE TO UPDATE DATABASE
+// NEED TO TRIGGER CLUSTER UPLOAD AFTER
 func AddFileToHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
-		FailNoExist(c, "network_name post form does not exist")
+		FailNoExistPostForm(c, "network_name")
 		return
 	}
 
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 
-	canUpload, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	if !canUpload {
-		FailNotAuthorized(c, "unauthorized access to private network")
-		return
-	}
+
 	holdTimeinMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
-		FailNoExist(c, "hold_time post form does not exist")
+		FailNoExistPostForm(c, "hold_time")
 		return
 	}
 	_, err = strconv.ParseInt(holdTimeinMonths, 10, 64)
@@ -211,19 +199,15 @@ func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	}
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 
-	canUpload, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
 	}
-	if !canUpload {
-		FailNotAuthorized(c, "unauthorized access to private network")
-	}
+
 	im := models.NewHostedIPFSNetworkManager(db)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
@@ -252,7 +236,6 @@ func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
-///TODO: NEED TO FINISH
 func IpfsPubSubConsumeForHostedIPFSNetwork(c *gin.Context) {
 	cC := c.Copy()
 
@@ -269,9 +252,7 @@ func IpfsPubSubConsumeForHostedIPFSNetwork(c *gin.Context) {
 
 	db, ok := cC.MustGet("db").(*gorm.DB)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to load database",
-		})
+		FailedToLoadDatabase(c)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(db)
@@ -350,7 +331,6 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 
-//TODO: NEED TO FINISH
 func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -363,13 +343,9 @@ func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-	canAccess, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
-		return
-	}
-	if !canAccess {
-		FailNotAuthorized(c, "unauthorizedaccess to private network")
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(db)
@@ -406,15 +382,12 @@ func GetObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-	canAccess, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	if !canAccess {
-		FailNotAuthorized(c, "unauthorizedaccess to private network")
-		return
-	}
+
 	im := models.NewHostedIPFSNetworkManager(db)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
@@ -447,13 +420,9 @@ func CheckLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-	canAccess, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
-		return
-	}
-	if !canAccess {
-		FailNotAuthorized(c, "unauthorizedaccess to private network")
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(db)
@@ -491,15 +460,12 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-	canUpload, err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	if !canUpload {
-		FailNotAuthorized(c, "unauthorized access to private network")
-		return
-	}
+
 	um := models.NewUserManager(db)
 
 	hash, present := c.GetPostForm("hash")
