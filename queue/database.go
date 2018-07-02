@@ -40,6 +40,7 @@ func ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
 				upload.HoldTimeInMonths = dfa.HoldTimeInMonths
 				upload.Type = "file"
 				upload.UploadAddress = dfa.UploaderAddress
+				upload.NetworkName = dfa.NetworkName
 				upload.GarbageCollectDate = gcd
 				lastUpload := models.Upload{
 					Hash: dfa.Hash,
@@ -95,6 +96,7 @@ func ProcessDatabasePinAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
 			upload.HoldTimeInMonths = dpa.HoldTimeInMonths
 			upload.Type = "pin"
 			upload.UploadAddress = dpa.UploaderAddress
+			upload.NetworkName = dpa.NetworkName
 			// get current time
 			currTime := time.Now()
 			// get the hold time from in64 and convert to int

@@ -1,22 +1,16 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
-	"time"
-
-	"github.com/RTradeLtd/Temporal/rtns"
 
 	//_ "./docs"
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtswarm"
-	"github.com/RTradeLtd/Temporal/server"
 )
 
 var certFile = "/home/solidity/certificates/api.pem"
@@ -56,24 +50,6 @@ func main() {
 	awsKey := tCfg.AWS.KeyID
 	awsSecret := tCfg.AWS.Secret
 	switch os.Args[1] {
-	case "config-test":
-		scanner := bufio.NewScanner(os.Stdin)
-		fmt.Println("enter dag cid for the config file")
-		scanner.Scan()
-		configCid := scanner.Text()
-		config := config.LoadConfig(configCid)
-		fmt.Printf("%+v\n", config)
-	case "ipns-test":
-		manager, err := rtns.InitializeWithNewKey()
-		if err != nil {
-			log.Fatal(err)
-		}
-		eol := time.Now().Add(time.Hour * 48)
-		entry, err := manager.CreateEntryWithEmbed("/ipfs/QmfM2r8seH2GiRaC4esTjeraXEachRt8ZsSeGaWTPLyMoG", eol)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("%+v\n", entry)
 	case "api":
 		router := api.Setup(jwtKey, rollbarToken, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass, listenAddress, dbUser, awsKey, awsSecret)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
@@ -149,20 +125,6 @@ func main() {
 			log.Fatal(err)
 		}
 		dbm.RunMigrations()
-	case "contract-backend":
-		manager := server.Initialize(false, ethKeyFilePath, ethKeyPass)
-		fmt.Println(manager)
-	case "lookup-address":
-		db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
-		if err != nil {
-			log.Fatal(err)
-		}
-		um := models.NewUserManager(db)
-		mdl := um.FindByAddress("0xbF43d80dA01332b28cEE39644E8e08AD02a289F5")
-		fmt.Println(mdl)
-		db.Close()
-	case "watch-payments":
-		fmt.Println("TODO")
 	default:
 		fmt.Println("noop")
 	}

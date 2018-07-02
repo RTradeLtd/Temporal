@@ -34,7 +34,7 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 		FailNoExistPostForm(c, "hold_time")
 		return
 	}
-	_, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -44,7 +44,11 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-
+	mqURL, ok := cC.MustGet("mq_url").(string)
+	if !ok {
+		FailOnError(c, errors.New("unable to load rabbitmq"))
+		return
+	}
 	err = CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
@@ -56,9 +60,13 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-
 	apiURL := pnet.APIURL
 	manager, err := rtfs.Initialize("", apiURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqURL)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -68,6 +76,18 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 		if err != nil {
 			//TODO log and handle
 			fmt.Println("Error encountered pinning content to private ipfs node", err.Error())
+			return
+		}
+		dpa := queue.DatabasePinAdd{
+			Hash:             hash,
+			HoldTimeInMonths: holdTimeInt,
+			UploaderAddress:  ethAddress,
+			NetworkName:      networkName,
+		}
+		err = qm.PublishMessage(dpa)
+		if err != nil {
+			//TODO log and handle
+			fmt.Println("error publishing", err.Error())
 			return
 		}
 	}()

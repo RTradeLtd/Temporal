@@ -51,6 +51,7 @@ func PinHashLocally(c *gin.Context) {
 		Hash:             hash,
 		UploaderAddress:  uploadAddress,
 		HoldTimeInMonths: holdTimeInt,
+		NetworkName:      "public",
 	}
 	// assert type assertion retrieving info from middleware
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
@@ -148,6 +149,7 @@ func AddFileLocally(c *gin.Context) {
 		Hash:             resp,
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		UploaderAddress:  uploaderAddress,
+		NetworkName:      "public",
 	}
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	// initialize a connectino to rabbitmq

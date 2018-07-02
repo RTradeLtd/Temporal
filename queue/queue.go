@@ -30,6 +30,7 @@ type DatabaseFileAdd struct {
 	Hash             string `json:"hash"`
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 	UploaderAddress  string `json:"uploader_address"`
+	NetworkName      string `json:"network_name"`
 }
 
 // DatabasePinAdd is a struct used wehn sending data to rabbitmq
@@ -37,6 +38,7 @@ type DatabasePinAdd struct {
 	Hash             string `json:"hash"`
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 	UploaderAddress  string `json:"uploader_address"`
+	NetworkName      string `json:"network_name"`
 }
 
 // PaymentRegister is a struct used when a payment has been regsitered and needs
