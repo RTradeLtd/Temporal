@@ -44,7 +44,7 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-	mqURL, ok := cC.MustGet("mq_url").(string)
+	mqURL, ok := cC.MustGet("mq_conn_url").(string)
 	if !ok {
 		FailOnError(c, errors.New("unable to load rabbitmq"))
 		return
@@ -156,7 +156,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-	mqURL, ok := c.MustGet("mq_url").(string)
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
 	if !ok {
 		FailOnError(c, errors.New("failed to load rabbitmq"))
 		return
