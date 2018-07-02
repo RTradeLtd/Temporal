@@ -128,7 +128,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsPrivateProtected.POST("/pubsub/consume/:topic", IpfsPubSubConsumeForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/pins", GetLocalPinsForHostedIPFSNetwork)
 	ipfsPrivateProtected.GET("/networks", GetAuthorizedPrivateNetworks)
-	ipfsPrivateProtected.GET("/uploads", GetUploadsByNetworkName)
+	ipfsPrivateProtected.POST("/uploads", GetUploadsByNetworkName)
 	ipfsPrivateProtected.DELETE("/pin/remove/:hash", RemovePinFromLocalHostForHostedIPFSNetwork)
 
 	ipnsProtected := g.Group("/api/v1/ipns")
