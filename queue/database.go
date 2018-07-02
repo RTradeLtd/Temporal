@@ -57,12 +57,14 @@ func ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
 					upload.GarbageCollectDate = lastUpload.GarbageCollectDate
 				}
 				upload.UploaderAddresses = append(lastUpload.UploaderAddresses, dfa.UploaderAddress)
+				fmt.Println("Saving in database")
 				if check := db.Save(&upload); check.Error != nil {
 					//TOOD add error handling
 					fmt.Println("error ", check.Error)
 					d.Ack(false)
 					continue
 				}
+				fmt.Println("record saved")
 			}
 		}
 	}
