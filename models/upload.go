@@ -118,34 +118,3 @@ func (um *UploadManager) GetUploadsForAddress(address string) *[]Upload {
 	um.DB.Where("upload_address = ?", address).Find(&uploads)
 	return &uploads
 }
-
-// AddPinHash is used to upload a pin hash to our database
-func (um *UploadManager) AddPinHash(hash string, uploaderAddress string, networkName string, holdTimeInMonths int64) {
-	var upload Upload
-	upload.HoldTimeInMonths = holdTimeInMonths
-	upload.UploadAddress = uploaderAddress
-	upload.Hash = hash
-	upload.NetworkName = networkName
-	upload.Type = "pin"
-	um.DB.Create(upload)
-}
-
-// AddFileHash is used to add the hash of a file to our database
-func (um *UploadManager) AddFileHash(hash string, uploaderAddress string, networkName string, holdTimeInMonths int64) (*Upload, error) {
-	upload := &Upload{}
-	check := um.DB.Where("hash = ? AND network_name = ?", hash, networkName).First(upload)
-	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
-		return nil, check.Error
-	}
-	if check.Error == nil {
-		//TODO HAd it update the database instead
-		return upload, nil
-	}
-	upload.HoldTimeInMonths = holdTimeInMonths
-	upload.UploadAddress = uploaderAddress
-	upload.Hash = hash
-	upload.NetworkName = networkName
-	upload.Type = "file"
-	um.DB.Create(&upload)
-	return upload, nil
-}

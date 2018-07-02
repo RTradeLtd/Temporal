@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
-	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
 
+var nilTime time.Time
+
 // ProcessDatabaseFileAdds is used to process database file add messages
 func ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
-	cm := rtfs_cluster.Initialize()
 	for d := range msgs {
 		if d.Body != nil {
 			if d.Body != nil {
@@ -42,36 +42,27 @@ func ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
 				upload.UploadAddress = dfa.UploaderAddress
 				upload.NetworkName = dfa.NetworkName
 				upload.GarbageCollectDate = gcd
-				lastUpload := models.Upload{
-					Hash: dfa.Hash,
+				lastUpload := models.Upload{}
+				if check := db.Where("hash = ? AND network_name = ?", upload.Hash, upload.NetworkName).Last(&lastUpload); check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+					//TODO: add error handling
+					fmt.Println("Error ", check.Error)
+					d.Ack(false)
+					continue
 				}
-				// retrieve the last upload matching this hash.
-				// this upload will have the latest Garbage Collect Date
-				db.Last(&lastUpload)
 				// check the garbage collect dates, if the current upload to be pinned will be
 				// GCd before the latest one from the database, we will skip it
 				// however if it will be GCd at a later date, we will keep it
 				// and update the database
-				if lastUpload.GarbageCollectDate.Unix() >= upload.GarbageCollectDate.Unix() {
-					d.Ack(false)
-					// skip the rest of the message, preventing a database record from being created
-					continue
+				if lastUpload.GarbageCollectDate.Unix() > upload.GarbageCollectDate.Unix() {
+					upload.GarbageCollectDate = lastUpload.GarbageCollectDate
 				}
 				upload.UploaderAddresses = append(lastUpload.UploaderAddresses, dfa.UploaderAddress)
-				// we have a valid upload request, so lets store it to the database
-				db.Create(&upload)
-				go func() {
-					decodedHash, err := cm.DecodeHashString(dfa.Hash)
-					if err != nil {
-						fmt.Println("error decoding hash ", err)
-						return
-					}
-					err = cm.Pin(decodedHash)
-					if err != nil {
-						fmt.Println("error pinning to cluster")
-					}
-				}()
-				d.Ack(false)
+				if check := db.Save(&upload); check.Error != nil {
+					//TOOD add error handling
+					fmt.Println("error ", check.Error)
+					d.Ack(false)
+					continue
+				}
 			}
 		}
 	}
