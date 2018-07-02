@@ -220,7 +220,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		UploaderAddress:  ethAddress,
 		NetworkName:      networkName,
 	}
-
+	fmt.Printf("+%v\n", dfa)
 	err = qm.PublishMessage(dfa)
 	if err != nil {
 		FailOnError(c, err)
