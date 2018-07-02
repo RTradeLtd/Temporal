@@ -156,7 +156,11 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-
+	mqURL, ok := c.MustGet("mq_url").(string)
+	if !ok {
+		FailOnError(c, errors.New("failed to load rabbitmq"))
+		return
+	}
 	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
@@ -168,7 +172,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		FailNoExistPostForm(c, "hold_time")
 		return
 	}
-	_, err = strconv.ParseInt(holdTimeinMonths, 10, 64)
+	holdTimeInt, err := strconv.ParseInt(holdTimeinMonths, 10, 64)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -181,6 +185,11 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 	}
 
 	ipfsManager, err := rtfs.Initialize("", apiURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqURL)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -205,6 +214,18 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	fmt.Println("file uploaded")
+	dfa := queue.DatabaseFileAdd{
+		Hash:             resp,
+		HoldTimeInMonths: holdTimeInt,
+		UploaderAddress:  ethAddress,
+		NetworkName:      networkName,
+	}
+
+	err = qm.PublishMessage(dfa)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"status": resp,
 	})
