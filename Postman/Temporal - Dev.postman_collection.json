@@ -65,13 +65,15 @@
 									"key": "use_private_network",
 									"value": "yes",
 									"description": "option",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "network_name",
 									"value": "private_net_1",
 									"description": "option",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								}
 							]
 						},
@@ -144,6 +146,7 @@
 							"formdata": [
 								{
 									"key": "file",
+									"value": "",
 									"description": "",
 									"type": "file"
 								},
@@ -163,8 +166,7 @@
 									"key": "network_name",
 									"value": "private_net_1",
 									"description": "",
-									"type": "text",
-									"disabled": true
+									"type": "text"
 								}
 							]
 						},
@@ -436,7 +438,7 @@
 					"response": []
 				},
 				{
-					"name": "ipfs network by name",
+					"name": "network by name",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -576,7 +578,7 @@
 					"response": []
 				},
 				{
-					"name": "ipfs object stat",
+					"name": "object stat",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -687,6 +689,284 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "ipfs add file",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "",
+									"type": "file"
+								},
+								{
+									"key": "eth_address",
+									"value": "0x0b76544F6C413a555F309Bf76260d1E02377c02A",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "hold_time",
+									"value": "5",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "network_name",
+									"value": "private_net_1",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "use_private_network",
+									"value": "yes",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs/add-file",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"add-file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ipfs add pin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f0897244-dce6-4305-9428-0830af27124f",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "eth_address",
+									"value": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
+									"description": "required",
+									"type": "text"
+								},
+								{
+									"key": "hold_time",
+									"value": "5",
+									"description": "required",
+									"type": "text"
+								},
+								{
+									"key": "use_private_network",
+									"value": "yes",
+									"description": "option",
+									"type": "text"
+								},
+								{
+									"key": "network_name",
+									"value": "private_net_1",
+									"description": "option",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs/pin/QmX7efCRGubzTssGTkZdgE4MGoV8CE2LrGf76VzARGahKf",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs",
+								"pin",
+								"QmX7efCRGubzTssGTkZdgE4MGoV8CE2LrGf76VzARGahKf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ipfs pubsub publish msg",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "message",
+									"value": "aksjdklajsdkasjldjawsdkljsdjasldas",
+									"type": "text"
+								},
+								{
+									"key": "network_name",
+									"value": "private_net_1",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs-private/pubsub/publish/foo",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs-private",
+								"pubsub",
+								"publish",
+								"foo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ipfs pubsub consume msg",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "network_name",
+									"value": "private_net_1",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs-private/pubsub/consume/foo",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs-private",
+								"pubsub",
+								"consume",
+								"foo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get uploads by name",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "network_name",
+									"value": "private_net_1",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs-private/uploads",
+							"protocol": "https",
+							"host": [
+								"{{api_url}}"
+							],
+							"port": "6767",
+							"path": [
+								"api",
+								"v1",
+								"ipfs-private",
+								"uploads"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -774,7 +1054,7 @@
 						"header": [],
 						"body": {},
 						"url": {
-							"raw": "https://{{api_url}}:6767/api/v1/ipfs-cluster/status-local-pin/Qm....",
+							"raw": "https://{{api_url}}:6767/api/v1/ipfs-cluster/status-local-pin/QmZfXy3D9rNcEoeLM4fs9mDbMkceJ1Y2m5EBRBUo4oX1JT",
 							"protocol": "https",
 							"host": [
 								"{{api_url}}"
@@ -785,7 +1065,7 @@
 								"v1",
 								"ipfs-cluster",
 								"status-local-pin",
-								"Qm...."
+								"QmZfXy3D9rNcEoeLM4fs9mDbMkceJ1Y2m5EBRBUo4oX1JT"
 							]
 						}
 					},
@@ -904,7 +1184,7 @@
 										},
 										{
 											"key": "aws_zone",
-											"value": "",
+											"value": "Z3HEZWZ7D3EZRG",
 											"description": "",
 											"type": "text"
 										},
@@ -1045,7 +1325,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9\",\n  \"password\": \"\"\n}"
+							"raw": "{\n  \"username\": \"0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9\",\n  \"password\": \"....\"\n}"
 						},
 						"url": {
 							"raw": "https://{{api_url}}:6767/api/v1/login",
@@ -1079,7 +1359,7 @@
 								},
 								{
 									"key": "password",
-									"value": "",
+									"value": "......",
 									"description": "",
 									"type": "text"
 								},
@@ -1134,7 +1414,7 @@
 								},
 								{
 									"key": "new_password",
-									"value": "",
+									"value": "....",
 									"description": "",
 									"type": "text"
 								}
