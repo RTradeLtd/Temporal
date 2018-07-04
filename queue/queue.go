@@ -77,6 +77,7 @@ type IpfsClusterPin struct {
 
 type IPNSUpdate struct {
 	CID         string `json:"content_hash"`
+	IPNSHash    string `json:"ipns_hash"`
 	LifeTime    string `json:"life_time"`
 	TTL         string `json:"ttl"`
 	Key         string `json:"key"`

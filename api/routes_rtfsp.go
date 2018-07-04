@@ -611,6 +611,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	}
 	ipnsUpdate := queue.IPNSUpdate{
 		CID:         hash,
+		IPNSHash:    resp.Name,
 		LifeTime:    lifetime.String(),
 		TTL:         ttl.String(),
 		Key:         key,

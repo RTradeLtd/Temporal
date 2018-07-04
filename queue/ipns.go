@@ -25,7 +25,7 @@ func ProcessIPNSUpdates(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 			d.Ack(false)
 			continue
 		}
-		ipnsHash := ipnsUpdate.Key
+		ipnsHash := ipnsUpdate.IPNSHash
 		ipfsHash := ipnsUpdate.CID
 		key := ipnsUpdate.Key
 		networkName := ipnsUpdate.NetworkName
@@ -53,6 +53,7 @@ func ProcessIPNSUpdates(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 }
 
 // ProcessIPNSPublishRequests is used to process IPNS requests, saving the data to the database and publishing an entry and announcing it
+// THIS FUNCTION IS OUT OF DATE
 func ProcessIPNSPublishRequests(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	var ipnsUpdate IPNSUpdate
 	var resolve bool
