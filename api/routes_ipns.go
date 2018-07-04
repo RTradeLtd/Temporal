@@ -121,12 +121,6 @@ func PublishToIPNSDetails(c *gin.Context) {
 	postPubTime := time.Now()
 	timeDifference := postPubTime.Sub(prePubTime)
 
-	im := models.NewIPNSManager(db)
-	ipnsEntry, err := im.UpdateIPNSEntry(resp.Name, resp.Value, key, "public", lifetime, ttl)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
 	ipnsUpdate := queue.IPNSUpdate{
 		CID:         hash,
 		IPNSHash:    resp.Name,
@@ -146,7 +140,6 @@ func PublishToIPNSDetails(c *gin.Context) {
 		"name":                   resp.Name,
 		"value":                  resp.Value,
 		"time_to_create_minutes": timeDifference.Minutes(),
-		"ipns_entry_model":       ipnsEntry,
 	})
 }
 

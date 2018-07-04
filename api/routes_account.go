@@ -62,6 +62,7 @@ func RegisterUserAccount(c *gin.Context) {
 	ethAddress, exists := c.GetPostForm("eth_address")
 	if !exists {
 		FailNoExistPostForm(c, "eth_address")
+		return
 	}
 	password, exists := c.GetPostForm("password")
 	if !exists {
@@ -71,6 +72,7 @@ func RegisterUserAccount(c *gin.Context) {
 	email, exists := c.GetPostForm("email_address")
 	if !exists {
 		FailNoExistPostForm(c, "email_address")
+		return
 	}
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
