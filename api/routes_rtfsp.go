@@ -501,6 +501,11 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailOnError(c, errors.New("failed to load rabbitmq"))
+		return
+	}
 	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
@@ -508,7 +513,11 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	}
 
 	um := models.NewUserManager(db)
-
+	qm, err := queue.Initialize(queue.IpnsUpdateQueue, mqURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	hash, present := c.GetPostForm("hash")
 	if !present {
 		FailNoExistPostForm(c, "hash")
@@ -596,6 +605,19 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 	ipnsManager := models.NewIPNSManager(db)
 	ipnsEntry, err := ipnsManager.UpdateIPNSEntry(resp.Name, resp.Value, key, networkName, lifetime, ttl)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	ipnsUpdate := queue.IPNSUpdate{
+		CID:         hash,
+		LifeTime:    lifetime.String(),
+		TTL:         ttl.String(),
+		Key:         key,
+		Resolve:     resolve,
+		NetworkName: networkName,
+	}
+	err = qm.PublishMessage(ipnsUpdate)
 	if err != nil {
 		FailOnError(c, err)
 		return

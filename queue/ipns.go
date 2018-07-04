@@ -46,18 +46,7 @@ func ProcessIPNSPublishRequests(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 			d.Ack(false)
 			continue
 		}
-		resolveStr := ipnsUpdate.Resolve
 		ethAddress := ipnsUpdate.EthAddress
-		switch resolveStr {
-		case "true":
-			resolve = true
-		case "false":
-			resolve = false
-		default:
-			// TODO: handle
-			fmt.Println("errror, resolve is neither \"true\" or \"false\" ")
-			switchErr = true
-		}
 		if switchErr {
 			// TODO: handle
 			fmt.Println("errror, resolve is neither \"true\" or \"false\" ")

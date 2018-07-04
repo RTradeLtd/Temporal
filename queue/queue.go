@@ -17,6 +17,7 @@ var DatabasePinAddQueue = "dpa-queue"
 var PaymentRegisterQueue = "payment-register-queue"
 var PaymentReceivedQueue = "payment-received-queue"
 var PinPaymentRequestQueue = "pin-payment-request-queue"
+var IpnsUpdateQueue = "ipns-update-queue"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
@@ -75,12 +76,13 @@ type IpfsClusterPin struct {
 }
 
 type IPNSUpdate struct {
-	CID        string `json:"content_hash"`
-	LifeTime   string `json:"life_time"`
-	TTL        string `json:"ttl"`
-	Key        string `json:"key"`
-	Resolve    string `json:"resolve"`
-	EthAddress string `json:"eth_address"`
+	CID         string `json:"content_hash"`
+	LifeTime    string `json:"life_time"`
+	TTL         string `json:"ttl"`
+	Key         string `json:"key"`
+	Resolve     bool   `json:"resolve"`
+	EthAddress  string `json:"eth_address"`
+	NetworkName string `json:"network_name"`
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/jinzhu/gorm"
 
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -54,7 +55,18 @@ func PublishToIPNSDetails(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailOnError(c, errors.New("failed to load rabbitmq"))
+		return
+	}
+
 	um := models.NewUserManager(db)
+	qm, err := queue.Initialize(queue.IpnsUpdateQueue, mqURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 
 	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
 	if err != nil {
@@ -111,6 +123,20 @@ func PublishToIPNSDetails(c *gin.Context) {
 
 	im := models.NewIPNSManager(db)
 	ipnsEntry, err := im.UpdateIPNSEntry(resp.Name, resp.Value, key, "public", lifetime, ttl)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	ipnsUpdate := queue.IPNSUpdate{
+		CID:         hash,
+		LifeTime:    lifetime.String(),
+		TTL:         ttl.String(),
+		Key:         key,
+		Resolve:     resolve,
+		EthAddress:  ethAddress,
+		NetworkName: "public",
+	}
+	err = qm.PublishMessage(ipnsUpdate)
 	if err != nil {
 		FailOnError(c, err)
 		return
