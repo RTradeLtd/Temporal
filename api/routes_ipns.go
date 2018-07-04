@@ -110,7 +110,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 	timeDifference := postPubTime.Sub(prePubTime)
 
 	im := models.NewIPNSManager(db)
-	ipnsEntry, err := im.UpdateIPNSEntry(resp.Name, resp.Value, key, lifetime, ttl)
+	ipnsEntry, err := im.UpdateIPNSEntry(resp.Name, resp.Value, key, "public", lifetime, ttl)
 	if err != nil {
 		FailOnError(c, err)
 		return

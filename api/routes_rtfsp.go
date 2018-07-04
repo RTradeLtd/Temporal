@@ -595,7 +595,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	timeDifference := postPubTime.Sub(prePubTime)
 
 	ipnsManager := models.NewIPNSManager(db)
-	ipnsEntry, err := ipnsManager.UpdateIPNSEntry(resp.Name, resp.Value, key, lifetime, ttl)
+	ipnsEntry, err := ipnsManager.UpdateIPNSEntry(resp.Name, resp.Value, key, networkName, lifetime, ttl)
 	if err != nil {
 		FailOnError(c, err)
 		return

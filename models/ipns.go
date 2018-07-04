@@ -20,6 +20,7 @@ type IPNS struct {
 	LifeTime        string         `gorm:"type:varchar(255)" json:"life_time"`
 	TTL             string         `gorm:"type:varchar(255)" json:"ttl"`
 	Key             string         `gorm:"type:varchar(255)" json:"key"`
+	NetworkName     string         `gorm:"type:varchar(255)" json:"network_name"`
 }
 
 type IpnsManager struct {
@@ -41,14 +42,16 @@ func (im *IpnsManager) FindByIPNSHash(ipnsHash string) (*IPNS, error) {
 	return &entry, nil
 }
 
-func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, key string, lifetime, ttl time.Duration) (*IPNS, error) {
+func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, key, networkName string, lifetime, ttl time.Duration) (*IPNS, error) {
 	var entry IPNS
 	// search for an IPNS entry that matches the given ipns hash
-	im.DB.Where("ipns_hash = ?", ipnsHash).First(&entry)
+	if check := im.DB.Where("ipns_hash = ? AND network_name = ?", ipnsHash, networkName).First(&entry); check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+		return nil, check.Error
+	}
 	// if the returned model does not exist create it
 	if entry.CreatedAt == nilTime {
 		// Create the record
-		entry, err := im.CreateEntry(ipnsHash, ipfsHash, key, lifetime, ttl)
+		entry, err := im.CreateEntry(ipnsHash, ipfsHash, key, networkName, lifetime, ttl)
 		if err != nil {
 			return nil, err
 		}
@@ -82,10 +85,10 @@ func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, key string, lifetime,
 	return &entry, nil
 }
 
-func (im *IpnsManager) CreateEntry(ipnsHash, ipfsHash, key string, lifetime, ttl time.Duration) (*IPNS, error) {
+func (im *IpnsManager) CreateEntry(ipnsHash, ipfsHash, key, networkName string, lifetime, ttl time.Duration) (*IPNS, error) {
 	// See above UpdateEntry function for an explanation
 	var entry IPNS
-	_, err := im.FindByIPNSHash(ipnsHash)
+	err := im.DB.Where("ipns_hash = ? AND network_name = ?", ipnsHash, networkName)
 	if err == nil {
 		return nil, errors.New("ipns hash already exists")
 	}
@@ -95,6 +98,7 @@ func (im *IpnsManager) CreateEntry(ipnsHash, ipfsHash, key string, lifetime, ttl
 	entry.LifeTime = lifetime.String()
 	entry.TTL = ttl.String()
 	entry.Key = key
+	entry.NetworkName = networkName
 	if check := im.DB.Create(&entry); check.Error != nil {
 		return nil, check.Error
 	}
