@@ -8,6 +8,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+/*
+	EMAIL ADDRESS MUST BE PROVIDED
+*/
 type User struct {
 	gorm.Model
 	EthAddress        string `gorm:"type:varchar(255);unique"`
@@ -174,7 +177,7 @@ func (um *UserManager) ChangePassword(ethAddress, currentPassword, newPassword s
 	return true, nil
 }
 
-func (um *UserManager) NewUserAccount(ethAddress, password string, enterpriseEnabled bool) (*User, error) {
+func (um *UserManager) NewUserAccount(ethAddress, password, email string, enterpriseEnabled bool) (*User, error) {
 	var user User
 	um.DB.Where("eth_address = ?", ethAddress).First(&user)
 	if user.CreatedAt != nilTime {
@@ -187,7 +190,10 @@ func (um *UserManager) NewUserAccount(ethAddress, password string, enterpriseEna
 	user.EthAddress = ethAddress
 	user.EnterpriseEnabled = enterpriseEnabled
 	user.HashedPassword = string(hashedPass)
-	um.DB.Create(&user)
+	user.EmailAddress = email
+	if check := um.DB.Create(&user); check.Error != nil {
+		return nil, check.Error
+	}
 	return &user, nil
 }
 

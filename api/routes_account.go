@@ -68,6 +68,10 @@ func RegisterUserAccount(c *gin.Context) {
 		FailNoExistPostForm(c, "password")
 		return
 	}
+	email, exists := c.GetPostForm("email_address")
+	if !exists {
+		FailNoExistPostForm(c, "email_address")
+	}
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
 		FailedToLoadDatabase(c)
@@ -75,7 +79,7 @@ func RegisterUserAccount(c *gin.Context) {
 	}
 
 	userManager := models.NewUserManager(db)
-	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
+	userModel, err := userManager.NewUserAccount(ethAddress, password, email, false)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -97,6 +101,10 @@ func RegisterEnterpriseUserAccount(c *gin.Context) {
 		FailNoExistPostForm(c, "password")
 		return
 	}
+	email, exists := c.GetPostForm("email_address")
+	if !exists {
+		FailNoExistPostForm(c, "email_address")
+	}
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
 		FailedToLoadDatabase(c)
@@ -104,7 +112,7 @@ func RegisterEnterpriseUserAccount(c *gin.Context) {
 	}
 
 	userManager := models.NewUserManager(db)
-	userModel, err := userManager.NewUserAccount(ethAddress, password, false)
+	userModel, err := userManager.NewUserAccount(ethAddress, password, email, false)
 	if err != nil {
 		FailOnError(c, err)
 		return
