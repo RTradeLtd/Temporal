@@ -52,28 +52,46 @@
             </div>
         </form>
     </div>
+	
+	<div class="modal fade" id="modalSuccess" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"></h4>
+        </div>
+        <div class="modal-body">
+          <p>Authentication Successful</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+	</div>
+	
+	<div class="modal fade" id="modalFail" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"></h4>
+        </div>
+        <div class="modal-body">
+          <p>Authentication Failed</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+	</div>
 
     <! -- Javascript Stuff -->
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
     <script type="text/javascript" src="main.js"></script>
-    <script>/*
-        function login() {
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", "https://www.wowdb.com/api/item/89154", false);
-            xmlHttp.send(null);
-            console.log(xmlHttp.responseText);
-        }*/
-        function login() {
-            $.get(
-                "https://www.wowdb.com/api/item/89154",
-                null,
-                function(data) {
-                    console.log(data);
-                }
-            );
-        }
-    </script>
+	<script type="text/javascript" src="js/login.js"></script>
 </body>
 </html>
