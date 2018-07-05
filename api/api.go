@@ -54,7 +54,9 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 	// prevent mine content sniffing
 	r.Use(helmet.NoSniff())
 	r.Use(middleware.DatabaseMiddleware(db))
-	r.Use(cors.Default())
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{"null"}
+	r.Use(cors.New(corsConfig))
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
 	setupRoutes(r, authMiddleware, db, awsKey, awsSecret, ethKey, ethPass, mqConnectionURL)
