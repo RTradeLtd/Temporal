@@ -63,7 +63,7 @@ func (im *IpfsManager) PublishToIPNSDetails(contentHash, keyName string, lifetim
 	if !keyPresent {
 		return nil, errors.New("attempting to sign with non existent key")
 	}
-	resp, err := im.Shell.PublishWithDetails(contentHash, keyName, lifetime, ttl, resolve)
+	resp, err := im.Shell.PublishWithDetails(contentHash, keyName, lifetime.String(), ttl.String(), resolve)
 	if err != nil {
 		return nil, err
 	}

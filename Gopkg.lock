@@ -43,12 +43,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/bmizerany/pat"
-  packages = ["."]
-  revision = "6226ea591a40176dd3ff9cd8eff81ed6ca721a00"
-
-[[projects]]
-  branch = "master"
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
   revision = "86fed781132ac890ee03e906e4ecd5d6fa180c64"
@@ -173,25 +167,10 @@
   revision = "f6d5545993d68e9e42df43eb57958f898dea3623"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/gdamore/encoding"
+  name = "github.com/gin-contrib/cors"
   packages = ["."]
-  revision = "b23993cbb6353f0e6aa98d0ee318a34728f628b9"
-
-[[projects]]
-  name = "github.com/gdamore/tcell"
-  packages = [
-    ".",
-    "terminfo"
-  ]
-  revision = "061d51a604c546b48e92253cb65190d76cecf4c6"
-  version = "v1.0.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/gin-contrib/rollbar"
-  packages = ["."]
-  revision = "dc0b4cb11f3e4b4ce030b911aad3c72e3463cc3d"
+  revision = "cf4846e6a636a76237a28d9286f163c132e841bc"
+  version = "v1.2"
 
 [[projects]]
   branch = "master"
@@ -653,12 +632,6 @@
   version = "v2.0.2"
 
 [[projects]]
-  name = "github.com/lucasb-eyer/go-colorful"
-  packages = ["."]
-  revision = "345fbb3dbcdb252d9985ee899a84963c0fa24c82"
-  version = "v1.0"
-
-[[projects]]
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
@@ -669,12 +642,6 @@
   packages = ["."]
   revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
   version = "v0.0.3"
-
-[[projects]]
-  name = "github.com/mattn/go-runewidth"
-  packages = ["."]
-  revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
-  version = "v0.0.2"
 
 [[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
@@ -851,12 +818,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/rivo/tview"
-  packages = ["."]
-  revision = "306abd9cb98c97417ab6c58aa0400b2e5daac88b"
-
-[[projects]]
-  branch = "master"
   name = "github.com/rjeczalik/notify"
   packages = ["."]
   revision = "d152f3ce359a5464dc41e84a8919fc67e55bbbf0"
@@ -899,12 +860,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/stvp/roll"
-  packages = ["."]
-  revision = "3627a5cbeaeaa68023abd02bb8687925265f2f63"
-
-[[projects]]
-  branch = "master"
   name = "github.com/syndtr/goleveldb"
   packages = [
     "leveldb",
@@ -921,16 +876,6 @@
     "leveldb/util"
   ]
   revision = "0d5a0ceb10cf9ab89fdd744cc8c50a83134f6697"
-
-[[projects]]
-  name = "github.com/tus/tusd"
-  packages = [
-    ".",
-    "filestore",
-    "uid"
-  ]
-  revision = "966f1d51639d3405b630e4c94c0b1d76a0f7475c"
-  version = "0.10.0"
 
 [[projects]]
   name = "github.com/ugorji/go"
@@ -1097,12 +1042,6 @@
   revision = "25b95b48224cce18163c7d49dcfb89a2d5ecd209"
 
 [[projects]]
-  name = "gopkg.in/Acconut/lockfile.v1"
-  packages = ["."]
-  revision = "ea910fd69bd541bb592c5729c94f595c696413ab"
-  version = "v1.1.0"
-
-[[projects]]
   name = "gopkg.in/dgrijalva/jwt-go.v3"
   packages = ["."]
   revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
@@ -1147,6 +1086,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7bd033515704d96bdaff5c42d6b63afcd112083a7308e5f4480ef934c434c79a"
+  inputs-digest = "82d778f958fca1a26745e0cfbb15190ba413cce92465d1d1f61d47337686be02"
   solver-name = "gps-cdcl"
   solver-version = 1

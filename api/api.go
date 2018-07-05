@@ -17,7 +17,7 @@ import (
 
 	"github.com/aviddiviner/gin-limit"
 	"github.com/dvwright/xss-mw"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/zsais/go-gin-prometheus"
 )
@@ -54,8 +54,7 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 	// prevent mine content sniffing
 	r.Use(helmet.NoSniff())
 	r.Use(middleware.DatabaseMiddleware(db))
-	r.Use(middleware.CORSMiddleware())
-
+	r.Use(cors.Default())
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
 	setupRoutes(r, authMiddleware, db, awsKey, awsSecret, ethKey, ethPass, mqConnectionURL)
