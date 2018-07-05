@@ -56,6 +56,7 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 	r.Use(middleware.DatabaseMiddleware(db))
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"http://null", "https://null"}
+	corsConfig.AddAllowHeaders("access-control-allow-origin")
 	r.Use(cors.New(corsConfig))
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
