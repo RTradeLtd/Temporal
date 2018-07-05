@@ -26,6 +26,13 @@ type QueueManager struct {
 	Queue      *amqp.Queue
 }
 
+// IPFSPin is a struct used when sending pin request
+type IPFSPin struct {
+	CID         string `json:"cid"`
+	NetworkName string `json:"network_name"`
+	EthAddress  string `json:"eth_address"`
+}
+
 // DatabaseFileAdd is a struct used when sending data to rabbitmq
 type DatabaseFileAdd struct {
 	Hash             string `json:"hash"`
