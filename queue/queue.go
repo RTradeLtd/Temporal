@@ -18,6 +18,7 @@ var PaymentRegisterQueue = "payment-register-queue"
 var PaymentReceivedQueue = "payment-received-queue"
 var PinPaymentRequestQueue = "pin-payment-request-queue"
 var IpnsUpdateQueue = "ipns-update-queue"
+var IpfsPinQueue = "ipfs-pin-queue"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
@@ -188,6 +189,8 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			ProcessPinPaymentRequestQueue(msgs, db, ethKeyFile, ethKeyPass)
 		case IpfsClusterQueue:
 			ProcessIpfsClusterQueue(msgs, db)
+		case IpfsPinQueue:
+			ProccessIPFSPins(msgs, db)
 		default:
 			log.Fatal("invalid queue name")
 		}

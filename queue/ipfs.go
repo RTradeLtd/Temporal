@@ -45,7 +45,8 @@ func ProcessIpfsClusterQueue(msgs <-chan amqp.Delivery, db *gorm.DB) {
 	}
 }
 
-func (qm *QueueManager) ProcesssIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB) {
+// ProccessIPFSPins is used to process IPFS pin requests
+func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB) {
 	userManager := models.NewUserManager(db)
 	//uploadManager := models.NewUploadManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
