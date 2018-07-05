@@ -38,14 +38,12 @@ func PinHashLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	go func() {
-		// before exiting, it is pinned to the cluster
-		err = manager.Pin(hash)
-		if err != nil {
-			// TODO: log it
-			fmt.Println(err)
-		}
-	}()
+	// before exiting, it is pinned to the cluster
+	err = manager.Pin(hash)
+	if err != nil {
+		// TODO: log it
+		fmt.Println(err)
+	}
 	// construct the rabbitmq message to add this entry to the database
 	dpa := queue.DatabasePinAdd{
 		Hash:             hash,
