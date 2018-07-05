@@ -90,9 +90,6 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	//g.POST("/api/v1/register-enterprise", RegisterEnterpriseUserAccount)
 
 	// PROTECTED ROUTES -- BEGIN
-	g.OPTIONS("/*cors", func(c *gin.Context) {
-		// Does nothing!
-	})
 	accountProtected := g.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
 	accountProtected.Use(middleware.APIRestrictionMiddleware(db))
