@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -44,6 +45,31 @@ func PinHashLocally(c *gin.Context) {
 		// TODO: log it
 		fmt.Println(err)
 	}
+
+	ip := queue.IPFSPin{
+		CID:         hash,
+		NetworkName: "public",
+		EthAddress:  uploadAddress,
+	}
+
+	mqConnectionURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailOnError(c, errors.New("unable to load rabbitmq"))
+		return
+	}
+
+	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	err = qm.PublishMessage(ip)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
 	// construct the rabbitmq message to add this entry to the database
 	dpa := queue.DatabasePinAdd{
 		Hash:             hash,
@@ -52,9 +78,8 @@ func PinHashLocally(c *gin.Context) {
 		NetworkName:      "public",
 	}
 	// assert type assertion retrieving info from middleware
-	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	// initialize the queue
-	qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
+	qm, err = queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
 	if err != nil {
 		FailOnError(c, err)
 		return

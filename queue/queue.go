@@ -2,7 +2,6 @@ package queue
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/big"
 
@@ -199,16 +198,15 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	return nil
 }
 
-// PublishMessage is used to produce messages that are sent to the queue
+// PublishMessage is used to produce messages that are sent to the queue, with a hard coded exchange of type fanout
 func (qm *QueueManager) PublishMessage(body interface{}) error {
-	fmt.Println("publishing message")
 	// we use a persistent delivery mode to combine with the durable queue
 	bodyMarshaled, err := json.Marshal(body)
 	if err != nil {
 		return err
 	}
 	err = qm.Channel.Publish(
-		"",            // exchange
+		"fanout",      // exchange
 		qm.Queue.Name, // routing key
 		false,         // mandatory
 		false,         //immediate
@@ -221,7 +219,6 @@ func (qm *QueueManager) PublishMessage(body interface{}) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("message published")
 	return nil
 }
 
