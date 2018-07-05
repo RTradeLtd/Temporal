@@ -54,6 +54,7 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 	// prevent mine content sniffing
 	r.Use(helmet.NoSniff())
 	r.Use(middleware.DatabaseMiddleware(db))
+	r.Use(middleware.CORSMiddleware())
 
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
