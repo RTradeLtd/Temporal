@@ -17,6 +17,7 @@ import (
 
 	"github.com/aviddiviner/gin-limit"
 	"github.com/dvwright/xss-mw"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/zsais/go-gin-prometheus"
 )
@@ -53,9 +54,11 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 	// prevent mine content sniffing
 	r.Use(helmet.NoSniff())
 	r.Use(middleware.DatabaseMiddleware(db))
-	r.Use(middleware.CORSMiddleware())
-	/*corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://null", "https://null"}
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowCredentials = false
+	r.Use(cors.New(corsConfig))
+	/*corsConfig.AllowOrigins = []string{"http://null", "https://null"}
 	corsConfig.AddAllowHeaders("X-Requested-With", "Access-Control-Allow-Headers", "Authorization", "Content-Type", "Set-Cookie", "X-Requested-With", "Accept", "Access-Control-Allow-Origin", "Access-Control-Request-Headers")
 	r.Use(cors.New(corsConfig))*/
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
