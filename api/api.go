@@ -57,7 +57,7 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	corsConfig.AllowCredentials = false
-	corsConfig.AddAllowHeaders("Access-Control-Allow-Headers", "Authorization", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Request-Headers")
+	corsConfig.AddAllowHeaders("cache-control", "Access-Control-Allow-Headers", "Authorization", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Request-Headers")
 	r.Use(cors.New(corsConfig))
 	/*corsConfig.AllowOrigins = []string{"http://null", "https://null"}
 	corsConfig.AddAllowHeaders("X-Requested-With", "Access-Control-Allow-Headers", "Authorization", "Content-Type", "Set-Cookie", "X-Requested-With", "Accept", "Access-Control-Allow-Origin", "Access-Control-Request-Headers")
