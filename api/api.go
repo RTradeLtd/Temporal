@@ -55,7 +55,7 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 	r.Use(helmet.NoSniff())
 	r.Use(middleware.DatabaseMiddleware(db))
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"null"}
+	corsConfig.AllowOrigins = []string{"http://null", "https://null"}
 	r.Use(cors.New(corsConfig))
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
