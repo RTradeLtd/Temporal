@@ -37,11 +37,6 @@ func Setup(cfg *config.TemporalConfig) *gin.Engine {
 	dbUser := cfg.Database.Username
 	listenAddress := cfg.API.Connection.ListenAddress
 	jwtKey := cfg.API.JwtKey
-	awsKey := cfg.AWS.KeyID
-	awsSecret := cfg.AWS.Secret
-	ethKey := cfg.Ethereum.Account.KeyFile
-	ethPass := cfg.Ethereum.Account.KeyPass
-	mqConnectionURL := cfg.RabbitMQ.URL
 	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	if err != nil {
 		fmt.Println("failed to open db connection")
@@ -67,7 +62,7 @@ func Setup(cfg *config.TemporalConfig) *gin.Engine {
 	r.Use(middleware.CORSMiddleware())
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
-	setupRoutes(r, authMiddleware, db, awsKey, awsSecret, ethKey, ethPass, mqConnectionURL)
+	setupRoutes(r, authMiddleware, db, cfg)
 
 	statsProtected := r.Group("/api/v1/statistics")
 	statsProtected.Use(authMiddleware.MiddlewareFunc())
@@ -86,9 +81,16 @@ func Setup(cfg *config.TemporalConfig) *gin.Engine {
 }
 
 // setupRoutes is used to setup all of our api routes
-func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, awsKey, awsSecret, ethKey, ethPass, mqConnectionURL string) {
-	//r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	//r.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
+func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg *config.TemporalConfig) {
+
+	mqConnectionURL := cfg.RabbitMQ.URL
+	ethKey := cfg.Ethereum.Account.KeyFile
+	ethPass := cfg.Ethereum.Account.KeyPass
+	awsKey := cfg.AWS.KeyID
+	awsSecret := cfg.AWS.Secret
+	endpoint := fmt.Sprintf("%s:%s", cfg.MINIO.Connection.IP, cfg.MINIO.Connection.Port)
+	minioKey := cfg.MINIO.AccessKey
+	minioSecret := cfg.MINIO.SecretKey
 	// LOGIN
 	g.POST("/api/v1/login", authWare.LoginHandler)
 
@@ -121,6 +123,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	ipfsProtected.Use(middleware.DatabaseMiddleware(db))
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
+	ipfsProtected.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
 	ipfsProtected.POST("/add-file", AddFileLocally)
 
 	//ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
