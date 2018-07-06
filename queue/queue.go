@@ -2,6 +2,7 @@ package queue
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"math/big"
 
@@ -103,6 +104,19 @@ func Initialize(queueName, connectionURL string) (*QueueManager, error) {
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
 	}
+	// Declare Non Default exchanges for the particular queue
+	switch queueName {
+	case PinExchange:
+		err = qm.DeclareIPFSPinExchange()
+		if err != nil {
+			return nil, err
+		}
+	case ClusterPinExchange:
+		err = qm.DeclareIPFSClusterPinExchange()
+		if err != nil {
+			return nil, err
+		}
+	}
 	if err := qm.DeclareQueue(queueName); err != nil {
 		return nil, err
 	}
@@ -198,7 +212,38 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	return nil
 }
 
-// PublishMessage is used to produce messages that are sent to the queue, with a hard coded exchange of type fanout
+//PublishFanOutMessage is used to publish a message to a fanout exchange.
+func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
+	switch exchangeName {
+	case PinExchange:
+		break
+	case ClusterPinExchange:
+		break
+	default:
+		return errors.New("invalid exchange name provided")
+	}
+	bodyMarshaled, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	err = qm.Channel.Publish(
+		exchangeName,  // exchange
+		qm.Queue.Name, // routing key
+		false,         // mandatory
+		false,         // immediate
+		amqp.Publishing{
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "text/plain",
+			Body:         bodyMarshaled,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// PublishMessage is used to produce messages that are sent to the queue, with a worker queue (one consumer)
 func (qm *QueueManager) PublishMessage(body interface{}) error {
 	// we use a persistent delivery mode to combine with the durable queue
 	bodyMarshaled, err := json.Marshal(body)
@@ -206,7 +251,7 @@ func (qm *QueueManager) PublishMessage(body interface{}) error {
 		return err
 	}
 	err = qm.Channel.Publish(
-		"fanout",      // exchange
+		"",            // exchange
 		qm.Queue.Name, // routing key
 		false,         // mandatory
 		false,         //immediate
