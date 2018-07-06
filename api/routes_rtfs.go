@@ -384,13 +384,12 @@ func CheckLocalNodeForPin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"present": present})
 }
 
-/*
 func DownloadContentHash(c *gin.Context) {
 	_, exists := c.GetPostForm("use_private_network")
 	if exists {
 		//PLACEHOLDER
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "private network support not implemented"
+			"error": "private network support not implemented",
 		})
 		return
 	}
@@ -416,4 +415,6 @@ func DownloadContentHash(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-}*/
+	extraHeaders := make(map[string]string)
+	c.DataFromReader(200, int64(sizeInBytes), "application/octet-stream", reader, extraHeaders)
+}
