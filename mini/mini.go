@@ -20,6 +20,7 @@ type MinioManager struct {
 	Client *minio.Client
 }
 
+// NewMinioManager is used to generate our MinioManager helper struct
 func NewMinioManager(endpoint, accessKeyID, secretAccessKey string, secure bool) (*MinioManager, error) {
 	mm := &MinioManager{}
 	client, err := minio.New(endpoint, accessKeyID, secretAccessKey, secure)
@@ -30,11 +31,12 @@ func NewMinioManager(endpoint, accessKeyID, secretAccessKey string, secure bool)
 	return mm, nil
 }
 
+// ListBuckets is used to list all known buckets
 func (mm *MinioManager) ListBuckets() ([]minio.BucketInfo, error) {
 	return mm.Client.ListBuckets()
 }
 
-// PutObject is a wrapper for the mini PutObject method, returning the number of bytes put or an error
+// PutObject is a wrapper for the minio PutObject method, returning the number of bytes put or an error
 func (mm *MinioManager) PutObject(bucketName, objectName string, reader io.Reader, objectSize int64, opts minio.PutObjectOptions) (int64, error) {
 	bucketExists, err := mm.CheckIfBucketExists(bucketName)
 	if err != nil {
@@ -46,9 +48,19 @@ func (mm *MinioManager) PutObject(bucketName, objectName string, reader io.Reade
 	return mm.Client.PutObject(bucketName, objectName, reader, objectSize, opts)
 }
 
+// GetObject is a wrapper for the minio GetObject method
+func (mm *MinioManager) GetObject(bucketName, objectName string, opts minio.GetObjectOptions) (*minio.Object, error) {
+	exists, err := mm.CheckIfBucketExists(bucketName)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, errors.New("bucket does not exist")
+	}
+	return mm.Client.GetObject(bucketName, objectName, opts)
+}
+
+// CheckIfBucketExists is used to check if a bucket exists
 func (mm *MinioManager) CheckIfBucketExists(bucketName string) (bool, error) {
 	return mm.Client.BucketExists(bucketName)
 }
-
-
-func (mm)

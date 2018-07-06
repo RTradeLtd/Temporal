@@ -37,16 +37,13 @@ func TestListBuckets(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	buckets, err := mm.ListBuckets()
+	_, err = mm.ListBuckets()
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, v := range buckets {
-		fmt.Println(v)
-	}
 }
 
-func TestPutObject(t *testing.T) {
+func TestPutAndGetObject(t *testing.T) {
 	mm, err := newMM(false)
 	if err != nil {
 		t.Fatal(err)
@@ -71,7 +68,34 @@ func TestPutObject(t *testing.T) {
 	if bytesWritten != fileStats.Size() {
 		t.Fatal(errors.New("improper amount of data written to bucket"))
 	}
+
+	_, err = mm.PutObject("fake bucket name", objName, openedFile, fileStats.Size(), minio.PutObjectOptions{})
+	if err == nil {
+		t.Fatal(err)
+	}
+
+	objInfo, err := mm.GetObject(bucket, objName, minio.GetObjectOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = objInfo.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = mm.GetObject("fakse bucket namememem", objName, minio.GetObjectOptions{})
+	if err == nil {
+		t.Fatal(err)
+	}
+	objInfo, err = mm.GetObject(bucket, "definitely a fake object name", minio.GetObjectOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = objInfo.Stat()
+	if err == nil {
+		t.Fatal(err)
+	}
 }
+
 func newMM(secure bool) (*MinioManager, error) {
 	return NewMinioManager(endpoint, keyID, secret, secure)
 }
