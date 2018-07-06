@@ -383,3 +383,37 @@ func CheckLocalNodeForPin(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"present": present})
 }
+
+/*
+func DownloadContentHash(c *gin.Context) {
+	_, exists := c.GetPostForm("use_private_network")
+	if exists {
+		//PLACEHOLDER
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "private network support not implemented"
+		})
+		return
+	}
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	// Admin locked for now
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+		return
+	}
+	contentHash := c.Param("hash")
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	reader, err := manager.Shell.Cat(contentHash)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	sizeInBytes, err := manager.GetObjectFileSizeInBytes(contentHash)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+}*/
