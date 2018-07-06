@@ -25,3 +25,4 @@
 * https://docs.minio.io/docs/minio-docker-quickstart-guide
 * https://godoc.org/github.com/minio/minio-go
 * https://docs.minio.io/docs/golang-client-api-reference
+* https://blog.alexellis.io/openfaas-storage-for-your-functions/
