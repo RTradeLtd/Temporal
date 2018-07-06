@@ -1,8 +1,11 @@
 #! /bin/bash
 
 # FOR PRODUCTION PLEASE USE CUSTOM KEYS
-MODE="dev"
+MODE="$2"
 
+if [[ "$2" -eq "" ]]; then
+    MODE="dev"
+fi
 
 if [[ "$MODE" -ne "dev" ]]; then
     if [[ "$MINIO_ACCESS_KEY" == "" ]]; then
@@ -39,7 +42,7 @@ case "$1" in
         sudo docker run -p 9000:9000 minio/minio /data
         ;;
     run-stable-custom)
-        docker run -p 9000:9000 --name minio1 \
+        sudo docker run -p 9000:9000 --name minio1 \
         -e "MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY" \
         -e "MINIO_SECRET_KEY=$MINIO_SECRET_KEY" \
         -v /mnt/data:"$DATA_DIR" \

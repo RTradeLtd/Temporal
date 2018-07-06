@@ -38,5 +38,13 @@
 	"aws": {
 		"key_id": "......",
 		"secret": "......."
+	},
+	"minio": {
+		"access_key": "C03T49S17RP0APEZDK6M",
+		"secret_key": "q4I9t2MN/6bAgLkbF6uyS7jtQrXuNARcyrm2vvNA",
+		"connection": {
+			"ip": "127.0.0.1",
+			"port": "9000"
+		}
 	}
 }
