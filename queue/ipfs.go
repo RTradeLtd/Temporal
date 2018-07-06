@@ -100,3 +100,11 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB) {
 		}
 	}
 }
+
+/* TODO: need to research a temporary storage backend to host the files temporarily
+before uploading them to IPFS.
+func ProcessIPFSFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) error {
+	users := models.NewUserManager(db)
+	uploads := models.NewUploadManager(db)
+	networks := models.NewHostedIPFSNetworkManager(db)
+}*/

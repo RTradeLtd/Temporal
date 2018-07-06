@@ -34,6 +34,14 @@ type IPFSPin struct {
 	EthAddress  string `json:"eth_address"`
 }
 
+//TODO need to finish, we need to find a temporary location to upload the file
+// to firsr, and then work on processing it
+type IPFSFile struct {
+	CID         string `json:"cid"`
+	NetworkName string `json:"network_name"`
+	EthAddress  string `json:"eth_address"`
+}
+
 // DatabaseFileAdd is a struct used when sending data to rabbitmq
 type DatabaseFileAdd struct {
 	Hash             string `json:"hash"`

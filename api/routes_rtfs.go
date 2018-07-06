@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -20,10 +21,9 @@ func PinHashLocally(c *gin.Context) {
 		PinToHostedIPFSNetwork(c)
 		return
 	}
-	contextCopy := c.Copy()
-	hash := contextCopy.Param("hash")
-	uploadAddress := GetAuthenticatedUserFromContext(contextCopy)
-	holdTimeInMonths, exists := contextCopy.GetPostForm("hold_time")
+	hash := c.Param("hash")
+	uploadAddress := GetAuthenticatedUserFromContext(c)
+	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
 		return
@@ -32,18 +32,6 @@ func PinHashLocally(c *gin.Context) {
 	if err != nil {
 		FailOnError(c, err)
 		return
-	}
-	// currently after it is pinned, it is sent to the cluster to be pinned
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	// before exiting, it is pinned to the cluster
-	err = manager.Pin(hash)
-	if err != nil {
-		// TODO: log it
-		fmt.Println(err)
 	}
 
 	ip := queue.IPFSPin{
@@ -114,6 +102,49 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 
 }
 
+func AddFileLocallyNoResponse(c *gin.Context) {
+	_, exists := c.GetPostForm("use_private_network")
+	if exists {
+		//TODO need to create another function to add file with no response
+		AddFileToHostedIPFSNetwork(c)
+		return
+	}
+	cC := c.Copy()
+	fileHandler, err := cC.FormFile("file")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	ethAddress := GetAuthenticatedUserFromContext(cC)
+	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
+	if !exists {
+		FailNoExistPostForm(c, "hold_time")
+		return
+	}
+	holdTimeInMonthsInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("opening file")
+	openFile, err := fileHandler.Open()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("file opened")
+	// read the contents of what they uploaded into a byte slice
+	_, err = ioutil.ReadAll(openFile)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"eth_address": ethAddress,
+		"hold_time":   holdTimeInMonthsInt,
+	})
+}
+
 // AddFileLocally is used to add a file to our local ipfs node
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
@@ -151,6 +182,7 @@ func AddFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	fmt.Println("file opened")
 	fmt.Println("initializing manager")
 	// initialize a connection to the local ipfs node
 	manager, err := rtfs.Initialize("", "")
