@@ -52,7 +52,7 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 	r.Use(helmet.SetHSTS(true))
 	// prevent mine content sniffing
 	r.Use(helmet.NoSniff())
-	r.Use(middleware.DatabaseMiddleware(db))
+	//r.Use(middleware.DatabaseMiddleware(db))
 	r.Use(middleware.CORSMiddleware())
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
@@ -89,6 +89,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	accountProtected := g.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
 	accountProtected.Use(middleware.APIRestrictionMiddleware(db))
+	accountProtected.Use(middleware.DatabaseMiddleware(db))
 	accountProtected.POST("password/change", ChangeAccountPassword)
 	accountProtected.POST("/key/ipfs/new", CreateIPFSKey)
 	accountProtected.GET("/key/ipfs/get", GetIPFSKeyNamesForAuthUser)
@@ -96,6 +97,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsProtected := g.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
 	ipfsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	// DATABASE-LESS routes
 	ipfsProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublish) // admin locked
 	ipfsProtected.GET("/pubsub/consume/:topic", IpfsPubSubConsume)  // admin locked
 	ipfsProtected.GET("/pins", GetLocalPins)                        // admin locked
@@ -103,8 +105,10 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsProtected.GET("/object/size/:key", GetFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
 	ipfsProtected.POST("/download/:hash", DownloadContentHash)
+	// DATABASE-USING ROUTES
 	ipfsProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	ipfsProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
+	ipfsProtected.Use(middleware.DatabaseMiddleware(db))
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
 	ipfsProtected.POST("/add-file", AddFileLocally)
 
@@ -113,6 +117,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsPrivateProtected := g.Group("/api/v1/ipfs-private")
 	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
 	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(db))
+	ipfsPrivateProtected.Use(middleware.DatabaseMiddleware(db))
 	ipfsPrivateProtected.POST("/new/network", CreateHostedIPFSNetworkEntryInDatabase)
 	ipfsPrivateProtected.POST("/network/name", GetIPFSPrivateNetworkByName)
 	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", CheckLocalNodeForPinForHostedIPFSNetwork)
@@ -129,6 +134,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipnsProtected.Use(authWare.MiddlewareFunc())
 	ipnsProtected.Use(middleware.APIRestrictionMiddleware(db))
 	ipnsProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
+	ipnsProtected.Use(middleware.DatabaseMiddleware(db))
 	ipnsProtected.POST("/publish/details", PublishToIPNSDetails) // admin locked
 	ipnsProtected.Use(middleware.AWSMiddleware(awsKey, awsSecret))
 	ipnsProtected.POST("/dnslink/aws/add", GenerateDNSLinkEntry) // admin locked
@@ -147,6 +153,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	databaseProtected := g.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
 	databaseProtected.Use(middleware.APIRestrictionMiddleware(db))
+	databaseProtected.Use(middleware.DatabaseMiddleware(db))
 	databaseProtected.DELETE("/garbage-collect/test", RunTestGarbageCollection)    // admin locked
 	databaseProtected.DELETE("/garbage-collect/run", RunDatabaseGarbageCollection) // admin locked
 	databaseProtected.GET("/uploads", GetUploadsFromDatabase)                      // admin locked
@@ -156,8 +163,11 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	frontendProtected.Use(authWare.MiddlewareFunc())
 	frontendProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	frontendProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
+	// DATABASE-LESS routes
 	frontendProtected.POST("/registration/request", SubmitPinPaymentRequest)
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", CalculatePinCost)
+	// DATABASE USING routes
+	frontendProtected.Use(middleware.DatabaseMiddleware(db))
 	frontendProtected.POST("/confirm/:paymentID", ConfirmPayment)
 
 	paymentsAPIProtected := g.Group("/api/v1/payments-api")
@@ -165,6 +175,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	paymentsAPIProtected.Use(middleware.APIRestrictionMiddleware(db))
 	paymentsAPIProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	paymentsAPIProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
+	paymentsAPIProtected.Use(middleware.DatabaseMiddleware(db))
 	paymentsAPIProtected.POST("/register", RegisterPayment) // admin locked
 	// PROTECTED ROUTES -- END
 
