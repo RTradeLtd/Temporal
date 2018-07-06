@@ -3,10 +3,10 @@ package mini
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"os"
 	"testing"
 
+	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/minio/minio-go"
 )
 
@@ -15,7 +15,7 @@ const (
 	keyID       = "C03T49S17RP0APEZDK6M"
 	secret      = "q4I9t2MN/6bAgLkbF6uyS7jtQrXuNARcyrm2vvNA"
 	bucket      = "test"
-	letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	letterBytes = "abcdefghijklmnopqrstuvwxyz"
 )
 
 func TestNewMinioManagerNoSecure(t *testing.T) {
@@ -84,7 +84,7 @@ func TestPutAndGetObject(t *testing.T) {
 	}
 	_, err = mm.GetObject("fakse bucket namememem", objName, minio.GetObjectOptions{})
 	if err == nil {
-		t.Fatal(err)
+		t.Fatal("no encountered when one should've been")
 	}
 	objInfo, err = mm.GetObject(bucket, "definitely a fake object name", minio.GetObjectOptions{})
 	if err != nil {
@@ -96,16 +96,30 @@ func TestPutAndGetObject(t *testing.T) {
 	}
 }
 
+func TestMakeBucket(t *testing.T) {
+	mm, err := newMM(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	args := make(map[string]string)
+	args["name"] = bucket
+	err = mm.MakeBucket(args)
+	if err == nil {
+		t.Fatal("no error encountered one one should've been")
+	}
+	args["name"] = randString(23)
+	err = mm.MakeBucket(args)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 func newMM(secure bool) (*MinioManager, error) {
 	return NewMinioManager(endpoint, keyID, secret, secure)
 }
 
 func randString(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
-	}
-	return string(b)
+	ru := utils.GenerateRandomUtils()
+	return ru.GenerateString(n, letterBytes)
 }
 
 func generateRandomFile() (string, error) {

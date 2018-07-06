@@ -15,6 +15,8 @@ Once objects have been stored in Minio, it can then be uploaded to IPFS
 TODO: Add in encryption module that mkaes use of minio server side encryption, allowing a user provided pasword
 */
 
+var DefaultBucketLocation = "us-east-1"
+
 // MinioManager is our helper methods to interface with minio
 type MinioManager struct {
 	Client *minio.Client
@@ -34,6 +36,30 @@ func NewMinioManager(endpoint, accessKeyID, secretAccessKey string, secure bool)
 // ListBuckets is used to list all known buckets
 func (mm *MinioManager) ListBuckets() ([]minio.BucketInfo, error) {
 	return mm.Client.ListBuckets()
+}
+
+// MakeBucket is a wrapper for te minio MakeBucket method
+func (mm *MinioManager) MakeBucket(args map[string]string) error {
+	var name, location string
+	_, ok := args["name"]
+	if !ok {
+		return errors.New("name item is missing from args")
+	}
+	_, ok = args["location"]
+	if ok {
+		location = args["location"]
+	} else {
+		location = DefaultBucketLocation
+	}
+	name = args["name"]
+	exists, err := mm.CheckIfBucketExists(name)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errors.New("bucket already exists")
+	}
+	return mm.Client.MakeBucket(name, location)
 }
 
 // PutObject is a wrapper for the minio PutObject method, returning the number of bytes put or an error
