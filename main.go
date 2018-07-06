@@ -118,6 +118,16 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+	case "ipfs-pin-queue":
+		mqConnectionURL := tCfg.RabbitMQ.URL
+		qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser)
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "migrate":
 		dbm, err := database.Initialize(dbPass, dbURL, dbUser)
 		if err != nil {

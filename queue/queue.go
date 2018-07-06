@@ -2,7 +2,7 @@ package queue
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"log"
 	"math/big"
 
@@ -18,12 +18,28 @@ var PaymentRegisterQueue = "payment-register-queue"
 var PaymentReceivedQueue = "payment-received-queue"
 var PinPaymentRequestQueue = "pin-payment-request-queue"
 var IpnsUpdateQueue = "ipns-update-queue"
+var IpfsPinQueue = "ipfs-pin-queue"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
 	Queue      *amqp.Queue
+}
+
+// IPFSPin is a struct used when sending pin request
+type IPFSPin struct {
+	CID         string `json:"cid"`
+	NetworkName string `json:"network_name"`
+	EthAddress  string `json:"eth_address"`
+}
+
+//TODO need to finish, we need to find a temporary location to upload the file
+// to firsr, and then work on processing it
+type IPFSFile struct {
+	CID         string `json:"cid"`
+	NetworkName string `json:"network_name"`
+	EthAddress  string `json:"eth_address"`
 }
 
 // DatabaseFileAdd is a struct used when sending data to rabbitmq
@@ -95,6 +111,19 @@ func Initialize(queueName, connectionURL string) (*QueueManager, error) {
 	qm := QueueManager{Connection: conn}
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
+	}
+	// Declare Non Default exchanges for the particular queue
+	switch queueName {
+	case PinExchange:
+		err = qm.DeclareIPFSPinExchange()
+		if err != nil {
+			return nil, err
+		}
+	case ClusterPinExchange:
+		err = qm.DeclareIPFSClusterPinExchange()
+		if err != nil {
+			return nil, err
+		}
 	}
 	if err := qm.DeclareQueue(queueName); err != nil {
 		return nil, err
@@ -181,6 +210,8 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			ProcessPinPaymentRequestQueue(msgs, db, ethKeyFile, ethKeyPass)
 		case IpfsClusterQueue:
 			ProcessIpfsClusterQueue(msgs, db)
+		case IpfsPinQueue:
+			ProccessIPFSPins(msgs, db)
 		default:
 			log.Fatal("invalid queue name")
 		}
@@ -189,9 +220,39 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	return nil
 }
 
-// PublishMessage is used to produce messages that are sent to the queue
+//PublishFanOutMessage is used to publish a message to a fanout exchange.
+func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
+	switch exchangeName {
+	case PinExchange:
+		break
+	case ClusterPinExchange:
+		break
+	default:
+		return errors.New("invalid exchange name provided")
+	}
+	bodyMarshaled, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	err = qm.Channel.Publish(
+		exchangeName,  // exchange
+		qm.Queue.Name, // routing key
+		false,         // mandatory
+		false,         // immediate
+		amqp.Publishing{
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "text/plain",
+			Body:         bodyMarshaled,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// PublishMessage is used to produce messages that are sent to the queue, with a worker queue (one consumer)
 func (qm *QueueManager) PublishMessage(body interface{}) error {
-	fmt.Println("publishing message")
 	// we use a persistent delivery mode to combine with the durable queue
 	bodyMarshaled, err := json.Marshal(body)
 	if err != nil {
@@ -211,7 +272,6 @@ func (qm *QueueManager) PublishMessage(body interface{}) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("message published")
 	return nil
 }
 

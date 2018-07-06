@@ -17,7 +17,6 @@ import (
 
 	"github.com/aviddiviner/gin-limit"
 	"github.com/dvwright/xss-mw"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/zsais/go-gin-prometheus"
 )
@@ -54,14 +53,7 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 	// prevent mine content sniffing
 	r.Use(helmet.NoSniff())
 	r.Use(middleware.DatabaseMiddleware(db))
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowAllOrigins = true
-	corsConfig.AllowCredentials = false
-	corsConfig.AddAllowHeaders("cache-control", "Access-Control-Allow-Headers", "Authorization", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Request-Headers")
-	r.Use(cors.New(corsConfig))
-	/*corsConfig.AllowOrigins = []string{"http://null", "https://null"}
-	corsConfig.AddAllowHeaders("X-Requested-With", "Access-Control-Allow-Headers", "Authorization", "Content-Type", "Set-Cookie", "X-Requested-With", "Accept", "Access-Control-Allow-Origin", "Access-Control-Request-Headers")
-	r.Use(cors.New(corsConfig))*/
+	r.Use(middleware.CORSMiddleware())
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
 	setupRoutes(r, authMiddleware, db, awsKey, awsSecret, ethKey, ethPass, mqConnectionURL)
@@ -110,6 +102,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsProtected.GET("/object-stat/:key", GetObjectStatForIpfs)
 	ipfsProtected.GET("/object/size/:key", GetFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
+	ipfsProtected.POST("/download/:hash", DownloadContentHash)
 	ipfsProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	ipfsProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)

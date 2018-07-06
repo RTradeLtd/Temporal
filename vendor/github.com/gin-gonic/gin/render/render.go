@@ -14,6 +14,8 @@ type Render interface {
 var (
 	_ Render     = JSON{}
 	_ Render     = IndentedJSON{}
+	_ Render     = SecureJSON{}
+	_ Render     = JsonpJSON{}
 	_ Render     = XML{}
 	_ Render     = String{}
 	_ Render     = Redirect{}
@@ -23,7 +25,7 @@ var (
 	_ HTMLRender = HTMLProduction{}
 	_ Render     = YAML{}
 	_ Render     = MsgPack{}
-	_ Render     = MsgPack{}
+	_ Render     = Reader{}
 )
 
 func writeContentType(w http.ResponseWriter, value []string) {

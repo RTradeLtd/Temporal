@@ -102,7 +102,7 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
 
 [[constraint]]
   name = "github.com/gin-gonic/gin"
-  version = "1.2.0"
+  branch = "master"
 
 
 

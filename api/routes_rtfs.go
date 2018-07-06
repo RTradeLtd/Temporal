@@ -1,7 +1,9 @@
 package api
 
 import (
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -19,10 +21,9 @@ func PinHashLocally(c *gin.Context) {
 		PinToHostedIPFSNetwork(c)
 		return
 	}
-	contextCopy := c.Copy()
-	hash := contextCopy.Param("hash")
-	uploadAddress := GetAuthenticatedUserFromContext(contextCopy)
-	holdTimeInMonths, exists := contextCopy.GetPostForm("hold_time")
+	hash := c.Param("hash")
+	uploadAddress := GetAuthenticatedUserFromContext(c)
+	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
 		return
@@ -32,20 +33,31 @@ func PinHashLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	// currently after it is pinned, it is sent to the cluster to be pinned
-	manager, err := rtfs.Initialize("", "")
+
+	ip := queue.IPFSPin{
+		CID:         hash,
+		NetworkName: "public",
+		EthAddress:  uploadAddress,
+	}
+
+	mqConnectionURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailOnError(c, errors.New("unable to load rabbitmq"))
+		return
+	}
+
+	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	go func() {
-		// before exiting, it is pinned to the cluster
-		err = manager.Pin(hash)
-		if err != nil {
-			// TODO: log it
-			fmt.Println(err)
-		}
-	}()
+
+	err = qm.PublishMessage(ip)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
 	// construct the rabbitmq message to add this entry to the database
 	dpa := queue.DatabasePinAdd{
 		Hash:             hash,
@@ -54,9 +66,8 @@ func PinHashLocally(c *gin.Context) {
 		NetworkName:      "public",
 	}
 	// assert type assertion retrieving info from middleware
-	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	// initialize the queue
-	qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
+	qm, err = queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -89,6 +100,49 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 		"size_in_bytes": sizeInBytes,
 	})
 
+}
+
+func AddFileLocallyNoResponse(c *gin.Context) {
+	_, exists := c.GetPostForm("use_private_network")
+	if exists {
+		//TODO need to create another function to add file with no response
+		AddFileToHostedIPFSNetwork(c)
+		return
+	}
+	cC := c.Copy()
+	fileHandler, err := cC.FormFile("file")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	ethAddress := GetAuthenticatedUserFromContext(cC)
+	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
+	if !exists {
+		FailNoExistPostForm(c, "hold_time")
+		return
+	}
+	holdTimeInMonthsInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("opening file")
+	openFile, err := fileHandler.Open()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("file opened")
+	// read the contents of what they uploaded into a byte slice
+	_, err = ioutil.ReadAll(openFile)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"eth_address": ethAddress,
+		"hold_time":   holdTimeInMonthsInt,
+	})
 }
 
 // AddFileLocally is used to add a file to our local ipfs node
@@ -128,6 +182,7 @@ func AddFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	fmt.Println("file opened")
 	fmt.Println("initializing manager")
 	// initialize a connection to the local ipfs node
 	manager, err := rtfs.Initialize("", "")
@@ -327,4 +382,62 @@ func CheckLocalNodeForPin(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"present": present})
+}
+
+// DownloadContentHash is used to download a particular content hash from the network
+//
+func DownloadContentHash(c *gin.Context) {
+	_, exists := c.GetPostForm("use_private_network")
+	if exists {
+		//PLACEHOLDER
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "private network support not implemented",
+		})
+		return
+	}
+	var contentType string
+	contentType, exists = c.GetPostForm("content_type")
+	if !exists {
+		contentType = "application/octet-stream"
+	}
+
+	exHeaders := c.PostFormArray("extra_headers")
+
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	// Admin locked for now
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+		return
+	}
+	contentHash := c.Param("hash")
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	reader, err := manager.Shell.Cat(contentHash)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	sizeInBytes, err := manager.GetObjectFileSizeInBytes(contentHash)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	extraHeaders := make(map[string]string)
+	var header string
+	var value string
+	if len(exHeaders) > 0 {
+		if len(exHeaders)%2 != 0 {
+			FailOnError(c, errors.New("extra_headers post form is not even in length"))
+			return
+		}
+		for i := 1; i < len(exHeaders)-1; i += 2 {
+			header = exHeaders[i-1]
+			value = exHeaders[i]
+			extraHeaders[header] = value
+		}
+	}
+	c.DataFromReader(200, int64(sizeInBytes), contentType, reader, extraHeaders)
 }
