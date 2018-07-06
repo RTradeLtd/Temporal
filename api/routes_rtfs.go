@@ -384,6 +384,8 @@ func CheckLocalNodeForPin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"present": present})
 }
 
+// DownloadContentHash is used to download a particular content hash from the network
+//
 func DownloadContentHash(c *gin.Context) {
 	_, exists := c.GetPostForm("use_private_network")
 	if exists {
@@ -393,6 +395,14 @@ func DownloadContentHash(c *gin.Context) {
 		})
 		return
 	}
+	var contentType string
+	contentType, exists = c.GetPostForm("content_type")
+	if !exists {
+		contentType = "application/octet-stream"
+	}
+
+	exHeaders := c.PostFormArray("extra_headers")
+
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	// Admin locked for now
 	if ethAddress != AdminAddress {
@@ -416,5 +426,18 @@ func DownloadContentHash(c *gin.Context) {
 		return
 	}
 	extraHeaders := make(map[string]string)
-	c.DataFromReader(200, int64(sizeInBytes), "application/octet-stream", reader, extraHeaders)
+	var header string
+	var value string
+	if len(exHeaders) > 0 {
+		if len(exHeaders)%2 != 0 {
+			FailOnError(c, errors.New("extra_headers post form is not even in length"))
+			return
+		}
+		for i := 1; i < len(exHeaders)-1; i += 2 {
+			header = exHeaders[i-1]
+			value = exHeaders[i]
+			extraHeaders[header] = value
+		}
+	}
+	c.DataFromReader(200, int64(sizeInBytes), contentType, reader, extraHeaders)
 }
