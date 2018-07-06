@@ -35,22 +35,21 @@ func main() {
 	if configDag == "" {
 		log.Fatal("CONFIG_DAG is not set")
 	}
-	tCfg := config.LoadConfig(configDag)
+	tCfg, err := config.LoadConfig(configDag)
+	if err != nil {
+		log.Fatal(err)
+	}
 	certFilePath := tCfg.API.Connection.Certificates.CertPath
 	keyFilePath := tCfg.API.Connection.Certificates.KeyPath
 	listenAddress := tCfg.API.Connection.ListenAddress
-	jwtKey := tCfg.API.JwtKey
-	rabbitMQConnectionURL := tCfg.RabbitMQ.URL
 	dbPass := tCfg.Database.Password
 	dbURL := tCfg.Database.URL
 	dbUser := tCfg.Database.Username
 	ethKeyFilePath := tCfg.Ethereum.Account.KeyFile
 	ethKeyPass := tCfg.Ethereum.Account.KeyPass
-	awsKey := tCfg.AWS.KeyID
-	awsSecret := tCfg.AWS.Secret
 	switch os.Args[1] {
 	case "api":
-		router := api.Setup(jwtKey, rabbitMQConnectionURL, dbPass, dbURL, ethKeyFilePath, ethKeyPass, listenAddress, dbUser, awsKey, awsSecret)
+		router := api.Setup(tCfg)
 		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()

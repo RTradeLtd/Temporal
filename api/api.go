@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/config"
 	"github.com/semihalev/gin-stats"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
@@ -30,7 +31,17 @@ var AdminAddress = "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9"
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser, awsKey, awsSecret string) *gin.Engine {
+func Setup(cfg *config.TemporalConfig) *gin.Engine {
+	dbPass := cfg.Database.Password
+	dbURL := cfg.Database.URL
+	dbUser := cfg.Database.Username
+	listenAddress := cfg.API.Connection.ListenAddress
+	jwtKey := cfg.API.JwtKey
+	awsKey := cfg.AWS.KeyID
+	awsSecret := cfg.AWS.Secret
+	ethKey := cfg.Ethereum.Account.KeyFile
+	ethPass := cfg.Ethereum.Account.KeyPass
+	mqConnectionURL := cfg.RabbitMQ.URL
 	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	if err != nil {
 		fmt.Println("failed to open db connection")
