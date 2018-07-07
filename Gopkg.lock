@@ -2,10 +2,10 @@
 
 
 [[projects]]
-  branch = "master"
+  branch = "master-rtrade"
   name = "github.com/RTradeLtd/go-ipfs-api"
   packages = ["."]
-  revision = "1c2767ea525149c0d4a81d90a805bf19e8fd84ea"
+  revision = "c34b7e732e45bb5dd7d170ffb8780b873e46e18a"
 
 [[projects]]
   branch = "master"
@@ -1143,6 +1143,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "de8da6ab73af3e0f6744b663334bc1a43a68539682cb4211215d35f7b86b3c7a"
+  inputs-digest = "056b66dc3e9eb4a18930152108245087560a7fbdc4a28ca985677ed3f294d33b"
   solver-name = "gps-cdcl"
   solver-version = 1

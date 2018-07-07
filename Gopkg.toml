@@ -35,7 +35,7 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
 
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
-  branch = "master"
+  branch = "master-rtrade"
   
 [[constraint]]
   name = "github.com/ipfs/go-cid"
