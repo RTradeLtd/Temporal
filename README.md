@@ -152,6 +152,6 @@ Should you wish to consider donations, or private investment email admin@rtradet
 
 # Media
 
-https://steemit.com/blockchain/@rtrade/temporal-development-update-optimizations-community-outreach-and-more-july-6th-2018
-https://steemit.com/cryptocurrency/@rtrade/temporal-developer-update-saturday-june-30th-2018
-https://steemit.com/cryptocurrency/@rtrade/temporal-a-distributed-platform-and-storage-infrastructure-service
+* https://steemit.com/blockchain/@rtrade/temporal-development-update-optimizations-community-outreach-and-more-july-6th-2018
+* https://steemit.com/cryptocurrency/@rtrade/temporal-developer-update-saturday-june-30th-2018
+* https://steemit.com/cryptocurrency/@rtrade/temporal-a-distributed-platform-and-storage-infrastructure-service
