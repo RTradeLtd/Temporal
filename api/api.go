@@ -125,6 +125,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
 	ipfsProtected.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
 	ipfsProtected.POST("/add-file", AddFileLocally)
+	ipfsProtected.POST("/add-file/advanced", AddFileLocallyNoResponse)
 
 	//ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
 

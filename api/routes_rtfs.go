@@ -3,9 +3,11 @@ package api
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/RTradeLtd/Temporal/mini"
+	"github.com/minio/minio-go"
 
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -109,7 +111,29 @@ func AddFileLocallyNoResponse(c *gin.Context) {
 		AddFileToHostedIPFSNetwork(c)
 		return
 	}
+
 	cC := c.Copy()
+
+	credentials, ok := cC.MustGet("minio_credentials").(map[string]string)
+	if !ok {
+		FailedToLoadMiddleware(c, "minio credentials")
+		return
+	}
+	secure, ok := cC.MustGet("minio_secure").(bool)
+	if !ok {
+		FailedToLoadMiddleware(c, "minio secure")
+		return
+	}
+	endpoint, ok := cC.MustGet("minio_endpoint").(string)
+	if !ok {
+		FailedToLoadMiddleware(c, "minio endpoint")
+		return
+	}
+	miniManager, err := mini.NewMinioManager(endpoint, credentials["access_key"], credentials["secret_key"], secure)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	fileHandler, err := cC.FormFile("file")
 	if err != nil {
 		FailOnError(c, err)
@@ -132,9 +156,7 @@ func AddFileLocallyNoResponse(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	fmt.Println("file opened")
-	// read the contents of what they uploaded into a byte slice
-	_, err = ioutil.ReadAll(openFile)
+	_, err = miniManager.PutObject("files", "test", openFile, fileHandler.Size, minio.PutObjectOptions{})
 	if err != nil {
 		FailOnError(c, err)
 		return
