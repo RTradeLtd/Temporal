@@ -86,6 +86,18 @@ func (mm *MinioManager) GetObject(bucketName, objectName string, opts minio.GetO
 	return mm.Client.GetObject(bucketName, objectName, opts)
 }
 
+// RemoveObject is used to remove an object from minio
+func (mm *MinioManager) RemoveObject(bucketName, objectName string) error {
+	exists, err := mm.CheckIfBucketExists(bucketName)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return errors.New("bucket does not exist")
+	}
+	return mm.Client.RemoveObject(bucketName, objectName)
+}
+
 // CheckIfBucketExists is used to check if a bucket exists
 func (mm *MinioManager) CheckIfBucketExists(bucketName string) (bool, error) {
 	return mm.Client.BucketExists(bucketName)

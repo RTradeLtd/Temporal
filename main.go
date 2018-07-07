@@ -63,7 +63,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser)
+		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -73,7 +73,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser)
+		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -83,7 +83,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser)
+		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -93,7 +93,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser)
+		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -103,7 +103,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser)
+		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -113,7 +113,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser)
+		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -123,7 +123,17 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser)
+		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		if err != nil {
+			log.Fatal(err)
+		}
+	case "ipfs-file-queue":
+		mqConnectionURL := tCfg.RabbitMQ.URL
+		qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}

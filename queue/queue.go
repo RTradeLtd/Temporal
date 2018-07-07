@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/big"
 
+	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/streadway/amqp"
 )
@@ -19,6 +20,7 @@ var PaymentReceivedQueue = "payment-received-queue"
 var PinPaymentRequestQueue = "pin-payment-request-queue"
 var IpnsUpdateQueue = "ipns-update-queue"
 var IpfsPinQueue = "ipfs-pin-queue"
+var IpfsFileQueue = "ipfs-file-queue"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
@@ -34,12 +36,12 @@ type IPFSPin struct {
 	EthAddress  string `json:"eth_address"`
 }
 
-//TODO need to finish, we need to find a temporary location to upload the file
-// to firsr, and then work on processing it
 type IPFSFile struct {
-	CID         string `json:"cid"`
-	NetworkName string `json:"network_name"`
-	EthAddress  string `json:"eth_address"`
+	BucketName       string `json:"bucket_name"`
+	ObjectName       string `json:"object_name"`
+	EthAddress       string `json:"eth_address"`
+	NetworkName      string `json:"network_name"`
+	HoldTimeInMonths string `json:"hold_time_in_months"`
 }
 
 // DatabaseFileAdd is a struct used when sending data to rabbitmq
@@ -170,7 +172,7 @@ func (qm *QueueManager) DeclareQueue(queueName string) error {
 // ConsumeMessage is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethKeyPass, dbUser string) error {
+func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethKeyPass, dbUser string, cfg *config.TemporalConfig) error {
 	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	if err != nil {
 		return err
@@ -212,6 +214,8 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			ProcessIpfsClusterQueue(msgs, db)
 		case IpfsPinQueue:
 			ProccessIPFSPins(msgs, db)
+		case IpfsFileQueue:
+			ProccessIPFSFiles(msgs, cfg, db)
 		default:
 			log.Fatal("invalid queue name")
 		}
