@@ -9,23 +9,20 @@ import (
 
 var testHash = "Qmbu7x6gJbsKDcseQv66pSbUcAA3Au6f7MfTYVXwvBxN2K"
 
-func TestDCCDComplete(t *testing.T) {
-	manager := dccd.NewDCCDManager("https://ipfs.io")
-	resp, err := manager.Shell.Cat(testHash)
+func TestDispersal(t *testing.T) {
+	manager := dccd.NewDCCDManager("")
+	resp, err := manager.DisperseContentWithShell(testHash)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = resp.Close()
-	if err != nil {
-		t.Fatal(err)
-	}
+	fmt.Println(resp)
 }
 
 func TestDCCD(t *testing.T) {
 	manager := dccd.NewDCCDManager("")
 	// Parse gateway array
 	manager.ParseGateways()
-	dispersals, err := manager.DisperseContent(testHash)
+	dispersals, err := manager.DisperseContentWithShell(testHash)
 	if err != nil {
 		t.Fatal(err)
 	}

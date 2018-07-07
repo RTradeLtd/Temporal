@@ -74,27 +74,19 @@ func (e *Error) Error() string {
 
 func (r *Request) SendGET(c *http.Client) (*Response, error) {
 	url := r.getURLNoEncode()
-	fmt.Println(url)
-	fmt.Println(1)
 	req, err := http.NewRequest("GET", url, r.Body)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(2)
-	fmt.Println(3)
 	resp, err := c.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(4)
 	contentType := resp.Header.Get("Content-Type")
 	parts := strings.Split(contentType, ";")
 	contentType = parts[0]
-	fmt.Println(5)
 	nresp := new(Response)
-	fmt.Println(6)
 	nresp.Output = resp.Body
-	fmt.Println(7)
 	if resp.StatusCode >= http.StatusBadRequest {
 		e := &Error{
 			Command: r.Command,
@@ -127,7 +119,6 @@ func (r *Request) SendGET(c *http.Client) (*Response, error) {
 		ioutil.ReadAll(resp.Body)
 		resp.Body.Close()
 	}
-	fmt.Println(8)
 
 	return nresp, nil
 }

@@ -13,62 +13,60 @@ package dccd
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"time"
 
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
-	"github.com/jinzhu/gorm"
 )
 
 type DCCDManager struct {
 	Shell    *ipfsapi.Shell
-	Gateways map[string]int
-	DB       *gorm.DB
+	Gateways map[int]string
 }
 
+// NewDCCDManager establishes our initial connection to our local IPFS node
 func NewDCCDManager(connectionURL string) *DCCDManager {
 	if connectionURL == "" {
 		// load a default api
 		connectionURL = "localhost:5001"
 	}
-	return &DCCDManager{Shell: ipfsapi.NewShell(connectionURL)}
-}
-
-func (dc *DCCDManager) ConnecToDatabase(db *gorm.DB) {
-	dc.DB = db
+	shell := ipfsapi.NewShell(connectionURL)
+	manager := &DCCDManager{Shell: shell}
+	manager.ParseGateways()
+	return manager
 }
 
 func (dc *DCCDManager) ParseGateways() {
-	indexes := make(map[string]int)
-	for k, v := range gateArrays {
-		indexes[v] = k
+	indexes := make(map[int]string)
+	for k, v := range GateArrays {
+		indexes[k] = v
 	}
 	dc.Gateways = indexes
 }
 
-func (dc *DCCDManager) DisperseContent(contentHash string) (map[string]bool, error) {
-	dispersals := make(map[string]bool)
+func (dc *DCCDManager) ReconnectShell(connectionURL string) error {
+	if connectionURL == "" {
+		return errors.New("please provide a valid connection url")
+	}
+	shell := ipfsapi.NewShell(connectionURL)
+	dc.Shell = shell
+	return nil
+}
 
-	if len(dc.Gateways) < 1 {
-		return nil, errors.New("please parse gateways before dispersing content")
-	}
-	var netClient = &http.Client{
-		Timeout: time.Minute * 1,
-	}
-	for k := range dc.Gateways {
-		url := fmt.Sprintf("%s/%s", k, contentHash)
-		resp, err := netClient.Get(url)
+func (dc *DCCDManager) DisperseContentWithShell(contentHash string) (map[string]bool, error) {
+	m := make(map[string]bool)
+	for _, v := range GateArrays {
+		err := dc.ReconnectShell(v)
+		r, err := dc.Shell.CatGet(contentHash)
 		if err != nil {
-			fmt.Println("Dispersal failed for", k)
-			dispersals[k] = false
+			m[v] = false
+			fmt.Println("dispersal failed for host ", v)
 			continue
 		}
-		if resp.StatusCode != 200 {
-			fmt.Println("Dispersal failed for", k)
-			dispersals[k] = false
-			continue
+		err = r.Close()
+		if err != nil {
+			fmt.Println("failed to close handler ", err)
 		}
-		dispersals[k] = true
+		fmt.Println("dispersal suceeded for host ", v)
+		m[v] = true
 	}
-	return dispersals, nil
+	return m, nil
 }
