@@ -123,8 +123,8 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	ipfsProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	ipfsProtected.Use(middleware.DatabaseMiddleware(db))
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
-	ipfsProtected.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
 	ipfsProtected.POST("/add-file", AddFileLocally)
+	ipfsProtected.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
 	ipfsProtected.POST("/add-file/advanced", AddFileLocallyNoResponse)
 
 	//ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
@@ -192,6 +192,13 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	paymentsAPIProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	paymentsAPIProtected.Use(middleware.DatabaseMiddleware(db))
 	paymentsAPIProtected.POST("/register", RegisterPayment) // admin locked
+
+	adminProtected := g.Group("/api/v1/admin")
+	adminProtected.Use(authWare.MiddlewareFunc())
+	adminProtected.Use(middleware.APIRestrictionMiddleware(db))
+	mini := adminProtected.Group("/mini")
+	mini.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
+	mini.POST("/create/bucket", MakeBucket)
 	// PROTECTED ROUTES -- END
 
 }
