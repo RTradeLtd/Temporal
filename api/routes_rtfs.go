@@ -105,7 +105,7 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 
 }
 
-func AddFileLocallyNoResponse(c *gin.Context) {
+func AddFileLocallyAdvanced(c *gin.Context) {
 	_, exists := c.GetPostForm("use_private_network")
 	if exists {
 		//TODO need to create another function to add file with no response
