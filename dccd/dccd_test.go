@@ -9,6 +9,18 @@ import (
 
 var testHash = "Qmbu7x6gJbsKDcseQv66pSbUcAA3Au6f7MfTYVXwvBxN2K"
 
+func TestDCCDComplete(t *testing.T) {
+	manager := dccd.NewDCCDManager("https://ipfs.io")
+	resp, err := manager.Shell.Cat(testHash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = resp.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestDCCD(t *testing.T) {
 	manager := dccd.NewDCCDManager("")
 	// Parse gateway array
