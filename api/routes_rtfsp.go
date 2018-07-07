@@ -826,3 +826,92 @@ func GetUploadsByNetworkName(c *gin.Context) {
 		"uploads": uploads,
 	})
 }
+
+// DownloadContentHash is used to download a particular content hash from the network
+//
+func DownloadContentHashForPrivateNetwork(c *gin.Context) {
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailNoExistPostForm(c, "network_name")
+		return
+	}
+
+	var contentType string
+	// fetch the specified content type from the user
+	contentType, exists = c.GetPostForm("content_type")
+	// if not specified, provide a default
+	if !exists {
+		contentType = "application/octet-stream"
+	}
+
+	// get any extra headers the user might want
+	exHeaders := c.PostFormArray("extra_headers")
+
+	ethAddress := GetAuthenticatedUserFromContext(c)
+
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	im := models.NewHostedIPFSNetworkManager(db)
+	apiURL, err := im.GetAPIURLByName(networkName)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// get the content hash that is to be downloaded
+	contentHash := c.Param("hash")
+
+	// initialize our connection to IPFS
+	manager, err := rtfs.Initialize("", apiURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// read the contents of the file
+	reader, err := manager.Shell.Cat(contentHash)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// get the size of hte file in bytes
+	sizeInBytes, err := manager.GetObjectFileSizeInBytes(contentHash)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// parse extra headers if there are any
+	extraHeaders := make(map[string]string)
+	var header string
+	var value string
+	// only process if there is actual data to process
+	// this will always be admin locked
+	if len(exHeaders) > 0 && ethAddress == AdminAddress {
+		// the array must be of equal length, as a header has two parts
+		// the name of the header, and its value
+		// this expects the user to have properly formatted the headers
+		// we will need to restrict the headers that we process so we don't
+		// open ourselves up to being attacked
+		if len(exHeaders)%2 != 0 {
+			FailOnError(c, errors.New("extra_headers post form is not even in length"))
+			return
+		}
+		// parse through the available headers
+		for i := 1; i < len(exHeaders)-1; i += 2 {
+			// retrieve header name
+			header = exHeaders[i-1]
+			// retrieve header value
+			value = exHeaders[i]
+			// store data
+			extraHeaders[header] = value
+		}
+	}
+	// send them the file
+	c.DataFromReader(200, int64(sizeInBytes), contentType, reader, extraHeaders)
+}

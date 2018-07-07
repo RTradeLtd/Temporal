@@ -117,7 +117,9 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	ipfsProtected.GET("/object-stat/:key", GetObjectStatForIpfs)
 	ipfsProtected.GET("/object/size/:key", GetFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
+	ipfsProtected.Use(middleware.DatabaseMiddleware(db))
 	ipfsProtected.POST("/download/:hash", DownloadContentHash)
+
 	// DATABASE-USING ROUTES
 	ipfsProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	ipfsProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))

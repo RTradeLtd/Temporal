@@ -445,10 +445,13 @@ func CheckLocalNodeForPin(c *gin.Context) {
 func DownloadContentHash(c *gin.Context) {
 	_, exists := c.GetPostForm("use_private_network")
 	if exists {
-		//PLACEHOLDER
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "private network support not implemented",
-		})
+		DownloadContentHashForPrivateNetwork(c)
+		return
+	}
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	// Admin locked for now
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
 	var contentType string
@@ -462,12 +465,6 @@ func DownloadContentHash(c *gin.Context) {
 	// get any extra headers the user might want
 	exHeaders := c.PostFormArray("extra_headers")
 
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	// Admin locked for now
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
-		return
-	}
 	// get the content hash that is to be downloaded
 	contentHash := c.Param("hash")
 	// initialize our connection to IPFS
