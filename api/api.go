@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/config"
 	"github.com/semihalev/gin-stats"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
@@ -30,7 +31,12 @@ var AdminAddress = "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9"
 
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
-func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddress, dbUser, awsKey, awsSecret string) *gin.Engine {
+func Setup(cfg *config.TemporalConfig) *gin.Engine {
+	dbPass := cfg.Database.Password
+	dbURL := cfg.Database.URL
+	dbUser := cfg.Database.Username
+	listenAddress := cfg.API.Connection.ListenAddress
+	jwtKey := cfg.API.JwtKey
 	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	if err != nil {
 		fmt.Println("failed to open db connection")
@@ -56,7 +62,7 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 	r.Use(middleware.CORSMiddleware())
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db)
 
-	setupRoutes(r, authMiddleware, db, awsKey, awsSecret, ethKey, ethPass, mqConnectionURL)
+	setupRoutes(r, authMiddleware, db, cfg)
 
 	statsProtected := r.Group("/api/v1/statistics")
 	statsProtected.Use(authMiddleware.MiddlewareFunc())
@@ -75,9 +81,16 @@ func Setup(jwtKey, mqConnectionURL, dbPass, dbURL, ethKey, ethPass, listenAddres
 }
 
 // setupRoutes is used to setup all of our api routes
-func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, awsKey, awsSecret, ethKey, ethPass, mqConnectionURL string) {
-	//r.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	//r.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
+func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg *config.TemporalConfig) {
+
+	mqConnectionURL := cfg.RabbitMQ.URL
+	ethKey := cfg.Ethereum.Account.KeyFile
+	ethPass := cfg.Ethereum.Account.KeyPass
+	awsKey := cfg.AWS.KeyID
+	awsSecret := cfg.AWS.Secret
+	endpoint := fmt.Sprintf("%s:%s", cfg.MINIO.Connection.IP, cfg.MINIO.Connection.Port)
+	minioKey := cfg.MINIO.AccessKey
+	minioSecret := cfg.MINIO.SecretKey
 	// LOGIN
 	g.POST("/api/v1/login", authWare.LoginHandler)
 
@@ -111,6 +124,8 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	ipfsProtected.Use(middleware.DatabaseMiddleware(db))
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
 	ipfsProtected.POST("/add-file", AddFileLocally)
+	ipfsProtected.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
+	ipfsProtected.POST("/add-file/advanced", AddFileLocallyNoResponse)
 
 	//ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
 
@@ -177,6 +192,13 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, aws
 	paymentsAPIProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	paymentsAPIProtected.Use(middleware.DatabaseMiddleware(db))
 	paymentsAPIProtected.POST("/register", RegisterPayment) // admin locked
+
+	adminProtected := g.Group("/api/v1/admin")
+	adminProtected.Use(authWare.MiddlewareFunc())
+	adminProtected.Use(middleware.APIRestrictionMiddleware(db))
+	mini := adminProtected.Group("/mini")
+	mini.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
+	mini.POST("/create/bucket", MakeBucket)
 	// PROTECTED ROUTES -- END
 
 }

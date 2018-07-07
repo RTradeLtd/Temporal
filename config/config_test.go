@@ -1,7 +1,6 @@
 package config_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/config"
@@ -11,6 +10,10 @@ import (
 var configPath = "/home/solidity/config.json"
 
 func TestConfig(t *testing.T) {
-	cfg := config.LoadConfig(configPath)
-	fmt.Printf("%+v\n", cfg.AWS)
+	_, err := config.LoadConfig(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	//fmt.Printf("%+v\n", cfg.AWS)
+	//fmt.Printf("%+v\n", cfg.MINIO)
 }

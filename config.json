@@ -19,7 +19,7 @@
 	"ethereum": { 
 		"account": {
 			"address": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
-			"key_file": "/media/solidity/fuck/Rinkeby/keystore/UTC--2018-05-26T01-50-15.918578523Z--c6c35f43fdd71f86a2d8d4e3ca1ce32564c38bd9",
+			"key_file": "/media/solidity/data/Rinkeby/keystore/UTC--2018-05-26T01-50-15.918578523Z--c6c35f43fdd71f86a2d8d4e3ca1ce32564c38bd9",
 			"key_pass": "password123"
 		},
 		"connection": {
@@ -28,7 +28,7 @@
 				"port": "8545"
 			},
 			"ipc": {
-				"path": "/media/solidity/fuck/Rinkeby/datadir/geth.ipc"
+				"path": "/media/solidity/data/Rinkeby/datadir/geth.ipc"
 			}
 		}
 	},
@@ -38,5 +38,13 @@
 	"aws": {
 		"key_id": "......",
 		"secret": "......."
+	},
+	"minio": {
+		"access_key": "C03T49S17RP0APEZDK6M",
+		"secret_key": "q4I9t2MN/6bAgLkbF6uyS7jtQrXuNARcyrm2vvNA",
+		"connection": {
+			"ip": "127.0.0.1",
+			"port": "9000"
+		}
 	}
 }

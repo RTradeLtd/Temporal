@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 )
 
 // TemporalConfig is a helper struct holding
@@ -49,16 +48,27 @@ type TemporalConfig struct {
 		KeyID  string `json:"key_id"`
 		Secret string `json:"secret"`
 	} `json:"aws"`
+	MINIO struct {
+		AccessKey  string `json:"access_key"`
+		SecretKey  string `json:"secret_key"`
+		Connection struct {
+			IP   string `json:"ip"`
+			Port string `json:"port"`
+		} `json:"connection"`
+	} `json:"minio"`
 }
 
-func LoadConfig(configPath string) *TemporalConfig {
+func LoadConfig(configPath string) (*TemporalConfig, error) {
 	var tCfg TemporalConfig
 	raw, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
 	err = json.Unmarshal(raw, &tCfg)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return &tCfg
+	return &tCfg, nil
 }
 
 /*

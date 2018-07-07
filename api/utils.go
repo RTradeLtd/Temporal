@@ -39,6 +39,12 @@ func FailedToLoadDatabase(c *gin.Context) {
 	})
 }
 
+func FailedToLoadMiddleware(c *gin.Context, middlewareName string) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"error": fmt.Sprintf("failed to load %s middleware", middlewareName),
+	})
+}
+
 func CheckAccessForPrivateNetwork(ethAddress, networkName string, db *gorm.DB) error {
 	um := models.NewUserManager(db)
 	canUpload, err := um.CheckIfUserHasAccessToNetwork(ethAddress, networkName)

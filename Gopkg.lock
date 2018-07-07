@@ -72,6 +72,12 @@
   revision = "dcfb0a7ac018a248366f96bcd8a2f8c805d7b268"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/dustin/go-humanize"
+  packages = ["."]
+  revision = "02af3965c54e8cacf948b97fef38925c4120652c"
+
+[[projects]]
   name = "github.com/dvwright/xss-mw"
   packages = ["."]
   revision = "5b2fd362dcafefa56a87b7a0884a39eaa3c909fc"
@@ -188,6 +194,12 @@
     "render"
   ]
   revision = "85221af84cf6ee99dc900bc41912abc09acfc1b5"
+
+[[projects]]
+  name = "github.com/go-ini/ini"
+  packages = ["."]
+  revision = "06f5f3d67269ccec1fe5fe4134ba6e982984f7f5"
+  version = "v1.37.0"
 
 [[projects]]
   name = "github.com/go-stack/stack"
@@ -669,6 +681,19 @@
   revision = "3f5f724cb5b182a5c278d6d3d55b40e7f8c2efb4"
 
 [[projects]]
+  name = "github.com/minio/minio-go"
+  packages = [
+    ".",
+    "pkg/credentials",
+    "pkg/encrypt",
+    "pkg/s3signer",
+    "pkg/s3utils",
+    "pkg/set"
+  ]
+  revision = "70799fe8dae6ecfb6c7d7e9e048fce27f23a1992"
+  version = "v6.0.5"
+
+[[projects]]
   branch = "master"
   name = "github.com/minio/sha256-simd"
   packages = ["."]
@@ -990,7 +1015,9 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = [
+    "argon2",
     "bcrypt",
+    "blake2b",
     "blake2s",
     "blowfish",
     "internal/subtle",
@@ -1012,6 +1039,8 @@
     "html",
     "html/atom",
     "html/charset",
+    "http/httpguts",
+    "idna",
     "websocket"
   ]
   revision = "afe8f62b1d6bbd81f31868121a50b06d8188e1f9"
@@ -1029,6 +1058,8 @@
 [[projects]]
   name = "golang.org/x/text"
   packages = [
+    "collate",
+    "collate/build",
     "encoding",
     "encoding/charmap",
     "encoding/htmlindex",
@@ -1039,13 +1070,20 @@
     "encoding/simplifiedchinese",
     "encoding/traditionalchinese",
     "encoding/unicode",
+    "internal/colltab",
     "internal/gen",
     "internal/tag",
+    "internal/triegen",
+    "internal/ucd",
     "internal/utf8internal",
     "language",
     "runes",
+    "secure/bidirule",
     "transform",
-    "unicode/cldr"
+    "unicode/bidi",
+    "unicode/cldr",
+    "unicode/norm",
+    "unicode/rangetable"
   ]
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
@@ -1105,6 +1143,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "89439cc2c504d85ba84be44c1ed6111330f64df3fb7031ffbf200523fcefbc60"
+  inputs-digest = "de8da6ab73af3e0f6744b663334bc1a43a68539682cb4211215d35f7b86b3c7a"
   solver-name = "gps-cdcl"
   solver-version = 1
