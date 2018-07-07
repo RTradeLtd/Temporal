@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/mini"
+	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/minio/minio-go"
 
 	"github.com/RTradeLtd/Temporal/queue"
@@ -114,6 +115,12 @@ func AddFileLocallyNoResponse(c *gin.Context) {
 
 	cC := c.Copy()
 
+	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
+	if !exists {
+		FailNoExistPostForm(c, "hold_time")
+		return
+	}
+
 	credentials, ok := cC.MustGet("minio_credentials").(map[string]string)
 	if !ok {
 		FailedToLoadMiddleware(c, "minio credentials")
@@ -129,6 +136,12 @@ func AddFileLocallyNoResponse(c *gin.Context) {
 		FailedToLoadMiddleware(c, "minio endpoint")
 		return
 	}
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailedToLoadMiddleware(c, "rabbitmq")
+		return
+	}
+
 	miniManager, err := mini.NewMinioManager(endpoint, credentials["access_key"], credentials["secret_key"], secure)
 	if err != nil {
 		FailOnError(c, err)
@@ -139,24 +152,45 @@ func AddFileLocallyNoResponse(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	ethAddress := GetAuthenticatedUserFromContext(cC)
-	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
-	if !exists {
-		FailNoExistPostForm(c, "hold_time")
-		return
-	}
-	holdTimeInMonthsInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
 	fmt.Println("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	_, err = miniManager.PutObject("files", "test", openFile, fileHandler.Size, minio.PutObjectOptions{})
+	fmt.Println("file opened")
+	ethAddress := GetAuthenticatedUserFromContext(cC)
+
+	holdTimeInMonthsInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	randUtils := utils.GenerateRandomUtils()
+	randString := randUtils.GenerateString(32, utils.LetterBytes)
+	objectName := fmt.Sprintf("%s%s", ethAddress, randString)
+	fmt.Println("storing file in minio")
+	_, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{})
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("file stored in minio")
+	ifp := queue.IPFSFile{
+		BucketName:       FilesUploadBucket,
+		ObjectName:       objectName,
+		EthAddress:       ethAddress,
+		NetworkName:      "public",
+		HoldTimeInMonths: holdTimeInMonths,
+	}
+	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	err = qm.PublishMessage(ifp)
 	if err != nil {
 		FailOnError(c, err)
 		return

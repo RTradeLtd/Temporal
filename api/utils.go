@@ -10,6 +10,8 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+const FilesUploadBucket = "filesuploadbucket"
+
 func FailNoExist(c *gin.Context, message string) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"error": message,

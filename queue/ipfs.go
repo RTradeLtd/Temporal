@@ -114,18 +114,24 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 	// grab our credentials for minio
 	accessKey := cfg.MINIO.AccessKey
 	secretKey := cfg.MINIO.SecretKey
+	fmt.Println("setting up ipfs connection")
 	// setup our connection to local ipfs node
 	ipfsManager, err := rtfs.Initialize("", "")
 	if err != nil {
 		return err
 	}
+	fmt.Println("ipfs connection setup")
+	fmt.Println("setting up minio connection")
 	// setup our connection to minio
 	minioManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
 		return err
 	}
+	fmt.Println("minio connection setup")
 	// process any received messages
+	fmt.Println("processing ipfs file messages")
 	for d := range msgs {
+		fmt.Println("file received")
 		ipfsFile := IPFSFile{}
 		// unmarshal the messagee
 		err = json.Unmarshal(d.Body, &ipfsFile)
@@ -135,6 +141,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("retrieving file from minio")
 		// get object from minio
 		obj, err := minioManager.GetObject(ipfsFile.BucketName, ipfsFile.ObjectName, minio.GetObjectOptions{})
 		if err != nil {
@@ -143,7 +150,9 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("file retrieved from minio")
 		// add object to IPFs
+		fmt.Println("adding file to ipfs")
 		resp, err := ipfsManager.Shell.Add(obj)
 		if err != nil {
 			//TODO: log and handle
@@ -151,6 +160,8 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("file added to ipfs")
+		fmt.Println("removing object from minio")
 		err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName)
 		if err != nil {
 			//TODO: log and handle
@@ -158,6 +169,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("object removed from minio")
 		upload := models.Upload{}
 		// find a model from the database matching the content hash and network name
 		check := db.Where("hash = ? AND network_name = ?", resp, ipfsFile.NetworkName).First(&upload)
@@ -197,7 +209,9 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 				d.Ack(false)
 				continue
 			}
-
+			fmt.Println("file added to database")
+			d.Ack(false)
+			continue
 		}
 		//TEMPORARY, will need to add logic here for processing of of records already in the database
 		d.Ack(false)

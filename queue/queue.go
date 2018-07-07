@@ -126,6 +126,11 @@ func Initialize(queueName, connectionURL string) (*QueueManager, error) {
 		if err != nil {
 			return nil, err
 		}
+	case FileExchange:
+		err = qm.DeclareIPFSFileExchange()
+		if err != nil {
+			return nil, err
+		}
 	}
 	if err := qm.DeclareQueue(queueName); err != nil {
 		return nil, err

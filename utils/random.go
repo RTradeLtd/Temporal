@@ -10,6 +10,10 @@ collection of random generating functions
 Taken from https://www.calhoun.io/creating-random-strings-in-go/
 */
 
+const (
+	LetterBytes = "abcdefghijklmnopqrstuvwxyz"
+)
+
 // RandomUtils is our helper struct for random related utilities
 type RandomUtils struct {
 	Seed       *rand.Rand
@@ -28,7 +32,8 @@ func generateSeed() *rand.Rand {
 
 // ReSeed is used to reseed our RNG
 func (u *RandomUtils) ReSeed() {
-	u.Seed = rand.New(rand.NewSource(time.Now().UnixNano()))
+	preSeed := u.Seed.Int63()
+	u.Seed = rand.New(rand.NewSource(time.Now().UnixNano() + ((preSeed / 3) % 2)))
 }
 
 // GenerateString is used to generate a fixed length random string
