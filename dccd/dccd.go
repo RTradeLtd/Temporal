@@ -13,6 +13,7 @@ package dccd
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 )
@@ -20,15 +21,17 @@ import (
 type DCCDManager struct {
 	Shell    *ipfsapi.Shell
 	Gateways map[int]string
+	TimeOut  time.Duration
 }
 
 // NewDCCDManager establishes our initial connection to our local IPFS node
-func NewDCCDManager(connectionURL string) *DCCDManager {
+func NewDCCDManager(connectionURL string, timeout time.Duration) *DCCDManager {
 	if connectionURL == "" {
 		// load a default api
 		connectionURL = "localhost:5001"
 	}
-	shell := ipfsapi.NewShell(connectionURL)
+	c := generateClient(timeout)
+	shell := ipfsapi.NewShellWithClient(connectionURL, c)
 	manager := &DCCDManager{Shell: shell}
 	manager.ParseGateways()
 	return manager
@@ -46,7 +49,8 @@ func (dc *DCCDManager) ReconnectShell(connectionURL string) error {
 	if connectionURL == "" {
 		return errors.New("please provide a valid connection url")
 	}
-	shell := ipfsapi.NewShell(connectionURL)
+	c := generateClient(dc.TimeOut)
+	shell := ipfsapi.NewShellWithClient(connectionURL, c)
 	dc.Shell = shell
 	return nil
 }
@@ -55,6 +59,7 @@ func (dc *DCCDManager) DisperseContentWithShell(contentHash string) (map[string]
 	m := make(map[string]bool)
 	for _, v := range GateArrays {
 		err := dc.ReconnectShell(v)
+
 		r, err := dc.Shell.CatGet(contentHash)
 		if err != nil {
 			m[v] = false

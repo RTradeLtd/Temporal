@@ -1,5 +1,10 @@
 package dccd
 
+import (
+	"net/http"
+	"time"
+)
+
 const (
 	g1          = "https://ipfs.io"
 	g2          = "https://gateway.ipfs.io"
@@ -23,3 +28,13 @@ const (
 )
 
 var GateArrays = []string{g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13, g14, g15, g16, g17, g18}
+
+func generateClient(timeout time.Duration) *http.Client {
+	return &http.Client{
+		Transport: &http.Transport{
+			Proxy:             http.ProxyFromEnvironment,
+			DisableKeepAlives: true,
+		},
+		Timeout: timeout,
+	}
+}
