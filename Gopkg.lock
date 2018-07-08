@@ -180,6 +180,15 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/gin-contrib/sessions"
+  packages = [
+    ".",
+    "cookie"
+  ]
+  revision = "da25b7bed527d57b81599b0864e0f1a7241ea913"
+
+[[projects]]
+  branch = "master"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
@@ -230,6 +239,24 @@
   name = "github.com/golang/snappy"
   packages = ["."]
   revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
+
+[[projects]]
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
+  version = "v1.1.1"
+
+[[projects]]
+  name = "github.com/gorilla/securecookie"
+  packages = ["."]
+  revision = "e59506cc896acb7f7bf732d4fdf5e25f7ccd8983"
+  version = "v1.1.1"
+
+[[projects]]
+  name = "github.com/gorilla/sessions"
+  packages = ["."]
+  revision = "03b6f63cc43ef9c7240a635a5e22b13180e822b8"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/gorilla/websocket"
@@ -1143,6 +1170,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "056b66dc3e9eb4a18930152108245087560a7fbdc4a28ca985677ed3f294d33b"
+  inputs-digest = "f951445ded63720e6cbe4f7a35cf5b5d7aa5782cc2dc8df93339bbf6c4324d71"
   solver-name = "gps-cdcl"
   solver-version = 1
