@@ -13,6 +13,10 @@
 			},
 			"listen_address": "127.0.0.1"
 		},
+		"sessions": {
+			"auth_key": "this is a test",
+			"encryption_key": "this is a test 1"
+		},
 		"rollbar_token": "....",
 		"jwt_key": "....."
 	},

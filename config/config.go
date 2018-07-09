@@ -22,6 +22,10 @@ type TemporalConfig struct {
 			}
 			ListenAddress string `json:"listen_address"`
 		} `json:"connection"`
+		Sessions struct {
+			AuthKey       string `json:"auth_key"`
+			EncryptionKey string `json:"encryption_key"`
+		} `json:"sessions"`
 		RollbarToken string `json:"rollbar_token"`
 		JwtKey       string `json:"jwt_key"`
 	} `json:"api"`
