@@ -47,6 +47,7 @@ func Setup(cfg *config.TemporalConfig) *gin.Engine {
 	r := gin.Default()
 	r.Use(stats.RequestStats())
 	r.Use(xssMdlwr.RemoveXss())
+	r.Use(middleware.SessionMiddleware())
 	r.Use(limit.MaxAllowed(20)) // limit to 20 con-current connections
 	// create gin middleware instance for prom
 	p := ginprometheus.NewPrometheus("gin")

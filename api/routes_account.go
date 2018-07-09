@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/hex"
 	"errors"
 	"net/http"
 	"strconv"
@@ -8,14 +9,40 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/Temporal/utils"
 	jwt "github.com/appleboy/gin-jwt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	peer "github.com/libp2p/go-libp2p-peer"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var nilTime time.Time
+
+func UpdateLoginSession(c *gin.Context) {
+	session := sessions.Default(c)
+	var login jwt.Login
+	err := c.BindJSON(&login)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	encryptedPass, err := bcrypt.GenerateFromPassword([]byte(login.Password), bcrypt.DefaultCost)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	hashedEncryptedPassword := utils.GenerateKeccak256HashFromString(string(encryptedPass))
+	session.Set("eth_address", login.Username)
+	session.Set("hashed_pass", hex.EncodeToString(hashedEncryptedPassword[:]))
+	err = session.Save()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+}
 
 func ChangeAccountPassword(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
