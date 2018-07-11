@@ -2,6 +2,7 @@ package payment_server
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -23,11 +24,12 @@ import (
 )
 
 type PaymentManager struct {
-	Contract *payments.Payments
-	Client   *ethclient.Client
-	EthRPC   *ethrpc.EthRPC
-	Auth     *bind.TransactOpts
-	DB       *gorm.DB
+	Contract   *payments.Payments
+	Client     *ethclient.Client
+	EthRPC     *ethrpc.EthRPC
+	Auth       *bind.TransactOpts
+	PrivateKey *ecdsa.PrivateKey
+	DB         *gorm.DB
 }
 
 func GenerateSignedPaymentMessage(ethAddress common.Address, paymentMethod uint8, paymentNumber, chargeAmountInWei *big.Int) []byte {
@@ -40,16 +42,15 @@ func GenerateSignedPaymentMessage(ethAddress common.Address, paymentMethod uint8
 	)
 }
 
-func GenerateKeccak256HashFromString(data string) [32]byte {
-	// this will hold the hashed data
-	var b [32]byte
-	// convert data into byte
-	dataByte := []byte(data)
-	// generate hash of the data
-	hashedDataByte := crypto.Keccak256(dataByte)
-	hash := common.BytesToHash(hashedDataByte)
-	copy(b[:], hash.Bytes()[:32])
-	return b
+func (pm *PaymentManager) GenerateSignedPaymentMessage(ethAddress common.Address, paymentMethod uint8, paymentNumber, chargeAmountInWei *big.Int) []byte {
+	//  return keccak256(abi.encodePacked(msg.sender, _paymentNumber, _paymentMethod, _chargeAmountInWei));
+	hashToSign := SoliditySHA3(
+		Address(ethAddress),
+		Uint256(paymentNumber),
+		Uint8(paymentMethod),
+		Uint256(chargeAmountInWei),
+	)
+	return hashToSign
 }
 
 func NewPaymentManager(useIPC bool, ethKey, ethPass string, db *gorm.DB) (*PaymentManager, error) {
