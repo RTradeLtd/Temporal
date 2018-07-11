@@ -21,11 +21,9 @@ func TestSign(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b := make([]byte, 32)
-	b[0] = 1
-	b[1] = 2
+	hash := crypto.Keccak256([]byte("hello"))
 	// sig [r,s,v]
-	sig, err := crypto.Sign(b, k.PrivateKey)
+	sig, err := crypto.Sign(hash, k.PrivateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +33,10 @@ func TestSign(t *testing.T) {
 	s := sig[32:64]
 	fmt.Println(len(s))
 	v := sig[64]
-	fmt.Println(v, r, s)
+	fmt.Printf("0x%s\n", hex.EncodeToString(hash))
+	fmt.Println(v)
+	fmt.Printf("0x%s\n", hex.EncodeToString(r))
+	fmt.Printf("0x%s\n", hex.EncodeToString(s))
 }
 func TestHash(t *testing.T) {
 	hash := payment.GenerateSignedPaymentMessage(common.HexToAddress("0xa1d9e8788414eA9827f9639c4bd81bA8f3A29758"), uint8(0), big.NewInt(0), big.NewInt(0))
