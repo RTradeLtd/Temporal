@@ -1,7 +1,6 @@
 package payment_server_test
 
 import (
-	"encoding/hex"
 	"fmt"
 	"math/big"
 	"testing"
@@ -16,5 +15,5 @@ func TestGenerateSignedPaymentMessage(t *testing.T) {
 	number := big.NewInt(0)
 	amount := big.NewInt(0)
 	hash := payment.GenerateSignedPaymentMessage(address, method, number, amount)
-	fmt.Println(hex.EncodeToString(hash))
+	fmt.Println(hash.String())
 }
