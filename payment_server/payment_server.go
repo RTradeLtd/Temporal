@@ -30,6 +30,33 @@ type PaymentManager struct {
 	DB       *gorm.DB
 }
 
+// https://ethereum.stackexchange.com/questions/28000/python-keccak256-hash-of-uint8-array-not-matching-solidity-hash
+func GenerateSignedPaymentMessage(ethAddress common.Address, paymentMethod uint8, paymentNumber, chargeAmountInWei *big.Int) []byte {
+	//keccak256(abi.encodePacked(msg.sender, _paymentNumber, _paymentMethod, _chargeAmountInWei))
+
+	addressBytes := ethAddress.Bytes()
+	// we need to cast to []byte in order to generate a keccak hash
+	methodBytes := make([]byte, 1)
+	methodBytes[0] = byte(paymentMethod)
+	numberBytes := paymentNumber.Bytes()
+	amountBytes := chargeAmountInWei.Bytes()
+	// generate the hash
+	hash := crypto.Keccak256(addressBytes, numberBytes, methodBytes, amountBytes)
+	return hash
+}
+
+func GenerateKeccak256HashFromString(data string) [32]byte {
+	// this will hold the hashed data
+	var b [32]byte
+	// convert data into byte
+	dataByte := []byte(data)
+	// generate hash of the data
+	hashedDataByte := crypto.Keccak256(dataByte)
+	hash := common.BytesToHash(hashedDataByte)
+	copy(b[:], hash.Bytes()[:32])
+	return b
+}
+
 func NewPaymentManager(useIPC bool, ethKey, ethPass string, db *gorm.DB) (*PaymentManager, error) {
 	var pm PaymentManager
 	var client *ethclient.Client
