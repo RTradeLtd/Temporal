@@ -24,6 +24,7 @@ function login()
 			//login was successful
 			var data = JSON.parse(this.response);
 			console.log(data);
+			window.sessionStorage.token = data.token;
 			$("#modalSuccess").modal()
         }
         else
