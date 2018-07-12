@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"math/big"
 
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
@@ -15,9 +14,6 @@ var IpfsQueue = "ipfs"
 var IpfsClusterQueue = "ipfs-cluster"
 var DatabaseFileAddQueue = "dfa-queue"
 var DatabasePinAddQueue = "dpa-queue"
-var PaymentRegisterQueue = "payment-register-queue"
-var PaymentReceivedQueue = "payment-received-queue"
-var PinPaymentRequestQueue = "pin-payment-request-queue"
 var IpnsUpdateQueue = "ipns-update-queue"
 var IpfsPinQueue = "ipfs-pin-queue"
 var IpfsFileQueue = "ipfs-file-queue"
@@ -58,33 +54,6 @@ type DatabasePinAdd struct {
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 	UploaderAddress  string `json:"uploader_address"`
 	NetworkName      string `json:"network_name"`
-}
-
-// PaymentRegister is a struct used when a payment has been regsitered and needs
-// to be added to the database
-type PaymentRegister struct {
-	UploaderAddress string `json:"uploader_address"`
-	CID             string `json:"cid"`
-	HashedCID       string `json:"hash_cid"`
-	PaymentID       string `json:"payment_id"`
-}
-
-// PinPaymentRequest is used by the frontend to submit a payment request
-// to allow our authenticated backend to register a payment
-type PinPaymentRequest struct {
-	UploaderAddress   string   `json:"uploader_address"`
-	CID               string   `json:"cid"`
-	HoldTimeInMonths  int64    `json:"hold_time_in_months"`
-	Method            uint8    `json:"method"`
-	ChargeAmountInWei *big.Int `json:"charge_amount_in_wei"`
-}
-
-// PaymentReceived is used when we need to mark that
-// a payment has been received, and we will upload
-// the content
-type PaymentReceived struct {
-	UploaderAddress string `json:"uploader_address"`
-	PaymentID       string `json:"payment_id"`
 }
 
 // IpfsClusterPin is used to handle pinning items to the cluster
@@ -209,12 +178,6 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		// only parse datbase file requests
 		case DatabaseFileAddQueue:
 			ProcessDatabaseFileAdds(msgs, db)
-		case PaymentRegisterQueue:
-			ProcessPaymentRegisterQueue(msgs, db)
-		case PaymentReceivedQueue:
-			ProcessPaymentReceivedQueue(msgs, db)
-		case PinPaymentRequestQueue:
-			ProcessPinPaymentRequestQueue(msgs, db, ethKeyFile, ethKeyPass)
 		case IpfsClusterQueue:
 			ProcessIpfsClusterQueue(msgs, db)
 		case IpfsPinQueue:

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/RTradeLtd/Temporal/payment_server/signer"
 	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/Temporal/signer"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
@@ -94,7 +94,7 @@ func CreatePinPayment(c *gin.Context) {
 	number := big.NewInt(0)
 	addressTyped := common.HexToAddress(ethAddress)
 
-	sm, err := ps.GenerateSignedPaymentMessage(addressTyped, uint8(methodUint), number, costBig)
+	sm, err := ps.GenerateSignedPaymentMessagePrefixed(addressTyped, uint8(methodUint), number, costBig)
 	if err != nil {
 		FailOnError(c, err)
 		return
