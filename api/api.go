@@ -187,14 +187,6 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	frontendProtected.Use(middleware.DatabaseMiddleware(db))
 	frontendProtected.POST("/confirm/:paymentID", ConfirmPayment)
 
-	paymentsAPIProtected := g.Group("/api/v1/payments-api")
-	paymentsAPIProtected.Use(authWare.MiddlewareFunc())
-	paymentsAPIProtected.Use(middleware.APIRestrictionMiddleware(db))
-	paymentsAPIProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	paymentsAPIProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
-	paymentsAPIProtected.Use(middleware.DatabaseMiddleware(db))
-	paymentsAPIProtected.POST("/register", RegisterPayment) // admin locked
-
 	adminProtected := g.Group("/api/v1/admin")
 	adminProtected.Use(authWare.MiddlewareFunc())
 	adminProtected.Use(middleware.APIRestrictionMiddleware(db))

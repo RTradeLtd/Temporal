@@ -33,10 +33,10 @@ func TestSign(t *testing.T) {
 	s := sig[32:64]
 	fmt.Println(len(s))
 	v := sig[64]
-	fmt.Printf("0x%s\n", hex.EncodeToString(hash))
-	fmt.Println(v)
-	fmt.Printf("0x%s\n", hex.EncodeToString(r))
-	fmt.Printf("0x%s\n", hex.EncodeToString(s))
+	fmt.Printf("_h: 0x%s\n", hex.EncodeToString(hash))
+	fmt.Println("_v:", v)
+	fmt.Printf("_r: 0x%s\n", hex.EncodeToString(r))
+	fmt.Printf("_s: 0x%s\n", hex.EncodeToString(s))
 }
 func TestHash(t *testing.T) {
 	hash := payment.GenerateSignedPaymentMessage(common.HexToAddress("0xa1d9e8788414eA9827f9639c4bd81bA8f3A29758"), uint8(0), big.NewInt(0), big.NewInt(0))
