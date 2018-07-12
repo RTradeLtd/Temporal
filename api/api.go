@@ -180,12 +180,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	frontendProtected.Use(authWare.MiddlewareFunc())
 	frontendProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	frontendProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
-	// DATABASE-LESS routes
-	frontendProtected.POST("/registration/request", SubmitPinPaymentRequest)
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", CalculatePinCost)
-	// DATABASE USING routes
-	frontendProtected.Use(middleware.DatabaseMiddleware(db))
-	frontendProtected.POST("/confirm/:paymentID", ConfirmPayment)
 
 	adminProtected := g.Group("/api/v1/admin")
 	adminProtected.Use(authWare.MiddlewareFunc())
