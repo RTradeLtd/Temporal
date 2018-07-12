@@ -2,6 +2,7 @@ package payment_server
 
 import (
 	"crypto/ecdsa"
+	"encoding/hex"
 	"io/ioutil"
 	"math/big"
 	"strings"
@@ -26,9 +27,9 @@ type PaymentManager struct {
 }
 
 type SignedMessage struct {
-	H []byte `json:"h"`
-	R []byte `json:"r"`
-	S []byte `json:"s"`
+	H string `json:"h"`
+	R string `json:"r"`
+	S string `json:"s"`
 	V uint8  `json:"v"`
 }
 
@@ -55,10 +56,10 @@ func (pm *PaymentManager) GenerateSignedPaymentMessage(ethAddress common.Address
 		return nil, err
 	}
 	msg := &SignedMessage{
-		H: hashToSign,
-		R: sig[0:32],
-		S: sig[32:64],
-		V: uint8(sig[64]) + 1,
+		H: hex.EncodeToString(hashToSign),
+		R: hex.EncodeToString(sig[0:32]),
+		S: hex.EncodeToString(sig[32:64]),
+		V: uint8(sig[64]) + 27,
 	}
 	return msg, nil
 }
