@@ -155,3 +155,17 @@ Should you wish to consider donations, or private investment email admin@rtradet
 * https://steemit.com/blockchain/@rtrade/temporal-development-update-optimizations-community-outreach-and-more-july-6th-2018
 * https://steemit.com/cryptocurrency/@rtrade/temporal-developer-update-saturday-june-30th-2018
 * https://steemit.com/cryptocurrency/@rtrade/temporal-a-distributed-platform-and-storage-infrastructure-service
+
+
+# Thanks
+
+Without open source, TEMPORAL wouldn't be possible, as such we would like to extend our thanks to all of the open source projects for which TEMPORAL depends on. If you notice any are missing from the list below please open an issue and we will add it to the list:
+
+* https://github.com/ipfs
+* https://github.com/miguelmota/go-solidity-sha3
+* https://github.com/libp2p
+* https://github.com/ethereum/
+* https://github.com/jinzhu/gorm
+* https://github.com/gin-gonic/gin
+* https://github.com/minio/minio
+* https://github.com/streadway/amqp
