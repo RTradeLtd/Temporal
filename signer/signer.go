@@ -22,10 +22,14 @@ type PaymentSigner struct {
 }
 
 type SignedMessage struct {
-	H [32]byte `json:"h"`
-	R [32]byte `json:"r"`
-	S [32]byte `json:"s"`
-	V uint8    `json:"v"`
+	H             [32]byte       `json:"h"`
+	R             [32]byte       `json:"r"`
+	S             [32]byte       `json:"s"`
+	V             uint8          `json:"v"`
+	Address       common.Address `json:"address"`
+	PaymentMethod uint8          `json:"payment_method"`
+	PaymentNumber *big.Int       `json:"payment_number"`
+	ChargeAmount  *big.Int       `json:"charge_amount"`
 }
 
 // GeneratePaymentSigner is used to generate our helper struct for signing payments
