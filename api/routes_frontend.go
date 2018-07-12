@@ -37,3 +37,29 @@ func CalculatePinCost(c *gin.Context) {
 		"total_cost_usd": totalCost,
 	})
 }
+
+func CreatePinPayment(c *gin.Context) {
+	contentHash := c.Param("hash")
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	holdTime, exists := c.GetPostForm("hold_time")
+	if !exists {
+		FailNoExistPostForm(c, "hold_time")
+		return
+	}
+	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 640)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	totalCost, err := utils.CalculatePinCost(contentHash, holdTimeInt, manager.Shell)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+}

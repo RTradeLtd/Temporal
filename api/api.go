@@ -181,6 +181,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	frontendProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	frontendProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", CalculatePinCost)
+	frontendProtected.POST("/payment/pin/create/:hash")
 
 	adminProtected := g.Group("/api/v1/admin")
 	adminProtected.Use(authWare.MiddlewareFunc())
