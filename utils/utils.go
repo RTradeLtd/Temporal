@@ -61,6 +61,14 @@ func CalculatePinCost(contentHash string, holdTimeInMonths int64, shell *ipfsapi
 	return totalCostFloat, nil
 }
 
+func CalculateFileCost(holdTimeInMonths, size int64) float64 {
+	gigabytesFloat := float64(datasize.GB.Bytes())
+	sizeFloat := float64(size)
+	sizeGigabytesFloat := sizeFloat / gigabytesFloat
+	totalCostUSDFloat := sizeGigabytesFloat * float64(holdTimeInMonths)
+	return totalCostUSDFloat
+}
+
 // FloatToBigInt used to convert a float to big int
 func FloatToBigInt(val float64) *big.Int {
 	bigval := new(big.Float)
