@@ -122,7 +122,6 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 
 	// DATABASE-USING ROUTES
 	ipfsProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	ipfsProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	ipfsProtected.Use(middleware.DatabaseMiddleware(db))
 	ipfsProtected.POST("/pin/:hash", PinHashLocally)
 	ipfsProtected.POST("/add-file", AddFileLocally)
@@ -181,7 +180,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	frontendProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	frontendProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", CalculatePinCost)
-	frontendProtected.POST("/payment/pin/create/:hash")
+	frontendProtected.POST("/payment/pin/create/:hash", CreatePinPayment)
 
 	adminProtected := g.Group("/api/v1/admin")
 	adminProtected.Use(authWare.MiddlewareFunc())

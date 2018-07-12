@@ -34,21 +34,21 @@ type SignedMessage struct {
 
 func GenerateSignedPaymentMessage(ethAddress common.Address, paymentMethod uint8, paymentNumber, chargeAmountInWei *big.Int) []byte {
 	//  return keccak256(abi.encodePacked(msg.sender, _paymentNumber, _paymentMethod, _chargeAmountInWei));
-	return SoliditySHA3(
-		Address(ethAddress),
-		Uint256(paymentNumber),
-		Uint8(paymentMethod),
-		Uint256(chargeAmountInWei),
+	return utils.SoliditySHA3(
+		utils.Address(ethAddress),
+		utils.Uint256(paymentNumber),
+		utils.Uint8(paymentMethod),
+		utils.Uint256(chargeAmountInWei),
 	)
 }
 
 func (pm *PaymentManager) GenerateSignedPaymentMessage(ethAddress common.Address, paymentMethod uint8, paymentNumber, chargeAmountInWei *big.Int) (*SignedMessage, error) {
 	//  return keccak256(abi.encodePacked(msg.sender, _paymentNumber, _paymentMethod, _chargeAmountInWei));
-	hashToSign := SoliditySHA3(
-		Address(ethAddress),
-		Uint256(paymentNumber),
-		Uint8(paymentMethod),
-		Uint256(chargeAmountInWei),
+	hashToSign := utils.SoliditySHA3(
+		utils.Address(ethAddress),
+		utils.Uint256(paymentNumber),
+		utils.Uint8(paymentMethod),
+		utils.Uint256(chargeAmountInWei),
 	)
 	sig, err := crypto.Sign(hashToSign, pm.PrivateKey)
 	if err != nil {
