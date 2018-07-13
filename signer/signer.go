@@ -79,11 +79,16 @@ func (ps *PaymentSigner) GenerateSignedPaymentMessagePrefixed(ethAddress common.
 	}
 
 	msg := &SignedMessage{
-		H: h,
-		R: r,
-		S: s,
-		V: uint8(sig[64]) + 27,
+		H:             h,
+		R:             r,
+		S:             s,
+		V:             uint8(sig[64]) + 27,
+		Address:       ethAddress,
+		PaymentMethod: paymentMethod,
+		PaymentNumber: paymentNumber,
+		ChargeAmount:  chargeAmountInWei,
 	}
+
 	// Here we do an off-chain validation to ensure that when validated on-chain the transaction won't rever
 	// however for some reason, the data isn't validating on-chain
 	pub := ps.Key.PublicKey

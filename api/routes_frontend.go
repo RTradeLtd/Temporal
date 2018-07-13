@@ -126,10 +126,14 @@ func CreatePinPayment(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"h": sm.H,
-		"v": sm.V,
-		"r": sm.R,
-		"s": sm.S,
+		"h":                    sm.H,
+		"v":                    sm.V,
+		"r":                    sm.R,
+		"s":                    sm.S,
+		"eth_address":          sm.Address,
+		"charge_amount_in_wei": sm.ChargeAmount,
+		"payment_method":       sm.PaymentMethod,
+		"payment_number":       sm.PaymentNumber,
 	})
 }
 
