@@ -296,6 +296,7 @@ func CreateFilePayment(c *gin.Context) {
 
 func SubmitPinPaymentConfirmation(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
+	contentHash := c.Param("hash")
 	paymentNumber, exists := c.GetPostForm("payment_number")
 	if !exists {
 		FailNoExistPostForm(c, "payment_number")
@@ -315,6 +316,10 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 	pp, err := ppm.FindPaymentByNumberAndAddress(paymentNumber, ethAddress)
 	if err != nil {
 		FailOnError(c, err)
+		return
+	}
+	if pp.ContentHash != contentHash {
+		FailOnError(c, errors.New("given content hash does not match what is in databse for payment number"))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"payment": pp})
