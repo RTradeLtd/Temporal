@@ -186,6 +186,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	frontendProtected.POST("/payment/pin/create/:hash", CreatePinPayment)
 	frontendProtected.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
 	frontendProtected.POST("/payment/file/create", CreateFilePayment)
+	frontendProtected.POST("/payment/file/confirm")
 
 	adminProtected := g.Group("/api/v1/admin")
 	adminProtected.Use(authWare.MiddlewareFunc())
