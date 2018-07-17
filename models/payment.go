@@ -9,11 +9,11 @@ import (
 
 type PinPayment struct {
 	gorm.Model
-	Method          uint8
-	Number          string
-	ChargeAmount    string
-	UploaderAddress string
-	ContentHash     string
+	Method       uint8
+	Number       string
+	ChargeAmount string
+	EthAddress   string
+	ContentHash  string
 }
 
 type PinPaymentManager struct {
@@ -26,11 +26,11 @@ func NewPinPaymentManager(db *gorm.DB) *PinPaymentManager {
 
 func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, contentHash string) (*PinPayment, error) {
 	pp := &PinPayment{
-		Number:          number.String(),
-		Method:          method,
-		ChargeAmount:    chargeAmount.String(),
-		UploaderAddress: uploaderAddress,
-		ContentHash:     contentHash,
+		Number:       number.String(),
+		Method:       method,
+		ChargeAmount: chargeAmount.String(),
+		EthAddress:   uploaderAddress,
+		ContentHash:  contentHash,
 	}
 	if check := ppm.DB.Create(pp); check.Error != nil {
 		return nil, check.Error
@@ -38,10 +38,10 @@ func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big
 	return pp, nil
 }
 
-func (ppm *PinPaymentManager) RetrieveLatestPaymentNumber() (*big.Int, error) {
+func (ppm *PinPaymentManager) RetrieveLatestPaymentNumber(ethAddress string) (*big.Int, error) {
 	pp := &PinPayment{}
 	num := big.NewInt(0)
-	check := ppm.DB.Table("pin_payments").Order("number desc").First(pp)
+	check := ppm.DB.Table("pin_payments").Order("number desc").Where("eth_address = ?", ethAddress).First(pp)
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}

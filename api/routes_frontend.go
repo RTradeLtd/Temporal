@@ -124,19 +124,20 @@ func CreatePinPayment(c *gin.Context) {
 	}
 	ppm := models.NewPinPaymentManager(db)
 	var num *big.Int
-	num, err = ppm.RetrieveLatestPaymentNumber()
+	num, err = ppm.RetrieveLatestPaymentNumber(ethAddress)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		FailOnError(c, err)
 		return
 	}
 	if num == nil {
 		num = big.NewInt(0)
-	}
-	// this means that the latest payment number is greater than 0
-	// indicating a payment has already been made, in which case
-	// we will increment the value by 1
-	if num.Cmp(big.NewInt(0)) == 1 {
+
+	} else if num.Cmp(big.NewInt(0)) == 1 {
+		// this means that the latest payment number is greater than 0
+		// indicating a payment has already been made, in which case
+		// we will increment the value by 1
 		num = new(big.Int).Add(num, big.NewInt(1))
+
 	}
 	costBig := utils.FloatToBigInt(totalCost)
 	// for testing purpose
