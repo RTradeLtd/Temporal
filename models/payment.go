@@ -55,3 +55,54 @@ func (ppm *PinPaymentManager) RetrieveLatestPaymentNumber(ethAddress string) (*b
 	}
 	return num, nil
 }
+
+type FilePayment struct {
+	gorm.Model
+	Method       uint8
+	Number       string
+	ChargeAmount string
+	EthAddress   string
+	BucketName   string
+	ObjectName   string
+}
+
+type FilePaymentManager struct {
+	DB *gorm.DB
+}
+
+func NewFilePaymentManager(db *gorm.DB) *FilePaymentManager {
+	return &FilePaymentManager{DB: db}
+}
+
+func (fpm *FilePaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, bucketName, objectName string) (*FilePayment, error) {
+	fp := &FilePayment{
+		Number:       number.String(),
+		Method:       method,
+		ChargeAmount: chargeAmount.String(),
+		EthAddress:   uploaderAddress,
+		BucketName:   bucketName,
+		ObjectName:   objectName,
+	}
+	if check := fpm.DB.Create(fp); check.Error != nil {
+		return nil, check.Error
+	}
+	return fp, nil
+}
+
+func (fpm *FilePaymentManager) RetrieveLatestPaymentNumber(ethAddress string) (*big.Int, error) {
+	fp := &FilePayment{}
+	num := big.NewInt(0)
+	check := fpm.DB.Table("file_payments").Order("number desc").Where("eth_address = ?", ethAddress).First(fp)
+	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+		return nil, check.Error
+	}
+	if check.Error == gorm.ErrRecordNotFound {
+		return num, nil
+	}
+	var valid bool
+	num, valid = num.SetString(fp.Number, 10)
+	if !valid {
+		return nil, errors.New("failed to convert from string to big int")
+	}
+	return num, nil
+}
