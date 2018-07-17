@@ -24,6 +24,14 @@ func NewPinPaymentManager(db *gorm.DB) *PinPaymentManager {
 	return &PinPaymentManager{DB: db}
 }
 
+func (ppm *PinPaymentManager) FindPaymentByNumberAndAddress(number, ethAddress string) (*PinPayment, error) {
+	pp := &PinPayment{}
+	if check := ppm.DB.Where("eth_address = ? AND number = ?", ethAddress, number).First(pp); check.Error != nil {
+		return nil, check.Error
+	}
+	return pp, nil
+}
+
 func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, contentHash string) (*PinPayment, error) {
 	pp := &PinPayment{
 		Number:       number.String(),

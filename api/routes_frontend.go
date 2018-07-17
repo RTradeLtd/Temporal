@@ -293,3 +293,29 @@ func CreateFilePayment(c *gin.Context) {
 		"payment_number":       sm.PaymentNumber,
 	})
 }
+
+func SubmitPinPaymentConfirmation(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	paymentNumber, exists := c.GetPostForm("payment_number")
+	if !exists {
+		FailNoExistPostForm(c, "payment_number")
+		return
+	} /*
+		txHash, exists := c.GetPostForm("tx_hash")
+		if !exists {
+			FailNoExistPostForm(c, "tx_hash")
+			return
+		}*/
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
+	ppm := models.NewPinPaymentManager(db)
+	pp, err := ppm.FindPaymentByNumberAndAddress(paymentNumber, ethAddress)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"payment": pp})
+}

@@ -182,6 +182,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", CalculatePinCost)
 	frontendProtected.POST("/cost/calculate/file", CalculateFileCost)
 	frontendProtected.Use(middleware.DatabaseMiddleware(db))
+	frontendProtected.POST("/payment/pin/confirm", SubmitPinPaymentConfirmation)
 	frontendProtected.POST("/payment/pin/create/:hash", CreatePinPayment)
 	frontendProtected.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
 	frontendProtected.POST("/payment/file/create", CreateFilePayment)
