@@ -39,12 +39,16 @@
     <div class="container" id="home-page-div">
             <h1>File Upload</h1>
             <! -- This is how users can register with our website -->
-            <form id="content-pin">
+            <form id="content-upload">
                 <div class="form-group">
                     <label for="fileUpload">Select File</label>
                     <input type="file" class="form-control-file" id="fileUpload">
                     <small id="fileUpload" class="form-text text-muted">This is the file you want to upload</small>
-                    <button type="submit" form="pin" class="btn btn-primary" onclick="pin()">Upload!</button>
+					<br>
+					<label for="holdTime">Hold Time (Months)</label>
+                    <input type="text" class="form-control" id="holdTime" aria-describedby="contentHash" placeholder="Enter Hold Time in Months">
+					<br>
+                    <button type="submit" form="pin" class="btn btn-primary" onclick="upload()">Upload!</button>
                 </div>
             </form>
         </div>
@@ -54,12 +58,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
     <script type="text/javascript" src="main.js"></script>
-    <script>
-    function pin() {
-        var x = document.getElementById("content-pin")
-        var hash = x[0].value;
-        alert(hash);
-    }
-    </script>
+	<script type="text/javascript" src="js/upload.js"></script>
 </body>
 </html>
