@@ -9,7 +9,6 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/models"
-	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/signer"
 	"github.com/RTradeLtd/Temporal/utils"
@@ -137,7 +136,6 @@ func CreatePinPayment(c *gin.Context) {
 		// indicating a payment has already been made, in which case
 		// we will increment the value by 1
 		num = new(big.Int).Add(num, big.NewInt(1))
-
 	}
 	costBig := utils.FloatToBigInt(totalCost)
 	// for testing purpose
@@ -175,6 +173,21 @@ func CreateFilePayment(c *gin.Context) {
 		return
 	}
 
+	method, exists := c.GetPostForm("payment_method")
+	if !exists {
+		FailNoExistPostForm(c, "payment_method")
+		return
+	}
+	methodUint, err := strconv.ParseUint(method, 10, 8)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	if methodUint > 1 {
+		FailOnError(c, errors.New("payment_method must be 1 or 0"))
+		return
+	}
+
 	credentials, ok := cC.MustGet("minio_credentials").(map[string]string)
 	if !ok {
 		FailedToLoadMiddleware(c, "minio credentials")
@@ -190,12 +203,21 @@ func CreateFilePayment(c *gin.Context) {
 		FailedToLoadMiddleware(c, "minio endpoint")
 		return
 	}
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
-		FailedToLoadMiddleware(c, "rabbitmq")
+		FailedToLoadDatabase(c)
 		return
 	}
-
+	keyMap, ok := c.MustGet("eth_account").(map[string]string)
+	if !ok {
+		FailedToLoadMiddleware(c, "eth account")
+		return
+	}
+	ps, err := signer.GeneratePaymentSigner(keyMap["keyFile"], keyMap["keyPass"])
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	miniManager, err := mini.NewMinioManager(endpoint, credentials["access_key"], credentials["secret_key"], secure)
 	if err != nil {
 		FailOnError(c, err)
@@ -220,7 +242,8 @@ func CreateFilePayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-
+	cost := utils.CalculateFileCost(holdTimeInMonthsInt, fileHandler.Size)
+	costBig := utils.FloatToBigInt(cost)
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", ethAddress, randString)
@@ -231,26 +254,42 @@ func CreateFilePayment(c *gin.Context) {
 		return
 	}
 	fmt.Println("file stored in minio")
-	ifp := queue.IPFSFile{
-		BucketName:       FilesUploadBucket,
-		ObjectName:       objectName,
-		EthAddress:       ethAddress,
-		NetworkName:      "public",
-		HoldTimeInMonths: holdTimeInMonths,
-	}
-	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL)
+
+	fpm := models.NewFilePaymentManager(db)
+	var num *big.Int
+	num, err = fpm.RetrieveLatestPaymentNumber(ethAddress)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
+	if num == nil {
+		num = big.NewInt(0)
 
-	err = qm.PublishMessage(ifp)
+	} else if num.Cmp(big.NewInt(0)) == 1 {
+		// this means that the latest payment number is greater than 0
+		// indicating a payment has already been made, in which case
+		// we will increment the value by 1
+		num = new(big.Int).Add(num, big.NewInt(1))
+	}
+	addressTyped := common.HexToAddress(ethAddress)
+	sm, err := ps.GenerateSignedPaymentMessagePrefixed(addressTyped, uint8(methodUint), num, costBig)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	_, err = fpm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, FilesUploadBucket, objectName)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"eth_address": ethAddress,
-		"hold_time":   holdTimeInMonthsInt,
+		"h":                    sm.H,
+		"v":                    sm.V,
+		"r":                    sm.R,
+		"s":                    sm.S,
+		"eth_address":          sm.Address,
+		"charge_amount_in_wei": sm.ChargeAmount,
+		"payment_method":       sm.PaymentMethod,
+		"payment_number":       sm.PaymentNumber,
 	})
 }

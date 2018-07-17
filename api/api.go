@@ -183,6 +183,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	frontendProtected.POST("/cost/calculate/file", CalculateFileCost)
 	frontendProtected.Use(middleware.DatabaseMiddleware(db))
 	frontendProtected.POST("/payment/pin/create/:hash", CreatePinPayment)
+	frontendProtected.POST("/payment/file/create", CreateFilePayment)
 
 	adminProtected := g.Group("/api/v1/admin")
 	adminProtected.Use(authWare.MiddlewareFunc())
