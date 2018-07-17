@@ -129,6 +129,9 @@ func CreatePinPayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	if num == nil {
+		num = big.NewInt(0)
+	}
 	// this means that the latest payment number is greater than 0
 	// indicating a payment has already been made, in which case
 	// we will increment the value by 1
@@ -140,6 +143,12 @@ func CreatePinPayment(c *gin.Context) {
 	addressTyped := common.HexToAddress(ethAddress)
 
 	sm, err := ps.GenerateSignedPaymentMessagePrefixed(addressTyped, uint8(methodUint), num, costBig)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	_, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash)
 	if err != nil {
 		FailOnError(c, err)
 		return
