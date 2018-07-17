@@ -22,14 +22,14 @@ else
     MINIO_SECRET_KEY="q4I9t2MN/6bAgLkbF6uyS7jtQrXuNARcyrm2vvNA"
 fi
 
-if [[ "$DATA_DIR" == "" ]]; then
-    echo "DATA_DIR environment variable empty"
-    exit 1
+if [[ "$DATA_DIR" == "" ]]; then    
+    # set the defaults
+    DATA_DIR="/mini_data"
 fi
 
 if [[ "$CONFIG_DIR" == "" ]]; then
-    echo "CONFIG_DIR environment variable empty"
-    exit 1
+    # set the defaults
+    CONFIG_DIR="/minio_config"
 fi
 
 
