@@ -10,7 +10,7 @@ import (
 
 var UploadObj *models.Upload
 var UserObj *models.User
-var PaymentObj *models.Payment
+var PinPaymentObj *models.PinPayment
 var IpnsObj *models.IPNS
 var HostedIpfsNetObj *models.HostedIPFSPrivateNetwork
 
@@ -33,7 +33,7 @@ func Initialize(dbPass, dbURL, dbUser string) (*DatabaseManager, error) {
 func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(UploadObj)
 	dbm.DB.AutoMigrate(UserObj)
-	dbm.DB.AutoMigrate(PaymentObj)
+	dbm.DB.AutoMigrate(PinPaymentObj)
 	// gorm will default table to name of ip_ns
 	// so we will override with ipns
 	dbm.DB.AutoMigrate(IpnsObj)

@@ -1,34 +1,50 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"math/big"
 
-type Payment struct {
+	"github.com/jinzhu/gorm"
+)
+
+type PinPayment struct {
 	gorm.Model
-	UploaderAddress string `gorm:"type:varchar(255);"`
-	CID             string `gorm:"type:varchar(255);"`
-	HashedCID       string `gorm:"type:varchar(255);"`
-	PaymentID       string `gorm:"type:varchar(255);"`
-	Paid            bool   `gorm:"type:boolean;"`
+	Method          uint8
+	Number          *big.Int
+	ChargeAmount    *big.Int
+	UploaderAddress string
+	ContentHash     string
 }
 
-type PaymentManager struct {
+type PinPaymentManager struct {
 	DB *gorm.DB
 }
 
-func NewPaymentManager(db *gorm.DB) *PaymentManager {
-	return &PaymentManager{DB: db}
+func NewPinPaymentManager(db *gorm.DB) *PinPaymentManager {
+	return &PinPaymentManager{DB: db}
 }
 
-func (pm *PaymentManager) FindPaymentsByUploader(address string) *[]Payment {
-	var payments []Payment
-	pm.DB.Find(&payments).Where("uploader_address = ?", address)
-	return &payments
-}
-
-func (pm *PaymentManager) FindPaymentByPaymentID(paymentID string) (*Payment, error) {
-	var payment Payment
-	if check := pm.DB.Find(&payment).Where("payment_id = ?", paymentID); check.Error != nil {
+func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, contentHash string) (*PinPayment, error) {
+	pp := &PinPayment{
+		Number:          number,
+		Method:          method,
+		ChargeAmount:    chargeAmount,
+		UploaderAddress: uploaderAddress,
+		ContentHash:     contentHash,
+	}
+	if check := ppm.DB.Create(pp); check.Error != nil {
 		return nil, check.Error
 	}
-	return &payment, nil
+	return pp, nil
+}
+
+func (ppm *PinPaymentManager) RetrieveLatestPaymentNumber() (*big.Int, error) {
+	pp := PinPayment{}
+	check := ppm.DB.Order("number desc").First(&pp)
+	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+		return nil, check.Error
+	}
+	if check.Error == gorm.ErrRecordNotFound {
+		return big.NewInt(0), nil
+	}
+	return pp.Number, nil
 }

@@ -8,12 +8,14 @@ import (
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/mini"
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/signer"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	minio "github.com/minio/minio-go"
 )
 
@@ -105,6 +107,11 @@ func CreatePinPayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
 	keyMap, ok := c.MustGet("eth_account").(map[string]string)
 	if !ok {
 		FailedToLoadMiddleware(c, "eth account")
@@ -115,12 +122,24 @@ func CreatePinPayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	ppm := models.NewPinPaymentManager(db)
+	var num *big.Int
+	num, err = ppm.RetrieveLatestPaymentNumber()
+	if err != nil && err != gorm.ErrRecordNotFound {
+		FailOnError(c, err)
+		return
+	}
+	// this means that the latest payment number is greater than 0
+	// indicating a payment has already been made, in which case
+	// we will increment the value by 1
+	if num.Cmp(big.NewInt(0)) == 1 {
+		num = new(big.Int).Add(num, big.NewInt(1))
+	}
 	costBig := utils.FloatToBigInt(totalCost)
 	// for testing purpose
-	number := big.NewInt(0)
 	addressTyped := common.HexToAddress(ethAddress)
 
-	sm, err := ps.GenerateSignedPaymentMessagePrefixed(addressTyped, uint8(methodUint), number, costBig)
+	sm, err := ps.GenerateSignedPaymentMessagePrefixed(addressTyped, uint8(methodUint), num, costBig)
 	if err != nil {
 		FailOnError(c, err)
 		return
