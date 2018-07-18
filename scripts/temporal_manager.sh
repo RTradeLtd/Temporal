@@ -23,11 +23,11 @@ case "$1" in
     ipfs-cluster-queue)
         Temporal ipfs-cluster-queue 2>&1 | tee --append /var/log/temporal/ipfs_cluster_queue.log
         ;;
-    payment-register-queue)
-        Temporal payment-register-queue 2>&1 | tee --append /var/log/temporal/payment_register_queue.log
+    ipfs-pin-queue)
+        Temporal ipfs-pin-queue 2>&1 | tee --append /var/log/temporal/ipfs_pin_queue.log
         ;;
-    payment-received-queue)
-        Temporal payment-received-queue 2>&1 | tee --append /var/log/temporal/payment_received_queue.log
+    ipfs-file-queue)
+        Temporal ipfs-file-queue 2>&1 |tee --append /var/log/temporal/ipfs_file_queue.log
         ;;
     migrate)
         Temporal migrate 2>&1 | tee --append /var/log/temporal/database_migrate.log

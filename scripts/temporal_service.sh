@@ -5,5 +5,5 @@
 /boot_scripts/temporal_manager.sh queue-dpa &
 /boot_scripts/temporal_manager.sh queue-dfa &
 /boot_scripts/temporal_manager.sh ipfs-cluster-queue &
-/boot_scripts/temporal_manager.sh payment-register-queue &
-/boot_scripts/temporal_manager.sh payment-received-queue &
+/boot_scripts/temporal_manager.sh ipfs-pin-queue &
+/boot_scripts/temporal_manager.sh ipfs-file-queue &
