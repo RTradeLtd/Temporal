@@ -9,6 +9,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/signer"
 	"github.com/RTradeLtd/Temporal/utils"
@@ -301,12 +302,12 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 	if !exists {
 		FailNoExistPostForm(c, "payment_number")
 		return
-	} /*
-		txHash, exists := c.GetPostForm("tx_hash")
-		if !exists {
-			FailNoExistPostForm(c, "tx_hash")
-			return
-		}*/
+	}
+	txHash, exists := c.GetPostForm("tx_hash")
+	if !exists {
+		FailNoExistPostForm(c, "tx_hash")
+		return
+	}
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
 		FailedToLoadDatabase(c)
@@ -320,6 +321,27 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 	}
 	if pp.ContentHash != contentHash {
 		FailOnError(c, errors.New("given content hash does not match what is in databse for payment number"))
+		return
+	}
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailedToLoadMiddleware(c, "rabbitmq")
+		return
+	}
+	ppc := queue.PinPaymentConfirmation{
+		TxHash:        txHash,
+		EthAddress:    ethAddress,
+		PaymentNumber: paymentNumber,
+		ContentHash:   contentHash,
+	}
+	qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	err = qm.PublishMessage(ppc)
+	if err != nil {
+		FailOnError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"payment": pp})

@@ -17,7 +17,7 @@ var DatabasePinAddQueue = "dpa-queue"
 var IpnsUpdateQueue = "ipns-update-queue"
 var IpfsPinQueue = "ipfs-pin-queue"
 var IpfsFileQueue = "ipfs-file-queue"
-var PinPaymentQueue = "pin-payment-queue"
+var PinPaymentConfirmationQueue = "pin-payment-confirmation-queue"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
@@ -185,7 +185,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			ProccessIPFSPins(msgs, db)
 		case IpfsFileQueue:
 			ProccessIPFSFiles(msgs, cfg, db)
-		case PinPaymentQueue:
+		case PinPaymentConfirmationQueue:
 			ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, "0x0")
 		default:
 			log.Fatal("invalid queue name")

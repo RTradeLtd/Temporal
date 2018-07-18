@@ -8,6 +8,10 @@ Temporal is being designed with a "Plug and Play" style design such that the und
 
 We have a telegram chat https://t.me/RTradeTEMPORAL, feel free to join and ask any questions you may have that could not be answered by reading the documentation here. The documentation contained is fairly detailed, as all my notes are public, however it is fairly scattered and unorganized for now.
 
+# Smart Contracts
+
+All smart contracts used by TEMPORAL can be viewed over here https://github.com/RTradeLtd/RT-Contracts/tree/master/TEMPORAL
+
 # Project Features
 
 * IPNS (50%)
