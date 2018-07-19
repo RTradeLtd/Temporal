@@ -29,8 +29,12 @@ type PinPaymentSubmission struct {
 	Number       string `json:"number"`
 	ChargeAmount string `json:"charge_amount"`
 	// EthAddress string.... this is derived from the ethkey
-	ContentHash   string                 `json:"content_hash"`
-	SignedMessage map[string]interface{} `json:"signed_message"`
+	ContentHash string   `json:"content_hash"`
+	H           [32]byte `json:"h"`
+	V           uint8    `json:"v"`
+	R           [32]byte `json:"r"`
+	S           [32]byte `json:"s"`
+	Prefixed    bool     `json:"prefixed"`
 }
 
 func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string) error {
@@ -137,27 +141,12 @@ func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPat
 			continue
 		}
 		auth := bind.NewKeyedTransactor(k.PrivateKey)
-		h, ok := pps.SignedMessage["h"].([32]byte)
-		if !ok {
-			fmt.Println("unable to convert h to [32]byte")
-			d.Ack(false)
-			continue
-		}
-		v, ok := pps.SignedMessage["v"].(uint8)
-		if !ok {
-			fmt.Println("unable to convert v to uint8")
-			d.Ack(false)
-			continue
-		}
-		r, ok := pps.SignedMessage["r"].([32]byte)
-		if !ok {
-			fmt.Println("unable to convert r to [32]byte")
-			d.Ack(false)
-			continue
-		}
-		s := pps.SignedMessage["s"].([32]byte)
+		h := pps.H
+		v := pps.V
+		r := pps.R
+		s := pps.S
 		method := pps.Method
-		prefixed := pps.SignedMessage["prefix"].(bool)
+		prefixed := pps.Prefixed
 		num, valid := new(big.Int).SetString(pps.Number, 10)
 		if !valid {
 			fmt.Println("unable to convert payment number from string to big int")

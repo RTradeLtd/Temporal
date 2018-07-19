@@ -471,19 +471,18 @@ func SubmitPaymentToContract(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	smm := make(map[string]interface{})
-	smm["h"] = sm.H
-	smm["v"] = sm.V
-	smm["r"] = sm.R
-	smm["s"] = sm.S
 
 	pps := queue.PinPaymentSubmission{
-		PrivateKey:    marshaledKey,
-		Method:        uint8(methodUint),
-		Number:        number.String(),
-		ChargeAmount:  costBig.String(),
-		ContentHash:   contentHash,
-		SignedMessage: smm,
+		PrivateKey:   marshaledKey,
+		Method:       uint8(methodUint),
+		Number:       number.String(),
+		ChargeAmount: costBig.String(),
+		ContentHash:  contentHash,
+		H:            sm.H,
+		V:            sm.V,
+		R:            sm.R,
+		S:            sm.S,
+		Prefixed:     true,
 	}
 
 	qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqURL)
