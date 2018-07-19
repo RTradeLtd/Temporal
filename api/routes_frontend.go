@@ -345,7 +345,7 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 }
 
 func SubmitPaymentToContract(c *gin.Context) {
-	msg := fmt.Sprintf("this route requires you giving us your private key and the password to descrypt. Please provide a postform accept_warning set to yes otherwise this route will not work. Although we will not store your private key this is an extremely unsafe method as it means your private key can become compromised during transit or if someone where to gain control of our servers, and covertly save your key during usage")
+	msg := fmt.Sprintf("this route requires you giving us your private key and the password to descrypt. Please provide a postform accept_warning set to yes otherwise this route will not work. Although we will not store your private key this is an extremely unsafe method as it means your private key can become compromised during transit or if someone where to gain control of our servers, and covertly save your key during usage. RTrade provides no insurance or protections against compromised accounts utilizing this route as it is intended for ADMIN USE ONLY or LAST RESORT USE ONLY. By using this route you full on agree that you void RTrade of any responsibilities, or fault that may occur as a resutl of your private key being compromised by using this route. DO NOT use this route if you do not agree with this")
 	acceptWarn, exists := c.GetPostForm("accept_warning")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
