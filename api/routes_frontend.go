@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/models"
@@ -341,4 +342,25 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"payment": pp})
+}
+
+func SubmitPaymentToContract(c *gin.Context) {
+	msg := fmt.Sprintf("this route requires you giving us your private key and the password to descrypt. Please provide a postform accept_warning set to yes otherwise this route will not work. Although we will not store your private key this is an extremely unsafe method as it means your private key can become compromised during transit or if someone where to gain control of our servers, and covertly save your key during usage")
+	acceptWarn, exists := c.GetPostForm("accept_warning")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": msg,
+		})
+		return
+	}
+	acceptWarn = strings.ToUpper(acceptWarn)
+	switch acceptWarn {
+	case "YES":
+		break
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "please set accept_warning to yes in order to continue",
+		})
+		return
+	}
 }

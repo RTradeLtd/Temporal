@@ -185,6 +185,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	frontendProtected.POST("/payment/pin/confirm/:hash", SubmitPinPaymentConfirmation)
 	frontendProtected.POST("/payment/pin/create/:hash", CreatePinPayment)
 	frontendProtected.POST("/payment/pin/confirm", SubmitPinPaymentConfirmation)
+	frontendProtected.POST("/payment/pin/submit", SubmitPaymentToContract)
 	frontendProtected.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
 	frontendProtected.POST("/payment/file/create", CreateFilePayment)
 
