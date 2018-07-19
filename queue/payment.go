@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/RTradeLtd/Temporal/bindings/payments"
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -25,7 +26,7 @@ type PinPaymentConfirmation struct {
 type PinPaymentSubmission struct {
 	EthKey       string `json:"eth_key"`
 	EthPass      string `json:"eth_pass"`
-	Method       string `json:"method"`
+	Method       uint8  `json:"method"`
 	Number       string `json:"number"`
 	ChargeAmount string `json:"charge_amount"`
 	// EthAddress string.... this is derived from the ethkey
@@ -110,7 +111,6 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 	return nil
 }
 
-/*
 func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string) error {
 	client, err := ethclient.Dial(ipcPath)
 	if err != nil {
@@ -120,7 +120,7 @@ func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPat
 	if err != nil {
 		return err
 	}
-	ppm := models.NewPinPaymentManager(db)
+	//ppm := models.NewPinPaymentManager(db)
 	for d := range msgs {
 		fmt.Println("delivery detected")
 		pps := PinPaymentSubmission{}
@@ -136,8 +136,37 @@ func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPat
 			d.Ack(false)
 			continue
 		}
-		contract.MakePayment(auth)
+		h := pps.SignedMessage["h"].([32]byte)
+		v := pps.SignedMessage["v"].(uint8)
+		r := pps.SignedMessage["r"].([32]byte)
+		s := pps.SignedMessage["s"].([32]byte)
+		method := pps.Method
+		prefixed := pps.SignedMessage["prefix"].(bool)
+		num, valid := new(big.Int).SetString(pps.Number, 10)
+		if !valid {
+			fmt.Println("unable to convert payment number from string to big int")
+			d.Ack(false)
+			continue
+		}
+		amount, valid := new(big.Int).SetString(pps.ChargeAmount, 10)
+		if !valid {
+			fmt.Println("unable to convert charge amount from string to big int")
+			d.Ack(false)
+			continue
+		}
+		tx, err := contract.MakePayment(auth, h, v, r, s, num, method, amount, prefixed)
+		if err != nil {
+			// this could be a temporary error so we wont ack it
+			fmt.Println("error making payment", err)
+			continue
+		}
+		rcpt, err := bind.WaitMined(context.Background(), client, tx)
+		if err != nil {
+			// this could be a temporary error, so we wont ack it
+			fmt.Println("error waiting for tx to be mined", err)
+			continue
+		}
+		fmt.Println(rcpt)
 	}
 	return nil
 }
-*/

@@ -458,7 +458,7 @@ func SubmitPaymentToContract(c *gin.Context) {
 	pps := queue.PinPaymentSubmission{
 		EthKey:        ethKey,
 		EthPass:       ethPass,
-		Method:        method,
+		Method:        uint8(methodUint),
 		Number:        number.String(),
 		ChargeAmount:  costBig.String(),
 		ContentHash:   contentHash,
