@@ -22,6 +22,17 @@ type PinPaymentConfirmation struct {
 	ContentHash   string `json:"content_hash"`
 }
 
+type PinPaymentSubmission struct {
+	EthKey       string `json:"eth_key"`
+	EthPass      string `json:"eth_pass"`
+	Method       string `json:"method"`
+	Number       string `json:"number"`
+	ChargeAmount string `json:"charge_amount"`
+	// EthAddress string.... this is derived from the ethkey
+	ContentHash   string                 `json:"content_hash"`
+	SignedMessage map[string]interface{} `json:"signed_message"`
+}
+
 func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string) error {
 	fmt.Println("dialing")
 	client, err := ethclient.Dial(ipcPath)
@@ -98,3 +109,35 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 	}
 	return nil
 }
+
+/*
+func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string) error {
+	client, err := ethclient.Dial(ipcPath)
+	if err != nil {
+		return err
+	}
+	contract, err := payments.NewPayments(common.HexToAddress(paymentContractAddress), client)
+	if err != nil {
+		return err
+	}
+	ppm := models.NewPinPaymentManager(db)
+	for d := range msgs {
+		fmt.Println("delivery detected")
+		pps := PinPaymentSubmission{}
+		err = json.Unmarshal(d.Body, &pps)
+		if err != nil {
+			fmt.Println("error unmarshaling", err)
+			d.Ack(false)
+			continue
+		}
+		auth, err := bind.NewTransactor(strings.NewReader(pps.EthKey), pps.EthPass)
+		if err != nil {
+			fmt.Println("error creating transactor from key", err)
+			d.Ack(false)
+			continue
+		}
+		contract.MakePayment(auth)
+	}
+	return nil
+}
+*/

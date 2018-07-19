@@ -363,4 +363,120 @@ func SubmitPaymentToContract(c *gin.Context) {
 		})
 		return
 	}
+	contentHash := c.Param("hash")
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	holdTime, exists := c.GetPostForm("hold_time")
+	if !exists {
+		FailNoExistPostForm(c, "hold_time")
+		return
+	}
+	ethKey, exists := c.GetPostForm("eth_key")
+	if !exists {
+		FailNoExistPostForm(c, "eth_key")
+		return
+	}
+	ethPass, exists := c.GetPostForm("eth_pass")
+	if !exists {
+		FailNoExistPostForm(c, "eth_pass")
+		return
+	}
+	method, exists := c.GetPostForm("payment_method")
+	if !exists {
+		FailNoExistPostForm(c, "payment_method")
+		return
+	}
+	methodUint, err := strconv.ParseUint(method, 10, 8)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	if methodUint > 1 {
+		FailOnError(c, errors.New("payment_method must be 1 or 0"))
+		return
+	}
+	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	totalCost, err := utils.CalculatePinCost(contentHash, holdTimeInt, manager.Shell)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	costBig := utils.FloatToBigInt(totalCost)
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
+	keyMap, ok := c.MustGet("eth_account").(map[string]string)
+	if !ok {
+		FailedToLoadMiddleware(c, "eth account")
+		return
+	}
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailedToLoadMiddleware(c, "rabbitmq")
+		return
+	}
+	ppm := models.NewPinPaymentManager(db)
+	var number *big.Int
+	num, err := ppm.RetrieveLatestPaymentNumber(ethAddress)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	if num.Cmp(big.NewInt(0)) == 1 {
+		number = new(big.Int).Add(num, big.NewInt(1))
+	} else {
+		number = num
+	}
+	addressTyped := common.HexToAddress(ethAddress)
+	ps, err := signer.GeneratePaymentSigner(keyMap["keyFile"], keyMap["keyPass"])
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	sm, err := ps.GenerateSignedPaymentMessagePrefixed(addressTyped, uint8(methodUint), number, costBig)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	smm := make(map[string]interface{})
+	smm["h"] = sm.H
+	smm["v"] = sm.V
+	smm["r"] = sm.R
+	smm["s"] = sm.S
+
+	pps := queue.PinPaymentSubmission{
+		EthKey:        ethKey,
+		EthPass:       ethPass,
+		Method:        method,
+		Number:        number.String(),
+		ChargeAmount:  costBig.String(),
+		ContentHash:   contentHash,
+		SignedMessage: smm,
+	}
+
+	qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	err = qm.PublishMessage(pps)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": pps,
+	})
 }

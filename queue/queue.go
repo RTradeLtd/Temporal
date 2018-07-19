@@ -18,6 +18,7 @@ var IpnsUpdateQueue = "ipns-update-queue"
 var IpfsPinQueue = "ipfs-pin-queue"
 var IpfsFileQueue = "ipfs-file-queue"
 var PinPaymentConfirmationQueue = "pin-payment-confirmation-queue"
+var PinPaymentSubmissionQueue = "pin-payment-submission-queue"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
