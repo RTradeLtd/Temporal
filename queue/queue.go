@@ -186,7 +186,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		case IpfsFileQueue:
 			ProccessIPFSFiles(msgs, cfg, db)
 		case PinPaymentConfirmationQueue:
-			ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, "0x0")
+			ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, "0xca868828e9C1135f1e23e460ddf84Eb3d3133eA6")
 		default:
 			log.Fatal("invalid queue name")
 		}
