@@ -49,8 +49,6 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 			d.Ack(false)
 			continue
 		}
-		fmt.Println("unmarshaled payment")
-		fmt.Printf("%+v\n", ppc)
 		tx, isPending, err := client.TransactionByHash(context.Background(), common.HexToHash(ppc.TxHash))
 		if err != nil {
 			//TODO handle
@@ -81,6 +79,7 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 			// could be a temporary issue, so lets not ack
 			continue
 		}
+		fmt.Printf("Payment struct \n%+v\n", payment)
 		// now lets verify that the payment was indeed processed
 		if payment.State != uint8(1) {
 			// this means the payment wasn't actually confirmed, could be transaction rejection, etc...
