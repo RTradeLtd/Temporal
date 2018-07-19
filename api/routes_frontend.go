@@ -297,7 +297,6 @@ func CreateFilePayment(c *gin.Context) {
 
 func SubmitPinPaymentConfirmation(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
-	contentHash := c.Param("hash")
 	paymentNumber, exists := c.GetPostForm("payment_number")
 	if !exists {
 		FailNoExistPostForm(c, "payment_number")
@@ -319,10 +318,6 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	if pp.ContentHash != contentHash {
-		FailOnError(c, errors.New("given content hash does not match what is in databse for payment number"))
-		return
-	}
 	mqURL, ok := c.MustGet("mq_conn_url").(string)
 	if !ok {
 		FailedToLoadMiddleware(c, "rabbitmq")
@@ -332,13 +327,14 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 		TxHash:        txHash,
 		EthAddress:    ethAddress,
 		PaymentNumber: paymentNumber,
-		ContentHash:   contentHash,
+		ContentHash:   pp.ContentHash,
 	}
 	qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqURL)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
+	fmt.Println("publishing message")
 	err = qm.PublishMessage(ppc)
 	if err != nil {
 		FailOnError(c, err)

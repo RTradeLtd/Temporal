@@ -23,12 +23,16 @@ type PinPaymentConfirmation struct {
 }
 
 func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string) error {
+	fmt.Println("dialing")
 	client, err := ethclient.Dial(ipcPath)
 	if err != nil {
+		fmt.Println("error dialing", err)
 		return err
 	}
+	fmt.Println("generating payment contract handler")
 	contract, err := payments.NewPayments(common.HexToAddress(paymentContractAddress), client)
 	if err != nil {
+		fmt.Println("error generating payment contract", err)
 		return err
 	}
 	manager, err := rtfs.Initialize("", "")
@@ -36,6 +40,7 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 		return err
 	}
 	for d := range msgs {
+		fmt.Println("payment detected")
 		ppc := &PinPaymentConfirmation{}
 		err = json.Unmarshal(d.Body, ppc)
 		if err != nil {
@@ -44,6 +49,8 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("unmarshaled payment")
+		fmt.Printf("%+v\n", ppc)
 		tx, isPending, err := client.TransactionByHash(context.Background(), common.HexToHash(ppc.TxHash))
 		if err != nil {
 			//TODO handle

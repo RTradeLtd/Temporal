@@ -168,30 +168,25 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		return err
 	}
 
-	forever := make(chan bool)
-	// So we don't cause hanging prcesses when consuming messages, it is processed in a goroutine
-	go func() {
-		// check the queue name
-		switch qm.Queue.Name {
-		// only parse database pin requests
-		case DatabasePinAddQueue:
-			ProcessDatabasePinAdds(msgs, db)
-		// only parse datbase file requests
-		case DatabaseFileAddQueue:
-			ProcessDatabaseFileAdds(msgs, db)
-		case IpfsClusterQueue:
-			ProcessIpfsClusterQueue(msgs, db)
-		case IpfsPinQueue:
-			ProccessIPFSPins(msgs, db)
-		case IpfsFileQueue:
-			ProccessIPFSFiles(msgs, cfg, db)
-		case PinPaymentConfirmationQueue:
-			ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, "0xca868828e9C1135f1e23e460ddf84Eb3d3133eA6")
-		default:
-			log.Fatal("invalid queue name")
-		}
-	}()
-	<-forever
+	// check the queue name
+	switch qm.Queue.Name {
+	// only parse database pin requests
+	case DatabasePinAddQueue:
+		ProcessDatabasePinAdds(msgs, db)
+	// only parse datbase file requests
+	case DatabaseFileAddQueue:
+		ProcessDatabaseFileAdds(msgs, db)
+	case IpfsClusterQueue:
+		ProcessIpfsClusterQueue(msgs, db)
+	case IpfsPinQueue:
+		ProccessIPFSPins(msgs, db)
+	case IpfsFileQueue:
+		ProccessIPFSFiles(msgs, cfg, db)
+	case PinPaymentConfirmationQueue:
+		ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, "0xca868828e9C1135f1e23e460ddf84Eb3d3133eA6")
+	default:
+		log.Fatal("invalid queue name")
+	}
 	return nil
 }
 
