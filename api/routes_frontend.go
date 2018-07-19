@@ -443,7 +443,8 @@ func SubmitPaymentToContract(c *gin.Context) {
 	if num.Cmp(big.NewInt(0)) == 1 {
 		number = new(big.Int).Add(num, big.NewInt(1))
 	} else {
-		number = num
+		// TEMPORARY SHOULD BE `````NUMBER = NUM````
+		number = new(big.Int).Add(num, big.NewInt(1))
 	}
 	addressTyped := common.HexToAddress(ethAddress)
 	ps, err := signer.GeneratePaymentSigner(keyMap["keyFile"], keyMap["keyPass"])

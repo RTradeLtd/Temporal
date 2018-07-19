@@ -25,7 +25,7 @@ import (
 var xssMdlwr xss.XssMw
 
 // AdminAddress is the eth address of the admin account
-var AdminAddress = "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9"
+var AdminAddress = "0x7E4A2359c745A982a54653128085eAC69E446DE1"
 
 //const experimental = true
 
