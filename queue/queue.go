@@ -191,6 +191,11 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		if err != nil {
 			return err
 		}
+	case PinPaymentSubmissionQueue:
+		err = ProcessPinPaymentSubmissions(msgs, db, cfg.Ethereum.Connection.IPC.Path, "0xca868828e9C1135f1e23e460ddf84Eb3d3133eA6")
+		if err != nil {
+			return err
+		}
 	default:
 		log.Fatal("invalid queue name")
 	}

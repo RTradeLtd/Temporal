@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"strings"
 
 	"github.com/RTradeLtd/Temporal/bindings/payments"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jinzhu/gorm"
@@ -24,8 +24,7 @@ type PinPaymentConfirmation struct {
 }
 
 type PinPaymentSubmission struct {
-	EthKey       string `json:"eth_key"`
-	EthPass      string `json:"eth_pass"`
+	PrivateKey   []byte `json:"private_key"`
 	Method       uint8  `json:"method"`
 	Number       string `json:"number"`
 	ChargeAmount string `json:"charge_amount"`
@@ -130,15 +129,32 @@ func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPat
 			d.Ack(false)
 			continue
 		}
-		auth, err := bind.NewTransactor(strings.NewReader(pps.EthKey), pps.EthPass)
+		k := keystore.Key{}
+		err = k.UnmarshalJSON(pps.PrivateKey)
 		if err != nil {
-			fmt.Println("error creating transactor from key", err)
+			fmt.Println("error unmarshaling private key", err)
 			d.Ack(false)
 			continue
 		}
-		h := pps.SignedMessage["h"].([32]byte)
-		v := pps.SignedMessage["v"].(uint8)
-		r := pps.SignedMessage["r"].([32]byte)
+		auth := bind.NewKeyedTransactor(k.PrivateKey)
+		h, ok := pps.SignedMessage["h"].([32]byte)
+		if !ok {
+			fmt.Println("unable to convert h to [32]byte")
+			d.Ack(false)
+			continue
+		}
+		v, ok := pps.SignedMessage["v"].(uint8)
+		if !ok {
+			fmt.Println("unable to convert v to uint8")
+			d.Ack(false)
+			continue
+		}
+		r, ok := pps.SignedMessage["r"].([32]byte)
+		if !ok {
+			fmt.Println("unable to convert r to [32]byte")
+			d.Ack(false)
+			continue
+		}
 		s := pps.SignedMessage["s"].([32]byte)
 		method := pps.Method
 		prefixed := pps.SignedMessage["prefix"].(bool)

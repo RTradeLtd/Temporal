@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/signer"
 	"github.com/RTradeLtd/Temporal/utils"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -370,9 +372,14 @@ func SubmitPaymentToContract(c *gin.Context) {
 		FailNoExistPostForm(c, "hold_time")
 		return
 	}
-	ethKey, exists := c.GetPostForm("eth_key")
-	if !exists {
-		FailNoExistPostForm(c, "eth_key")
+	keyFile, err := c.FormFile("key_file")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	keyFileHandler, err := keyFile.Open()
+	if err != nil {
+		FailOnError(c, err)
 		return
 	}
 	ethPass, exists := c.GetPostForm("eth_pass")
@@ -449,6 +456,21 @@ func SubmitPaymentToContract(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	jsonKeyBytes, err := ioutil.ReadAll(keyFileHandler)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	pk, err := keystore.DecryptKey(jsonKeyBytes, ethPass)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	marshaledKey, err := pk.MarshalJSON()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	smm := make(map[string]interface{})
 	smm["h"] = sm.H
 	smm["v"] = sm.V
@@ -456,8 +478,7 @@ func SubmitPaymentToContract(c *gin.Context) {
 	smm["s"] = sm.S
 
 	pps := queue.PinPaymentSubmission{
-		EthKey:        ethKey,
-		EthPass:       ethPass,
+		PrivateKey:    marshaledKey,
 		Method:        uint8(methodUint),
 		Number:        number.String(),
 		ChargeAmount:  costBig.String(),
