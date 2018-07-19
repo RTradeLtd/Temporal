@@ -12,6 +12,7 @@ import (
 )
 
 // PinHashToCluster is used to pin a hash to the local ipfs node
+// TODO: INCOMPLETE
 func PinHashToCluster(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
@@ -27,11 +28,14 @@ func PinHashToCluster(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	// we are going to pin first, since we want the data availableility immediately
-	// and dont want to depend on a failure, say adding to the database, preventing us from pinning
+	//TODO: CLEANUP AND MAKE MORE RESILIENT
 	go func() {
 		// currently after it is pinned, it is sent to the cluster to be pinned
-		manager := rtfs_cluster.Initialize()
+		manager, err := rtfs_cluster.Initialize()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		decodedHash, err := manager.DecodeHashString(hash)
 		if err != nil {
 			fmt.Println(err)
@@ -77,7 +81,11 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 		return
 	}
 	// initialize a conection to the cluster
-	manager := rtfs_cluster.Initialize()
+	manager, err := rtfs_cluster.Initialize()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
 	syncedCids, err := manager.ParseLocalStatusAllAndSync()
 	if err != nil {
@@ -92,8 +100,12 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 // TODO: fully implement, add in goroutines
 func RemovePinFromCluster(c *gin.Context) {
 	hash := c.Param("hash")
-	manager := rtfs_cluster.Initialize()
-	err := manager.RemovePinFromCluster(hash)
+	manager, err := rtfs_cluster.Initialize()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	err = manager.RemovePinFromCluster(hash)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -117,7 +129,11 @@ func GetLocalStatusForClusterPin(c *gin.Context) {
 	}
 	hash := c.Param("hash")
 	// initialize a connection to the cluster
-	manager := rtfs_cluster.Initialize()
+	manager, err := rtfs_cluster.Initialize()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	// get the cluster status for the cid only asking the local cluster node
 	status, err := manager.GetStatusForCidLocally(hash)
 	if err != nil {
@@ -131,7 +147,11 @@ func GetLocalStatusForClusterPin(c *gin.Context) {
 func GetGlobalStatusForClusterPin(c *gin.Context) {
 	hash := c.Param("hash")
 	// initialize a connection to the cluster
-	manager := rtfs_cluster.Initialize()
+	manager, err := rtfs_cluster.Initialize()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	// get teh cluster wide status for this particular pin
 	status, err := manager.GetStatusForCidGlobally(hash)
 	if err != nil {
@@ -155,7 +175,11 @@ func FetchLocalClusterStatus(c *gin.Context) {
 	// this will hold all the statuses of the content hashes
 	var statuses []string
 	// initialize a connection to the cluster
-	manager := rtfs_cluster.Initialize()
+	manager, err := rtfs_cluster.Initialize()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	// fetch a map of all the statuses
 	maps, err := manager.FetchLocalStatus()
 	if err != nil {

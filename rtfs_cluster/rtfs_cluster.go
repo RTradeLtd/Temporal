@@ -18,12 +18,15 @@ type ClusterManager struct {
 }
 
 // Initialize is used to init, and return a cluster manager object
-func Initialize() *ClusterManager {
+func Initialize() (*ClusterManager, error) {
 	cm := ClusterManager{}
 	cm.GenRestAPIConfig()
 	// modify default config with infrastructure specific settings
-	cm.GenClient()
-	return &cm
+	err := cm.GenClient()
+	if err != nil {
+		return nil, err
+	}
+	return &cm, nil
 }
 
 // GenRestAPIConfig is used to generate the api cfg

@@ -20,9 +20,12 @@ import (
 )
 
 // ProcessIpfsClusterQueue is used to process msgs sent to the ipfs cluster queue
-func ProcessIpfsClusterQueue(msgs <-chan amqp.Delivery, db *gorm.DB) {
+func ProcessIpfsClusterQueue(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	var clusterPin IpfsClusterPin
-	clusterManager := rtfs_cluster.Initialize()
+	clusterManager, err := rtfs_cluster.Initialize()
+	if err != nil {
+		return err
+	}
 	for d := range msgs {
 		err := json.Unmarshal(d.Body, &clusterPin)
 		if err != nil {
@@ -50,6 +53,7 @@ func ProcessIpfsClusterQueue(msgs <-chan amqp.Delivery, db *gorm.DB) {
 		d.Ack(false)
 
 	}
+	return nil
 }
 
 // ProccessIPFSPins is used to process IPFS pin requests

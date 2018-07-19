@@ -268,7 +268,11 @@ func AddFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	clusterManager := rtfs_cluster.Initialize()
+	clusterManager, err := rtfs_cluster.Initialize()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	decodedHash, err := clusterManager.DecodeHashString(resp)
 	if err != nil {
 		FailOnError(c, err)
