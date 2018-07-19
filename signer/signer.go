@@ -3,6 +3,7 @@ package signer
 import (
 	"crypto/ecdsa"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"math/big"
 
@@ -97,5 +98,6 @@ func (ps *PaymentSigner) GenerateSignedPaymentMessagePrefixed(ethAddress common.
 	if !valid {
 		return nil, errors.New("failed to validate signature off-chain")
 	}
+	fmt.Println("successfully validated signature")
 	return msg, nil
 }

@@ -159,19 +159,23 @@ func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPat
 			d.Ack(false)
 			continue
 		}
+		auth.GasLimit = 275000
 		tx, err := contract.MakePayment(auth, h, v, r, s, num, method, amount, prefixed)
 		if err != nil {
 			// this could be a temporary error so we wont ack it
 			fmt.Println("error making payment", err)
 			continue
 		}
+		fmt.Println("successfully sent payment transaction, waiting for it to be mined")
 		rcpt, err := bind.WaitMined(context.Background(), client, tx)
 		if err != nil {
 			// this could be a temporary error, so we wont ack it
 			fmt.Println("error waiting for tx to be mined", err)
 			continue
 		}
-		fmt.Println(rcpt)
+		fmt.Println("transaction has been mined")
+		fmt.Printf("%+v\n", rcpt)
+		d.Ack(false)
 	}
 	return nil
 }
