@@ -43,3 +43,22 @@ func GenerateMailManager(tCfg *config.TemporalConfig) (*MailManager, error) {
 	}
 	return &mm, nil
 }
+
+/*
+// Send24HourEmail is a function used to send report information for the last 24 hour period
+func (m *Manager) Send24HourEmail(date, ethMined, usdValue, cadValue string) (int, error) {
+	content := fmt.Sprintf("<br>Eth Mined: %v<br>USD Value: %v<br>CAD Value: %v", ethMined, usdValue, cadValue)
+	from := mail.NewEmail("stake-sendgrid-api", "sgapi@rtradetechnologies.com")
+	subject := fmt.Sprintf("Ethereum Mining Report - %s", date)
+	to := mail.NewEmail("Mining Reports", "postables@rtradetechnologies.com")
+
+	mContent := mail.NewContent("text/html", content)
+	mail := mail.NewV3MailInit(from, subject, to, mContent)
+
+	response, err := m.SendgridClient.Send(mail)
+	if err != nil {
+		return 0, err
+	}
+	return response.StatusCode, nil
+}
+*/
