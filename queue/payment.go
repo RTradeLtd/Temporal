@@ -34,6 +34,8 @@ type PinPaymentSubmission struct {
 	V           uint8    `json:"v"`
 	R           [32]byte `json:"r"`
 	S           [32]byte `json:"s"`
+	Hash        []byte   `json:"hash"`
+	Sig         []byte   `json:"sig"`
 	Prefixed    bool     `json:"prefixed"`
 }
 

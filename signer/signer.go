@@ -31,6 +31,8 @@ type SignedMessage struct {
 	PaymentMethod uint8          `json:"payment_method"`
 	PaymentNumber *big.Int       `json:"payment_number"`
 	ChargeAmount  *big.Int       `json:"charge_amount"`
+	Hash          []byte         `json:"hash"`
+	Sig           []byte         `json:"sig"`
 }
 
 // GeneratePaymentSigner is used to generate our helper struct for signing payments
@@ -88,13 +90,15 @@ func (ps *PaymentSigner) GenerateSignedPaymentMessagePrefixed(ethAddress common.
 		PaymentMethod: paymentMethod,
 		PaymentNumber: paymentNumber,
 		ChargeAmount:  chargeAmountInWei,
+		Hash:          hashPrefixed,
+		Sig:           sig[0:64],
 	}
 
 	// Here we do an off-chain validation to ensure that when validated on-chain the transaction won't rever
 	// however for some reason, the data isn't validating on-chain
 	pub := ps.Key.PublicKey
 	compressedKey := crypto.CompressPubkey(&pub)
-	valid := crypto.VerifySignature(compressedKey, hashPrefixed, sig[0:64])
+	valid := crypto.VerifySignature(compressedKey, msg.Hash, msg.Sig)
 	if !valid {
 		return nil, errors.New("failed to validate signature off-chain")
 	}

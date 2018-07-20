@@ -484,6 +484,8 @@ func SubmitPaymentToContract(c *gin.Context) {
 		R:            sm.R,
 		S:            sm.S,
 		Prefixed:     true,
+		Hash:         sm.Hash,
+		Sig:          sm.Sig,
 	}
 
 	qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqURL)
