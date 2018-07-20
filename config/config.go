@@ -60,6 +60,11 @@ type TemporalConfig struct {
 			Port string `json:"port"`
 		} `json:"connection"`
 	} `json:"minio"`
+	Sendgrid struct {
+		APIKey       string `json:"api_key"`
+		EmailAddress string `json:"email_address"`
+		EmailName    string `json:"email_name"`
+	} `json:"sendgrid"`
 }
 
 func LoadConfig(configPath string) (*TemporalConfig, error) {

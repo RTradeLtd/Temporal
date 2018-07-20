@@ -50,5 +50,10 @@
 			"ip": "127.0.0.1",
 			"port": "9000"
 		}
+	},
+	"sendgrid":  {
+		"api_key": "wowsuchkeymajorapi",
+		"email_address": "temporal@rtradetechnologies.com",
+		"email_name": "Temporal Reports"
 	}
 }
