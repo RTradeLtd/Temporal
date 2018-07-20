@@ -14,42 +14,23 @@ All smart contracts used by TEMPORAL can be viewed over here https://github.com/
 
 # Project Features
 
-* IPNS (50%)
-    * Full control over IPNS key creation (100%)
-    * Full control over DNSLink TXT Record Creation (100%)
-        * Currently only AWS Route53 is supported, more DNS providers will rolled out as needed
-    * Automated record republishing (0%)
-    * Record validation (0%)
-* IPFS (85%)
-    * IPFS Cluster Integration (100%)
-    * Public IPFS Integration (100%)
-    * IPFS Key Creation (66%)
-        * SECP Keys (0%)
-        * RSA Keys (100%)
-        * ED25519 Keys (100%)
-    * Private IPFS Integration
-        * Static Private Connectivity (100%)
-            * We currently support connections to any private IPFS network, however it requires a static configuration done on a network-by-network basis
-        * Dynamic Private IPFS (70%)
-            * This will allow people to provide configuration details through temporal, allowing for the dynamic joining of private IPFS networks
-        * Cluster Support (50%)
-            * This will back our connection to a hosted or non hosted private IPFS network with IPFS Cluster support
-            * Cluster support is already built into Temporal, we just need to integrate it with the Private IPFS feature
-    * Dynamic Content Cache Dispersion (50%)
-        * Dynamic Content Cache Dispersion (DCCD) will be a service that distributes content requests across all known public gateways, allowing for content to be easily spread through the network cache
+* IPNS (100%):
+    * Overtime addtional IPNS functionality will be added allowing for things like automatic record republishing, however the core functionality is done!
+* IPFS (100%):
+    * Overtime additional IPFS functionality will be added, however the core functionality needed to use IPFS (upload, download, etc...) is done! Both for public and private IPFS networks
 
 # Supported Technologies
 
 Following is a list of distributed and decentralized storage technologies that Temporal currently, or plans on supporting.
 
 
-IPFS (80% complete):
+IPFS (100% complete):
 
     Temporal supports integration with the public IPFS network, and will evolve to support new features added to IPFS so that you will have the most optimal experience possible, and never suffer from inability to access the latest and greatest features due to an API that fails to evolve as the underlying technology evolves.
 
     Soon after release, support for Private IPFS networks will be integrated into Temporal, allowing you to get the same benefits of the public IPFS network, but with the data security and privacy that comes with running a private network. This is extremely useful to financial institutions, data archivers, and other industries to whom data security and privacy is one of the primary concerns when integrating with any new technology
 
-IPNS (80% Complete):
+IPNS (100% Complete):
 
     IPNS allows for publishing of human readable names, and immutable links to changing content. IPNS integration is an optional feature with each upload to IPFS, and will allow for creation of dnslink records on our domain. Note that for the hosted API, IPNS usage alongside of IPFS pins or file uploads will incur additional charges.
 
