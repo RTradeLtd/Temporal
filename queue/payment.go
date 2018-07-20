@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/RTradeLtd/Temporal/bindings/payments"
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
@@ -125,7 +126,11 @@ func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPat
 	if err != nil {
 		return err
 	}
-	//ppm := models.NewPinPaymentManager(db)
+	ppm := models.NewPinPaymentManager(db)
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		return err
+	}
 	for d := range msgs {
 		fmt.Println("delivery detected")
 		pps := PinPaymentSubmission{}
@@ -169,14 +174,38 @@ func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPat
 			continue
 		}
 		fmt.Println("successfully sent payment transaction, waiting for it to be mined")
-		rcpt, err := bind.WaitMined(context.Background(), client, tx)
+		_, err = bind.WaitMined(context.Background(), client, tx)
 		if err != nil {
 			// this could be a temporary error, so we wont ack it
 			fmt.Println("error waiting for tx to be mined", err)
 			continue
 		}
-		fmt.Println("transaction has been mined")
-		fmt.Printf("%+v\n", rcpt)
+		paymentStruct, err := contract.Payments(nil, auth.From, num)
+		if err != nil {
+			//TODO: add error handling (msg client via email notifying failure)
+			fmt.Println("error retrieving payments", err)
+			d.Ack(false)
+			continue
+		}
+		if paymentStruct.State != 1 {
+			fmt.Println("error occured while processing payment and the upload will not be processed")
+			d.Ack(false)
+			continue
+		}
+		paymentFromDB, err := ppm.FindPaymentByNumberAndAddress(num.String(), auth.From.String())
+		if err != nil {
+			fmt.Println("erorr reading payment from database", err)
+			d.Ack(false)
+			continue
+		}
+		contentHash := paymentFromDB.ContentHash
+		err = manager.Pin(contentHash)
+		if err != nil {
+			fmt.Println("error pinning to IPFS", err)
+			d.Ack(false)
+			continue
+		}
+		fmt.Println("Content pinned to IPFS")
 		d.Ack(false)
 	}
 	return nil
