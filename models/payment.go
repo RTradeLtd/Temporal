@@ -33,6 +33,13 @@ func (ppm *PinPaymentManager) FindPaymentByNumberAndAddress(number, ethAddress s
 }
 
 func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, contentHash string) (*PinPayment, error) {
+	_, err := ppm.FindPaymentByNumberAndAddress(number.String(), uploaderAddress)
+	if err == nil {
+		return nil, errors.New("payment already exists")
+	}
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
 	pp := &PinPayment{
 		Number:       number.String(),
 		Method:       method,

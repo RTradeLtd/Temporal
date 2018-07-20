@@ -443,8 +443,7 @@ func SubmitPaymentToContract(c *gin.Context) {
 	if num.Cmp(big.NewInt(0)) == 1 {
 		number = new(big.Int).Add(num, big.NewInt(1))
 	} else {
-		// TEMPORARY SHOULD BE `````NUMBER = NUM````
-		number = new(big.Int).Add(num, big.NewInt(1))
+		number = num
 	}
 	addressTyped := common.HexToAddress(ethAddress)
 	ps, err := signer.GeneratePaymentSigner(keyMap["keyFile"], keyMap["keyPass"])
@@ -488,6 +487,11 @@ func SubmitPaymentToContract(c *gin.Context) {
 		Sig:          sm.Sig,
 	}
 
+	_, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqURL)
 	if err != nil {
 		FailOnError(c, err)
