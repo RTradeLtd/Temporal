@@ -5,6 +5,7 @@ import (
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 /*
@@ -44,21 +45,21 @@ func GenerateMailManager(tCfg *config.TemporalConfig) (*MailManager, error) {
 	return &mm, nil
 }
 
-/*
-// Send24HourEmail is a function used to send report information for the last 24 hour period
-func (m *Manager) Send24HourEmail(date, ethMined, usdValue, cadValue string) (int, error) {
-	content := fmt.Sprintf("<br>Eth Mined: %v<br>USD Value: %v<br>CAD Value: %v", ethMined, usdValue, cadValue)
-	from := mail.NewEmail("stake-sendgrid-api", "sgapi@rtradetechnologies.com")
-	subject := fmt.Sprintf("Ethereum Mining Report - %s", date)
-	to := mail.NewEmail("Mining Reports", "postables@rtradetechnologies.com")
+// SendEmail is used to send an email to temporal users
+func (mm *MailManager) SendEmail(subject, content, contentType, recipientName, recipientEmail string) (int, error) {
+	if contentType == "" {
+		contentType = "text/html"
+	}
+	// 	content := fmt.Sprintf("<br>Eth Mined: %v<br>USD Value: %v<br>CAD Value: %v", ethMined, usdValue, cadValue)
+	from := mail.NewEmail(mm.EmailName, mm.EmailAddress)
+	to := mail.NewEmail(recipientName, recipientEmail)
 
-	mContent := mail.NewContent("text/html", content)
+	mContent := mail.NewContent(contentType, content)
 	mail := mail.NewV3MailInit(from, subject, to, mContent)
 
-	response, err := m.SendgridClient.Send(mail)
+	response, err := mm.Client.Send(mail)
 	if err != nil {
 		return 0, err
 	}
 	return response.StatusCode, nil
 }
-*/
