@@ -1,6 +1,8 @@
 package mail
 
 import (
+	"errors"
+
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
@@ -45,6 +47,19 @@ func GenerateMailManager(tCfg *config.TemporalConfig) (*MailManager, error) {
 	return &mm, nil
 }
 
+func (mm *MailManager) BulkSend(subject, content, contentType string, recipientNames, recipientEmails []string) error {
+	if len(recipientNames) != len(recipientEmails) {
+		return errors.New("recipientNames and recipientEmails must be fo equal length")
+	}
+	for k, v := range recipientEmails {
+		_, err := mm.SendEmail(subject, content, contentType, recipientNames[k], v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // SendEmail is used to send an email to temporal users
 func (mm *MailManager) SendEmail(subject, content, contentType, recipientName, recipientEmail string) (int, error) {
 	if contentType == "" {
@@ -62,4 +77,8 @@ func (mm *MailManager) SendEmail(subject, content, contentType, recipientName, r
 		return 0, err
 	}
 	return response.StatusCode, nil
+}
+
+type Message struct {
+	EthAddress string `json:"eth_address"`
 }

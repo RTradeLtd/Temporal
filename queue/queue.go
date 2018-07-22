@@ -19,6 +19,8 @@ var IpfsPinQueue = "ipfs-pin-queue"
 var IpfsFileQueue = "ipfs-file-queue"
 var PinPaymentConfirmationQueue = "pin-payment-confirmation-queue"
 var PinPaymentSubmissionQueue = "pin-payment-submission-queue"
+var EmailSendQueue = "email-send-queue"
+var AdminEmail = "temporal.reports@rtradetechnologies.com"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
@@ -193,6 +195,11 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		}
 	case PinPaymentSubmissionQueue:
 		err = ProcessPinPaymentSubmissions(msgs, db, cfg.Ethereum.Connection.IPC.Path, "0xA1aEe59A900c1Bc34403bBBA68252D024bECcB91")
+		if err != nil {
+			return err
+		}
+	case EmailSendQueue:
+		err = ProcessMailSends(msgs, cfg)
 		if err != nil {
 			return err
 		}

@@ -240,3 +240,16 @@ func (um *UserManager) FindByAddress(address string) *User {
 	}
 	return &u
 }
+
+// FindEmailByAddress is used to find an email address by searching for the users eth address
+// the returned map contains their eth address as a key, and their email address as a value
+func (um *UserManager) FindEmailByAddress(ethAddress string) (map[string]string, error) {
+	u := User{}
+	check := um.DB.Where("eth_address = ?", ethAddress).First(&u)
+	if check.Error != nil {
+		return nil, check.Error
+	}
+	emails := make(map[string]string)
+	emails[ethAddress] = u.EmailAddress
+	return emails, nil
+}
