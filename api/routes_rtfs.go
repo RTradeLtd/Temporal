@@ -55,7 +55,7 @@ func PinHashLocally(c *gin.Context) {
 		return
 	}
 
-	err = qm.PublishMessage(ip)
+	err = qm.PublishMessageWithExchange(ip, queue.PinExchange)
 	if err != nil {
 		FailOnError(c, err)
 		return

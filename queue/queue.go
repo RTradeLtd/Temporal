@@ -90,7 +90,7 @@ func Initialize(queueName, connectionURL string) (*QueueManager, error) {
 	}
 	// Declare Non Default exchanges for the particular queue
 	switch queueName {
-	case PinExchange:
+	case IpfsPinQueue:
 		err = qm.DeclareIPFSPinExchange()
 		if err != nil {
 			return nil, err
@@ -172,6 +172,18 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		return err
 	}
 
+	switch qm.Queue.Name {
+	case IpfsPinQueue:
+		err = qm.Channel.QueueBind(
+			qm.Queue.Name,  // name of the queue
+			PinExchangeKey, // bindingKey
+			PinExchange,    // sourceExchange
+			false,          // noWait
+			nil,            // arguments
+		)
+	default:
+		break
+	}
 	// check the queue name
 	switch qm.Queue.Name {
 	// only parse database pin requests
@@ -211,11 +223,12 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	return nil
 }
 
-//PublishFanOutMessage is used to publish a message to a fanout exchange.
+//PublishMessageWithExchange is used to publish a message to a given exchange
 func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
+	routingKey := ""
 	switch exchangeName {
 	case PinExchange:
-		break
+		routingKey = PinExchangeKey
 	case ClusterPinExchange:
 		break
 	default:
@@ -226,10 +239,10 @@ func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeNam
 		return err
 	}
 	err = qm.Channel.Publish(
-		exchangeName,  // exchange
-		qm.Queue.Name, // routing key
-		false,         // mandatory
-		false,         // immediate
+		exchangeName, // exchange
+		routingKey,   // routing key
+		false,        // mandatory
+		false,        // immediate
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
 			ContentType:  "text/plain",

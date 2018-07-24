@@ -3,6 +3,8 @@ package queue
 const (
 	// PinExchange is the name of the fanout exchange for regular ipfs pins
 	PinExchange = "ipfs-pin"
+	// PinExchangeKey is the key used for ipfs pin exchanges
+	PinExchangeKey = "ipfs-pin-key"
 	// ClusterPinExchange is the name of the fanout exchange for cluster ipfs pins
 	ClusterPinExchange = "ipfs-cluster-pin"
 	// FileExchange is the name of the fanout exchange for regular ipfs files
