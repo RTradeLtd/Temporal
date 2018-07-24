@@ -103,7 +103,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			}
 			url, err := networkManager.GetAPIURLByName(pin.NetworkName)
 			if err != nil {
-				//TODO log and handle
+				//TODO: decide if we should send out an email
 				fmt.Println(err)
 				d.Ack(false)
 				continue
@@ -132,6 +132,21 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 		}
 		err = ipfsManager.Pin(pin.CID)
 		if err != nil {
+			addresses := []string{}
+			addresses = append(addresses, pin.EthAddress)
+			es := EmailSend{
+				Subject:      IpfsPinFailedSubject,
+				Content:      fmt.Sprintf(IpfsPinFailedContent, pin.CID, pin.NetworkName, err),
+				ContentType:  "",
+				EthAddresses: addresses,
+			}
+			errOne := qm.PublishMessage(es)
+			if errOne != nil {
+				// For now we aren't acking this, however this needs to be
+				// reevluated later on
+				fmt.Println("error publishing message ", err)
+				continue
+			}
 			//TODO log and handle
 			// we aren't acknowlding this since it could be a temporary failure
 			fmt.Println(err)

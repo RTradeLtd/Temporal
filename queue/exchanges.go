@@ -7,6 +7,8 @@ const (
 	PinExchangeKey = "ipfs-pin-key"
 	// ClusterPinExchange is the name of the fanout exchange for cluster ipfs pins
 	ClusterPinExchange = "ipfs-cluster-pin"
+	// ClusterExchangeKey is the key used for ipfs cluster exchanges
+	ClusterExchangeKey = "cluster-exchange-key"
 	// FileExchange is the name of the fanout exchange for regular ipfs files
 	FileExchange = "ipfs-file"
 )
