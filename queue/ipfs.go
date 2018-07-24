@@ -177,6 +177,10 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		return err
 	}
 	fmt.Println("minio connection setup")
+	qm, err := Initialize(IpfsFileQueue, cfg.RabbitMQ.URL)
+	if err != nil {
+		return err
+	}
 	// process any received messages
 	fmt.Println("processing ipfs file messages")
 	for d := range msgs {
@@ -194,7 +198,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		// get object from minio
 		obj, err := minioManager.GetObject(ipfsFile.BucketName, ipfsFile.ObjectName, minio.GetObjectOptions{})
 		if err != nil {
-			//TODO: log and handle
+			//TODO: log and handle, should we email them when this fails?
 			fmt.Println(err)
 			d.Ack(false)
 			continue
@@ -204,6 +208,19 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		fmt.Println("adding file to ipfs")
 		resp, err := ipfsManager.Shell.Add(obj)
 		if err != nil {
+			//TODO: decide how to handle email failures
+			addresses := []string{}
+			addresses = append(addresses, ipfsFile.EthAddress)
+			es := EmailSend{
+				Subject:      IpfsFileFailedSubject,
+				Content:      fmt.Sprintf(IpfsFileFailedContent, ipfsFile.ObjectName, ipfsFile.NetworkName),
+				ContentType:  "",
+				EthAddresses: addresses,
+			}
+			errOne := qm.PublishMessage(es)
+			if errOne != nil {
+				fmt.Println(errOne)
+			}
 			//TODO: log and handle
 			fmt.Println(err)
 			d.Ack(false)
@@ -218,6 +235,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
+		// TODO: decide whether or not we should email on "backend" failures
 		fmt.Println("object removed from minio")
 		upload := models.Upload{}
 		// find a model from the database matching the content hash and network name
@@ -229,6 +247,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
+		//THIS PART IS EXTREMELY INEFFICIENT AND NEEDS TO BE RE-EXAMINED
 		// if we have an error of type record not found, lets build a fresh model to save in the database
 		if check.Error == gorm.ErrRecordNotFound {
 			upload.Hash = resp

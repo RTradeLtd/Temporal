@@ -14,6 +14,10 @@ var (
 	IpfsPinFailedContent = "Pin failed for content hash %s on IPFS network %s, for reason %s"
 	// IpfsPinFailedSubject is a subject for IPFS pin failed messages
 	IpfsPinFailedSubject = "IPFS Pin Failed"
+	// IpfsFileFailedContent is a to be formatted message sent on ipfs add failures
+	IpfsFileFailedContent = "IPFS File Add Failed for object name %s on IPFS network %s"
+	// IpfsFileFailedSubject is a subject for ipfs file add fails
+	IpfsFileFailedSubject = "IPFS File Add Failed"
 	// IpfsPrivateNetworkUnauthorizedSubject is a subject whenever someone tries to access a bad private network
 	IpfsPrivateNetworkUnauthorizedSubject = "Unauthorized access to IPFS private network"
 	// IpfsInitializationFailedSubject is a subject used when connecting to ipfs fails
