@@ -172,6 +172,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		return err
 	}
 
+	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
 	switch qm.Queue.Name {
 	case IpfsPinQueue:
 		err = qm.Channel.QueueBind(
