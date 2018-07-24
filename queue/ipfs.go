@@ -57,10 +57,14 @@ func ProcessIpfsClusterQueue(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 }
 
 // ProccessIPFSPins is used to process IPFS pin requests
-func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB) {
+func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	userManager := models.NewUserManager(db)
 	//uploadManager := models.NewUploadManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
+	qm, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL)
+	if err != nil {
+		return err
+	}
 	for d := range msgs {
 		pin := &IPFSPin{}
 		err := json.Unmarshal(d.Body, pin)
@@ -79,8 +83,20 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB) {
 				continue
 			}
 			if !canAccess {
+				addresses := []string{}
+				addresses = append(addresses, pin.EthAddress)
+				es := EmailSend{
+					Subject:      IpfsPrivateNetworkUnauthorizedSubject,
+					Content:      fmt.Sprintf("Unauthorized access to IPFS private network %s", pin.NetworkName),
+					ContentType:  "",
+					EthAddresses: addresses,
+				}
+				err = qm.PublishMessage(es)
+				if err != nil {
+					//TODO log and handle
+					fmt.Println(err)
+				}
 				//TODO log 	and handle
-				fmt.Println(err)
 				fmt.Println("unauthorized access to private net ", pin.NetworkName)
 				d.Ack(false)
 				continue
@@ -90,15 +106,28 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB) {
 				//TODO log and handle
 				fmt.Println(err)
 				d.Ack(false)
+				continue
 			}
 			apiURL = url
 		}
 		ipfsManager, err := rtfs.Initialize("", apiURL)
 		if err != nil {
-			//TODO log and handle
-			// We aren't acknowledging this particular message
-			// since it may be a temporary issue
+			addresses := []string{}
+			addresses = append(addresses, pin.EthAddress)
+			es := EmailSend{
+				Subject:      IpfsInitializationFailedSubject,
+				Content:      fmt.Sprintf("Connection to IPFS failed due to the following error %s", err),
+				ContentType:  "",
+				EthAddresses: addresses,
+			}
+			errOne := qm.PublishMessage(es)
+			if errOne != nil {
+				// For this, we will not ack since we want to be able to send messages
+				fmt.Println("error publishing message ", err)
+				continue
+			}
 			fmt.Println(err)
+			d.Ack(false)
 			continue
 		}
 		err = ipfsManager.Pin(pin.CID)
@@ -110,6 +139,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB) {
 			continue
 		}
 	}
+	return nil
 }
 
 func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {

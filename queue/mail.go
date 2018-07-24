@@ -14,6 +14,10 @@ var (
 	IpfsPinFailedContent = "Pin failed for content hash %s on IPFS network %s, for reason %s"
 	// IpfsPinFailedSubject is a subject for IPFS pin failed messages
 	IpfsPinFailedSubject = "IPFS Pin Failed"
+	// IpfsPrivateNetworkUnauthorizedSubject is a subject whenever someone tries to access a bad private network
+	IpfsPrivateNetworkUnauthorizedSubject = "Unauthorized access to IPFS private network"
+	// IpfsInitializationFailedSubject is a subject used when connecting to ipfs fails
+	IpfsInitializationFailedSubject = "Connection to IPFS failed"
 )
 
 // EmailSend is a helper struct used to contained formatted content ot send as an email
@@ -31,6 +35,7 @@ func ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.TemporalConfig) er
 		return err
 	}
 	for d := range msgs {
+		fmt.Println("email send notification detected")
 		es := EmailSend{}
 		err = json.Unmarshal(d.Body, &es)
 		if err != nil {
@@ -56,6 +61,7 @@ func ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.TemporalConfig) er
 				fmt.Printf("error sending message to %s for error %s", v, err)
 			}
 		}
+		fmt.Println("emails sent")
 	}
 	return nil
 }

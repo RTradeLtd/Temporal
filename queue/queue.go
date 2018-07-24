@@ -3,6 +3,7 @@ package queue
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/RTradeLtd/Temporal/config"
@@ -182,7 +183,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	case IpfsClusterQueue:
 		ProcessIpfsClusterQueue(msgs, db)
 	case IpfsPinQueue:
-		ProccessIPFSPins(msgs, db)
+		ProccessIPFSPins(msgs, db, cfg)
 	case IpfsFileQueue:
 		err = ProccessIPFSFiles(msgs, cfg, db)
 		if err != nil {
@@ -199,6 +200,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			return err
 		}
 	case EmailSendQueue:
+		fmt.Println("processing mail sends")
 		err = ProcessMailSends(msgs, cfg)
 		if err != nil {
 			return err
