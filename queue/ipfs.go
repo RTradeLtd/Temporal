@@ -78,7 +78,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(pin.EthAddress, pin.NetworkName)
 			if err != nil {
 				//TODO log and handle
-				fmt.Println(err)
+				fmt.Println("error checking for private network access", err)
 				d.Ack(false)
 				continue
 			}
@@ -142,10 +142,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			}
 			errOne := qm.PublishMessage(es)
 			if errOne != nil {
-				// For now we aren't acking this, however this needs to be
-				// reevluated later on
 				fmt.Println("error publishing message ", err)
-				continue
 			}
 			//TODO log and handle
 			// we aren't acknowlding this since it could be a temporary failure
@@ -164,7 +161,6 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 	accessKey := cfg.MINIO.AccessKey
 	secretKey := cfg.MINIO.SecretKey
 	fmt.Println("setting up ipfs connection")
-	// setup our connection to local ipfs node
 	ipfsManager, err := rtfs.Initialize("", "")
 	if err != nil {
 		return err
@@ -177,10 +173,15 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		return err
 	}
 	fmt.Println("minio connection setup")
-	qm, err := Initialize(IpfsFileQueue, cfg.RabbitMQ.URL)
+	qmFile, err := Initialize(IpfsFileQueue, cfg.RabbitMQ.URL)
 	if err != nil {
 		return err
 	}
+	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL)
+	if err != nil {
+		return err
+	}
+	userManager := models.NewUserManager(db)
 	// process any received messages
 	fmt.Println("processing ipfs file messages")
 	for d := range msgs {
@@ -194,6 +195,56 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("determining network")
+		apiURL := ""
+		// determing private network access rights
+		if ipfsFile.NetworkName != "public" {
+			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(ipfsFile.EthAddress, ipfsFile.NetworkName)
+			if err != nil {
+				//TODO log and handle, decide how we would do this
+				fmt.Println("error checking for private network access", err)
+				d.Ack(false)
+				continue
+			}
+			if !canAccess {
+				addresses := []string{}
+				addresses = append(addresses, ipfsFile.EthAddress)
+				es := EmailSend{
+					Subject:      IpfsPrivateNetworkUnauthorizedSubject,
+					Content:      fmt.Sprintf("Unauthorized access to IPFS private network %s", ipfsFile.NetworkName),
+					ContentType:  "",
+					EthAddresses: addresses,
+				}
+				err = qmEmail.PublishMessage(es)
+				if err != nil {
+					//TODO log and handle
+					fmt.Println(err)
+				}
+				//TODO log 	and handle
+				fmt.Println("unauthorized access to private net ", ipfsFile.NetworkName)
+				d.Ack(false)
+				continue
+			}
+			ipfsManager, err = rtfs.Initialize("", apiURL)
+			if err != nil {
+				addresses := []string{}
+				addresses = append(addresses, ipfsFile.EthAddress)
+				es := EmailSend{
+					Subject:      IpfsInitializationFailedSubject,
+					Content:      fmt.Sprintf("Connection to IPFS failed due to the following error %s", err),
+					ContentType:  "",
+					EthAddresses: addresses,
+				}
+				errOne := qmEmail.PublishMessage(es)
+				if errOne != nil {
+					fmt.Println("error publishing message ", err)
+				}
+				fmt.Println(err)
+				d.Ack(false)
+				continue
+			}
+		}
+
 		fmt.Println("retrieving file from minio")
 		// get object from minio
 		obj, err := minioManager.GetObject(ipfsFile.BucketName, ipfsFile.ObjectName, minio.GetObjectOptions{})
@@ -217,7 +268,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 				ContentType:  "",
 				EthAddresses: addresses,
 			}
-			errOne := qm.PublishMessage(es)
+			errOne := qmEmail.PublishMessage(es)
 			if errOne != nil {
 				fmt.Println(errOne)
 			}
@@ -225,6 +276,16 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			fmt.Println(err)
 			d.Ack(false)
 			continue
+		}
+		ipfsPin := IPFSPin{
+			CID:         resp,
+			NetworkName: ipfsFile.NetworkName,
+			EthAddress:  ipfsFile.EthAddress,
+		}
+		err = qmFile.PublishMessageWithExchange(ipfsPin, PinExchange)
+		if err != nil {
+			// this we will won't ack, or continue on since the file has already been added to ipfs and can be pinned seperately
+			fmt.Println("error publishing ipfs pin message to the pin exchange ", err)
 		}
 		fmt.Println("file added to ipfs")
 		fmt.Println("removing object from minio")
