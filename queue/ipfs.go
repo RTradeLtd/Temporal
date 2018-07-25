@@ -154,6 +154,9 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 	return nil
 }
 
+// ProccessIPFSFiles is used to process messages sent to rabbitmq to upload files to IPFS.
+// This function is invoked with the advanced method of file uploads, and is significantly more resilient than
+// the simple file upload method.
 func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
 	// construct the endpoint url to access our minio server
 	endpoint := fmt.Sprintf("%s:%s", cfg.MINIO.Connection.IP, cfg.MINIO.Connection.Port)

@@ -17,6 +17,74 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// PinToHostedIPFSNetwork is used to pin content to a private/hosted ipfs network
+func PinToHostedIPFSNetwork(c *gin.Context) {
+	hash := c.Param("hash")
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailNoExistPostForm(c, "network_name")
+	}
+	holdTimeInMonths, exists := c.GetPostForm("hold_time")
+	if !exists {
+		FailNoExistPostForm(c, "hold_time")
+		return
+	}
+	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	ip := queue.IPFSPin{
+		CID:         hash,
+		NetworkName: networkName,
+		EthAddress:  ethAddress,
+	}
+
+	mqConnectionURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailOnError(c, errors.New("unable to load rabbitmq"))
+		return
+	}
+
+	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	err = qm.PublishMessageWithExchange(ip, queue.PinExchange)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// construct the rabbitmq message to add this entry to the database
+	dpa := queue.DatabasePinAdd{
+		Hash:             hash,
+		UploaderAddress:  ethAddress,
+		HoldTimeInMonths: holdTimeInt,
+		NetworkName:      networkName,
+	}
+	// assert type assertion retrieving info from middleware
+	// initialize the queue
+	qm, err = queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// publish the message, if there was an error finish processing
+	err = qm.PublishMessage(dpa)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": "content pin request sent",
+	})
+}
+
+/* left enabled for historical purposes, will be removed later
 //TODO NEED TO FINISH
 // NEEDS TO CALL QUEUE TO UPDATE THE DATABASE
 // NEED TO ADD ONE BUT FOR THE CLUSTER
@@ -94,7 +162,7 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "content pin request sent",
 	})
-}
+}*/
 
 func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
