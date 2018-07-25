@@ -11,12 +11,113 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/jinzhu/gorm"
 
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/rtns/dlink"
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/goamz/aws"
 )
 
+func PublishToIPNSDetails(c *gin.Context) {
+	_, exists := c.GetPostForm("network_name")
+	if exists {
+		PublishDetailedIPNSToHostedIPFSNetwork(c)
+		return
+	}
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	hash, present := c.GetPostForm("hash")
+	if !present {
+		FailNoExistPostForm(c, "hash")
+		return
+	}
+	lifetimeStr, present := c.GetPostForm("life_time")
+	if !present {
+		FailNoExistPostForm(c, "lifetime")
+		return
+	}
+	ttlStr, present := c.GetPostForm("ttl")
+	if !present {
+		FailNoExistPostForm(c, "ttl")
+		return
+	}
+	key, present := c.GetPostForm("key")
+	if !present {
+		FailNoExistPostForm(c, "key")
+		return
+	}
+	resolveString, present := c.GetPostForm("resolve")
+	if !present {
+		FailNoExistPostForm(c, "resolve")
+		return
+	}
+
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailOnError(c, errors.New("failed to load rabbitmq"))
+		return
+	}
+
+	um := models.NewUserManager(db)
+
+	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	if !ownsKey {
+		FailOnError(c, errors.New("attempting to generate IPNS entry with unowned key"))
+		return
+	}
+	resolve, err := strconv.ParseBool(resolveString)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	lifetime, err := time.ParseDuration(lifetimeStr)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	ttl, err := time.ParseDuration(ttlStr)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	ie := queue.IPNSEntry{
+		CID:         hash,
+		LifeTime:    lifetime,
+		TTL:         ttl,
+		Resolve:     resolve,
+		Key:         key,
+		EthAddress:  ethAddress,
+		NetworkName: "public",
+	}
+
+	fmt.Printf("IPNS Entry struct %+v\n", ie)
+
+	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	//TODO move to fanout exchange
+	err = qm.PublishMessage(ie)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ipns entry creation sent to backend",
+	})
+}
+
+/* KEPT FOR HISTORICAL PURPOSES, WILL PHASE OUT EVENTUALLY
+// Phase this out overtime for the above method
 func PublishToIPNSDetails(c *gin.Context) {
 	_, exists := c.GetPostForm("network_name")
 	if exists {
@@ -75,7 +176,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 	}
 
 	if !ownsKey {
-		FailOnError(c, errors.New("attempting to generate IPNS entry unowned key"))
+		FailOnError(c, errors.New("attempting to generate IPNS entry with unowned key"))
 		return
 	}
 	manager, err := rtfs.Initialize("", "")
@@ -141,7 +242,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 		"value":                  resp.Value,
 		"time_to_create_minutes": timeDifference.Minutes(),
 	})
-}
+}*/
 
 // GenerateDNSLinkEntry is used to generate a DNS link entry
 func GenerateDNSLinkEntry(c *gin.Context) {

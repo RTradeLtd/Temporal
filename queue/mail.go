@@ -22,6 +22,9 @@ var (
 	IpfsPrivateNetworkUnauthorizedSubject = "Unauthorized access to IPFS private network"
 	// IpfsInitializationFailedSubject is a subject used when connecting to ipfs fails
 	IpfsInitializationFailedSubject = "Connection to IPFS failed"
+	// IpnsEntryFailedSubject is a subject sent upon IPNS failures
+	IpnsEntryFailedSubject = "IPNS Entry Creation Failed"
+	IpnsEntryFailedContent = "IPNS Entry creation failed for content hash %s using key %s for reason %s"
 )
 
 // EmailSend is a helper struct used to contained formatted content ot send as an email

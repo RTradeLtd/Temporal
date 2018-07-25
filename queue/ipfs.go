@@ -185,6 +185,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		return err
 	}
 	userManager := models.NewUserManager(db)
+	networkManager := models.NewHostedIPFSNetworkManager(db)
 	// process any received messages
 	fmt.Println("processing ipfs file messages")
 	for d := range msgs {
@@ -228,6 +229,14 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 				d.Ack(false)
 				continue
 			}
+			apiURLName, err := networkManager.GetAPIURLByName(ipfsFile.NetworkName)
+			if err != nil {
+				//TODO send email, log, handle
+				fmt.Println("error getting API url by name ", err)
+				d.Ack(false)
+				continue
+			}
+			apiURL = apiURLName
 			ipfsManager, err = rtfs.Initialize("", apiURL)
 			if err != nil {
 				addresses := []string{}

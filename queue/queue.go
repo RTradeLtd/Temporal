@@ -21,6 +21,8 @@ var IpfsFileQueue = "ipfs-file-queue"
 var PinPaymentConfirmationQueue = "pin-payment-confirmation-queue"
 var PinPaymentSubmissionQueue = "pin-payment-submission-queue"
 var EmailSendQueue = "email-send-queue"
+var IpnsEntryQueue = "ipns-entry-queue"
+
 var AdminEmail = "temporal.reports@rtradetechnologies.com"
 
 // QueueManager is a helper struct to interact with rabbitmq
@@ -215,6 +217,12 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	case EmailSendQueue:
 		fmt.Println("processing mail sends")
 		err = ProcessMailSends(msgs, cfg)
+		if err != nil {
+			return err
+		}
+	case IpnsEntryQueue:
+		fmt.Println("processing IPNS entry creation requests")
+		err = ProcessIPNSEntryCreationRequests(msgs, db, cfg)
 		if err != nil {
 			return err
 		}
