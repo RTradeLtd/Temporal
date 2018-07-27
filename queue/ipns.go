@@ -29,6 +29,7 @@ func ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cf
 	if err != nil {
 		return err
 	}
+	ipnsManager := models.NewIPNSManager(db)
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
 	qmEmail, err := Initialize(IpnsEntryQueue, cfg.RabbitMQ.URL)
@@ -122,6 +123,11 @@ func ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cf
 			fmt.Println("error publishing IPNS entry ", err)
 			d.Ack(false)
 			continue
+		}
+		_, err = ipnsManager.UpdateIPNSEntry(response.Name, ie.CID, ie.Key, ie.NetworkName, ie.LifeTime, ie.TTL)
+		if err != nil {
+			//TODO: decide how to handle
+			fmt.Println("error adding IPNS entry to database ", err)
 		}
 		fmt.Println("response published successfully")
 		fmt.Println("IPNS entry creation successful ", response)
