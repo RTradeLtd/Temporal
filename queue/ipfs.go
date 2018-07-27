@@ -357,8 +357,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
-		//THIS PART IS EXTREMELY INEFFICIENT AND NEEDS TO BE RE-EXAMINED
-		// if we have an error of type record not found, lets build a fresh model to save in the database
+		// TODO: add email notification indicating that the file was added, giving the content hash for the particular file
 		if check.Error == gorm.ErrRecordNotFound {
 			_, err = uploadManager.NewUpload(resp, "file", ipfsFile.NetworkName, ipfsFile.EthAddress, holdTimeInt)
 			if err != nil {
@@ -377,7 +376,6 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
-		//TEMPORARY, will need to add logic here for processing of of records already in the database
 		d.Ack(false)
 	}
 	return nil
