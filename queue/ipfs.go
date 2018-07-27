@@ -73,6 +73,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			//TODO log and handle
 			fmt.Println(err)
 			d.Ack(false)
+			continue
 		}
 		apiURL := ""
 		if pin.NetworkName != "public" {
@@ -162,7 +163,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			_, check := uploadManager.NewUpload(pin.CID, "pin", pin.NetworkName, pin.EthAddress, pin.HoldTimeInMonths)
 			if check != nil {
 				fmt.Println("error creating new upload ", check)
-				// decide what to do ehre
+				// decide what to do ehre, who we should email, etcc...
 				d.Ack(false)
 				continue
 			}
