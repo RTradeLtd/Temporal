@@ -75,16 +75,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-	case "ipfs-cluster-queue":
-		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.IpfsClusterQueue, mqConnectionURL)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser, tCfg)
-		if err != nil {
-			log.Fatal(err)
-		}
 	case "ipfs-pin-queue":
 		mqConnectionURL := tCfg.RabbitMQ.URL
 		qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL)

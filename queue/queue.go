@@ -12,7 +12,6 @@ import (
 )
 
 var IpfsQueue = "ipfs"
-var IpfsClusterQueue = "ipfs-cluster"
 var DatabaseFileAddQueue = "dfa-queue"
 var DatabasePinAddQueue = "dpa-queue"
 var IpnsUpdateQueue = "ipns-update-queue"
@@ -62,12 +61,6 @@ type DatabasePinAdd struct {
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 	UploaderAddress  string `json:"uploader_address"`
 	NetworkName      string `json:"network_name"`
-}
-
-// IpfsClusterPin is used to handle pinning items to the cluster
-// that have been pinned locally
-type IpfsClusterPin struct {
-	CID string `json:"content_hash"`
 }
 
 type IPNSUpdate struct {
@@ -196,8 +189,6 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	// only parse datbase file requests
 	case DatabaseFileAddQueue:
 		ProcessDatabaseFileAdds(msgs, db)
-	case IpfsClusterQueue:
-		ProcessIpfsClusterQueue(msgs, db)
 	case IpfsPinQueue:
 		ProccessIPFSPins(msgs, db, cfg)
 	case IpfsFileQueue:

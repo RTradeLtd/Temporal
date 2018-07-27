@@ -13,47 +13,9 @@ import (
 	"github.com/RTradeLtd/Temporal/rtfs"
 
 	"github.com/RTradeLtd/Temporal/models"
-	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
-
-// ProcessIpfsClusterQueue is used to process msgs sent to the ipfs cluster queue
-func ProcessIpfsClusterQueue(msgs <-chan amqp.Delivery, db *gorm.DB) error {
-	var clusterPin IpfsClusterPin
-	clusterManager, err := rtfs_cluster.Initialize()
-	if err != nil {
-		return err
-	}
-	for d := range msgs {
-		err := json.Unmarshal(d.Body, &clusterPin)
-		if err != nil {
-			fmt.Println("error unmarshaling data ", err)
-			// TODO: handle error
-			d.Ack(false)
-			continue
-		}
-		contentHash := clusterPin.CID
-		decodedContentHash, err := clusterManager.DecodeHashString(contentHash)
-		if err != nil {
-			fmt.Println("error decoded content hash to cid ", err)
-			//TODO: handle error
-			d.Ack(false)
-			continue
-		}
-		err = clusterManager.Pin(decodedContentHash)
-		if err != nil {
-			fmt.Println("error pinning to cluster ", err)
-			//TODO: handle error
-			d.Ack(false)
-			continue
-		}
-		fmt.Println("content pinned to cluster ", contentHash)
-		d.Ack(false)
-
-	}
-	return nil
-}
 
 // ProccessIPFSPins is used to process IPFS pin requests
 func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
