@@ -44,6 +44,9 @@ type TemporalConfig struct {
 				Path string `json:"path"`
 			} `json:"ipc"`
 		} `json:"connection"`
+		Contracts struct {
+			PaymentContractAddress string `json:"payment_contract_address"`
+		} `json:"contracts"`
 	} `json:"ethereum"`
 	RabbitMQ struct {
 		URL string `json:"url"`

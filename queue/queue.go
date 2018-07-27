@@ -197,12 +197,12 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			return err
 		}
 	case PinPaymentConfirmationQueue:
-		err = ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, "0xA1aEe59A900c1Bc34403bBBA68252D024bECcB91")
+		err = ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, cfg.Ethereum.Contracts.PaymentContractAddress)
 		if err != nil {
 			return err
 		}
 	case PinPaymentSubmissionQueue:
-		err = ProcessPinPaymentSubmissions(msgs, db, cfg.Ethereum.Connection.IPC.Path, "0xA1aEe59A900c1Bc34403bBBA68252D024bECcB91")
+		err = ProcessPinPaymentSubmissions(msgs, db, cfg.Ethereum.Connection.IPC.Path, cfg.Ethereum.Contracts.PaymentContractAddress)
 		if err != nil {
 			return err
 		}
