@@ -166,6 +166,8 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 				d.Ack(false)
 				continue
 			}
+			d.Ack(false)
+			continue
 		}
 		// the record already exists so we will update
 		_, err = uploadManager.UpdateUpload(pin.HoldTimeInMonths, pin.EthAddress, pin.CID, pin.NetworkName)
