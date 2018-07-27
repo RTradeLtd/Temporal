@@ -159,7 +159,13 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			continue
 		}
 		if err == gorm.ErrRecordNotFound {
-			// TODO create new entry in database
+			_, check := uploadManager.NewUpload(pin.CID, "pin", pin.NetworkName, pin.EthAddress, pin.HoldTimeInMonths)
+			if check != nil {
+				fmt.Println("error creating new upload ", check)
+				// decide what to do ehre
+				d.Ack(false)
+				continue
+			}
 		}
 		// the record already exists so we will update
 		_, err = uploadManager.UpdateUpload(pin.HoldTimeInMonths, pin.EthAddress, pin.CID, pin.NetworkName)
