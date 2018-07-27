@@ -8,7 +8,6 @@ import (
 	"github.com/minio/minio-go"
 
 	"github.com/RTradeLtd/Temporal/mini"
-	"github.com/RTradeLtd/Temporal/utils"
 
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -213,6 +212,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 	}
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
+	uploadManager := models.NewUploadManager(db)
 	// process any received messages
 	fmt.Println("processing ipfs file messages")
 	for d := range msgs {
@@ -316,10 +316,18 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
+		holdTimeInt, err := strconv.ParseInt(ipfsFile.HoldTimeInMonths, 10, 64)
+		if err != nil {
+			fmt.Println("erorr parsing string to int ", err)
+			//TODO decide how to handle, etc..
+			d.Ack(false)
+			continue
+		}
 		ipfsPin := IPFSPin{
-			CID:         resp,
-			NetworkName: ipfsFile.NetworkName,
-			EthAddress:  ipfsFile.EthAddress,
+			CID:              resp,
+			NetworkName:      ipfsFile.NetworkName,
+			EthAddress:       ipfsFile.EthAddress,
+			HoldTimeInMonths: holdTimeInt,
 		}
 		err = qmFile.PublishMessageWithExchange(ipfsPin, PinExchange)
 		if err != nil {
@@ -350,34 +358,20 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		//THIS PART IS EXTREMELY INEFFICIENT AND NEEDS TO BE RE-EXAMINED
 		// if we have an error of type record not found, lets build a fresh model to save in the database
 		if check.Error == gorm.ErrRecordNotFound {
-			upload.Hash = resp
-			holdInt, err := strconv.Atoi(ipfsFile.HoldTimeInMonths)
-			holdInt64, err := strconv.ParseInt(ipfsFile.HoldTimeInMonths, 10, 64)
+			_, err = uploadManager.NewUpload(resp, "file", ipfsFile.NetworkName, ipfsFile.EthAddress, holdTimeInt)
 			if err != nil {
-				//TODO: log and handle
-				fmt.Println(err)
+				//TODO decide how we should handle this
+				fmt.Println("error creating new upload in database ", err)
 				d.Ack(false)
 				continue
 			}
-			if err != nil {
-				//TODO: log and handle
-				fmt.Println(err)
-				d.Ack(false)
-				continue
-			}
-			gcd := utils.CalculateGarbageCollectDate(holdInt)
-			upload.GarbageCollectDate = gcd
-			upload.HoldTimeInMonths = holdInt64
-			upload.NetworkName = ipfsFile.NetworkName
-			upload.UploadAddress = ipfsFile.EthAddress
-			upload.UploaderAddresses = append(upload.UploaderAddresses, ipfsFile.EthAddress)
-			if chk := db.Create(&upload); chk.Error != nil {
-				//TODO: log and handle
-				fmt.Println(err)
-				d.Ack(false)
-				continue
-			}
-			fmt.Println("file added to database")
+			d.Ack(false)
+			continue
+		}
+		_, err = uploadManager.UpdateUpload(holdTimeInt, ipfsFile.EthAddress, resp, ipfsFile.NetworkName)
+		if err != nil {
+			//TODO decide how to handle
+			fmt.Println("error updating upload in database ", err)
 			d.Ack(false)
 			continue
 		}
