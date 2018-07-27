@@ -61,6 +61,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 	userManager := models.NewUserManager(db)
 	//uploadManager := models.NewUploadManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
+	uploadManager := models.NewUploadManager(db)
 	qm, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL)
 	if err != nil {
 		return err
@@ -150,6 +151,25 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			fmt.Println("error pinning to network ", pin.NetworkName)
 			continue
 		}
+		_, err = uploadManager.FindUploadByHashAndNetwork(pin.CID, pin.NetworkName)
+		if err != nil && err != gorm.ErrRecordNotFound {
+			fmt.Println("error getting model from database ", err)
+			// decide what to do here
+			d.Ack(false)
+			continue
+		}
+		if err == gorm.ErrRecordNotFound {
+			// TODO create new entry in database
+		}
+		// the record already exists so we will update
+		_, err = uploadManager.UpdateUpload(pin.HoldTimeInMonths, pin.EthAddress, pin.CID, pin.NetworkName)
+		if err != nil {
+			fmt.Println("error updating model in database ", err)
+			// TODO: decide what to do, who we should email, etcc
+			d.Ack(false)
+			continue
+		}
+		d.Ack(false)
 	}
 	return nil
 }

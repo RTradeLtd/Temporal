@@ -37,9 +37,10 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 	}
 
 	ip := queue.IPFSPin{
-		CID:         hash,
-		NetworkName: networkName,
-		EthAddress:  ethAddress,
+		CID:              hash,
+		NetworkName:      networkName,
+		EthAddress:       ethAddress,
+		HoldTimeInMonths: holdTimeInt,
 	}
 
 	mqConnectionURL, ok := c.MustGet("mq_conn_url").(string)

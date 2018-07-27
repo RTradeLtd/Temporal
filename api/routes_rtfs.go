@@ -38,9 +38,10 @@ func PinHashLocally(c *gin.Context) {
 	}
 
 	ip := queue.IPFSPin{
-		CID:         hash,
-		NetworkName: "public",
-		EthAddress:  uploadAddress,
+		CID:              hash,
+		NetworkName:      "public",
+		EthAddress:       uploadAddress,
+		HoldTimeInMonths: holdTimeInt,
 	}
 
 	mqConnectionURL, ok := c.MustGet("mq_conn_url").(string)

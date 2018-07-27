@@ -34,9 +34,10 @@ type QueueManager struct {
 
 // IPFSPin is a struct used when sending pin request
 type IPFSPin struct {
-	CID         string `json:"cid"`
-	NetworkName string `json:"network_name"`
-	EthAddress  string `json:"eth_address"`
+	CID              string `json:"cid"`
+	NetworkName      string `json:"network_name"`
+	EthAddress       string `json:"eth_address"`
+	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 }
 
 type IPFSFile struct {

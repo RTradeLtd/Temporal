@@ -2,8 +2,11 @@ package models
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 )
@@ -28,6 +31,65 @@ type UploadManager struct {
 // NewUploadManager is used to generate an upload manager interface
 func NewUploadManager(db *gorm.DB) *UploadManager {
 	return &UploadManager{DB: db}
+}
+
+// NewUpload is used to create a new upload in the database
+func (um *UploadManager) NewUpload(contentHash, uploadType, networkName, ethAddress string, holdTimeInMonths int64) (*Upload, error) {
+	_, err := um.FindUploadByHashAndNetwork(contentHash, networkName)
+	if err == nil {
+		// this means that there is already an upload in hte database matching this content hash and network name, so we will skip
+		return nil, errors.New("attempting to create new upload entry when one already exists in database")
+	}
+	holdInt, err := strconv.Atoi(fmt.Sprintf("%+v", holdTimeInMonths))
+	if err != nil {
+		return nil, err
+	}
+	upload := Upload{
+		Hash:               contentHash,
+		Type:               uploadType,
+		NetworkName:        networkName,
+		HoldTimeInMonths:   holdTimeInMonths,
+		UploadAddress:      ethAddress,
+		GarbageCollectDate: utils.CalculateGarbageCollectDate(holdInt),
+		UploaderAddresses:  []string{ethAddress},
+	}
+	if check := um.DB.Create(&upload); check.Error != nil {
+		return nil, check.Error
+	}
+	return &upload, nil
+}
+
+// UpdateUpload is used to upadte an already existing upload
+func (um *UploadManager) UpdateUpload(holdTimeInMonths int64, ethAddress, contentHash, networkName string) (*Upload, error) {
+	upload, err := um.FindUploadByHashAndNetwork(contentHash, networkName)
+	if err != nil {
+		return nil, err
+	}
+	isUploader := false
+	upload.UploadAddress = ethAddress
+	for _, v := range upload.UploaderAddresses {
+		if ethAddress == v {
+			isUploader = true
+			break
+		}
+	}
+	if !isUploader {
+		upload.UploaderAddresses = append(upload.UploaderAddresses, ethAddress)
+	}
+	holdInt, err := strconv.Atoi(fmt.Sprintf("%v", holdTimeInMonths))
+	if err != nil {
+		return nil, err
+	}
+	oldGcd := upload.GarbageCollectDate
+	newGcd := utils.CalculateGarbageCollectDate(holdInt)
+	if newGcd.Unix() > oldGcd.Unix() {
+		upload.HoldTimeInMonths = holdTimeInMonths
+		upload.GarbageCollectDate = oldGcd
+	}
+	if check := um.DB.Save(upload); check.Error != nil {
+		return nil, err
+	}
+	return upload, nil
 }
 
 // RunDatabaseGarbageCollection is used to parse through the database
