@@ -352,39 +352,32 @@ func IpfsPubSubConsume(c *gin.Context) {
 // RemovePinFromLocalHost is used to remove a pin from the ipfs instance
 // TODO: fully implement
 func RemovePinFromLocalHost(c *gin.Context) {
-	contextCopy := c.Copy()
 	// fetch hash param
-	hash := contextCopy.Param("hash")
-
-	manager, err := rtfs.Initialize("", "")
+	hash := c.Param("hash")
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	rm := queue.IPFSPinRemoval{
+		ContentHash: hash,
+		NetworkName: "public",
+		EthAddress:  ethAddress,
+	}
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailedToLoadMiddleware(c, "rabbit mq")
+		return
+	}
+	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	// remove the file from the local ipfs state
-	// TODO: implement some kind of error handling and notification
-	err = manager.Shell.Unpin(hash)
+	err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-
-	// TODO:
-	// change to send a message to the cluster to depin
-	mqConnectionURL := c.MustGet("mq_conn_url").(string)
-	qm, err := queue.Initialize(queue.IpfsQueue, mqConnectionURL)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	// TODO:
-	// add in appropriate rabbitmq processing to delete from database
-	err = qm.PublishMessage(hash)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"deleted": hash})
+	c.JSON(http.StatusOK, gin.H{
+		"status": "pin removal sent to backend",
+	})
 }
 
 // GetLocalPins is used to get the pins tracked by the local ipfs node
