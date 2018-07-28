@@ -110,13 +110,6 @@ func RemovePinFromCluster(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	mqConnectionURL := c.MustGet("mq_conn_url").(string)
-	qm, err := queue.Initialize(queue.IpfsQueue, mqConnectionURL)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	qm.PublishMessage(hash)
 	c.JSON(http.StatusOK, gin.H{"deleted": hash})
 }
 

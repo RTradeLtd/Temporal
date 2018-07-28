@@ -11,8 +11,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// THIS NEEDS TO BE PHASED OUT FOR IPFSPINQUEUE
-var IpfsQueue = "ipfs"
 var DatabaseFileAddQueue = "dfa-queue"
 var DatabasePinAddQueue = "dpa-queue"
 var IpnsUpdateQueue = "ipns-update-queue"
