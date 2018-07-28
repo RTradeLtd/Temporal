@@ -21,6 +21,7 @@ var PinPaymentSubmissionQueue = "pin-payment-submission-queue"
 var EmailSendQueue = "email-send-queue"
 var IpnsEntryQueue = "ipns-entry-queue"
 var IpfsPinRemovalQueue = "ipns-pin-removal-queue"
+
 var AdminEmail = "temporal.reports@rtradetechnologies.com"
 
 // QueueManager is a helper struct to interact with rabbitmq
