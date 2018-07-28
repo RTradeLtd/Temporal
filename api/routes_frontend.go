@@ -171,6 +171,11 @@ func CreatePinPayment(c *gin.Context) {
 func CreateFilePayment(c *gin.Context) {
 	cC := c.Copy()
 
+	networkName, exists := cC.GetPostForm("network_name")
+	if !exists {
+		FailNoExistPostForm(c, "network_name")
+		return
+	}
 	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
@@ -281,7 +286,7 @@ func CreateFilePayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	_, err = fpm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, FilesUploadBucket, objectName)
+	_, err = fpm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, FilesUploadBucket, objectName, networkName, holdTimeInMonthsInt)
 	if err != nil {
 		FailOnError(c, err)
 		return

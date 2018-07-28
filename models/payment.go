@@ -84,12 +84,14 @@ func (ppm *PinPaymentManager) RetrieveLatestPaymentNumber(ethAddress string) (*b
 
 type FilePayment struct {
 	gorm.Model
-	Method       uint8
-	Number       string
-	ChargeAmount string
-	EthAddress   string
-	BucketName   string
-	ObjectName   string
+	Method           uint8
+	Number           string
+	ChargeAmount     string
+	EthAddress       string
+	BucketName       string
+	ObjectName       string
+	NetworkName      string
+	HoldTimeInMonths int64
 }
 
 type FilePaymentManager struct {
@@ -100,14 +102,16 @@ func NewFilePaymentManager(db *gorm.DB) *FilePaymentManager {
 	return &FilePaymentManager{DB: db}
 }
 
-func (fpm *FilePaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, bucketName, objectName string) (*FilePayment, error) {
+func (fpm *FilePaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, bucketName, objectName, networkName string, holdTimeInMonths int64) (*FilePayment, error) {
 	fp := &FilePayment{
-		Number:       number.String(),
-		Method:       method,
-		ChargeAmount: chargeAmount.String(),
-		EthAddress:   uploaderAddress,
-		BucketName:   bucketName,
-		ObjectName:   objectName,
+		Number:           number.String(),
+		Method:           method,
+		ChargeAmount:     chargeAmount.String(),
+		EthAddress:       uploaderAddress,
+		BucketName:       bucketName,
+		ObjectName:       objectName,
+		NetworkName:      networkName,
+		HoldTimeInMonths: holdTimeInMonths,
 	}
 	if check := fpm.DB.Create(fp); check.Error != nil {
 		return nil, check.Error
