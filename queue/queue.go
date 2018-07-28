@@ -22,7 +22,7 @@ var PinPaymentConfirmationQueue = "pin-payment-confirmation-queue"
 var PinPaymentSubmissionQueue = "pin-payment-submission-queue"
 var EmailSendQueue = "email-send-queue"
 var IpnsEntryQueue = "ipns-entry-queue"
-
+var IpfsPinRemovalQueue = "ipns-pin-removal-queue"
 var AdminEmail = "temporal.reports@rtradetechnologies.com"
 
 // QueueManager is a helper struct to interact with rabbitmq
@@ -93,6 +93,11 @@ func Initialize(queueName, connectionURL string) (*QueueManager, error) {
 	}
 	// Declare Non Default exchanges for the particular queue
 	switch queueName {
+	case IpfsPinRemovalQueue:
+		err = qm.DeclareIPFSPinRemovalExchange()
+		if err != nil {
+			return nil, err
+		}
 	case IpfsPinQueue:
 		err = qm.DeclareIPFSPinExchange()
 		if err != nil {
@@ -177,6 +182,14 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 
 	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
 	switch qm.Queue.Name {
+	case IpfsPinRemovalQueue:
+		err = qm.Channel.QueueBind(
+			qm.Queue.Name,         // name of the queue
+			PinRemovalExchangeKey, // bindingKey
+			PinRemovalExchange,    // sourceExchange
+			false,                 // noWait
+			nil,                   // arguments
+		)
 	case IpfsPinQueue:
 		err = qm.Channel.QueueBind(
 			qm.Queue.Name,  // name of the queue
@@ -222,6 +235,12 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	case IpnsEntryQueue:
 		fmt.Println("processing IPNS entry creation requests")
 		err = ProcessIPNSEntryCreationRequests(msgs, db, cfg)
+		if err != nil {
+			return err
+		}
+	case IpfsPinRemovalQueue:
+		fmt.Println("processing ipfs pin removals")
+		err = ProcessIPFSPinRemovals(msgs, cfg, db)
 		if err != nil {
 			return err
 		}
