@@ -48,6 +48,12 @@ type IPFSFile struct {
 	HoldTimeInMonths string `json:"hold_time_in_months"`
 }
 
+type IPFSPinRemoval struct {
+	ContentHash string `json:"content_hash"`
+	NetworkName string `json:"network_name"`
+	EthAddress  string `json:"eth_address"`
+}
+
 // DatabaseFileAdd is a struct used when sending data to rabbitmq
 type DatabaseFileAdd struct {
 	Hash             string `json:"hash"`

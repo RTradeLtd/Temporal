@@ -144,6 +144,100 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 	return nil
 }
 
+// ProcessIPFSPinRemovals is used to listen for and process any IPFS pin removals.
+// This queue must be running on each of the IPFS nodes, and we must eventually run checks
+// to ensure that pins were actually removed
+func ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
+	userManager := models.NewUserManager(db)
+	networkManager := models.NewHostedIPFSNetworkManager(db)
+	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL)
+	if err != nil {
+		return err
+	}
+	for d := range msgs {
+		rm := IPFSPinRemoval{}
+		err := json.Unmarshal(d.Body, &rm)
+		if err != nil {
+			//TODO: log and handle
+			fmt.Println("error unmarshaling ", err)
+			d.Ack(false)
+			continue
+		}
+		apiURL := ""
+		if rm.NetworkName != "public" {
+			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(rm.EthAddress, rm.NetworkName)
+			if err != nil {
+				//TODO: log and handle
+				fmt.Println("error checking for network access ", err)
+				d.Ack(false)
+				continue
+			}
+			if !canAccess {
+				addresses := []string{}
+				addresses = append(addresses, rm.EthAddress)
+				es := EmailSend{
+					Subject:      IpfsPrivateNetworkUnauthorizedSubject,
+					Content:      fmt.Sprintf("Unauthorized access to IPFS private network %s", rm.NetworkName),
+					ContentType:  "",
+					EthAddresses: addresses,
+				}
+				err = qmEmail.PublishMessage(es)
+				if err != nil {
+					//TODO log and handle
+					fmt.Println(err)
+				}
+				//TODO log 	and handle
+				fmt.Println("unauthorized access to private net ", rm.NetworkName)
+				d.Ack(false)
+				continue
+			}
+			apiURL, err = networkManager.GetAPIURLByName(rm.NetworkName)
+			if err != nil {
+				//TODO log and handle
+				fmt.Println("failed to get api url for private network ", err)
+				d.Ack(false)
+				continue
+			}
+		}
+		ipfsManager, err := rtfs.Initialize("", apiURL)
+		if err != nil {
+			addresses := []string{rm.EthAddress}
+			es := EmailSend{
+				Subject:      IpfsInitializationFailedSubject,
+				Content:      fmt.Sprintf("Failed to connect to IPFS network %s for reason %s", rm.NetworkName, err),
+				ContentType:  "",
+				EthAddresses: addresses,
+			}
+			errOne := qmEmail.PublishMessage(es)
+			if errOne != nil {
+				fmt.Println("error publishing email to queue ", errOne)
+			}
+			fmt.Println("error connecting to IPFS network ", err)
+			d.Ack(false)
+			continue
+		}
+		err = ipfsManager.Shell.Unpin(rm.ContentHash)
+		if err != nil {
+			addresses := []string{rm.EthAddress}
+			es := EmailSend{
+				Subject:      "Pin removal failed",
+				Content:      fmt.Sprintf("Pin removal failed for ipfs network %s due to reason %s", rm.NetworkName, err),
+				ContentType:  "",
+				EthAddresses: addresses,
+			}
+			errOne := qmEmail.PublishMessage(es)
+			if errOne != nil {
+				//TODO log and handle
+				fmt.Println("error publishing email to queue ", errOne)
+			}
+			fmt.Println("failed to remove content hash ", err)
+			d.Ack(false)
+			continue
+		}
+	}
+	return nil
+}
+
 // ProccessIPFSFiles is used to process messages sent to rabbitmq to upload files to IPFS.
 // This function is invoked with the advanced method of file uploads, and is significantly more resilient than
 // the simple file upload method.

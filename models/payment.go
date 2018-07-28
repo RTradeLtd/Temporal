@@ -9,13 +9,13 @@ import (
 
 type PinPayment struct {
 	gorm.Model
-	Method           uint8
-	Number           string
-	ChargeAmount     string
-	EthAddress       string
-	ContentHash      string
-	NetworkName      string
-	HoldTimeInMonths int64
+	Method           uint8  `json:"method"`
+	Number           string `json:"number"`
+	ChargeAmount     string `json:"charge_amount"`
+	EthAddress       string `json:"eth_address"`
+	ContentHash      string `json:"content_hash"`
+	NetworkName      string `json:"network_name"`
+	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 }
 
 type PinPaymentManager struct {
