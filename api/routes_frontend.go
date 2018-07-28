@@ -151,7 +151,7 @@ func CreatePinPayment(c *gin.Context) {
 		return
 	}
 
-	_, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash)
+	_, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash, holdTimeInt)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -487,7 +487,7 @@ func SubmitPaymentToContract(c *gin.Context) {
 		Sig:          sm.Sig,
 	}
 
-	_, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash)
+	_, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash, holdTimeInt)
 	if err != nil {
 		FailOnError(c, err)
 		return

@@ -19,12 +19,10 @@ import (
 )
 
 type PinPaymentConfirmation struct {
-	TxHash           string `json:"tx_hash"`
-	EthAddress       string `json:"eth_address"`
-	PaymentNumber    string `json:"payment_number"`
-	ContentHash      string `json:"content_hash"`
-	NetworkName      string `json:"network_name"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
+	TxHash        string `json:"tx_hash"`
+	EthAddress    string `json:"eth_address"`
+	PaymentNumber string `json:"payment_number"`
+	ContentHash   string `json:"content_hash"`
 }
 
 type PinPaymentSubmission struct {
@@ -66,6 +64,8 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 	if err != nil {
 		return err
 	}
+	paymentManager := models.NewPinPaymentManager(db)
+
 	for d := range msgs {
 		fmt.Println("payment detected")
 		ppc := &PinPaymentConfirmation{}
@@ -139,14 +139,22 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 			d.Ack(false)
 			continue
 		}
+		paymentFromDatabase, err := paymentManager.RetrieveLatestPayment(ppc.EthAddress)
+		if err != nil {
+			//TODO: decide how we should handle
+			fmt.Println("failed to retrieve latest payment ", err)
+			d.Ack(false)
+			continue
+		}
 		// decide whether or not this should be handled here, or injected into the pin queue...
 		// probably injected into the pin queue
 		ip := IPFSPin{
 			CID:              ppc.ContentHash,
-			NetworkName:      ppc.NetworkName,
+			NetworkName:      paymentFromDatabase.NetworkName,
 			EthAddress:       ppc.EthAddress,
-			HoldTimeInMonths: ppc.HoldTimeInMonths,
+			HoldTimeInMonths: paymentFromDatabase.HoldTimeInMonths,
 		}
+
 		// DECIDE HOW WE SHOULD HANDLE FAILURES
 		err = qmIpfs.PublishMessageWithExchange(ip, PinExchange)
 		if err != nil {
@@ -172,6 +180,10 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 	return nil
 }
 
+// ProcessPinPaymentSubmissions is used to submit payments on behalf of a user. This does require them giving us the private key.
+// while functional, this route isn't recommended as there are security risks involved. This will be upgraded over time so we can try
+// to implement a more secure method. However keep in mind, this will always be "insecure". We may transition
+// to letting the user sign the transactino, and we can broadcast the signed transaction
 func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string) error {
 	client, err := ethclient.Dial(ipcPath)
 	if err != nil {

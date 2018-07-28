@@ -9,11 +9,13 @@ import (
 
 type PinPayment struct {
 	gorm.Model
-	Method       uint8
-	Number       string
-	ChargeAmount string
-	EthAddress   string
-	ContentHash  string
+	Method           uint8
+	Number           string
+	ChargeAmount     string
+	EthAddress       string
+	ContentHash      string
+	NetworkName      string
+	HoldTimeInMonths int64
 }
 
 type PinPaymentManager struct {
@@ -32,7 +34,7 @@ func (ppm *PinPaymentManager) FindPaymentByNumberAndAddress(number, ethAddress s
 	return pp, nil
 }
 
-func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, contentHash string) (*PinPayment, error) {
+func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, contentHash string, holdTimeInMonths int64) (*PinPayment, error) {
 	_, err := ppm.FindPaymentByNumberAndAddress(number.String(), uploaderAddress)
 	if err == nil {
 		return nil, errors.New("payment already exists")
@@ -41,16 +43,25 @@ func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big
 		return nil, err
 	}
 	pp := &PinPayment{
-		Number:       number.String(),
-		Method:       method,
-		ChargeAmount: chargeAmount.String(),
-		EthAddress:   uploaderAddress,
-		ContentHash:  contentHash,
+		Number:           number.String(),
+		Method:           method,
+		ChargeAmount:     chargeAmount.String(),
+		EthAddress:       uploaderAddress,
+		ContentHash:      contentHash,
+		HoldTimeInMonths: holdTimeInMonths,
 	}
 	if check := ppm.DB.Create(pp); check.Error != nil {
 		return nil, check.Error
 	}
 	return pp, nil
+}
+
+func (ppm *PinPaymentManager) RetrieveLatestPayment(ethAddress string) (*PinPayment, error) {
+	pp := PinPayment{}
+	if check := ppm.DB.Table("pin_payments").Order("number desc").Where("eth_address = ?", ethAddress).First(&pp); check.Error != nil {
+		return nil, check.Error
+	}
+	return &pp, nil
 }
 
 func (ppm *PinPaymentManager) RetrieveLatestPaymentNumber(ethAddress string) (*big.Int, error) {
