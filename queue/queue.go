@@ -11,6 +11,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// THIS NEEDS TO BE PHASED OUT FOR IPFSPINQUEUE
 var IpfsQueue = "ipfs"
 var DatabaseFileAddQueue = "dfa-queue"
 var DatabasePinAddQueue = "dpa-queue"
@@ -197,7 +198,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			return err
 		}
 	case PinPaymentConfirmationQueue:
-		err = ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, cfg.Ethereum.Contracts.PaymentContractAddress)
+		err = ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, cfg.Ethereum.Contracts.PaymentContractAddress, cfg)
 		if err != nil {
 			return err
 		}

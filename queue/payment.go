@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/RTradeLtd/Temporal/bindings/payments"
+	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -18,10 +19,12 @@ import (
 )
 
 type PinPaymentConfirmation struct {
-	TxHash        string `json:"tx_hash"`
-	EthAddress    string `json:"eth_address"`
-	PaymentNumber string `json:"payment_number"`
-	ContentHash   string `json:"content_hash"`
+	TxHash           string `json:"tx_hash"`
+	EthAddress       string `json:"eth_address"`
+	PaymentNumber    string `json:"payment_number"`
+	ContentHash      string `json:"content_hash"`
+	NetworkName      string `json:"network_name"`
+	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 }
 
 type PinPaymentSubmission struct {
@@ -40,7 +43,9 @@ type PinPaymentSubmission struct {
 	Prefixed    bool     `json:"prefixed"`
 }
 
-func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string) error {
+// ProcessPinPaymentConfirmation is used to process pin payment confirmations to inject content into TEMPORAL
+// currently only supprots the private IPFS network
+func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string, cfg *config.TemporalConfig) error {
 	fmt.Println("dialing")
 	client, err := ethclient.Dial(ipcPath)
 	if err != nil {
@@ -53,7 +58,11 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 		fmt.Println("error generating payment contract", err)
 		return err
 	}
-	manager, err := rtfs.Initialize("", "")
+	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL)
+	if err != nil {
+		return err
+	}
+	qmIpfs, err := Initialize(IpfsPinQueue, cfg.RabbitMQ.URL)
 	if err != nil {
 		return err
 	}
@@ -85,6 +94,18 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 		}
 		numberBig, valid := new(big.Int).SetString(ppc.PaymentNumber, 10)
 		if !valid {
+			addresses := []string{}
+			addresses = append(addresses, ppc.EthAddress)
+			es := EmailSend{
+				Subject:      PaymentConfirmationFailedSubject,
+				Content:      fmt.Sprintf(PaymentConfirmationFailedContent, ppc.ContentHash, "unable to convert string to big int"),
+				ContentType:  "",
+				EthAddresses: addresses,
+			}
+			err = qmEmail.PublishMessage(es)
+			if err != nil {
+				fmt.Println("error publishing message ", err)
+			}
 			// the message was improperly formatted so its garbagio
 			fmt.Println("unable to convert string to big int")
 			d.Ack(false)
@@ -100,19 +121,53 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 		fmt.Printf("Payment struct \n%+v\n", payment)
 		// now lets verify that the payment was indeed processed
 		if payment.State != uint8(1) {
+			addresses := []string{}
+			addresses = append(addresses, ppc.EthAddress)
+			es := EmailSend{
+				Subject:      PaymentConfirmationFailedSubject,
+				Content:      "payment unable to be processed, likely due to transaction failure or other contract runtime issue",
+				ContentType:  "",
+				EthAddresses: addresses,
+			}
+			err = qmEmail.PublishMessage(es)
+			if err != nil {
+				fmt.Println("error publishing message ", err)
+			}
 			// this means the payment wasn't actually confirmed, could be transaction rejection, etc...
 			// by getting to this step in the code, it means the transaction has been mined so we need to ack this failure
 			fmt.Println("payment unable to be processed, likely due to transaction failure or other contract runtime issue")
 			d.Ack(false)
 			continue
 		}
-		// here we have confirmed payment went through, so we can upload the file to our system
-		err = manager.Pin(ppc.ContentHash)
+		// decide whether or not this should be handled here, or injected into the pin queue...
+		// probably injected into the pin queue
+		ip := IPFSPin{
+			CID:              ppc.ContentHash,
+			NetworkName:      ppc.NetworkName,
+			EthAddress:       ppc.EthAddress,
+			HoldTimeInMonths: ppc.HoldTimeInMonths,
+		}
+		// DECIDE HOW WE SHOULD HANDLE FAILURES
+		err = qmIpfs.PublishMessageWithExchange(ip, PinExchange)
 		if err != nil {
-			// this could be temporary so we wont ack
-			fmt.Println(err)
+			addresses := []string{}
+			addresses = append(addresses, ppc.EthAddress)
+			es := EmailSend{
+				Subject:      fmt.Sprintf("Critical Error: Unable to process IPFS Pin confirmation for content hash %s", ppc.ContentHash),
+				Content:      "Please contact us at admin@rtradetechnologies.com and we will resolve this",
+				ContentType:  "",
+				EthAddresses: addresses,
+			}
+			errOne := qmEmail.PublishMessage(es)
+			if errOne != nil {
+				fmt.Println("error publishing email to queue", errOne)
+			}
+			//TODO log and handle
+			fmt.Println("error publishing pin to queue ", err)
+			d.Ack(false)
 			continue
 		}
+		d.Ack(false)
 	}
 	return nil
 }

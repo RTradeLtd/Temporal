@@ -13,6 +13,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// IPNSEntry is used to hold relevant information needed to process IPNS entry creation requests
 type IPNSEntry struct {
 	CID         string        `json:"cid"`
 	LifeTime    time.Duration `json:"life_time"`

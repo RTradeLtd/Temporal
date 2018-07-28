@@ -24,7 +24,12 @@ var (
 	IpfsInitializationFailedSubject = "Connection to IPFS failed"
 	// IpnsEntryFailedSubject is a subject sent upon IPNS failures
 	IpnsEntryFailedSubject = "IPNS Entry Creation Failed"
+	// IpnsEntryFailedContent is the content used when sending an email for IPNS entry creation failures
 	IpnsEntryFailedContent = "IPNS Entry creation failed for content hash %s using key %s for reason %s"
+	// PaymentConfirmationFailedSubject is a subject used when payment confirmations fail
+	PaymentConfirmationFailedSubject = "Payment Confirmation Failed"
+	// PaymentConfirmationFailedContent is a content used when a payment confirmation failure occurs
+	PaymentConfirmationFailedContent = "Payment failed for content hash %s with error %s"
 )
 
 // EmailSend is a helper struct used to contained formatted content ot send as an email
