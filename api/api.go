@@ -91,9 +91,10 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	endpoint := fmt.Sprintf("%s:%s", cfg.MINIO.Connection.IP, cfg.MINIO.Connection.Port)
 	minioKey := cfg.MINIO.AccessKey
 	minioSecret := cfg.MINIO.SecretKey
-	// LOGIN
-	g.POST("/api/v1/login", authWare.LoginHandler)
 
+	// LOGIN
+	g.Use(middleware.DatabaseMiddleware(db))
+	g.POST("/api/v1/login", authWare.LoginHandler)
 	// REGISTER
 	g.POST("/api/v1/register", RegisterUserAccount)
 	//g.POST("/api/v1/register-enterprise", RegisterEnterpriseUserAccount)

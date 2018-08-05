@@ -3,11 +3,11 @@
 # FOR PRODUCTION PLEASE USE CUSTOM KEYS
 MODE="$2"
 
-if [[ "$2" -eq "" ]]; then
+if [[ "$2" == "" ]]; then
     MODE="dev"
 fi
 
-if [[ "$MODE" -ne "dev" ]]; then
+if [[ "$MODE" != "dev" ]]; then
     if [[ "$MINIO_ACCESS_KEY" == "" ]]; then
         echo "MINIO_ACCESS_KEY environment variable empty"
         exit 1
@@ -29,7 +29,7 @@ fi
 
 if [[ "$CONFIG_DIR" == "" ]]; then
     # set the defaults
-    CONFIG_DIR="/minio_config"
+    CONFIG_DIR="/mini_config"
 fi
 
 
@@ -39,7 +39,7 @@ case "$1" in
         sudo docker pull minio/minio
         ;;
     run-stable)
-        sudo docker run -p 9000:9000 minio/minio /data
+        docker run -p 9000:9000 --name minio1 -v "$DATA_DIR":/data -v "$CONFIG_DIR":/root/.minio minio/minio server /data
         ;;
     run-stable-custom)
         sudo docker run -p 9000:9000 --name minio1 \
