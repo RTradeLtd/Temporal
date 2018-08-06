@@ -20,8 +20,6 @@ function upload()
 		var formData = new FormData();
 		formData.append("file", file);
 		formData.append("hold_time", holdTime);
-		formData.append("use_private_network", "yes");
-		formData.append("network_name", "private_net_1");
 		
 		request.onload = function ()
 		{
