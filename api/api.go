@@ -8,7 +8,10 @@ import (
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/config"
-	"github.com/semihalev/gin-stats"
+	limit "github.com/aviddiviner/gin-limit"
+	xss "github.com/dvwright/xss-mw"
+	stats "github.com/semihalev/gin-stats"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/database"
@@ -16,10 +19,7 @@ import (
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/jinzhu/gorm"
 
-	"github.com/aviddiviner/gin-limit"
-	"github.com/dvwright/xss-mw"
 	"github.com/gin-gonic/gin"
-	"github.com/zsais/go-gin-prometheus"
 )
 
 var xssMdlwr xss.XssMw
