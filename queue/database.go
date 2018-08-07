@@ -111,7 +111,15 @@ func ProcessDatabasePinAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
 				if lastUpload.GarbageCollectDate.Unix() > upload.GarbageCollectDate.Unix() {
 					upload.GarbageCollectDate = lastUpload.GarbageCollectDate
 				}
-				upload.UploaderAddresses = append(lastUpload.UploaderAddresses, dpa.UploaderAddress)
+				found := false
+				for _, v := range lastUpload.UploaderAddresses {
+					if v == dpa.UploaderAddress {
+						found = true
+					}
+				}
+				if !found {
+					upload.UploaderAddresses = append(lastUpload.UploaderAddresses, dpa.UploaderAddress)
+				}
 				fmt.Println("Saving in database")
 				if check := db.Save(&upload); check.Error != nil {
 					//TOOD add error handling
