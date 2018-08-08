@@ -94,7 +94,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			d.Ack(false)
 			continue
 		}
-		fmt.Println("pinning content to ipfs")
+		fmt.Printf("pinning content hash %s to ipfs", pin.CID)
 		err = ipfsManager.Pin(pin.CID)
 		if err != nil {
 			fmt.Println("error pinning content to ipfs")
