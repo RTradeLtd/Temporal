@@ -74,9 +74,7 @@ func (im *IpfsManager) PublishToIPNSDetails(contentHash, keyName string, lifetim
 // but also alert the rest of the local nodes to pin
 // after which the pin will be sent to the cluster
 func (im *IpfsManager) Pin(hash string) error {
-	fmt.Println("pinning hash locally")
 	err := im.Shell.Pin(hash)
-	fmt.Println("hash pinned locally")
 	if err != nil {
 		// TODO: add error reporting
 		fmt.Println(err)
