@@ -28,11 +28,11 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 		return err
 	}
 	for d := range msgs {
+		fmt.Println("detected new content")
 		pin := &IPFSPin{}
 		err := json.Unmarshal(d.Body, pin)
 		if err != nil {
-			//TODO log and handle
-			fmt.Println(err)
+			fmt.Println("failed to unmarshal response", err)
 			d.Ack(false)
 			continue
 		}
@@ -67,14 +67,16 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			url, err := networkManager.GetAPIURLByName(pin.NetworkName)
 			if err != nil {
 				//TODO: decide if we should send out an email
-				fmt.Println(err)
+				fmt.Println("error getting api url by name ", err)
 				d.Ack(false)
 				continue
 			}
 			apiURL = url
 		}
+		fmt.Println("initializing ipfs")
 		ipfsManager, err := rtfs.Initialize("", apiURL)
 		if err != nil {
+			fmt.Println("error initializing IPFS", err)
 			addresses := []string{}
 			addresses = append(addresses, pin.EthAddress)
 			es := EmailSend{
@@ -86,15 +88,16 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			errOne := qm.PublishMessage(es)
 			if errOne != nil {
 				// For this, we will not ack since we want to be able to send messages
-				fmt.Println("error publishing message ", err)
-				continue
+				fmt.Println("error publishing message to email queue", err)
 			}
-			fmt.Println(err)
+			fmt.Println("error initializing ipfs", err)
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("pinning content to ipfs")
 		err = ipfsManager.Pin(pin.CID)
 		if err != nil {
+			fmt.Println("error pinning content to ipfs")
 			addresses := []string{}
 			addresses = append(addresses, pin.EthAddress)
 			es := EmailSend{
