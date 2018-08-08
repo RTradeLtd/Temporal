@@ -12,7 +12,6 @@ import (
 )
 
 var DatabaseFileAddQueue = "dfa-queue"
-var DatabasePinAddQueue = "dpa-queue"
 var IpnsUpdateQueue = "ipns-update-queue"
 var IpfsPinQueue = "ipfs-pin-queue"
 var IpfsFileQueue = "ipfs-file-queue"
@@ -55,14 +54,6 @@ type IPFSPinRemoval struct {
 
 // DatabaseFileAdd is a struct used when sending data to rabbitmq
 type DatabaseFileAdd struct {
-	Hash             string `json:"hash"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
-	UploaderAddress  string `json:"uploader_address"`
-	NetworkName      string `json:"network_name"`
-}
-
-// DatabasePinAdd is a struct used wehn sending data to rabbitmq
-type DatabasePinAdd struct {
 	Hash             string `json:"hash"`
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 	UploaderAddress  string `json:"uploader_address"`
@@ -202,9 +193,6 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	}
 	// check the queue name
 	switch qm.Queue.Name {
-	// only parse database pin requests
-	case DatabasePinAddQueue:
-		ProcessDatabasePinAdds(msgs, db)
 	// only parse datbase file requests
 	case DatabaseFileAddQueue:
 		ProcessDatabaseFileAdds(msgs, db)

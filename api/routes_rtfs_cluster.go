@@ -1,18 +1,14 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
 
-	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
 
-// PinHashToCluster is used to pin a hash to the local ipfs node
-// TODO: INCOMPLETE
+/* PinHashToCluster is used to pin a hash to the local ipfs node
 func PinHashToCluster(c *gin.Context) {
 	contextCopy := c.Copy()
 	hash := contextCopy.Param("hash")
@@ -48,29 +44,12 @@ func PinHashToCluster(c *gin.Context) {
 			// log error
 		}
 	}()
-	// construct the rabbitmq message to add this entry to the database
-	dpa := queue.DatabasePinAdd{
-		Hash:             hash,
-		UploaderAddress:  uploadAddress,
-		HoldTimeInMonths: holdTimeInt,
-	}
-	// assert type assertion retrieving info from middleware
-	mqConnectionURL := c.MustGet("mq_conn_url").(string)
-	// initialize the queue
-	qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	// publish the message, if there was an error finish processing
-	err = qm.PublishMessage(dpa)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	qm.Close()
-	c.JSON(http.StatusOK, gin.H{"upload": dpa})
-}
+	//
+	//
+	// THIS NEEDS TO BE CHANGED TO FOLLOW A SIMILAR PATTERN TO IPFS PINS
+	//
+	//
+}*/
 
 // SyncClusterErrorsLocally is used to parse through the local cluster state
 // and sync any errors that are detected.

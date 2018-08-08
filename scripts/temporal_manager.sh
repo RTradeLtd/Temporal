@@ -14,9 +14,6 @@ case "$1" in
     api)
         Temporal api 2>&1 | tee --append /var/log/temporal/api.log
         ;;
-    queue-dpa)
-        Temporal queue-dpa 2>&1 | tee --append /var/log/temporal/queue_dpa.log
-        ;;
     queue-dfa)
         Temporal queue-dfa 2>&1 | tee --append /var/log/temporal/queue_dfa.log
         ;;

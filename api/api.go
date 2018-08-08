@@ -164,7 +164,9 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	clusterProtected.GET("/status-global-pin/:hash", GetGlobalStatusForClusterPin) // admin locked
 	clusterProtected.GET("/status-local", FetchLocalClusterStatus)                 // admin locked
 	clusterProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	clusterProtected.POST("/pin/:hash", PinHashToCluster)
+
+	// TEMPORALRILY REMOVED
+	//	clusterProtected.POST("/pin/:hash", PinHashToCluster)
 	//clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster)
 
 	databaseProtected := g.Group("/api/v1/database")

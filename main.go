@@ -23,7 +23,6 @@ func main() {
 		fmt.Println("./Temporal [api | swarm | queue-dpa | queue-dfa | ipfs-cluster-queue | migrate]")
 		fmt.Println("api: run the api, used to interact with temporal")
 		fmt.Println("swarm: run the ethereum swarm mode of tempora")
-		fmt.Println("queue-dpa: listen to pin requests, and store them in the database")
 		fmt.Println("queue-dfa: listen to file add requests, and add to the database")
 		fmt.Println("ipfs-cluster-queue: listen to cluster pin pubsub topic")
 		fmt.Println("migrate: migrate the database")
@@ -55,16 +54,6 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Printf("%+v\n", sm)
-	case "queue-dpa":
-		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser, tCfg)
-		if err != nil {
-			log.Fatal(err)
-		}
 	case "queue-dfa":
 		mqConnectionURL := tCfg.RabbitMQ.URL
 		qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL)

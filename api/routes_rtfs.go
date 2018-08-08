@@ -62,27 +62,7 @@ func PinHashLocally(c *gin.Context) {
 		return
 	}
 
-	// construct the rabbitmq message to add this entry to the database
-	dpa := queue.DatabasePinAdd{
-		Hash:             hash,
-		UploaderAddress:  uploadAddress,
-		HoldTimeInMonths: holdTimeInt,
-		NetworkName:      "public",
-	}
-	// assert type assertion retrieving info from middleware
-	// initialize the queue
-	qm, err = queue.Initialize(queue.DatabasePinAddQueue, mqConnectionURL)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	// publish the message, if there was an error finish processing
-	err = qm.PublishMessage(dpa)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"upload": dpa})
+	c.JSON(http.StatusOK, gin.H{"status": "pin request sent to backend"})
 }
 
 // GetFileSizeInBytesForObject is used to retrieve the size of an object in bytes
