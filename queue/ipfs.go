@@ -114,6 +114,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			// we aren't acknowlding this since it could be a temporary failure
 			fmt.Println(err)
 			fmt.Println("error pinning to network ", pin.NetworkName)
+			d.Ack(false)
 			continue
 		}
 		_, err = uploadManager.FindUploadByHashAndNetwork(pin.CID, pin.NetworkName)
