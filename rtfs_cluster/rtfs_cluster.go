@@ -18,9 +18,13 @@ type ClusterManager struct {
 }
 
 // Initialize is used to init, and return a cluster manager object
-func Initialize() (*ClusterManager, error) {
+func Initialize(hostAddress, hostPort string) (*ClusterManager, error) {
 	cm := ClusterManager{}
 	cm.GenRestAPIConfig()
+	if hostAddress != "" && hostPort != "" {
+		cm.Config.Host = hostAddress
+		cm.Config.Port = hostPort
+	}
 	// modify default config with infrastructure specific settings
 	err := cm.GenClient()
 	if err != nil {

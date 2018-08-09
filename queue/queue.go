@@ -15,6 +15,7 @@ var DatabaseFileAddQueue = "dfa-queue"
 var IpnsUpdateQueue = "ipns-update-queue"
 var IpfsPinQueue = "ipfs-pin-queue"
 var IpfsFileQueue = "ipfs-file-queue"
+var IpfsClusterQueueAdd = "ipfs-cluster-queue-add"
 var PinPaymentConfirmationQueue = "pin-payment-confirmation-queue"
 var PinPaymentSubmissionQueue = "pin-payment-submission-queue"
 var EmailSendQueue = "email-send-queue"
@@ -44,6 +45,12 @@ type IPFSFile struct {
 	EthAddress       string `json:"eth_address"`
 	NetworkName      string `json:"network_name"`
 	HoldTimeInMonths string `json:"hold_time_in_months"`
+}
+
+// IPFSClusterAdd is a queue message used when sending a message to the cluster to pin content
+type IPFSClusterAdd struct {
+	CID         string `json:"cid"`
+	NetworkName string `json:"network_name,omitempty"`
 }
 
 type IPFSPinRemoval struct {
@@ -197,7 +204,10 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	case DatabaseFileAddQueue:
 		ProcessDatabaseFileAdds(msgs, db)
 	case IpfsPinQueue:
-		ProccessIPFSPins(msgs, db, cfg)
+		err = ProccessIPFSPins(msgs, db, cfg)
+		if err != nil {
+			return err
+		}
 	case IpfsFileQueue:
 		err = ProccessIPFSFiles(msgs, cfg, db)
 		if err != nil {

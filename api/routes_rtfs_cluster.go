@@ -60,7 +60,7 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 		return
 	}
 	// initialize a conection to the cluster
-	manager, err := rtfs_cluster.Initialize()
+	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -79,7 +79,7 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 // TODO: fully implement, add in goroutines
 func RemovePinFromCluster(c *gin.Context) {
 	hash := c.Param("hash")
-	manager, err := rtfs_cluster.Initialize()
+	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -101,7 +101,7 @@ func GetLocalStatusForClusterPin(c *gin.Context) {
 	}
 	hash := c.Param("hash")
 	// initialize a connection to the cluster
-	manager, err := rtfs_cluster.Initialize()
+	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -119,7 +119,7 @@ func GetLocalStatusForClusterPin(c *gin.Context) {
 func GetGlobalStatusForClusterPin(c *gin.Context) {
 	hash := c.Param("hash")
 	// initialize a connection to the cluster
-	manager, err := rtfs_cluster.Initialize()
+	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -147,7 +147,7 @@ func FetchLocalClusterStatus(c *gin.Context) {
 	// this will hold all the statuses of the content hashes
 	var statuses []string
 	// initialize a connection to the cluster
-	manager, err := rtfs_cluster.Initialize()
+	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
 		FailOnError(c, err)
 		return

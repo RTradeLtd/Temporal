@@ -29,6 +29,18 @@ type TemporalConfig struct {
 		RollbarToken string `json:"rollbar_token"`
 		JwtKey       string `json:"jwt_key"`
 	} `json:"api"`
+	IPFS struct {
+		APIConnection struct {
+			Host string `json:"host"`
+			Port string `json:"port"`
+		} `json:"api_connection"`
+	} `json:"ipfs"`
+	IPFSCluster struct {
+		APIConnection struct {
+			Host string `json:"host"`
+			Port string `json:"port"`
+		} `json:"api_connection"`
+	} `json:"ipfs_cluster"`
 	Ethereum struct {
 		Account struct {
 			Address string `json:"address"`
