@@ -1,4 +1,4 @@
-function pin()
+function createKey()
 {
 	if(window.sessionStorage.token == undefined || window.sessionStorage.token == "")
 	{
@@ -30,13 +30,12 @@ function pin()
 				//pin was successful
 				var data = JSON.parse(this.response);
 				console.log(data);
-				window.alert("Pin Successful");
+				window.alert("key creation suceeded");
 			}
 			else
-			{
-				console.log("Error pinning");
+			{   
 				console.log(this.response);
-				window.alert("Pin failed");
+				window.alert("key creation failed");
 			}
 		}
 		request.onerror = function ()
