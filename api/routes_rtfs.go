@@ -12,7 +12,6 @@ import (
 
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
-	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/gin-gonic/gin"
 )
 
@@ -191,18 +190,17 @@ func AddFileLocally(c *gin.Context) {
 		AddFileToHostedIPFSNetwork(c)
 		return
 	}
-	cC := c.Copy()
 	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
-	fileHandler, err := cC.FormFile("file")
+	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
 
-	uploaderAddress := GetAuthenticatedUserFromContext(cC)
+	uploaderAddress := GetAuthenticatedUserFromContext(c)
 
-	holdTimeinMonths, present := cC.GetPostForm("hold_time")
+	holdTimeinMonths, present := c.GetPostForm("hold_time")
 	if !present {
 		FailNoExistPostForm(c, "post_form")
 		return
@@ -249,24 +247,9 @@ func AddFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	clusterManager, err := rtfs_cluster.Initialize("", "")
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	decodedHash, err := clusterManager.DecodeHashString(resp)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	// spawn a cluster pin as a go-routine
-	go func() {
-		err := clusterManager.Pin(decodedHash)
-		if err != nil {
-			//TODO: LOG IT
-			fmt.Println("error encountered pinning to cluster ", err)
-		}
-	}()
+
+	// Consider whether or not we should trigger a cluster pin here
+
 	// publish the database file add message
 	err = qm.PublishMessage(dfa)
 	if err != nil {
