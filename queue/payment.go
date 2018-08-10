@@ -78,17 +78,17 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 		}
 		tx, isPending, err := client.TransactionByHash(context.Background(), common.HexToHash(ppc.TxHash))
 		if err != nil {
-			//TODO handle
 			fmt.Println(err)
-			// could be temporary error, so lets not ack
+			//TODO send email
+			d.Ack(false)
 			continue
 		}
 		if isPending {
 			_, err := bind.WaitMined(context.Background(), client, tx)
 			if err != nil {
-				//TODO handle
 				fmt.Println(err)
-				// could be a temporary error so lets not ack
+				//TODO send email
+				d.Ack(false)
 				continue
 			}
 		}
@@ -113,9 +113,9 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 		}
 		payment, err := contract.Payments(nil, common.HexToAddress(ppc.EthAddress), numberBig)
 		if err != nil {
-			// TODO handle
 			fmt.Println(err)
-			// could be a temporary issue, so lets not ack
+			//TODO send email
+			d.Ack(false)
 			continue
 		}
 		fmt.Printf("Payment struct \n%+v\n", payment)
@@ -236,15 +236,15 @@ func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPat
 		auth.GasLimit = 275000
 		tx, err := contract.MakePayment(auth, h, v, r, s, num, method, amount, prefixed)
 		if err != nil {
-			// this could be a temporary error so we wont ack it
 			fmt.Println("error making payment", err)
+			d.Ack(false)
 			continue
 		}
 		fmt.Println("successfully sent payment transaction, waiting for it to be mined")
 		_, err = bind.WaitMined(context.Background(), client, tx)
 		if err != nil {
-			// this could be a temporary error, so we wont ack it
 			fmt.Println("error waiting for tx to be mined", err)
+			d.Ack(false)
 			continue
 		}
 		paymentStruct, err := contract.Payments(nil, auth.From, num)

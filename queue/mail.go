@@ -74,6 +74,7 @@ func ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.TemporalConfig) er
 			}
 		}
 		fmt.Println("emails sent")
+		d.Ack(false)
 	}
 	return nil
 }

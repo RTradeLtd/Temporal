@@ -88,7 +88,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			errOne := qm.PublishMessage(es)
 			if errOne != nil {
 				// For this, we will not ack since we want to be able to send messages
-				fmt.Println("error publishing message to email queue", err)
+				fmt.Println("error publishing message to email queue", errOne)
 			}
 			fmt.Println("error initializing ipfs", err)
 			d.Ack(false)
