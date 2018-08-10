@@ -9,7 +9,7 @@ function pin()
 		//variables and get user input
 		var keyType = document.getElementById("keyType").value;
         var keyBits = document.getElementById("keyBits").value;
-        var keyName = document.getElementById("keyName".value);
+        var keyName = document.getElementById("keyName").value;
 		var apiUrl = "https://nuts.rtradetechnologies.com:6767/api/v1/account/key/ipfs/new";
 		
 		//send api request
@@ -22,7 +22,7 @@ function pin()
 		formData.append("key_type", keyType);
         formData.append("key_bits", keyBits);
         formData.append("key_name", keyName);
-        
+
 		request.onload = function ()
 		{
 			if(request.status < 400)
