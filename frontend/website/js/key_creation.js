@@ -7,9 +7,9 @@ function createKey()
 	else
 	{
 		//variables and get user input
-		var keyType = document.getElementById("keyType").value;
-        var keyBits = document.getElementById("keyBits").value;
-        var keyName = document.getElementById("keyName").value;
+		var keyType = document.getElementById('keyType').value;
+        var keyBits = document.getElementById('keyBits').value;
+        var keyName = document.getElementById('keyName').value;
 		var apiUrl = "https://nuts.rtradetechnologies.com:6767/api/v1/account/key/ipfs/new";
 		
 		//send api request
