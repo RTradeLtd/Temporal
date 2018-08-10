@@ -28,7 +28,8 @@ function upload()
 				//pin was successful
 				var data = JSON.parse(this.response);
 				console.log(data);
-				window.alert("Upload Successful");
+				var contentHash = data.response;
+				window.alert("Upload Successful.\nYour Content Hash Is\n" + contentHash);
 			}
 			else
 			{
