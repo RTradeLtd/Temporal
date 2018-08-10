@@ -8,7 +8,7 @@ function upload()
 	{
 		//variables and get user input
 		var apiUrl = "https://nuts.rtradetechnologies.com:6767/api/v1/ipfs/add-file";
-		var file = document.getElementById("fileUpload").file;
+		var file = document.getElementById("fileUpload").files[0];
 		var holdTime = document.getElementById("holdTime").value;
 		
 		//send api request
