@@ -27,6 +27,10 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 	if err != nil {
 		return err
 	}
+	qmCluster, err := Initialize(IpfsClusterAddQueue, cfg.RabbitMQ.URL)
+	if err != nil {
+		return err
+	}
 	for d := range msgs {
 		fmt.Println("detected new content")
 		pin := &IPFSPin{}
@@ -117,6 +121,14 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			d.Ack(false)
 			continue
 		}
+		// automatically trigger a cluster add
+		go func() {
+			clusterAddMsg := IPFSClusterAdd{
+				CID:         pin.CID,
+				NetworkName: pin.NetworkName,
+			}
+			qmCluster.PublishMessage(clusterAddMsg)
+		}()
 		_, err = uploadManager.FindUploadByHashAndNetwork(pin.CID, pin.NetworkName)
 		if err != nil && err != gorm.ErrRecordNotFound {
 			fmt.Println("error getting model from database ", err)
