@@ -30,6 +30,7 @@ func FailNotAuthorized(c *gin.Context, message string) {
 }
 
 func FailOnError(c *gin.Context, err error) {
+	fmt.Println(err)
 	c.JSON(http.StatusBadRequest, gin.H{
 		"error": err.Error(),
 	})

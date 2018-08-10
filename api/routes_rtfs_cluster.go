@@ -8,48 +8,34 @@ import (
 	gocid "github.com/ipfs/go-cid"
 )
 
-/* PinHashToCluster is used to pin a hash to the local ipfs node
+// PinHashToCluster is used to trigger a cluster pin of a particular CID
 func PinHashToCluster(c *gin.Context) {
-	contextCopy := c.Copy()
-	hash := contextCopy.Param("hash")
-	uploadAddress := GetAuthenticatedUserFromContext(contextCopy)
-
-	holdTimeInMonths, exists := contextCopy.GetPostForm("hold_time")
-	if !exists {
-		FailNoExistPostForm(c, "hold_time")
-		return
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to cluster pin")
 	}
-	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	hash := c.Param("hash")
+	// currently after it is pinned, it is sent to the cluster to be pinned
+	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	//TODO: CLEANUP AND MAKE MORE RESILIENT
-	go func() {
-		// currently after it is pinned, it is sent to the cluster to be pinned
-		manager, err := rtfs_cluster.Initialize()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		decodedHash, err := manager.DecodeHashString(hash)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		// before exiting, it is pinned to the cluster
-		err = manager.Pin(decodedHash)
-		if err != nil {
-			fmt.Println(err)
-			// log error
-		}
-	}()
-	//
-	//
-	// THIS NEEDS TO BE CHANGED TO FOLLOW A SIMILAR PATTERN TO IPFS PINS
-	//
-	//
-}*/
+
+	decodedHash, err := manager.DecodeHashString(hash)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	// before exiting, it is pinned to the cluster
+	err = manager.Pin(decodedHash)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "content hash pin request sent to cluster"})
+}
 
 // SyncClusterErrorsLocally is used to parse through the local cluster state
 // and sync any errors that are detected.
@@ -78,6 +64,11 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 // this will mean that all nodes in the cluster will no longer track the pin
 // TODO: fully implement, add in goroutines
 func RemovePinFromCluster(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to cluster removal")
+		return
+	}
 	hash := c.Param("hash")
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
@@ -89,7 +80,7 @@ func RemovePinFromCluster(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"deleted": hash})
+	c.JSON(http.StatusOK, gin.H{"statsu": "pin removal request sent to cluster"})
 }
 
 // GetLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
@@ -117,6 +108,11 @@ func GetLocalStatusForClusterPin(c *gin.Context) {
 
 // GetGlobalStatusForClusterPin is used to get the global cluster status for a particular pin
 func GetGlobalStatusForClusterPin(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to cluster status")
+		return
+	}
 	hash := c.Param("hash")
 	// initialize a connection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
