@@ -6,12 +6,11 @@ function createKey()
 	}
 	else
 	{
-		//variables and get user input
+		var apiUrl = "https://nuts.rtradetechnologies.com:6767/api/v1/account/key/ipfs/new";
 		var keyType = document.getElementById("keyType").value;
         var keyBits = document.getElementById("keyBits").value;
         var keyName = document.getElementById("keyName").value;
-		var apiUrl = "https://nuts.rtradetechnologies.com:6767/api/v1/account/key/ipfs/new";
-		
+
 		//send api request
 		var request = new XMLHttpRequest();
 		request.open('POST', apiUrl, true);
