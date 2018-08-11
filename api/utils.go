@@ -4,12 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 )
+
+var nilTime time.Time
 
 // FilesUploadBucket is the bucket files are stored into before being processed
 const FilesUploadBucket = "filesuploadbucket"

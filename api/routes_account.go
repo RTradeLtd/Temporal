@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -13,8 +12,6 @@ import (
 	ci "github.com/libp2p/go-libp2p-crypto"
 	peer "github.com/libp2p/go-libp2p-peer"
 )
-
-var nilTime time.Time
 
 // ChangeAccountPassword is used to change a users password
 func ChangeAccountPassword(c *gin.Context) {
@@ -179,6 +176,7 @@ func CreateIPFSKey(c *gin.Context) {
 	})
 }
 
+// GetIPFSKeyNamesForAuthUser is used to get the keys a user has setup
 func GetIPFSKeyNamesForAuthUser(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
