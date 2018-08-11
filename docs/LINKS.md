@@ -72,4 +72,9 @@ https://github.com/ipfs/go-dnslink
 
 
 IPFS Configuration Explanation:
-https://github.com/ipfs/go-ipfs/blob/master/docs/config.md
+https://github.com/ipfs/go-ipfs/blob/master/docs/config.
+
+
+calculate ipfs hashes https://discuss.ipfs.io/t/how-to-calculate-file-directory-hash/777/48
+
+Debugging https://github.com/ipfs/go-ipfs/blob/master/docs/debug-guide.md
