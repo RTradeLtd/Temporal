@@ -288,30 +288,6 @@ func IpfsPubSubPublish(c *gin.Context) {
 	})
 }
 
-// IpfsPubSubConsume is used to consume pubsub messages
-func IpfsPubSubConsume(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
-		return
-	}
-	contextCopy := c.Copy()
-	topic := contextCopy.Param("topic")
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	go func() {
-		manager.SubscribeToPubSubTopic(topic)
-		manager.ConsumeSubscription(manager.PubSub)
-	}()
-
-	c.JSON(http.StatusOK, gin.H{
-		"status": "consuming messages in background",
-	})
-}
-
 // RemovePinFromLocalHost is used to remove a pin from the ipfs instance
 // TODO: fully implement
 func RemovePinFromLocalHost(c *gin.Context) {

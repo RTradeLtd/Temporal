@@ -121,7 +121,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			d.Ack(false)
 			continue
 		}
-		// automatically trigger a cluster add
+		// automatically trigger a cluster add0
 		go func() {
 			clusterAddMsg := IPFSClusterAdd{
 				CID:         pin.CID,
