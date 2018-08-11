@@ -5,7 +5,7 @@
   branch = "master-rtrade"
   name = "github.com/RTradeLtd/go-ipfs-api"
   packages = ["."]
-  revision = "c34b7e732e45bb5dd7d170ffb8780b873e46e18a"
+  revision = "2f45aa41fd54f751d77a1e1f378fc7d25b001dbb"
 
 [[projects]]
   branch = "master"
@@ -180,15 +180,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/gin-contrib/sessions"
-  packages = [
-    ".",
-    "cookie"
-  ]
-  revision = "da25b7bed527d57b81599b0864e0f1a7241ea913"
-
-[[projects]]
-  branch = "master"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
@@ -239,24 +230,6 @@
   name = "github.com/golang/snappy"
   packages = ["."]
   revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
-
-[[projects]]
-  name = "github.com/gorilla/context"
-  packages = ["."]
-  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
-  version = "v1.1.1"
-
-[[projects]]
-  name = "github.com/gorilla/securecookie"
-  packages = ["."]
-  revision = "e59506cc896acb7f7bf732d4fdf5e25f7ccd8983"
-  version = "v1.1.1"
-
-[[projects]]
-  name = "github.com/gorilla/sessions"
-  packages = ["."]
-  revision = "03b6f63cc43ef9c7240a635a5e22b13180e822b8"
-  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/gorilla/websocket"
@@ -812,12 +785,6 @@
   version = "v0.3.7"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/onrik/ethrpc"
-  packages = ["."]
-  revision = "a38990194dea417644f4f383279ab737aa8abb4a"
-
-[[projects]]
   name = "github.com/opentracing/opentracing-go"
   packages = [
     ".",
@@ -910,6 +877,21 @@
   name = "github.com/semihalev/gin-stats"
   packages = ["."]
   revision = "30fdcbbd353327f4b95c2ce382a05ce003d96f7e"
+
+[[projects]]
+  name = "github.com/sendgrid/rest"
+  packages = ["."]
+  revision = "306b9bef57dc36f3435ccfcc08fe6ae2c6920344"
+  version = "v2.4.1"
+
+[[projects]]
+  name = "github.com/sendgrid/sendgrid-go"
+  packages = [
+    ".",
+    "helpers/mail"
+  ]
+  revision = "8caf17aa96b4a98bae8bd216878dd50ff12897b5"
+  version = "v3.4.1"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -1170,6 +1152,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f951445ded63720e6cbe4f7a35cf5b5d7aa5782cc2dc8df93339bbf6c4324d71"
+  inputs-digest = "32a91c93fc3aae48a16b98c54c6c67d3699d874fd2edb13d5a8831d9373e5282"
   solver-name = "gps-cdcl"
   solver-version = 1
