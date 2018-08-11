@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"os"
+	"io"
 
 	"github.com/ipsn/go-ipfs/core"
 	"github.com/ipsn/go-ipfs/core/coreunix"
@@ -17,7 +17,7 @@ import (
 // for a given file, without actually broadcasting it to the network
 // or even adding it at all. It was graciously adopted thanks to @hinshun
 // over on discuss.ipfs.io. Overtime we willallow calculating different hash types
-func GenerateIpfsMultiHashForFile(fileName string) (string, error) {
+func GenerateIpfsMultiHashForFile(r io.Reader) (string, error) {
 	dstore := datastore.NewMapDatastore()
 	bstore := blockstore.NewBlockstore(dstore)
 	bserv := blockservice.New(bstore, offline.Exchange(bstore))
@@ -27,10 +27,5 @@ func GenerateIpfsMultiHashForFile(fileName string) (string, error) {
 		Pinning:    pin.NewPinner(dstore, dserv, dserv),
 		DAG:        dserv,
 	}
-	fileHandler, err := os.Open(fileName)
-	if err != nil {
-		return "", err
-	}
-
-	return coreunix.Add(n, fileHandler)
+	return coreunix.Add(n, r)
 }

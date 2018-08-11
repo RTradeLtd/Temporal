@@ -15,6 +15,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CalculateContentHashForFile is used to calculate the content hash
+// for a particular file, without actually storing it or providing it
+func CalculateContentHashForFile(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+	}
+	fileHandler, err := c.FormFile("file")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	reader, err := fileHandler.Open()
+	if err != nil {
+		FailOnError(c, err)
+	}
+	defer reader.Close()
+	hash, err := utils.GenerateIpfsMultiHashForFile(reader)
+	if err != nil {
+		FailOnError(c, err)
+	}
+	c.JSON(http.StatusOK, gin.H{"hash": hash})
+}
+
 // PinHashLocally is used to pin a hash to the local ipfs node
 func PinHashLocally(c *gin.Context) {
 	// check if its for a private network

@@ -112,8 +112,9 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	ipfsProtected.Use(authWare.MiddlewareFunc())
 	ipfsProtected.Use(middleware.APIRestrictionMiddleware(db))
 	// DATABASE-LESS routes
-	ipfsProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublish) // admin locked
-	ipfsProtected.GET("/pins", GetLocalPins)                        // admin locked
+	ipfsProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublish)            // admin locked
+	ipfsProtected.POST("/calculate-content-hash", CalculateContentHashForFile) // admin locked
+	ipfsProtected.GET("/pins", GetLocalPins)                                   // admin locked
 	ipfsProtected.GET("/object-stat/:key", GetObjectStatForIpfs)
 	ipfsProtected.GET("/object/size/:key", GetFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
