@@ -55,6 +55,9 @@ type TemporalConfig struct {
 			IPC struct {
 				Path string `json:"path"`
 			} `json:"ipc"`
+			INFURA struct {
+				URL string `json:"url"`
+			} `json:"infura"`
 		} `json:"connection"`
 		Contracts struct {
 			PaymentContractAddress string `json:"payment_contract_address"`

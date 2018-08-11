@@ -45,6 +45,9 @@
 			},
 			"ipc": {
 				"path": "/media/solidity/data/Rinkeby/datadir/geth.ipc"
+			},
+			"infura": {
+				"url": "...."
 			}
 		},
 		"contracts": {
