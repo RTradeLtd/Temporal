@@ -16,6 +16,7 @@ import (
 	"github.com/mitchellh/goamz/aws"
 )
 
+// PublishToIPNSDetails is used to publish a record on IPNS with more fine grained control
 func PublishToIPNSDetails(c *gin.Context) {
 	_, exists := c.GetPostForm("network_name")
 	if exists {
@@ -115,134 +116,6 @@ func PublishToIPNSDetails(c *gin.Context) {
 		"status": "ipns entry creation sent to backend",
 	})
 }
-
-/* KEPT FOR HISTORICAL PURPOSES, WILL PHASE OUT EVENTUALLY
-// Phase this out overtime for the above method
-func PublishToIPNSDetails(c *gin.Context) {
-	_, exists := c.GetPostForm("network_name")
-	if exists {
-		PublishDetailedIPNSToHostedIPFSNetwork(c)
-		return
-	}
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	hash, present := c.GetPostForm("hash")
-	if !present {
-		FailNoExistPostForm(c, "hash")
-		return
-	}
-	lifetimeStr, present := c.GetPostForm("life_time")
-	if !present {
-		FailNoExistPostForm(c, "lifetime")
-		return
-	}
-	ttlStr, present := c.GetPostForm("ttl")
-	if !present {
-		FailNoExistPostForm(c, "ttl")
-		return
-	}
-	key, present := c.GetPostForm("key")
-	if !present {
-		FailNoExistPostForm(c, "key")
-		return
-	}
-	resolveString, present := c.GetPostForm("resolve")
-	if !present {
-		FailNoExistPostForm(c, "resolve")
-		return
-	}
-
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailOnError(c, errors.New("failed to load rabbitmq"))
-		return
-	}
-
-	um := models.NewUserManager(db)
-	qm, err := queue.Initialize(queue.IpnsUpdateQueue, mqURL)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-
-	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-
-	if !ownsKey {
-		FailOnError(c, errors.New("attempting to generate IPNS entry with unowned key"))
-		return
-	}
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	fmt.Println("creating key store manager")
-	err = manager.CreateKeystoreManager()
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	resolve, err := strconv.ParseBool(resolveString)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	lifetime, err := time.ParseDuration(lifetimeStr)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	ttl, err := time.ParseDuration(ttlStr)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	prePubTime := time.Now()
-	keyID, err := um.GetKeyIDByName(ethAddress, key)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	fmt.Println(key)
-	fmt.Println(keyID)
-	fmt.Println("publishing to IPNS")
-	resp, err := manager.PublishToIPNSDetails(hash, key, lifetime, ttl, resolve)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	postPubTime := time.Now()
-	timeDifference := postPubTime.Sub(prePubTime)
-
-	ipnsUpdate := queue.IPNSUpdate{
-		CID:         hash,
-		IPNSHash:    resp.Name,
-		LifeTime:    lifetime.String(),
-		TTL:         ttl.String(),
-		Key:         key,
-		Resolve:     resolve,
-		EthAddress:  ethAddress,
-		NetworkName: "public",
-	}
-	err = qm.PublishMessage(ipnsUpdate)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	c.JSON(http.StatusCreated, gin.H{
-		"name":                   resp.Name,
-		"value":                  resp.Value,
-		"time_to_create_minutes": timeDifference.Minutes(),
-	})
-}*/
 
 // GenerateDNSLinkEntry is used to generate a DNS link entry
 func GenerateDNSLinkEntry(c *gin.Context) {

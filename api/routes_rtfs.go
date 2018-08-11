@@ -110,6 +110,10 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 
 }
 
+// AddFileLocallyAdvanced is used to upload a file in a more resilient
+// and efficient manner than our traditional simple upload. Note that
+// it does not give the user a content hash back immediately and will be sent
+// via email (eventually we will have a notification system for the interface)
 func AddFileLocallyAdvanced(c *gin.Context) {
 	_, exists := c.GetPostForm("use_private_network")
 	if exists {
@@ -314,16 +318,13 @@ func IpfsPubSubPublish(c *gin.Context) {
 }
 
 // RemovePinFromLocalHost is used to remove a pin from the ipfs instance
-// TODO: fully implement
 func RemovePinFromLocalHost(c *gin.Context) {
-	// fetch hash param
-	hash := c.Param("hash")
 	ethAddress := GetAuthenticatedUserFromContext(c)
-	rm := queue.IPFSPinRemoval{
-		ContentHash: hash,
-		NetworkName: "public",
-		EthAddress:  ethAddress,
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to removal route")
+		return
 	}
+	hash := c.Param("hash")
 	mqURL, ok := c.MustGet("mq_conn_url").(string)
 	if !ok {
 		FailedToLoadMiddleware(c, "rabbit mq")
@@ -333,6 +334,11 @@ func RemovePinFromLocalHost(c *gin.Context) {
 	if err != nil {
 		FailOnError(c, err)
 		return
+	}
+	rm := queue.IPFSPinRemoval{
+		ContentHash: hash,
+		NetworkName: "public",
+		EthAddress:  ethAddress,
 	}
 	err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange)
 	if err != nil {
@@ -403,7 +409,6 @@ func CheckLocalNodeForPin(c *gin.Context) {
 }
 
 // DownloadContentHash is used to download a particular content hash from the network
-//
 func DownloadContentHash(c *gin.Context) {
 	_, exists := c.GetPostForm("use_private_network")
 	if exists {

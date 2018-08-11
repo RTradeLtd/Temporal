@@ -8,7 +8,6 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs"
-	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	ci "github.com/libp2p/go-libp2p-crypto"
@@ -17,6 +16,7 @@ import (
 
 var nilTime time.Time
 
+// ChangeAccountPassword is used to change a users password
 func ChangeAccountPassword(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
@@ -45,9 +45,7 @@ func ChangeAccountPassword(c *gin.Context) {
 		return
 	}
 	if !suceeded {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "password change failed but no error occured",
-		})
+		FailOnError(c, errors.New("password change failed but no error occured"))
 		return
 	}
 
@@ -56,8 +54,7 @@ func ChangeAccountPassword(c *gin.Context) {
 	})
 }
 
-// RegisterUserAccount is used to sign up with temporal and gain web interface access
-// you will not be granted API access however, as that needs to be done manually
+// RegisterUserAccount is used to sign up with temporal
 func RegisterUserAccount(c *gin.Context) {
 	ethAddress, exists := c.GetPostForm("eth_address")
 	if !exists {
@@ -91,48 +88,7 @@ func RegisterUserAccount(c *gin.Context) {
 	return
 }
 
-// RegisterEnterpriseUserAccount is used to register a user account marked as enterprise enabled
-func RegisterEnterpriseUserAccount(c *gin.Context) {
-	ethAddress, exists := c.GetPostForm("eth_address")
-	if !exists {
-		FailNoExistPostForm(c, "eth_address")
-		return
-	}
-	password, exists := c.GetPostForm("password")
-	if !exists {
-		FailNoExistPostForm(c, "password")
-		return
-	}
-	email, exists := c.GetPostForm("email_address")
-	if !exists {
-		FailNoExistPostForm(c, "email_address")
-	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-
-	userManager := models.NewUserManager(db)
-	userModel, err := userManager.NewUserAccount(ethAddress, password, email, false)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	userModel.HashedPassword = "scrubbed"
-	c.JSON(http.StatusCreated, gin.H{"user": userModel})
-	return
-}
-
-// GetAuthenticatedUserFromContext is used to pull the eth address of hte user
-func GetAuthenticatedUserFromContext(c *gin.Context) string {
-	claims := jwt.ExtractClaims(c)
-	// this is their eth address
-	return claims["id"].(string)
-}
-
 // CreateIPFSKey is used to create an IPFS key
-// TODO: encrypt key with provided password
 func CreateIPFSKey(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 

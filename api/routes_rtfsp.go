@@ -65,6 +65,8 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
+// GetFileSizeInBytesForObjectForHostedIPFSNetwork is used to get file size for an object
+// on a private IPFS network
 func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -108,9 +110,7 @@ func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 
 }
 
-// TODO: NEED TO FINISH
-// NEED TO CALL QUEUE TO UPDATE DATABASE
-// NEED TO TRIGGER CLUSTER UPLOAD AFTER
+// AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network
 func AddFileToHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
@@ -200,6 +200,8 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
+// IpfsPubSubPublishToHostedIPFSNetwork is used to publish a pubsub message
+// to a private ipfs network
 func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -264,8 +266,6 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 		NetworkName: networkName,
 		EthAddress:  ethAddress,
 	}
-	// TODO:
-	// change to send a message to the cluster to depin
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL)
 	if err != nil {
@@ -277,13 +277,13 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	// TODO:
-	// add in appropriate rabbitmq processing to delete from database
 	c.JSON(http.StatusOK, gin.H{
 		"status": "pin removal sent to backend",
 	})
 }
 
+// GetLocalPinsForHostedIPFSNetwork is used to get local pins
+// for a private ipfs network
 func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -323,6 +323,8 @@ func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
+// GetObjectStatForIpfsForHostedIPFSNetwork is  used to get object
+// stats for a private ipfs network
 func GetObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -361,6 +363,8 @@ func GetObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"stats": stats})
 }
 
+// CheckLocalNodeForPinForHostedIPFSNetwork is used to check a
+// private ipfs network for a partilcar pin
 func CheckLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -398,6 +402,8 @@ func CheckLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"present": present})
 }
 
+// PublishDetailedIPNSToHostedIPFSNetwork is used to publish
+// an IPNS record to a private network with fine grained control
 func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 	networkName, exists := c.GetPostForm("network_name")
@@ -512,6 +518,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	fmt.Println("record published")
 	postPubTime := time.Now()
 	timeDifference := postPubTime.Sub(prePubTime)
 
@@ -543,6 +550,8 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
+// CreateHostedIPFSNetworkEntryInDatabase is used to create
+// an entry in the database for a private ipfs network
 func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	// lock down as admin route for now
 	cC := c.Copy()
@@ -554,30 +563,30 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 
 	networkName, exists := cC.GetPostForm("network_name")
 	if !exists {
-		FailNoExist(c, "network_name post form does not exist")
+		FailNoExistPostForm(c, "network_name")
 		return
 	}
 
 	apiURL, exists := cC.GetPostForm("api_url")
 	if !exists {
-		FailNoExist(c, "api_url post form does not exist")
+		FailNoExistPostForm(c, "api_url")
 		return
 	}
 
 	swarmKey, exists := cC.GetPostForm("swarm_key")
 	if !exists {
-		FailNoExist(c, "swarm_key post form does not exist")
+		FailNoExistPostForm(c, "swarm_key")
 		return
 	}
 
 	bPeers, exists := cC.GetPostFormArray("bootstrap_peers")
 	if !exists {
-		FailNoExist(c, "boostrap_peers post form array does not exist")
+		FailNoExistPostForm(c, "bootstrap_peers")
 		return
 	}
 	nodeAddresses, exists := cC.GetPostFormArray("local_node_addresses")
 	if !exists {
-		FailNoExist(c, "local_node_addresses post form array does not exist")
+		FailNoExistPostForm(c, "local_node_addresses")
 		return
 	}
 	users := cC.PostFormArray("users")
@@ -600,7 +609,7 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 			return
 		}
 		if !valid {
-			FailOnError(c, errors.New(fmt.Sprintf("provided peer %s is not a valid bootstrap peer", addr)))
+			FailOnError(c, fmt.Errorf("provided peer %s is not a valid bootstrap peer", addr))
 			return
 		}
 		addr, err = utils.GenerateMultiAddrFromString(nodeAddresses[k])
@@ -614,7 +623,7 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 			return
 		}
 		if !valid {
-			FailOnError(c, errors.New(fmt.Sprintf("provided peer %s is not a valid ipfs peer", addr)))
+			FailOnError(c, fmt.Errorf("provided peer %s is not a valid ipfs peer", addr))
 			return
 		}
 		bootstrapPeerAddresses = append(bootstrapPeerAddresses, v)
@@ -660,6 +669,7 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 
 }
 
+// GetIPFSPrivateNetworkByName is used to get connection information for a priavate ipfs network
 func GetIPFSPrivateNetworkByName(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
@@ -688,6 +698,8 @@ func GetIPFSPrivateNetworkByName(c *gin.Context) {
 	})
 }
 
+// GetAuthorizedPrivateNetworks is used to get the private
+// networks a user is authorized for
 func GetAuthorizedPrivateNetworks(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	db, ok := c.MustGet("db").(*gorm.DB)
@@ -707,6 +719,7 @@ func GetAuthorizedPrivateNetworks(c *gin.Context) {
 	})
 }
 
+// GetUploadsByNetworkName is used to getu plaods for a network by its name
 func GetUploadsByNetworkName(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
@@ -739,8 +752,7 @@ func GetUploadsByNetworkName(c *gin.Context) {
 	})
 }
 
-// DownloadContentHash is used to download a particular content hash from the network
-//
+// DownloadContentHashForPrivateNetwork is used to download content from  a private ipfs network
 func DownloadContentHashForPrivateNetwork(c *gin.Context) {
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {

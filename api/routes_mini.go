@@ -7,10 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/*
-Used to handle interaction with our minio backend
-*/
-
+// MakeBucket is used to create a bucket in our minio container
 func MakeBucket(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
