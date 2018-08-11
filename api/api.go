@@ -140,7 +140,6 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	ipfsPrivateProtected.POST("/ipfs/object-stat/:key", GetObjectStatForIpfsForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/ipfs/object/size/:key", GetFileSizeInBytesForObjectForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublishToHostedIPFSNetwork)
-	ipfsPrivateProtected.POST("/pubsub/consume/:topic", IpfsPubSubConsumeForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/pins", GetLocalPinsForHostedIPFSNetwork)
 	ipfsPrivateProtected.GET("/networks", GetAuthorizedPrivateNetworks)
 	ipfsPrivateProtected.POST("/uploads", GetUploadsByNetworkName)

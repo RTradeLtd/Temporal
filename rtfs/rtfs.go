@@ -8,8 +8,7 @@ import (
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 )
 
-var ClusterPubSubTopic = "ipfs-cluster"
-
+// IpfsManager is our helper wrapper for IPFS
 type IpfsManager struct {
 	Shell           *ipfsapi.Shell
 	PubSub          *ipfsapi.PubSubSubscription
@@ -18,10 +17,8 @@ type IpfsManager struct {
 	PubTopic        string
 }
 
+// Initialize is used ot initialize our Ipfs manager struct
 func Initialize(pubTopic, connectionURL string) (*IpfsManager, error) {
-	if pubTopic == "" {
-		pubTopic = ClusterPubSubTopic
-	}
 	manager := IpfsManager{}
 	manager.Shell = EstablishShellWithNode(connectionURL)
 	_, err := manager.Shell.ID()
@@ -32,6 +29,7 @@ func Initialize(pubTopic, connectionURL string) (*IpfsManager, error) {
 	return &manager, nil
 }
 
+// EstablishShellWithNode is used to establish our api shell for the ipfs node
 func EstablishShellWithNode(url string) *ipfsapi.Shell {
 	if url == "" {
 		shell := ipfsapi.NewShell("localhost:5001")
@@ -41,6 +39,13 @@ func EstablishShellWithNode(url string) *ipfsapi.Shell {
 	return shell
 }
 
+// SetTimeout is used to set a timeout for our api client
+func (im *IpfsManager) SetTimeout(time time.Duration) {
+	im.Shell.SetTimeout(time)
+}
+
+// CreateKeystoreManager is used to create a key store manager for ipfs keys
+// for now it just uses a file system keystore manager
 func (im *IpfsManager) CreateKeystoreManager() error {
 	km, err := GenerateKeystoreManager()
 	if err != nil {
@@ -51,7 +56,7 @@ func (im *IpfsManager) CreateKeystoreManager() error {
 	return nil
 }
 
-// TODO: lock this down upstream. We will need to make sure that they own the key they are attempting to access
+// PublishToIPNSDetails is used for fine grained control over IPNS record publishing
 func (im *IpfsManager) PublishToIPNSDetails(contentHash, keyName string, lifetime, ttl time.Duration, resolve bool) (*ipfsapi.PublishResponse, error) {
 	if !im.KeystoreEnabled {
 		return nil, errors.New("attempting to create ipns entry with dynamic keys keystore is not enabled/generated yet")
@@ -113,52 +118,6 @@ func (im *IpfsManager) ParseLocalPinsForHash(hash string) (bool, error) {
 		return true, nil
 	}
 	return false, nil
-}
-
-// SubscribeToPubSubTopic is used to subscribe to a pubsub topic
-func (im *IpfsManager) SubscribeToPubSubTopic(topic string) error {
-	if topic == "" {
-		return errors.New("invalid topic name")
-	}
-	// create a pubsub subscription according to topic name
-	subscription, err := im.Shell.PubSubSubscribe(topic)
-	if err != nil {
-		return err
-	}
-	// store the pubsub scription
-	im.PubSub = subscription
-	return nil
-}
-
-// ConsumeSubscription is used to consume a pubsub subscription
-func (im *IpfsManager) ConsumeSubscription(sub *ipfsapi.PubSubSubscription) error {
-	for {
-		// we should try and add some logic to unmarshal this data instead
-		subRecord, err := sub.Next()
-		if err != nil {
-			continue
-		}
-		fmt.Println(string(subRecord.Data()))
-	}
-}
-
-// ConsumeSubscriptionToPin is used to consume a pubsub subscription, with the intent of pinning the content referred to on the local ipfs node
-func (im *IpfsManager) ConsumeSubscriptionToPin(sub *ipfsapi.PubSubSubscription) error {
-	for {
-		// we should try and add some logic to unmarshal this data instead
-		subRecord, err := sub.Next()
-		if err != nil {
-			continue
-		}
-		cidString := string(subRecord.Data())
-		fmt.Println("pinning ", cidString)
-		err = im.Shell.Pin(cidString)
-		if err != nil {
-			fmt.Println("pin failed")
-			continue
-		}
-		fmt.Println("pin succeeded")
-	}
 }
 
 // PublishPubSubMessage is used to publish a message to the given topic

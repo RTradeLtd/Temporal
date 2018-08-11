@@ -246,46 +246,6 @@ func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
-func IpfsPubSubConsumeForHostedIPFSNetwork(c *gin.Context) {
-	cC := c.Copy()
-
-	ethAddress := GetAuthenticatedUserFromContext(cC)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
-		return
-	}
-	networkName, exists := cC.GetPostForm("network_name")
-	if !exists {
-		FailNoExistPostForm(c, "network_name")
-		return
-	}
-
-	db, ok := cC.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	im := models.NewHostedIPFSNetworkManager(db)
-	apiURL, err := im.GetAPIURLByName(networkName)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	topic := cC.Param("topic")
-
-	go func() {
-		manager, err := rtfs.Initialize("", apiURL)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		manager.SubscribeToPubSubTopic(topic)
-		manager.ConsumeSubscription(manager.PubSub)
-	}()
-
-	c.JSON(http.StatusOK, gin.H{"status": "consuming messages in background"})
-}
-
 // RemovePinFromLocalHostForHostedIPFSNetwork is used to remove a content hash from a private hosted ipfs network
 func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	hash := c.Param("hash")
