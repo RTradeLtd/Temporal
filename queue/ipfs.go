@@ -276,10 +276,6 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		return err
 	}
 	fmt.Println("minio connection setup")
-	qmFile, err := Initialize(IpfsFileQueue, cfg.RabbitMQ.URL)
-	if err != nil {
-		return err
-	}
 	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL)
 	if err != nil {
 		return err
@@ -397,19 +393,6 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
-		ipfsPin := IPFSPin{
-			CID:              resp,
-			NetworkName:      ipfsFile.NetworkName,
-			EthAddress:       ipfsFile.EthAddress,
-			HoldTimeInMonths: holdTimeInt,
-		}
-		err = qmFile.PublishMessageWithExchange(ipfsPin, PinExchange)
-		if err != nil {
-			// this we will won't ack, or continue on since the file has already been added to ipfs and can be pinned seperately
-			fmt.Println("error publishing ipfs pin message to the pin exchange ", err)
-		}
-		fmt.Println("file added to ipfs")
-		fmt.Println("removing object from minio")
 		err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName)
 		if err != nil {
 			//TODO: log and handle
