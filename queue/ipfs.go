@@ -98,7 +98,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			d.Ack(false)
 			continue
 		}
-		fmt.Printf("pinning content hash %s to ipfs", pin.CID)
+		fmt.Printf("pinning content hash %s to ipfs\n", pin.CID)
 		err = ipfsManager.Pin(pin.CID)
 		if err != nil {
 			fmt.Println("error pinning content to ipfs")
@@ -121,6 +121,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("successfully pinned content to ipfs")
 		// automatically trigger a cluster add0
 		go func() {
 			clusterAddMsg := IPFSClusterAdd{
