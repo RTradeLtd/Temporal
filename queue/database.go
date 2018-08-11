@@ -16,6 +16,7 @@ var nilTime time.Time
 func ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
 	uploadManager := models.NewUploadManager(db)
 	for d := range msgs {
+		fmt.Println("detected new message")
 		dfa := DatabaseFileAdd{}
 		// unmarshal the message body into the dfa struct
 		err := json.Unmarshal(d.Body, &dfa)
@@ -23,6 +24,7 @@ func ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("processing database update for content hash", dfa.Hash)
 		_, err = uploadManager.FindUploadByHashAndNetwork(dfa.Hash, dfa.NetworkName)
 		if err != nil && err != gorm.ErrRecordNotFound {
 			fmt.Println("error looking for upload in database ", err)
