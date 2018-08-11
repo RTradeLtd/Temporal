@@ -24,7 +24,7 @@
 #   go-tests = true
 #   unused-packages = true
 
-ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "github.com/satori/go.uuid"]
+ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/ipsn/go-ipfs*"]
 
 
 # IPFS
