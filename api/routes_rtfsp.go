@@ -19,12 +19,23 @@ import (
 
 // PinToHostedIPFSNetwork is used to pin content to a private/hosted ipfs network
 func PinToHostedIPFSNetwork(c *gin.Context) {
-	hash := c.Param("hash")
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
 	}
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	hash := c.Param("hash")
+
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
@@ -125,14 +136,16 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailOnError(c, errors.New("failed to load rabbitmq"))
-		return
-	}
+
 	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
+		return
+	}
+
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailOnError(c, errors.New("failed to load rabbitmq"))
 		return
 	}
 
@@ -250,12 +263,12 @@ func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 
 // RemovePinFromLocalHostForHostedIPFSNetwork is used to remove a content hash from a private hosted ipfs network
 func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
-	hash := c.Param("hash")
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
+	hash := c.Param("hash")
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
@@ -760,17 +773,6 @@ func DownloadContentHashForPrivateNetwork(c *gin.Context) {
 		return
 	}
 
-	var contentType string
-	// fetch the specified content type from the user
-	contentType, exists = c.GetPostForm("content_type")
-	// if not specified, provide a default
-	if !exists {
-		contentType = "application/octet-stream"
-	}
-
-	// get any extra headers the user might want
-	exHeaders := c.PostFormArray("extra_headers")
-
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
 	db, ok := c.MustGet("db").(*gorm.DB)
@@ -783,6 +785,18 @@ func DownloadContentHashForPrivateNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	var contentType string
+	// fetch the specified content type from the user
+	contentType, exists = c.GetPostForm("content_type")
+	// if not specified, provide a default
+	if !exists {
+		contentType = "application/octet-stream"
+	}
+
+	// get any extra headers the user might want
+	exHeaders := c.PostFormArray("extra_headers")
+
 	im := models.NewHostedIPFSNetworkManager(db)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
