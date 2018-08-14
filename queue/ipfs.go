@@ -15,7 +15,73 @@ import (
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
+
+	ci "github.com/libp2p/go-libp2p-crypto"
+	peer "github.com/libp2p/go-libp2p-peer"
 )
+
+// ProcessIPFSKeyCreation is used to create IPFS keys
+func ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		return err
+	}
+	// load the keystore manager
+	err = manager.CreateKeystoreManager()
+	if err != nil {
+		return err
+	}
+	userManager := models.NewUserManager(db)
+	fmt.Println("processing ipfs key creation")
+	for d := range msgs {
+		key := IPFSKeyCreation{}
+		err = json.Unmarshal(d.Body, &key)
+		if err != nil {
+			fmt.Println("error unmarshaling message ", err)
+			d.Ack(false)
+			continue
+		}
+		var keyTypeInt int
+		var bitsInt int
+		switch key.Type {
+		case "rsa":
+			keyTypeInt = ci.RSA
+			if key.Size > 4096 {
+				fmt.Println("key size generation greater than 4096 not supported")
+				d.Ack(false)
+				continue
+			}
+			bitsInt = key.Size
+		case "ed25519":
+			keyTypeInt = ci.Ed25519
+			bitsInt = 256
+		default:
+			fmt.Println("unsupported key type")
+		}
+		pk, err := manager.KeystoreManager.CreateAndSaveKey(key.Name, keyTypeInt, bitsInt)
+		if err != nil {
+			fmt.Println("error creating key ", err)
+			d.Ack(false)
+			continue
+		}
+
+		id, err := peer.IDFromPrivateKey(pk)
+		if err != nil {
+			fmt.Println("failed to get id from private key ", err)
+			d.Ack(false)
+			continue
+		}
+		err = userManager.AddIPFSKeyForUser(key.EthAddress, key.Name, id.Pretty())
+		if err != nil {
+			fmt.Println("error adding ipfs key for user to database ", err)
+			d.Ack(false)
+			continue
+		}
+		fmt.Println("successfully created and saved key")
+		d.Ack(false)
+	}
+	return nil
+}
 
 // ProccessIPFSPins is used to process IPFS pin requests
 func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {

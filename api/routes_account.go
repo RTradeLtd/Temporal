@@ -6,11 +6,9 @@ import (
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/models"
-	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	ci "github.com/libp2p/go-libp2p-crypto"
-	peer "github.com/libp2p/go-libp2p-peer"
 )
 
 // ChangeAccountPassword is used to change a users password
@@ -105,75 +103,38 @@ func CreateIPFSKey(c *gin.Context) {
 		FailNoExistPostForm(c, "key_name")
 		return
 	}
-	var keyTypeInt int
-	var bitsInt int
-	// currently we support generation of rsa or ed25519 keys
-	switch keyType {
-	case "rsa":
-		keyTypeInt = ci.RSA
-		// convert the string bits to int
-		bitsInt64, err := strconv.ParseInt(keyBits, 10, 64)
-		if err != nil {
-			FailOnError(c, err)
-			return
-		}
-		// right now we wont generate keys larger than 4096 in length
-		if bitsInt64 > 4096 {
-			FailOnError(c, errors.New("key bits must be 4096 or less. For larger keys contact your Temporal administrator"))
-			return
-		}
-		bitsInt = int(bitsInt64)
-	case "ed25519":
-		// ed25519 uses a 256bit key length, we just specify the length here for brevity
-		keyTypeInt = ci.Ed25519
-		bitsInt = 256
-	default:
-		FailOnError(c, errors.New("key_type must be rsa or ed25519"))
-		return
-	}
-	// initialize our connection to the ipfs node
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	//  load the key store manager
-	err = manager.CreateKeystoreManager()
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	// prevent key name collision between different users
-	//keyName = fmt.Sprintf("%s-%s", ethAddress, keyName)
-	// create a key and save it to disk
-	pk, err := manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	// load the database so we can update our models
-	db, ok := c.MustGet("db").(*gorm.DB)
+
+	mqConnectionURL, ok := c.MustGet("mq_conn_url").(string)
 	if !ok {
-		FailedToLoadDatabase(c)
+		FailedToLoadMiddleware(c, "rabbitmq")
 		return
 	}
-	id, err := peer.IDFromPrivateKey(pk)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	um := models.NewUserManager(db)
-	// update the user model with the new key
-	err = um.AddIPFSKeyForUser(ethAddress, keyName, id.Pretty())
+
+	bitsInt, err := strconv.Atoi(keyBits)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "key created",
-		"id":     id.Pretty(),
-	})
+	key := queue.IPFSKeyCreation{
+		EthAddress: ethAddress,
+		Name:       keyName,
+		Type:       keyType,
+		Size:       bitsInt,
+	}
+
+	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	err = qm.PublishMessage(key)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "key creation sent to backend"})
 }
 
 // GetIPFSKeyNamesForAuthUser is used to get the keys a user has setup

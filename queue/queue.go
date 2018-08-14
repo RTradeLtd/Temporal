@@ -21,6 +21,7 @@ var PinPaymentSubmissionQueue = "pin-payment-submission-queue"
 var EmailSendQueue = "email-send-queue"
 var IpnsEntryQueue = "ipns-entry-queue"
 var IpfsPinRemovalQueue = "ipns-pin-removal-queue"
+var IpfsKeyCreationQueue = "ipfs-key-creation-queue"
 
 var AdminEmail = "temporal.reports@rtradetechnologies.com"
 
@@ -29,6 +30,15 @@ type QueueManager struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
 	Queue      *amqp.Queue
+}
+
+// IPFSKeyCreation is a message used for processing key creation
+// only supported for the public IPFS network at the moment
+type IPFSKeyCreation struct {
+	EthAddress string `json:"eth_address"`
+	Name       string `json:"name"`
+	Type       string `json:"type"`
+	Size       int    `json:"size"`
 }
 
 // IPFSPin is a struct used when sending pin request
@@ -238,6 +248,12 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	case IpfsPinRemovalQueue:
 		fmt.Println("processing ipfs pin removals")
 		err = ProcessIPFSPinRemovals(msgs, cfg, db)
+		if err != nil {
+			return err
+		}
+	case IpfsKeyCreationQueue:
+		fmt.Println("processing ipfs key creation")
+		err = ProcessIPFSKeyCreation(msgs, db, cfg)
 		if err != nil {
 			return err
 		}
