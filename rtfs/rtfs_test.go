@@ -73,10 +73,6 @@ func TestPubSub(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = im.SubscribeToPubSubTopic(im.PubTopic)
-	if err != nil {
-		t.Fatal(err)
-	}
 	err = im.PublishPubSubMessage(im.PubTopic, "data")
 	if err != nil {
 		t.Fatal(err)
