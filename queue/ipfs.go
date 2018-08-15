@@ -347,6 +347,10 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 	if err != nil {
 		return err
 	}
+	qmPin, err := Initialize(IpfsPinQueue, cfg.RabbitMQ.URL)
+	if err != nil {
+		return err
+	}
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
 	uploadManager := models.NewUploadManager(db)
@@ -453,6 +457,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("successfully added file to ipfs, sending a pin message to the queue")
 		holdTimeInt, err := strconv.ParseInt(ipfsFile.HoldTimeInMonths, 10, 64)
 		if err != nil {
 			fmt.Println("erorr parsing string to int ", err)
@@ -460,12 +465,20 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
+		pin := IPFSPin{
+			CID:              resp,
+			NetworkName:      ipfsFile.NetworkName,
+			EthAddress:       ipfsFile.EthAddress,
+			HoldTimeInMonths: holdTimeInt,
+		}
+		err = qmPin.PublishMessage(pin)
+		if err != nil {
+			fmt.Println("error publishing message to queue ", err)
+		}
 		err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName)
 		if err != nil {
-			//TODO: log and handle
-			fmt.Println(err)
-			d.Ack(false)
-			continue
+			//TODO: send email
+			fmt.Println("error removing object from minio ", err)
 		}
 		// TODO: decide whether or not we should email on "backend" failures
 		fmt.Println("object removed from minio")

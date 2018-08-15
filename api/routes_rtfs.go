@@ -285,6 +285,24 @@ func AddFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	pin := queue.IPFSPin{
+		CID:              resp,
+		NetworkName:      "public",
+		EthAddress:       uploaderAddress,
+		HoldTimeInMonths: holdTimeinMonthsInt,
+	}
+
+	qm, err = queue.Initialize(queue.IpfsPinQueue, mqConnectionURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	err = qm.PublishMessage(pin)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"response": resp})
 }
 
