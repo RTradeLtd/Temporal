@@ -106,7 +106,6 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	accountProtected.Use(middleware.DatabaseMiddleware(db))
 	accountProtected.POST("password/change", ChangeAccountPassword)
 	accountProtected.GET("/key/ipfs/get", GetIPFSKeyNamesForAuthUser)
-	accountProtected.POST("/key/ipfs/new", CreateIPFSKey)
 	accountProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	accountProtected.POST("/key/ipfs/new", CreateIPFSKey)
 
