@@ -444,7 +444,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	}
 
 	um := models.NewUserManager(db)
-	qm, err := queue.Initialize(queue.IpnsUpdateQueue, mqURL)
+	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL)
 	if err != nil {
 		FailOnError(c, err)
 		return

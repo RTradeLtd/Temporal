@@ -12,7 +12,6 @@ import (
 )
 
 var DatabaseFileAddQueue = "dfa-queue"
-var IpnsUpdateQueue = "ipns-update-queue"
 var IpfsPinQueue = "ipfs-pin-queue"
 var IpfsFileQueue = "ipfs-file-queue"
 var IpfsClusterAddQueue = "ipfs-cluster-add-queue"

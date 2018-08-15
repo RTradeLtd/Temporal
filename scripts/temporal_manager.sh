@@ -17,14 +17,20 @@ case "$1" in
     queue-dfa)
         Temporal queue-dfa 2>&1 | tee --append /var/log/temporal/queue_dfa.log
         ;;
-    ipfs-cluster-queue)
-        Temporal ipfs-cluster-queue 2>&1 | tee --append /var/log/temporal/ipfs_cluster_queue.log
-        ;;
     ipfs-pin-queue)
         Temporal ipfs-pin-queue 2>&1 | tee --append /var/log/temporal/ipfs_pin_queue.log
         ;;
     ipfs-file-queue)
-        Temporal ipfs-file-queue 2>&1 |tee --append /var/log/temporal/ipfs_file_queue.log
+        Temporal ipfs-file-queue 2>&1 | tee --append /var/log/temporal/ipfs_file_queue.log
+        ;;
+    ipns-entry-queue)
+        Temporal ipns-entry-queue 2>&1 | tee --append /var/log/temporal/ipns_entry_queue.log
+        ;;
+    email-send-queue)
+        Temporal email-send-queue 2>&1 | tee --append /var/log/temporal/email_send_queue.log
+        ;;
+    ipfs-key-creation-queue)
+        Temporal ipfs-key-creation-queue 2>&1 | tee --append /var/log/temporal/ipfs_key_creation_queue.log
         ;;
     migrate)
         Temporal migrate 2>&1 | tee --append /var/log/temporal/database_migrate.log
