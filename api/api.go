@@ -193,6 +193,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	adminProtected := g.Group("/api/v1/admin")
 	adminProtected.Use(authWare.MiddlewareFunc())
 	adminProtected.Use(middleware.APIRestrictionMiddleware(db))
+	adminProtected.POST("/utils/file-size-check", CalculateFileSize)
 	mini := adminProtected.Group("/mini")
 	mini.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
 	mini.POST("/create/bucket", MakeBucket)

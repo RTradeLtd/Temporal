@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/Temporal/utils"
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -16,6 +17,19 @@ var nilTime time.Time
 
 // FilesUploadBucket is the bucket files are stored into before being processed
 const FilesUploadBucket = "filesuploadbucket"
+
+// CalculateFileSize helper route used to calculate the size of a file
+func CalculateFileSize(c *gin.Context) {
+	fileHandler, err := c.FormFile("file")
+	if err != nil {
+		FailOnError(c, err)
+	}
+	size := utils.CalculateFileSizeInGigaBytes(fileHandler.Size)
+	c.JSON(http.StatusOK, gin.H{
+		"file_size_gb":    size,
+		"file_size_bytes": fileHandler.Size,
+	})
+}
 
 // FailNoExist is a failure used when somethign does not exist
 func FailNoExist(c *gin.Context, message string) {

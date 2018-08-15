@@ -69,6 +69,12 @@ func CalculateFileCost(holdTimeInMonths, size int64) float64 {
 	return totalCostUSDFloat
 }
 
+func CalculateFileSizeInGigaBytes(size int64) int64 {
+	gigabytes := int64(datasize.GB.Bytes())
+	sizeInGigaBytes := size / gigabytes
+	return sizeInGigaBytes
+}
+
 // FloatToBigInt used to convert a float to big int
 func FloatToBigInt(val float64) *big.Int {
 	bigval := new(big.Float)
