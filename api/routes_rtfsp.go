@@ -190,7 +190,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	resp, err := ipfsManager.Shell.Add(file)
+	resp, err := ipfsManager.Add(file)
 	if err != nil {
 		FailOnError(c, err)
 		return

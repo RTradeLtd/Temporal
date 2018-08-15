@@ -433,7 +433,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		fmt.Println("file retrieved from minio")
 		// add object to IPFs
 		fmt.Println("adding file to ipfs")
-		resp, err := ipfsManager.Shell.Add(obj)
+		resp, err := ipfsManager.Add(obj)
 		if err != nil {
 			//TODO: decide how to handle email failures
 			addresses := []string{}

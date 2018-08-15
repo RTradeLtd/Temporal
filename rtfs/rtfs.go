@@ -3,6 +3,7 @@ package rtfs
 import (
 	"errors"
 	"fmt"
+	"io"
 	"time"
 
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
@@ -86,6 +87,17 @@ func (im *IpfsManager) Pin(hash string) error {
 		return err
 	}
 	return nil
+}
+
+// Add is a wrapper used to add a file to IPFS
+// currently until https://github.com/ipfs/go-ipfs/issues/5376 it is added with no pin
+// thus a manual pin must be triggered afterwards
+func (im *IpfsManager) Add(r io.Reader) (string, error) {
+	hash, err := im.Shell.AddNoPin(r)
+	if err != nil {
+		return "", err
+	}
+	return hash, nil
 }
 
 // GetObjectFileSizeInBytes is used to retrieve the cumulative byte size of an object

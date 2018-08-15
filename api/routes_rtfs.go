@@ -256,7 +256,7 @@ func AddFileLocally(c *gin.Context) {
 	}
 	// pin the file
 	fmt.Println("adding file")
-	resp, err := manager.Shell.Add(openFile)
+	resp, err := manager.Add(openFile)
 	if err != nil {
 		FailOnError(c, err)
 		return
