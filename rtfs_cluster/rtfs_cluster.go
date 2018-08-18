@@ -160,8 +160,12 @@ func (cm *ClusterManager) ListPeers() ([]api.ID, error) {
 
 // AddPeerToCluster is used to add a peer to the cluster
 // TODO: still needs to be completed
-func (cm *ClusterManager) AddPeerToCluster(addr ma.Multiaddr) {
-	cm.Client.PeerAdd(addr)
+func (cm *ClusterManager) AddPeerToCluster(addr ma.Multiaddr) error {
+	_, err := cm.Client.PeerAdd(addr)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // DecodeHashString is used to take a hash string, and turn it into a CID

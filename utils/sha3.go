@@ -18,6 +18,7 @@ The only reason why I didn't use that library directly was due to how go-ethereu
 */
 
 // Address address
+/* #nosec */
 func Address(input interface{}) []byte {
 	switch v := input.(type) {
 	case common.Address:
@@ -30,6 +31,7 @@ func Address(input interface{}) []byte {
 }
 
 // Uint256 uint256
+/* #nosec */
 func Uint256(input interface{}) []byte {
 	switch v := input.(type) {
 	case *big.Int:
@@ -44,6 +46,7 @@ func Uint256(input interface{}) []byte {
 }
 
 // Uint128 uint128
+/* #nosec */
 func Uint128(input interface{}) []byte {
 	switch v := input.(type) {
 	case *big.Int:
@@ -58,6 +61,7 @@ func Uint128(input interface{}) []byte {
 }
 
 // Uint64 uint64
+/* #nosec */
 func Uint64(input interface{}) []byte {
 	b := new(bytes.Buffer)
 	switch v := input.(type) {
@@ -94,6 +98,7 @@ func Uint64(input interface{}) []byte {
 }
 
 // Uint32 uint32
+/* #nosec */
 func Uint32(input interface{}) []byte {
 	b := new(bytes.Buffer)
 	switch v := input.(type) {
@@ -130,6 +135,7 @@ func Uint32(input interface{}) []byte {
 }
 
 // Uint16 uint16
+/* #nosec */
 func Uint16(input interface{}) []byte {
 	b := new(bytes.Buffer)
 	switch v := input.(type) {
@@ -166,6 +172,7 @@ func Uint16(input interface{}) []byte {
 }
 
 // Uint8 uint8
+/* #nosec */
 func Uint8(input interface{}) []byte {
 	b := new(bytes.Buffer)
 	switch v := input.(type) {
@@ -202,6 +209,7 @@ func Uint8(input interface{}) []byte {
 }
 
 // Int256 int256
+/* #nosec */
 func Int256(input interface{}) []byte {
 	switch v := input.(type) {
 	case *big.Int:
@@ -247,6 +255,7 @@ func Int256(input interface{}) []byte {
 }
 
 // Int128 int128
+/* #nosec */
 func Int128(input interface{}) []byte {
 	switch v := input.(type) {
 	case *big.Int:
@@ -292,6 +301,7 @@ func Int128(input interface{}) []byte {
 }
 
 // Int64 int64
+/* #nosec */
 func Int64(input interface{}) []byte {
 	b := make([]byte, 8)
 	switch v := input.(type) {
@@ -328,6 +338,7 @@ func Int64(input interface{}) []byte {
 }
 
 // Int32 int32
+/* #nosec */
 func Int32(input interface{}) []byte {
 	b := make([]byte, 4)
 	switch v := input.(type) {
@@ -364,6 +375,7 @@ func Int32(input interface{}) []byte {
 }
 
 // Int16 int16
+/* #nosec */
 func Int16(input interface{}) []byte {
 	b := make([]byte, 2)
 	switch v := input.(type) {
@@ -400,6 +412,7 @@ func Int16(input interface{}) []byte {
 }
 
 // Int8 int8
+/* #nosec */
 func Int8(input interface{}) []byte {
 	b := make([]byte, 1)
 	switch v := input.(type) {
@@ -436,6 +449,7 @@ func Int8(input interface{}) []byte {
 }
 
 // Bytes32 bytes32
+/* #nosec */
 func Bytes32(input interface{}) []byte {
 	switch v := input.(type) {
 	case [32]byte:
@@ -452,6 +466,7 @@ func Bytes32(input interface{}) []byte {
 }
 
 // String string
+/* #nosec */
 func String(input interface{}) []byte {
 	switch v := input.(type) {
 	case []byte:
@@ -464,6 +479,7 @@ func String(input interface{}) []byte {
 }
 
 // Bool bool
+/* #nosec */
 func Bool(input interface{}) []byte {
 	switch v := input.(type) {
 	case bool:
@@ -477,6 +493,7 @@ func Bool(input interface{}) []byte {
 }
 
 // ConcatByteSlices concat byte slices
+/* #nosec */
 func ConcatByteSlices(arrays ...[]byte) []byte {
 	var result []byte
 
@@ -488,6 +505,7 @@ func ConcatByteSlices(arrays ...[]byte) []byte {
 }
 
 // SoliditySHA3 solidity sha3
+/* #nosec */
 func SoliditySHA3(data ...[]byte) []byte {
 	var result []byte
 
@@ -501,6 +519,7 @@ func SoliditySHA3(data ...[]byte) []byte {
 }
 
 // SoliditySHA3WithPrefix solidity sha3 with prefix
+/* #nosec */
 func SoliditySHA3WithPrefix(data []byte) []byte {
 	result := SoliditySHA3(
 		ConcatByteSlices(

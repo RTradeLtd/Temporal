@@ -71,7 +71,10 @@ func RetrieveEthUsdPriceNoDecimals() (int64, error) {
 		return 0, err
 	}
 
-	f, _ := strconv.ParseFloat(decode[0].PriceUsd, 64)
+	f, err := strconv.ParseFloat(decode[0].PriceUsd, 64)
+	if err != nil {
+		return 0, err
+	}
 
 	bigF := big.NewFloat(f)
 	bigFloatString := bigF.String()

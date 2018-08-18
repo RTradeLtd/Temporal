@@ -188,12 +188,13 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			continue
 		}
 		fmt.Println("successfully pinned content to ipfs")
-		// automatically trigger a cluster add0
+		// automatically trigger a cluster add
 		go func() {
 			clusterAddMsg := IPFSClusterAdd{
 				CID:         pin.CID,
 				NetworkName: pin.NetworkName,
 			}
+			// TODO: decide if we can handle this better
 			qmCluster.PublishMessage(clusterAddMsg)
 		}()
 		_, err = uploadManager.FindUploadByHashAndNetwork(pin.CID, pin.NetworkName)

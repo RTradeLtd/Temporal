@@ -49,7 +49,10 @@ func main() {
 	switch os.Args[1] {
 	case "api":
 		router := api.Setup(tCfg)
-		router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
+		err = router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
 		if err != nil {

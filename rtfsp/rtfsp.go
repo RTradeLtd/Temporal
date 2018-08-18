@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	addrUtil "github.com/ipfs/go-ipfs-addr"
@@ -67,7 +68,7 @@ func (pcm *PrivateConfigManager) ConfigureBootstrap(peers ...string) ([]cg.Boots
 // ParseConfigAndWrite is used to parse a configuration object and write it
 func (pcm *PrivateConfigManager) ParseConfigAndWrite(peers ...string) error {
 	// Create file, truncating if it exists
-	cFilePath, err := os.Create("/tmp/tconfigfileforips")
+	cFilePath, err := ioutil.TempFile("/tmp/", "tconfigfileforips")
 	if err != nil {
 		return err
 	}

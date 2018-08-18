@@ -67,6 +67,10 @@ func OpenTestDBConnection(dbPass string) (*gorm.DB, error) {
 }
 
 // CloseDBConnection is used to close a db
-func CloseDBConnection(db *gorm.DB) {
-	db.Close()
+func CloseDBConnection(db *gorm.DB) error {
+	err := db.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }

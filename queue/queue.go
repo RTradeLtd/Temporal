@@ -318,6 +318,6 @@ func (qm *QueueManager) PublishMessage(body interface{}) error {
 	return nil
 }
 
-func (qm *QueueManager) Close() {
-	qm.Connection.Close()
+func (qm *QueueManager) Close() error {
+	return qm.Connection.Close()
 }
