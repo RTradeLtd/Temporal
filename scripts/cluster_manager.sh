@@ -4,7 +4,7 @@
 export IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
 case "$1" in
     daemon)
-        ipfs-cluster-service daemon | tee --append /var/log/ipfs/ipfs_cluster_daemon.log
+        ipfs-cluster-service daemon 2>&1 | tee --append /var/log/ipfs/ipfs_cluster_daemon.log
         ;;
     # used by a node to add itself to a cluster
     bootstrap)
