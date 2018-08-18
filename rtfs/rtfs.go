@@ -147,8 +147,15 @@ func (im *IpfsManager) PublishPubSubMessage(topic string, data string) error {
 }
 
 // BuildCustomRequest is used to build a custom request
-func (im *IpfsManager) BuildCustomRequest(ctx context.Context, url, commad string, args ...string) (*ipfsapi.Response, error) {
+func (im *IpfsManager) BuildCustomRequest(ctx context.Context, url, commad string, opts map[string]string, args ...string) (*ipfsapi.Response, error) {
 	req := ipfsapi.NewRequest(ctx, url, commad, args...)
+	if len(opts) > 0 {
+		currentOpts := req.Opts
+		for k, v := range opts {
+			currentOpts[k] = v
+		}
+		req.Opts = currentOpts
+	}
 	hc := &http.Client{Timeout: time.Minute * 1}
 	resp, err := req.Send(hc)
 	if err != nil {
@@ -156,4 +163,23 @@ func (im *IpfsManager) BuildCustomRequest(ctx context.Context, url, commad strin
 	}
 
 	return resp, nil
+}
+
+// DHTFindProvs is used to find providers of a given CID
+// Currently bugged and wil only fetch 1 provider
+func (im *IpfsManager) DHTFindProvs(cid, numProviders string) error {
+	opts := make(map[string]string)
+	opts["num-providers"] = numProviders
+	cmd := "dht/findprovs"
+	url := "http://127.0.0.1:5001"
+	resp, err := im.BuildCustomRequest(context.Background(), url, cmd, opts, cid)
+	if err != nil {
+		return err
+	}
+	out := DHTFindProvsResponse{}
+	err = resp.Decode(&out)
+	if err != nil {
+		return err
+	}
+	return nil
 }

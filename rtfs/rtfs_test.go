@@ -22,12 +22,23 @@ func TestInitialize(t *testing.T) {
 	fmt.Println(info)
 }
 
+func TestDHTFindProvs(t *testing.T) {
+	im, err := rtfs.Initialize("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = im.DHTFindProvs("QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv", "10")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestBuildCustomRequest(t *testing.T) {
 	im, err := rtfs.Initialize("", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp, err := im.BuildCustomRequest(context.Background(), "127.0.0.1:5001", "dht/findprovs", "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
+	resp, err := im.BuildCustomRequest(context.Background(), "127.0.0.1:5001", "dht/findprovs", nil, "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
 	if err != nil {
 		t.Fatal(err)
 	}
