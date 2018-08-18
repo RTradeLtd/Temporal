@@ -3,6 +3,8 @@ Description=Starts the ipfs daemon
 After=network.target
 
 [Service]
+User=rtrade
+Group=rtrade
 Type=simple
 PIDFile=/var/run/ipfs_daemon.pid
 ExecStart=/boot_scripts/ipfs_manager_script.sh

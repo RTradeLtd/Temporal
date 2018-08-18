@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/hex"
 	"math/big"
 	"time"
 
@@ -98,4 +99,12 @@ func ConvertNumberToBaseWei(num *big.Int) *big.Int {
 	exp := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
 	baseWei := new(big.Int).Mul(num, exp)
 	return baseWei
+}
+
+// CalculateConfigFileChecksum is used to calculate our config file checksum
+func CalculateConfigFileChecksum(fileBytes []byte) (string, error) {
+	hashBytes := SoliditySHA3(fileBytes)
+	hashString := hex.EncodeToString(hashBytes)
+
+	return hashString, nil
 }

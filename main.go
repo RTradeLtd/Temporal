@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtswarm"
+	"github.com/RTradeLtd/Temporal/utils"
 )
 
 var certFile = "/home/solidity/certificates/api.pem"
@@ -144,6 +146,17 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+	case "calculcate-config-checksum":
+		fileBytes, err := ioutil.ReadFile(configDag)
+		if err != nil {
+			log.Fatal(err)
+		}
+		hash, err := utils.CalculateConfigFileChecksum(fileBytes)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("calculated config file checksum is %s", hash)
+		// TODO: hardcode the checksum value so we can do a check here
 	case "migrate":
 		dbm, err := database.Initialize(dbPass, dbURL, dbUser)
 		if err != nil {
