@@ -23,11 +23,17 @@ case "$1" in
     ipfs-file-queue)
         Temporal ipfs-file-queue 2>&1 | tee --append /var/log/temporal/ipfs_file_queue.log
         ;;
-    ipns-entry-queue)
-        Temporal ipns-entry-queue 2>&1 | tee --append /var/log/temporal/ipns_entry_queue.log
+    pin-payment-confirmation-queue)
+        Temporal pin-payment-confirmation-queue 2>&1 | tee --append /var/log/temporal/pin_payment_confirmation_queue.log
+        ;;
+    pin-payment-submission-queue)
+        Temporal pin-payment-submission-queue 2>&1 | tee --append /var/log/temporal/pin_payment_submissions_queue.log
         ;;
     email-send-queue)
         Temporal email-send-queue 2>&1 | tee --append /var/log/temporal/email_send_queue.log
+        ;;
+    ipns-entry-queue)
+        Temporal ipns-entry-queue 2>&1 | tee --append /var/log/temporal/ipns_entry_queue.log
         ;;
     ipfs-key-creation-queue)
         Temporal ipfs-key-creation-queue 2>&1 | tee --append /var/log/temporal/ipfs_key_creation_queue.log

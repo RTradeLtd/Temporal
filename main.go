@@ -155,7 +155,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("calculated config file checksum is %s", hash)
+		fmt.Printf("calculated config file checksum is %s\n", hash)
 		// TODO: hardcode the checksum value so we can do a check here
 	case "migrate":
 		dbm, err := database.Initialize(dbPass, dbURL, dbUser)
