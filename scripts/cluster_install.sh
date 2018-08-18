@@ -5,19 +5,17 @@
 
 IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
 export IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
-#CLUSTER_SECRET="....."
-#export CLUSTER_SECRET="....."
 
-cd ~
-wget https://dist.ipfs.io/ipfs-cluster-service/v0.4.0-rc1/ipfs-cluster-service_v0.4.0-rc1_linux-amd64.tar.gz
+cd ~ || exit
+wget https://dist.ipfs.io/ipfs-cluster-service/v0.4.0/ipfs-cluster-service_v0.4.0_linux-amd64.tar.gz
 tar zxvf ipfs-cluster-service*.tar.gz
-rm *gz
-cd ipfs-cluster-service
+rm -- *gz
+cd ipfs-cluster-service || exit
 ./ipfs-cluster-service init
 cp ipfs-cluster-service /usr/local/bin
-cd ~
-wget https://dist.ipfs.io/ipfs-cluster-ctl/v0.4.0-rc1/ipfs-cluster-ctl_v0.4.0-rc1_linux-amd64.tar.gz
+cd ~ || exit
+wget https://dist.ipfs.io/ipfs-cluster-ctl/v0.4.0/ipfs-cluster-ctl_v0.4.0_linux-amd64.tar.gz
 tar zxvf ipfs-cluster-ctl*.tar.gz
-rm *gz
-cd ipfs-cluster-ctl
+rm -- *gz
+cd ipfs-cluster-ctl || exit
 cp ipfs-cluster-ctl /usr/local/bin
