@@ -29,6 +29,10 @@ func NewMinioManager(endpoint, accessKeyID, secretAccessKey string, secure bool)
 	if err != nil {
 		return nil, err
 	}
+	_, err = client.ListBuckets()
+	if err != nil {
+		return nil, err
+	}
 	mm.Client = client
 	return mm, nil
 }
