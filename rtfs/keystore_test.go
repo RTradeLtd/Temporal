@@ -30,7 +30,7 @@ func TestKeystoreManager(t *testing.T) {
 			t.Error(err)
 			continue
 		}
-		present, err := km.CheckIfKeyIsPresent(v)
+		present, err := km.CheckIfKeyExists(v)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -41,7 +41,7 @@ func TestKeystoreManager(t *testing.T) {
 		}
 	}
 
-	present, err := km.CheckIfKeyIsPresent("thiskeyshouldreallynotexistwithsucharandomname")
+	present, err := km.CheckIfKeyExists("thiskeyshouldreallynotexistwithsucharandomname")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +76,7 @@ func TestGetKey(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	present, err := km.CheckIfKeyIsPresent(k1)
+	present, err := km.CheckIfKeyExists(k1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +91,7 @@ func TestGetKey(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", pk1.GetPublic())
 
-	present, err = km.CheckIfKeyIsPresent(k2)
+	present, err = km.CheckIfKeyExists(k2)
 	if err != nil {
 		t.Fatal(err)
 	}
