@@ -1,9 +1,11 @@
 package rtfs
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
 
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
@@ -142,4 +144,16 @@ func (im *IpfsManager) PublishPubSubMessage(topic string, data string) error {
 		return err
 	}
 	return nil
+}
+
+// BuildCustomRequest is used to build a custom request
+func (im *IpfsManager) BuildCustomRequest(ctx context.Context, url, commad string, args ...string) (*ipfsapi.Response, error) {
+	req := ipfsapi.NewRequest(ctx, url, commad, args...)
+	hc := &http.Client{Timeout: time.Minute * 1}
+	resp, err := req.Send(hc)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
