@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -156,10 +155,5 @@ func (im *IpfsManager) BuildCustomRequest(ctx context.Context, url, commad strin
 		return nil, err
 	}
 
-	by, err := ioutil.ReadAll(resp.Output)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(string(by))
 	return resp, nil
 }
