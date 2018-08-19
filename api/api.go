@@ -171,10 +171,8 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	databaseProtected.Use(authWare.MiddlewareFunc())
 	databaseProtected.Use(middleware.APIRestrictionMiddleware(db))
 	databaseProtected.Use(middleware.DatabaseMiddleware(db))
-	databaseProtected.DELETE("/garbage-collect/test", RunTestGarbageCollection)    // admin locked
-	databaseProtected.DELETE("/garbage-collect/run", RunDatabaseGarbageCollection) // admin locked
-	databaseProtected.GET("/uploads", GetUploadsFromDatabase)                      // admin locked
-	databaseProtected.GET("/uploads/:address", GetUploadsForAddress)               // partial admin locked
+	databaseProtected.GET("/uploads", GetUploadsFromDatabase)        // admin locked
+	databaseProtected.GET("/uploads/:address", GetUploadsForAddress) // partial admin locked
 
 	frontendProtected := g.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())

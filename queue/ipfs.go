@@ -190,7 +190,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 		fmt.Println("successfully pinned content to ipfs")
 		// automatically trigger a cluster add
 		go func() {
-			clusterAddMsg := IPFSClusterAdd{
+			clusterAddMsg := IPFSClusterPin{
 				CID:         pin.CID,
 				NetworkName: pin.NetworkName,
 			}

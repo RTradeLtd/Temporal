@@ -56,8 +56,8 @@ type IPFSFile struct {
 	HoldTimeInMonths string `json:"hold_time_in_months"`
 }
 
-// IPFSClusterAdd is a queue message used when sending a message to the cluster to pin content
-type IPFSClusterAdd struct {
+// IPFSClusterPin is a queue message used when sending a message to the cluster to pin content
+type IPFSClusterPin struct {
 	CID         string `json:"cid"`
 	NetworkName string `json:"network_name,omitempty"`
 }

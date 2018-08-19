@@ -118,6 +118,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 }
 
 // GenerateDNSLinkEntry is used to generate a DNS link entry
+// TODO: turn into a queue call
 func GenerateDNSLinkEntry(c *gin.Context) {
 	authUser := GetAuthenticatedUserFromContext(c)
 	if authUser != AdminAddress {

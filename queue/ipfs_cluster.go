@@ -18,7 +18,7 @@ func (qm *QueueManager) ProcessIPFSClusterAdds(msgs <-chan amqp.Delivery, cfg *c
 		return err
 	}
 	for d := range msgs {
-		clusterAdd := IPFSClusterAdd{}
+		clusterAdd := IPFSClusterPin{}
 		err = json.Unmarshal(d.Body, &clusterAdd)
 		if err != nil {
 			fmt.Println("error unmarshaling cluster add message ", err)

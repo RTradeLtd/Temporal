@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
@@ -15,25 +16,28 @@ func PinHashToCluster(c *gin.Context) {
 		FailNotAuthorized(c, "unauthorized access to cluster pin")
 	}
 	hash := c.Param("hash")
-	// currently after it is pinned, it is sent to the cluster to be pinned
-	manager, err := rtfs_cluster.Initialize("", "")
+
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailedToLoadMiddleware(c, "rabbitmq")
+		return
+	}
+	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
 
-	decodedHash, err := manager.DecodeHashString(hash)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	// before exiting, it is pinned to the cluster
-	err = manager.Pin(decodedHash)
-	if err != nil {
-		FailOnError(c, err)
-		return
+	ipfsClusterPin := queue.IPFSClusterPin{
+		CID:         hash,
+		NetworkName: "public",
 	}
 
+	err = qm.PublishMessage(ipfsClusterPin)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"status": "content hash pin request sent to cluster"})
 }
 
@@ -62,7 +66,7 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 
 // RemovePinFromCluster is used to remove a pin from the cluster global state
 // this will mean that all nodes in the cluster will no longer track the pin
-// TODO: fully implement, add in goroutines
+// TODO: change to use a queue
 func RemovePinFromCluster(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
