@@ -20,8 +20,9 @@ else
     sudo apt install zabbix-agent -y
 fi
 
-echo "Installation complete, please see https://www.zabbix.com/download?zabbix=3.4&os_distribution=ubuntu&os_version=bionic&db=PostgreSQL for additional setup instructions"
-
+if [[ "$MODE" == "server" ]]; then
+    echo "Installation complete, please see https://www.zabbix.com/download?zabbix=3.4&os_distribution=ubuntu&os_version=bionic&db=PostgreSQL for additional setup instructions"
+fi
 # sudo -u postgres createuser --pwprompt zabbix
 # sudo -u postgres createdb -O zabbix zabbix 
 
