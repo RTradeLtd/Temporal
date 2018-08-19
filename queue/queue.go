@@ -14,7 +14,7 @@ import (
 var DatabaseFileAddQueue = "dfa-queue"
 var IpfsPinQueue = "ipfs-pin-queue"
 var IpfsFileQueue = "ipfs-file-queue"
-var IpfsClusterAddQueue = "ipfs-cluster-add-queue"
+var IpfsClusterPinQueue = "ipfs-cluster-add-queue"
 var PinPaymentConfirmationQueue = "pin-payment-confirmation-queue"
 var PinPaymentSubmissionQueue = "pin-payment-submission-queue"
 var EmailSendQueue = "email-send-queue"
@@ -109,12 +109,12 @@ func Initialize(queueName, connectionURL string) (*QueueManager, error) {
 		if err != nil {
 			return nil, err
 		}
-	case ClusterPinExchange:
+	case IpfsClusterPinQueue:
 		err = qm.DeclareIPFSClusterPinExchange()
 		if err != nil {
 			return nil, err
 		}
-	case FileExchange:
+	case IpfsFileQueue:
 		err = qm.DeclareIPFSFileExchange()
 		if err != nil {
 			return nil, err

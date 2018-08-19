@@ -93,7 +93,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 	if err != nil {
 		return err
 	}
-	qmCluster, err := Initialize(IpfsClusterAddQueue, cfg.RabbitMQ.URL)
+	qmCluster, err := Initialize(IpfsClusterPinQueue, cfg.RabbitMQ.URL)
 	if err != nil {
 		return err
 	}
