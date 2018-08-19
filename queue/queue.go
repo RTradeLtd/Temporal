@@ -218,7 +218,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	msgs, err := qm.Channel.Consume(
 		qm.Queue.Name, // queue
 		consumer,      // consumer
-		false,         // auto-ack
+		true,          // auto-ack
 		false,         // exclusive
 		false,         // no-local
 		false,         // no-wait
