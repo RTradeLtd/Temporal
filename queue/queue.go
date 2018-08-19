@@ -109,6 +109,11 @@ func Initialize(queueName, connectionURL string) (*QueueManager, error) {
 		if err != nil {
 			return nil, err
 		}
+	case IpfsKeyCreationQueue:
+		err = qm.DeclareIPFSKeyExchange()
+		if err != nil {
+			return nil, err
+		}
 	}
 	if err := qm.DeclareQueue(queueName); err != nil {
 		return nil, err
@@ -186,6 +191,9 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			false,                 // noWait
 			nil,                   // arguments
 		)
+		if err != nil {
+			return err
+		}
 	case IpfsPinQueue:
 		err = qm.Channel.QueueBind(
 			qm.Queue.Name,  // name of the queue
@@ -194,6 +202,20 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			false,          // noWait
 			nil,            // arguments
 		)
+		if err != nil {
+			return err
+		}
+	case IpfsKeyCreationQueue:
+		err = qm.Channel.QueueBind(
+			qm.Queue.Name,      // name of the queue
+			IpfsKeyExchangeKey, // binding key
+			IpfsKeyExchange,    // source exchange
+			false,              // no wait
+			nil,                // arguments
+		)
+		if err != nil {
+			return err
+		}
 	default:
 		break
 	}
@@ -260,6 +282,8 @@ func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeNam
 		routingKey = PinExchangeKey
 	case PinRemovalExchange:
 		routingKey = PinRemovalExchangeKey
+	case IpfsKeyExchange:
+		routingKey = IpfsKeyExchangeKey
 	default:
 		return errors.New("invalid exchange name provided")
 	}

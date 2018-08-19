@@ -129,7 +129,7 @@ func CreateIPFSKey(c *gin.Context) {
 		return
 	}
 
-	err = qm.PublishMessage(key)
+	err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange)
 	if err != nil {
 		FailOnError(c, err)
 		return
