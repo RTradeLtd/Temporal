@@ -24,6 +24,7 @@ type IpfsManager struct {
 func Initialize(pubTopic, connectionURL string) (*IpfsManager, error) {
 	manager := IpfsManager{}
 	manager.Shell = EstablishShellWithNode(connectionURL)
+	manager.SetTimeout(time.Minute * 1)
 	_, err := manager.Shell.ID()
 	if err != nil {
 		return nil, err
