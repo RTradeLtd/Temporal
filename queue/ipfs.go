@@ -206,6 +206,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("updating database")
 		if err == gorm.ErrRecordNotFound {
 			_, check := uploadManager.NewUpload(pin.CID, "pin", pin.NetworkName, pin.EthAddress, pin.HoldTimeInMonths)
 			if check != nil {
@@ -225,6 +226,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("pin successfully processed")
 		d.Ack(false)
 	}
 	return nil

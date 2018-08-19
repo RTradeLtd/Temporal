@@ -18,6 +18,7 @@ func ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *config.TemporalConfi
 		return err
 	}
 	for d := range msgs {
+		fmt.Println("new pin detected")
 		clusterAdd := IPFSClusterPin{}
 		err = json.Unmarshal(d.Body, &clusterAdd)
 		if err != nil {
@@ -25,17 +26,14 @@ func ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *config.TemporalConfi
 			d.Ack(false)
 			continue
 		}
-		if clusterAdd.NetworkName != "" {
-			//TODO implement adds to private clusters
-			d.Ack(false)
-			continue
-		}
+		fmt.Println("decoding hash string")
 		encodedCid, err := clusterManager.DecodeHashString(clusterAdd.CID)
 		if err != nil {
 			fmt.Println("failed to encode hash string to cid object ", err)
 			d.Ack(false)
 			continue
 		}
+		fmt.Println("pinning to cluster")
 		err = clusterManager.Pin(encodedCid)
 		if err != nil {
 			fmt.Println("failed to pin content to ipfs cluster ", err)
