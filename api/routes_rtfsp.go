@@ -212,8 +212,8 @@ func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-
-	err = qm.PublishMessageWithExchange(ifp, queue.FileExchange)
+	// we don't use an exchange for file publishes so that rabbitmq distributes round robin
+	err = qm.PublishMessage(ifp)
 	if err != nil {
 		FailOnError(c, err)
 		return

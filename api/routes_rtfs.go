@@ -193,7 +193,7 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 
-	err = qm.PublishMessageWithExchange(ifp, queue.FileExchange)
+	err = qm.PublishMessage(ifp)
 	if err != nil {
 		FailOnError(c, err)
 		return
