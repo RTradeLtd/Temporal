@@ -160,6 +160,16 @@ func main() {
 		}
 		fmt.Printf("calculated config file checksum is %s\n", hash)
 		// TODO: hardcode the checksum value so we can do a check here
+	case "ipfs-cluster-queue":
+		mqConnectionURL := tCfg.RabbitMQ.URL
+		qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqConnectionURL, false)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "migrate":
 		dbm, err := database.Initialize(dbPass, dbURL, dbUser)
 		if err != nil {

@@ -11,3 +11,4 @@
 /boot_scripts/temporal_manager.sh ipns-entry-queue &
 # /boot_scripts/temporal_manager.sh ipfs-pin-removal-queue &
 /boot_scripts/temporal_manager.sh ipfs-key-creation-queue &
+/boot_scripts/temporal_manager.sh ipfs-cluster-queue &
