@@ -123,7 +123,7 @@ func CreateIPFSKey(c *gin.Context) {
 		Size:       bitsInt,
 	}
 
-	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL)
+	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return

@@ -61,7 +61,7 @@ func main() {
 		fmt.Printf("%+v\n", sm)
 	case "queue-dfa":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL)
+		qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -71,7 +71,7 @@ func main() {
 		}
 	case "ipfs-pin-queue":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL)
+		qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, false)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -81,7 +81,7 @@ func main() {
 		}
 	case "ipfs-file-queue":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL)
+		qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL, false)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -91,7 +91,7 @@ func main() {
 		}
 	case "pin-payment-confirmation-queue":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqConnectionURL)
+		qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqConnectionURL, false)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -101,7 +101,7 @@ func main() {
 		}
 	case "pin-payment-submission-queue":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqConnectionURL)
+		qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqConnectionURL, false)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -111,7 +111,7 @@ func main() {
 		}
 	case "email-send-queue":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL)
+		qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL, false)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -121,7 +121,7 @@ func main() {
 		}
 	case "ipns-entry-queue":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL)
+		qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL, false)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -131,7 +131,7 @@ func main() {
 		}
 	case "ipfs-pin-removal-queue":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL)
+		qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, false)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -141,7 +141,7 @@ func main() {
 		}
 	case "ipfs-key-creation-queue":
 		mqConnectionURL := tCfg.RabbitMQ.URL
-		qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL)
+		qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, false)
 		if err != nil {
 			log.Fatal(err)
 		}

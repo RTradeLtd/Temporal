@@ -56,11 +56,11 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 		fmt.Println("error generating payment contract", err)
 		return err
 	}
-	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL)
+	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true)
 	if err != nil {
 		return err
 	}
-	qmIpfs, err := Initialize(IpfsPinQueue, cfg.RabbitMQ.URL)
+	qmIpfs, err := Initialize(IpfsPinQueue, cfg.RabbitMQ.URL, true)
 	if err != nil {
 		return err
 	}

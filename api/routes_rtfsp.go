@@ -62,7 +62,7 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL)
+	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -207,7 +207,7 @@ func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		NetworkName:      networkName,
 		HoldTimeInMonths: holdTimeInMonths,
 	}
-	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL)
+	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -271,7 +271,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqURL)
+	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -380,7 +380,7 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 		EthAddress:  ethAddress,
 	}
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
-	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL)
+	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -544,7 +544,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	}
 
 	um := models.NewUserManager(db)
-	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL)
+	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return

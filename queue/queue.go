@@ -88,7 +88,7 @@ type IPNSUpdate struct {
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
-func Initialize(queueName, connectionURL string) (*QueueManager, error) {
+func Initialize(queueName, connectionURL string, publish bool) (*QueueManager, error) {
 	conn, err := setupConnection(connectionURL)
 	if err != nil {
 		return nil, err
@@ -114,6 +114,9 @@ func Initialize(queueName, connectionURL string) (*QueueManager, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+	if publish {
+		return &qm, err
 	}
 	if err := qm.DeclareQueue(queueName); err != nil {
 		return nil, err

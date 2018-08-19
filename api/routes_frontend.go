@@ -342,7 +342,7 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 		PaymentNumber: paymentNumber,
 		ContentHash:   pp.ContentHash,
 	}
-	qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqURL)
+	qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -500,7 +500,7 @@ func SubmitPaymentToContract(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqURL)
+	qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return

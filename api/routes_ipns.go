@@ -101,7 +101,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 
 	fmt.Printf("IPNS Entry struct %+v\n", ie)
 
-	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL)
+	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return

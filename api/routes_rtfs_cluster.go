@@ -22,7 +22,7 @@ func PinHashToCluster(c *gin.Context) {
 		FailedToLoadMiddleware(c, "rabbitmq")
 		return
 	}
-	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL)
+	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return

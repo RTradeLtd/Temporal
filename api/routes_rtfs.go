@@ -74,7 +74,7 @@ func PinHashLocally(c *gin.Context) {
 		return
 	}
 
-	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL)
+	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -187,7 +187,7 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 		NetworkName:      "public",
 		HoldTimeInMonths: holdTimeInMonths,
 	}
-	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL)
+	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -262,7 +262,7 @@ func AddFileLocally(c *gin.Context) {
 	}
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	// initialize a connectino to rabbitmq
-	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL)
+	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -284,7 +284,7 @@ func AddFileLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeinMonthsInt,
 	}
 
-	qm, err = queue.Initialize(queue.IpfsPinQueue, mqConnectionURL)
+	qm, err = queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -339,7 +339,7 @@ func RemovePinFromLocalHost(c *gin.Context) {
 		FailedToLoadMiddleware(c, "rabbit mq")
 		return
 	}
-	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL)
+	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
