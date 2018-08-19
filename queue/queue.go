@@ -104,19 +104,19 @@ func Initialize(queueName, connectionURL string, publish bool) (*QueueManager, e
 		if err != nil {
 			return nil, err
 		}
+		return &qm, nil
 	case IpfsPinQueue:
 		err = qm.DeclareIPFSPinExchange()
 		if err != nil {
 			return nil, err
 		}
+		return &qm, nil
 	case IpfsKeyCreationQueue:
 		err = qm.DeclareIPFSKeyExchange()
 		if err != nil {
 			return nil, err
 		}
-	}
-	if publish {
-		return &qm, err
+		return &qm, nil
 	}
 	if err := qm.DeclareQueue(queueName); err != nil {
 		return nil, err
