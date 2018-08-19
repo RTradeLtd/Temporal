@@ -278,14 +278,13 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 
 //PublishMessageWithExchange is used to publish a message to a given exchange
 func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
-	routingKey := ""
 	switch exchangeName {
 	case PinExchange:
-		routingKey = PinExchangeKey
+		break
 	case PinRemovalExchange:
-		routingKey = PinRemovalExchangeKey
+		break
 	case IpfsKeyExchange:
-		routingKey = IpfsKeyExchangeKey
+		break
 	default:
 		return errors.New("invalid exchange name provided")
 	}
@@ -295,7 +294,7 @@ func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeNam
 	}
 	err = qm.Channel.Publish(
 		exchangeName, // exchange
-		routingKey,   // routing key
+		"",           // routing key
 		false,        // mandatory
 		false,        // immediate
 		amqp.Publishing{
