@@ -40,6 +40,7 @@ case "$1" in
         ;;
     ipfs-cluster-queue)
         Temporal ipfs-cluster-queue 2>&1 | tee --append /var/log/temporal/ipfs_cluster_queue.log
+        ;;
     migrate)
         Temporal migrate 2>&1 | tee --append /var/log/temporal/database_migrate.log
         ;;
