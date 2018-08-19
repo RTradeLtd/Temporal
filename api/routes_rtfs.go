@@ -118,7 +118,7 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 	_, exists := c.GetPostForm("use_private_network")
 	if exists {
 		//TODO need to create another function to add file with no response
-		AddFileToHostedIPFSNetwork(c)
+		AddFileToHostedIPFSNetworkAdvanced(c)
 		return
 	}
 
@@ -170,12 +170,6 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 	fmt.Println("file opened")
 	ethAddress := GetAuthenticatedUserFromContext(cC)
 
-	holdTimeInMonthsInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", ethAddress, randString)
@@ -204,10 +198,7 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"eth_address": ethAddress,
-		"hold_time":   holdTimeInMonthsInt,
-	})
+	c.JSON(http.StatusOK, gin.H{"status": "file upload request sent to backend"})
 }
 
 // AddFileLocally is used to add a file to our local ipfs node

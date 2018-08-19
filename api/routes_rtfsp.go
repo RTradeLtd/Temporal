@@ -7,8 +7,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
+	minio "github.com/minio/minio-go"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
@@ -119,6 +121,104 @@ func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 		"size_in_bytes": sizeInBytes,
 	})
 
+}
+
+// AddFileToHostedIPFSNetworkAdvanced is used to add a file to a hosted ipfs network in a more advanced and resilient manner
+func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
+
+	ethAddress := GetAuthenticatedUserFromContext(c)
+
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailNoExistPostForm(c, "network_name")
+		return
+	}
+
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadMiddleware(c, "database")
+		return
+	}
+
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	holdTimeInMonths, exists := c.GetPostForm("hold_time")
+	if !exists {
+		FailNoExistPostForm(c, "hold_time")
+		return
+	}
+
+	credentials, ok := c.MustGet("minio_credentials").(map[string]string)
+	if !ok {
+		FailedToLoadMiddleware(c, "minio credentials")
+		return
+	}
+	secure, ok := c.MustGet("minio_secure").(bool)
+	if !ok {
+		FailedToLoadMiddleware(c, "minio secure")
+		return
+	}
+	endpoint, ok := c.MustGet("minio_endpoint").(string)
+	if !ok {
+		FailedToLoadMiddleware(c, "minio endpoint")
+		return
+	}
+	mqURL, ok := c.MustGet("mq_conn_url").(string)
+	if !ok {
+		FailedToLoadMiddleware(c, "rabbitmq")
+		return
+	}
+
+	miniManager, err := mini.NewMinioManager(endpoint, credentials["access_key"], credentials["secret_key"], secure)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fileHandler, err := c.FormFile("file")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("opening file")
+	openFile, err := fileHandler.Open()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("file opened")
+	randUtils := utils.GenerateRandomUtils()
+	randString := randUtils.GenerateString(32, utils.LetterBytes)
+	objectName := fmt.Sprintf("%s%s", ethAddress, randString)
+	fmt.Println("storing file in minio")
+	_, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{})
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fmt.Println("file stored in minio")
+	ifp := queue.IPFSFile{
+		BucketName:       FilesUploadBucket,
+		ObjectName:       objectName,
+		EthAddress:       ethAddress,
+		NetworkName:      networkName,
+		HoldTimeInMonths: holdTimeInMonths,
+	}
+	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+
+	err = qm.PublishMessage(ifp)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "file upload request sent to backend"})
 }
 
 // AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network
