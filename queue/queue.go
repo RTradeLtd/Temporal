@@ -109,11 +109,6 @@ func Initialize(queueName, connectionURL string) (*QueueManager, error) {
 		if err != nil {
 			return nil, err
 		}
-	case IpfsClusterPinQueue:
-		err = qm.DeclareIPFSClusterPinExchange()
-		if err != nil {
-			return nil, err
-		}
 	case IpfsFileQueue:
 		err = qm.DeclareIPFSFileExchange()
 		if err != nil {
@@ -203,6 +198,14 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			PinExchange,    // sourceExchange
 			false,          // noWait
 			nil,            // arguments
+		)
+	case IpfsFileQueue:
+		err = qm.Channel.QueueBind(
+			qm.Queue.Name,   // name of the queue
+			FileExchangeKey, // binding key
+			FileExchange,    // source exchange
+			false,           // no wait
+			nil,             // arguments
 		)
 	default:
 		break
