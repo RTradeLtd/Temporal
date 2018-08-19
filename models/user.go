@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
@@ -84,6 +85,12 @@ func (um *UserManager) AddIPFSKeyForUser(ethAddress, keyName, keyID string) erro
 		return errors.New("user account does not exist")
 	}
 
+	for _, v := range user.IPFSKeyNames {
+		if v == keyName {
+			fmt.Println("key already exists in db, skipping")
+			return nil
+		}
+	}
 	user.IPFSKeyNames = append(user.IPFSKeyNames, keyName)
 	user.IPFSKeyIDs = append(user.IPFSKeyIDs, keyID)
 	// The following only updates the specified column for the given model
