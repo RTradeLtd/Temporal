@@ -586,23 +586,6 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	im := models.NewHostedIPFSNetworkManager(db)
-	apiURL, err := im.GetAPIURLByName(networkName)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	manager, err := rtfs.Initialize("", apiURL)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	fmt.Println("creating key store manager")
-	err = manager.CreateKeystoreManager()
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
 	resolve, err := strconv.ParseBool(resolveString)
 	if err != nil {
 		FailOnError(c, err)
@@ -618,34 +601,16 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	prePubTime := time.Now()
 	keyID, err := um.GetKeyIDByName(ethAddress, key)
 	fmt.Println("using key id of ", keyID)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	fmt.Println("publishing to IPNS")
-	resp, err := manager.PublishToIPNSDetails(hash, key, lifetime, ttl, resolve)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	fmt.Println("record published")
-	postPubTime := time.Now()
-	timeDifference := postPubTime.Sub(prePubTime)
-
-	ipnsManager := models.NewIPNSManager(db)
-	ipnsEntry, err := ipnsManager.UpdateIPNSEntry(resp.Name, resp.Value, key, networkName, lifetime, ttl)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
-	ipnsUpdate := queue.IPNSUpdate{
+	ipnsUpdate := queue.IPNSEntry{
 		CID:         hash,
-		IPNSHash:    resp.Name,
-		LifeTime:    lifetime.String(),
-		TTL:         ttl.String(),
+		LifeTime:    lifetime,
+		TTL:         ttl,
 		Key:         key,
 		Resolve:     resolve,
 		NetworkName: networkName,
@@ -655,12 +620,7 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{
-		"name":                   resp.Name,
-		"value":                  resp.Value,
-		"time_to_create_minutes": timeDifference.Minutes(),
-		"ipns_entry_model":       ipnsEntry,
-	})
+	c.JSON(http.StatusOK, gin.H{"status": "ipns entry creation request sent to backend"})
 }
 
 // CreateHostedIPFSNetworkEntryInDatabase is used to create
