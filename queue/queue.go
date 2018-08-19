@@ -277,6 +277,12 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		if err != nil {
 			return err
 		}
+	case IpfsClusterPinQueue:
+		fmt.Println("processing ipfs cluster pins")
+		err = ProcessIPFSClusterPins(msgs, cfg, db)
+		if err != nil {
+			return err
+		}
 	default:
 		log.Fatal("invalid queue name")
 	}
