@@ -472,7 +472,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			EthAddress:       ipfsFile.EthAddress,
 			HoldTimeInMonths: holdTimeInt,
 		}
-		err = qmPin.PublishMessage(pin)
+		err = qmPin.PublishMessageWithExchange(pin, PinExchange)
 		if err != nil {
 			fmt.Println("error publishing message to queue ", err)
 		}
