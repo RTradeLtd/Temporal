@@ -170,33 +170,33 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	switch qm.Queue.Name {
 	case IpfsPinRemovalQueue:
 		err = qm.Channel.QueueBind(
-			qm.Queue.Name,         // name of the queue
-			PinRemovalExchangeKey, // bindingKey
-			PinRemovalExchange,    // sourceExchange
-			false,                 // noWait
-			nil,                   // arguments
+			qm.Queue.Name,      // name of the queue
+			"",                 // routing key
+			PinRemovalExchange, // exchange
+			false,              // noWait
+			nil,                // arguments
 		)
 		if err != nil {
 			return err
 		}
 	case IpfsPinQueue:
 		err = qm.Channel.QueueBind(
-			qm.Queue.Name,  // name of the queue
-			PinExchangeKey, // bindingKey
-			PinExchange,    // sourceExchange
-			false,          // noWait
-			nil,            // arguments
+			qm.Queue.Name, // name of the queue
+			"",            // routing key
+			PinExchange,   // exchange
+			false,         // noWait
+			nil,           // arguments
 		)
 		if err != nil {
 			return err
 		}
 	case IpfsKeyCreationQueue:
 		err = qm.Channel.QueueBind(
-			qm.Queue.Name,      // name of the queue
-			IpfsKeyExchangeKey, // binding key
-			IpfsKeyExchange,    // source exchange
-			false,              // no wait
-			nil,                // arguments
+			qm.Queue.Name,   // name of the queue
+			"",              // routing key
+			IpfsKeyExchange, // exchange
+			false,           // no wait
+			nil,             // arguments
 		)
 		if err != nil {
 			return err
@@ -205,9 +205,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		break
 	}
 
-	// we use a false flag for auto-ack since we will use
-	// manually acknowledgemnets to ensure message delivery
-	// even if a worker dies
+	// consider moving to true for auto-ack
 	msgs, err := qm.Channel.Consume(
 		qm.Queue.Name, // queue
 		consumer,      // consumer
