@@ -165,21 +165,6 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	if err != nil {
 		return err
 	}
-	// we use a false flag for auto-ack since we will use
-	// manually acknowledgemnets to ensure message delivery
-	// even if a worker dies
-	msgs, err := qm.Channel.Consume(
-		qm.Queue.Name, // queue
-		consumer,      // consumer
-		false,         // auto-ack
-		false,         // exclusive
-		false,         // no-local
-		false,         // no-wait
-		nil,           // args
-	)
-	if err != nil {
-		return err
-	}
 
 	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
 	switch qm.Queue.Name {
@@ -219,6 +204,23 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	default:
 		break
 	}
+
+	// we use a false flag for auto-ack since we will use
+	// manually acknowledgemnets to ensure message delivery
+	// even if a worker dies
+	msgs, err := qm.Channel.Consume(
+		qm.Queue.Name, // queue
+		consumer,      // consumer
+		false,         // auto-ack
+		false,         // exclusive
+		false,         // no-local
+		false,         // no-wait
+		nil,           // args
+	)
+	if err != nil {
+		return err
+	}
+
 	// check the queue name
 	switch qm.Queue.Name {
 	// only parse datbase file requests
