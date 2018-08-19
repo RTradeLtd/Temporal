@@ -10,7 +10,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// ProcessIPFSClusterAdds is used to process messages sent to rabbitmq requesting be pinned to our cluster
+// ProcessIPFSClusterPins is used to process messages sent to rabbitmq requesting be pinned to our cluster
 // TODO: add in email notification and metric strategies
 func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
 	clusterManager, err := rtfs_cluster.Initialize(cfg.IPFSCluster.APIConnection.Host, cfg.IPFSCluster.APIConnection.Port)

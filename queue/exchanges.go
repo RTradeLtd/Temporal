@@ -5,10 +5,6 @@ const (
 	PinExchange = "ipfs-pin"
 	// PinExchangeKey is the key used for ipfs pin exchanges
 	PinExchangeKey = "ipfs-pin-key"
-	// ClusterPinExchange is the name of the fanout exchange for cluster ipfs pins
-	ClusterPinExchange = "ipfs-cluster-pin"
-	// ClusterExchangeKey is the key used for ipfs cluster exchanges
-	ClusterExchangeKey = "cluster-exchange-key"
 	// PinRemovalExchange is the fanout exchange we use for pin removals
 	PinRemovalExchange = "ipfs-pin-removal"
 	// PinRemovalExchangeKey is the key used for pin removal exchanges
@@ -38,18 +34,5 @@ func (qm *QueueManager) DeclareIPFSPinExchange() error {
 		false,       // internal
 		false,       // no wait
 		nil,         // args
-	)
-}
-
-// DeclareIPFSClusterPinExchange is used to declare the exchange used to handle ipfs cluster pins
-func (qm *QueueManager) DeclareIPFSClusterPinExchange() error {
-	return qm.Channel.ExchangeDeclare(
-		ClusterPinExchange, // name
-		"fanout",           // type
-		true,               // durable
-		false,              // auto-delete
-		false,              // internal
-		false,              // no wait
-		nil,                // args
 	)
 }

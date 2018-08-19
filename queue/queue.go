@@ -258,8 +258,8 @@ func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeNam
 	switch exchangeName {
 	case PinExchange:
 		routingKey = PinExchangeKey
-	case ClusterPinExchange:
-		break
+	case PinRemovalExchange:
+		routingKey = PinRemovalExchangeKey
 	default:
 		return errors.New("invalid exchange name provided")
 	}
