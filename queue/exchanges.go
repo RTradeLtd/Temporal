@@ -18,38 +18,38 @@ const (
 // DeclareIPFSPinRemovalExchange is used to declare the exchange used to handle ipfs pins
 func (qm *QueueManager) DeclareIPFSPinRemovalExchange() error {
 	return qm.Channel.ExchangeDeclare(
-		PinRemovalExchange, // name
-		"fanout",           // type
-		true,               // durable
-		false,              // auto-delete
-		false,              // internal
-		false,              // no wait
-		nil,                // args
+		IpfsPinRemovalQueue, // name
+		"fanout",            // type
+		true,                // durable
+		false,               // auto-delete
+		false,               // internal
+		false,               // no wait
+		nil,                 // args
 	)
 }
 
 // DeclareIPFSPinExchange is used to declare the exchange used to handle ipfs pins
 func (qm *QueueManager) DeclareIPFSPinExchange() error {
 	return qm.Channel.ExchangeDeclare(
-		PinExchange, // name
-		"fanout",    // type
-		true,        // durable
-		false,       // auto-delete
-		false,       // internal
-		false,       // no wait
-		nil,         // args
+		IpfsPinQueue, // name
+		"fanout",     // type
+		true,         // durable
+		false,        // auto-delete
+		false,        // internal
+		false,        // no wait
+		nil,          // args
 	)
 }
 
 // DeclareIPFSKeyExchange is used to declare the exchange used to handle ipfs key creation requests
 func (qm *QueueManager) DeclareIPFSKeyExchange() error {
 	return qm.Channel.ExchangeDeclare(
-		IpfsKeyExchange, // name
-		"fanout",        // type
-		true,            // durable
-		false,           // auto-delete
-		false,           // internal
-		false,           // no wait
-		nil,             // args
+		IpfsKeyCreationQueue, // name
+		"fanout",             // type
+		true,                 // durable
+		false,                // auto-delete
+		false,                // internal
+		false,                // no wait
+		nil,                  // args
 	)
 }
