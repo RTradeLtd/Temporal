@@ -24,7 +24,7 @@ if [[ "$PRIVATE_NODE" == "yes" ]]; then
     echo "[INFO] Installing ipfs swarm key gen"
     go get -v github.com/Kubuxu/go-ipfs-swarm-key-gen/ipfs-swarm-key-gen
     echo "[INFO] generating swarm key"
-    ipfs-swarm-key-gen > "$IPFS_PATH/swarm.key"
+    /home/rtrade/go/bin/ipfs-swarm-key-gen > "$IPFS_PATH/swarm.key"
     echo "[INFO] removing bootstrap peers"
     ipfs bootstrap rm --all
     echo "[INFO] setting LIBP2P_FORCE_PNET=1 please set this in your bashrc file to force private networks"
