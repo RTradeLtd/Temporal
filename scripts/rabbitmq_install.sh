@@ -5,25 +5,19 @@ ADMIN="admin"
 PASS="$1"
 DISTRO=$(lsb_release -sc)
 
+if [[ "$DISTRO" != "bionic" ]]; then
+    echo "[WARN] non bionic distro detected, this installation may not work without adding specific repositories"
+    echo "[WARN] Sleeping for 10 seconds before continuing, hit CTRL+C to exit"
+    sleep 10
+fi
+
 if [[ "$PASS" == "" ]]; then
     echo "password not provided as first argument"
     echo "Please set as this is used to create rabbitmq account"
     exit 1
 fi
 
-cd ~
-
-if [[ "$DISTRO" == "bionic" ]]; then
-    echo "deb https://dl.bintray.com/rabbitmq/debian xenial main" | sudo tee /etc/apt/sources.list.d/bintray.rabbitmq.list
-    wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -
-    wget https://packages.erlang-solutions.com/erlang/esl-erlang/FLAVOUR_1_general/esl-erlang_20.3-1~ubuntu~xenial_amd64.deb
-    sudo dpkg -ig "esl-erlang_20.3-1~ubuntu~xenial_amd64.deb"
-
-    if [[ "$?" -ne 0 ]]; then
-        sudo apt-get install -f
-    fi
-fi
-
+cd ~ || exit
 sudo apt-get update -y
 sudo apt-get install rabbitmq-server
 sudo systemctl start rabbitmq-server.service
