@@ -20,14 +20,6 @@ echo "[INFO] Initializing ipfs with server and badgerds profile"
 ipfs init --profile=server,badgerds >> ~/ipfs_init_log.txt
 
 if [[ "$PRIVATE_NODE" == "yes" ]]; then
-    
-    echo "[INFO] Setting up private network"
-
-    GO=$(go -v)
-    if [[ "$GO" == "" ]]; then
-        echo "[ERROR] Please install golang first"
-        exit 1
-    fi
 
     echo "[INFO] Installing ipfs swarm key gen"
     go get -v github.com/Kubuxu/go-ipfs-swarm-key-gen/ipfs-swarm-key-gen
