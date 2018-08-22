@@ -255,6 +255,14 @@ func (um *UserManager) FindByAddress(address string) *User {
 	return &u
 }
 
+func (um *UserManager) FindEthAddressByUserName(username string) (string, error) {
+	u := User{}
+	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
+		return "", check.Error
+	}
+	return u.EthAddress, nil
+}
+
 // FindEmailByUserName is used to find an email address by searching for the users eth address
 // the returned map contains their eth address as a key, and their email address as a value
 func (um *UserManager) FindEmailByUserName(username string) (map[string]string, error) {

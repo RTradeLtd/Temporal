@@ -37,7 +37,7 @@ func GetUploadsFromDatabase(c *gin.Context) {
 // GetUploadsForAddress is used to read a list of uploads from a particular eth address
 // If not admin, will retrieve all uploads for the current context account
 func GetUploadsForAddress(c *gin.Context) {
-	var queryAddress string
+	var queryUser string
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
 		FailedToLoadDatabase(c)
@@ -47,12 +47,12 @@ func GetUploadsForAddress(c *gin.Context) {
 	um := models.NewUploadManager(db)
 	user := GetAuthenticatedUserFromContext(c)
 	if user == AdminAddress {
-		queryAddress = c.Param("address")
+		queryUser = c.Param("user_name")
 	} else {
-		queryAddress = user
+		queryUser = user
 	}
 	// fetch all uploads for that address
-	uploads := um.GetUploadsForAddress(queryAddress)
+	uploads := um.GetUploadsForUser(queryUser)
 	if uploads == nil {
 		FailOnError(c, errors.New("no uploads found"))
 		return

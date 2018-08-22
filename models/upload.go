@@ -17,9 +17,9 @@ type Upload struct {
 	Type               string `gorm:"type:varchar(255);not null;"` //  file, pin
 	NetworkName        string `gorm:"type:varchar(255)"`
 	HoldTimeInMonths   int64  `gorm:"type:integer;not null;"`
-	UploadAddress      string `gorm:"type:varchar(255);not null;"`
+	UserName           string `gorm:"type:varchar(255);not null;"`
 	GarbageCollectDate time.Time
-	UploaderAddresses  pq.StringArray `gorm:"type:text[];not null;"`
+	UserNames          pq.StringArray `gorm:"type:text[];not null;"`
 }
 
 const dev = true
@@ -34,7 +34,7 @@ func NewUploadManager(db *gorm.DB) *UploadManager {
 }
 
 // NewUpload is used to create a new upload in the database
-func (um *UploadManager) NewUpload(contentHash, uploadType, networkName, ethAddress string, holdTimeInMonths int64) (*Upload, error) {
+func (um *UploadManager) NewUpload(contentHash, uploadType, networkName, username string, holdTimeInMonths int64) (*Upload, error) {
 	_, err := um.FindUploadByHashAndNetwork(contentHash, networkName)
 	if err == nil {
 		// this means that there is already an upload in hte database matching this content hash and network name, so we will skip
@@ -49,9 +49,9 @@ func (um *UploadManager) NewUpload(contentHash, uploadType, networkName, ethAddr
 		Type:               uploadType,
 		NetworkName:        networkName,
 		HoldTimeInMonths:   holdTimeInMonths,
-		UploadAddress:      ethAddress,
+		UserName:           username,
 		GarbageCollectDate: utils.CalculateGarbageCollectDate(holdInt),
-		UploaderAddresses:  []string{ethAddress},
+		UserNames:          []string{username},
 	}
 	if check := um.DB.Create(&upload); check.Error != nil {
 		return nil, check.Error
@@ -60,21 +60,21 @@ func (um *UploadManager) NewUpload(contentHash, uploadType, networkName, ethAddr
 }
 
 // UpdateUpload is used to upadte an already existing upload
-func (um *UploadManager) UpdateUpload(holdTimeInMonths int64, ethAddress, contentHash, networkName string) (*Upload, error) {
+func (um *UploadManager) UpdateUpload(holdTimeInMonths int64, username, contentHash, networkName string) (*Upload, error) {
 	upload, err := um.FindUploadByHashAndNetwork(contentHash, networkName)
 	if err != nil {
 		return nil, err
 	}
 	isUploader := false
-	upload.UploadAddress = ethAddress
-	for _, v := range upload.UploaderAddresses {
-		if ethAddress == v {
+	upload.UserName = username
+	for _, v := range upload.UserNames {
+		if username == v {
 			isUploader = true
 			break
 		}
 	}
 	if !isUploader {
-		upload.UploaderAddresses = append(upload.UploaderAddresses, ethAddress)
+		upload.UserNames = append(upload.UserNames, username)
 	}
 	holdInt, err := strconv.Atoi(fmt.Sprintf("%v", holdTimeInMonths))
 	if err != nil {
@@ -160,10 +160,10 @@ func (um *UploadManager) FindUploadsByHash(hash string) *[]Upload {
 	return &uploads
 }
 
-// GetUploadByHashForUploader is used to retrieve the last (most recent) upload for a user
-func (um *UploadManager) GetUploadByHashForUploader(hash string, uploaderAddress string) []*Upload {
+// GetUploadByHashForUser is used to retrieve the last (most recent) upload for a user
+func (um *UploadManager) GetUploadByHashForUser(hash string, username string) []*Upload {
 	var uploads []*Upload
-	um.DB.Find(&uploads).Where("hash = ? AND uploader_address = ?", hash, uploaderAddress)
+	um.DB.Find(&uploads).Where("hash = ? AND user_name = ?", hash, username)
 	return uploads
 }
 
@@ -174,9 +174,9 @@ func (um *UploadManager) GetUploads() *[]Upload {
 	return &uploads
 }
 
-// GetUploadsForAddress is used to retrieve all uploads by an address
-func (um *UploadManager) GetUploadsForAddress(address string) *[]Upload {
+// GetUploadsForUser is used to retrieve all uploads by a user name
+func (um *UploadManager) GetUploadsForUser(username string) *[]Upload {
 	var uploads []Upload
-	um.DB.Where("upload_address = ?", address).Find(&uploads)
+	um.DB.Where("user_name = ?", username).Find(&uploads)
 	return &uploads
 }

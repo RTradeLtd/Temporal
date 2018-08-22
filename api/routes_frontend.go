@@ -76,7 +76,7 @@ func CalculateFileCost(c *gin.Context) {
 // CreatePinPayment is used to create a signed message for a pin payment
 func CreatePinPayment(c *gin.Context) {
 	contentHash := c.Param("hash")
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 	holdTime, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
@@ -127,9 +127,15 @@ func CreatePinPayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	um := models.NewUserManager(db)
+	ethAddress, err := um.FindEthAddressByUserName(username)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	ppm := models.NewPinPaymentManager(db)
 	var num *big.Int
-	num, err = ppm.RetrieveLatestPaymentNumber(ethAddress)
+	num, err = ppm.RetrieveLatestPaymentNumberByUser(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		FailOnError(c, err)
 		return
@@ -153,7 +159,7 @@ func CreatePinPayment(c *gin.Context) {
 		return
 	}
 
-	_, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash, holdTimeInt)
+	_, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash, username, holdTimeInt)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -247,7 +253,7 @@ func CreateFilePayment(c *gin.Context) {
 		return
 	}
 	fmt.Println("file opened")
-	ethAddress := GetAuthenticatedUserFromContext(cC)
+	username := GetAuthenticatedUserFromContext(cC)
 
 	holdTimeInMonthsInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
 	if err != nil {
@@ -258,7 +264,7 @@ func CreateFilePayment(c *gin.Context) {
 	costBig := utils.FloatToBigInt(cost)
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
-	objectName := fmt.Sprintf("%s%s", ethAddress, randString)
+	objectName := fmt.Sprintf("%s%s", username, randString)
 	fmt.Println("storing file in minio")
 	_, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{})
 	if err != nil {
@@ -268,6 +274,12 @@ func CreateFilePayment(c *gin.Context) {
 	fmt.Println("file stored in minio")
 
 	fpm := models.NewFilePaymentManager(db)
+	um := models.NewUserManager(db)
+	ethAddress, err := um.FindEthAddressByUserName(username)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	var num *big.Int
 	num, err = fpm.RetrieveLatestPaymentNumber(ethAddress)
 	if err != nil {
@@ -289,7 +301,7 @@ func CreateFilePayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	_, err = fpm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, FilesUploadBucket, objectName, networkName, holdTimeInMonthsInt)
+	_, err = fpm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, FilesUploadBucket, objectName, networkName, username, holdTimeInMonthsInt)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -309,7 +321,7 @@ func CreateFilePayment(c *gin.Context) {
 // SubmitPinPaymentConfirmation is used to submit a pin payment confirmationrequest to the backend.
 // A successful payment will result in the content being injected into temporal
 func SubmitPinPaymentConfirmation(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 	paymentNumber, exists := c.GetPostForm("payment_number")
 	if !exists {
 		FailNoExistPostForm(c, "payment_number")
@@ -326,6 +338,12 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 		return
 	}
 	ppm := models.NewPinPaymentManager(db)
+	um := models.NewUserManager(db)
+	ethAddress, err := um.FindEthAddressByUserName(username)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	pp, err := ppm.FindPaymentByNumberAndAddress(paymentNumber, ethAddress)
 	if err != nil {
 		FailOnError(c, err)
@@ -374,7 +392,7 @@ func SubmitPaymentToContract(c *gin.Context) {
 
 	}
 	contentHash := c.Param("hash")
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 	holdTime, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
@@ -442,8 +460,14 @@ func SubmitPaymentToContract(c *gin.Context) {
 		return
 	}
 	ppm := models.NewPinPaymentManager(db)
+	um := models.NewUserManager(db)
+	ethAddress, err := um.FindEthAddressByUserName(username)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 	var number *big.Int
-	num, err := ppm.RetrieveLatestPaymentNumber(ethAddress)
+	num, err := ppm.RetrieveLatestPaymentNumberByUser(username)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -495,7 +519,7 @@ func SubmitPaymentToContract(c *gin.Context) {
 		Sig:          sm.Sig,
 	}
 
-	_, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash, holdTimeInt)
+	_, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash, username, holdTimeInt)
 	if err != nil {
 		FailOnError(c, err)
 		return

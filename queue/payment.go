@@ -140,7 +140,7 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 			d.Ack(false)
 			continue
 		}
-		paymentFromDatabase, err := paymentManager.RetrieveLatestPayment(ppc.EthAddress)
+		paymentFromDatabase, err := paymentManager.RetrieveLatestPaymentByUser(ppc.UserName)
 		if err != nil {
 			//TODO: decide how we should handle
 			fmt.Println("failed to retrieve latest payment ", err)
