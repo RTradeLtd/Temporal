@@ -34,24 +34,24 @@ type QueueManager struct {
 // IPFSKeyCreation is a message used for processing key creation
 // only supported for the public IPFS network at the moment
 type IPFSKeyCreation struct {
-	EthAddress string `json:"eth_address"`
-	Name       string `json:"name"`
-	Type       string `json:"type"`
-	Size       int    `json:"size"`
+	UserName string `json:"user_name"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	Size     int    `json:"size"`
 }
 
 // IPFSPin is a struct used when sending pin request
 type IPFSPin struct {
 	CID              string `json:"cid"`
 	NetworkName      string `json:"network_name"`
-	EthAddress       string `json:"eth_address"`
+	UserName         string `json:"user_name"`
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 }
 
 type IPFSFile struct {
 	BucketName       string `json:"bucket_name"`
 	ObjectName       string `json:"object_name"`
-	EthAddress       string `json:"eth_address"`
+	UserName         string `json:"user_name"`
 	NetworkName      string `json:"network_name"`
 	HoldTimeInMonths string `json:"hold_time_in_months"`
 }
@@ -65,14 +65,14 @@ type IPFSClusterPin struct {
 type IPFSPinRemoval struct {
 	ContentHash string `json:"content_hash"`
 	NetworkName string `json:"network_name"`
-	EthAddress  string `json:"eth_address"`
+	UserName    string `json:"user_name"`
 }
 
 // DatabaseFileAdd is a struct used when sending data to rabbitmq
 type DatabaseFileAdd struct {
 	Hash             string `json:"hash"`
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
-	UploaderAddress  string `json:"uploader_address"`
+	UserName         string `json:"user_name"`
 	NetworkName      string `json:"network_name"`
 }
 
@@ -83,7 +83,7 @@ type IPNSUpdate struct {
 	TTL         string `json:"ttl"`
 	Key         string `json:"key"`
 	Resolve     bool   `json:"resolve"`
-	EthAddress  string `json:"eth_address"`
+	UserName    string `json:"user_name"`
 	NetworkName string `json:"network_name"`
 }
 

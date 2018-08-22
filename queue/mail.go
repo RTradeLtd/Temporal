@@ -34,10 +34,10 @@ var (
 
 // EmailSend is a helper struct used to contained formatted content ot send as an email
 type EmailSend struct {
-	Subject      string   `json:"subject"`
-	Content      string   `json:"content"`
-	ContentType  string   `json:"content_type"`
-	EthAddresses []string `json:"eth_addresses"`
+	Subject     string   `json:"subject"`
+	Content     string   `json:"content"`
+	ContentType string   `json:"content_type"`
+	UserNames   []string `json:"user_names"`
 }
 
 // ProcessMailSends is a function used to process mail send queue messages
@@ -56,8 +56,8 @@ func ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.TemporalConfig) er
 			continue
 		}
 		emails := make(map[string]string)
-		for _, v := range es.EthAddresses {
-			resp, err := mm.UserManager.FindEmailByAddress(v)
+		for _, v := range es.UserNames {
+			resp, err := mm.UserManager.FindEmailByUserName(v)
 			if err != nil {
 				//TODO: decide on how this should be handled
 				fmt.Println("error finding email address for user", err)

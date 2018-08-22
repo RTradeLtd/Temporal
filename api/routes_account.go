@@ -51,10 +51,11 @@ func ChangeAccountPassword(c *gin.Context) {
 
 // RegisterUserAccount is used to sign up with temporal
 func RegisterUserAccount(c *gin.Context) {
-	ethAddress, exists := c.GetPostForm("eth_address")
+	ethAddress := c.PostForm("eth_address")
+
+	username, exists := c.GetPostForm("username")
 	if !exists {
-		FailNoExistPostForm(c, "eth_address")
-		return
+		FailNoExistPostForm(c, "username")
 	}
 	password, exists := c.GetPostForm("password")
 	if !exists {
@@ -73,7 +74,7 @@ func RegisterUserAccount(c *gin.Context) {
 	}
 
 	userManager := models.NewUserManager(db)
-	userModel, err := userManager.NewUserAccount(ethAddress, password, email, false)
+	userModel, err := userManager.NewUserAccount(ethAddress, username, password, email, false)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -85,7 +86,7 @@ func RegisterUserAccount(c *gin.Context) {
 
 // CreateIPFSKey is used to create an IPFS key
 func CreateIPFSKey(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 
 	keyType, exists := c.GetPostForm("key_type")
 	if !exists {
@@ -117,10 +118,10 @@ func CreateIPFSKey(c *gin.Context) {
 	}
 
 	key := queue.IPFSKeyCreation{
-		EthAddress: ethAddress,
-		Name:       keyName,
-		Type:       keyType,
-		Size:       bitsInt,
+		UserName: username,
+		Name:     keyName,
+		Type:     keyType,
+		Size:     bitsInt,
 	}
 
 	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true)

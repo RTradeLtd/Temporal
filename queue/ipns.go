@@ -64,10 +64,10 @@ func ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cf
 				addresses := []string{}
 				addresses = append(addresses, ie.EthAddress)
 				es := EmailSend{
-					Subject:      IpfsPrivateNetworkUnauthorizedSubject,
-					Content:      fmt.Sprintf("Unauthorized access to IPFS private network %s", ie.NetworkName),
-					ContentType:  "",
-					EthAddresses: addresses,
+					Subject:     IpfsPrivateNetworkUnauthorizedSubject,
+					Content:     fmt.Sprintf("Unauthorized access to IPFS private network %s", ie.NetworkName),
+					ContentType: "",
+					UserNames:   addresses,
 				}
 				err = qmEmail.PublishMessage(es)
 				if err != nil {
@@ -91,10 +91,10 @@ func ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cf
 				addresses := []string{}
 				addresses = append(addresses, ie.EthAddress)
 				es := EmailSend{
-					Subject:      IpfsInitializationFailedSubject,
-					Content:      fmt.Sprintf("Connection to IPFS failed due to the following error %s", err),
-					ContentType:  "",
-					EthAddresses: addresses,
+					Subject:     IpfsInitializationFailedSubject,
+					Content:     fmt.Sprintf("Connection to IPFS failed due to the following error %s", err),
+					ContentType: "",
+					UserNames:   addresses,
 				}
 				errOne := qmEmail.PublishMessage(es)
 				if errOne != nil {
@@ -113,10 +113,10 @@ func ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cf
 			addresses := []string{}
 			addresses = append(addresses, ie.EthAddress)
 			es := EmailSend{
-				Subject:      IpnsEntryFailedSubject,
-				Content:      formattedContent,
-				ContentType:  "",
-				EthAddresses: addresses,
+				Subject:     IpnsEntryFailedSubject,
+				Content:     formattedContent,
+				ContentType: "",
+				UserNames:   addresses,
 			}
 			errOne := qmEmail.PublishMessage(es)
 			if errOne != nil {

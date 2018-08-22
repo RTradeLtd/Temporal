@@ -21,6 +21,7 @@ import (
 type PinPaymentConfirmation struct {
 	TxHash        string `json:"tx_hash"`
 	EthAddress    string `json:"eth_address"`
+	UserName      string `json:"user_name"`
 	PaymentNumber string `json:"payment_number"`
 	ContentHash   string `json:"content_hash"`
 }
@@ -97,10 +98,10 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 			addresses := []string{}
 			addresses = append(addresses, ppc.EthAddress)
 			es := EmailSend{
-				Subject:      PaymentConfirmationFailedSubject,
-				Content:      fmt.Sprintf(PaymentConfirmationFailedContent, ppc.ContentHash, "unable to convert string to big int"),
-				ContentType:  "",
-				EthAddresses: addresses,
+				Subject:     PaymentConfirmationFailedSubject,
+				Content:     fmt.Sprintf(PaymentConfirmationFailedContent, ppc.ContentHash, "unable to convert string to big int"),
+				ContentType: "",
+				UserNames:   addresses,
 			}
 			err = qmEmail.PublishMessage(es)
 			if err != nil {
@@ -124,10 +125,10 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 			addresses := []string{}
 			addresses = append(addresses, ppc.EthAddress)
 			es := EmailSend{
-				Subject:      PaymentConfirmationFailedSubject,
-				Content:      "payment unable to be processed, likely due to transaction failure or other contract runtime issue",
-				ContentType:  "",
-				EthAddresses: addresses,
+				Subject:     PaymentConfirmationFailedSubject,
+				Content:     "payment unable to be processed, likely due to transaction failure or other contract runtime issue",
+				ContentType: "",
+				UserNames:   addresses,
 			}
 			err = qmEmail.PublishMessage(es)
 			if err != nil {
@@ -151,7 +152,7 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 		ip := IPFSPin{
 			CID:              ppc.ContentHash,
 			NetworkName:      paymentFromDatabase.NetworkName,
-			EthAddress:       ppc.EthAddress,
+			UserName:         ppc.UserName,
 			HoldTimeInMonths: paymentFromDatabase.HoldTimeInMonths,
 		}
 
@@ -161,10 +162,10 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 			addresses := []string{}
 			addresses = append(addresses, ppc.EthAddress)
 			es := EmailSend{
-				Subject:      fmt.Sprintf("Critical Error: Unable to process IPFS Pin confirmation for content hash %s", ppc.ContentHash),
-				Content:      "Please contact us at admin@rtradetechnologies.com and we will resolve this",
-				ContentType:  "",
-				EthAddresses: addresses,
+				Subject:     fmt.Sprintf("Critical Error: Unable to process IPFS Pin confirmation for content hash %s", ppc.ContentHash),
+				Content:     "Please contact us at admin@rtradetechnologies.com and we will resolve this",
+				ContentType: "",
+				UserNames:   addresses,
 			}
 			errOne := qmEmail.PublishMessage(es)
 			if errOne != nil {

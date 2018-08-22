@@ -33,7 +33,7 @@ func ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
 			continue
 		}
 		if err != nil && err == gorm.ErrRecordNotFound {
-			_, err = uploadManager.NewUpload(dfa.Hash, "file", dfa.NetworkName, dfa.UploaderAddress, dfa.HoldTimeInMonths)
+			_, err = uploadManager.NewUpload(dfa.Hash, "file", dfa.NetworkName, dfa.UserName, dfa.HoldTimeInMonths)
 			if err != nil {
 				fmt.Println("error updating database ", err)
 			}
@@ -41,7 +41,7 @@ func ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
 			continue
 		}
 		// this isn't a new upload so we shall upload the database
-		_, err = uploadManager.UpdateUpload(dfa.HoldTimeInMonths, dfa.UploaderAddress, dfa.Hash, dfa.NetworkName)
+		_, err = uploadManager.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName)
 		if err != nil {
 			fmt.Println("error updating database ", err)
 			d.Ack(false)
