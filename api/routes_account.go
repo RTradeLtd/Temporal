@@ -56,6 +56,7 @@ func RegisterUserAccount(c *gin.Context) {
 	username, exists := c.GetPostForm("username")
 	if !exists {
 		FailNoExistPostForm(c, "username")
+		return
 	}
 	password, exists := c.GetPostForm("password")
 	if !exists {
