@@ -21,7 +21,7 @@ import (
 
 // PinToHostedIPFSNetwork is used to pin content to a private/hosted ipfs network
 func PinToHostedIPFSNetwork(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
@@ -31,7 +31,7 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(username, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -52,7 +52,7 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 	ip := queue.IPFSPin{
 		CID:              hash,
 		NetworkName:      networkName,
-		EthAddress:       ethAddress,
+		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
 	}
 
@@ -81,7 +81,7 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 // GetFileSizeInBytesForObjectForHostedIPFSNetwork is used to get file size for an object
 // on a private IPFS network
 func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
@@ -92,7 +92,7 @@ func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 		FailedToLoadDatabase(c)
 		return
 	}
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(username, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -126,7 +126,7 @@ func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 // AddFileToHostedIPFSNetworkAdvanced is used to add a file to a hosted ipfs network in a more advanced and resilient manner
 func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
@@ -140,7 +140,7 @@ func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		return
 	}
 
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(username, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -192,7 +192,7 @@ func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	fmt.Println("file opened")
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
-	objectName := fmt.Sprintf("%s%s", ethAddress, randString)
+	objectName := fmt.Sprintf("%s%s", username, randString)
 	fmt.Println("storing file in minio")
 	_, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{})
 	if err != nil {
@@ -203,7 +203,7 @@ func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	ifp := queue.IPFSFile{
 		BucketName:       FilesUploadBucket,
 		ObjectName:       objectName,
-		EthAddress:       ethAddress,
+		UserName:         username,
 		NetworkName:      networkName,
 		HoldTimeInMonths: holdTimeInMonths,
 	}
@@ -223,7 +223,7 @@ func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 
 // AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network
 func AddFileToHostedIPFSNetwork(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
@@ -237,7 +237,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(username, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -299,7 +299,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 	dfa := queue.DatabaseFileAdd{
 		Hash:             resp,
 		HoldTimeInMonths: holdTimeInt,
-		UploaderAddress:  ethAddress,
+		UserName:         username,
 		NetworkName:      networkName,
 	}
 	fmt.Printf("+%v\n", dfa)
@@ -316,7 +316,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 // IpfsPubSubPublishToHostedIPFSNetwork is used to publish a pubsub message
 // to a private ipfs network
 func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
@@ -328,7 +328,7 @@ func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(username, networkName, db)
 	if err != nil {
 		FailOnError(c, err)
 	}
@@ -363,8 +363,8 @@ func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 
 // RemovePinFromLocalHostForHostedIPFSNetwork is used to remove a content hash from a private hosted ipfs network
 func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
+	username := GetAuthenticatedUserFromContext(c)
+	if username != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
@@ -377,7 +377,7 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	rm := queue.IPFSPinRemoval{
 		ContentHash: hash,
 		NetworkName: networkName,
-		EthAddress:  ethAddress,
+		UserName:    username,
 	}
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
 	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, true)

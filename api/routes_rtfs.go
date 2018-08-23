@@ -18,8 +18,8 @@ import (
 // CalculateContentHashForFile is used to calculate the content hash
 // for a particular file, without actually storing it or providing it
 func CalculateContentHashForFile(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
+	username := GetAuthenticatedUserFromContext(c)
+	if username != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
 	}
 	fileHandler, err := c.FormFile("file")
@@ -49,7 +49,7 @@ func PinHashLocally(c *gin.Context) {
 		return
 	}
 	hash := c.Param("hash")
-	uploadAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
@@ -64,7 +64,7 @@ func PinHashLocally(c *gin.Context) {
 	ip := queue.IPFSPin{
 		CID:              hash,
 		NetworkName:      "public",
-		EthAddress:       uploadAddress,
+		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
 	}
 
@@ -168,11 +168,11 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 	fmt.Println("file opened")
-	ethAddress := GetAuthenticatedUserFromContext(cC)
+	username := GetAuthenticatedUserFromContext(cC)
 
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
-	objectName := fmt.Sprintf("%s%s", ethAddress, randString)
+	objectName := fmt.Sprintf("%s%s", username, randString)
 	fmt.Println("storing file in minio")
 	_, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{})
 	if err != nil {
@@ -183,7 +183,7 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 	ifp := queue.IPFSFile{
 		BucketName:       FilesUploadBucket,
 		ObjectName:       objectName,
-		EthAddress:       ethAddress,
+		UserName:         username,
 		NetworkName:      "public",
 		HoldTimeInMonths: holdTimeInMonths,
 	}
@@ -218,7 +218,7 @@ func AddFileLocally(c *gin.Context) {
 		return
 	}
 
-	uploaderAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 
 	holdTimeinMonths, present := c.GetPostForm("hold_time")
 	if !present {
@@ -257,7 +257,7 @@ func AddFileLocally(c *gin.Context) {
 	dfa := queue.DatabaseFileAdd{
 		Hash:             resp,
 		HoldTimeInMonths: holdTimeinMonthsInt,
-		UploaderAddress:  uploaderAddress,
+		UserName:         username,
 		NetworkName:      "public",
 	}
 	mqConnectionURL := c.MustGet("mq_conn_url").(string)
@@ -280,7 +280,7 @@ func AddFileLocally(c *gin.Context) {
 	pin := queue.IPFSPin{
 		CID:              resp,
 		NetworkName:      "public",
-		EthAddress:       uploaderAddress,
+		UserName:         username,
 		HoldTimeInMonths: holdTimeinMonthsInt,
 	}
 
@@ -328,8 +328,8 @@ func IpfsPubSubPublish(c *gin.Context) {
 
 // RemovePinFromLocalHost is used to remove a pin from the ipfs instance
 func RemovePinFromLocalHost(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
+	username := GetAuthenticatedUserFromContext(c)
+	if username != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to removal route")
 		return
 	}
@@ -347,7 +347,7 @@ func RemovePinFromLocalHost(c *gin.Context) {
 	rm := queue.IPFSPinRemoval{
 		ContentHash: hash,
 		NetworkName: "public",
-		EthAddress:  ethAddress,
+		UserName:    username,
 	}
 	err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange)
 	if err != nil {

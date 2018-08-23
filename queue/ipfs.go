@@ -71,7 +71,7 @@ func ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.
 			d.Ack(false)
 			continue
 		}
-		err = userManager.AddIPFSKeyForUser(key.EthAddress, key.Name, id.Pretty())
+		err = userManager.AddIPFSKeyForUser(key.UserName, key.Name, id.Pretty())
 		if err != nil {
 			fmt.Println("error adding ipfs key for user to database ", err)
 			d.Ack(false)
@@ -108,7 +108,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 		}
 		apiURL := ""
 		if pin.NetworkName != "public" {
-			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(pin.EthAddress, pin.NetworkName)
+			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(pin.UserName, pin.NetworkName)
 			if err != nil {
 				//TODO log and handle
 				fmt.Println("error checking for private network access", err)
@@ -116,13 +116,13 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 				continue
 			}
 			if !canAccess {
-				addresses := []string{}
-				addresses = append(addresses, pin.EthAddress)
+				usernames := []string{}
+				usernames = append(usernames, pin.UserName)
 				es := EmailSend{
-					Subject:      IpfsPrivateNetworkUnauthorizedSubject,
-					Content:      fmt.Sprintf("Unauthorized access to IPFS private network %s", pin.NetworkName),
-					ContentType:  "",
-					EthAddresses: addresses,
+					Subject:     IpfsPrivateNetworkUnauthorizedSubject,
+					Content:     fmt.Sprintf("Unauthorized access to IPFS private network %s", pin.NetworkName),
+					ContentType: "",
+					UserNames:   usernames,
 				}
 				err = qm.PublishMessage(es)
 				if err != nil {
@@ -148,12 +148,12 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 		if err != nil {
 			fmt.Println("error initializing IPFS", err)
 			addresses := []string{}
-			addresses = append(addresses, pin.EthAddress)
+			addresses = append(addresses, pin.UserName)
 			es := EmailSend{
-				Subject:      IpfsInitializationFailedSubject,
-				Content:      fmt.Sprintf("Connection to IPFS failed due to the following error %s", err),
-				ContentType:  "",
-				EthAddresses: addresses,
+				Subject:     IpfsInitializationFailedSubject,
+				Content:     fmt.Sprintf("Connection to IPFS failed due to the following error %s", err),
+				ContentType: "",
+				UserNames:   addresses,
 			}
 			errOne := qm.PublishMessage(es)
 			if errOne != nil {
@@ -169,12 +169,12 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 		if err != nil {
 			fmt.Println("error pinning content to ipfs")
 			addresses := []string{}
-			addresses = append(addresses, pin.EthAddress)
+			addresses = append(addresses, pin.UserName)
 			es := EmailSend{
-				Subject:      IpfsPinFailedSubject,
-				Content:      fmt.Sprintf(IpfsPinFailedContent, pin.CID, pin.NetworkName, err),
-				ContentType:  "",
-				EthAddresses: addresses,
+				Subject:     IpfsPinFailedSubject,
+				Content:     fmt.Sprintf(IpfsPinFailedContent, pin.CID, pin.NetworkName, err),
+				ContentType: "",
+				UserNames:   addresses,
 			}
 			errOne := qm.PublishMessage(es)
 			if errOne != nil {
@@ -208,7 +208,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 		}
 		fmt.Println("updating database")
 		if err == gorm.ErrRecordNotFound {
-			_, check := uploadManager.NewUpload(pin.CID, "pin", pin.NetworkName, pin.EthAddress, pin.HoldTimeInMonths)
+			_, check := uploadManager.NewUpload(pin.CID, "pin", pin.NetworkName, pin.UserName, pin.HoldTimeInMonths)
 			if check != nil {
 				fmt.Println("error creating new upload ", check)
 				// decide what to do ehre, who we should email, etcc...
@@ -219,7 +219,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 			continue
 		}
 		// the record already exists so we will update
-		_, err = uploadManager.UpdateUpload(pin.HoldTimeInMonths, pin.EthAddress, pin.CID, pin.NetworkName)
+		_, err = uploadManager.UpdateUpload(pin.HoldTimeInMonths, pin.UserName, pin.CID, pin.NetworkName)
 		if err != nil {
 			fmt.Println("error updating model in database ", err)
 			// TODO: decide what to do, who we should email, etcc
@@ -253,7 +253,7 @@ func ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *config.TemporalConfi
 		}
 		apiURL := ""
 		if rm.NetworkName != "public" {
-			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(rm.EthAddress, rm.NetworkName)
+			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(rm.UserName, rm.NetworkName)
 			if err != nil {
 				//TODO: log and handle
 				fmt.Println("error checking for network access ", err)
@@ -262,12 +262,12 @@ func ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *config.TemporalConfi
 			}
 			if !canAccess {
 				addresses := []string{}
-				addresses = append(addresses, rm.EthAddress)
+				addresses = append(addresses, rm.UserName)
 				es := EmailSend{
-					Subject:      IpfsPrivateNetworkUnauthorizedSubject,
-					Content:      fmt.Sprintf("Unauthorized access to IPFS private network %s", rm.NetworkName),
-					ContentType:  "",
-					EthAddresses: addresses,
+					Subject:     IpfsPrivateNetworkUnauthorizedSubject,
+					Content:     fmt.Sprintf("Unauthorized access to IPFS private network %s", rm.NetworkName),
+					ContentType: "",
+					UserNames:   addresses,
 				}
 				err = qmEmail.PublishMessage(es)
 				if err != nil {
@@ -289,12 +289,12 @@ func ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *config.TemporalConfi
 		}
 		ipfsManager, err := rtfs.Initialize("", apiURL)
 		if err != nil {
-			addresses := []string{rm.EthAddress}
+			addresses := []string{rm.UserName}
 			es := EmailSend{
-				Subject:      IpfsInitializationFailedSubject,
-				Content:      fmt.Sprintf("Failed to connect to IPFS network %s for reason %s", rm.NetworkName, err),
-				ContentType:  "",
-				EthAddresses: addresses,
+				Subject:     IpfsInitializationFailedSubject,
+				Content:     fmt.Sprintf("Failed to connect to IPFS network %s for reason %s", rm.NetworkName, err),
+				ContentType: "",
+				UserNames:   addresses,
 			}
 			errOne := qmEmail.PublishMessage(es)
 			if errOne != nil {
@@ -306,12 +306,12 @@ func ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *config.TemporalConfi
 		}
 		err = ipfsManager.Shell.Unpin(rm.ContentHash)
 		if err != nil {
-			addresses := []string{rm.EthAddress}
+			addresses := []string{rm.UserName}
 			es := EmailSend{
-				Subject:      "Pin removal failed",
-				Content:      fmt.Sprintf("Pin removal failed for ipfs network %s due to reason %s", rm.NetworkName, err),
-				ContentType:  "",
-				EthAddresses: addresses,
+				Subject:     "Pin removal failed",
+				Content:     fmt.Sprintf("Pin removal failed for ipfs network %s due to reason %s", rm.NetworkName, err),
+				ContentType: "",
+				UserNames:   addresses,
 			}
 			errOne := qmEmail.PublishMessage(es)
 			if errOne != nil {
@@ -376,7 +376,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		apiURL := ""
 		// determing private network access rights
 		if ipfsFile.NetworkName != "public" {
-			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(ipfsFile.EthAddress, ipfsFile.NetworkName)
+			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(ipfsFile.UserName, ipfsFile.NetworkName)
 			if err != nil {
 				//TODO log and handle, decide how we would do this
 				fmt.Println("error checking for private network access", err)
@@ -385,12 +385,12 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			}
 			if !canAccess {
 				addresses := []string{}
-				addresses = append(addresses, ipfsFile.EthAddress)
+				addresses = append(addresses, ipfsFile.UserName)
 				es := EmailSend{
-					Subject:      IpfsPrivateNetworkUnauthorizedSubject,
-					Content:      fmt.Sprintf("Unauthorized access to IPFS private network %s", ipfsFile.NetworkName),
-					ContentType:  "",
-					EthAddresses: addresses,
+					Subject:     IpfsPrivateNetworkUnauthorizedSubject,
+					Content:     fmt.Sprintf("Unauthorized access to IPFS private network %s", ipfsFile.NetworkName),
+					ContentType: "",
+					UserNames:   addresses,
 				}
 				err = qmEmail.PublishMessage(es)
 				if err != nil {
@@ -413,12 +413,12 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			ipfsManager, err = rtfs.Initialize("", apiURL)
 			if err != nil {
 				addresses := []string{}
-				addresses = append(addresses, ipfsFile.EthAddress)
+				addresses = append(addresses, ipfsFile.UserName)
 				es := EmailSend{
-					Subject:      IpfsInitializationFailedSubject,
-					Content:      fmt.Sprintf("Connection to IPFS failed due to the following error %s", err),
-					ContentType:  "",
-					EthAddresses: addresses,
+					Subject:     IpfsInitializationFailedSubject,
+					Content:     fmt.Sprintf("Connection to IPFS failed due to the following error %s", err),
+					ContentType: "",
+					UserNames:   addresses,
 				}
 				errOne := qmEmail.PublishMessage(es)
 				if errOne != nil {
@@ -446,12 +446,12 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		if err != nil {
 			//TODO: decide how to handle email failures
 			addresses := []string{}
-			addresses = append(addresses, ipfsFile.EthAddress)
+			addresses = append(addresses, ipfsFile.UserName)
 			es := EmailSend{
-				Subject:      IpfsFileFailedSubject,
-				Content:      fmt.Sprintf(IpfsFileFailedContent, ipfsFile.ObjectName, ipfsFile.NetworkName),
-				ContentType:  "",
-				EthAddresses: addresses,
+				Subject:     IpfsFileFailedSubject,
+				Content:     fmt.Sprintf(IpfsFileFailedContent, ipfsFile.ObjectName, ipfsFile.NetworkName),
+				ContentType: "",
+				UserNames:   addresses,
 			}
 			errOne := qmEmail.PublishMessage(es)
 			if errOne != nil {
@@ -473,7 +473,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		pin := IPFSPin{
 			CID:              resp,
 			NetworkName:      ipfsFile.NetworkName,
-			EthAddress:       ipfsFile.EthAddress,
+			UserName:         ipfsFile.UserName,
 			HoldTimeInMonths: holdTimeInt,
 		}
 		err = qmPin.PublishMessageWithExchange(pin, PinExchange)
@@ -499,7 +499,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		}
 		// TODO: add email notification indicating that the file was added, giving the content hash for the particular file
 		if check.Error == gorm.ErrRecordNotFound {
-			_, err = uploadManager.NewUpload(resp, "file", ipfsFile.NetworkName, ipfsFile.EthAddress, holdTimeInt)
+			_, err = uploadManager.NewUpload(resp, "file", ipfsFile.NetworkName, ipfsFile.UserName, holdTimeInt)
 			if err != nil {
 				//TODO decide how we should handle this
 				fmt.Println("error creating new upload in database ", err)
@@ -509,7 +509,7 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 			d.Ack(false)
 			continue
 		}
-		_, err = uploadManager.UpdateUpload(holdTimeInt, ipfsFile.EthAddress, resp, ipfsFile.NetworkName)
+		_, err = uploadManager.UpdateUpload(holdTimeInt, ipfsFile.UserName, resp, ipfsFile.NetworkName)
 		if err != nil {
 			//TODO decide how to handle
 			fmt.Println("error updating upload in database ", err)

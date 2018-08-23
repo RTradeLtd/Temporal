@@ -13,6 +13,7 @@ type PinPayment struct {
 	Number           string `json:"number"`
 	ChargeAmount     string `json:"charge_amount"`
 	EthAddress       string `json:"eth_address"`
+	UserName         string `json:"user_name"`
 	ContentHash      string `json:"content_hash"`
 	NetworkName      string `json:"network_name"`
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
@@ -34,7 +35,7 @@ func (ppm *PinPaymentManager) FindPaymentByNumberAndAddress(number, ethAddress s
 	return pp, nil
 }
 
-func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, contentHash string, holdTimeInMonths int64) (*PinPayment, error) {
+func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, contentHash, username string, holdTimeInMonths int64) (*PinPayment, error) {
 	_, err := ppm.FindPaymentByNumberAndAddress(number.String(), uploaderAddress)
 	if err == nil {
 		return nil, errors.New("payment already exists")
@@ -47,6 +48,7 @@ func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big
 		Method:           method,
 		ChargeAmount:     chargeAmount.String(),
 		EthAddress:       uploaderAddress,
+		UserName:         username,
 		ContentHash:      contentHash,
 		HoldTimeInMonths: holdTimeInMonths,
 	}
@@ -56,18 +58,18 @@ func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big
 	return pp, nil
 }
 
-func (ppm *PinPaymentManager) RetrieveLatestPayment(ethAddress string) (*PinPayment, error) {
+func (ppm *PinPaymentManager) RetrieveLatestPaymentByUser(username string) (*PinPayment, error) {
 	pp := PinPayment{}
-	if check := ppm.DB.Table("pin_payments").Order("number desc").Where("eth_address = ?", ethAddress).First(&pp); check.Error != nil {
+	if check := ppm.DB.Table("pin_payments").Order("number desc").Where("user_name = ?", username).First(&pp); check.Error != nil {
 		return nil, check.Error
 	}
 	return &pp, nil
 }
 
-func (ppm *PinPaymentManager) RetrieveLatestPaymentNumber(ethAddress string) (*big.Int, error) {
+func (ppm *PinPaymentManager) RetrieveLatestPaymentNumberByUser(username string) (*big.Int, error) {
 	pp := &PinPayment{}
 	num := big.NewInt(0)
-	check := ppm.DB.Table("pin_payments").Order("number desc").Where("eth_address = ?", ethAddress).First(pp)
+	check := ppm.DB.Table("pin_payments").Order("number desc").Where("user_name = ?", username).First(pp)
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
@@ -88,6 +90,7 @@ type FilePayment struct {
 	Number           string
 	ChargeAmount     string
 	EthAddress       string
+	UserName         string
 	BucketName       string
 	ObjectName       string
 	NetworkName      string
@@ -102,12 +105,13 @@ func NewFilePaymentManager(db *gorm.DB) *FilePaymentManager {
 	return &FilePaymentManager{DB: db}
 }
 
-func (fpm *FilePaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, bucketName, objectName, networkName string, holdTimeInMonths int64) (*FilePayment, error) {
+func (fpm *FilePaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, bucketName, objectName, networkName, username string, holdTimeInMonths int64) (*FilePayment, error) {
 	fp := &FilePayment{
 		Number:           number.String(),
 		Method:           method,
 		ChargeAmount:     chargeAmount.String(),
 		EthAddress:       uploaderAddress,
+		UserName:         username,
 		BucketName:       bucketName,
 		ObjectName:       objectName,
 		NetworkName:      networkName,
@@ -119,10 +123,10 @@ func (fpm *FilePaymentManager) NewPayment(method uint8, number, chargeAmount *bi
 	return fp, nil
 }
 
-func (fpm *FilePaymentManager) RetrieveLatestPaymentNumber(ethAddress string) (*big.Int, error) {
+func (fpm *FilePaymentManager) RetrieveLatestPaymentNumber(username string) (*big.Int, error) {
 	fp := &FilePayment{}
 	num := big.NewInt(0)
-	check := fpm.DB.Table("file_payments").Order("number desc").Where("eth_address = ?", ethAddress).First(fp)
+	check := fpm.DB.Table("file_payments").Order("number desc").Where("user_name = ?", username).First(fp)
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
