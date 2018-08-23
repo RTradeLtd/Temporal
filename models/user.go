@@ -215,6 +215,7 @@ func (um *UserManager) NewUserAccount(ethAddress, username, password, email stri
 // Returns bool on succesful login, or false with an error on failure
 func (um *UserManager) SignIn(username, password string) (bool, error) {
 	var user User
+	fmt.Println(1)
 	um.DB.Where("user_name = ?", username).First(&user)
 	if user.CreatedAt == nilTime {
 		return false, errors.New("user account does not exist")
@@ -222,6 +223,7 @@ func (um *UserManager) SignIn(username, password string) (bool, error) {
 	if !user.AccountEnabled {
 		return false, errors.New("account is marked is disabled")
 	}
+	fmt.Println(2)
 	validPassword, err := um.ComparePlaintextPasswordToHash(username, password)
 	if err != nil {
 		return false, err
