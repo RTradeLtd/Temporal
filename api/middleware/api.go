@@ -21,8 +21,8 @@ var nilTime time.Time
 func APIRestrictionMiddleware(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
-		ethAddress := claims["id"]
-		db.Where("eth_address = ?", ethAddress).First(&user)
+		username := claims["id"]
+		db.Where("user_name = ?", username).First(&user)
 		if user.CreatedAt == nilTime {
 			c.AbortWithError(http.StatusBadRequest, errors.New("invalid user account"))
 			return
