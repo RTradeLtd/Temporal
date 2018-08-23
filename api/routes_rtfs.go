@@ -289,7 +289,7 @@ func AddFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	err = qm.PublishMessage(pin)
+	err = qm.PublishMessageWithExchange(pin, queue.PinExchange)
 	if err != nil {
 		FailOnError(c, err)
 		return
