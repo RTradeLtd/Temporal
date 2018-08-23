@@ -239,7 +239,11 @@ func (um *UserManager) ComparePlaintextPasswordToHash(username, password string)
 	if user.CreatedAt == nilTime {
 		return false, errors.New("user account does not exist")
 	}
-	err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(password))
+	passwordBytes, err := hex.DecodeString(user.HashedPassword)
+	if err != nil {
+		return false, err
+	}
+	err = bcrypt.CompareHashAndPassword(passwordBytes, []byte(password))
 	if err != nil {
 		return false, err
 	}
