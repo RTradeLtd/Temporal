@@ -12,6 +12,10 @@ TEMPORAL is a work in progress, and current code does not represent quality of t
 
 There is a basic web interface that allows pinning of content to IPFS through TEMPORAL. Anyone can sign up an account, but you must be manually enabled to access any of the functionality, including logging in. To get your account activated, message us on our TEMPORAL telegram chat. The website is served over IPFS, and can be viewed through through a public gate such as [ipfs.io](https://ipfs.io/ipfs/Qma7Vxmm7bVafuQV9bWTF8LGcJd3tz9B9o9hsRRPdYCJCj/website/index.html)
 
+## API Documentation
+
+Our API documentation is through [postman](https://documenter.getpostman.com/view/4295780/RWEcQM6W#intro)
+
 ## Smart Contracts
 
 All smart contracts used by TEMPORAL can be viewed over here https://github.com/RTradeLtd/RT-Contracts/tree/master/TEMPORAL
