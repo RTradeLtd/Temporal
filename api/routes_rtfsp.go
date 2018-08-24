@@ -768,11 +768,7 @@ func GetIPFSPrivateNetworkByName(c *gin.Context) {
 		return
 	}
 
-	netName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailNoExistPostForm(c, "network_name")
-		return
-	}
+	netName := c.Param("name")
 	manager := models.NewHostedIPFSNetworkManager(db)
 	net, err := manager.GetNetworkByName(netName)
 	if err != nil {

@@ -137,7 +137,7 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(db))
 	ipfsPrivateProtected.Use(middleware.DatabaseMiddleware(db))
 	ipfsPrivateProtected.POST("/new/network", CreateHostedIPFSNetworkEntryInDatabase)                // admin locked
-	ipfsPrivateProtected.POST("/network/name", GetIPFSPrivateNetworkByName)                          // admin locked
+	ipfsPrivateProtected.GET("/network/:name", GetIPFSPrivateNetworkByName)                          // admin locked
 	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", CheckLocalNodeForPinForHostedIPFSNetwork) // admin locked
 	ipfsPrivateProtected.POST("/ipfs/object-stat/:key", GetObjectStatForIpfsForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/ipfs/object/size/:key", GetFileSizeInBytesForObjectForHostedIPFSNetwork)

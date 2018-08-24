@@ -38,12 +38,6 @@ func CalculateContentHashForFile(c *gin.Context) {
 
 // PinHashLocally is used to pin a hash to the local ipfs node
 func PinHashLocally(c *gin.Context) {
-	// check if its for a private network
-	_, exists := c.GetPostForm("use_private_network")
-	if exists {
-		PinToHostedIPFSNetwork(c)
-		return
-	}
 	hash := c.Param("hash")
 	username := GetAuthenticatedUserFromContext(c)
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
@@ -111,13 +105,6 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 // it does not give the user a content hash back immediately and will be sent
 // via email (eventually we will have a notification system for the interface)
 func AddFileLocallyAdvanced(c *gin.Context) {
-	_, exists := c.GetPostForm("use_private_network")
-	if exists {
-		//TODO need to create another function to add file with no response
-		AddFileToHostedIPFSNetworkAdvanced(c)
-		return
-	}
-
 	cC := c.Copy()
 
 	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
@@ -201,11 +188,6 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
 func AddFileLocally(c *gin.Context) {
-	_, exists := c.GetPostForm("use_private_network")
-	if exists {
-		AddFileToHostedIPFSNetwork(c)
-		return
-	}
 	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
@@ -415,14 +397,9 @@ func CheckLocalNodeForPin(c *gin.Context) {
 
 // DownloadContentHash is used to download a particular content hash from the network
 func DownloadContentHash(c *gin.Context) {
-	_, exists := c.GetPostForm("use_private_network")
-	if exists {
-		DownloadContentHashForPrivateNetwork(c)
-		return
-	}
 	var contentType string
 	// fetch the specified content type from the user
-	contentType, exists = c.GetPostForm("content_type")
+	contentType, exists := c.GetPostForm("content_type")
 	// if not specified, provide a default
 	if !exists {
 		contentType = "application/octet-stream"
