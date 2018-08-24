@@ -6,6 +6,7 @@
 		"password": "password123"
 	},
 	"api": {
+		"admin_user": "....",
 		"connection": {
 			"certificates": {
 				"cert_path": "/home/solidity/certificates/api.pem",

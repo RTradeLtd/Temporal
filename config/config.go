@@ -15,6 +15,7 @@ type TemporalConfig struct {
 		Password string `json:"password"`
 	} `json:"database"`
 	API struct {
+		AdminUser  string `json:"admin_user"`
 		Connection struct {
 			Certificates struct {
 				CertPath string `json:"cert_path"`
