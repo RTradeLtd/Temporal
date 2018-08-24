@@ -364,15 +364,20 @@ func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 // RemovePinFromLocalHostForHostedIPFSNetwork is used to remove a content hash from a private hosted ipfs network
 func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
-		return
-	}
 	hash := c.Param("hash")
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
 		return
+	}
+	db, ok := c.MustGet("db").(*gorm.DB)
+	if !ok {
+		FailedToLoadDatabase(c)
+		return
+	}
+	err := CheckAccessForPrivateNetwork(username, networkName, db)
+	if err != nil {
+		FailOnError(c, err)
 	}
 	rm := queue.IPFSPinRemoval{
 		ContentHash: hash,
@@ -399,6 +404,10 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 // for a private ipfs network
 func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+		return
+	}
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
@@ -480,6 +489,10 @@ func GetObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 // private ipfs network for a partilcar pin
 func CheckLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+		return
+	}
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")

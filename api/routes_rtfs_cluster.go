@@ -11,10 +11,6 @@ import (
 
 // PinHashToCluster is used to trigger a cluster pin of a particular CID
 func PinHashToCluster(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to cluster pin")
-	}
 	hash := c.Param("hash")
 
 	mqURL, ok := c.MustGet("mq_conn_url").(string)
@@ -66,7 +62,6 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 
 // RemovePinFromCluster is used to remove a pin from the cluster global state
 // this will mean that all nodes in the cluster will no longer track the pin
-// TODO: change to use a queue
 func RemovePinFromCluster(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {

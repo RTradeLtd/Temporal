@@ -47,7 +47,7 @@ func GetUploadsForAddress(c *gin.Context) {
 	um := models.NewUploadManager(db)
 	user := GetAuthenticatedUserFromContext(c)
 	if user == AdminAddress {
-		queryUser = c.Param("user_name")
+		queryUser = c.Param("user")
 	} else {
 		queryUser = user
 	}
