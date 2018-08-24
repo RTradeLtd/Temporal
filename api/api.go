@@ -32,6 +32,7 @@ var AdminAddress = "0x7E4A2359c745A982a54653128085eAC69E446DE1"
 // Setup is used to initialize our api.
 // it invokes all  non exported function to setup the api.
 func Setup(cfg *config.TemporalConfig) *gin.Engine {
+	AdminAddress = cfg.API.AdminUser
 	dbPass := cfg.Database.Password
 	dbURL := cfg.Database.URL
 	dbUser := cfg.Database.Username
