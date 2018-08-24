@@ -146,7 +146,10 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	ipfsPrivateProtected.POST("/pins", GetLocalPinsForHostedIPFSNetwork) // admin locked
 	ipfsPrivateProtected.GET("/networks", GetAuthorizedPrivateNetworks)
 	ipfsPrivateProtected.POST("/uploads", GetUploadsByNetworkName)
-	ipfsPrivateProtected.DELETE("/pin/remove/:hash", RemovePinFromLocalHostForHostedIPFSNetwork) // admin locked
+	ipfsPrivateProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
+	ipfsPrivateProtected.POST("/ipfs/pin/:hash", PinHashLocally)
+	ipfsPrivateProtected.POST("/ipfs/add-file", AddFileLocally)
+	ipfsPrivateProtected.DELETE("/ipfs/pin/remove/:hash", RemovePinFromLocalHostForHostedIPFSNetwork) // admin locked
 
 	ipnsProtected := g.Group("/api/v1/ipns")
 	ipnsProtected.Use(authWare.MiddlewareFunc())
