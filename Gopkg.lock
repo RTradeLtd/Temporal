@@ -5,7 +5,7 @@
   branch = "master-rtrade"
   name = "github.com/RTradeLtd/go-ipfs-api"
   packages = ["."]
-  revision = "2f45aa41fd54f751d77a1e1f378fc7d25b001dbb"
+  revision = "d0a010b9c5bb0a0667fbb977aa7181f0e9294f6e"
 
 [[projects]]
   branch = "master"
