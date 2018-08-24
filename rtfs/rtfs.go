@@ -137,11 +137,13 @@ func (im *IpfsManager) ParseLocalPinsForHash(hash string) (bool, error) {
 
 // PublishPubSubMessage is used to publish a message to the given topic
 func (im *IpfsManager) PublishPubSubMessage(topic string, data string) error {
+	fmt.Println("publishing data")
 	if topic == "" && data == "" {
 		return errors.New("invalid topic and data")
 	}
 	err := im.Shell.PubSubPublish(topic, data)
 	if err != nil {
+		fmt.Println("error publishing data ", err.Error())
 		return err
 	}
 	return nil
