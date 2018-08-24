@@ -306,11 +306,13 @@ func IpfsPubSubPublish(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	fmt.Println("test")
 	err = manager.PublishPubSubMessage(topic, message)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
+	fmt.Println("blah")
 	c.JSON(http.StatusOK, gin.H{
 		"topic":   topic,
 		"message": message,
