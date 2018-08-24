@@ -13,7 +13,7 @@ var dev = false
 
 // GetUploadsFromDatabase is used to read a list of uploads from our database
 // only usable by admin
-func GetUploadsFromDatabase(c *gin.Context) {
+func getUploadsFromDatabase(c *gin.Context) {
 	authenticatedUser := GetAuthenticatedUserFromContext(c)
 	if authenticatedUser != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
@@ -36,7 +36,7 @@ func GetUploadsFromDatabase(c *gin.Context) {
 
 // GetUploadsForAddress is used to read a list of uploads from a particular eth address
 // If not admin, will retrieve all uploads for the current context account
-func GetUploadsForAddress(c *gin.Context) {
+func getUploadsForAddress(c *gin.Context) {
 	var queryUser string
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {

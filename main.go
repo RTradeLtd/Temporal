@@ -48,8 +48,11 @@ func main() {
 	ethKeyPass := tCfg.Ethereum.Account.KeyPass
 	switch os.Args[1] {
 	case "api":
-		router := api.Setup(tCfg)
-		err = router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
+		api, err := api.Initialize(tCfg, false)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = api.Router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -171,7 +174,7 @@ func main() {
 			log.Fatal(err)
 		}
 	case "migrate":
-		dbm, err := database.Initialize(dbPass, dbURL, dbUser)
+		dbm, err := database.Initialize(tCfg, false)
 		if err != nil {
 			log.Fatal(err)
 		}

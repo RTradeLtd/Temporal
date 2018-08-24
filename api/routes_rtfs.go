@@ -17,7 +17,7 @@ import (
 
 // CalculateContentHashForFile is used to calculate the content hash
 // for a particular file, without actually storing it or providing it
-func CalculateContentHashForFile(c *gin.Context) {
+func calculateContentHashForFile(c *gin.Context) {
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		FailOnError(c, err)
@@ -37,7 +37,7 @@ func CalculateContentHashForFile(c *gin.Context) {
 }
 
 // PinHashLocally is used to pin a hash to the local ipfs node
-func PinHashLocally(c *gin.Context) {
+func pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")
 	username := GetAuthenticatedUserFromContext(c)
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
@@ -80,7 +80,7 @@ func PinHashLocally(c *gin.Context) {
 }
 
 // GetFileSizeInBytesForObject is used to retrieve the size of an object in bytes
-func GetFileSizeInBytesForObject(c *gin.Context) {
+func getFileSizeInBytesForObject(c *gin.Context) {
 	key := c.Param("key")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
@@ -104,7 +104,7 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 // and efficient manner than our traditional simple upload. Note that
 // it does not give the user a content hash back immediately and will be sent
 // via email (eventually we will have a notification system for the interface)
-func AddFileLocallyAdvanced(c *gin.Context) {
+func addFileLocallyAdvanced(c *gin.Context) {
 	cC := c.Copy()
 
 	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
@@ -187,7 +187,7 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 // AddFileLocally is used to add a file to our local ipfs node
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
-func AddFileLocally(c *gin.Context) {
+func addFileLocally(c *gin.Context) {
 	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
@@ -276,7 +276,7 @@ func AddFileLocally(c *gin.Context) {
 }
 
 // IpfsPubSubPublish is used to publish a pubsub msg
-func IpfsPubSubPublish(c *gin.Context) {
+func ipfsPubSubPublish(c *gin.Context) {
 	topic := c.Param("topic")
 	message, present := c.GetPostForm("message")
 	if !present {
@@ -300,7 +300,7 @@ func IpfsPubSubPublish(c *gin.Context) {
 }
 
 // RemovePinFromLocalHost is used to remove a pin from the ipfs instance
-func RemovePinFromLocalHost(c *gin.Context) {
+func removePinFromLocalHost(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if username != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to removal route")
@@ -333,7 +333,7 @@ func RemovePinFromLocalHost(c *gin.Context) {
 }
 
 // GetLocalPins is used to get the pins tracked by the local ipfs node
-func GetLocalPins(c *gin.Context) {
+func getLocalPins(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
@@ -358,7 +358,7 @@ func GetLocalPins(c *gin.Context) {
 // GetObjectStatForIpfs is used to get the
 // particular object state from the local
 // ipfs node
-func GetObjectStatForIpfs(c *gin.Context) {
+func getObjectStatForIpfs(c *gin.Context) {
 	key := c.Param("key")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
@@ -375,7 +375,7 @@ func GetObjectStatForIpfs(c *gin.Context) {
 
 // CheckLocalNodeForPin is used to check whether or not
 // the local node has pinned the content
-func CheckLocalNodeForPin(c *gin.Context) {
+func checkLocalNodeForPin(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
@@ -396,7 +396,7 @@ func CheckLocalNodeForPin(c *gin.Context) {
 }
 
 // DownloadContentHash is used to download a particular content hash from the network
-func DownloadContentHash(c *gin.Context) {
+func downloadContentHash(c *gin.Context) {
 	var contentType string
 	// fetch the specified content type from the user
 	contentType, exists := c.GetPostForm("content_type")

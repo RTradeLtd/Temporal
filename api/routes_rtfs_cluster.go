@@ -10,7 +10,7 @@ import (
 )
 
 // PinHashToCluster is used to trigger a cluster pin of a particular CID
-func PinHashToCluster(c *gin.Context) {
+func pinHashToCluster(c *gin.Context) {
 	hash := c.Param("hash")
 
 	mqURL, ok := c.MustGet("mq_conn_url").(string)
@@ -39,7 +39,7 @@ func PinHashToCluster(c *gin.Context) {
 
 // SyncClusterErrorsLocally is used to parse through the local cluster state
 // and sync any errors that are detected.
-func SyncClusterErrorsLocally(c *gin.Context) {
+func syncClusterErrorsLocally(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
@@ -62,7 +62,7 @@ func SyncClusterErrorsLocally(c *gin.Context) {
 
 // RemovePinFromCluster is used to remove a pin from the cluster global state
 // this will mean that all nodes in the cluster will no longer track the pin
-func RemovePinFromCluster(c *gin.Context) {
+func removePinFromCluster(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to cluster removal")
@@ -83,7 +83,7 @@ func RemovePinFromCluster(c *gin.Context) {
 }
 
 // GetLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
-func GetLocalStatusForClusterPin(c *gin.Context) {
+func getLocalStatusForClusterPin(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
@@ -106,7 +106,7 @@ func GetLocalStatusForClusterPin(c *gin.Context) {
 }
 
 // GetGlobalStatusForClusterPin is used to get the global cluster status for a particular pin
-func GetGlobalStatusForClusterPin(c *gin.Context) {
+func getGlobalStatusForClusterPin(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to cluster status")
@@ -131,7 +131,7 @@ func GetGlobalStatusForClusterPin(c *gin.Context) {
 // FetchLocalClusterStatus is used to fetch the status of the localhost's
 // cluster state, and not the rest of the cluster
 // TODO: cleanup
-func FetchLocalClusterStatus(c *gin.Context) {
+func fetchLocalClusterStatus(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")

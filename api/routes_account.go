@@ -12,7 +12,7 @@ import (
 )
 
 // ChangeAccountPassword is used to change a users password
-func ChangeAccountPassword(c *gin.Context) {
+func changeAccountPassword(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
 	oldPassword, exists := c.GetPostForm("old_password")
@@ -50,7 +50,7 @@ func ChangeAccountPassword(c *gin.Context) {
 }
 
 // RegisterUserAccount is used to sign up with temporal
-func RegisterUserAccount(c *gin.Context) {
+func registerUserAccount(c *gin.Context) {
 	ethAddress := c.PostForm("eth_address")
 
 	username, exists := c.GetPostForm("username")
@@ -86,7 +86,7 @@ func RegisterUserAccount(c *gin.Context) {
 }
 
 // CreateIPFSKey is used to create an IPFS key
-func CreateIPFSKey(c *gin.Context) {
+func createIPFSKey(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 
 	keyType, exists := c.GetPostForm("key_type")
@@ -140,7 +140,7 @@ func CreateIPFSKey(c *gin.Context) {
 }
 
 // GetIPFSKeyNamesForAuthUser is used to get the keys a user has setup
-func GetIPFSKeyNamesForAuthUser(c *gin.Context) {
+func getIPFSKeyNamesForAuthUser(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
 	db, ok := c.MustGet("db").(*gorm.DB)

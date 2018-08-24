@@ -17,7 +17,7 @@ import (
 )
 
 // PublishToIPNSDetails is used to publish a record on IPNS with more fine grained control
-func PublishToIPNSDetails(c *gin.Context) {
+func publishToIPNSDetails(c *gin.Context) {
 	_, exists := c.GetPostForm("network_name")
 	if exists {
 		PublishDetailedIPNSToHostedIPFSNetwork(c)
@@ -119,7 +119,7 @@ func PublishToIPNSDetails(c *gin.Context) {
 
 // GenerateDNSLinkEntry is used to generate a DNS link entry
 // TODO: turn into a queue call
-func GenerateDNSLinkEntry(c *gin.Context) {
+func generateDNSLinkEntry(c *gin.Context) {
 	authUser := GetAuthenticatedUserFromContext(c)
 	if authUser != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")

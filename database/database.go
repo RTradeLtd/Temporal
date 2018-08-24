@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 
+	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -20,14 +21,19 @@ type DatabaseManager struct {
 	Upload *models.UploadManager
 }
 
-func Initialize(dbPass, dbURL, dbUser string) (*DatabaseManager, error) {
+func Initialize(cfg *config.TemporalConfig, runMigrations bool) (*DatabaseManager, error) {
 	dbm := DatabaseManager{}
-	db, err := OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := OpenDBConnection(
+		cfg.Database.Password,
+		cfg.Database.URL,
+		cfg.Database.Username)
 	if err != nil {
 		return nil, err
 	}
 	dbm.DB = db
-	dbm.RunMigrations()
+	if runMigrations {
+		dbm.RunMigrations()
+	}
 	return &dbm, nil
 }
 
