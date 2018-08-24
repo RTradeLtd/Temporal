@@ -399,6 +399,10 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 // for a private ipfs network
 func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+		return
+	}
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
@@ -480,6 +484,10 @@ func GetObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 // private ipfs network for a partilcar pin
 func CheckLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+		return
+	}
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")

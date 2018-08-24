@@ -113,12 +113,12 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	ipfsProtected.Use(authWare.MiddlewareFunc())
 	ipfsProtected.Use(middleware.APIRestrictionMiddleware(db))
 	// DATABASE-LESS routes
-	ipfsProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublish)            // admin locked
-	ipfsProtected.POST("/calculate-content-hash", CalculateContentHashForFile) // admin locked
-	ipfsProtected.GET("/pins", GetLocalPins)                                   // admin locked
+	ipfsProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublish)
+	ipfsProtected.POST("/calculate-content-hash", CalculateContentHashForFile)
+	ipfsProtected.GET("/pins", GetLocalPins) // admin locked
 	ipfsProtected.GET("/object-stat/:key", GetObjectStatForIpfs)
 	ipfsProtected.GET("/object/size/:key", GetFileSizeInBytesForObject)
-	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin)
+	ipfsProtected.GET("/check-for-pin/:hash", CheckLocalNodeForPin) // admin locked
 	ipfsProtected.Use(middleware.DatabaseMiddleware(db))
 	ipfsProtected.POST("/download/:hash", DownloadContentHash)
 
@@ -136,23 +136,23 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
 	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(db))
 	ipfsPrivateProtected.Use(middleware.DatabaseMiddleware(db))
-	ipfsPrivateProtected.POST("/new/network", CreateHostedIPFSNetworkEntryInDatabase)
-	ipfsPrivateProtected.POST("/network/name", GetIPFSPrivateNetworkByName)
-	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", CheckLocalNodeForPinForHostedIPFSNetwork)
+	ipfsPrivateProtected.POST("/new/network", CreateHostedIPFSNetworkEntryInDatabase)                // admin locked
+	ipfsPrivateProtected.POST("/network/name", GetIPFSPrivateNetworkByName)                          // admin locked
+	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", CheckLocalNodeForPinForHostedIPFSNetwork) // admin locked
 	ipfsPrivateProtected.POST("/ipfs/object-stat/:key", GetObjectStatForIpfsForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/ipfs/object/size/:key", GetFileSizeInBytesForObjectForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublishToHostedIPFSNetwork)
-	ipfsPrivateProtected.POST("/pins", GetLocalPinsForHostedIPFSNetwork)
+	ipfsPrivateProtected.POST("/pins", GetLocalPinsForHostedIPFSNetwork) // admin locked
 	ipfsPrivateProtected.GET("/networks", GetAuthorizedPrivateNetworks)
 	ipfsPrivateProtected.POST("/uploads", GetUploadsByNetworkName)
-	ipfsPrivateProtected.DELETE("/pin/remove/:hash", RemovePinFromLocalHostForHostedIPFSNetwork)
+	ipfsPrivateProtected.DELETE("/pin/remove/:hash", RemovePinFromLocalHostForHostedIPFSNetwork) // admin locked
 
 	ipnsProtected := g.Group("/api/v1/ipns")
 	ipnsProtected.Use(authWare.MiddlewareFunc())
 	ipnsProtected.Use(middleware.APIRestrictionMiddleware(db))
 	ipnsProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
 	ipnsProtected.Use(middleware.DatabaseMiddleware(db))
-	ipnsProtected.POST("/publish/details", PublishToIPNSDetails) // admin locked
+	ipnsProtected.POST("/publish/details", PublishToIPNSDetails)
 	ipnsProtected.Use(middleware.AWSMiddleware(awsKey, awsSecret))
 	ipnsProtected.POST("/dnslink/aws/add", GenerateDNSLinkEntry) // admin locked
 
@@ -164,15 +164,15 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 	clusterProtected.GET("/status-global-pin/:hash", GetGlobalStatusForClusterPin) // admin locked
 	clusterProtected.GET("/status-local", FetchLocalClusterStatus)                 // admin locked
 	clusterProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))           // admin locked
-	clusterProtected.POST("/pin/:hash", PinHashToCluster)                          // admin locked
-	clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster)             // admin locked
+	clusterProtected.POST("/pin/:hash", PinHashToCluster)
+	clusterProtected.DELETE("/remove-pin/:hash", RemovePinFromCluster) // admin locked
 
 	databaseProtected := g.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
 	databaseProtected.Use(middleware.APIRestrictionMiddleware(db))
 	databaseProtected.Use(middleware.DatabaseMiddleware(db))
-	databaseProtected.GET("/uploads", GetUploadsFromDatabase)        // admin locked
-	databaseProtected.GET("/uploads/:address", GetUploadsForAddress) // partial admin locked
+	databaseProtected.GET("/uploads", GetUploadsFromDatabase)     // admin locked
+	databaseProtected.GET("/uploads/:user", GetUploadsForAddress) // partial admin locked
 
 	frontendProtected := g.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())

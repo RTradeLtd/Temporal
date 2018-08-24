@@ -18,10 +18,6 @@ import (
 // CalculateContentHashForFile is used to calculate the content hash
 // for a particular file, without actually storing it or providing it
 func CalculateContentHashForFile(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
-	}
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		FailOnError(c, err)
@@ -299,11 +295,6 @@ func AddFileLocally(c *gin.Context) {
 
 // IpfsPubSubPublish is used to publish a pubsub msg
 func IpfsPubSubPublish(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
-		return
-	}
 	topic := c.Param("topic")
 	message, present := c.GetPostForm("message")
 	if !present {
@@ -403,6 +394,11 @@ func GetObjectStatForIpfs(c *gin.Context) {
 // CheckLocalNodeForPin is used to check whether or not
 // the local node has pinned the content
 func CheckLocalNodeForPin(c *gin.Context) {
+	ethAddress := GetAuthenticatedUserFromContext(c)
+	if ethAddress != AdminAddress {
+		FailNotAuthorized(c, "unauthorized access to admin route")
+		return
+	}
 	hash := c.Param("hash")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
@@ -422,12 +418,6 @@ func DownloadContentHash(c *gin.Context) {
 	_, exists := c.GetPostForm("use_private_network")
 	if exists {
 		DownloadContentHashForPrivateNetwork(c)
-		return
-	}
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	// Admin locked for now
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
 	var contentType string
@@ -467,7 +457,7 @@ func DownloadContentHash(c *gin.Context) {
 	var value string
 	// only process if there is actual data to process
 	// this will always be admin locked
-	if len(exHeaders) > 0 && ethAddress == AdminAddress {
+	if len(exHeaders) > 0 {
 		// the array must be of equal length, as a header has two parts
 		// the name of the header, and its value
 		// this expects the user to have properly formatted the headers
