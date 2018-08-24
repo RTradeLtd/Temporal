@@ -143,7 +143,7 @@ func (im *IpfsManager) PublishPubSubMessage(topic string, data string) error {
 	}
 	err := im.Shell.PubSubPublish(topic, data)
 	if err != nil {
-		fmt.Println("error publishing data")
+		fmt.Println("error publishing data ", err.Error())
 		return err
 	}
 	fmt.Println("published data")
