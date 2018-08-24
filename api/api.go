@@ -176,10 +176,10 @@ func setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg
 
 	frontendProtected := g.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
-	frontendProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	frontendProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", CalculatePinCost)
 	frontendProtected.POST("/cost/calculate/file", CalculateFileCost)
+	frontendProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
+	frontendProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
 	frontendProtected.Use(middleware.DatabaseMiddleware(db))
 	frontendProtected.POST("/payment/pin/confirm/:hash", SubmitPinPaymentConfirmation)
 	frontendProtected.POST("/payment/pin/create/:hash", CreatePinPayment)
