@@ -120,7 +120,7 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 	//uploadManager := models.NewUploadManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
 	uploadManager := models.NewUploadManager(db)
-	qm, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true, false)
+	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
@@ -177,7 +177,7 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 					ContentType: "",
 					UserNames:   usernames,
 				}
-				err = qm.PublishMessage(es)
+				err = qmEmail.PublishMessage(es)
 				if err != nil {
 					qm.Logger.WithFields(log.Fields{
 						"service": qm.QueueName,
@@ -217,7 +217,7 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 				ContentType: "",
 				UserNames:   addresses,
 			}
-			errOne := qm.PublishMessage(es)
+			errOne := qmEmail.PublishMessage(es)
 			if errOne != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
@@ -247,7 +247,7 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 				ContentType: "",
 				UserNames:   addresses,
 			}
-			errOne := qm.PublishMessage(es)
+			errOne := qmEmail.PublishMessage(es)
 			if errOne != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
