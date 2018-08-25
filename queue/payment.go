@@ -44,7 +44,7 @@ type PinPaymentSubmission struct {
 
 // ProcessPinPaymentConfirmation is used to process pin payment confirmations to inject content into TEMPORAL
 // currently only supprots the private IPFS network
-func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string, cfg *config.TemporalConfig) error {
+func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string, cfg *config.TemporalConfig) error {
 	fmt.Println("dialing")
 	client, err := ethclient.Dial(ipcPath)
 	if err != nil {
@@ -185,7 +185,7 @@ func ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPa
 // while functional, this route isn't recommended as there are security risks involved. This will be upgraded over time so we can try
 // to implement a more secure method. However keep in mind, this will always be "insecure". We may transition
 // to letting the user sign the transactino, and we can broadcast the signed transaction
-func ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string) error {
+func (qm *QueueManager) ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string) error {
 	client, err := ethclient.Dial(ipcPath)
 	if err != nil {
 		return err

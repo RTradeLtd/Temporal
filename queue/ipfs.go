@@ -21,7 +21,7 @@ import (
 )
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
-func ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		return err
@@ -84,7 +84,7 @@ func ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.
 }
 
 // ProccessIPFSPins is used to process IPFS pin requests
-func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	userManager := models.NewUserManager(db)
 	//uploadManager := models.NewUploadManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
@@ -235,7 +235,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 // ProcessIPFSPinRemovals is used to listen for and process any IPFS pin removals.
 // This queue must be running on each of the IPFS nodes, and we must eventually run checks
 // to ensure that pins were actually removed
-func ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
+func (qm *QueueManager) ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
 	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true, false)
@@ -329,7 +329,7 @@ func ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *config.TemporalConfi
 // ProccessIPFSFiles is used to process messages sent to rabbitmq to upload files to IPFS.
 // This function is invoked with the advanced method of file uploads, and is significantly more resilient than
 // the simple file upload method.
-func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
+func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
 	// construct the endpoint url to access our minio server
 	endpoint := fmt.Sprintf("%s:%s", cfg.MINIO.Connection.IP, cfg.MINIO.Connection.Port)
 	// grab our credentials for minio

@@ -41,7 +41,7 @@ type EmailSend struct {
 }
 
 // ProcessMailSends is a function used to process mail send queue messages
-func ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.TemporalConfig) error {
+func (qm *QueueManager) ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.TemporalConfig) error {
 	mm, err := mail.GenerateMailManager(tCfg)
 	if err != nil {
 		return err

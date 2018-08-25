@@ -25,7 +25,7 @@ type IPNSEntry struct {
 }
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
-func ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	ipfsManager, err := rtfs.Initialize("", "")
 	err = ipfsManager.CreateKeystoreManager()
 	if err != nil {
@@ -140,7 +140,7 @@ func ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cf
 }
 
 // ProcessIPNSUpdates is used to process any IPNS updates, saving them to the database
-func ProcessIPNSUpdates(msgs <-chan amqp.Delivery, db *gorm.DB) error {
+func (qm *QueueManager) ProcessIPNSUpdates(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	im := models.NewIPNSManager(db)
 	//um := models.NewUserManager(db)
 	manager, err := rtfs.Initialize("", "")
