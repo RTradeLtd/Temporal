@@ -2,11 +2,11 @@ package queue
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -17,30 +17,58 @@ func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *c
 	if err != nil {
 		return err
 	}
+
+	qm.Logger.WithFields(log.Fields{
+		"service": qm.QueueName,
+	}).Info("processing ipfs cluster pins")
+
 	for d := range msgs {
-		fmt.Println("new pin detected")
+
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Info("new message detected")
+
 		clusterAdd := IPFSClusterPin{}
 		err = json.Unmarshal(d.Body, &clusterAdd)
 		if err != nil {
-			fmt.Println("error unmarshaling cluster add message ", err)
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   err.Error(),
+			}).Error("error unmarshaling message")
 			d.Ack(false)
 			continue
 		}
-		fmt.Println("decoding hash string")
+
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Info("successfully unmarshaled message, decoding hash string")
+
 		encodedCid, err := clusterManager.DecodeHashString(clusterAdd.CID)
 		if err != nil {
-			fmt.Println("failed to encode hash string to cid object ", err)
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   err.Error(),
+			}).Error("failed to decode hash string")
 			d.Ack(false)
 			continue
 		}
-		fmt.Println("pinning to cluster")
+
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Infof("pinning %s to cluster", clusterAdd.CID)
+
 		err = clusterManager.Pin(encodedCid)
 		if err != nil {
-			fmt.Println("failed to pin content to ipfs cluster ", err)
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   err.Error(),
+			}).Errorf("failed to pin %s to cluster", clusterAdd.CID)
 			d.Ack(false)
 			continue
 		}
-		fmt.Println("successfully pinned content to ipfs cluster")
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Infof("successfully pinned %s to cluster", clusterAdd.CID)
 		d.Ack(false)
 	}
 	return nil
