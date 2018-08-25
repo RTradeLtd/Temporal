@@ -51,14 +51,9 @@ func JwtConfigGenerate(jwtKey string, db *gorm.DB, logger *log.Logger) *jwt.GinJ
 			return true
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
-			loginVals := Login{}
-			c.BindJSON(&loginVals)
-
 			logger.WithFields(log.Fields{
 				"service": "api",
-				"user":    loginVals.Username,
 			}).Error("invalid login detected")
-
 			c.JSON(code, gin.H{
 				"code":    code,
 				"message": message,
