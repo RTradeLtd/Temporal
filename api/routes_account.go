@@ -14,7 +14,7 @@ import (
 
 // ChangeAccountPassword is used to change a users password
 func (api *API) changeAccountPassword(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 
 	oldPassword, exists := c.GetPostForm("old_password")
 	if !exists {
@@ -28,17 +28,24 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		return
 	}
 
-	um := models.NewUserManager(api.DBM.DB)
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("password change requested")
 
-	suceeded, err := um.ChangePassword(ethAddress, oldPassword, newPassword)
+	um := models.NewUserManager(api.DBM.DB)
+	suceeded, err := um.ChangePassword(username, oldPassword, newPassword)
 	if err != nil {
-		msg := fmt.Sprintf("password change failed due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+		api.Logger.WithFields(log.Fields{
+			"service": "api",
+			"user":    username,
+			"error":   err.Error(),
+		}).Warn("password change failed")
 		FailOnError(c, err)
 		return
 	}
 	if !suceeded {
-		msg := fmt.Sprintf("password changed failed for user %s to due an unspecified error", ethAddress)
+		msg := fmt.Sprintf("password changed failed for user %s to due an unspecified error", username)
 		api.Logger.Error(msg)
 		FailOnError(c, errors.New("password change failed but no error occured"))
 		return
@@ -46,7 +53,7 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 
 	api.Logger.WithFields(log.Fields{
 		"service": api,
-		"user":    ethAddress,
+		"user":    username,
 	}).Info("password changed")
 
 	c.JSON(http.StatusOK, gin.H{
@@ -74,19 +81,26 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		return
 	}
 
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+	}).Info("user account registration detected")
+
 	userManager := models.NewUserManager(api.DBM.DB)
 	userModel, err := userManager.NewUserAccount(ethAddress, username, password, email, false)
 	if err != nil {
-		msg := fmt.Sprintf("user account registration failed for user %s due to the following error: %s", username, err.Error())
-		api.Logger.Error(msg)
+		api.Logger.WithFields(log.Fields{
+			"service": "api",
+			"error":   err.Error(),
+			"user":    username,
+		}).Error("user account registration failed")
 		FailOnError(c, err)
 		return
 	}
 
 	api.Logger.WithFields(log.Fields{
 		"service": "api",
-		"user":    ethAddress,
-	}).Info("account registered")
+		"user":    username,
+	}).Info("user account registered")
 
 	userModel.HashedPassword = "scrubbed"
 	c.JSON(http.StatusCreated, gin.H{"user": userModel})

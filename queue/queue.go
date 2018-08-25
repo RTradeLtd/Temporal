@@ -62,8 +62,10 @@ type IPFSFile struct {
 
 // IPFSClusterPin is a queue message used when sending a message to the cluster to pin content
 type IPFSClusterPin struct {
-	CID         string `json:"cid"`
-	NetworkName string `json:"network_name,omitempty"`
+	CID              string `json:"cid"`
+	NetworkName      string `json:"network_name"`
+	UserName         string `json:"user_name"`
+	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 }
 
 type IPFSPinRemoval struct {

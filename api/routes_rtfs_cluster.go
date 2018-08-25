@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
@@ -14,6 +15,17 @@ import (
 func (api *API) pinHashToCluster(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	hash := c.Param("hash")
+	holdTime, exists := c.GetPostForm("hold_time")
+	if !exists {
+		FailNoExistPostForm(c, "hold_time")
+		return
+	}
+
+	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
 
 	mqURL := api.TConfig.RabbitMQ.URL
 
@@ -25,8 +37,10 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 	}
 
 	ipfsClusterPin := queue.IPFSClusterPin{
-		CID:         hash,
-		NetworkName: "public",
+		CID:              hash,
+		NetworkName:      "public",
+		UserName:         username,
+		HoldTimeInMonths: holdTimeInt,
 	}
 
 	err = qm.PublishMessage(ipfsClusterPin)

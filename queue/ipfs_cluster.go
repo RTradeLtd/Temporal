@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/RTradeLtd/Temporal/config"
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
@@ -17,7 +18,7 @@ func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *c
 	if err != nil {
 		return err
 	}
-
+	uploadManager := models.NewUploadManager(db)
 	qm.Logger.WithFields(log.Fields{
 		"service": qm.QueueName,
 	}).Info("processing ipfs cluster pins")
@@ -35,6 +36,16 @@ func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *c
 				"service": qm.QueueName,
 				"error":   err.Error(),
 			}).Error("error unmarshaling message")
+			d.Ack(false)
+			continue
+		}
+
+		if clusterAdd.NetworkName != "public" {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"user":    clusterAdd.UserName,
+				"error":   "private networks not supported",
+			}).Error("private networks not supported for ipfs cluster")
 			d.Ack(false)
 			continue
 		}
@@ -66,8 +77,40 @@ func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *c
 			d.Ack(false)
 			continue
 		}
+		_, err = uploadManager.FindUploadByHashAndNetwork(clusterAdd.CID, clusterAdd.NetworkName)
+		if err != nil && err != gorm.ErrRecordNotFound {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"user":    clusterAdd.UserName,
+				"error":   err.Error(),
+			}).Error("error occured searching database for upload")
+		}
+
+		if err == gorm.ErrRecordNotFound {
+			_, err = uploadManager.NewUpload(clusterAdd.CID, "pin-cluster", clusterAdd.NetworkName, clusterAdd.UserName, clusterAdd.HoldTimeInMonths)
+			if err != nil {
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.QueueName,
+					"user":    clusterAdd.UserName,
+					"error":   err.Error(),
+				}).Error("failed to create upload in database")
+				d.Ack(false)
+				continue
+			}
+		} else {
+			_, err = uploadManager.UpdateUpload(clusterAdd.HoldTimeInMonths, clusterAdd.UserName, clusterAdd.CID, clusterAdd.NetworkName)
+			if err != nil {
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.QueueName,
+					"user":    clusterAdd.UserName,
+					"error":   err.Error(),
+				}).Error("failed to update upload in database")
+			}
+		}
+
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
+			"user":    clusterAdd.UserName,
 		}).Infof("successfully pinned %s to cluster", clusterAdd.CID)
 		d.Ack(false)
 	}

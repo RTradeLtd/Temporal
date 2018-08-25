@@ -269,8 +269,10 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 			"network": pin.NetworkName,
 		}).Infof("successfully pinned %s to ipfs", pin.CID)
 		clusterAddMsg := IPFSClusterPin{
-			CID:         pin.CID,
-			NetworkName: pin.NetworkName,
+			CID:              pin.CID,
+			NetworkName:      pin.NetworkName,
+			HoldTimeInMonths: pin.HoldTimeInMonths,
+			UserName:         pin.UserName,
 		}
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
