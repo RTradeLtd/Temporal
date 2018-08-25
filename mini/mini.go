@@ -25,7 +25,7 @@ type MinioManager struct {
 // NewMinioManager is used to generate our MinioManager helper struct
 func NewMinioManager(endpoint, accessKeyID, secretAccessKey string, secure bool) (*MinioManager, error) {
 	mm := &MinioManager{}
-	client, err := minio.New(endpoint, accessKeyID, secretAccessKey, !secure)
+	client, err := minio.New(endpoint, accessKeyID, secretAccessKey, secure)
 	if err != nil {
 		return nil, err
 	}

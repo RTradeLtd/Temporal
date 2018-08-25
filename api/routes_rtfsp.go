@@ -138,7 +138,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 
 	mqURL := api.TConfig.RabbitMQ.URL
 
-	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
+	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
 		FailOnError(c, err)
 		return

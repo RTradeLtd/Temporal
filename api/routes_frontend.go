@@ -229,7 +229,7 @@ func (api *API) createFilePayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
+	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
 		FailOnError(c, err)
 		return
