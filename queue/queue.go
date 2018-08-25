@@ -106,6 +106,15 @@ func (qm *QueueManager) setupLogging() error {
 	return nil
 }
 
+func (qm *QueueManager) parseQueueName(queueName string) error {
+	host, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+	qm.QueueName = fmt.Sprintf("%s+%s", host, queueName)
+	return nil
+}
+
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
 func Initialize(queueName, connectionURL string, publish, service bool) (*QueueManager, error) {
 	conn, err := setupConnection(connectionURL)
@@ -116,7 +125,16 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
 	}
-	qm.QueueName = queueName
+
+	if service {
+		err = qm.parseQueueName(queueName)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		qm.QueueName = queueName
+	}
+
 	if service {
 		err = qm.setupLogging()
 		if err != nil {
@@ -150,7 +168,7 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 			return &qm, nil
 		}
 	}
-	if err := qm.DeclareQueue(queueName); err != nil {
+	if err := qm.DeclareQueue(); err != nil {
 		return nil, err
 	}
 	return &qm, nil
@@ -179,16 +197,16 @@ func (qm *QueueManager) OpenChannel() error {
 }
 
 // DeclareQueue is used to declare a queue for which messages will be sent to
-func (qm *QueueManager) DeclareQueue(queueName string) error {
+func (qm *QueueManager) DeclareQueue() error {
 	// we declare the queue as durable so that even if rabbitmq server stops
 	// our messages won't be lost
 	q, err := qm.Channel.QueueDeclare(
-		queueName, // name
-		true,      // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+		qm.QueueName, // name
+		true,         // durable
+		false,        // delete when unused
+		false,        // exclusive
+		false,        // no-wait
+		nil,          // arguments
 	)
 	if err != nil {
 		return err
