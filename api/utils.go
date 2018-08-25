@@ -54,7 +54,6 @@ func FailNotAuthorized(c *gin.Context, message string) {
 
 // FailOnError is a failure used when an error occurs
 func FailOnError(c *gin.Context, err error) {
-	fmt.Println(err)
 	c.JSON(http.StatusBadRequest, gin.H{
 		"error": err.Error(),
 	})

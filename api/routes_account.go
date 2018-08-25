@@ -31,10 +31,14 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 
 	suceeded, err := um.ChangePassword(ethAddress, oldPassword, newPassword)
 	if err != nil {
+		msg := fmt.Sprintf("password change failed due to the following error: %s", err.Error())
+		api.Logger.Error(msg)
 		FailOnError(c, err)
 		return
 	}
 	if !suceeded {
+		msg := fmt.Sprintf("password changed failed for user %s to due an unspecified error", ethAddress)
+		api.Logger.Error(msg)
 		FailOnError(c, errors.New("password change failed but no error occured"))
 		return
 	}
@@ -67,6 +71,8 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	userManager := models.NewUserManager(api.DBM.DB)
 	userModel, err := userManager.NewUserAccount(ethAddress, username, password, email, false)
 	if err != nil {
+		msg := fmt.Sprintf("user account registration failed for user %s due to the following error: %s", username, err.Error())
+		api.Logger.Error(msg)
 		FailOnError(c, err)
 		return
 	}
@@ -125,12 +131,20 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true)
 	if err != nil {
+		msg := fmt.Sprintf("queue initialization failed due to the following error: %s", err.Error())
+		api.Logger.Error(msg)
 		FailOnError(c, err)
 		return
 	}
 
 	err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange)
 	if err != nil {
+		msg := fmt.Sprintf(
+			"publishing to queue %s with exchange %s failed due to the following error: %s",
+			queue.IpfsKeyCreationQueue,
+			queue.IpfsKeyExchange,
+			err.Error())
+		api.Logger.Error(msg)
 		FailOnError(c, err)
 		return
 	}
@@ -144,6 +158,8 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 	um := models.NewUserManager(api.DBM.DB)
 	keys, err := um.GetKeysForUser(ethAddress)
 	if err != nil {
+		msg := fmt.Sprintf("key fetch for user %s failed due to error: %s", ethAddress, err.Error())
+		api.Logger.Error(msg)
 		FailOnError(c, err)
 		return
 	}
