@@ -119,12 +119,10 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 	ipfsProtected.GET("/object/size/:key", api.getFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
 	ipfsProtected.POST("/download/:hash", api.downloadContentHash)
-
 	ipfsProtected.POST("/pin/:hash", api.pinHashLocally)
 	ipfsProtected.POST("/add-file", api.addFileLocally)
 	ipfsProtected.POST("/add-file/advanced", api.addFileLocallyAdvanced)
-
-	//ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
+	ipfsProtected.DELETE("/remove-pin/:hash", api.removePinFromLocalHost) // admin locked
 
 	ipfsPrivateProtected := g.Group("/api/v1/ipfs-private")
 	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
