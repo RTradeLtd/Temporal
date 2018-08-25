@@ -52,6 +52,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		api.Logger.Info("API service initialized")
 		err = api.Router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 		if err != nil {
 			log.Fatal(err)
