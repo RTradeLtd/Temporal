@@ -52,16 +52,14 @@ func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	// generate our default router
 	router := gin.Default()
 
-	// load our middleware
-	router.Use(stats.RequestStats())
-	router.Use(xssMdlwr.RemoveXss())
-	router.Use(limit.MaxAllowed(20)) // limit to 20 con-current connections
-	// create gin middleware instance for prom
+	// load our global middlewares
 	p := ginprometheus.NewPrometheus("gin")
 	// set the address for prometheus to collect metrics
 	p.SetListenAddress(prometheusListenAddress)
 	// load in prom to gin
 	p.Use(router)
+	router.Use(xssMdlwr.RemoveXss())
+	router.Use(limit.MaxAllowed(20)) // limit to 20 con-current connections
 	// enable HSTS on all domains including subdomains
 	router.Use(helmet.SetHSTS(true))
 	// prevent mine content sniffing
@@ -86,6 +84,7 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 	statsProtected := g.Group("/api/v1/statistics")
 	statsProtected.Use(authWare.MiddlewareFunc())
 	statsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	statsProtected.Use(stats.RequestStats())
 	statsProtected.GET("/stats", func(c *gin.Context) { // admin locked
 		ethAddress := GetAuthenticatedUserFromContext(c)
 		if ethAddress != AdminAddress {
@@ -97,11 +96,10 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 		c.JSON(http.StatusOK, stats.Report())
 	})
 
-	// REGISTER
-	g.POST("/api/v1/register", api.registerUserAccount)
-	// LOGIN
-	g.Use(middleware.DatabaseMiddleware(db))
-	g.POST("/api/v1/login", authWare.LoginHandler)
+	auth := g.Group("/api/v1/auth")
+	auth.POST("/register", api.registerUserAccount)
+	auth.Use(middleware.DatabaseMiddleware(db))
+	auth.POST("/login", authWare.LoginHandler)
 
 	// PROTECTED ROUTES -- BEGIN
 	accountProtected := g.Group("/api/v1/account")
