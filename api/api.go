@@ -75,7 +75,7 @@ func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	//r.Use(middleware.DatabaseMiddleware(db))
 	router.Use(middleware.CORSMiddleware())
 	// generate our auth middleware to pass to setup routes
-	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db.DB)
+	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db.DB, api.Logger)
 	// setup our routes
 	api.setupRoutes(router, authMiddleware, db.DB, cfg)
 	api.Router = router

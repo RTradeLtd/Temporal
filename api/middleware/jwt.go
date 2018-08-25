@@ -7,12 +7,13 @@ import (
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
 )
 
 var realmName = "temporal-realm"
 
 // JwtConfigGenerate is used to generate our JWT configuration
-func JwtConfigGenerate(jwtKey string, db *gorm.DB) *jwt.GinJWTMiddleware {
+func JwtConfigGenerate(jwtKey string, db *gorm.DB, logger *log.Logger) *jwt.GinJWTMiddleware {
 
 	// will implement metamaks/msg signing with ethereum accounts
 	// as the authentication metho
@@ -28,8 +29,16 @@ func JwtConfigGenerate(jwtKey string, db *gorm.DB) *jwt.GinJWTMiddleware {
 				return userId, false
 			}
 			if !validLogin {
+				logger.WithFields(log.Fields{
+					"service": "api",
+					"user":    userId,
+				}).Error("bad login")
 				return userId, false
 			}
+			logger.WithFields(log.Fields{
+				"service": "api",
+				"user":    userId,
+			}).Info("successful login")
 			return userId, true
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {
