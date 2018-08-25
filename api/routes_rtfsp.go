@@ -662,6 +662,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		Key:         key,
 		Resolve:     resolve,
 		NetworkName: networkName,
+		UserName:    ethAddress,
 	}
 	err = qm.PublishMessage(ipnsUpdate)
 	if err != nil {

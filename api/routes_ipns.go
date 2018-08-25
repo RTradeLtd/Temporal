@@ -83,7 +83,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		TTL:         ttl,
 		Resolve:     resolve,
 		Key:         key,
-		EthAddress:  ethAddress,
+		UserName:    ethAddress,
 		NetworkName: "public",
 	}
 
