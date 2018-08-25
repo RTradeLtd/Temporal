@@ -168,15 +168,19 @@ func (um *UploadManager) GetUploadByHashForUser(hash string, username string) []
 }
 
 // GetUploads is used to return all  uploads
-func (um *UploadManager) GetUploads() *[]Upload {
-	var uploads []Upload
-	um.DB.Find(&uploads)
-	return &uploads
+func (um *UploadManager) GetUploads() (*[]Upload, error) {
+	uploads := []Upload{}
+	if check := um.DB.Find(&uploads); check.Error != nil {
+		return nil, check.Error
+	}
+	return &uploads, nil
 }
 
 // GetUploadsForUser is used to retrieve all uploads by a user name
-func (um *UploadManager) GetUploadsForUser(username string) *[]Upload {
-	var uploads []Upload
-	um.DB.Where("user_name = ?", username).Find(&uploads)
-	return &uploads
+func (um *UploadManager) GetUploadsForUser(username string) (*[]Upload, error) {
+	uploads := []Upload{}
+	if check := um.DB.Where("user_name = ?", username).Find(&uploads); check.Error != nil {
+		return nil, check.Error
+	}
+	return &uploads, nil
 }
