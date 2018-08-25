@@ -9,6 +9,7 @@ import (
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 // ChangeAccountPassword is used to change a users password
@@ -43,6 +44,11 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		return
 	}
 
+	api.Logger.WithFields(log.Fields{
+		"service": api,
+		"user":    ethAddress,
+	}).Info("password changed")
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "password changed",
 	})
@@ -76,6 +82,12 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("account registered")
+
 	userModel.HashedPassword = "scrubbed"
 	c.JSON(http.StatusCreated, gin.H{"user": userModel})
 	return
@@ -148,6 +160,12 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("key creation request sent to backend")
+
 	c.JSON(http.StatusOK, gin.H{"status": "key creation sent to backend"})
 }
 
@@ -163,6 +181,12 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("key name list requested")
+
 	c.JSON(http.StatusOK, gin.H{
 		"key_names": keys["key_names"],
 		"key_ids":   keys["key_ids"],
