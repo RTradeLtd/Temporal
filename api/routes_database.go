@@ -6,6 +6,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 var dev = false
@@ -29,6 +30,10 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    authenticatedUser,
+	}).Info("all uploads from database requested")
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }
 
@@ -51,5 +56,11 @@ func (api *API) getUploadsForAddress(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    user,
+	}).Info("specific uploads from database requested")
+
 	c.JSON(http.StatusFound, gin.H{"uploads": uploads})
 }

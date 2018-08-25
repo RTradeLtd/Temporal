@@ -9,6 +9,7 @@ import (
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/minio/minio-go"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -18,6 +19,7 @@ import (
 // CalculateContentHashForFile is used to calculate the content hash
 // for a particular file, without actually storing it or providing it
 func (api *API) calculateContentHashForFile(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		FailOnError(c, err)
@@ -34,6 +36,12 @@ func (api *API) calculateContentHashForFile(c *gin.Context) {
 		api.Logger.Error(err)
 		FailOnError(c, err)
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("content hash calculation for file requested")
+
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
 
@@ -75,11 +83,17 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("ipfs pin request sent to backend")
+
 	c.JSON(http.StatusOK, gin.H{"status": "pin request sent to backend"})
 }
 
 // GetFileSizeInBytesForObject is used to retrieve the size of an object in bytes
 func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
 	key := c.Param("key")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
@@ -93,6 +107,11 @@ func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("ipfs object file size requested")
 
 	c.JSON(http.StatusOK, gin.H{
 		"object":        key,
@@ -170,6 +189,12 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("advanced ipfs file upload requested")
+
 	c.JSON(http.StatusOK, gin.H{"status": "file upload request sent to backend"})
 }
 
@@ -267,11 +292,18 @@ func (api *API) addFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("simple ipfs file upload processed")
+
 	c.JSON(http.StatusOK, gin.H{"response": resp})
 }
 
 // IpfsPubSubPublish is used to publish a pubsub msg
 func (api *API) ipfsPubSubPublish(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
 	topic := c.Param("topic")
 	message, present := c.GetPostForm("message")
 	if !present {
@@ -290,6 +322,12 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("ipfs pub sub message published")
+
 	c.JSON(http.StatusOK, gin.H{
 		"topic":   topic,
 		"message": message,
@@ -323,6 +361,12 @@ func (api *API) removePinFromLocalHost(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("ipfs pin removal request sent to backend")
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "pin removal sent to backend",
 	})
@@ -350,6 +394,12 @@ func (api *API) getLocalPins(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("ipfs pin list requested")
+
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
@@ -357,6 +407,7 @@ func (api *API) getLocalPins(c *gin.Context) {
 // particular object state from the local
 // ipfs node
 func (api *API) getObjectStatForIpfs(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
 	key := c.Param("key")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
@@ -370,6 +421,12 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("ipfs object stat requested")
+
 	c.JSON(http.StatusOK, gin.H{"stats": stats})
 }
 

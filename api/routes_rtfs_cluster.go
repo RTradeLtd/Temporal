@@ -7,10 +7,12 @@ import (
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
+	log "github.com/sirupsen/logrus"
 )
 
 // PinHashToCluster is used to trigger a cluster pin of a particular CID
 func (api *API) pinHashToCluster(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
 	hash := c.Param("hash")
 
 	mqURL := api.TConfig.RabbitMQ.URL
@@ -33,7 +35,13 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "content hash pin request sent to cluster"})
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("cluster pin request sent to backend")
+
+	c.JSON(http.StatusOK, gin.H{"status": "cluster pin request sent to backend"})
 }
 
 // SyncClusterErrorsLocally is used to parse through the local cluster state
@@ -58,6 +66,12 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("local cluster errors parsed")
+
 	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
 }
 
@@ -82,6 +96,12 @@ func (api *API) removePinFromCluster(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("pin removal request sent to cluster")
+
 	c.JSON(http.StatusOK, gin.H{"statsu": "pin removal request sent to cluster"})
 }
 
@@ -107,6 +127,12 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("local cluster status for pin requested")
+
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
@@ -132,6 +158,12 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("global cluster status for pin requested")
+
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
@@ -167,5 +199,11 @@ func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 		cids = append(cids, k)
 		statuses = append(statuses, v)
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("local cluster state fetched")
+
 	c.JSON(http.StatusOK, gin.H{"cids": cids, "statuses": statuses})
 }

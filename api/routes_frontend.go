@@ -20,6 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	minio "github.com/minio/minio-go"
+	log "github.com/sirupsen/logrus"
 )
 
 /*
@@ -28,6 +29,7 @@ Contains routes used for frontend operation
 
 // CalculateIPFSFileHash is used to calculate the ipfs hash of a file
 func (api *API) calculateIPFSFileHash(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
 	file, err := c.FormFile("file")
 	if err != nil {
 		FailOnError(c, err)
@@ -47,11 +49,18 @@ func (api *API) calculateIPFSFileHash(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": api,
+		"user":    username,
+	}).Info("ipfs file hash calculation requested")
+
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
 }
 
 // CalculatePinCost is used to calculate the cost of pinning something to temporal
 func (api *API) calculatePinCost(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
 	hash := c.Param("hash")
 	holdTime := c.Param("holdtime")
 	manager, err := rtfs.Initialize("", "")
@@ -73,6 +82,12 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("pin cost calculation requested")
+
 	c.JSON(http.StatusOK, gin.H{
 		"total_cost_usd": totalCost,
 	})
@@ -80,6 +95,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 
 // CalculateFileCost is used to calculate the cost of uploading a file to our system
 func (api *API) calculateFileCost(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
 	file, err := c.FormFile("file")
 	if err != nil {
 		FailOnError(c, err)
@@ -95,6 +111,12 @@ func (api *API) calculateFileCost(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("file cost calculation requested")
+
 	cost := utils.CalculateFileCost(holdTimeInt, file.Size)
 	c.JSON(http.StatusOK, gin.H{
 		"total_cost_usd": cost,
@@ -197,6 +219,13 @@ func (api *API) createPinPayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service":        "api",
+		"user":           username,
+		"payment_number": sm.PaymentNumber.String(),
+	}).Info("pin payment request generated")
+
 	c.JSON(http.StatusOK, gin.H{
 		"h":                    sm.H,
 		"v":                    sm.V,
@@ -330,6 +359,13 @@ func (api *API) createFilePayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service":        "api",
+		"user":           username,
+		"payment_number": sm.PaymentNumber.String(),
+	}).Info("file payment request generated")
+
 	c.JSON(http.StatusOK, gin.H{
 		"h":                    sm.H,
 		"v":                    sm.V,
@@ -391,6 +427,12 @@ func (api *API) submitPinPaymentConfirmation(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	api.Logger.WithFields(log.Fields{
+		"service":        "api",
+		"user":           username,
+		"payment_number": paymentNumber,
+	}).Info("pin payment confirmation being processed")
+
 	c.JSON(http.StatusOK, gin.H{"payment": pp})
 }
 
@@ -545,6 +587,11 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("payment submitted to contract, user clearly ignored the warnings")
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": pps,
 	})

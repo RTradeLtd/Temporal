@@ -9,6 +9,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/rtns/dlink"
 	"github.com/gin-gonic/gin"
@@ -101,6 +102,12 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("ipns entry creation request sent to backend")
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ipns entry creation sent to backend",
 	})
@@ -164,6 +171,11 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    authUser,
+	}).Info("dnslink entry created")
 
 	c.JSON(http.StatusOK, gin.H{
 		"record_name":  recordName,

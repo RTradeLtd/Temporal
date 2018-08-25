@@ -6,6 +6,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 // MakeBucket is used to create a bucket in our minio container
@@ -38,6 +39,12 @@ func (api *API) makeBucket(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("minio bucket created")
+
 	c.JSON(http.StatusCreated, gin.H{
 		"status": "bucket created",
 	})
