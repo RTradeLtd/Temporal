@@ -412,7 +412,7 @@ func (api *API) submitPinPaymentConfirmation(c *gin.Context) {
 		PaymentNumber: paymentNumber,
 		ContentHash:   pp.ContentHash,
 	}
-	qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqURL, true)
+	qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqURL, true, false)
 	if err != nil {
 		msg := fmt.Sprintf("failed to initialize connection to queue due to the following error: %s", err.Error())
 		api.Logger.Error(msg)
@@ -576,7 +576,7 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqURL, true)
+	qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqURL, true, false)
 	if err != nil {
 		FailOnError(c, err)
 		return

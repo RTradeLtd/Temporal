@@ -17,7 +17,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 
 	mqURL := api.TConfig.RabbitMQ.URL
 
-	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL, true)
+	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)

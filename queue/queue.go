@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
@@ -29,6 +31,8 @@ type QueueManager struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
 	Queue      *amqp.Queue
+	Logger     *log.Logger
+	QueueName  string
 }
 
 // IPFSKeyCreation is a message used for processing key creation
@@ -87,8 +91,21 @@ type IPNSUpdate struct {
 	NetworkName string `json:"network_name"`
 }
 
+func (qm *QueueManager) setupLogging() error {
+	logFileName := fmt.Sprintf("/var/log/temporal/%s_serice.log", qm.QueueName)
+	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
+	if err != nil {
+		return err
+	}
+	logger := log.New()
+	logger.Out = logFile
+	qm.Logger = logger
+	qm.Logger.Info("Logging initialized")
+	return nil
+}
+
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
-func Initialize(queueName, connectionURL string, publish bool) (*QueueManager, error) {
+func Initialize(queueName, connectionURL string, publish, service bool) (*QueueManager, error) {
 	conn, err := setupConnection(connectionURL)
 	if err != nil {
 		return nil, err
@@ -96,6 +113,13 @@ func Initialize(queueName, connectionURL string, publish bool) (*QueueManager, e
 	qm := QueueManager{Connection: conn}
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
+	}
+	qm.QueueName = queueName
+	if service {
+		err = qm.setupLogging()
+		if err != nil {
+			return nil, err
+		}
 	}
 	// Declare Non Default exchanges for the particular queue
 	switch queueName {
@@ -143,6 +167,11 @@ func (qm *QueueManager) OpenChannel() error {
 	if err != nil {
 		return err
 	}
+	if qm.Logger != nil {
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Info("channel opened")
+	}
 	qm.Channel = ch
 	return nil
 }
@@ -161,6 +190,11 @@ func (qm *QueueManager) DeclareQueue(queueName string) error {
 	)
 	if err != nil {
 		return err
+	}
+	if qm.Logger != nil {
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Info("queue declared")
 	}
 	qm.Queue = &q
 	return nil
@@ -188,6 +222,9 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		if err != nil {
 			return err
 		}
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Info("queue bound")
 	case IpfsPinQueue:
 		err = qm.Channel.QueueBind(
 			qm.Queue.Name, // name of the queue
@@ -199,6 +236,9 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		if err != nil {
 			return err
 		}
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Info("queue bound")
 	case IpfsKeyCreationQueue:
 		err = qm.Channel.QueueBind(
 			qm.Queue.Name,   // name of the queue
@@ -210,6 +250,9 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		if err != nil {
 			return err
 		}
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Info("queue bound")
 	default:
 		break
 	}
@@ -232,54 +275,49 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	switch qm.Queue.Name {
 	// only parse datbase file requests
 	case DatabaseFileAddQueue:
-		ProcessDatabaseFileAdds(msgs, db)
+		qm.ProcessDatabaseFileAdds(msgs, db)
 	case IpfsPinQueue:
-		err = ProccessIPFSPins(msgs, db, cfg)
+		err = qm.ProccessIPFSPins(msgs, db, cfg)
 		if err != nil {
 			return err
 		}
 	case IpfsFileQueue:
-		err = ProccessIPFSFiles(msgs, cfg, db)
+		err = qm.ProccessIPFSFiles(msgs, cfg, db)
 		if err != nil {
 			return err
 		}
 	case PinPaymentConfirmationQueue:
-		err = ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, cfg.Ethereum.Contracts.PaymentContractAddress, cfg)
+		err = qm.ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, cfg.Ethereum.Contracts.PaymentContractAddress, cfg)
 		if err != nil {
 			return err
 		}
 	case PinPaymentSubmissionQueue:
-		err = ProcessPinPaymentSubmissions(msgs, db, cfg.Ethereum.Connection.IPC.Path, cfg.Ethereum.Contracts.PaymentContractAddress)
+		err = qm.ProcessPinPaymentSubmissions(msgs, db, cfg.Ethereum.Connection.IPC.Path, cfg.Ethereum.Contracts.PaymentContractAddress)
 		if err != nil {
 			return err
 		}
 	case EmailSendQueue:
-		fmt.Println("processing mail sends")
-		err = ProcessMailSends(msgs, cfg)
+		err = qm.ProcessMailSends(msgs, cfg)
 		if err != nil {
 			return err
 		}
 	case IpnsEntryQueue:
-		fmt.Println("processing IPNS entry creation requests")
-		err = ProcessIPNSEntryCreationRequests(msgs, db, cfg)
+		err = qm.ProcessIPNSEntryCreationRequests(msgs, db, cfg)
 		if err != nil {
 			return err
 		}
 	case IpfsPinRemovalQueue:
-		fmt.Println("processing ipfs pin removals")
-		err = ProcessIPFSPinRemovals(msgs, cfg, db)
+		err = qm.ProcessIPFSPinRemovals(msgs, cfg, db)
 		if err != nil {
 			return err
 		}
 	case IpfsKeyCreationQueue:
-		fmt.Println("processing ipfs key creation")
-		err = ProcessIPFSKeyCreation(msgs, db, cfg)
+		err = qm.ProcessIPFSKeyCreation(msgs, db, cfg)
 		if err != nil {
 			return err
 		}
 	case IpfsClusterPinQueue:
-		fmt.Println("processing ipfs cluster pins")
-		err = ProcessIPFSClusterPins(msgs, cfg, db)
+		err = qm.ProcessIPFSClusterPins(msgs, cfg, db)
 		if err != nil {
 			return err
 		}

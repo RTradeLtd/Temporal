@@ -141,7 +141,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 	mqConnectionURL := api.TConfig.RabbitMQ.URL
 
-	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true)
+	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true, false)
 	if err != nil {
 		msg := fmt.Sprintf("queue initialization failed due to the following error: %s", err.Error())
 		api.Logger.Error(msg)

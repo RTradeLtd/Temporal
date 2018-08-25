@@ -69,7 +69,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 
 	mqConnectionURL := api.TConfig.RabbitMQ.URL
 
-	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true)
+	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -176,7 +176,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		NetworkName:      "public",
 		HoldTimeInMonths: holdTimeInMonths,
 	}
-	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true)
+	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -256,7 +256,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	}
 	mqConnectionURL := api.TConfig.RabbitMQ.URL
 	// initialize a connectino to rabbitmq
-	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, true)
+	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -280,7 +280,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeinMonthsInt,
 	}
 
-	qm, err = queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true)
+	qm, err = queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -344,7 +344,7 @@ func (api *API) removePinFromLocalHost(c *gin.Context) {
 	hash := c.Param("hash")
 	mqURL := api.TConfig.RabbitMQ.URL
 
-	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL, true)
+	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)

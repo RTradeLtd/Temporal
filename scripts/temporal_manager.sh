@@ -12,37 +12,37 @@ export CONFIG_DAG="/home/rtrade/config.json"
 case "$1" in
 
     api)
-        Temporal api 2>&1 | tee --append /var/log/temporal/api.log
+        Temporal api
         ;;
     queue-dfa)
-        Temporal queue-dfa 2>&1 | tee --append /var/log/temporal/queue_dfa.log
+        Temporal queue-dfa
         ;;
     ipfs-pin-queue)
-        Temporal ipfs-pin-queue 2>&1 | tee --append /var/log/temporal/ipfs_pin_queue.log
+        Temporal ipfs-pin-queue
         ;;
     ipfs-file-queue)
-        Temporal ipfs-file-queue 2>&1 | tee --append /var/log/temporal/ipfs_file_queue.log
+        Temporal ipfs-file-queue
         ;;
     pin-payment-confirmation-queue)
-        Temporal pin-payment-confirmation-queue 2>&1 | tee --append /var/log/temporal/pin_payment_confirmation_queue.log
+        Temporal pin-payment-confirmation-queue
         ;;
     pin-payment-submission-queue)
-        Temporal pin-payment-submission-queue 2>&1 | tee --append /var/log/temporal/pin_payment_submissions_queue.log
+        Temporal pin-payment-submission-queue
         ;;
     email-send-queue)
-        Temporal email-send-queue 2>&1 | tee --append /var/log/temporal/email_send_queue.log
+        Temporal email-send-queue
         ;;
     ipns-entry-queue)
-        Temporal ipns-entry-queue 2>&1 | tee --append /var/log/temporal/ipns_entry_queue.log
+        Temporal ipns-entry-queue
         ;;
     ipfs-key-creation-queue)
-        Temporal ipfs-key-creation-queue 2>&1 | tee --append /var/log/temporal/ipfs_key_creation_queue.log
+        Temporal ipfs-key-creation-queue
         ;;
     ipfs-cluster-queue)
-        Temporal ipfs-cluster-queue 2>&1 | tee --append /var/log/temporal/ipfs_cluster_queue.log
+        Temporal ipfs-cluster-queue
         ;;
     migrate)
-        Temporal migrate 2>&1 | tee --append /var/log/temporal/database_migrate.log
+        Temporal migrate
         ;;
     *)
         echo "[ERROR] Invalid command"
