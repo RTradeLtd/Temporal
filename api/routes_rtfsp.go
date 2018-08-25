@@ -301,7 +301,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 
 	pin := queue.IPFSPin{
 		CID:              resp,
-		NetworkName:      "public",
+		NetworkName:      networkName,
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
 	}
