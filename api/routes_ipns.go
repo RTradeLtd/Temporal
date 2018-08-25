@@ -50,11 +50,13 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 
 	if !ownsKey {
+		api.Logger.Warnf("user %s attempted to generate IPFS entry with unowned key", ethAddress)
 		FailOnError(c, errors.New("attempting to generate IPNS entry with unowned key"))
 		return
 	}
@@ -88,12 +90,14 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 	//TODO move to fanout exchange
 	err = qm.PublishMessage(ie)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -149,12 +153,14 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 
 	awsManager, err := dlink.GenerateAwsLinkManager("get", aKey, aSecret, awsZone, region)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 
 	resp, err := awsManager.AddDNSLinkEntry(recordName, recordValue)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}

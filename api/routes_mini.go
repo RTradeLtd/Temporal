@@ -15,23 +15,26 @@ func (api *API) makeBucket(c *gin.Context) {
 		FailNotAuthorized(c, "unauthorized access")
 		return
 	}
-	accessKey := api.TConfig.MINIO.AccessKey
-	secretKey := api.TConfig.MINIO.SecretKey
-	endpoint := fmt.Sprintf("%s:%s", api.TConfig.MINIO.Connection.IP, api.TConfig.MINIO.Connection.Port)
-	manager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
-	if err != nil {
-		FailOnError(c, err)
-		return
-	}
 	bucketName, exists := c.GetPostForm("bucket_name")
 	if !exists {
 		FailNoExistPostForm(c, "bucket_name")
 		return
 	}
+	accessKey := api.TConfig.MINIO.AccessKey
+	secretKey := api.TConfig.MINIO.SecretKey
+	endpoint := fmt.Sprintf("%s:%s", api.TConfig.MINIO.Connection.IP, api.TConfig.MINIO.Connection.Port)
+	manager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
+	if err != nil {
+		api.Logger.Error(err)
+		FailOnError(c, err)
+		return
+	}
+
 	args := make(map[string]string)
 	args["name"] = bucketName
 	err = manager.MakeBucket(args)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
