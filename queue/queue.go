@@ -33,6 +33,7 @@ type QueueManager struct {
 	Queue        *amqp.Queue
 	Logger       *log.Logger
 	QueueName    string
+	Service      string
 	ExchangeName string
 }
 
@@ -128,6 +129,7 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 	}
 
 	qm.QueueName = queueName
+	qm.Service = queueName
 
 	if service {
 		err = qm.setupLogging()
@@ -242,7 +244,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	switch qm.ExchangeName {
 	case PinRemovalExchange:
 		err = qm.Channel.QueueBind(
-			qm.Queue.Name,      // name of the queue
+			qm.QueueName,       // name of the queue
 			"",                 // routing key
 			PinRemovalExchange, // exchange
 			false,              // noWait
@@ -256,11 +258,11 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		}).Info("queue bound")
 	case PinExchange:
 		err = qm.Channel.QueueBind(
-			qm.Queue.Name, // name of the queue
-			"",            // routing key
-			PinExchange,   // exchange
-			false,         // noWait
-			nil,           // arguments
+			qm.QueueName, // name of the queue
+			"",           // routing key
+			PinExchange,  // exchange
+			false,        // noWait
+			nil,          // arguments
 		)
 		if err != nil {
 			return err
@@ -270,7 +272,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		}).Info("queue bound")
 	case IpfsKeyExchange:
 		err = qm.Channel.QueueBind(
-			qm.Queue.Name,   // name of the queue
+			qm.QueueName,    // name of the queue
 			"",              // routing key
 			IpfsKeyExchange, // exchange
 			false,           // no wait
@@ -288,20 +290,20 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 
 	// consider moving to true for auto-ack
 	msgs, err := qm.Channel.Consume(
-		qm.Queue.Name, // queue
-		consumer,      // consumer
-		false,         // auto-ack
-		false,         // exclusive
-		false,         // no-local
-		false,         // no-wait
-		nil,           // args
+		qm.QueueName, // queue
+		consumer,     // consumer
+		false,        // auto-ack
+		false,        // exclusive
+		false,        // no-local
+		false,        // no-wait
+		nil,          // args
 	)
 	if err != nil {
 		return err
 	}
 
 	// check the queue name
-	switch qm.Queue.Name {
+	switch qm.Service {
 	// only parse datbase file requests
 	case DatabaseFileAddQueue:
 		qm.ProcessDatabaseFileAdds(msgs, db)
