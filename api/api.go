@@ -5,6 +5,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/RTradeLtd/Temporal/config"
 	limit "github.com/aviddiviner/gin-limit"
@@ -19,6 +20,7 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 var xssMdlwr xss.XssMw
@@ -31,12 +33,18 @@ type API struct {
 	Router  *gin.Engine
 	TConfig *config.TemporalConfig
 	DBM     *database.DatabaseManager
+	Logger  *log.Logger
 }
 
 // Initialize is used ot initialize our API service
 func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	// load config variables
 	api := API{}
+	// setup logging
+	err := api.setupLogging()
+	if err != nil {
+		return nil, err
+	}
 	api.TConfig = cfg
 	AdminAddress = cfg.API.AdminUser
 	listenAddress := cfg.API.Connection.ListenAddress
@@ -71,11 +79,20 @@ func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	// setup our routes
 	api.setupRoutes(router, authMiddleware, db.DB, cfg)
 	api.Router = router
+
 	return &api, nil
 }
 
-func (api *API) setupLogging() {
-
+func (api *API) setupLogging() error {
+	logFile, err := os.OpenFile("/var/log/temporal/api_service.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
+	if err != nil {
+		return err
+	}
+	logger := log.New()
+	logger.Out = logFile
+	api.Logger = logger
+	api.Logger.Info("Logging initialized")
+	return nil
 }
 
 // setupRoutes is used to setup all of our api routes
@@ -183,4 +200,5 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 	mini.POST("/create/bucket", api.makeBucket)
 	// PROTECTED ROUTES -- END
 
+	api.Logger.Info("Routes initialized")
 }

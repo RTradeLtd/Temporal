@@ -52,9 +52,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		api.Logger.Info("API service initialized")
 		err = api.Router.RunTLS(fmt.Sprintf("%s:6767", listenAddress), certFilePath, keyFilePath)
 		if err != nil {
-			log.Fatal(err)
+			msg := fmt.Sprintf("API service execution failed due to the following error: %s", err.Error())
+			api.Logger.Fatal(msg)
+			fmt.Printf("API execution failed for error %s\nSee logs for more details", err.Error())
 		}
 	case "swarm":
 		sm, err := rtswarm.NewSwarmManager()
