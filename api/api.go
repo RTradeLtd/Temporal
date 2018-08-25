@@ -115,7 +115,6 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 
 	auth := g.Group("/api/v1/auth")
 	auth.POST("/register", api.registerUserAccount)
-	auth.Use(middleware.DatabaseMiddleware(db))
 	auth.POST("/login", authWare.LoginHandler)
 
 	// PROTECTED ROUTES -- BEGIN
