@@ -31,6 +31,7 @@ func (api *API) calculateContentHashForFile(c *gin.Context) {
 	defer reader.Close()
 	hash, err := utils.GenerateIpfsMultiHashForFile(reader)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 	}
 	c.JSON(http.StatusOK, gin.H{"hash": hash})
@@ -62,12 +63,14 @@ func (api *API) pinHashLocally(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 
 	err = qm.PublishMessageWithExchange(ip, queue.PinExchange)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -80,11 +83,13 @@ func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
 	key := c.Param("key")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 	sizeInBytes, err := manager.GetObjectFileSizeInBytes(key)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -115,6 +120,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 
 	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -126,6 +132,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	fmt.Println("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -138,6 +145,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	fmt.Println("storing file in minio")
 	_, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{})
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -151,12 +159,14 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	}
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 
 	err = qm.PublishMessage(ifp)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -199,6 +209,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	// initialize a connection to the local ipfs node
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -206,6 +217,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	fmt.Println("adding file")
 	resp, err := manager.Add(openFile)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -221,6 +233,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	// initialize a connectino to rabbitmq
 	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, true)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -230,6 +243,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	// publish the database file add message
 	err = qm.PublishMessage(dfa)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -243,11 +257,13 @@ func (api *API) addFileLocally(c *gin.Context) {
 
 	qm, err = queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 	err = qm.PublishMessageWithExchange(pin, queue.PinExchange)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -264,11 +280,13 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	}
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 	err = manager.PublishPubSubMessage(topic, message)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -290,6 +308,7 @@ func (api *API) removePinFromLocalHost(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL, true)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -300,6 +319,7 @@ func (api *API) removePinFromLocalHost(c *gin.Context) {
 	}
 	err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -318,6 +338,7 @@ func (api *API) getLocalPins(c *gin.Context) {
 	// initialize a connection toe the local ipfs node
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -325,6 +346,7 @@ func (api *API) getLocalPins(c *gin.Context) {
 	// WARNING: THIS COULD BE A VERY LARGE LIST
 	pinInfo, err := manager.Shell.Pins()
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -338,11 +360,13 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 	key := c.Param("key")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 	stats, err := manager.ObjectStat(key)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -360,11 +384,13 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 	hash := c.Param("hash")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 	present, err := manager.ParseLocalPinsForHash(hash)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
@@ -389,18 +415,21 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	// initialize our connection to IPFS
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 	// read the contents of the file
 	reader, err := manager.Shell.Cat(contentHash)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
 	// get the size of hte file in bytes
 	sizeInBytes, err := manager.GetObjectFileSizeInBytes(contentHash)
 	if err != nil {
+		api.Logger.Error(err)
 		FailOnError(c, err)
 		return
 	}
