@@ -17,7 +17,7 @@ import (
 
 // CalculateContentHashForFile is used to calculate the content hash
 // for a particular file, without actually storing it or providing it
-func CalculateContentHashForFile(c *gin.Context) {
+func (api *API) calculateContentHashForFile(c *gin.Context) {
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		FailOnError(c, err)
@@ -37,7 +37,7 @@ func CalculateContentHashForFile(c *gin.Context) {
 }
 
 // PinHashLocally is used to pin a hash to the local ipfs node
-func PinHashLocally(c *gin.Context) {
+func (api *API) pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")
 	username := GetAuthenticatedUserFromContext(c)
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
@@ -58,11 +58,7 @@ func PinHashLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 	}
 
-	mqConnectionURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailOnError(c, errors.New("unable to load rabbitmq"))
-		return
-	}
+	mqConnectionURL := api.TConfig.RabbitMQ.URL
 
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true)
 	if err != nil {
@@ -80,7 +76,7 @@ func PinHashLocally(c *gin.Context) {
 }
 
 // GetFileSizeInBytesForObject is used to retrieve the size of an object in bytes
-func GetFileSizeInBytesForObject(c *gin.Context) {
+func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
 	key := c.Param("key")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
@@ -104,42 +100,25 @@ func GetFileSizeInBytesForObject(c *gin.Context) {
 // and efficient manner than our traditional simple upload. Note that
 // it does not give the user a content hash back immediately and will be sent
 // via email (eventually we will have a notification system for the interface)
-func AddFileLocallyAdvanced(c *gin.Context) {
-	cC := c.Copy()
-
-	holdTimeInMonths, exists := cC.GetPostForm("hold_time")
+func (api *API) addFileLocallyAdvanced(c *gin.Context) {
+	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
 		return
 	}
 
-	credentials, ok := cC.MustGet("minio_credentials").(map[string]string)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio credentials")
-		return
-	}
-	secure, ok := cC.MustGet("minio_secure").(bool)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio secure")
-		return
-	}
-	endpoint, ok := cC.MustGet("minio_endpoint").(string)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio endpoint")
-		return
-	}
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailedToLoadMiddleware(c, "rabbitmq")
-		return
-	}
+	accessKey := api.TConfig.MINIO.AccessKey
+	secretKey := api.TConfig.MINIO.SecretKey
+	endpoint := fmt.Sprintf("%s:%s", api.TConfig.MINIO.Connection.IP, api.TConfig.MINIO.Connection.Port)
 
-	miniManager, err := mini.NewMinioManager(endpoint, credentials["access_key"], credentials["secret_key"], secure)
+	mqURL := api.TConfig.RabbitMQ.URL
+
+	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	fileHandler, err := cC.FormFile("file")
+	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -151,7 +130,7 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 	fmt.Println("file opened")
-	username := GetAuthenticatedUserFromContext(cC)
+	username := GetAuthenticatedUserFromContext(c)
 
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
@@ -187,7 +166,7 @@ func AddFileLocallyAdvanced(c *gin.Context) {
 // AddFileLocally is used to add a file to our local ipfs node
 // this will have to be done first before pushing any file's to the cluster
 // this needs to be optimized so that the process doesn't "hang" while uploading
-func AddFileLocally(c *gin.Context) {
+func (api *API) addFileLocally(c *gin.Context) {
 	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
@@ -238,7 +217,7 @@ func AddFileLocally(c *gin.Context) {
 		UserName:         username,
 		NetworkName:      "public",
 	}
-	mqConnectionURL := c.MustGet("mq_conn_url").(string)
+	mqConnectionURL := api.TConfig.RabbitMQ.URL
 	// initialize a connectino to rabbitmq
 	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, true)
 	if err != nil {
@@ -276,7 +255,7 @@ func AddFileLocally(c *gin.Context) {
 }
 
 // IpfsPubSubPublish is used to publish a pubsub msg
-func IpfsPubSubPublish(c *gin.Context) {
+func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	topic := c.Param("topic")
 	message, present := c.GetPostForm("message")
 	if !present {
@@ -300,18 +279,15 @@ func IpfsPubSubPublish(c *gin.Context) {
 }
 
 // RemovePinFromLocalHost is used to remove a pin from the ipfs instance
-func RemovePinFromLocalHost(c *gin.Context) {
+func (api *API) removePinFromLocalHost(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if username != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to removal route")
 		return
 	}
 	hash := c.Param("hash")
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailedToLoadMiddleware(c, "rabbit mq")
-		return
-	}
+	mqURL := api.TConfig.RabbitMQ.URL
+
 	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
@@ -333,7 +309,7 @@ func RemovePinFromLocalHost(c *gin.Context) {
 }
 
 // GetLocalPins is used to get the pins tracked by the local ipfs node
-func GetLocalPins(c *gin.Context) {
+func (api *API) getLocalPins(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
@@ -358,7 +334,7 @@ func GetLocalPins(c *gin.Context) {
 // GetObjectStatForIpfs is used to get the
 // particular object state from the local
 // ipfs node
-func GetObjectStatForIpfs(c *gin.Context) {
+func (api *API) getObjectStatForIpfs(c *gin.Context) {
 	key := c.Param("key")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
@@ -375,7 +351,7 @@ func GetObjectStatForIpfs(c *gin.Context) {
 
 // CheckLocalNodeForPin is used to check whether or not
 // the local node has pinned the content
-func CheckLocalNodeForPin(c *gin.Context) {
+func (api *API) checkLocalNodeForPin(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
@@ -396,7 +372,7 @@ func CheckLocalNodeForPin(c *gin.Context) {
 }
 
 // DownloadContentHash is used to download a particular content hash from the network
-func DownloadContentHash(c *gin.Context) {
+func (api *API) downloadContentHash(c *gin.Context) {
 	var contentType string
 	// fetch the specified content type from the user
 	contentType, exists := c.GetPostForm("content_type")

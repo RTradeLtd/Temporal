@@ -13,25 +13,20 @@ import (
 	minio "github.com/minio/minio-go"
 
 	"github.com/RTradeLtd/Temporal/models"
-	"github.com/jinzhu/gorm"
 
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 )
 
 // PinToHostedIPFSNetwork is used to pin content to a private/hosted ipfs network
-func PinToHostedIPFSNetwork(c *gin.Context) {
+func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	err := CheckAccessForPrivateNetwork(username, networkName, db)
+
+	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -56,11 +51,7 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 	}
 
-	mqConnectionURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailOnError(c, errors.New("unable to load rabbitmq"))
-		return
-	}
+	mqConnectionURL := api.TConfig.RabbitMQ.URL
 
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true)
 	if err != nil {
@@ -80,25 +71,20 @@ func PinToHostedIPFSNetwork(c *gin.Context) {
 
 // GetFileSizeInBytesForObjectForHostedIPFSNetwork is used to get file size for an object
 // on a private IPFS network
-func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
+func (api *API) getFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	err := CheckAccessForPrivateNetwork(username, networkName, db)
+	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
 
-	im := models.NewHostedIPFSNetworkManager(db)
+	im := models.NewHostedIPFSNetworkManager(api.DBM.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
 		FailOnError(c, err)
@@ -124,7 +110,7 @@ func GetFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 }
 
 // AddFileToHostedIPFSNetworkAdvanced is used to add a file to a hosted ipfs network in a more advanced and resilient manner
-func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
+func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 
 	username := GetAuthenticatedUserFromContext(c)
 
@@ -134,13 +120,7 @@ func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		return
 	}
 
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadMiddleware(c, "database")
-		return
-	}
-
-	err := CheckAccessForPrivateNetwork(username, networkName, db)
+	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -152,28 +132,13 @@ func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		return
 	}
 
-	credentials, ok := c.MustGet("minio_credentials").(map[string]string)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio credentials")
-		return
-	}
-	secure, ok := c.MustGet("minio_secure").(bool)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio secure")
-		return
-	}
-	endpoint, ok := c.MustGet("minio_endpoint").(string)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio endpoint")
-		return
-	}
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailedToLoadMiddleware(c, "rabbitmq")
-		return
-	}
+	accessKey := api.TConfig.MINIO.AccessKey
+	secretKey := api.TConfig.MINIO.SecretKey
+	endpoint := fmt.Sprintf("%s:%s", api.TConfig.MINIO.Connection.IP, api.TConfig.MINIO.Connection.Port)
 
-	miniManager, err := mini.NewMinioManager(endpoint, credentials["access_key"], credentials["secret_key"], secure)
+	mqURL := api.TConfig.RabbitMQ.URL
+
+	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -222,7 +187,7 @@ func AddFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 }
 
 // AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network
-func AddFileToHostedIPFSNetwork(c *gin.Context) {
+func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 
 	networkName, exists := c.GetPostForm("network_name")
@@ -231,23 +196,13 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-
-	err := CheckAccessForPrivateNetwork(username, networkName, db)
+	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
 
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailOnError(c, errors.New("failed to load rabbitmq"))
-		return
-	}
+	mqURL := api.TConfig.RabbitMQ.URL
 
 	holdTimeinMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
@@ -259,7 +214,7 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	im := models.NewHostedIPFSNetworkManager(db)
+	im := models.NewHostedIPFSNetworkManager(api.DBM.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
 		FailOnError(c, err)
@@ -315,25 +270,19 @@ func AddFileToHostedIPFSNetwork(c *gin.Context) {
 
 // IpfsPubSubPublishToHostedIPFSNetwork is used to publish a pubsub message
 // to a private ipfs network
-func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
+func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-
-	err := CheckAccessForPrivateNetwork(username, networkName, db)
+	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 	}
 
-	im := models.NewHostedIPFSNetworkManager(db)
+	im := models.NewHostedIPFSNetworkManager(api.DBM.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
 		FailOnError(c, err)
@@ -362,7 +311,7 @@ func IpfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 }
 
 // RemovePinFromLocalHostForHostedIPFSNetwork is used to remove a content hash from a private hosted ipfs network
-func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
+func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	hash := c.Param("hash")
 	networkName, exists := c.GetPostForm("network_name")
@@ -370,12 +319,7 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	err := CheckAccessForPrivateNetwork(username, networkName, db)
+	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 	}
@@ -384,7 +328,7 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 		NetworkName: networkName,
 		UserName:    username,
 	}
-	mqConnectionURL := c.MustGet("mq_conn_url").(string)
+	mqConnectionURL := api.TConfig.RabbitMQ.URL
 	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, true)
 	if err != nil {
 		FailOnError(c, err)
@@ -402,7 +346,7 @@ func RemovePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 
 // GetLocalPinsForHostedIPFSNetwork is used to get local pins
 // for a private ipfs network
-func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
+func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
@@ -413,17 +357,12 @@ func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	im := models.NewHostedIPFSNetworkManager(db)
+	im := models.NewHostedIPFSNetworkManager(api.DBM.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
 		FailOnError(c, err)
@@ -447,25 +386,20 @@ func GetLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 
 // GetObjectStatForIpfsForHostedIPFSNetwork is  used to get object
 // stats for a private ipfs network
-func GetObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
+func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
 
-	im := models.NewHostedIPFSNetworkManager(db)
+	im := models.NewHostedIPFSNetworkManager(api.DBM.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
 		FailOnError(c, err)
@@ -487,7 +421,7 @@ func GetObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 
 // CheckLocalNodeForPinForHostedIPFSNetwork is used to check a
 // private ipfs network for a partilcar pin
-func CheckLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
+func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
@@ -498,17 +432,13 @@ func CheckLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	im := models.NewHostedIPFSNetworkManager(db)
+	im := models.NewHostedIPFSNetworkManager(api.DBM.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
 		FailOnError(c, err)
@@ -530,7 +460,7 @@ func CheckLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 
 // PublishDetailedIPNSToHostedIPFSNetwork is used to publish
 // an IPNS record to a private network with fine grained control
-func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
+func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
@@ -540,23 +470,15 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailOnError(c, errors.New("failed to load rabbitmq"))
-		return
-	}
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	mqURL := api.TConfig.RabbitMQ.URL
+
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
 
-	um := models.NewUserManager(db)
+	um := models.NewUserManager(api.DBM.DB)
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true)
 	if err != nil {
 		FailOnError(c, err)
@@ -638,44 +560,43 @@ func PublishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 // CreateHostedIPFSNetworkEntryInDatabase is used to create
 // an entry in the database for a private ipfs network
-func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
+func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	// lock down as admin route for now
-	cC := c.Copy()
-	ethAddress := GetAuthenticatedUserFromContext(cC)
+	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access")
 		return
 	}
 
-	networkName, exists := cC.GetPostForm("network_name")
+	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
 
-	apiURL, exists := cC.GetPostForm("api_url")
+	apiURL, exists := c.GetPostForm("api_url")
 	if !exists {
 		FailNoExistPostForm(c, "api_url")
 		return
 	}
 
-	swarmKey, exists := cC.GetPostForm("swarm_key")
+	swarmKey, exists := c.GetPostForm("swarm_key")
 	if !exists {
 		FailNoExistPostForm(c, "swarm_key")
 		return
 	}
 
-	bPeers, exists := cC.GetPostFormArray("bootstrap_peers")
+	bPeers, exists := c.GetPostFormArray("bootstrap_peers")
 	if !exists {
 		FailNoExistPostForm(c, "bootstrap_peers")
 		return
 	}
-	nodeAddresses, exists := cC.GetPostFormArray("local_node_addresses")
+	nodeAddresses, exists := c.GetPostFormArray("local_node_addresses")
 	if !exists {
 		FailNoExistPostForm(c, "local_node_addresses")
 		return
 	}
-	users := cC.PostFormArray("users")
+	users := c.PostFormArray("users")
 	var localNodeAddresses []string
 	var bootstrapPeerAddresses []string
 
@@ -721,18 +642,13 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	if len(bootstrapPeerAddresses) > 0 {
 		args["bootstrap_peer_addresses"] = bootstrapPeerAddresses
 	}
-	db, ok := cC.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	manager := models.NewHostedIPFSNetworkManager(db)
+	manager := models.NewHostedIPFSNetworkManager(api.DBM.DB)
 	network, err := manager.CreateHostedPrivateNetwork(networkName, apiURL, swarmKey, args, users)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	um := models.NewUserManager(db)
+	um := models.NewUserManager(api.DBM.DB)
 
 	if len(users) > 0 {
 		for _, v := range users {
@@ -756,20 +672,15 @@ func CreateHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 }
 
 // GetIPFSPrivateNetworkByName is used to get connection information for a priavate ipfs network
-func GetIPFSPrivateNetworkByName(c *gin.Context) {
+func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access")
 		return
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
 
 	netName := c.Param("name")
-	manager := models.NewHostedIPFSNetworkManager(db)
+	manager := models.NewHostedIPFSNetworkManager(api.DBM.DB)
 	net, err := manager.GetNetworkByName(netName)
 	if err != nil {
 		FailOnError(c, err)
@@ -782,15 +693,10 @@ func GetIPFSPrivateNetworkByName(c *gin.Context) {
 
 // GetAuthorizedPrivateNetworks is used to get the private
 // networks a user is authorized for
-func GetAuthorizedPrivateNetworks(c *gin.Context) {
+func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
 
-	um := models.NewUserManager(db)
+	um := models.NewUserManager(api.DBM.DB)
 	networks, err := um.GetPrivateIPFSNetworksForUser(ethAddress)
 	if err != nil {
 		FailOnError(c, err)
@@ -802,7 +708,7 @@ func GetAuthorizedPrivateNetworks(c *gin.Context) {
 }
 
 // GetUploadsByNetworkName is used to getu plaods for a network by its name
-func GetUploadsByNetworkName(c *gin.Context) {
+func (api *API) getUploadsByNetworkName(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
 	networkName, exists := c.GetPostForm("network_name")
@@ -811,19 +717,13 @@ func GetUploadsByNetworkName(c *gin.Context) {
 		return
 	}
 
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
 
-	um := models.NewUploadManager(db)
+	um := models.NewUploadManager(api.DBM.DB)
 	uploads, err := um.FindUploadsByNetwork(networkName)
 	if err != nil {
 		FailOnError(c, err)
@@ -835,7 +735,7 @@ func GetUploadsByNetworkName(c *gin.Context) {
 }
 
 // DownloadContentHashForPrivateNetwork is used to download content from  a private ipfs network
-func DownloadContentHashForPrivateNetwork(c *gin.Context) {
+func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
@@ -844,12 +744,7 @@ func DownloadContentHashForPrivateNetwork(c *gin.Context) {
 
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, db)
+	err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -866,7 +761,7 @@ func DownloadContentHashForPrivateNetwork(c *gin.Context) {
 	// get any extra headers the user might want
 	exHeaders := c.PostFormArray("extra_headers")
 
-	im := models.NewHostedIPFSNetworkManager(db)
+	im := models.NewHostedIPFSNetworkManager(api.DBM.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
 		FailOnError(c, err)
@@ -899,7 +794,7 @@ func DownloadContentHashForPrivateNetwork(c *gin.Context) {
 	var value string
 	// only process if there is actual data to process
 	// this will always be admin locked
-	if len(exHeaders) > 0 && ethAddress == AdminAddress {
+	if len(exHeaders) > 0 {
 		// the array must be of equal length, as a header has two parts
 		// the name of the header, and its value
 		// this expects the user to have properly formatted the headers

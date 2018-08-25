@@ -27,7 +27,7 @@ Contains routes used for frontend operation
 */
 
 // CalculatePinCost is used to calculate the cost of pinning something to temporal
-func CalculatePinCost(c *gin.Context) {
+func (api *API) calculatePinCost(c *gin.Context) {
 	hash := c.Param("hash")
 	holdTime := c.Param("holdtime")
 	manager, err := rtfs.Initialize("", "")
@@ -51,7 +51,7 @@ func CalculatePinCost(c *gin.Context) {
 }
 
 // CalculateFileCost is used to calculate the cost of uploading a file to our system
-func CalculateFileCost(c *gin.Context) {
+func (api *API) calculateFileCost(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
 		FailOnError(c, err)
@@ -74,7 +74,7 @@ func CalculateFileCost(c *gin.Context) {
 }
 
 // CreatePinPayment is used to create a signed message for a pin payment
-func CreatePinPayment(c *gin.Context) {
+func (api *API) createPinPayment(c *gin.Context) {
 	contentHash := c.Param("hash")
 	username := GetAuthenticatedUserFromContext(c)
 	holdTime, exists := c.GetPostForm("hold_time")
@@ -112,28 +112,21 @@ func CreatePinPayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	keyMap, ok := c.MustGet("eth_account").(map[string]string)
-	if !ok {
-		FailedToLoadMiddleware(c, "eth account")
-		return
-	}
-	ps, err := signer.GeneratePaymentSigner(keyMap["keyFile"], keyMap["keyPass"])
+
+	keyFile := api.TConfig.Ethereum.Account.KeyFile
+	keyPass := api.TConfig.Ethereum.Account.KeyPass
+	ps, err := signer.GeneratePaymentSigner(keyFile, keyPass)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	um := models.NewUserManager(db)
+	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	ppm := models.NewPinPaymentManager(db)
+	ppm := models.NewPinPaymentManager(api.DBM.DB)
 	var num *big.Int
 	num, err = ppm.RetrieveLatestPaymentNumberByUser(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -177,7 +170,7 @@ func CreatePinPayment(c *gin.Context) {
 }
 
 // CreateFilePayment is used to create a signed file payment message
-func CreateFilePayment(c *gin.Context) {
+func (api *API) createFilePayment(c *gin.Context) {
 	cC := c.Copy()
 
 	networkName, exists := cC.GetPostForm("network_name")
@@ -206,37 +199,17 @@ func CreateFilePayment(c *gin.Context) {
 		return
 	}
 
-	credentials, ok := cC.MustGet("minio_credentials").(map[string]string)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio credentials")
-		return
-	}
-	secure, ok := cC.MustGet("minio_secure").(bool)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio secure")
-		return
-	}
-	endpoint, ok := cC.MustGet("minio_endpoint").(string)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio endpoint")
-		return
-	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	keyMap, ok := c.MustGet("eth_account").(map[string]string)
-	if !ok {
-		FailedToLoadMiddleware(c, "eth account")
-		return
-	}
-	ps, err := signer.GeneratePaymentSigner(keyMap["keyFile"], keyMap["keyPass"])
+	accessKey := api.TConfig.MINIO.AccessKey
+	secretKey := api.TConfig.MINIO.SecretKey
+	endpoint := fmt.Sprintf("%s:%s", api.TConfig.MINIO.Connection.IP, api.TConfig.MINIO.Connection.Port)
+	keyFile := api.TConfig.Ethereum.Account.KeyFile
+	keyPass := api.TConfig.Ethereum.Account.KeyPass
+	ps, err := signer.GeneratePaymentSigner(keyFile, keyPass)
 	if err != nil {
 		FailOnError(c, err)
 		return
 	}
-	miniManager, err := mini.NewMinioManager(endpoint, credentials["access_key"], credentials["secret_key"], secure)
+	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -273,8 +246,8 @@ func CreateFilePayment(c *gin.Context) {
 	}
 	fmt.Println("file stored in minio")
 
-	fpm := models.NewFilePaymentManager(db)
-	um := models.NewUserManager(db)
+	fpm := models.NewFilePaymentManager(api.DBM.DB)
+	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
 		FailOnError(c, err)
@@ -320,7 +293,7 @@ func CreateFilePayment(c *gin.Context) {
 
 // SubmitPinPaymentConfirmation is used to submit a pin payment confirmationrequest to the backend.
 // A successful payment will result in the content being injected into temporal
-func SubmitPinPaymentConfirmation(c *gin.Context) {
+func (api *API) submitPinPaymentConfirmation(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	paymentNumber, exists := c.GetPostForm("payment_number")
 	if !exists {
@@ -332,13 +305,8 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 		FailNoExistPostForm(c, "tx_hash")
 		return
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	ppm := models.NewPinPaymentManager(db)
-	um := models.NewUserManager(db)
+	ppm := models.NewPinPaymentManager(api.DBM.DB)
+	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
 		FailOnError(c, err)
@@ -349,11 +317,8 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailedToLoadMiddleware(c, "rabbitmq")
-		return
-	}
+	mqURL := api.TConfig.RabbitMQ.URL
+
 	ppc := queue.PinPaymentConfirmation{
 		TxHash:        txHash,
 		EthAddress:    ethAddress,
@@ -375,7 +340,7 @@ func SubmitPinPaymentConfirmation(c *gin.Context) {
 }
 
 // SubmitPaymentToContract is a highly "insecure" way of paying for TEMPORAL and essentially involves sending us a private key
-func SubmitPaymentToContract(c *gin.Context) {
+func (api *API) submitPaymentToContract(c *gin.Context) {
 	msg := fmt.Sprintf("this route requires you giving us your private key and the password to descrypt. Please provide a postform accept_warning set to yes otherwise this route will not work. Although we will not store your private key this is an extremely unsafe method as it means your private key can become compromised during transit or if someone where to gain control of our servers, and covertly save your key during usage. RTrade provides no insurance or protections against compromised accounts utilizing this route as it is intended for ADMIN USE ONLY or LAST RESORT USE ONLY. By using this route you full on agree that you void RTrade of any responsibilities, or fault that may occur as a resutl of your private key being compromised by using this route. DO NOT use this route if you do not agree with this")
 	acceptWarn, exists := c.GetPostForm("accept_warning")
 	if !exists {
@@ -444,23 +409,11 @@ func SubmitPaymentToContract(c *gin.Context) {
 		return
 	}
 	costBig := utils.FloatToBigInt(totalCost)
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	keyMap, ok := c.MustGet("eth_account").(map[string]string)
-	if !ok {
-		FailedToLoadMiddleware(c, "eth account")
-		return
-	}
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailedToLoadMiddleware(c, "rabbitmq")
-		return
-	}
-	ppm := models.NewPinPaymentManager(db)
-	um := models.NewUserManager(db)
+
+	mqURL := api.TConfig.RabbitMQ.URL
+
+	ppm := models.NewPinPaymentManager(api.DBM.DB)
+	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
 		FailOnError(c, err)
@@ -478,7 +431,9 @@ func SubmitPaymentToContract(c *gin.Context) {
 		number = num
 	}
 	addressTyped := common.HexToAddress(ethAddress)
-	ps, err := signer.GeneratePaymentSigner(keyMap["keyFile"], keyMap["keyPass"])
+	ps, err := signer.GeneratePaymentSigner(
+		api.TConfig.Ethereum.Account.KeyFile,
+		api.TConfig.Ethereum.Account.KeyPass)
 	if err != nil {
 		FailOnError(c, err)
 		return
