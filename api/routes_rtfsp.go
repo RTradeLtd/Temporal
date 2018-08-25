@@ -11,6 +11,7 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	minio "github.com/minio/minio-go"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/models"
 
@@ -67,6 +68,12 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("ipfs pin request for private network sent to backend")
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "content pin request sent to backend",
 	})
@@ -108,6 +115,11 @@ func (api *API) getFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) 
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("private ipfs object file size requested")
 
 	c.JSON(http.StatusOK, gin.H{
 		"object":        key,
@@ -195,6 +207,12 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("advanced private ipfs file upload requested")
+
 	c.JSON(http.StatusOK, gin.H{"status": "file upload request sent to backend"})
 }
 
@@ -300,6 +318,12 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("simple private ipfs file upload processed")
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": resp,
 	})
@@ -344,6 +368,12 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("private ipfs pub sub message published")
+
 	c.JSON(http.StatusOK, gin.H{
 		"topic":   topic,
 		"message": message,
@@ -382,6 +412,12 @@ func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("private ipfs pin removal request sent to backend")
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "pin removal sent to backend",
 	})
@@ -428,6 +464,12 @@ func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("private ipfs pin list requested")
+
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
@@ -467,6 +509,12 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("private ipfs object stat requested")
+
 	c.JSON(http.StatusOK, gin.H{"stats": stats})
 }
 
@@ -509,6 +557,12 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("private ipfs pin check requested")
+
 	c.JSON(http.StatusOK, gin.H{"present": present})
 }
 
@@ -615,6 +669,12 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("private ipns entry creation request sent to backend")
+
 	c.JSON(http.StatusOK, gin.H{"status": "ipns entry creation request sent to backend"})
 }
 
@@ -734,6 +794,12 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 			return
 		}
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("private ipfs netwokr created")
+
 	c.JSON(http.StatusCreated, gin.H{
 		"network": network,
 	})
@@ -756,6 +822,12 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("private ipfs network by name requested")
+
 	c.JSON(http.StatusOK, gin.H{
 		"network": net,
 	})
@@ -773,6 +845,12 @@ func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("authorized private ipfs network listing requested")
+
 	c.JSON(http.StatusOK, gin.H{
 		"networks": networks,
 	})
@@ -802,6 +880,12 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("uploads forprivate ifps network requested")
+
 	c.JSON(http.StatusOK, gin.H{
 		"uploads": uploads,
 	})
@@ -892,6 +976,12 @@ func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
 			extraHeaders[header] = value
 		}
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("private ipfs content download requested")
+
 	// send them the file
 	c.DataFromReader(200, int64(sizeInBytes), contentType, reader, extraHeaders)
 }

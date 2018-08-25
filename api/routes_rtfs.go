@@ -451,11 +451,18 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    ethAddress,
+	}).Info("ipfs pin check requested")
+
 	c.JSON(http.StatusOK, gin.H{"present": present})
 }
 
 // DownloadContentHash is used to download a particular content hash from the network
 func (api *API) downloadContentHash(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
 	var contentType string
 	// fetch the specified content type from the user
 	contentType, exists := c.GetPostForm("content_type")
@@ -516,6 +523,12 @@ func (api *API) downloadContentHash(c *gin.Context) {
 			extraHeaders[header] = value
 		}
 	}
+
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("ipfs content download requested")
+
 	// send them the file
 	c.DataFromReader(200, int64(sizeInBytes), contentType, reader, extraHeaders)
 }
