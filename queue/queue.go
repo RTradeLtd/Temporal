@@ -28,11 +28,13 @@ var AdminEmail = "temporal.reports@rtradetechnologies.com"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
-	Connection *amqp.Connection
-	Channel    *amqp.Channel
-	Queue      *amqp.Queue
-	Logger     *log.Logger
-	QueueName  string
+	Connection   *amqp.Connection
+	Channel      *amqp.Channel
+	Queue        *amqp.Queue
+	Logger       *log.Logger
+	QueueName    string
+	Service      string
+	ExchangeName string
 }
 
 // IPFSKeyCreation is a message used for processing key creation
@@ -106,6 +108,15 @@ func (qm *QueueManager) setupLogging() error {
 	return nil
 }
 
+func (qm *QueueManager) parseQueueName(queueName string) error {
+	host, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+	qm.QueueName = fmt.Sprintf("%s+%s", host, queueName)
+	return nil
+}
+
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
 func Initialize(queueName, connectionURL string, publish, service bool) (*QueueManager, error) {
 	conn, err := setupConnection(connectionURL)
@@ -116,7 +127,10 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
 	}
+
 	qm.QueueName = queueName
+	qm.Service = queueName
+
 	if service {
 		err = qm.setupLogging()
 		if err != nil {
@@ -126,31 +140,46 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 	// Declare Non Default exchanges for the particular queue
 	switch queueName {
 	case IpfsPinRemovalQueue:
+		err = qm.parseQueueName(queueName)
+		if err != nil {
+			return nil, err
+		}
 		err = qm.DeclareIPFSPinRemovalExchange()
 		if err != nil {
 			return nil, err
 		}
+		qm.ExchangeName = PinRemovalExchange
 		if publish {
 			return &qm, nil
 		}
 	case IpfsPinQueue:
+		err = qm.parseQueueName(queueName)
+		if err != nil {
+			return nil, err
+		}
 		err = qm.DeclareIPFSPinExchange()
 		if err != nil {
 			return nil, err
 		}
+		qm.ExchangeName = PinExchange
 		if publish {
 			return &qm, nil
 		}
 	case IpfsKeyCreationQueue:
+		err = qm.parseQueueName(queueName)
+		if err != nil {
+			return nil, err
+		}
 		err = qm.DeclareIPFSKeyExchange()
 		if err != nil {
 			return nil, err
 		}
+		qm.ExchangeName = IpfsKeyExchange
 		if publish {
 			return &qm, nil
 		}
 	}
-	if err := qm.DeclareQueue(queueName); err != nil {
+	if err := qm.DeclareQueue(); err != nil {
 		return nil, err
 	}
 	return &qm, nil
@@ -179,16 +208,16 @@ func (qm *QueueManager) OpenChannel() error {
 }
 
 // DeclareQueue is used to declare a queue for which messages will be sent to
-func (qm *QueueManager) DeclareQueue(queueName string) error {
+func (qm *QueueManager) DeclareQueue() error {
 	// we declare the queue as durable so that even if rabbitmq server stops
 	// our messages won't be lost
 	q, err := qm.Channel.QueueDeclare(
-		queueName, // name
-		true,      // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+		qm.QueueName, // name
+		true,         // durable
+		false,        // delete when unused
+		false,        // exclusive
+		false,        // no-wait
+		nil,          // arguments
 	)
 	if err != nil {
 		return err
@@ -212,10 +241,10 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	}
 
 	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
-	switch qm.Queue.Name {
-	case IpfsPinRemovalQueue:
+	switch qm.ExchangeName {
+	case PinRemovalExchange:
 		err = qm.Channel.QueueBind(
-			qm.Queue.Name,      // name of the queue
+			qm.QueueName,       // name of the queue
 			"",                 // routing key
 			PinRemovalExchange, // exchange
 			false,              // noWait
@@ -227,13 +256,13 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
 		}).Info("queue bound")
-	case IpfsPinQueue:
+	case PinExchange:
 		err = qm.Channel.QueueBind(
-			qm.Queue.Name, // name of the queue
-			"",            // routing key
-			PinExchange,   // exchange
-			false,         // noWait
-			nil,           // arguments
+			qm.QueueName, // name of the queue
+			"",           // routing key
+			PinExchange,  // exchange
+			false,        // noWait
+			nil,          // arguments
 		)
 		if err != nil {
 			return err
@@ -241,9 +270,9 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
 		}).Info("queue bound")
-	case IpfsKeyCreationQueue:
+	case IpfsKeyExchange:
 		err = qm.Channel.QueueBind(
-			qm.Queue.Name,   // name of the queue
+			qm.QueueName,    // name of the queue
 			"",              // routing key
 			IpfsKeyExchange, // exchange
 			false,           // no wait
@@ -261,20 +290,20 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 
 	// consider moving to true for auto-ack
 	msgs, err := qm.Channel.Consume(
-		qm.Queue.Name, // queue
-		consumer,      // consumer
-		false,         // auto-ack
-		false,         // exclusive
-		false,         // no-local
-		false,         // no-wait
-		nil,           // args
+		qm.QueueName, // queue
+		consumer,     // consumer
+		false,        // auto-ack
+		false,        // exclusive
+		false,        // no-local
+		false,        // no-wait
+		nil,          // args
 	)
 	if err != nil {
 		return err
 	}
 
 	// check the queue name
-	switch qm.Queue.Name {
+	switch qm.Service {
 	// only parse datbase file requests
 	case DatabaseFileAddQueue:
 		qm.ProcessDatabaseFileAdds(msgs, db)
