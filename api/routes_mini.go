@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/mini"
@@ -8,28 +9,16 @@ import (
 )
 
 // MakeBucket is used to create a bucket in our minio container
-func makeBucket(c *gin.Context) {
+func (api *API) makeBucket(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access")
 		return
 	}
-	credentials, ok := c.MustGet("minio_credentials").(map[string]string)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio credentials")
-		return
-	}
-	secure, ok := c.MustGet("minio_secure").(bool)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio secure")
-		return
-	}
-	endpoint, ok := c.MustGet("minio_endpoint").(string)
-	if !ok {
-		FailedToLoadMiddleware(c, "minio endpoint")
-		return
-	}
-	manager, err := mini.NewMinioManager(endpoint, credentials["access_key"], credentials["secret_key"], secure)
+	accessKey := api.TConfig.MINIO.AccessKey
+	secretKey := api.TConfig.MINIO.SecretKey
+	endpoint := fmt.Sprintf("%s:%s", api.TConfig.MINIO.Connection.IP, api.TConfig.MINIO.Connection.Port)
+	manager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
 	if err != nil {
 		FailOnError(c, err)
 		return

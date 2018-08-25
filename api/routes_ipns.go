@@ -9,7 +9,6 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/jinzhu/gorm"
 
 	"github.com/RTradeLtd/Temporal/rtns/dlink"
 	"github.com/gin-gonic/gin"
@@ -17,12 +16,7 @@ import (
 )
 
 // PublishToIPNSDetails is used to publish a record on IPNS with more fine grained control
-func publishToIPNSDetails(c *gin.Context) {
-	_, exists := c.GetPostForm("network_name")
-	if exists {
-		PublishDetailedIPNSToHostedIPFSNetwork(c)
-		return
-	}
+func (api *API) publishToIPNSDetails(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	hash, present := c.GetPostForm("hash")
 	if !present {
@@ -50,18 +44,9 @@ func publishToIPNSDetails(c *gin.Context) {
 		return
 	}
 
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	mqURL, ok := c.MustGet("mq_conn_url").(string)
-	if !ok {
-		FailOnError(c, errors.New("failed to load rabbitmq"))
-		return
-	}
+	mqURL := api.TConfig.RabbitMQ.URL
 
-	um := models.NewUserManager(db)
+	um := models.NewUserManager(api.DBM.DB)
 
 	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
 	if err != nil {
@@ -119,7 +104,7 @@ func publishToIPNSDetails(c *gin.Context) {
 
 // GenerateDNSLinkEntry is used to generate a DNS link entry
 // TODO: turn into a queue call
-func generateDNSLinkEntry(c *gin.Context) {
+func (api *API) generateDNSLinkEntry(c *gin.Context) {
 	authUser := GetAuthenticatedUserFromContext(c)
 	if authUser != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
@@ -150,8 +135,8 @@ func generateDNSLinkEntry(c *gin.Context) {
 		return
 	}
 
-	aKey := c.MustGet("aws_key").(string)
-	aSecret := c.MustGet("aws_secret").(string)
+	aKey := api.TConfig.AWS.KeyID
+	aSecret := api.TConfig.AWS.Secret
 
 	var region aws.Region
 	switch regionName {

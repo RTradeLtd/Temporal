@@ -6,25 +6,19 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 var dev = false
 
 // GetUploadsFromDatabase is used to read a list of uploads from our database
 // only usable by admin
-func getUploadsFromDatabase(c *gin.Context) {
+func (api *API) getUploadsFromDatabase(c *gin.Context) {
 	authenticatedUser := GetAuthenticatedUserFromContext(c)
 	if authenticatedUser != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-	um := models.NewUploadManager(db)
+	um := models.NewUploadManager(api.DBM.DB)
 	// fetch the uplaods
 	uploads := um.GetUploads()
 	if uploads == nil {
@@ -36,15 +30,9 @@ func getUploadsFromDatabase(c *gin.Context) {
 
 // GetUploadsForAddress is used to read a list of uploads from a particular eth address
 // If not admin, will retrieve all uploads for the current context account
-func getUploadsForAddress(c *gin.Context) {
+func (api *API) getUploadsForAddress(c *gin.Context) {
 	var queryUser string
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		FailedToLoadDatabase(c)
-		return
-	}
-
-	um := models.NewUploadManager(db)
+	um := models.NewUploadManager(api.DBM.DB)
 	user := GetAuthenticatedUserFromContext(c)
 	if user == AdminAddress {
 		queryUser = c.Param("user")

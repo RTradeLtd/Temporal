@@ -48,7 +48,7 @@ func main() {
 	ethKeyPass := tCfg.Ethereum.Account.KeyPass
 	switch os.Args[1] {
 	case "api":
-		api, err := api.Initialize(tCfg, false)
+		api, err := api.Initialize(tCfg, true)
 		if err != nil {
 			log.Fatal(err)
 		}

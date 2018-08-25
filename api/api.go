@@ -76,17 +76,12 @@ func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	return &api, nil
 }
 
+func (api *API) setupLogging() {
+
+}
+
 // setupRoutes is used to setup all of our api routes
 func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg *config.TemporalConfig) {
-
-	mqConnectionURL := cfg.RabbitMQ.URL
-	ethKey := cfg.Ethereum.Account.KeyFile
-	ethPass := cfg.Ethereum.Account.KeyPass
-	awsKey := cfg.AWS.KeyID
-	awsSecret := cfg.AWS.Secret
-	endpoint := fmt.Sprintf("%s:%s", cfg.MINIO.Connection.IP, cfg.MINIO.Connection.Port)
-	minioKey := cfg.MINIO.AccessKey
-	minioSecret := cfg.MINIO.SecretKey
 
 	statsProtected := g.Group("/api/v1/statistics")
 	statsProtected.Use(authWare.MiddlewareFunc())
@@ -102,113 +97,93 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 		c.JSON(http.StatusOK, stats.Report())
 	})
 
+	// REGISTER
+	g.POST("/api/v1/register", api.registerUserAccount)
 	// LOGIN
 	g.Use(middleware.DatabaseMiddleware(db))
 	g.POST("/api/v1/login", authWare.LoginHandler)
-	// REGISTER
-	g.POST("/api/v1/register", registerUserAccount)
-	//g.POST("/api/v1/register-enterprise", RegisterEnterpriseUserAccount)
 
 	// PROTECTED ROUTES -- BEGIN
 	accountProtected := g.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
 	accountProtected.Use(middleware.APIRestrictionMiddleware(db))
-	accountProtected.Use(middleware.DatabaseMiddleware(db))
-	accountProtected.POST("password/change", changeAccountPassword)
-	accountProtected.GET("/key/ipfs/get", getIPFSKeyNamesForAuthUser)
-	accountProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	accountProtected.POST("/key/ipfs/new", createIPFSKey)
+	accountProtected.POST("password/change", api.changeAccountPassword)
+	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
+	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
 
 	ipfsProtected := g.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
 	ipfsProtected.Use(middleware.APIRestrictionMiddleware(db))
-	// DATABASE-LESS routes
-	ipfsProtected.POST("/pubsub/publish/:topic", ipfsPubSubPublish)
-	ipfsProtected.POST("/calculate-content-hash", calculateContentHashForFile)
-	ipfsProtected.GET("/pins", getLocalPins) // admin locked
-	ipfsProtected.GET("/object-stat/:key", getObjectStatForIpfs)
-	ipfsProtected.GET("/object/size/:key", getFileSizeInBytesForObject)
-	ipfsProtected.GET("/check-for-pin/:hash", checkLocalNodeForPin) // admin locked
-	ipfsProtected.Use(middleware.DatabaseMiddleware(db))
-	ipfsProtected.POST("/download/:hash", downloadContentHash)
+	ipfsProtected.POST("/pubsub/publish/:topic", api.ipfsPubSubPublish)
+	ipfsProtected.POST("/calculate-content-hash", api.calculateContentHashForFile)
+	ipfsProtected.GET("/pins", api.getLocalPins) // admin locked
+	ipfsProtected.GET("/object-stat/:key", api.getObjectStatForIpfs)
+	ipfsProtected.GET("/object/size/:key", api.getFileSizeInBytesForObject)
+	ipfsProtected.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
+	ipfsProtected.POST("/download/:hash", api.downloadContentHash)
 
-	// DATABASE-USING ROUTES
-	ipfsProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	ipfsProtected.Use(middleware.DatabaseMiddleware(db))
-	ipfsProtected.POST("/pin/:hash", pinHashLocally)
-	ipfsProtected.POST("/add-file", addFileLocally)
-	ipfsProtected.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
-	ipfsProtected.POST("/add-file/advanced", addFileLocallyAdvanced)
+	ipfsProtected.POST("/pin/:hash", api.pinHashLocally)
+	ipfsProtected.POST("/add-file", api.addFileLocally)
+	ipfsProtected.POST("/add-file/advanced", api.addFileLocallyAdvanced)
 
 	//ipfsProtected.DELETE("/remove-pin/:hash", RemovePinFromLocalHost)
 
 	ipfsPrivateProtected := g.Group("/api/v1/ipfs-private")
 	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
 	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(db))
-	ipfsPrivateProtected.Use(middleware.DatabaseMiddleware(db))
-	ipfsPrivateProtected.POST("/new/network", CreateHostedIPFSNetworkEntryInDatabase)                // admin locked
-	ipfsPrivateProtected.GET("/network/:name", GetIPFSPrivateNetworkByName)                          // admin locked
-	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", CheckLocalNodeForPinForHostedIPFSNetwork) // admin locked
-	ipfsPrivateProtected.POST("/ipfs/object-stat/:key", GetObjectStatForIpfsForHostedIPFSNetwork)
-	ipfsPrivateProtected.POST("/ipfs/object/size/:key", GetFileSizeInBytesForObjectForHostedIPFSNetwork)
-	ipfsPrivateProtected.POST("/pubsub/publish/:topic", IpfsPubSubPublishToHostedIPFSNetwork)
-	ipfsPrivateProtected.POST("/pins", GetLocalPinsForHostedIPFSNetwork) // admin locked
-	ipfsPrivateProtected.GET("/networks", GetAuthorizedPrivateNetworks)
-	ipfsPrivateProtected.POST("/uploads", GetUploadsByNetworkName)
-	ipfsPrivateProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	ipfsPrivateProtected.POST("/ipfs/pin/:hash", PinToHostedIPFSNetwork)
-	ipfsPrivateProtected.POST("/ipfs/add-file", AddFileToHostedIPFSNetwork)
-	ipfsPrivateProtected.POST("/ipfs/add-file/advanced", AddFileToHostedIPFSNetworkAdvanced)
-	ipfsPrivateProtected.DELETE("/ipfs/pin/remove/:hash", RemovePinFromLocalHostForHostedIPFSNetwork) // admin locked
+	ipfsPrivateProtected.POST("/new/network", api.createHostedIPFSNetworkEntryInDatabase)                // admin locked
+	ipfsPrivateProtected.GET("/network/:name", api.getIPFSPrivateNetworkByName)                          // admin locked
+	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", api.checkLocalNodeForPinForHostedIPFSNetwork) // admin locked
+	ipfsPrivateProtected.POST("/ipfs/object-stat/:key", api.getObjectStatForIpfsForHostedIPFSNetwork)
+	ipfsPrivateProtected.POST("/ipfs/object/size/:key", api.getFileSizeInBytesForObjectForHostedIPFSNetwork)
+	ipfsPrivateProtected.POST("/pubsub/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
+	ipfsPrivateProtected.POST("/pins", api.getLocalPinsForHostedIPFSNetwork) // admin locked
+	ipfsPrivateProtected.GET("/networks", api.getAuthorizedPrivateNetworks)
+	ipfsPrivateProtected.POST("/uploads", api.getUploadsByNetworkName)
+	ipfsPrivateProtected.POST("/ipfs/pin/:hash", api.pinToHostedIPFSNetwork)
+	ipfsPrivateProtected.POST("/ipfs/add-file", api.addFileToHostedIPFSNetwork)
+	ipfsPrivateProtected.POST("/ipfs/add-file/advanced", api.addFileToHostedIPFSNetworkAdvanced)
+	ipfsPrivateProtected.POST("/ipns/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
+	ipfsPrivateProtected.DELETE("/ipfs/pin/remove/:hash", api.removePinFromLocalHostForHostedIPFSNetwork)
 
 	ipnsProtected := g.Group("/api/v1/ipns")
 	ipnsProtected.Use(authWare.MiddlewareFunc())
 	ipnsProtected.Use(middleware.APIRestrictionMiddleware(db))
-	ipnsProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	ipnsProtected.Use(middleware.DatabaseMiddleware(db))
-	ipnsProtected.POST("/publish/details", publishToIPNSDetails)
-	ipnsProtected.Use(middleware.AWSMiddleware(awsKey, awsSecret))
-	ipnsProtected.POST("/dnslink/aws/add", generateDNSLinkEntry) // admin locked
+	ipnsProtected.POST("/publish/details", api.publishToIPNSDetails)
+	ipnsProtected.POST("/dnslink/aws/add", api.generateDNSLinkEntry) // admin locked
 
 	clusterProtected := g.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())
 	clusterProtected.Use(middleware.APIRestrictionMiddleware(db))
-	clusterProtected.POST("/sync-errors-local", syncClusterErrorsLocally)          // admin locked
-	clusterProtected.GET("/status-local-pin/:hash", getLocalStatusForClusterPin)   // admin locked
-	clusterProtected.GET("/status-global-pin/:hash", getGlobalStatusForClusterPin) // admin locked
-	clusterProtected.GET("/status-local", fetchLocalClusterStatus)                 // admin locked
-	clusterProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))           // admin locked
-	clusterProtected.POST("/pin/:hash", pinHashToCluster)
-	clusterProtected.DELETE("/remove-pin/:hash", removePinFromCluster) // admin locked
+	clusterProtected.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
+	clusterProtected.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
+	clusterProtected.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
+	clusterProtected.GET("/status-local", api.fetchLocalClusterStatus)                 // admin locked
+	clusterProtected.POST("/pin/:hash", api.pinHashToCluster)
+	clusterProtected.DELETE("/remove-pin/:hash", api.removePinFromCluster) // admin locked
 
 	databaseProtected := g.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
 	databaseProtected.Use(middleware.APIRestrictionMiddleware(db))
-	databaseProtected.Use(middleware.DatabaseMiddleware(db))
-	databaseProtected.GET("/uploads", getUploadsFromDatabase)     // admin locked
-	databaseProtected.GET("/uploads/:user", getUploadsForAddress) // partial admin locked
+	databaseProtected.GET("/uploads", api.getUploadsFromDatabase)     // admin locked
+	databaseProtected.GET("/uploads/:user", api.getUploadsForAddress) // partial admin locked
 
 	frontendProtected := g.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
-	frontendProtected.GET("/cost/calculate/:hash/:holdtime", calculatePinCost)
-	frontendProtected.POST("/cost/calculate/file", calculateFileCost)
-	frontendProtected.Use(middleware.RabbitMQMiddleware(mqConnectionURL))
-	frontendProtected.Use(middleware.BlockchainMiddleware(true, ethKey, ethPass))
-	frontendProtected.Use(middleware.DatabaseMiddleware(db))
-	frontendProtected.POST("/payment/pin/confirm/:hash", submitPinPaymentConfirmation)
-	frontendProtected.POST("/payment/pin/create/:hash", createPinPayment)
-	frontendProtected.POST("/payment/pin/confirm", submitPinPaymentConfirmation)
-	frontendProtected.POST("/payment/pin/submit/:hash", submitPaymentToContract)
-	frontendProtected.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
-	frontendProtected.POST("/payment/file/create", createFilePayment)
+	frontendProtected.GET("/cost/calculate/:hash/:holdtime", api.calculatePinCost)
+	frontendProtected.POST("/cost/calculate/file", api.calculateFileCost)
+	frontendProtected.POST("/payment/pin/confirm/:hash", api.submitPinPaymentConfirmation)
+	frontendProtected.POST("/payment/pin/create/:hash", api.createPinPayment)
+	frontendProtected.POST("/payment/pin/confirm", api.submitPinPaymentConfirmation)
+	frontendProtected.POST("/payment/pin/submit/:hash", api.submitPaymentToContract)
+	frontendProtected.POST("/payment/file/create", api.createFilePayment)
 
 	adminProtected := g.Group("/api/v1/admin")
 	adminProtected.Use(authWare.MiddlewareFunc())
 	adminProtected.Use(middleware.APIRestrictionMiddleware(db))
 	adminProtected.POST("/utils/file-size-check", CalculateFileSize)
 	mini := adminProtected.Group("/mini")
-	mini.Use(middleware.MINIMiddleware(minioKey, minioSecret, endpoint, true))
-	mini.POST("/create/bucket", makeBucket)
+	mini.POST("/create/bucket", api.makeBucket)
 	// PROTECTED ROUTES -- END
 
 }
