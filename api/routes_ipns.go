@@ -89,7 +89,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	fmt.Printf("IPNS Entry struct %+v\n", ie)
 
-	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true)
+	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)

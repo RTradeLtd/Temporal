@@ -55,7 +55,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 
 	mqConnectionURL := api.TConfig.RabbitMQ.URL
 
-	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true)
+	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -194,7 +194,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		NetworkName:      networkName,
 		HoldTimeInMonths: holdTimeInMonths,
 	}
-	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true)
+	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -258,7 +258,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqURL, true)
+	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -306,7 +306,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 	}
 
-	qm, err = queue.Initialize(queue.IpfsPinQueue, mqURL, true)
+	qm, err = queue.Initialize(queue.IpfsPinQueue, mqURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -400,7 +400,7 @@ func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 		UserName:    username,
 	}
 	mqConnectionURL := api.TConfig.RabbitMQ.URL
-	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, true)
+	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -588,7 +588,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	}
 
 	um := models.NewUserManager(api.DBM.DB)
-	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true)
+	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)

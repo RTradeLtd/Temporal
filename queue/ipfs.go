@@ -89,11 +89,11 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 	//uploadManager := models.NewUploadManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
 	uploadManager := models.NewUploadManager(db)
-	qm, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true)
+	qm, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		return err
 	}
-	qmCluster, err := Initialize(IpfsClusterPinQueue, cfg.RabbitMQ.URL, true)
+	qmCluster, err := Initialize(IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		return err
 	}
@@ -238,7 +238,7 @@ func ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.Tempor
 func ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
-	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true)
+	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		return err
 	}
@@ -348,11 +348,11 @@ func ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db
 		return err
 	}
 	fmt.Println("minio connection setup")
-	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true)
+	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		return err
 	}
-	qmPin, err := Initialize(IpfsPinQueue, cfg.RabbitMQ.URL, true)
+	qmPin, err := Initialize(IpfsPinQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		return err
 	}

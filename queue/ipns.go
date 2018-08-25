@@ -34,7 +34,7 @@ func ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cf
 	ipnsManager := models.NewIPNSManager(db)
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
-	qmEmail, err := Initialize(IpnsEntryQueue, cfg.RabbitMQ.URL, true)
+	qmEmail, err := Initialize(IpnsEntryQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		return err
 	}

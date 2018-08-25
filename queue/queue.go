@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
@@ -29,6 +31,8 @@ type QueueManager struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
 	Queue      *amqp.Queue
+	Logger     *log.Logger
+	QueueName  string
 }
 
 // IPFSKeyCreation is a message used for processing key creation
@@ -87,8 +91,21 @@ type IPNSUpdate struct {
 	NetworkName string `json:"network_name"`
 }
 
+func (qm *QueueManager) setupLogging() error {
+	logFileName := fmt.Sprintf("/var/log/temporal/%s_serice.log", qm.QueueName)
+	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
+	if err != nil {
+		return err
+	}
+	logger := log.New()
+	logger.Out = logFile
+	qm.Logger = logger
+	qm.Logger.Info("Logging initialized")
+	return nil
+}
+
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
-func Initialize(queueName, connectionURL string, publish bool) (*QueueManager, error) {
+func Initialize(queueName, connectionURL string, publish, service bool) (*QueueManager, error) {
 	conn, err := setupConnection(connectionURL)
 	if err != nil {
 		return nil, err
@@ -96,6 +113,13 @@ func Initialize(queueName, connectionURL string, publish bool) (*QueueManager, e
 	qm := QueueManager{Connection: conn}
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
+	}
+	qm.QueueName = queueName
+	if service {
+		err = qm.setupLogging()
+		if err != nil {
+			return nil, err
+		}
 	}
 	// Declare Non Default exchanges for the particular queue
 	switch queueName {
