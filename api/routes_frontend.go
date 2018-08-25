@@ -26,6 +26,26 @@ import (
 Contains routes used for frontend operation
 */
 
+// CalculateIPFSFileHash is used to calculate the ipfs hash of a file
+func (api *API) calculateIPFSFileHash(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	fh, err := file.Open()
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	hash, err := utils.GenerateIpfsMultiHashForFile(fh)
+	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"hash": hash})
+}
+
 // CalculatePinCost is used to calculate the cost of pinning something to temporal
 func (api *API) calculatePinCost(c *gin.Context) {
 	hash := c.Param("hash")

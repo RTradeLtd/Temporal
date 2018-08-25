@@ -168,6 +168,7 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 
 	frontendProtected := g.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
+	frontendProtected.POST("/utils/ipfs/hash/calculate", api.calculateIPFSFileHash)
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", api.calculatePinCost)
 	frontendProtected.POST("/cost/calculate/file", api.calculateFileCost)
 	frontendProtected.POST("/payment/pin/confirm/:hash", api.submitPinPaymentConfirmation)

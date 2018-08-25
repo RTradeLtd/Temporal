@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -83,6 +84,18 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		FailNoExistPostForm(c, "key_type")
 		return
 	}
+
+	switch keyType {
+	case "rsa":
+		break
+	case "ed25519":
+		break
+	default:
+		err := fmt.Errorf("%s is invalid key type must be rsa, or ed25519", keyType)
+		FailOnError(c, err)
+		return
+	}
+
 	keyBits, exists := c.GetPostForm("key_bits")
 	if !exists {
 		FailNoExistPostForm(c, "key_bits")
