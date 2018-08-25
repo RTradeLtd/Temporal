@@ -15,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -43,52 +44,78 @@ type PinPaymentSubmission struct {
 }
 
 // ProcessPinPaymentConfirmation is used to process pin payment confirmations to inject content into TEMPORAL
-// currently only supprots the private IPFS network
 func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string, cfg *config.TemporalConfig) error {
-	fmt.Println("dialing")
 	client, err := ethclient.Dial(ipcPath)
 	if err != nil {
-		fmt.Println("error dialing", err)
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+			"error":   err.Error(),
+		}).Error("failed to connect to ethereum blockchain")
 		return err
 	}
-	fmt.Println("generating payment contract handler")
 	contract, err := payments.NewPayments(common.HexToAddress(paymentContractAddress), client)
 	if err != nil {
-		fmt.Println("error generating payment contract", err)
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+			"error":   err.Error(),
+		}).Error("failed to generate payment contract handler")
 		return err
 	}
 	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+			"error":   err.Error(),
+		}).Error("failed to initialize connection to email send queue")
 		return err
 	}
 	qmIpfs, err := Initialize(IpfsPinQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+			"error":   err.Error(),
+		}).Error("failed to initialize connection to ipfs pin queue")
 		return err
 	}
 	paymentManager := models.NewPinPaymentManager(db)
-
+	qm.Logger.WithFields(log.Fields{
+		"service": qm.QueueName,
+		"error":   err.Error(),
+	}).Error("processing pin payment confirmations")
 	for d := range msgs {
-		fmt.Println("payment detected")
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Info("new message detected")
 		ppc := &PinPaymentConfirmation{}
 		err = json.Unmarshal(d.Body, ppc)
 		if err != nil {
-			//TODO handle
-			fmt.Println(err)
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   err.Error(),
+			}).Error("failed to unmarshal message")
 			d.Ack(false)
 			continue
 		}
 		tx, isPending, err := client.TransactionByHash(context.Background(), common.HexToHash(ppc.TxHash))
 		if err != nil {
-			fmt.Println(err)
-			//TODO send email
+			qm.Logger.WithFields(log.Fields{
+				"service":     qm.QueueName,
+				"eth_address": ppc.EthAddress,
+				"tx_hash":     ppc.TxHash,
+				"error":       err.Error(),
+			}).Error("failed to get transaction hash")
 			d.Ack(false)
 			continue
 		}
 		if isPending {
 			_, err := bind.WaitMined(context.Background(), client, tx)
 			if err != nil {
-				fmt.Println(err)
-				//TODO send email
+				qm.Logger.WithFields(log.Fields{
+					"service":     qm.QueueName,
+					"eth_address": ppc.EthAddress,
+					"tx_hash":     ppc.TxHash,
+					"error":       err.Error(),
+				}).Error("failed to wait for transaction to be mined")
 				d.Ack(false)
 				continue
 			}
@@ -105,17 +132,28 @@ func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery,
 			}
 			err = qmEmail.PublishMessage(es)
 			if err != nil {
-				fmt.Println("error publishing message ", err)
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.QueueName,
+					"error":   err.Error(),
+				}).Error("failed to publish message to email send queue")
 			}
-			// the message was improperly formatted so its garbagio
-			fmt.Println("unable to convert string to big int")
+			qm.Logger.WithFields(log.Fields{
+				"service":        qm.QueueName,
+				"eth_address":    ppc.EthAddress,
+				"payment_number": ppc.PaymentNumber,
+				"error":          err.Error(),
+			}).Error("failed to convert paymnet number to big int")
 			d.Ack(false)
 			continue
 		}
 		payment, err := contract.Payments(nil, common.HexToAddress(ppc.EthAddress), numberBig)
 		if err != nil {
-			fmt.Println(err)
-			//TODO send email
+			qm.Logger.WithFields(log.Fields{
+				"service":        qm.QueueName,
+				"eth_address":    ppc.EthAddress,
+				"payment_number": ppc.PaymentNumber,
+				"error":          err.Error(),
+			}).Error("failed to retrieve payment information from contract")
 			d.Ack(false)
 			continue
 		}
@@ -132,18 +170,27 @@ func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery,
 			}
 			err = qmEmail.PublishMessage(es)
 			if err != nil {
-				fmt.Println("error publishing message ", err)
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.QueueName,
+					"error":   err.Error(),
+				}).Error("failed to publish message to email send queue")
 			}
-			// this means the payment wasn't actually confirmed, could be transaction rejection, etc...
-			// by getting to this step in the code, it means the transaction has been mined so we need to ack this failure
-			fmt.Println("payment unable to be processed, likely due to transaction failure or other contract runtime issue")
+			qm.Logger.WithFields(log.Fields{
+				"service":        qm.QueueName,
+				"eth_address":    ppc.EthAddress,
+				"payment_number": ppc.PaymentNumber,
+				"error":          "unspecified transaction error",
+			}).Error("transaction was mined, but contract code execution failed")
 			d.Ack(false)
 			continue
 		}
-		paymentFromDatabase, err := paymentManager.RetrieveLatestPaymentByUser(ppc.UserName)
+		paymentFromDatabase, err := paymentManager.FindPaymentByNumberAndAddress(ppc.PaymentNumber, ppc.EthAddress)
 		if err != nil {
-			//TODO: decide how we should handle
-			fmt.Println("failed to retrieve latest payment ", err)
+			qm.Logger.WithFields(log.Fields{
+				"service":     qm.QueueName,
+				"eth_address": ppc.EthAddress,
+				"error":       err.Error(),
+			}).Error("failed to find payment in database")
 			d.Ack(false)
 			continue
 		}
@@ -156,7 +203,6 @@ func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery,
 			HoldTimeInMonths: paymentFromDatabase.HoldTimeInMonths,
 		}
 
-		// DECIDE HOW WE SHOULD HANDLE FAILURES
 		err = qmIpfs.PublishMessageWithExchange(ip, PinExchange)
 		if err != nil {
 			addresses := []string{}
@@ -169,13 +215,24 @@ func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery,
 			}
 			errOne := qmEmail.PublishMessage(es)
 			if errOne != nil {
-				fmt.Println("error publishing email to queue", errOne)
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.QueueName,
+					"error":   errOne.Error(),
+				}).Error("failed to publish message to email send queue")
 			}
-			//TODO log and handle
-			fmt.Println("error publishing pin to queue ", err)
+			qm.Logger.WithFields(log.Fields{
+				"service":     qm.QueueName,
+				"eth_address": ppc.EthAddress,
+				"error":       err.Error(),
+			}).Error("critical error, failed to publish ipfs pin request for payment")
 			d.Ack(false)
 			continue
 		}
+		qm.Logger.WithFields(log.Fields{
+			"service":        qm.QueueName,
+			"eth_address":    ppc.EthAddress,
+			"payment_number": ppc.PaymentNumber,
+		}).Info("payment successfully processed")
 		d.Ack(false)
 	}
 	return nil
@@ -188,30 +245,53 @@ func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery,
 func (qm *QueueManager) ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, db *gorm.DB, ipcPath, paymentContractAddress string) error {
 	client, err := ethclient.Dial(ipcPath)
 	if err != nil {
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+			"error":   err.Error(),
+		}).Error("failed to connect to ethereum network")
 		return err
 	}
 	contract, err := payments.NewPayments(common.HexToAddress(paymentContractAddress), client)
 	if err != nil {
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+			"error":   err.Error(),
+		}).Error("failed to connect to connect to payment contract")
 		return err
 	}
 	ppm := models.NewPinPaymentManager(db)
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+			"error":   err.Error(),
+		}).Error("failed to connect to ipfs")
 		return err
 	}
+	qm.Logger.WithFields(log.Fields{
+		"service": qm.QueueName,
+	}).Info("processing pin payment submissions")
 	for d := range msgs {
-		fmt.Println("delivery detected")
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Info("detected new message")
 		pps := PinPaymentSubmission{}
 		err = json.Unmarshal(d.Body, &pps)
 		if err != nil {
-			fmt.Println("error unmarshaling", err)
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   err.Error(),
+			}).Error("failed to unmarshal message")
 			d.Ack(false)
 			continue
 		}
 		k := keystore.Key{}
 		err = k.UnmarshalJSON(pps.PrivateKey)
 		if err != nil {
-			fmt.Println("error unmarshaling private key", err)
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   err.Error(),
+			}).Error("failed to unmarshal private key")
 			d.Ack(false)
 			continue
 		}
@@ -224,56 +304,94 @@ func (qm *QueueManager) ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, 
 		prefixed := pps.Prefixed
 		num, valid := new(big.Int).SetString(pps.Number, 10)
 		if !valid {
-			fmt.Println("unable to convert payment number from string to big int")
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   "bad type conversion",
+			}).Error("failed to convert string to big int")
 			d.Ack(false)
 			continue
 		}
 		amount, valid := new(big.Int).SetString(pps.ChargeAmount, 10)
 		if !valid {
-			fmt.Println("unable to convert charge amount from string to big int")
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   "bad type conversion",
+			}).Error("failed to convert string to big int")
 			d.Ack(false)
 			continue
 		}
 		auth.GasLimit = 275000
 		tx, err := contract.MakePayment(auth, h, v, r, s, num, method, amount, prefixed)
 		if err != nil {
-			fmt.Println("error making payment", err)
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   err.Error(),
+			}).Error("failed to submit payment to contract")
 			d.Ack(false)
 			continue
 		}
 		fmt.Println("successfully sent payment transaction, waiting for it to be mined")
 		_, err = bind.WaitMined(context.Background(), client, tx)
 		if err != nil {
-			fmt.Println("error waiting for tx to be mined", err)
+			qm.Logger.WithFields(log.Fields{
+				"service":     qm.QueueName,
+				"eth_address": auth.From,
+				"tx_hash":     tx.Hash().String(),
+				"error":       err.Error(),
+			}).Error("failed to wait for transaction to be mined")
 			d.Ack(false)
 			continue
 		}
 		paymentStruct, err := contract.Payments(nil, auth.From, num)
 		if err != nil {
-			//TODO: add error handling (msg client via email notifying failure)
-			fmt.Println("error retrieving payments", err)
+			qm.Logger.WithFields(log.Fields{
+				"service":        qm.QueueName,
+				"eth_address":    auth.From,
+				"payment_number": num.String(),
+				"error":          err.Error(),
+			}).Error("failed to get payment from contract")
 			d.Ack(false)
 			continue
 		}
 		if paymentStruct.State != 1 {
-			fmt.Println("error occured while processing payment and the upload will not be processed")
+			qm.Logger.WithFields(log.Fields{
+				"service":        qm.QueueName,
+				"eth_address":    auth.From,
+				"payment_number": num.String(),
+				"tx_hash":        tx.Hash().String(),
+				"error":          "unspecifeid payment failure",
+			}).Error("transaction was mined but payment failed to be processed")
 			d.Ack(false)
 			continue
 		}
 		paymentFromDB, err := ppm.FindPaymentByNumberAndAddress(num.String(), auth.From.String())
 		if err != nil {
-			fmt.Println("erorr reading payment from database", err)
+			qm.Logger.WithFields(log.Fields{
+				"service":        qm.QueueName,
+				"eth_address":    auth.From,
+				"payment_number": num.String(),
+				"error":          err.Error(),
+			}).Error("failed to find payment in database")
 			d.Ack(false)
 			continue
 		}
 		contentHash := paymentFromDB.ContentHash
 		err = manager.Pin(contentHash)
 		if err != nil {
-			fmt.Println("error pinning to IPFS", err)
+			qm.Logger.WithFields(log.Fields{
+				"service":        qm.QueueName,
+				"eth_address":    auth.From,
+				"payment_number": num.String(),
+				"error":          err.Error(),
+			}).Error("failed to pin content to ipfs")
 			d.Ack(false)
 			continue
 		}
-		fmt.Println("Content pinned to IPFS")
+		qm.Logger.WithFields(log.Fields{
+			"service":        qm.QueueName,
+			"eth_address":    auth.From,
+			"payment_number": num.String(),
+		}).Info("payment successfully processed and content pinned to ipfs")
 		d.Ack(false)
 	}
 	return nil
