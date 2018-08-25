@@ -28,11 +28,12 @@ var AdminEmail = "temporal.reports@rtradetechnologies.com"
 
 // QueueManager is a helper struct to interact with rabbitmq
 type QueueManager struct {
-	Connection *amqp.Connection
-	Channel    *amqp.Channel
-	Queue      *amqp.Queue
-	Logger     *log.Logger
-	QueueName  string
+	Connection   *amqp.Connection
+	Channel      *amqp.Channel
+	Queue        *amqp.Queue
+	Logger       *log.Logger
+	QueueName    string
+	ExchangeName string
 }
 
 // IPFSKeyCreation is a message used for processing key creation
@@ -126,14 +127,7 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 		return nil, err
 	}
 
-	if service {
-		err = qm.parseQueueName(queueName)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		qm.QueueName = queueName
-	}
+	qm.QueueName = queueName
 
 	if service {
 		err = qm.setupLogging()
@@ -144,26 +138,41 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 	// Declare Non Default exchanges for the particular queue
 	switch queueName {
 	case IpfsPinRemovalQueue:
+		err = qm.parseQueueName(queueName)
+		if err != nil {
+			return nil, err
+		}
 		err = qm.DeclareIPFSPinRemovalExchange()
 		if err != nil {
 			return nil, err
 		}
+		qm.ExchangeName = PinRemovalExchange
 		if publish {
 			return &qm, nil
 		}
 	case IpfsPinQueue:
+		err = qm.parseQueueName(queueName)
+		if err != nil {
+			return nil, err
+		}
 		err = qm.DeclareIPFSPinExchange()
 		if err != nil {
 			return nil, err
 		}
+		qm.ExchangeName = PinExchange
 		if publish {
 			return &qm, nil
 		}
 	case IpfsKeyCreationQueue:
+		err = qm.parseQueueName(queueName)
+		if err != nil {
+			return nil, err
+		}
 		err = qm.DeclareIPFSKeyExchange()
 		if err != nil {
 			return nil, err
 		}
+		qm.ExchangeName = IpfsKeyExchange
 		if publish {
 			return &qm, nil
 		}
@@ -230,8 +239,8 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 	}
 
 	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
-	switch qm.Queue.Name {
-	case IpfsPinRemovalQueue:
+	switch qm.ExchangeName {
+	case PinRemovalExchange:
 		err = qm.Channel.QueueBind(
 			qm.Queue.Name,      // name of the queue
 			"",                 // routing key
@@ -245,7 +254,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
 		}).Info("queue bound")
-	case IpfsPinQueue:
+	case PinExchange:
 		err = qm.Channel.QueueBind(
 			qm.Queue.Name, // name of the queue
 			"",            // routing key
@@ -259,7 +268,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
 		}).Info("queue bound")
-	case IpfsKeyCreationQueue:
+	case IpfsKeyExchange:
 		err = qm.Channel.QueueBind(
 			qm.Queue.Name,   // name of the queue
 			"",              // routing key
