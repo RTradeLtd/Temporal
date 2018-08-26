@@ -234,7 +234,7 @@ func (qm *QueueManager) DeclareQueue() error {
 // ConsumeMessage is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethKeyPass, dbUser string, cfg *config.TemporalConfig) error {
+func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
 	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
 	if err != nil {
 		return err
@@ -318,12 +318,12 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, ethKeyFile, ethK
 			return err
 		}
 	case PinPaymentConfirmationQueue:
-		err = qm.ProcessPinPaymentConfirmation(msgs, db, cfg.Ethereum.Connection.IPC.Path, cfg.Ethereum.Contracts.PaymentContractAddress, cfg)
+		err = qm.ProcessPinPaymentConfirmation(msgs, db, cfg)
 		if err != nil {
 			return err
 		}
 	case PinPaymentSubmissionQueue:
-		err = qm.ProcessPinPaymentSubmissions(msgs, db, cfg.Ethereum.Connection.IPC.Path, cfg.Ethereum.Contracts.PaymentContractAddress)
+		err = qm.ProcessPinPaymentSubmissions(msgs, db, cfg)
 		if err != nil {
 			return err
 		}

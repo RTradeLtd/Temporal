@@ -44,8 +44,6 @@ func main() {
 	dbPass := tCfg.Database.Password
 	dbURL := tCfg.Database.URL
 	dbUser := tCfg.Database.Username
-	ethKeyFilePath := tCfg.Ethereum.Account.KeyFile
-	ethKeyPass := tCfg.Ethereum.Account.KeyPass
 	switch os.Args[1] {
 	case "api":
 		api, err := api.Initialize(tCfg, true)
@@ -71,7 +69,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, "", "", dbUser, tCfg)
+		err = qm.ConsumeMessage("", dbPass, dbURL, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -81,7 +79,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		err = qm.ConsumeMessage("", dbPass, dbURL, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -91,7 +89,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		err = qm.ConsumeMessage("", dbPass, dbURL, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -101,7 +99,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		err = qm.ConsumeMessage("", dbPass, dbURL, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -111,7 +109,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		err = qm.ConsumeMessage("", dbPass, dbURL, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -121,7 +119,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		err = qm.ConsumeMessage("", dbPass, dbURL, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -131,7 +129,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		err = qm.ConsumeMessage("", dbPass, dbURL, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -141,7 +139,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		err = qm.ConsumeMessage("", dbPass, dbURL, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -151,7 +149,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		err = qm.ConsumeMessage("", dbPass, dbURL, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -172,7 +170,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = qm.ConsumeMessage("", dbPass, dbURL, ethKeyFilePath, ethKeyPass, dbUser, tCfg)
+		err = qm.ConsumeMessage("", dbPass, dbURL, dbUser, tCfg)
 		if err != nil {
 			log.Fatal(err)
 		}
