@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/RTradeLtd/Temporal/bindings/payments"
+	"github.com/RTradeLtd/Temporal/bindings"
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -43,30 +43,6 @@ type PinPaymentSubmission struct {
 	Prefixed    bool     `json:"prefixed"`
 }
 
-// WatchForAndProcessPaymentsMade is used to watch for payment made events and action them
-func (qm *QueueManager) WatchForAndProcessPaymentsMade(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	_, err := payments.GeneratePaymentManager(cfg, "infura")
-	if err != nil {
-		return err
-	}
-	qm.Logger.WithFields(log.Fields{
-		"service": qm.QueueName,
-	}).Info("watching for payments to process")
-	for d := range msgs {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("detected new message")
-		var out interface{}
-		err := json.Unmarshal(d.Body, &out)
-		if err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"error":   err.Error(),
-			}).Error("failed to unmarshal message")
-		}
-	}
-}
-
 // ProcessPinPaymentConfirmation is used to process pin payment confirmations to inject content into TEMPORAL
 func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	paymentContractAddress := cfg.Ethereum.Contracts.PaymentContractAddress
@@ -78,7 +54,7 @@ func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery,
 		}).Error("failed to connect to ethereum blockchain")
 		return err
 	}
-	contract, err := payments.NewPayments(common.HexToAddress(paymentContractAddress), client)
+	contract, err := bindings.NewPayments(common.HexToAddress(paymentContractAddress), client)
 	if err != nil {
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
@@ -102,7 +78,7 @@ func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery,
 		}).Error("failed to initialize connection to ipfs pin queue")
 		return err
 	}
-	paymentManager := models.NewPinPaymentManager(db)
+	paymentManager := models.NewPaymentManager(db)
 	qm.Logger.WithFields(log.Fields{
 		"service": qm.QueueName,
 	}).Info("processing pin payment confirmations")
@@ -276,7 +252,7 @@ func (qm *QueueManager) ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, 
 		}).Error("failed to connect to ethereum network")
 		return err
 	}
-	contract, err := payments.NewPayments(common.HexToAddress(paymentContractAddress), client)
+	contract, err := bindings.NewPayments(common.HexToAddress(paymentContractAddress), client)
 	if err != nil {
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
@@ -284,7 +260,7 @@ func (qm *QueueManager) ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, 
 		}).Error("failed to connect to connect to payment contract")
 		return err
 	}
-	ppm := models.NewPinPaymentManager(db)
+	ppm := models.NewPaymentManager(db)
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		qm.Logger.WithFields(log.Fields{
@@ -400,7 +376,7 @@ func (qm *QueueManager) ProcessPinPaymentSubmissions(msgs <-chan amqp.Delivery, 
 			d.Ack(false)
 			continue
 		}
-		contentHash := paymentFromDB.ContentHash
+		contentHash := paymentFromDB.ObjectName
 		err = manager.Pin(contentHash)
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
