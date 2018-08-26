@@ -23,10 +23,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-/*
-Contains routes used for frontend operation
-*/
-
 // CalculateIPFSFileHash is used to calculate the ipfs hash of a file
 func (api *API) calculateIPFSFileHash(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)

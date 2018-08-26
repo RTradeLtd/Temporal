@@ -16,7 +16,7 @@ import (
 	"github.com/mitchellh/goamz/aws"
 )
 
-// PublishToIPNSDetails is used to publish a record on IPNS with more fine grained control
+// PublishToIPNSDetails is used to publish a record on IPNS with more fine grained control over typical publishing methods
 func (api *API) publishToIPNSDetails(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	hash, present := c.GetPostForm("hash")
@@ -114,7 +114,6 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 }
 
 // GenerateDNSLinkEntry is used to generate a DNS link entry
-// TODO: turn into a queue call
 func (api *API) generateDNSLinkEntry(c *gin.Context) {
 	authUser := GetAuthenticatedUserFromContext(c)
 	if authUser != AdminAddress {

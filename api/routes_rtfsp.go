@@ -19,7 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// PinToHostedIPFSNetwork is used to pin content to a private/hosted ipfs network
+// PinToHostedIPFSNetwork is used to pin content to a private ipfs network
 func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -79,8 +79,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
-// GetFileSizeInBytesForObjectForHostedIPFSNetwork is used to get file size for an object
-// on a private IPFS network
+// GetFileSizeInBytesForObjectForHostedIPFSNetwork is used to get file size for an object from a private ipfs network
 func (api *API) getFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -128,7 +127,7 @@ func (api *API) getFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) 
 
 }
 
-// AddFileToHostedIPFSNetworkAdvanced is used to add a file to a hosted ipfs network in a more advanced and resilient manner
+// AddFileToHostedIPFSNetworkAdvanced is used to add a file to a private ipfs network in a more advanced and resilient manner
 func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 
 	username := GetAuthenticatedUserFromContext(c)
@@ -216,7 +215,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "file upload request sent to backend"})
 }
 
-// AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network
+// AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network via the simple method
 func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 
@@ -329,8 +328,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
-// IpfsPubSubPublishToHostedIPFSNetwork is used to publish a pubsub message
-// to a private ipfs network
+// IpfsPubSubPublishToHostedIPFSNetwork is used to publish a pubsub message to a private ipfs network
 func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -380,7 +378,7 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
-// RemovePinFromLocalHostForHostedIPFSNetwork is used to remove a content hash from a private hosted ipfs network
+// RemovePinFromLocalHostForHostedIPFSNetwork is used to remove a content hash from a private ipfs network
 func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	hash := c.Param("hash")
@@ -423,8 +421,7 @@ func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	})
 }
 
-// GetLocalPinsForHostedIPFSNetwork is used to get local pins
-// for a private ipfs network
+// GetLocalPinsForHostedIPFSNetwork is used to get local pins from the serving private ipfs node
 func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
@@ -473,8 +470,7 @@ func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
-// GetObjectStatForIpfsForHostedIPFSNetwork is  used to get object
-// stats for a private ipfs network
+// GetObjectStatForIpfsForHostedIPFSNetwork is  used to get object stats from a private ipfs network
 func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
@@ -518,8 +514,7 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"stats": stats})
 }
 
-// CheckLocalNodeForPinForHostedIPFSNetwork is used to check a
-// private ipfs network for a partilcar pin
+// CheckLocalNodeForPinForHostedIPFSNetwork is used to check the serving node for a pin
 func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
@@ -566,8 +561,7 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"present": present})
 }
 
-// PublishDetailedIPNSToHostedIPFSNetwork is used to publish
-// an IPNS record to a private network with fine grained control
+// PublishDetailedIPNSToHostedIPFSNetwork is used to publish an IPNS record to a private network with fine grained control
 func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 	networkName, exists := c.GetPostForm("network_name")
@@ -679,8 +673,8 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ipns entry creation request sent to backend"})
 }
 
-// CreateHostedIPFSNetworkEntryInDatabase is used to create
-// an entry in the database for a private ipfs network
+// CreateHostedIPFSNetworkEntryInDatabase is used to create an entry in the database for a private ipfs network
+// TODO: make bootstrap peers and related config optional
 func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	// lock down as admin route for now
 	ethAddress := GetAuthenticatedUserFromContext(c)

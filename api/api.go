@@ -83,6 +83,7 @@ func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	return &api, nil
 }
 
+// SetupLogging is used to setup our API logging system
 func (api *API) setupLogging() error {
 	logFile, err := os.OpenFile("/var/log/temporal/api_service.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {

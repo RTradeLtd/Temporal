@@ -12,7 +12,6 @@ import (
 var dev = false
 
 // GetUploadsFromDatabase is used to read a list of uploads from our database
-// only usable by admin
 func (api *API) getUploadsFromDatabase(c *gin.Context) {
 	authenticatedUser := GetAuthenticatedUserFromContext(c)
 	if authenticatedUser != AdminAddress {
@@ -38,7 +37,7 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 }
 
 // GetUploadsForAddress is used to read a list of uploads from a particular eth address
-// If not admin, will retrieve all uploads for the current context account
+// If not called by admin  admin, will retrieve all uploads for the current authenticated user
 func (api *API) getUploadsForAddress(c *gin.Context) {
 	var queryUser string
 	um := models.NewUploadManager(api.DBM.DB)

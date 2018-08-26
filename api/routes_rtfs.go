@@ -17,7 +17,7 @@ import (
 )
 
 // CalculateContentHashForFile is used to calculate the content hash
-// for a particular file, without actually storing it or providing it
+// for a particular file, without actually storing it or processing it
 func (api *API) calculateContentHashForFile(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	fileHandler, err := c.FormFile("file")
@@ -122,8 +122,7 @@ func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
 
 // AddFileLocallyAdvanced is used to upload a file in a more resilient
 // and efficient manner than our traditional simple upload. Note that
-// it does not give the user a content hash back immediately and will be sent
-// via email (eventually we will have a notification system for the interface)
+// it does not give the user a content hash back immediately
 func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
@@ -198,9 +197,8 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "file upload request sent to backend"})
 }
 
-// AddFileLocally is used to add a file to our local ipfs node
-// this will have to be done first before pushing any file's to the cluster
-// this needs to be optimized so that the process doesn't "hang" while uploading
+// AddFileLocally is used to add a file to our local ipfs node in a simple manner
+// this route gives the user back a content hash for their file immedaitely
 func (api *API) addFileLocally(c *gin.Context) {
 	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
@@ -334,7 +332,7 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	})
 }
 
-// RemovePinFromLocalHost is used to remove a pin from the ipfs instance
+// RemovePinFromLocalHost is used to remove a pin from the  ipfs node
 func (api *API) removePinFromLocalHost(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if username != AdminAddress {
@@ -372,7 +370,8 @@ func (api *API) removePinFromLocalHost(c *gin.Context) {
 	})
 }
 
-// GetLocalPins is used to get the pins tracked by the local ipfs node
+// GetLocalPins is used to get the pins tracked by the serving ipfs node
+// This is admin locked to avoid peformance penalties from looking up the pinset
 func (api *API) getLocalPins(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
@@ -403,9 +402,7 @@ func (api *API) getLocalPins(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
 }
 
-// GetObjectStatForIpfs is used to get the
-// particular object state from the local
-// ipfs node
+// GetObjectStatForIpfs is used to get the object stats for the particular cid
 func (api *API) getObjectStatForIpfs(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	key := c.Param("key")
@@ -430,8 +427,7 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"stats": stats})
 }
 
-// CheckLocalNodeForPin is used to check whether or not
-// the local node has pinned the content
+// CheckLocalNodeForPin is used to check whether or not the serving node is tacking the particular pin
 func (api *API) checkLocalNodeForPin(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {

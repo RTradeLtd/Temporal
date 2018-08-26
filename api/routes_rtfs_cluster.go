@@ -58,8 +58,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "cluster pin request sent to backend"})
 }
 
-// SyncClusterErrorsLocally is used to parse through the local cluster state
-// and sync any errors that are detected.
+// SyncClusterErrorsLocally is used to parse through the local cluster state and sync any errors that are detected.
 func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
@@ -181,9 +180,7 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 	c.JSON(http.StatusFound, gin.H{"status": status})
 }
 
-// FetchLocalClusterStatus is used to fetch the status of the localhost's
-// cluster state, and not the rest of the cluster
-// TODO: cleanup
+// FetchLocalClusterStatus is used to fetch the status of the localhost's cluster state, and not the rest of the cluster
 func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
