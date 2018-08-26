@@ -179,9 +179,9 @@ func (api *API) createPinPayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	ppm := models.NewPinPaymentManager(api.DBM.DB)
+	ppm := models.NewPaymentManager(api.DBM.DB)
 	var num *big.Int
-	num, err = ppm.RetrieveLatestPaymentNumberByUser(username)
+	num, err = ppm.RetrieveLatestPaymentNumberForUser(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -189,13 +189,8 @@ func (api *API) createPinPayment(c *gin.Context) {
 	}
 	if num == nil {
 		num = big.NewInt(0)
-
-	} else if num.Cmp(big.NewInt(0)) == 1 {
-		// this means that the latest payment number is greater than 0
-		// indicating a payment has already been made, in which case
-		// we will increment the value by 1
-		num = new(big.Int).Add(num, big.NewInt(1))
 	}
+	num = new(big.Int).Add(num, big.NewInt(1))
 	costBig := utils.FloatToBigInt(totalCost)
 	// for testing purpose
 	addressTyped := common.HexToAddress(ethAddress)
@@ -208,7 +203,7 @@ func (api *API) createPinPayment(c *gin.Context) {
 		return
 	}
 
-	_, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash, username, holdTimeInt)
+	_, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash, username, "pin", "public", holdTimeInt)
 	if err != nil {
 		msg := fmt.Sprintf("failed to create payment record in database for user %s due to the following error: %s", username, err.Error())
 		api.Logger.Error(msg)
@@ -316,7 +311,7 @@ func (api *API) createFilePayment(c *gin.Context) {
 	}
 	fmt.Println("file stored in minio")
 
-	fpm := models.NewFilePaymentManager(api.DBM.DB)
+	pm := models.NewPaymentManager(api.DBM.DB)
 	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
@@ -325,7 +320,7 @@ func (api *API) createFilePayment(c *gin.Context) {
 		return
 	}
 	var num *big.Int
-	num, err = fpm.RetrieveLatestPaymentNumber(ethAddress)
+	num, err = pm.RetrieveLatestPaymentNumberForUser(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		api.Logger.Error(err)
 		FailOnError(c, err)
@@ -348,7 +343,7 @@ func (api *API) createFilePayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	_, err = fpm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, FilesUploadBucket, objectName, networkName, username, holdTimeInMonthsInt)
+	_, err = pm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, objectName, username, "file", networkName, holdTimeInMonthsInt)
 	if err != nil {
 		msg := fmt.Sprintf("failed to store payment information in database for user %s due to the following error: %s", username, err.Error())
 		api.Logger.Error(msg)
@@ -388,7 +383,7 @@ func (api *API) submitPinPaymentConfirmation(c *gin.Context) {
 		FailNoExistPostForm(c, "tx_hash")
 		return
 	}
-	ppm := models.NewPinPaymentManager(api.DBM.DB)
+	ppm := models.NewPaymentManager(api.DBM.DB)
 	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
@@ -406,7 +401,7 @@ func (api *API) submitPinPaymentConfirmation(c *gin.Context) {
 		TxHash:        txHash,
 		EthAddress:    ethAddress,
 		PaymentNumber: paymentNumber,
-		ContentHash:   pp.ContentHash,
+		ContentHash:   pp.ObjectName,
 	}
 	qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqURL, true, false)
 	if err != nil {
@@ -505,7 +500,7 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 
 	mqURL := api.TConfig.RabbitMQ.URL
 
-	ppm := models.NewPinPaymentManager(api.DBM.DB)
+	ppm := models.NewPaymentManager(api.DBM.DB)
 	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
@@ -513,7 +508,7 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 		return
 	}
 	var number *big.Int
-	num, err := ppm.RetrieveLatestPaymentNumberByUser(username)
+	num, err := ppm.RetrieveLatestPaymentNumberForUser(username)
 	if err != nil {
 		FailOnError(c, err)
 		return
@@ -567,7 +562,7 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 		Sig:          sm.Sig,
 	}
 
-	_, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash, username, holdTimeInt)
+	_, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash, username, "pin", "public", holdTimeInt)
 	if err != nil {
 		FailOnError(c, err)
 		return

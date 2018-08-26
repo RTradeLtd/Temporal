@@ -19,124 +19,77 @@ type PinPayment struct {
 	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 }
 
-type PinPaymentManager struct {
-	DB *gorm.DB
-}
-
-func NewPinPaymentManager(db *gorm.DB) *PinPaymentManager {
-	return &PinPaymentManager{DB: db}
-}
-
-func (ppm *PinPaymentManager) FindPaymentByNumberAndAddress(number, ethAddress string) (*PinPayment, error) {
-	pp := &PinPayment{}
-	if check := ppm.DB.Where("eth_address = ? AND number = ?", ethAddress, number).First(pp); check.Error != nil {
-		return nil, check.Error
-	}
-	return pp, nil
-}
-
-func (ppm *PinPaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, contentHash, username string, holdTimeInMonths int64) (*PinPayment, error) {
-	_, err := ppm.FindPaymentByNumberAndAddress(number.String(), uploaderAddress)
-	if err == nil {
-		return nil, errors.New("payment already exists")
-	}
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
-	}
-	pp := &PinPayment{
-		Number:           number.String(),
-		Method:           method,
-		ChargeAmount:     chargeAmount.String(),
-		EthAddress:       uploaderAddress,
-		UserName:         username,
-		ContentHash:      contentHash,
-		HoldTimeInMonths: holdTimeInMonths,
-	}
-	if check := ppm.DB.Create(pp); check.Error != nil {
-		return nil, check.Error
-	}
-	return pp, nil
-}
-
-func (ppm *PinPaymentManager) RetrieveLatestPaymentByUser(username string) (*PinPayment, error) {
-	pp := PinPayment{}
-	if check := ppm.DB.Table("pin_payments").Order("number desc").Where("user_name = ?", username).First(&pp); check.Error != nil {
-		return nil, check.Error
-	}
-	return &pp, nil
-}
-
-func (ppm *PinPaymentManager) RetrieveLatestPaymentNumberByUser(username string) (*big.Int, error) {
-	pp := &PinPayment{}
-	num := big.NewInt(0)
-	check := ppm.DB.Table("pin_payments").Order("number desc").Where("user_name = ?", username).First(pp)
-	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
-		return nil, check.Error
-	}
-	if check.Error == gorm.ErrRecordNotFound {
-		return num, nil
-	}
-	var valid bool
-	num, valid = num.SetString(pp.Number, 10)
-	if !valid {
-		return nil, errors.New("failed to convert from string to big int")
-	}
-	return num, nil
-}
-
-type FilePayment struct {
+// Payment is our database model for payments
+// Note that if it is of type file, then object name is the minio object
+// if it is of type pin, then the object name is the content hash
+type Payment struct {
 	gorm.Model
-	Method           uint8
-	Number           string
-	ChargeAmount     string
-	EthAddress       string
-	UserName         string
-	BucketName       string
-	ObjectName       string
-	NetworkName      string
-	HoldTimeInMonths int64
+	Method           uint8  `json:"method"`
+	Number           string `json:"number"`
+	ChargeAmount     string `json:"charge_amount"`
+	EthAddress       string `json:"eth_address"`
+	UserName         string `json:"user_name"`
+	NetworkName      string `json:"network_name"`
+	ObjectName       string `json:"content_hash"`
+	Type             string `json:"time"`
+	HoldTimeInMonths int64  `json:"hold_time_in_months"`
 }
-
-type FilePaymentManager struct {
+type PaymentManager struct {
 	DB *gorm.DB
 }
 
-func NewFilePaymentManager(db *gorm.DB) *FilePaymentManager {
-	return &FilePaymentManager{DB: db}
+func NewPaymentManager(db *gorm.DB) *PaymentManager {
+	return &PaymentManager{DB: db}
 }
 
-func (fpm *FilePaymentManager) NewPayment(method uint8, number, chargeAmount *big.Int, uploaderAddress, bucketName, objectName, networkName, username string, holdTimeInMonths int64) (*FilePayment, error) {
-	fp := &FilePayment{
-		Number:           number.String(),
-		Method:           method,
-		ChargeAmount:     chargeAmount.String(),
-		EthAddress:       uploaderAddress,
-		UserName:         username,
-		BucketName:       bucketName,
-		ObjectName:       objectName,
-		NetworkName:      networkName,
-		HoldTimeInMonths: holdTimeInMonths,
+func (pm *PaymentManager) NewPayment(method uint8, number *big.Int, chargeAmount *big.Int, ethAddress, objectName, username, uploadType, networkName string, holdTimeInMonths int64) (*Payment, error) {
+	p := Payment{}
+	check := pm.DB.Where("eth_address = ? AND payment_number = ?", ethAddress, number.String()).First(&p)
+	if check.Error == nil {
+		return nil, errors.New("payment number already in database for address")
 	}
-	if check := fpm.DB.Create(fp); check.Error != nil {
-		return nil, check.Error
-	}
-	return fp, nil
-}
-
-func (fpm *FilePaymentManager) RetrieveLatestPaymentNumber(username string) (*big.Int, error) {
-	fp := &FilePayment{}
-	num := big.NewInt(0)
-	check := fpm.DB.Table("file_payments").Order("number desc").Where("user_name = ?", username).First(fp)
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
-	if check.Error == gorm.ErrRecordNotFound {
-		return num, nil
+	p.Method = method
+	p.Number = number.String()
+	p.ChargeAmount = chargeAmount.String()
+	p.EthAddress = ethAddress
+	p.UserName = username
+	p.NetworkName = networkName
+	p.ObjectName = objectName
+	p.Type = uploadType
+	p.HoldTimeInMonths = holdTimeInMonths
+	if check = pm.DB.Create(&p); check.Error != nil {
+		return nil, check.Error
 	}
-	var valid bool
-	num, valid = num.SetString(fp.Number, 10)
-	if !valid {
-		return nil, errors.New("failed to convert from string to big int")
+	return &p, nil
+}
+
+func (pm *PaymentManager) FindPaymentByNumberAndAddress(paymentNumber, ethAddress string) (*Payment, error) {
+	p := Payment{}
+	if check := pm.DB.Where("eth_address = ? AND payment_number = ?", ethAddress, paymentNumber).First(&p); check.Error != nil {
+		return nil, check.Error
+	}
+	return &p, nil
+}
+
+func (pm *PaymentManager) RetrieveLatestPaymentForUser(username string) (*Payment, error) {
+	p := Payment{}
+	if check := pm.DB.Where("user_name = ?", username).Last(&p); check.Error != nil {
+		return nil, check.Error
+	}
+	return &p, nil
+}
+
+func (pm *PaymentManager) RetrieveLatestPaymentNumberForUser(username string) (*big.Int, error) {
+	p := Payment{}
+	if check := pm.DB.Where("user_name = ?", username).Last(&p); check.Error != nil {
+		return nil, check.Error
+	}
+	num, ok := new(big.Int).SetString(p.Number, 10)
+	if !ok {
+		return nil, errors.New("failed to convert string to big int")
 	}
 	return num, nil
 }
