@@ -43,6 +43,30 @@ type PinPaymentSubmission struct {
 	Prefixed    bool     `json:"prefixed"`
 }
 
+// WatchForAndProcessPaymentsMade is used to watch for payment made events and action them
+func (qm *QueueManager) WatchForAndProcessPaymentsMade(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+	_, err := payments.GeneratePaymentManager(cfg, "infura")
+	if err != nil {
+		return err
+	}
+	qm.Logger.WithFields(log.Fields{
+		"service": qm.QueueName,
+	}).Info("watching for payments to process")
+	for d := range msgs {
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.QueueName,
+		}).Info("detected new message")
+		var out interface{}
+		err := json.Unmarshal(d.Body, &out)
+		if err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   err.Error(),
+			}).Error("failed to unmarshal message")
+		}
+	}
+}
+
 // ProcessPinPaymentConfirmation is used to process pin payment confirmations to inject content into TEMPORAL
 func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	paymentContractAddress := cfg.Ethereum.Contracts.PaymentContractAddress
