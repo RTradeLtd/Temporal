@@ -81,8 +81,7 @@ func (qm *QueueManager) ProcessPinPaymentConfirmation(msgs <-chan amqp.Delivery,
 	paymentManager := models.NewPinPaymentManager(db)
 	qm.Logger.WithFields(log.Fields{
 		"service": qm.QueueName,
-		"error":   err.Error(),
-	}).Error("processing pin payment confirmations")
+	}).Info("processing pin payment confirmations")
 	for d := range msgs {
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
