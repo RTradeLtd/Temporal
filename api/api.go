@@ -69,7 +69,7 @@ func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	router.Use(xssMdlwr.RemoveXss())
 	router.Use(limit.MaxAllowed(20)) // limit to 20 con-current connections
 	// enable HSTS on all domains including subdomains
-	router.Use(helmet.SetHSTS(true))
+	//router.Use(helmet.SetHSTS(true))
 	// prevent mine content sniffing
 	router.Use(helmet.NoSniff())
 	//r.Use(middleware.DatabaseMiddleware(db))
