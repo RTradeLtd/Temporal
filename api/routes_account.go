@@ -80,7 +80,9 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		FailNoExistPostForm(c, "email_address")
 		return
 	}
-
+	if ethAddress == "" {
+		ethAddress = username
+	}
 	api.Logger.WithFields(log.Fields{
 		"service": "api",
 	}).Info("user account registration detected")
