@@ -46,10 +46,6 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
   name = "github.com/ipfs/go-dnslink"
 
 [[constraint]]
-  name = "github.com/ipfs/go-ipfs-api"
-  version = "1.2.7"
-
-[[constraint]]
   branch = "master"
   name = "github.com/ipfs/go-ipfs-keystore"
 
@@ -73,10 +69,6 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
   name = "github.com/minio/minio-go"
   version = "6.0.5"
 
-[[constraint]]
-  name = "github.com/ipfs/go-ipfs-cmdkit"
-  branch = "master"
-  
 # MISC
 
 [[constraint]]
@@ -104,10 +96,6 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
   version = "1.8.11"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/gin-contrib/rollbar"
-
-[[constraint]]
   name = "github.com/gin-gonic/gin"
   branch = "master"
 
@@ -126,14 +114,6 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
   name = "github.com/mitchellh/goamz"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/onrik/ethrpc"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/rivo/tview"
-
-[[constraint]]
   name = "github.com/segmentio/go-route53"
   version = "0.2.0"
 
@@ -144,14 +124,6 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
 [[constraint]]
   branch = "master"
   name = "github.com/streadway/amqp"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/stvp/roll"
-
-[[constraint]]
-  name = "github.com/tus/tusd"
-  version = "0.10.0"
 
 [[constraint]]
   branch = "master"
@@ -168,7 +140,3 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
 [[constraint]]
   name = "github.com/gin-contrib/cors"
   version = "1.2.0"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/gin-contrib/sessions"
