@@ -33,7 +33,10 @@ func TestDatabaseMigrations(t *testing.T) {
 	} else {
 		dbPass = ""
 	}
-	db := database.OpenDBConnection(dbPass)
+	db, err := database.OpenDBConnection(dbPass, "127.0.0.1", "postgres")
+	if err != nil {
+		t.Fatal(err)
+	}
 	db.AutoMigrate(database.UploadObj)
 	db.AutoMigrate(database.UserObj)
 	db.AutoMigrate(database.PaymentObj)

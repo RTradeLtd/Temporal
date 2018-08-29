@@ -3,6 +3,7 @@ package dccd_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/dccd"
 )
@@ -10,7 +11,7 @@ import (
 var testHash = "Qmbu7x6gJbsKDcseQv66pSbUcAA3Au6f7MfTYVXwvBxN2K"
 
 func TestDispersal(t *testing.T) {
-	manager := dccd.NewDCCDManager("")
+	manager := dccd.NewDCCDManager("", 100*time.Second)
 	resp, err := manager.DisperseContentWithShell(testHash)
 	if err != nil {
 		t.Fatal(err)
@@ -19,7 +20,7 @@ func TestDispersal(t *testing.T) {
 }
 
 func TestDCCD(t *testing.T) {
-	manager := dccd.NewDCCDManager("")
+	manager := dccd.NewDCCDManager("", 100*time.Second)
 	// Parse gateway array
 	manager.ParseGateways()
 	dispersals, err := manager.DisperseContentWithShell(testHash)
