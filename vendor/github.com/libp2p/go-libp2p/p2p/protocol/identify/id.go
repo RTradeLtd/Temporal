@@ -92,13 +92,13 @@ func (ids *IDService) IdentifyConn(c inet.Conn) {
 		c.Close()
 		return
 	}
-	defer inet.FullClose(s)
 
 	s.SetProtocol(ID)
 
 	// ok give the response to our handler.
 	if err := msmux.SelectProtoOrFail(ID, s); err != nil {
 		log.Event(context.TODO(), "IdentifyOpenFailed", c.RemotePeer(), logging.Metadata{"error": err})
+		s.Reset()
 		return
 	}
 
@@ -111,8 +111,8 @@ func (ids *IDService) IdentifyConn(c inet.Conn) {
 
 	if !found {
 		log.Errorf("IdentifyConn failed to find channel (programmer error) for %s", c)
-		return
 	}
+	inet.FullClose(s)
 }
 
 func (ids *IDService) requestHandler(s inet.Stream) {
@@ -255,7 +255,7 @@ func (ids *IDService) consumeReceivedPubKey(c inet.Conn, kb []byte) {
 
 	newKey, err := ic.UnmarshalPublicKey(kb)
 	if err != nil {
-		log.Errorf("%s cannot unmarshal key from remote peer: %s", lp, rp)
+		log.Warningf("%s cannot unmarshal key from remote peer: %s, %s", lp, rp, err)
 		return
 	}
 

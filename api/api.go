@@ -38,13 +38,14 @@ type API struct {
 
 // Initialize is used ot initialize our API service
 func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
-	// load config variables
+	// initialize an empty api struct
 	api := API{}
 	// setup logging
 	err := api.setupLogging()
 	if err != nil {
 		return nil, err
 	}
+	// setup some default config variables
 	api.TConfig = cfg
 	AdminAddress = cfg.API.AdminUser
 	listenAddress := cfg.API.Connection.ListenAddress
@@ -56,30 +57,31 @@ func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 		return nil, err
 	}
 	api.DBM = db
+	// set log mode to true, useful for debugging database issues
 	api.DBM.DB.LogMode(logMode)
 	// generate our default router
 	router := gin.Default()
-
 	// load our global middlewares
 	p := ginprometheus.NewPrometheus("gin")
 	// set the address for prometheus to collect metrics
 	p.SetListenAddress(prometheusListenAddress)
 	// load in prom to gin
 	p.Use(router)
+	// load xss mitigation middleware
 	router.Use(xssMdlwr.RemoveXss())
-	router.Use(limit.MaxAllowed(20)) // limit to 20 con-current connections
-	// enable HSTS on all domains including subdomains
-	//router.Use(helmet.SetHSTS(true))
+	// set a connection limit
+	router.Use(limit.MaxAllowed(20))
 	// prevent mine content sniffing
 	router.Use(helmet.NoSniff())
-	//r.Use(middleware.DatabaseMiddleware(db))
+	// load cors
 	router.Use(middleware.CORSMiddleware())
 	// generate our auth middleware to pass to setup routes
 	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db.DB, api.Logger)
 	// setup our routes
 	api.setupRoutes(router, authMiddleware, db.DB, cfg)
+	// add our router
 	api.Router = router
-
+	// return our configured API service
 	return &api, nil
 }
 

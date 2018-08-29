@@ -7,7 +7,6 @@ import (
 	gocid "github.com/ipfs/go-cid"
 	"github.com/ipfs/ipfs-cluster/api"
 	"github.com/ipfs/ipfs-cluster/api/rest/client"
-	ma "github.com/multiformats/go-multiaddr"
 	//"github.com/ipfs/ipfs-cluster/api/rest/client"
 )
 
@@ -156,16 +155,6 @@ func (cm *ClusterManager) ListPeers() ([]api.ID, error) {
 		return nil, err
 	}
 	return peers, nil
-}
-
-// AddPeerToCluster is used to add a peer to the cluster
-// TODO: still needs to be completed
-func (cm *ClusterManager) AddPeerToCluster(addr ma.Multiaddr) error {
-	_, err := cm.Client.PeerAdd(addr)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // DecodeHashString is used to take a hash string, and turn it into a CID

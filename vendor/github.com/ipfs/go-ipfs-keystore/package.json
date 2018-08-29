@@ -8,15 +8,15 @@
   },
   "gxDependencies": [
     {
-      "hash": "QmPuosXfnE2Xrdiw95D78AhW41GYwGqpstKMf4TEsE4f33",
+      "hash": "QmcVVHfdyv15GVPk7NrxdWjh2hLVccXnoD8j2tyQShiXJb",
       "name": "go-log",
-      "version": "1.5.0"
+      "version": "1.5.3"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmaPbCnUMBohSGo3KnxEa2bHqyJVVeEEcwtqJAYxerieBo",
+      "hash": "QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n",
       "name": "go-libp2p-crypto",
-      "version": "1.5.0"
+      "version": "2.0.1"
     },
     {
       "author": "whyrusleeping",
@@ -29,6 +29,6 @@
   "language": "go",
   "license": "MIT",
   "name": "go-ipfs-keystore",
-  "version": "0.0.2"
+  "version": "0.0.6"
 }
 

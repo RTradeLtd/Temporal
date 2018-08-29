@@ -384,8 +384,7 @@ func (h *BasicHost) Connect(ctx context.Context, pi pstore.PeerInfo) error {
 	// absorb addresses into peerstore
 	h.Peerstore().AddAddrs(pi.ID, pi.Addrs, pstore.TempAddrTTL)
 
-	cs := h.Network().ConnsToPeer(pi.ID)
-	if len(cs) > 0 {
+	if h.Network().Connectedness(pi.ID) == inet.Connected {
 		return nil
 	}
 
@@ -432,7 +431,7 @@ func (h *BasicHost) resolveAddrs(ctx context.Context, pi pstore.PeerInfo) ([]ma.
 // dialPeer opens a connection to peer, and makes sure to identify
 // the connection once it has been opened.
 func (h *BasicHost) dialPeer(ctx context.Context, p peer.ID) error {
-	log.Debugf("host %s dialing %s", h.ID, p)
+	log.Debugf("host %s dialing %s", h.ID(), p)
 	c, err := h.Network().DialPeer(ctx, p)
 	if err != nil {
 		return err

@@ -22,9 +22,9 @@
     },
     {
       "author": "multiformats",
-      "hash": "QmRDePEiL4Yupq5EkcK3L3ko3iMgYaqUdLu7xc1kqs7dnV",
+      "hash": "QmewJ1Zp9Hwz5HcMd7JYjhLXwvEHTL2UBCCz3oLt1E2N5z",
       "name": "go-multicodec",
-      "version": "0.1.5"
+      "version": "0.1.6"
     },
     {
       "author": "davidlazar",
@@ -38,6 +38,6 @@
   "license": "MIT",
   "name": "go-libp2p-pnet",
   "releaseCmd": "git commit -a -m \"gx release $VERSION\"",
-  "version": "3.0.1"
+  "version": "3.0.2"
 }
 

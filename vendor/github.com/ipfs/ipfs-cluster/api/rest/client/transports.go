@@ -41,7 +41,7 @@ func (c *Client) defaultTransport() {
 func (c *Client) enableLibp2p() error {
 	c.defaultTransport()
 
-	pid, addr, err := api.Libp2pMultiaddrSplit(c.config.PeerAddr)
+	pid, addr, err := api.Libp2pMultiaddrSplit(c.config.APIAddr)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (c *Client) enableLibp2p() error {
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(c.ctx, c.config.Timeout)
+	ctx, cancel := context.WithTimeout(c.ctx, ResolveTimeout)
 	defer cancel()
 	resolvedAddrs, err := madns.Resolve(ctx, addr)
 	if err != nil {
