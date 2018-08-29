@@ -315,12 +315,6 @@
   version = "v1.2.7"
 
 [[projects]]
-  name = "github.com/ipfs/go-ipfs-cmdkit"
-  packages = ["files"]
-  revision = "3432d7e930e7d6d874654d566fa44573f8e0d955"
-  version = "v1.1.1"
-
-[[projects]]
   branch = "master"
   name = "github.com/ipfs/go-ipfs-keystore"
   packages = ["."]
@@ -358,8 +352,8 @@
     "api",
     "api/rest/client"
   ]
-  revision = "0889302c8d71627ccfa23ebd66e8a5dcef75b56e"
-  version = "v0.4.0"
+  revision = "2f417eb63281e53ab8273189fac20ac70267287b"
+  version = "v0.5.0"
 
 [[projects]]
   name = "github.com/jackpal/gateway"
@@ -1152,6 +1146,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ac71e678cc54deac6ea65ed7575dfa70bc26424eb6ae46bbb8d27222af689c0c"
+  inputs-digest = "2543c8e3b9b3217977ba472a2824a421dfbba12998a3b9f20e85463215713dee"
   solver-name = "gps-cdcl"
   solver-version = 1
