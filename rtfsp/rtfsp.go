@@ -9,7 +9,7 @@ import (
 	"os"
 
 	addrUtil "github.com/ipfs/go-ipfs-addr"
-	cg "github.com/ipfs/go-ipfs/repo/config"
+	cg "github.com/ipfs/go-ipfs-config"
 )
 
 type PrivateConfigManager struct {

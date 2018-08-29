@@ -1,4 +1,4 @@
-ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/ipsn/go-ipfs*"]
+ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/ipsn/go-ipfs*"]
 
 [prune]
   go-tests = true
@@ -109,3 +109,7 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
 [[constraint]]
   name = "github.com/gin-contrib/cors"
   version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/ipfs/go-ipfs-config"
+  version = "0.2.4"
