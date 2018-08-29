@@ -9,33 +9,57 @@
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "Qmd1HfU1m9mR839VhGp5JrcvteF7b5LoTtPMqcxLuriCTY",
+      "hash": "QmRcFemyJ8JjkMhErTAapQqs411JxD6YQRbtCmwAfnGe24",
       "name": "go-libp2p-pubsub",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmXYjuNuxVzXKJCfWasQk1RqkhVLDM9jtUKhqc2WPQmFSB",
+      "hash": "QmcZSzKEM5yDfpZbeEEZaVmaZ1zXm6JWTbrQZSB8hCVPzk",
       "name": "go-libp2p-peer",
-      "version": "2.2.0"
+      "version": "2.3.6"
     },
     {
       "author": "multiformats",
-      "hash": "QmXY77cVe7rVRQXZZQRioukUM7aRW3BTcAgJe12MCtb3Ji",
+      "hash": "QmYmsdtJ3HsodkePE3eU3TsCaP2YvPZJ4LoXnNkDE5Tpt7",
       "name": "go-multiaddr",
-      "version": "1.2.4"
+      "version": "1.3.0"
     },
     {
       "author": "multiformats",
-      "hash": "QmX3U3YXCQ6UYBxq2LVWF8dARS1hPUTEYLrSx654Qyxyw6",
+      "hash": "QmV6FjemM1K8oXjrvuq3wuVWWoU2TLDPmNnKrxHzY3v6Ai",
       "name": "go-multiaddr-net",
-      "version": "1.5.5"
+      "version": "1.6.3"
     },
     {
       "author": "keks",
-      "hash": "QmfDySkRheT56VAKqvM57xsUcfCRPXjYPzFHr4dAGdpyGj",
+      "hash": "QmSP88ryZkHSRn1fnngAaV2Vcn63WUJzAavnRM9CVdU1Ky",
       "name": "go-ipfs-cmdkit",
-      "version": "0.3.4"
+      "version": "1.1.3"
+    },
+    {
+      "author": "mitchellh",
+      "hash": "QmdcULN1WCzgoQmcCaUAmEhwcxHYsDrbZ2LvRJKCL8dMrK",
+      "name": "go-homedir",
+      "version": "1.0.0"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmPdKqUcHGFdeSpvjVoaTRPPstGif9GBZb5Q56RVw9o69A",
+      "name": "go-ipfs-util",
+      "version": "1.2.8"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmQine7gvHncNevKtG9QXxf3nXcwSj6aDDmMm52mHofEEp",
+      "name": "tar-utils",
+      "version": "0.0.3"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmWne2EKHBvVpSTYuWuWch3D9KqAx78Te83UXWFKQDcksJ",
+      "name": "go-libp2p-metrics",
+      "version": "2.1.4"
     }
   ],
   "gxVersion": "0.7.0",
@@ -43,6 +67,6 @@
   "license": "MIT",
   "name": "go-ipfs-api",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "1.2.1"
+  "version": "1.3.5"
 }
 
