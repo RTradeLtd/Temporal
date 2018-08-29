@@ -5,8 +5,6 @@ services:
   - docker
 
 install:
-  - go get github.com/golang/dep/cmd/dep
-  - dep ensure -v
   - docker pull koalaman/shellcheck
 
 before_script:
