@@ -113,3 +113,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   name = "github.com/ipfs/go-ipfs-config"
   version = "0.2.4"
+
+[[override]]
+  name = "github.com/rjeczalik/notify"
+  branch = "master"
