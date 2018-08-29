@@ -121,3 +121,11 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[override]]
   name = "github.com/rjeczalik/notify"
   branch = "master"
+
+[[constraint]]
+  name = "github.com/libp2p/go-libp2p-peer"
+  branch = "master"
+
+[[override]]
+  name = "github.com/ipfs/go-ipfs-cmdkit"
+  branch = "master"

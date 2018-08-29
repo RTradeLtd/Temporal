@@ -70,14 +70,6 @@
   revision = "4eba002a5eaea69cf8d235a388fc6b65ae68d2dd"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4c4c33075b704791d6a7f09dfb55c66769e8a1dc6adf87026292d274fe8ad113"
-  name = "github.com/codahale/hdrhistogram"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "3a0bb77429bd3a61596f5e8a3172445844342120"
-
-[[projects]]
   digest = "1:0ef770954bca104ee99b3b6b7f9b240605ac03517d9f98cbc1893daa03f3c038"
   name = "github.com/coreos/go-semver"
   packages = ["semver"]
@@ -126,90 +118,32 @@
   version = "v1.0-Beta"
 
 [[projects]]
-  branch = "master"
-  digest = "1:67d0b50be0549e610017cb91e0b0b745ec0cad7c613bc8e18ff2d1c1fc8825a7"
-  name = "github.com/edsrzf/mmap-go"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "0bce6a6887123b67a60366d2c9fe2dfb74289d2e"
-
-[[projects]]
-  digest = "1:877f318c091d2babd52d8fe277f2655b0301b9e567d18c057fa91a3e2a5871c5"
+  digest = "1:4415ce580b6e9b094c8012320c393b474bd61a7b402671a09719c8fa384891f2"
   name = "github.com/ethereum/go-ethereum"
   packages = [
     ".",
     "accounts",
     "accounts/abi",
     "accounts/abi/bind",
-    "accounts/abi/bind/backends",
     "accounts/keystore",
-    "accounts/usbwallet",
-    "accounts/usbwallet/internal/trezor",
     "common",
-    "common/bitutil",
     "common/hexutil",
     "common/math",
     "common/mclock",
-    "consensus",
-    "consensus/ethash",
-    "consensus/misc",
-    "contracts/chequebook",
-    "contracts/chequebook/contract",
-    "contracts/ens",
-    "contracts/ens/contract",
-    "core",
-    "core/bloombits",
-    "core/rawdb",
-    "core/state",
     "core/types",
-    "core/vm",
     "crypto",
-    "crypto/bn256",
-    "crypto/bn256/cloudflare",
-    "crypto/bn256/google",
-    "crypto/ecies",
     "crypto/secp256k1",
     "crypto/sha3",
-    "eth/filters",
     "ethclient",
     "ethdb",
     "event",
-    "internal/debug",
     "log",
-    "log/term",
     "metrics",
-    "metrics/exp",
-    "node",
-    "p2p",
-    "p2p/discover",
-    "p2p/discv5",
-    "p2p/nat",
     "p2p/netutil",
-    "p2p/protocols",
     "params",
     "rlp",
     "rpc",
-    "swarm/api",
-    "swarm/api/client",
-    "swarm/bmt",
-    "swarm/chunk",
-    "swarm/log",
-    "swarm/multihash",
-    "swarm/network",
-    "swarm/pot",
-    "swarm/pss",
-    "swarm/sctx",
-    "swarm/services/swap",
-    "swarm/services/swap/swap",
-    "swarm/spancontext",
-    "swarm/state",
-    "swarm/storage",
-    "swarm/storage/encryption",
-    "swarm/storage/mock",
-    "swarm/storage/mru",
-    "swarm/tracing",
     "trie",
-    "whisper/whisperv5",
   ]
   pruneopts = "UT"
   revision = "316fc7ecfc10d06603f1358c1f4c1020ec36dd2a"
@@ -222,17 +156,6 @@
   pruneopts = "UT"
   revision = "bad65a492f32121a87197f4a085905c35e2a367e"
   version = "v1.0.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:0e46990e9f1b0c4f6f84003ba9c7b5e5b8adccbcfb3595b6f0d2312080356bfb"
-  name = "github.com/fjl/memsize"
-  packages = [
-    ".",
-    "memsizeui",
-  ]
-  pruneopts = "UT"
-  revision = "f6d5545993d68e9e42df43eb57958f898dea3623"
 
 [[projects]]
   digest = "1:2b59aca2665ff804f6606c8829eaee133ddd3aefbc841014660d961b0034f888"
@@ -291,12 +214,9 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:4ee2c939f1ee5983ec75069bc51604a64657b37bc03adeccee8b60abecfe76cc"
+  digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
   name = "github.com/golang/protobuf"
-  packages = [
-    "proto",
-    "protoc-gen-go/descriptor",
-  ]
+  packages = ["proto"]
   pruneopts = "UT"
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
   version = "v1.2.0"
@@ -348,17 +268,6 @@
   packages = ["keccakpg"]
   pruneopts = "UT"
   revision = "d9f6b97f8db22dd1e090fd0bbbe98f09cc7dd0a8"
-
-[[projects]]
-  branch = "master"
-  digest = "1:cf296baa185baae04a9a7004efee8511d08e2f5f51d4cbe5375da89722d681db"
-  name = "github.com/hashicorp/golang-lru"
-  packages = [
-    ".",
-    "simplelru",
-  ]
-  pruneopts = "UT"
-  revision = "0fb14efe8c47ae851c0034ed7a448854d3d34cf3"
 
 [[projects]]
   branch = "master"
@@ -425,12 +334,12 @@
   version = "v1.3.1"
 
 [[projects]]
-  digest = "1:e0da4be95e9d79b26ae671a246cb31c9eb9165442a2bfeb17fe70b688e0736ce"
+  branch = "master"
+  digest = "1:960df862bef266ca070f8ed90aeb274edc89e9fd8fa2e12472e59845c77a4dab"
   name = "github.com/ipfs/go-ipfs-cmdkit"
   packages = ["files"]
   pruneopts = "UT"
-  revision = "3432d7e930e7d6d874654d566fa44573f8e0d955"
-  version = "v1.1.1"
+  revision = "b8ab4890f8913c81f3e906b9e46fdb369d31bad3"
 
 [[projects]]
   digest = "1:a78df9eef7df7688f5894d5ba93c1ae7b788713e7f59ccf5d7a306f81a2e6a00"
@@ -703,12 +612,12 @@
   version = "v3.0.8"
 
 [[projects]]
-  digest = "1:aad19d7f56eea6ceafbe7cf19291a1af3e00b80b9bef35f1f5aa4da0f7b56b44"
+  branch = "master"
+  digest = "1:e9107ad09c36587c50f466c7b60855919e2e01a010a3d3b46773dadb6ed5fe25"
   name = "github.com/libp2p/go-libp2p-peer"
   packages = ["."]
   pruneopts = "UT"
-  revision = "554a9b76b860b599d3ef0806a142fdd2c2e9a3d6"
-  version = "v2.3.6"
+  revision = "e79fbd6ae779787504f963eddfead69494bb3e92"
 
 [[projects]]
   digest = "1:2f583d2aa1131f6f5634a26ca1757a7e625da97060c8ca6d79eed0ad89745ee6"
@@ -1107,14 +1016,6 @@
   revision = "05ee40e3a273f7245e8777337fc7b46e533a9a92"
 
 [[projects]]
-  digest = "1:9ffc0db15d8de463144fdc52af75a21b9d6ffc9af2a91e3ed294758ac19c734e"
-  name = "github.com/prometheus/prometheus"
-  packages = ["util/flock"]
-  pruneopts = "UT"
-  revision = "85f23d82a045d103ea7f3c89a91fba4a93e6367a"
-  version = "v2.1.0"
-
-[[projects]]
   branch = "master"
   digest = "1:c4556a44e350b50a490544d9b06e9fba9c286c21d6c0e47f54f3a9214597298c"
   name = "github.com/rcrowley/go-metrics"
@@ -1217,39 +1118,6 @@
   ]
   pruneopts = "UT"
   revision = "ae2bd5eed72d46b28834ec3f60db3a3ebedd8dbd"
-
-[[projects]]
-  digest = "1:104a2d7446f4628e4663d7c029b18da1aad4313735de775f37b6e7720b1d0aa7"
-  name = "github.com/uber/jaeger-client-go"
-  packages = [
-    ".",
-    "config",
-    "internal/baggage",
-    "internal/baggage/remote",
-    "internal/spanlog",
-    "internal/throttler",
-    "internal/throttler/remote",
-    "log",
-    "rpcmetrics",
-    "thrift",
-    "thrift-gen/agent",
-    "thrift-gen/baggage",
-    "thrift-gen/jaeger",
-    "thrift-gen/sampling",
-    "thrift-gen/zipkincore",
-    "utils",
-  ]
-  pruneopts = "UT"
-  revision = "b043381d944715b469fd6b37addfd30145ca1758"
-  version = "v2.14.0"
-
-[[projects]]
-  digest = "1:0f09db8429e19d57c8346ad76fbbc679341fa86073d3b8fb5ac919f0357d8f4c"
-  name = "github.com/uber/jaeger-lib"
-  packages = ["metrics"]
-  pruneopts = "UT"
-  revision = "ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5"
-  version = "v1.5.0"
 
 [[projects]]
   digest = "1:03aa6e485e528acb119fb32901cf99582c380225fc7d5a02758e08b180cb56c3"
@@ -1373,7 +1241,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:22d4f88aaf8f868dc8621707bff7b7c08d7ea2f71d531a06eb50857dbcc7065e"
+  digest = "1:f3d41858ff2b8d56fb5751cc8f4982d9a2b00adddee9d460bc96c657f1fa17be"
   name = "golang.org/x/crypto"
   packages = [
     "argon2",
@@ -1383,7 +1251,6 @@
     "blowfish",
     "internal/subtle",
     "pbkdf2",
-    "ripemd160",
     "salsa20",
     "salsa20/salsa",
     "scrypt",
@@ -1408,14 +1275,6 @@
   ]
   pruneopts = "UT"
   revision = "8a410e7b638dca158bf9e766925842f6651ff828"
-
-[[projects]]
-  branch = "master"
-  digest = "1:9f303486d623f840492bfeb48eb906a94e9d3fe638a761639b72ce64bf7bfcc3"
-  name = "golang.org/x/sync"
-  packages = ["syncmap"]
-  pruneopts = "UT"
-  revision = "1d60e4601c6fd243af51cc01ddf169918a5407ca"
 
 [[projects]]
   branch = "master"
@@ -1509,14 +1368,6 @@
   revision = "c1b8fa8bdccecb0b8db834ee0b92fdbcfa606dd6"
 
 [[projects]]
-  digest = "1:b24d38b282bacf9791408a080f606370efa3d364e4b5fd9ba0f7b87786d3b679"
-  name = "gopkg.in/urfave/cli.v1"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
-  version = "v1.20.0"
-
-[[projects]]
   digest = "1:342378ac4dcb378a5448dd723f0784ae519383532f5e70ade24132c4c8693202"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -1544,8 +1395,6 @@
     "github.com/ethereum/go-ethereum/crypto/sha3",
     "github.com/ethereum/go-ethereum/ethclient",
     "github.com/ethereum/go-ethereum/event",
-    "github.com/ethereum/go-ethereum/swarm/api",
-    "github.com/ethereum/go-ethereum/swarm/api/client",
     "github.com/gin-contrib/cors",
     "github.com/gin-gonic/gin",
     "github.com/ipfs/go-cid",
