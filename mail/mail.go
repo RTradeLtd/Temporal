@@ -32,7 +32,8 @@ func GenerateMailManager(tCfg *config.TemporalConfig) (*MailManager, error) {
 	dbPass := tCfg.Database.Password
 	dbURL := tCfg.Database.URL
 	dbUser := tCfg.Database.Username
-	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := database.OpenDBConnection(database.DBOptions{
+		User: dbUser, Password: dbPass, Address: dbURL})
 	if err != nil {
 		return nil, err
 	}
