@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "temporal"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password123"
+
+#  node1:
+#    image: ubuntu
+#  node2:
+#    image: ubuntu
+#  node3:
+#    image: ubuntu
+#  node4:
+#    image: ubuntu
+#  node5:
+#    image: ubuntu

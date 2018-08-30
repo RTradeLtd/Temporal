@@ -8,8 +8,10 @@ ls:
 # Run simple checks
 .PHONY: check
 check:
+	@echo "===================      running checks     ==================="
 	go vet ./...
 	go test -run xxxx ./...
+	@echo "===================          done           ==================="
 
 # Build Temporal
 Temporal:
@@ -22,6 +24,11 @@ lint:
 	# Shellcheck disabled for now - too much to fix
 	# shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
 
+# Set up test environment
+.PHONY: testenv
+testenv:
+	docker-compose -f test/docker-compose.yml up 
+
 # Execute tests
 .PHONY: test
 test: check
@@ -32,7 +39,8 @@ test: check
 # Remove assets
 .PHONY: clean
 clean:
-	rm Temporal
+	rm -f Temporal
+	docker-compose -f test/docker-compose.yml rm -f -s -v
 
 # Rebuild vendored dependencies
 .PHONY: vendor
