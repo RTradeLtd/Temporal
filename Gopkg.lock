@@ -22,12 +22,11 @@
   revision = "5312a61534124124185d41f09206b9fef1d88403"
 
 [[projects]]
-  digest = "1:12750f0ddc83c3351b450a6e078f68f70453861237e746292843d8c6564f25d6"
+  digest = "1:a164e093eccfde4fb63dc94707f3570d112ff4549072a065a48813c37c0c76a9"
   name = "github.com/appleboy/gin-jwt"
   packages = ["."]
   pruneopts = "UT"
-  revision = "18c777042be3ecc5cb3bf79cd24cbd6b28683cdc"
-  version = "v2.5.0"
+  revision = "f7347d7c16fc8297bf5b7215b9e4847a5ca05d90"
 
 [[projects]]
   branch = "master"
@@ -1409,10 +1408,8 @@
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/postgres",
     "github.com/lib/pq",
-    "github.com/libp2p/go-libp2p",
     "github.com/libp2p/go-libp2p-crypto",
     "github.com/libp2p/go-libp2p-peer",
-    "github.com/libp2p/go-libp2p-peerstore",
     "github.com/minio/minio-go",
     "github.com/mitchellh/goamz/aws",
     "github.com/mitchellh/goamz/route53",

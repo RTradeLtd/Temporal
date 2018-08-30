@@ -6,30 +6,45 @@ This is a middleware for [Gin](https://github.com/gin-gonic/gin) framework.
 
 It uses [jwt-go](https://github.com/dgrijalva/jwt-go) to provide a jwt authentication middleware. It provides additional handler functions to provide the `login` api that will generate the token and an additional `refresh` handler that can be used to refresh tokens.
 
-## Usage
+## Install
 
-Download and install it:
+### v2 version
 
-```sh
-$ go get github.com/appleboy/gin-jwt
+Install gin-gwt [v2](http://gopkg.in/appleboy/gin-jwt.v2) version for `jwt-go` [v3](http://gopkg.in/dgrijalva/jwt-go.v3) version. To get the package, execute:
+
+```bash
+$ go get gopkg.in/appleboy/gin-jwt.v2
 ```
 
-Import it in your code:
+To import this package, add the following line to your code:
 
 ```go
-import "github.com/appleboy/gin-jwt"
+import "gopkg.in/appleboy/gin-jwt.v2"
+```
+
+### v1 version
+
+Install gin-gwt [v1](http://gopkg.in/appleboy/gin-jwt.v1) version for `jwt-go` [v2](http://gopkg.in/dgrijalva/jwt-go.v2) version. To get the package, execute:
+
+```bash
+$ go get gopkg.in/appleboy/gin-jwt.v1
+```
+
+To import this package, add the following line to your code:
+
+```go
+import "gopkg.in/appleboy/gin-jwt.v1"
 ```
 
 ## Example
 
-Please see [the example file](example/server.go) and you can use `ExtractClaims` to fetch user data.
+Please see [server example file](example/server.go).
 
 [embedmd]:# (example/server.go go)
 ```go
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -38,24 +53,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type login struct {
-	Username string `form:"username" json:"username" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
-}
-
 func helloHandler(c *gin.Context) {
-	claims := jwt.ExtractClaims(c)
 	c.JSON(200, gin.H{
-		"userID": claims["id"],
-		"text":   "Hello World.",
+		"text": "Hello World.",
 	})
-}
-
-// User demo
-type User struct {
-	UserName  string
-	FirstName string
-	LastName  string
 }
 
 func main() {
@@ -74,34 +75,15 @@ func main() {
 		Key:        []byte("secret key"),
 		Timeout:    time.Hour,
 		MaxRefresh: time.Hour,
-		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if v, ok := data.(*User); ok {
-				return jwt.MapClaims{
-					"id": v.UserName,
-				}
-			}
-			return jwt.MapClaims{}
-		},
-		Authenticator: func(c *gin.Context) (interface{}, error) {
-			var loginVals login
-			if err := c.Bind(&loginVals); err != nil {
-				return "", jwt.ErrMissingLoginValues
-			}
-			userID := loginVals.Username
-			password := loginVals.Password
-
-			if (userID == "admin" && password == "admin") || (userID == "test" && password == "test") {
-				return &User{
-					UserName:  userID,
-					LastName:  "Bo-Yi",
-					FirstName: "Wu",
-				}, nil
+		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {
+			if (userId == "admin" && password == "admin") || (userId == "test" && password == "test") {
+				return userId, true
 			}
 
-			return nil, jwt.ErrFailedAuthentication
+			return userId, false
 		},
-		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if v, ok := data.(string); ok && v == "admin" {
+		Authorizator: func(userId string, c *gin.Context) bool {
+			if userId == "admin" {
 				return true
 			}
 
@@ -120,7 +102,7 @@ func main() {
 		// - "header:<name>"
 		// - "query:<name>"
 		// - "cookie:<name>"
-		TokenLookup: "header: Authorization, query: token, cookie: jwt",
+		TokenLookup: "header:Authorization",
 		// TokenLookup: "query:token",
 		// TokenLookup: "cookie:token",
 
@@ -133,12 +115,6 @@ func main() {
 
 	r.POST("/login", authMiddleware.LoginHandler)
 
-	r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
-		claims := jwt.ExtractClaims(c)
-		log.Printf("NoRoute claims: %#v\n", claims)
-		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
-	})
-
 	auth := r.Group("/auth")
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
@@ -146,9 +122,7 @@ func main() {
 		auth.GET("/refresh_token", authMiddleware.RefreshHandler)
 	}
 
-	if err := http.ListenAndServe(":"+port, r); err != nil {
-		log.Fatal(err)
-	}
+	http.ListenAndServe(":"+port, r)
 }
 ```
 
@@ -165,7 +139,7 @@ Download and install [httpie](https://github.com/jkbrzt/httpie) CLI HTTP client.
 ### Login API:
 
 ```bash
-$ http -v --json POST localhost:8000/login username=admin password=admin
+$ http -v --json POST localhost:8000/auth/login username=admin password=admin
 ```
 
 Output screenshot
@@ -199,8 +173,7 @@ Content-Type: application/json; charset=utf-8
 Date: Sat, 19 Mar 2016 03:02:57 GMT
 
 {
-  "text": "Hello World.",
-  "userID": "admin"
+    "text": "Hello World."
 }
 ```
 
@@ -222,7 +195,7 @@ Date: Sat, 19 Mar 2016 03:05:40 GMT
 Www-Authenticate: JWT realm=test zone
 
 {
-  "code": 403,
-  "message": "You don't have permission to access."
+    "code": 403,
+    "message": "You don't have permission to access."
 }
 ```

@@ -45,10 +45,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 # MISC
 
 [[constraint]]
-  name = "github.com/appleboy/gin-jwt"
-  version = "2.3.1"
-
-[[constraint]]
   branch = "master"
   name = "github.com/aviddiviner/gin-limit"
 
@@ -129,3 +125,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[override]]
   name = "github.com/ipfs/go-ipfs-cmdkit"
   branch = "master"
+
+[[constraint]]
+  name = "github.com/appleboy/gin-jwt"
+  revision = "f7347d7c16fc8297bf5b7215b9e4847a5ca05d90"
