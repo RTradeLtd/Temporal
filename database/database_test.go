@@ -2,15 +2,17 @@ package database_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/jinzhu/gorm"
 )
 
-const travis = true
-
-var dbPass string
+var (
+	travis = os.Getenv("TRAVIS") != ""
+	dbPass string
+)
 
 func TestDatabase(t *testing.T) {
 	if !travis {
@@ -33,7 +35,12 @@ func TestDatabaseMigrations(t *testing.T) {
 	} else {
 		dbPass = ""
 	}
-	db, err := database.OpenDBConnection(dbPass, "127.0.0.1", "postgres")
+	db, err := database.OpenDBConnection(database.DBOptions{
+		User:           "postgres",
+		Password:       dbPass,
+		Address:        "127.0.0.1",
+		SSLModeDisable: true,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
