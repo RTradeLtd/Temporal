@@ -46,22 +46,17 @@ clean:
 .PHONY: vendor
 vendor:
 	@echo "=================== generating dependencies ==================="
-	# Nuke vendor directory
-	rm -rf vendor
-
-	# Run dep ensure first, as it clears the vendor directory upon completion
+	# Update standard dependencies
 	dep ensure -v
 
-	# Install required IPFS GX dependencies
-	go get -u github.com/whyrusleeping/gx
-	while read in; do gx get -o ./vendor/gx/ipfs/"$$in" "$$in"; done < ipfs_deps.txt
-
-	# Vendor IPFS. The previous step resolves the required GX dependencies
-	# rather than using `make install` in go-ipfs, which installs everything -
-	# Temporal only requires a subset for the time being.
+	# Generate IPFS dependencies
 	go get -u github.com/ipfs/go-ipfs
-	mkdir -p ./vendor/github.com/ipfs/go-ipfs
-	cp -r $(GOPATH)/src/github.com/ipfs/go-ipfs ./vendor/github.com/ipfs/go-ipfs
+	( cd $(GOPATH)/src/github.com/ipfs/go-ipfs ; make install )
+
+	# Vendor IPFS dependencies
+	rm -rf vendor/github.com/ipfs/go-ipfs vendor/gx
+	cp -r $(GOPATH)/src/github.com/ipfs/go-ipfs vendor/github.com/ipfs
+	cp -r $(GOPATH)/src/gx vendor/github.com/ipfs vendor
 
 	# Vendor ethereum - this step is required for some of the cgo components, as
 	# dep doesn't seem to resolve them

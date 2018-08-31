@@ -1,0 +1,34 @@
+{
+  "author": "kevina",
+  "bugs": {},
+  "gx": {
+    "dvcsimport": "github.com/ipfs/go-cidutil"
+  },
+  "gxDependencies": [
+    {
+      "author": "multiformats",
+      "hash": "QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8",
+      "name": "go-multihash",
+      "version": "1.0.8"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmSbvata2WqNkqGtZNg8MR3SKwnB8iQ7vTPJgWqB8bC5kR",
+      "name": "go-multibase",
+      "version": "0.2.7"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmZFbDTY9jfSBms2MchvYM9oYRbAF19K7Pby47yDBfpPrb",
+      "name": "go-cid",
+      "version": "0.8.0"
+    }
+  ],
+  "gxVersion": "0.12.1",
+  "language": "go",
+  "license": "",
+  "name": "go-cidutil",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.0.2"
+}
+

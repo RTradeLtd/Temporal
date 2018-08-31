@@ -1,4 +1,4 @@
-ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/ipsn/go-ipfs*"]
+ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid"]
 
 [prune]
   go-tests = true
@@ -21,10 +21,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   branch = "master"
   name = "github.com/ipfs/go-ipfs-keystore"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/ipfs/go-ipns"
 
 [[constraint]]
   name = "github.com/ipfs/ipfs-cluster"

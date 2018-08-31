@@ -1,0 +1,65 @@
+{
+  "author": "hsanjuan",
+  "bugs": {
+    "url": "https://github.com/ipfs/go-ipfs-blockstore"
+  },
+  "gx": {
+    "dvcsimport": "github.com/ipfs/go-ipfs-blockstore"
+  },
+  "gxDependencies": [
+    {
+      "author": "stebalien",
+      "hash": "QmWAzSEoqZ6xU6pu8yL8e5WaMb7wtbfbhhN4p1DknUPtr3",
+      "name": "go-block-format",
+      "version": "0.1.11"
+    },
+    {
+      "author": "jbenet",
+      "hash": "QmVG5gxteQNEMhrS8prJSmU2C9rebtFuTd3SYZ5kE3YZ5k",
+      "name": "go-datastore",
+      "version": "3.0.0"
+    },
+    {
+      "author": "ipfs",
+      "hash": "QmekzFM3hPZjTjUFGTABdQkEnQ3PTiMstY198PwSFr5w1Q",
+      "name": "go-metrics-interface",
+      "version": "0.2.0"
+    },
+    {
+      "author": "hashicorp",
+      "hash": "QmVYxfoJQiZijTgPNHCHgHELvQpbsJNTg6Crmc3dQkj3yy",
+      "name": "golang-lru",
+      "version": "0.0.0"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmZFbDTY9jfSBms2MchvYM9oYRbAF19K7Pby47yDBfpPrb",
+      "name": "go-cid",
+      "version": "0.8.0"
+    },
+    {
+      "author": "hector",
+      "hash": "Qmd39D2vUhmPKQA2fgykjo2JXwekHKeJUggmGRpYuVMA2Z",
+      "name": "go-ipfs-ds-help",
+      "version": "0.0.9"
+    },
+    {
+      "author": "kubuxu",
+      "hash": "QmWaLViWQF8jgyoLLqqcSrnp6dJpHESiJfzor1vrfDyTZf",
+      "name": "bbloom",
+      "version": "0.1.2"
+    },
+    {
+      "hash": "QmRREK2CAZ5Re2Bd9zZFG6FeYDppUWt5cMgsoUEp3ktgSr",
+      "name": "go-log",
+      "version": "1.5.5"
+    }
+  ],
+  "gxVersion": "0.12.1",
+  "language": "go",
+  "license": "MIT",
+  "name": "go-ipfs-blockstore",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.0.18"
+}
+
