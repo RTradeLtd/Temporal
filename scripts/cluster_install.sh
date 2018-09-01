@@ -7,7 +7,7 @@ NODE="initial_peer"
 # if we are setting up the first node, lets generate a new cluster secret
 if [[ "$NODE" == "initial_peer" ]]; then
     CLUSTER_SECRET=$(od  -vN 32 -An -tx1 /dev/urandom | tr -d ' \n')
-    export CLUSTER_SECRET=$(od  -vN 32 -An -tx1 /dev/urandom | tr -d ' \n')
+    export CLUSTER_SECRET
 fi
 
 IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
