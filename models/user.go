@@ -172,7 +172,11 @@ func (um *UserManager) ChangePassword(username, currentPassword, newPassword str
 	if user.CreatedAt == nilTime {
 		return false, errors.New("user account does not exist")
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(currentPassword)); err != nil {
+	decodedPassword, err := hex.DecodeString(user.HashedPassword)
+	if err != nil {
+		return false, err
+	}
+	if err := bcrypt.CompareHashAndPassword(decodedPassword, []byte(currentPassword)); err != nil {
 		return false, errors.New("invalid current password")
 	}
 	newHashedPass, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
@@ -279,4 +283,17 @@ func (um *UserManager) FindEmailByUserName(username string) (map[string]string, 
 	emails := make(map[string]string)
 	emails[username] = u.EmailAddress
 	return emails, nil
+}
+
+// ChangEthereumAddress is used to change a user's ethereum address
+func (um *UserManager) ChangeEthereumAddress(username, ethAddress string) (*User, error) {
+	u := User{}
+	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
+		return nil, check.Error
+	}
+	u.EthAddress = ethAddress
+	if check := um.DB.Model(u).Update("eth_address", ethAddress); check.Error != nil {
+		return nil, check.Error
+	}
+	return &u, nil
 }
