@@ -285,7 +285,7 @@ func (um *UserManager) FindEmailByUserName(username string) (map[string]string, 
 	return emails, nil
 }
 
-// ChangEthereumAddress is used to change a user's ethereum address
+// ChangeEthereumAddress is used to change a user's ethereum address
 func (um *UserManager) ChangeEthereumAddress(username, ethAddress string) (*User, error) {
 	u := User{}
 	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
