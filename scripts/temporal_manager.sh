@@ -5,9 +5,10 @@
 
 IPFS_PATH="/ipfs"
 IPFS_CLUSTER_PATH="/ipfs/ipfs-cluster"
-export IPFS_PATH="$IPFS_PATH"
-export IPFS_CLUSTER_PATH="$IPFS_CLUSTER_PATH"
-export CONFIG_DAG="/home/rtrade/config.json"
+CONFIG_DAG="/home/rtrade/config.json"
+export IPFS_PATH
+export IPFS_CLUSTER_PATH
+export CONFIG_DAG
 
 case "$1" in
 
