@@ -218,8 +218,7 @@ func (api *API) changeEthereumAddress(c *gin.Context) {
 		return
 	}
 	um := models.NewUserManager(api.DBM.DB)
-	_, err := um.ChangeEthereumAddress(username, ethAddress)
-	if err != nil {
+	if _, err := um.ChangeEthereumAddress(username, ethAddress); err != nil {
 		api.Logger.WithFields(log.Fields{
 			"service": "api",
 			"user":    username,

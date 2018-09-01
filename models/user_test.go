@@ -28,7 +28,7 @@ type args struct {
 	enterpriseEnabled bool
 }
 
-func TestUser(t *testing.T) {
+func TestUserManager_ChangeEthereumAddress(t *testing.T) {
 	cfg, err := config.LoadConfig(defaultConfigFile)
 	if err != nil {
 		t.Fatal(err)
@@ -38,66 +38,110 @@ func TestUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	randUtils := utils.GenerateRandomUtils()
-	username := randUtils.GenerateString(10, utils.LetterBytes)
-	ethAddress := randUtils.GenerateString(10, utils.LetterBytes)
-	email := randUtils.GenerateString(10, utils.LetterBytes)
+	um := models.NewUserManager(db)
+
+	var (
+		randUtils  = utils.GenerateRandomUtils()
+		username   = randUtils.GenerateString(10, utils.LetterBytes)
+		ethAddress = randUtils.GenerateString(10, utils.LetterBytes)
+		email      = randUtils.GenerateString(10, utils.LetterBytes)
+	)
+
 	tests := []struct {
 		name string
 		args args
 	}{
-		{"NewAccount", args{ethAddress, username, email, "password123", false}},
-		{"ChangePassword", args{ethAddress, username, email, "password123", false}},
 		{"ChangeEthereumAddress", args{ethAddress, username, email, "password123", false}},
 	}
+
 	for _, tt := range tests {
-		switch tt.name {
-		case "NewAccount":
-			_, err = newAccount(t, db, tt.args)
-			if err != nil {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled); err != nil {
 				t.Fatal(err)
 			}
-		case "ChangePassword":
-			changed, err := changePassword(t, db, tt.args)
+			if _, err := um.ChangeEthereumAddress(tt.args.userName, tt.args.ethAddress); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestUserManager_ChangePassword(t *testing.T) {
+	cfg, err := config.LoadConfig(defaultConfigFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db, err := openDatabaseConnection(t, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	um := models.NewUserManager(db)
+
+	var (
+		randUtils  = utils.GenerateRandomUtils()
+		username   = randUtils.GenerateString(10, utils.LetterBytes)
+		ethAddress = randUtils.GenerateString(10, utils.LetterBytes)
+		email      = randUtils.GenerateString(10, utils.LetterBytes)
+	)
+
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"ChangePassword", args{ethAddress, username, email, "password123", false}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled); err != nil {
+				t.Fatal(err)
+			}
+			changed, err := um.ChangePassword(tt.args.userName, tt.args.password, "newpassword")
 			if err != nil {
 				t.Fatal(err)
 			}
 			if !changed {
-				t.Error("password changed failed but no error was raised")
+				t.Error("password changed failed, but no error occured")
 			}
-		case "ChangeEthereumAddress":
-			_, err = changeEthereumAddress(t, db, tt.args)
-			if err != nil {
-				t.Error(err)
+		})
+	}
+}
+
+func TestUserManager_NewAccount(t *testing.T) {
+	cfg, err := config.LoadConfig(defaultConfigFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db, err := openDatabaseConnection(t, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	um := models.NewUserManager(db)
+
+	var (
+		randUtils  = utils.GenerateRandomUtils()
+		username   = randUtils.GenerateString(10, utils.LetterBytes)
+		ethAddress = randUtils.GenerateString(10, utils.LetterBytes)
+		email      = randUtils.GenerateString(10, utils.LetterBytes)
+	)
+
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"AccountCreation", args{ethAddress, username, email, "password123", false}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled); err != nil {
+				t.Fatal(err)
 			}
-		default:
-			fmt.Println("skipping... invalid test name")
-		}
+		})
 	}
 }
 
-func newAccount(t *testing.T, db *gorm.DB, args args) (*models.User, error) {
-	um := models.NewUserManager(db)
-	user, err := um.NewUserAccount(args.ethAddress, args.userName, args.password, args.email, args.enterpriseEnabled)
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
-}
-
-func changePassword(t *testing.T, db *gorm.DB, args args) (bool, error) {
-	um := models.NewUserManager(db)
-	return um.ChangePassword(args.userName, args.password, "newpassword")
-}
-
-func changeEthereumAddress(t *testing.T, db *gorm.DB, args args) (*models.User, error) {
-	um := models.NewUserManager(db)
-	user, err := um.ChangeEthereumAddress(args.userName, args.ethAddress)
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
-}
 func openDatabaseConnection(t *testing.T, cfg *config.TemporalConfig) (*gorm.DB, error) {
 	if !travis {
 		dbPass = cfg.Database.Password
