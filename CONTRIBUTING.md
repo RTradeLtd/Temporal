@@ -7,3 +7,13 @@ All code submitted must include tests that handle proper requests, and improper 
 ## BASH Script Guidelines
 
 All new scripts must pass validation by [shellcheck](https://www.shellcheck.net/)
+
+## Golang Code
+
+For functions where no return values are kept:
+
+```Golang
+if _, err = um.ChangeEthereumAddress( ... ); if err != nil {
+    ...
+}
+```
