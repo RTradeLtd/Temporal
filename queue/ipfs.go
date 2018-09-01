@@ -2,6 +2,7 @@ package queue
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -49,7 +50,16 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"error":   err.Error(),
-			}).Info("failed to unmarshal message")
+			}).Error("failed to unmarshal message")
+			d.Ack(false)
+			continue
+		}
+		if key.NetworkName != "public" {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"user":    key.UserName,
+				"error":   errors.New("private network key creation not yet supported"),
+			}).Error("private network key creation not yet supported")
 			d.Ack(false)
 			continue
 		}
@@ -61,6 +71,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 			if key.Size > 4096 {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
+					"user":    key.UserName,
 					"error":   "key size error",
 				}).Error("rsa key generation larger than 4096 bits not supported")
 				d.Ack(false)
@@ -73,6 +84,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 		default:
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
+				"user":    key.UserName,
 				"error":   "unsupported key type",
 			}).Errorf("%s is not a valid key type, only ed25519 and rsa are supported", key.Type)
 			d.Ack(false)
@@ -82,6 +94,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
+				"user":    key.UserName,
 				"error":   err.Error(),
 			}).Error("failed to create and save key")
 			d.Ack(false)
@@ -92,6 +105,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
+				"user":    key.UserName,
 				"error":   err.Error(),
 			}).Error("failed to get id from private key")
 			d.Ack(false)
@@ -101,6 +115,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
+				"user":    key.UserName,
 				"error":   err.Error(),
 			}).Error("failed to add ipfs key to database")
 			d.Ack(false)
@@ -108,6 +123,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 		}
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
+			"user":    key.UserName,
 		}).Info("successfully processed ipfs key creation")
 		d.Ack(false)
 	}
