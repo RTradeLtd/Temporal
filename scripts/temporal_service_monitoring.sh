@@ -20,7 +20,7 @@ case "$1" in
         fi
         ;;
     ipfs-pin-queue)
-        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep Temporal ipfs-pin-queue | grep -iv grep | awk '{print $2}')
+        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep "Temporal ipfs-pin-queue" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
             echo 0
         else
@@ -28,7 +28,7 @@ case "$1" in
         fi
         ;;
     ipfs-file-queue)
-        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep Temporal ipfs-file-queue | grep -iv grep | awk '{print $2}')
+        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep "Temporal ipfs-file-queue" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
             echo 0
         else
@@ -36,7 +36,7 @@ case "$1" in
         fi
         ;;
     pin-payment-confirmation-queue)
-        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep Temporal pin-payment-confirmation-queue | grep -iv grep | awk '{print $2}')
+        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep "Temporal pin-payment-confirmation-queue" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
             echo 0
         else
@@ -44,7 +44,7 @@ case "$1" in
         fi
         ;;
     email-send-queue)
-        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep Temporal email-send-queue | grep -iv grep | awk '{print $2}')
+        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep "Temporal email-send-queue" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
             echo 0
         else
@@ -52,7 +52,7 @@ case "$1" in
         fi
         ;;
     ipns-entry-queue)
-        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep Temporal ipns-entry-queue | grep -iv grep | awk '{print $2}')
+        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep "Temporal ipns-entry-queue" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
             echo 0
         else
@@ -60,7 +60,7 @@ case "$1" in
         fi
         ;;
     ipfs-key-creation-queue)
-        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep Temporal ipfs-key-creation-queue | grep -iv grep | awk '{print $2}')
+        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep "Temporal ipfs-key-creation-queue" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
             echo 0
         else
@@ -68,7 +68,7 @@ case "$1" in
         fi
         ;;
     ipfs-cluster-queue)
-        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep Temporal ipfs-cluster-queue | grep -iv grep | awk '{print $2}')
+        PID=$(pgrep -ax Temporal | awk '{print $2" "$3}' | grep "Temporal ipfs-cluster-queue" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
             echo 0
         else
