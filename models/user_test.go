@@ -142,6 +142,48 @@ func TestUserManager_NewAccount(t *testing.T) {
 	}
 }
 
+func TestUserManager_SignIn(t *testing.T) {
+	cfg, err := config.LoadConfig(defaultConfigFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db, err := openDatabaseConnection(t, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	um := models.NewUserManager(db)
+
+	var (
+		randUtils  = utils.GenerateRandomUtils()
+		username   = randUtils.GenerateString(10, utils.LetterBytes)
+		ethAddress = randUtils.GenerateString(10, utils.LetterBytes)
+		email      = randUtils.GenerateString(10, utils.LetterBytes)
+	)
+
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"AccountCreation", args{ethAddress, username, email, "password123", false}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled); err != nil {
+				t.Fatal(err)
+			}
+			success, err := um.SignIn(tt.args.userName, tt.args.password)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !success {
+				t.Error("sign in failed")
+			}
+		})
+	}
+}
+
 func openDatabaseConnection(t *testing.T, cfg *config.TemporalConfig) (*gorm.DB, error) {
 	if !travis {
 		dbPass = cfg.Database.Password

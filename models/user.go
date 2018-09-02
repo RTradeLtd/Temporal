@@ -210,6 +210,7 @@ func (um *UserManager) NewUserAccount(ethAddress, username, password, email stri
 	user.EnterpriseEnabled = enterpriseEnabled
 	user.HashedPassword = hex.EncodeToString(hashedPass)
 	user.EmailAddress = email
+	user.AccountEnabled = true
 	if check := um.DB.Create(&user); check.Error != nil {
 		return nil, check.Error
 	}
@@ -220,12 +221,11 @@ func (um *UserManager) NewUserAccount(ethAddress, username, password, email stri
 // Returns bool on succesful login, or false with an error on failure
 func (um *UserManager) SignIn(username, password string) (bool, error) {
 	var user User
-	um.DB.Where("user_name = ?", username).First(&user)
-	if user.CreatedAt == nilTime {
-		return false, errors.New("user account does not exist")
+	if check := um.DB.Where("user_name = ?", username).First(&user); check.Error != nil {
+		return false, check.Error
 	}
 	if !user.AccountEnabled {
-		return false, errors.New("account is marked is disabled")
+		return false, errors.New("account is disabled")
 	}
 	validPassword, err := um.ComparePlaintextPasswordToHash(username, password)
 	if err != nil {
