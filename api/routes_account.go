@@ -149,30 +149,33 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	}
 
 	key := queue.IPFSKeyCreation{
-		UserName: username,
-		Name:     keyName,
-		Type:     keyType,
-		Size:     bitsInt,
+		UserName:    username,
+		Name:        keyName,
+		Type:        keyType,
+		Size:        bitsInt,
+		NetworkName: "public",
 	}
 
 	mqConnectionURL := api.TConfig.RabbitMQ.URL
 
 	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true, false)
 	if err != nil {
-		msg := fmt.Sprintf("queue initialization failed due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+		api.Logger.WithFields(log.Fields{
+			"service": "api",
+			"user":    username,
+			"error":   err.Error(),
+		}).Error("failed to initialize queue")
 		FailOnError(c, err)
 		return
 	}
 
 	err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange)
 	if err != nil {
-		msg := fmt.Sprintf(
-			"publishing to queue %s with exchange %s failed due to the following error: %s",
-			queue.IpfsKeyCreationQueue,
-			queue.IpfsKeyExchange,
-			err.Error())
-		api.Logger.Error(msg)
+		api.Logger.WithFields(log.Fields{
+			"service": "api",
+			"user":    username,
+			"error":   err.Error(),
+		}).Error("failed to publish message")
 		FailOnError(c, err)
 		return
 	}
