@@ -4,6 +4,7 @@
 # v1.2.2
 # IPFS public gateway checker (extended cli version)
 # original repository: https://github.com/ipfs/public-gateway-checker
+# modifications made to pass shellcheck linting
 # this script copyright 2017 by Joss Brown (pseud.): https://github.com/JayBrown
 # license: MIT
 
@@ -168,7 +169,8 @@ CACHE=false
 CLOCAL=false
 CREMOTE=true
 
-if [[ "$@" == "" ]] ; then
+
+if [[ "$*" == "" ]] ; then
 	REMOTE=true
 	LOCAL=true
 else
@@ -203,7 +205,7 @@ else
 						WEB_HASH="n/a"
 						WPRINT=false
 					fi
-					LOCAL_HASH=$(cat "$HASH_PATH" 2>/dev/null | sed -e '/^$/d')
+					LOCAL_HASH=$(sed -e '/^$/d' "$HASH_PATH")
 					if [[ $LOCAL_HASH == "" ]] ; then
 						LOCAL_HASH="n/a"
 						LPRINT=false
@@ -214,7 +216,7 @@ else
 					else
 						echo -e "IPFS hash (current):\t$WEB_HASH"
 						echo -e "IPFS hash (backup):\t$LOCAL_HASH"
-						if [[ $LOCAL_HASH != $WEB_HASH ]] ; then
+						if [[ $LOCAL_HASH != "$WEB_HASH" ]] ; then
 							echoerr "Attention: a new web version was published."
 							backup-hash
 						else
@@ -292,6 +294,7 @@ else
 						else
 							if [[ $1 == "local" ]] ; then
 								CLOCAL=true
+								# shellcheck disable=SC2034
 								CREMOTE=false
 							fi
 							if [[ $2 != "http"* ]] || [[ $2 != *"/ipfs/"* ]] ; then
@@ -316,15 +319,15 @@ else
 				-w|--web)
 					WEB_HASH=$(curl --silent "$WB_PATH")
 					if [[ $WEB_HASH == "" ]] ; then
-						WEB_HASH=$(cat "$HASH_PATH" 2>/dev/null | sed -e '/^$/d')
+						WEB_HASH=$(sed -e '/^$/d'"$HASH_PATH")
 						if [[ $WEB_HASH == "" ]] ; then
 							echoerr "Opening fallback web version of IPFS public gateway checker..."
 							open "https://ipfs.github.io/public-gateway-checker/"
 							exit 0
 						fi
 					else
-						LOCAL_HASH=$(cat "$HASH_PATH" 2>/dev/null | sed -e '/^$/d')
-						if [[ $LOCAL_HASH != "" ]] && [[ $WEB_HASH != $LOCAL_HASH ]] ; then
+						LOCAL_HASH=$(sed -e '/^$/d' "$HASH_PATH")
+						if [[ $LOCAL_HASH != "" ]] && [[ $WEB_HASH != "$LOCAL_HASH" ]] ; then
 							echoerr "New hash detected: $WEB_HASH"
 							backup-hash
 						fi
@@ -333,6 +336,7 @@ else
 						echoerr "Opening web version of IPFS public gateway checker on IPFS gateway..."
 						open "https://ipfs.io/ipfs/$WEB_HASH"
 					else
+						# shellcheck disable=SC2009
 						if [[ $(ps aux | grep "ipfs daemon" | grep -v "grep.*ipfs daemon" 2>/dev/null) == "" ]] ; then
 							echoerr "Opening web version of IPFS public gateway checker on IPFS gateway..."
 							open "https://ipfs.io/ipfs/$WEB_HASH"
@@ -363,13 +367,14 @@ else
 fi
 
 if $ADD ; then
-	if [[ "$@" == "" ]] ; then
+	if [[ "$*" == "" ]] ; then
 		echoerr "Error: no gateway URL specified."
 		exit 1
 	else
-		LOCAL_LIST=$(cat "$LL_PATH" | sed -e '/^$/d')
+		LOCAL_LIST=$(sed -e '/^$/d' "$LL_PATH")
 		for ADD_URL in "$@"
 		do
+			# shellcheck disable=SC2140
 			if ! [[ $ADD_URL =~ ^("http://"|"https://") ]] ; then
 				echoerr "Error: wrong domain format: $ADD_URL"
 				echoerr "Format must be: http[s]://<domain>.<tld>/ipfs/:hash"
@@ -379,7 +384,7 @@ if $ADD ; then
 				echoerr "Format must be: http[s]://<domain>.<tld>/ipfs/:hash"
 				continue
 			else
-				if [[ $(echo "$LOCAL_LIST" | grep ^$ADD_URL$) != "" ]] ; then
+				if [[ $(echo "$LOCAL_LIST" | grep ^"$ADD_URL"$) != "" ]] ; then
 					echoerr "Already exists: $ADD_URL"
 					continue
 				else
@@ -405,7 +410,7 @@ if $COMPARE ; then
 			done < <(echo "$RGATEWAYS")
 			)
 	fi
-	SAVELIST=$(cat "$RLB_PATH" | sed -e '/^$/d' | sort)
+	SAVELIST=$(sed -e '/^$/d' "$RLB_PATH" | sort)
 	if [[ $SAVELIST == "" ]] ; then
 		echoerr "Error: no local backup available."
 		exit 1
@@ -445,19 +450,20 @@ if $COMPARE ; then
 fi
 
 if $DELETE ; then
-	LOCAL_LIST=$(cat "$LL_PATH" | sed -e '/^$/d')
+	LOCAL_LIST=$(sed -e '/^$/d' "$LL_PATH")
 	if [[ $LOCAL_LIST == "" ]] ; then
 		echoerr "Local gateway list is already empty."
 		exit 0
 	fi
+	# shellcheck disable=SC2199
 	if [[ "$@" == "" ]] ; then
 		echoerr "Error: no gateway URL specified."
 		exit 1
 	elif [[ "$@" == "all" ]] ; then
 		echo -e "Do you really want to delete all local gateway URL entries? (y/n)"
-		read -n 1 -s DELYN
+		read -r -n 1 -s DELYN
 		if [[ $DELYN == "y" ]] ; then
-			LOCAL_LIST=$(cat "$LL_PATH" | sed -e '/^$/d')
+			LOCAL_LIST=$(sed -e '/^$/d' "$LL_PATH")
 			echo "" > "$LL_PATH"
 			while read -r DEL_URL
 			do
@@ -469,7 +475,8 @@ if $DELETE ; then
 	else
 		for DEL_URL in "$@"
 		do
-			LOCAL_LIST=$(cat "$LL_PATH" | sed -e '/^$/d')
+			LOCAL_LIST=$(sed -e '/^$/d' "$LL_PATH")
+			# shellcheck disable=SC2140
 			if [[ ! $DEL_URL =~ ^("http://"|"https://") ]] ; then
 				echoerr "Error: wrong domain format: $DEL_URL"
 				echoerr "Format must be: http[s]://<domain>.<tld>/ipfs/:hash"
@@ -500,7 +507,7 @@ if $LIST ; then
 		if [[ $RGATEWAYS == "" ]] ; then
 			echoerr "Error: remote gateway list is not accessible."
 			echoerr "Checking for backup list..."
-			RGATEWAYS=$(cat "$RLB_PATH" | awk -F/ '{print $1"//"$3}')
+			RGATEWAYS=$(awk -F/ '{print $1"//"$3}' "$RLB_PATH")
 		fi
 		if [[ $RGATEWAYS == "" ]] ; then
 			echoerr "Error: no backup list available."
@@ -515,7 +522,7 @@ if $LIST ; then
 		fi
 	fi
 	if $LIST_LOCAL ; then
-		LGATEWAYS=$(cat "$LL_PATH" | sed -e '/^$/d')
+		LGATEWAYS=$(sed -e '/^$/d' "$LL_PATH")
 		if [[ $LGATEWAYS == "" ]] ; then
 			LIST_LOCAL=false
 		else
@@ -543,6 +550,7 @@ if $CACHE ; then
 			echoerr "Error: ipfs is either not installed or not in your \$PATH"
 			exit 1
 		fi
+		# shellcheck disable=SC2009
 		if [[ $(ps aux | grep "ipfs daemon" | grep -v "grep.*ipfs daemon" 2>/dev/null) == "" ]] ; then
 			echoerr "Error: IPFS daemon is not running"
 			exit 1
@@ -550,9 +558,10 @@ if $CACHE ; then
 	fi
 	CDOMAIN=$(echo "$1" | awk -F/ '{print $1"//"$3}')
 	TEMPNAME=$(basename "$1")
+	# shellcheck disable=SC2001
 	TESTURL=$(echo "$1" | sed "s/$TEMPNAME$/$TESTHASH/")
 	if [[ $(curl --silent "$TESTURL") != "Hello from IPFS Gateway Checker" ]] ; then
-		RESP_CODE=$(/usr/bin/curl -o /dev/null --silent --head --write-out "%{http_code}\n" $TESTURL)
+		RESP_CODE=$(/usr/bin/curl -o /dev/null --silent --head --write-out "%{http_code}\n" "$TESTURL")
 		if [[ $RESP_CODE =~ ^(301|303|307|308)$ ]] ; then
 			RD_CDOMAIN=$(curl -w "%{url_effective}\n" -I -L -s -S "$CDOMAIN" -o /dev/null | sed 's-/*$--')
 			RD_TESTURL="$RD_CDOMAIN/ipfs/$TESTHASH"
@@ -580,12 +589,14 @@ if $CACHE ; then
 fi
 
 if $MANUAL ; then
+	# shellcheck disable=SC2199
 	if [[ "$@" == "" ]] ; then
 		echoerr "Error: no gateway URL specified."
 		exit 1
 	fi
 	GATEWAYS=$(for MANGW in "$@"
 		do
+			# shellcheck disable=SC2140
 			if ! [[ $MANGW =~ ^("http://"|"https://") ]] ; then
 				echoerr "Error: wrong domain format: $MANGW"
 				echoerr "Format must be: http[s]://<domain>.<tld>/ipfs/:hash"
@@ -618,7 +629,7 @@ else
 	fi
 
 	if $LOCAL ; then
-		LGATEWAYS=$(cat "$LL_PATH" | sed -e '/^$/d')
+		LGATEWAYS=$(sed -e '/^$/d' "$LL_PATH")
 		if [[ $LGATEWAYS == "" ]] ; then
 			LOCAL=false
 			if ! $REMOTE ; then
@@ -650,6 +661,7 @@ while read -r GATEWAY
 do
 
 	GATEWAY=$(echo "$GATEWAY" | xargs)
+	# shellcheck disable=SC2001
 	TESTURL=$(echo "$GATEWAY" | sed -e "s-:hash-$TESTHASH-")
 	if $RAW ; then
 		DOMAIN="$TESTURL"
@@ -660,7 +672,7 @@ do
 	if [[ $(curl --silent "$TESTURL") == "Hello from IPFS Gateway Checker" ]] ; then
 		echo -e "${GREEN}Online${NC}\t$DOMAIN"
 	else
-		RESP_CODE=$(/usr/bin/curl -o /dev/null --silent --head --write-out "%{http_code}\n" $TESTURL)
+		RESP_CODE=$(/usr/bin/curl -o /dev/null --silent --head --write-out "%{http_code}\n" "$TESTURL")
 		if [[ $RESP_CODE =~ ^(301|303|307|308)$ ]] ; then
 			DOMAIN=$(echo "$GATEWAY" | awk -F/ '{print $1"//"$3}')
 			RD_DOMAIN=$(curl -w "%{url_effective}\n" -I -L -s -S "$DOMAIN" -o /dev/null | sed 's-/*$--')

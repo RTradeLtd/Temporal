@@ -208,3 +208,29 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 		"key_ids":   keys["key_ids"],
 	})
 }
+
+// ChangeEthereumAddress is used to change a user's ethereum address
+func (api *API) changeEthereumAddress(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	ethAddress, exists := c.GetPostForm("eth_address")
+	if !exists {
+		FailNoExistPostForm(c, "eth_address")
+		return
+	}
+	um := models.NewUserManager(api.DBM.DB)
+	if _, err := um.ChangeEthereumAddress(username, ethAddress); err != nil {
+		api.Logger.WithFields(log.Fields{
+			"service": "api",
+			"user":    username,
+			"error":   err.Error(),
+		}).Info("ethereum address change failed")
+		FailOnError(c, err)
+		return
+	}
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("ethereum address changed")
+
+	c.JSON(http.StatusOK, gin.H{"status": "address change successful"})
+}

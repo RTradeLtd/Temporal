@@ -127,6 +127,7 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 	accountProtected.POST("password/change", api.changeAccountPassword)
 	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
 	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
+	accountProtected.POST("/ethereum/address/change", api.changeEthereumAddress)
 
 	ipfsProtected := g.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
