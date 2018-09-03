@@ -1,3 +1,5 @@
+GOFILES=`go list ./... | grep -v /vendor/`
+
 all: check Temporal
 
 # List all commands
@@ -22,6 +24,7 @@ Temporal:
 .PHONY: lint
 lint:
 	go fmt ./...
+	golint $(GOFILES)
 	# Shellcheck disabled for now - too much to fix
 	# shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
 
