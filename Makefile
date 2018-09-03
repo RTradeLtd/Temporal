@@ -31,7 +31,7 @@ lint:
 # Set up test environment
 .PHONY: testenv
 testenv:
-	docker-compose -f test/docker-compose.yml up 
+	docker-compose -f test/docker-compose.yml up -d
 
 # Execute short tests
 .PHONY: test
