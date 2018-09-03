@@ -40,10 +40,11 @@ type QueueManager struct {
 // IPFSKeyCreation is a message used for processing key creation
 // only supported for the public IPFS network at the moment
 type IPFSKeyCreation struct {
-	UserName string `json:"user_name"`
-	Name     string `json:"name"`
-	Type     string `json:"type"`
-	Size     int    `json:"size"`
+	UserName    string `json:"user_name"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Size        int    `json:"size"`
+	NetworkName string `json:"network_name"`
 }
 
 // IPFSPin is a struct used when sending pin request
