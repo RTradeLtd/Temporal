@@ -1,0 +1,48 @@
+{
+  "author": "hsanjuan",
+  "bugs": {
+    "url": "https://github.com/ipfs/go-ipfs-exchange-offline"
+  },
+  "gx": {
+    "dvcsimport": "github.com/ipfs/go-ipfs-exchange-offline"
+  },
+  "gxDependencies": [
+    {
+      "author": "hsanjuan",
+      "hash": "QmadMhXJLHMFjpRmh85XjpmVDkEtQpNYEZNRpWRvYVLrvb",
+      "name": "go-ipfs-blockstore",
+      "version": "0.0.11"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmYVNvtQkeZ6AKSwDrjQTs432QtL6umrrK41EBq3cu7iSP",
+      "name": "go-cid",
+      "version": "0.7.22"
+    },
+    {
+      "author": "hsanjuan",
+      "hash": "Qmc2faLf7URkHpsbfYM4EMbr8iSAcGAe8VPgVi64HVnwji",
+      "name": "go-ipfs-exchange-interface",
+      "version": "0.0.3"
+    },
+    {
+      "author": "stebalien",
+      "hash": "QmVzK524a2VWLqyvtBeiHKsUAWYgeAk4DBeZoY7vpNPNRx",
+      "name": "go-block-format",
+      "version": "0.1.8"
+    },
+    {
+      "author": "hsanjuan",
+      "hash": "QmYqPGpZ9Yemr55xus9DiEztkns6Jti5XJ7hC94JbvkdqZ",
+      "name": "go-ipfs-blocksutil",
+      "version": "0.0.3"
+    }
+  ],
+  "gxVersion": "0.12.1",
+  "language": "go",
+  "license": "MIT",
+  "name": "go-ipfs-exchange-offline",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.0.9"
+}
+

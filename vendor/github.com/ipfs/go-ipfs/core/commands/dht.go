@@ -10,17 +10,17 @@ import (
 
 	cmds "github.com/ipfs/go-ipfs/commands"
 	e "github.com/ipfs/go-ipfs/core/commands/e"
-	dag "gx/ipfs/QmRDaC5z6yXkXTTSWzaxs2sSVBon5RRCN6eNtMmpuHtKCr/go-merkledag"
-	path "gx/ipfs/QmTKaiDxQqVxmA1bRipSuP7hnTSgnMSmEa98NYeS6fcoiv/go-path"
+	dag "github.com/ipfs/go-ipfs/merkledag"
+	path "github.com/ipfs/go-ipfs/path"
 
-	peer "gx/ipfs/QmQsErDt8Qgw1XrsXf2BpEzDgGWtB1YLsTAARBup5b6B9W/go-libp2p-peer"
-	routing "gx/ipfs/QmS4niovD1U6pRjUBXivr1zvvLBqiTKbERjFo994JU7oQS/go-libp2p-routing"
-	notif "gx/ipfs/QmS4niovD1U6pRjUBXivr1zvvLBqiTKbERjFo994JU7oQS/go-libp2p-routing/notifications"
-	"gx/ipfs/QmSP88ryZkHSRn1fnngAaV2Vcn63WUJzAavnRM9CVdU1Ky/go-ipfs-cmdkit"
 	b58 "gx/ipfs/QmWFAMPqsEyUX7gDUsRVmMWz59FxSpJ1b2v6bJ1yYzo7jY/go-base58-fast/base58"
-	ipld "gx/ipfs/QmX5CsuHyVZeTLxgRSYkgLSDQKb9UjE8xnhQzCEJWWWFsC/go-ipld-format"
-	cid "gx/ipfs/QmZFbDTY9jfSBms2MchvYM9oYRbAF19K7Pby47yDBfpPrb/go-cid"
-	pstore "gx/ipfs/QmeKD8YT7887Xu6Z86iZmpYNxrLogJexqxEugSmaf14k64/go-libp2p-peerstore"
+	cid "gx/ipfs/QmYVNvtQkeZ6AKSwDrjQTs432QtL6umrrK41EBq3cu7iSP/go-cid"
+	routing "gx/ipfs/QmZ383TySJVeZWzGnWui6pRcKyYZk9VkKTuW7tmKRWk5au/go-libp2p-routing"
+	notif "gx/ipfs/QmZ383TySJVeZWzGnWui6pRcKyYZk9VkKTuW7tmKRWk5au/go-libp2p-routing/notifications"
+	pstore "gx/ipfs/QmZR2XWVVBCtbgBWnQhWk2xcQfaR3W8faQPriAiaaj7rsr/go-libp2p-peerstore"
+	ipld "gx/ipfs/QmZtNq8dArGfnpCZfx2pUNY7UcjGhVp5qqwQ4hH6mpTMRQ/go-ipld-format"
+	"gx/ipfs/QmdE4gMduCKCGAcczM2F5ioYDfdeKuPix138wrES1YSr7f/go-ipfs-cmdkit"
+	peer "gx/ipfs/QmdVrMn1LhB4ybb8hMVaMLXnA8XRSewMnK6YqXKXoTcRvN/go-libp2p-peer"
 )
 
 var ErrNotDHT = errors.New("routing service is not a DHT")
@@ -160,7 +160,7 @@ var findProvidersDhtCmd = &cmds.Command{
 		}
 
 		if n.Routing == nil {
-			res.SetError(ErrNotOnline, cmdkit.ErrNormal)
+			res.SetError(errNotOnline, cmdkit.ErrNormal)
 			return
 		}
 
@@ -176,8 +176,8 @@ var findProvidersDhtCmd = &cmds.Command{
 
 		events := make(chan *notif.QueryEvent)
 		ctx := notif.RegisterForQueryEvents(req.Context(), events)
-		c, err := cid.Parse(req.Arguments()[0])
 
+		c, err := cid.Decode(req.Arguments()[0])
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return
@@ -272,7 +272,7 @@ var provideRefDhtCmd = &cmds.Command{
 		}
 
 		if n.Routing == nil {
-			res.SetError(ErrNotOnline, cmdkit.ErrNormal)
+			res.SetError(errNotOnline, cmdkit.ErrNormal)
 			return
 		}
 
@@ -424,7 +424,7 @@ var findPeerDhtCmd = &cmds.Command{
 		}
 
 		if n.Routing == nil {
-			res.SetError(ErrNotOnline, cmdkit.ErrNormal)
+			res.SetError(errNotOnline, cmdkit.ErrNormal)
 			return
 		}
 
@@ -529,7 +529,7 @@ Different key types can specify other 'best' rules.
 		}
 
 		if n.Routing == nil {
-			res.SetError(ErrNotOnline, cmdkit.ErrNormal)
+			res.SetError(errNotOnline, cmdkit.ErrNormal)
 			return
 		}
 
@@ -643,7 +643,7 @@ NOTE: A value may not exceed 2048 bytes.
 		}
 
 		if n.Routing == nil {
-			res.SetError(ErrNotOnline, cmdkit.ErrNormal)
+			res.SetError(errNotOnline, cmdkit.ErrNormal)
 			return
 		}
 

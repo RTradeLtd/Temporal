@@ -21,7 +21,6 @@ test_expect_success 'configure EnableRelayHop in relay node' '
 
 test_expect_success 'restart nodes' '
   iptb stop &&
-  iptb_wait_stop &&
   iptb start --args --routing=none
 '
 

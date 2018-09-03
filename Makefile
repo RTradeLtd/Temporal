@@ -1,5 +1,5 @@
 GOFILES=`go list ./... | grep -v /vendor/`
-IPFSVERSION=0.4.17
+IPFSVERSION=v0.4.17
 
 all: check Temporal
 

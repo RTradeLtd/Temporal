@@ -11,12 +11,12 @@ import (
 	"context"
 	"errors"
 
-	logging "gx/ipfs/QmRREK2CAZ5Re2Bd9zZFG6FeYDppUWt5cMgsoUEp3ktgSr/go-log"
-	dsq "gx/ipfs/QmVG5gxteQNEMhrS8prJSmU2C9rebtFuTd3SYZ5kE3YZ5k/go-datastore/query"
-	blocks "gx/ipfs/QmWAzSEoqZ6xU6pu8yL8e5WaMb7wtbfbhhN4p1DknUPtr3/go-block-format"
-	posinfo "gx/ipfs/QmXD4grfThQ4LwVoEEfe4dgR7ukmbV9TppM5Q4SPowp7hU/go-ipfs-posinfo"
-	cid "gx/ipfs/QmZFbDTY9jfSBms2MchvYM9oYRbAF19K7Pby47yDBfpPrb/go-cid"
-	blockstore "gx/ipfs/QmcmpX42gtDv1fz24kau4wjS9hfwWj5VexWBKgGnWzsyag/go-ipfs-blockstore"
+	posinfo "gx/ipfs/QmSHjPDw8yNgLZ7cBfX7w3Smn7PHwYhNEpd4LHQQxUg35L/go-ipfs-posinfo"
+	blocks "gx/ipfs/QmVzK524a2VWLqyvtBeiHKsUAWYgeAk4DBeZoY7vpNPNRx/go-block-format"
+	cid "gx/ipfs/QmYVNvtQkeZ6AKSwDrjQTs432QtL6umrrK41EBq3cu7iSP/go-cid"
+	blockstore "gx/ipfs/QmadMhXJLHMFjpRmh85XjpmVDkEtQpNYEZNRpWRvYVLrvb/go-ipfs-blockstore"
+	logging "gx/ipfs/QmcVVHfdyv15GVPk7NrxdWjh2hLVccXnoD8j2tyQShiXJb/go-log"
+	dsq "gx/ipfs/QmeiCcJfDW1GJnWUArudsv5rQsihpi4oyddPhdqo3CfX6i/go-datastore/query"
 )
 
 var log = logging.Logger("filestore")
@@ -143,27 +143,15 @@ func (f *Filestore) DeleteBlock(c *cid.Cid) error {
 func (f *Filestore) Get(c *cid.Cid) (blocks.Block, error) {
 	blk, err := f.bs.Get(c)
 	switch err {
+	default:
+		return nil, err
 	case nil:
 		return blk, nil
 	case blockstore.ErrNotFound:
-		return f.fm.Get(c)
-	default:
-		return nil, err
+		// try filestore
 	}
-}
 
-// GetSize returns the size of the requested block. It may return ErrNotFound
-// when the block is not stored.
-func (f *Filestore) GetSize(c *cid.Cid) (int, error) {
-	size, err := f.bs.GetSize(c)
-	switch err {
-	case nil:
-		return size, nil
-	case blockstore.ErrNotFound:
-		return f.fm.GetSize(c)
-	default:
-		return -1, err
-	}
+	return f.fm.Get(c)
 }
 
 // Has returns true if the block with the given Cid is

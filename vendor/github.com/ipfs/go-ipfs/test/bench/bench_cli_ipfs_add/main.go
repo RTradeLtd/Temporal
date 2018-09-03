@@ -11,9 +11,8 @@ import (
 	"testing"
 
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-random"
+	"github.com/ipfs/go-ipfs/repo/config"
 	"github.com/ipfs/go-ipfs/thirdparty/unit"
-
-	config "gx/ipfs/QmXUU23sGKdT7AHpyJ4aSvYpXbWjbiuYG1CYhZ3ai3btkG/go-ipfs-config"
 )
 
 var (

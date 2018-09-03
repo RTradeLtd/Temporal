@@ -4,8 +4,7 @@ import (
 	"os"
 
 	homedir "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/mitchellh/go-homedir"
-
-	config "gx/ipfs/QmXUU23sGKdT7AHpyJ4aSvYpXbWjbiuYG1CYhZ3ai3btkG/go-ipfs-config"
+	"github.com/ipfs/go-ipfs/repo/config"
 )
 
 // BestKnownPath returns the best known fsrepo path. If the ENV override is

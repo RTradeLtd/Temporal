@@ -10,9 +10,9 @@ import (
 	"github.com/ipfs/go-ipfs/plugin"
 
 	mh "gx/ipfs/QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8/go-multihash"
-	git "gx/ipfs/QmTH9uimkEFHc7HcrFSG2pMskWLSfnRb8HKUngiP7r4iDN/go-ipld-git"
-	"gx/ipfs/QmX5CsuHyVZeTLxgRSYkgLSDQKb9UjE8xnhQzCEJWWWFsC/go-ipld-format"
-	"gx/ipfs/QmZFbDTY9jfSBms2MchvYM9oYRbAF19K7Pby47yDBfpPrb/go-cid"
+	"gx/ipfs/QmYVNvtQkeZ6AKSwDrjQTs432QtL6umrrK41EBq3cu7iSP/go-cid"
+	"gx/ipfs/QmZtNq8dArGfnpCZfx2pUNY7UcjGhVp5qqwQ4hH6mpTMRQ/go-ipld-format"
+	git "gx/ipfs/QmarUgTjwokWN8NyEuvRP5gSsJQpDecpRJEKxAi31pM7XX/go-ipld-git"
 )
 
 // Plugins is exported list of plugins that will be loaded

@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"io"
 	"strings"
 
@@ -9,18 +8,15 @@ import (
 	lgc "github.com/ipfs/go-ipfs/commands/legacy"
 	dag "github.com/ipfs/go-ipfs/core/commands/dag"
 	e "github.com/ipfs/go-ipfs/core/commands/e"
-	name "github.com/ipfs/go-ipfs/core/commands/name"
 	ocmd "github.com/ipfs/go-ipfs/core/commands/object"
 	unixfs "github.com/ipfs/go-ipfs/core/commands/unixfs"
 
-	"gx/ipfs/QmPTfgFTo9PFr1PvPKyKoeMgBvYPh6cX3aDP7DHKVbnCbi/go-ipfs-cmds"
-	logging "gx/ipfs/QmRREK2CAZ5Re2Bd9zZFG6FeYDppUWt5cMgsoUEp3ktgSr/go-log"
-	"gx/ipfs/QmSP88ryZkHSRn1fnngAaV2Vcn63WUJzAavnRM9CVdU1Ky/go-ipfs-cmdkit"
+	"gx/ipfs/QmNueRyPRQiV7PUEpnP4GgGLuK1rKQLaRW7sfPvUetYig1/go-ipfs-cmds"
+	logging "gx/ipfs/QmcVVHfdyv15GVPk7NrxdWjh2hLVccXnoD8j2tyQShiXJb/go-log"
+	"gx/ipfs/QmdE4gMduCKCGAcczM2F5ioYDfdeKuPix138wrES1YSr7f/go-ipfs-cmdkit"
 )
 
 var log = logging.Logger("core/commands")
-
-var ErrNotOnline = errors.New("this command must be run in online mode. Try running 'ipfs daemon' first")
 
 const (
 	ApiOption = "api"
@@ -125,11 +121,11 @@ var rootSubcommands = map[string]*cmds.Command{
 	"diag":      lgc.NewCommand(DiagCmd),
 	"dns":       lgc.NewCommand(DNSCmd),
 	"id":        lgc.NewCommand(IDCmd),
-	"key":       KeyCmd,
+	"key":       lgc.NewCommand(KeyCmd),
 	"log":       lgc.NewCommand(LogCmd),
 	"ls":        lgc.NewCommand(LsCmd),
 	"mount":     lgc.NewCommand(MountCmd),
-	"name":      name.NameCmd,
+	"name":      lgc.NewCommand(NameCmd),
 	"object":    ocmd.ObjectCmd,
 	"pin":       lgc.NewCommand(PinCmd),
 	"ping":      lgc.NewCommand(PingCmd),
@@ -142,7 +138,7 @@ var rootSubcommands = map[string]*cmds.Command{
 	"update":    lgc.NewCommand(ExternalBinary()),
 	"urlstore":  urlStoreCmd,
 	"version":   lgc.NewCommand(VersionCmd),
-	"shutdown":  daemonShutdownCmd,
+	"shutdown":  lgc.NewCommand(daemonShutdownCmd),
 }
 
 // RootRO is the readonly version of Root
@@ -164,11 +160,11 @@ var rootROSubcommands = map[string]*cmds.Command{
 	"get": GetCmd,
 	"dns": lgc.NewCommand(DNSCmd),
 	"ls":  lgc.NewCommand(LsCmd),
-	"name": &cmds.Command{
-		Subcommands: map[string]*cmds.Command{
-			"resolve": name.IpnsCmd,
+	"name": lgc.NewCommand(&oldcmds.Command{
+		Subcommands: map[string]*oldcmds.Command{
+			"resolve": IpnsCmd,
 		},
-	},
+	}),
 	"object": lgc.NewCommand(&oldcmds.Command{
 		Subcommands: map[string]*oldcmds.Command{
 			"data":  ocmd.ObjectDataCmd,

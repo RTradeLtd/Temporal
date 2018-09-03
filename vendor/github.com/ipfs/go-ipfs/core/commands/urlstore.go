@@ -5,17 +5,16 @@ import (
 	"io"
 	"net/http"
 
-	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
 	filestore "github.com/ipfs/go-ipfs/filestore"
+	balanced "github.com/ipfs/go-ipfs/importer/balanced"
+	ihelper "github.com/ipfs/go-ipfs/importer/helpers"
+	trickle "github.com/ipfs/go-ipfs/importer/trickle"
 
-	cmds "gx/ipfs/QmPTfgFTo9PFr1PvPKyKoeMgBvYPh6cX3aDP7DHKVbnCbi/go-ipfs-cmds"
+	cmds "gx/ipfs/QmNueRyPRQiV7PUEpnP4GgGLuK1rKQLaRW7sfPvUetYig1/go-ipfs-cmds"
 	mh "gx/ipfs/QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8/go-multihash"
-	cmdkit "gx/ipfs/QmSP88ryZkHSRn1fnngAaV2Vcn63WUJzAavnRM9CVdU1Ky/go-ipfs-cmdkit"
-	balanced "gx/ipfs/QmVNEJ5Vk1e2G5kHMiuVbpD6VQZiK1oS6aWZKjcUQW7hEy/go-unixfs/importer/balanced"
-	ihelper "gx/ipfs/QmVNEJ5Vk1e2G5kHMiuVbpD6VQZiK1oS6aWZKjcUQW7hEy/go-unixfs/importer/helpers"
-	trickle "gx/ipfs/QmVNEJ5Vk1e2G5kHMiuVbpD6VQZiK1oS6aWZKjcUQW7hEy/go-unixfs/importer/trickle"
-	chunk "gx/ipfs/QmXzBbJo2sLf3uwjNTeoWYiJV7CjAhkiA4twtLvwJSSNdK/go-ipfs-chunker"
-	cid "gx/ipfs/QmZFbDTY9jfSBms2MchvYM9oYRbAF19K7Pby47yDBfpPrb/go-cid"
+	chunk "gx/ipfs/QmVDjhUMtkRskBFAVNwyXuLSKbeAya7JKPnzAxMKDaK4x4/go-ipfs-chunker"
+	cid "gx/ipfs/QmYVNvtQkeZ6AKSwDrjQTs432QtL6umrrK41EBq3cu7iSP/go-cid"
+	cmdkit "gx/ipfs/QmdE4gMduCKCGAcczM2F5ioYDfdeKuPix138wrES1YSr7f/go-ipfs-cmdkit"
 )
 
 var urlStoreCmd = &cmds.Command{
@@ -54,7 +53,7 @@ time.
 
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) {
 		url := req.Arguments[0]
-		n, err := cmdenv.GetNode(env)
+		n, err := GetNode(env)
 		if err != nil {
 			res.SetError(err, cmdkit.ErrNormal)
 			return
@@ -97,12 +96,12 @@ time.
 		chk := chunk.NewSizeSplitter(hres.Body, chunk.DefaultBlockSize)
 		prefix := cid.NewPrefixV1(cid.DagProtobuf, mh.SHA2_256)
 		dbp := &ihelper.DagBuilderParams{
-			Dagserv:    n.DAG,
-			RawLeaves:  true,
-			Maxlinks:   ihelper.DefaultLinksPerBlock,
-			NoCopy:     true,
-			CidBuilder: &prefix,
-			URL:        url,
+			Dagserv:   n.DAG,
+			RawLeaves: true,
+			Maxlinks:  ihelper.DefaultLinksPerBlock,
+			NoCopy:    true,
+			Prefix:    &prefix,
+			URL:       url,
 		}
 
 		layout := balanced.Layout

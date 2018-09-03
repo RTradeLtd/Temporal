@@ -9,12 +9,12 @@ import (
 	"hash/fnv"
 	"sort"
 
+	"github.com/ipfs/go-ipfs/merkledag"
 	"github.com/ipfs/go-ipfs/pin/internal/pb"
-	"gx/ipfs/QmRDaC5z6yXkXTTSWzaxs2sSVBon5RRCN6eNtMmpuHtKCr/go-merkledag"
 
-	ipld "gx/ipfs/QmX5CsuHyVZeTLxgRSYkgLSDQKb9UjE8xnhQzCEJWWWFsC/go-ipld-format"
-	cid "gx/ipfs/QmZFbDTY9jfSBms2MchvYM9oYRbAF19K7Pby47yDBfpPrb/go-cid"
-	"gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
+	cid "gx/ipfs/QmYVNvtQkeZ6AKSwDrjQTs432QtL6umrrK41EBq3cu7iSP/go-cid"
+	"gx/ipfs/QmZ4Qi3GaRbjcx28Sme5eMH7RQjGkt8wHxt2a65oLaeFEV/gogo-protobuf/proto"
+	ipld "gx/ipfs/QmZtNq8dArGfnpCZfx2pUNY7UcjGhVp5qqwQ4hH6mpTMRQ/go-ipld-format"
 )
 
 const (
@@ -67,9 +67,9 @@ func storeItems(ctx context.Context, dag ipld.DAGService, estimatedLen uint64, d
 	internalKeys(emptyKey)
 
 	hdr := &pb.Set{
-		Version: 1,
-		Fanout:  defaultFanout,
-		Seed:    depth,
+		Version: proto.Uint32(1),
+		Fanout:  proto.Uint32(defaultFanout),
+		Seed:    proto.Uint32(depth),
 	}
 	if err := writeHdr(n, hdr); err != nil {
 		return nil, err

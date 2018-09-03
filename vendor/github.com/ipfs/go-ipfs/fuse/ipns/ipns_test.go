@@ -16,9 +16,9 @@ import (
 	namesys "github.com/ipfs/go-ipfs/namesys"
 
 	u "gx/ipfs/QmPdKqUcHGFdeSpvjVoaTRPPstGif9GBZb5Q56RVw9o69A/go-ipfs-util"
-	ci "gx/ipfs/QmRNhSdqzMcuRxX9A1egBeQ3BhDTguDV5HPwi8wRykkPU8/go-testutil/ci"
 	fstest "gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse/fs/fstestutil"
-	offroute "gx/ipfs/QmZdn8S4FLTfDrmLZb7JoLkrRvTYnyuMWEG6ZGZ3YKwEiK/go-ipfs-routing/offline"
+	offroute "gx/ipfs/QmbFRJeEmEU16y3BmKKaD4a9fm5oHsEAMHe2vSB1UnfLMi/go-ipfs-routing/offline"
+	ci "gx/ipfs/QmcW4FGAt24fdK1jBgWQn3yP4R9ZLyWQqjozv9QK7epRhL/go-testutil/ci"
 	racedet "gx/ipfs/Qmf7HqcW7LtCi1W8y2bdx2eJpze74jkbKqpByxgXikdbLF/go-detect-race"
 )
 
@@ -168,23 +168,13 @@ func TestIpnsBasicIO(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
 	}
-	nd, mnt := setupIpnsTest(t, nil)
+	_, mnt := setupIpnsTest(t, nil)
 	defer closeMount(mnt)
 
 	fname := mnt.Dir + "/local/testfile"
 	data := writeFile(t, 10, fname)
 
 	rbuf, err := ioutil.ReadFile(fname)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !bytes.Equal(rbuf, data) {
-		t.Fatal("Incorrect Read!")
-	}
-
-	fname2 := mnt.Dir + "/" + nd.Identity.Pretty() + "/testfile"
-	rbuf, err = ioutil.ReadFile(fname2)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -6,11 +6,10 @@ import (
 
 	cmds "github.com/ipfs/go-ipfs/commands"
 	e "github.com/ipfs/go-ipfs/core/commands/e"
-	ncmd "github.com/ipfs/go-ipfs/core/commands/name"
 	namesys "github.com/ipfs/go-ipfs/namesys"
 	nsopts "github.com/ipfs/go-ipfs/namesys/opts"
 
-	"gx/ipfs/QmSP88ryZkHSRn1fnngAaV2Vcn63WUJzAavnRM9CVdU1Ky/go-ipfs-cmdkit"
+	"gx/ipfs/QmdE4gMduCKCGAcczM2F5ioYDfdeKuPix138wrES1YSr7f/go-ipfs-cmdkit"
 )
 
 var DNSCmd = &cmds.Command{
@@ -73,7 +72,7 @@ The resolver can recursively resolve:
 			res.SetError(err, cmdkit.ErrNormal)
 			return
 		}
-		res.SetOutput(&ncmd.ResolvedPath{Path: output})
+		res.SetOutput(&ResolvedPath{output})
 	},
 	Marshalers: cmds.MarshalerMap{
 		cmds.Text: func(res cmds.Response) (io.Reader, error) {
@@ -82,12 +81,12 @@ The resolver can recursively resolve:
 				return nil, err
 			}
 
-			output, ok := v.(*ncmd.ResolvedPath)
+			output, ok := v.(*ResolvedPath)
 			if !ok {
 				return nil, e.TypeErr(output, v)
 			}
 			return strings.NewReader(output.Path.String() + "\n"), nil
 		},
 	},
-	Type: ncmd.ResolvedPath{},
+	Type: ResolvedPath{},
 }

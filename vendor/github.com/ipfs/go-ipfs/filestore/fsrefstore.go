@@ -10,15 +10,15 @@ import (
 
 	pb "github.com/ipfs/go-ipfs/filestore/pb"
 
-	ds "gx/ipfs/QmVG5gxteQNEMhrS8prJSmU2C9rebtFuTd3SYZ5kE3YZ5k/go-datastore"
-	dsns "gx/ipfs/QmVG5gxteQNEMhrS8prJSmU2C9rebtFuTd3SYZ5kE3YZ5k/go-datastore/namespace"
-	dsq "gx/ipfs/QmVG5gxteQNEMhrS8prJSmU2C9rebtFuTd3SYZ5kE3YZ5k/go-datastore/query"
-	blocks "gx/ipfs/QmWAzSEoqZ6xU6pu8yL8e5WaMb7wtbfbhhN4p1DknUPtr3/go-block-format"
-	posinfo "gx/ipfs/QmXD4grfThQ4LwVoEEfe4dgR7ukmbV9TppM5Q4SPowp7hU/go-ipfs-posinfo"
-	cid "gx/ipfs/QmZFbDTY9jfSBms2MchvYM9oYRbAF19K7Pby47yDBfpPrb/go-cid"
-	blockstore "gx/ipfs/QmcmpX42gtDv1fz24kau4wjS9hfwWj5VexWBKgGnWzsyag/go-ipfs-blockstore"
-	dshelp "gx/ipfs/Qmd39D2vUhmPKQA2fgykjo2JXwekHKeJUggmGRpYuVMA2Z/go-ipfs-ds-help"
-	proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
+	posinfo "gx/ipfs/QmSHjPDw8yNgLZ7cBfX7w3Smn7PHwYhNEpd4LHQQxUg35L/go-ipfs-posinfo"
+	blocks "gx/ipfs/QmVzK524a2VWLqyvtBeiHKsUAWYgeAk4DBeZoY7vpNPNRx/go-block-format"
+	cid "gx/ipfs/QmYVNvtQkeZ6AKSwDrjQTs432QtL6umrrK41EBq3cu7iSP/go-cid"
+	proto "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
+	blockstore "gx/ipfs/QmadMhXJLHMFjpRmh85XjpmVDkEtQpNYEZNRpWRvYVLrvb/go-ipfs-blockstore"
+	dshelp "gx/ipfs/Qmd8UZEDddMaCnQ1G5eSrUhN3coX19V7SyXNQGWnAvUsnT/go-ipfs-ds-help"
+	ds "gx/ipfs/QmeiCcJfDW1GJnWUArudsv5rQsihpi4oyddPhdqo3CfX6i/go-datastore"
+	dsns "gx/ipfs/QmeiCcJfDW1GJnWUArudsv5rQsihpi4oyddPhdqo3CfX6i/go-datastore/namespace"
+	dsq "gx/ipfs/QmeiCcJfDW1GJnWUArudsv5rQsihpi4oyddPhdqo3CfX6i/go-datastore/query"
 )
 
 // FilestorePrefix identifies the key prefix for FileManager blocks.
@@ -122,18 +122,6 @@ func (f *FileManager) Get(c *cid.Cid) (blocks.Block, error) {
 	return blocks.NewBlockWithCid(out, c)
 }
 
-// GetSize gets the size of the block from the datastore.
-//
-// This method may successfully return the size even if returning the block
-// would fail because the associated file is no longer available.
-func (f *FileManager) GetSize(c *cid.Cid) (int, error) {
-	dobj, err := f.getDataObj(c)
-	if err != nil {
-		return -1, err
-	}
-	return int(dobj.GetSize_()), nil
-}
-
 func (f *FileManager) readDataObj(c *cid.Cid, d *pb.DataObj) ([]byte, error) {
 	if IsURL(d.GetFilePath()) {
 		return f.readURLDataObj(c, d)
@@ -155,7 +143,12 @@ func (f *FileManager) getDataObj(c *cid.Cid) (*pb.DataObj, error) {
 	return unmarshalDataObj(o)
 }
 
-func unmarshalDataObj(data []byte) (*pb.DataObj, error) {
+func unmarshalDataObj(o interface{}) (*pb.DataObj, error) {
+	data, ok := o.([]byte)
+	if !ok {
+		return nil, fmt.Errorf("stored filestore dataobj was not a []byte")
+	}
+
 	var dobj pb.DataObj
 	if err := proto.Unmarshal(data, &dobj); err != nil {
 		return nil, err
@@ -260,7 +253,7 @@ func (f *FileManager) Has(c *cid.Cid) (bool, error) {
 }
 
 type putter interface {
-	Put(ds.Key, []byte) error
+	Put(ds.Key, interface{}) error
 }
 
 // Put adds a new reference block to the FileManager. It does not check
@@ -276,7 +269,7 @@ func (f *FileManager) putTo(b *posinfo.FilestoreNode, to putter) error {
 		if !f.AllowUrls {
 			return ErrUrlstoreNotEnabled
 		}
-		dobj.FilePath = b.PosInfo.FullPath
+		dobj.FilePath = proto.String(b.PosInfo.FullPath)
 	} else {
 		if !f.AllowFiles {
 			return ErrFilestoreNotEnabled
@@ -290,10 +283,10 @@ func (f *FileManager) putTo(b *posinfo.FilestoreNode, to putter) error {
 			return err
 		}
 
-		dobj.FilePath = filepath.ToSlash(p)
+		dobj.FilePath = proto.String(filepath.ToSlash(p))
 	}
-	dobj.Offset = b.PosInfo.Offset
-	dobj.Size_ = uint64(len(b.RawData()))
+	dobj.Offset = proto.Uint64(b.PosInfo.Offset)
+	dobj.Size_ = proto.Uint64(uint64(len(b.RawData())))
 
 	data, err := proto.Marshal(&dobj)
 	if err != nil {

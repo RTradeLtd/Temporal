@@ -43,16 +43,6 @@ experimental, default-disabled.
 run your daemon with the `--enable-pubsub-experiment` flag. Then use the
 `ipfs pubsub` commands.
 
-### gossipsub
-
-Gossipsub is a new, experimental routing protocol for pubsub that
-should waste less bandwidth than floodsub, the current pubsub
-protocol. It's backwards compatible with floodsub so enabling this
-feature shouldn't break compatibility with existing IPFS nodes.
-
-You can enable gossipsub via configuration:
-`ipfs config Pubsub.Router gossipsub`
-
 ### Road to being a real feature
 - [ ] Needs more people to use and report on how well it works
 - [ ] Needs authenticated modes to be implemented
@@ -435,35 +425,5 @@ run your daemon with the `--enable-namesys-pubsub` flag; enables pubsub.
 
 - [ ] Needs more people to use and report on how well it works
 - [ ] Add a mechanism for last record distribution on subscription,
-  so that we don't have to hit the DHT for the initial resolution.
-  Alternatively, we could republish the last record periodically.
-
-
-
-## QUIC
-
-### In Version
-
-0.4.18
-
-### State
-
-Experiment, disabled by default
-
-### How to enable
-
-Modify your ipfs config:
-
-```
-ipfs config --json Experimental.QUIC true
-```
-
-For listening on a QUIC address, add it the swarm addresses, e.g. `/ip4/0.0.0.0/udp/4001/quic`.
-
-
-### Road to being a real feature
-
-- [ ] The IETF QUIC specification needs to be finalised.
-- [ ] Make sure QUIC connections work reliably
-- [ ] Make sure QUIC connection offer equal or better performance than TCP connections on real world networks
-- [ ] Finalize libp2p-TLS handshake spec.
+      so that we don't have to hit the DHT for the initial resolution.
+      Alternatively, we could republish the last record periodically.
