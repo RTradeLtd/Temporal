@@ -1,4 +1,5 @@
 GOFILES=`go list ./... | grep -v /vendor/`
+IPFSVERSION=0.4.17
 
 all: check Temporal
 
@@ -61,13 +62,15 @@ vendor:
 	dep ensure -v
 
 	# Generate IPFS dependencies
+	rm -rf $(GOPATH)/src/gx
+	rm -rf $(GOPATH)/src/github.com/ipfs/go-ipfs
 	go get -u github.com/ipfs/go-ipfs
-	( cd $(GOPATH)/src/github.com/ipfs/go-ipfs ; make install )
+	( cd $(GOPATH)/src/github.com/ipfs/go-ipfs ; git checkout $(IPFSVERSION) ; make install )
 
 	# Vendor IPFS dependencies
 	rm -rf vendor/github.com/ipfs/go-ipfs vendor/gx
 	cp -r $(GOPATH)/src/github.com/ipfs/go-ipfs vendor/github.com/ipfs
-	cp -r $(GOPATH)/src/gx vendor/github.com/ipfs vendor
+	cp -r $(GOPATH)/src/gx vendor
 
 	# Vendor ethereum - this step is required for some of the cgo components, as
 	# dep doesn't seem to resolve them

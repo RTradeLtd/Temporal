@@ -1,0 +1,30 @@
+{
+  "author": "marten-seemann",
+  "bugs": {
+    "url": "github.com/libp2p/go-libp2p-quic-transport"
+  },
+  "gx": {
+    "dvcsimport": "github.com/libp2p/go-libp2p-quic-transport"
+  },
+  "gxDependencies": [
+    {
+      "author": "marten-seemann",
+      "hash": "QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ",
+      "name": "quic-go",
+      "version": "0.10.0"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmcDUyb52N62J8ZamGgUWUyWc1MtuCBce7WFA4D9xA6cwF",
+      "name": "go-libp2p-transport",
+      "version": "3.0.8"
+    }
+  ],
+  "gxVersion": "0.11.0",
+  "language": "go",
+  "license": "",
+  "name": "go-libp2p-quic-transport",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.2.3"
+}
+

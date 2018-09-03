@@ -1,4 +1,4 @@
-ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid"]
+ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/ipfs/go-ipfs"]
 
 [prune]
   go-tests = true
