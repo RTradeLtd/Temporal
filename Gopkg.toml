@@ -1,41 +1,14 @@
-# Gopkg.toml example
-#
-# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
-# for detailed Gopkg.toml documentation.
-#
-# required = ["github.com/user/thing/cmd/thing"]
-# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
-#
-# [[constraint]]
-#   name = "github.com/user/project"
-#   version = "1.0.0"
-#
-# [[constraint]]
-#   name = "github.com/user/project2"
-#   branch = "dev"
-#   source = "github.com/myfork/project2"
-#
-# [[override]]
-#   name = "github.com/x/y"
-#   version = "2.4.0"
-#
-# [prune]
-#   non-go = false
-#   go-tests = true
-#   unused-packages = true
+ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/ipfs/go-ipfs"]
 
-ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/ipsn/go-ipfs*"]
-
+[prune]
+  go-tests = true
+  unused-packages = true
 
 # IPFS
 
 [[override]]
   name = "github.com/multiformats/go-multiaddr-dns"
   branch = "master"
-
-[[constraint]]
-  name = "github.com/RTradeLtd/go-ipfs-api"
-  branch = "master-rtrade"
   
 [[constraint]]
   name = "github.com/ipfs/go-cid"
@@ -48,10 +21,6 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
 [[constraint]]
   branch = "master"
   name = "github.com/ipfs/go-ipfs-keystore"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/ipfs/go-ipns"
 
 [[constraint]]
   name = "github.com/ipfs/ipfs-cluster"
@@ -70,10 +39,6 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
   version = "6.0.5"
 
 # MISC
-
-[[constraint]]
-  name = "github.com/appleboy/gin-jwt"
-  version = "2.3.1"
 
 [[constraint]]
   branch = "master"
@@ -133,10 +98,30 @@ ignored = ["github.com/ipfs/go-ipfs/repo/config", "github.com/karalabe/hid", "gi
   branch = "master"
   name = "golang.org/x/crypto"
 
-[prune]
-  go-tests = true
-  unused-packages = true
-
 [[constraint]]
   name = "github.com/gin-contrib/cors"
   version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/ipfs/go-ipfs-config"
+  version = "0.2.4"
+
+[[constraint]]
+  name = "github.com/RTradeLtd/go-ipfs-api"
+  branch = "master-rtrade"
+
+[[override]]
+  name = "github.com/rjeczalik/notify"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/libp2p/go-libp2p-peer"
+  branch = "master"
+
+[[override]]
+  name = "github.com/ipfs/go-ipfs-cmdkit"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/appleboy/gin-jwt"
+  revision = "f7347d7c16fc8297bf5b7215b9e4847a5ca05d90"

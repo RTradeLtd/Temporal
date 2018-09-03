@@ -38,8 +38,8 @@ type Session struct {
 	// conn is the underlying connection
 	conn io.ReadWriteCloser
 
-	// bufRead is a buffered reader
-	bufRead *bufio.Reader
+	// reader is a buffered reader
+	reader io.Reader
 
 	// pings is used to track inflight pings
 	pings    map[uint32]chan struct{}
@@ -69,6 +69,9 @@ type Session struct {
 	// between stream registration and stream shutdown
 	recvDoneCh chan struct{}
 
+	// client is true if we're the client and our stream IDs should be odd.
+	client bool
+
 	// shutdown is used to safely close a session
 	shutdown     bool
 	shutdownErr  error
@@ -85,12 +88,17 @@ type sendReady struct {
 }
 
 // newSession is used to construct a new session
-func newSession(config *Config, conn io.ReadWriteCloser, client bool) *Session {
+func newSession(config *Config, conn io.ReadWriteCloser, client bool, readBuf int) *Session {
+	var reader io.Reader = conn
+	if readBuf > 0 {
+		reader = bufio.NewReaderSize(reader, readBuf)
+	}
 	s := &Session{
 		config:     config,
+		client:     client,
 		logger:     log.New(config.LogOutput, "", log.LstdFlags),
 		conn:       conn,
-		bufRead:    bufio.NewReader(conn),
+		reader:     reader,
 		pings:      make(map[uint32]chan struct{}),
 		streams:    make(map[uint32]*Stream),
 		inflight:   make(map[uint32]struct{}),
@@ -448,7 +456,7 @@ func (s *Session) recvLoop() error {
 	hdr := header(make([]byte, headerSize))
 	for {
 		// Read the header
-		if _, err := io.ReadFull(s.bufRead, hdr); err != nil {
+		if _, err := io.ReadFull(s.reader, hdr); err != nil {
 			if err != io.EOF && !strings.Contains(err.Error(), "closed") && !strings.Contains(err.Error(), "reset by peer") {
 				s.logger.Printf("[ERR] yamux: Failed to read header: %v", err)
 			}
@@ -493,7 +501,7 @@ func (s *Session) handleStreamMessage(hdr header) error {
 		// Drain any data on the wire
 		if hdr.MsgType() == typeData && hdr.Length() > 0 {
 			s.logger.Printf("[WARN] yamux: Discarding data for stream: %d", id)
-			if _, err := io.CopyN(ioutil.Discard, s.bufRead, int64(hdr.Length())); err != nil {
+			if _, err := io.CopyN(ioutil.Discard, s.reader, int64(hdr.Length())); err != nil {
 				s.logger.Printf("[ERR] yamux: Failed to discard data: %v", err)
 				return nil
 			}
@@ -515,7 +523,7 @@ func (s *Session) handleStreamMessage(hdr header) error {
 	}
 
 	// Read the new data
-	if err := stream.readData(hdr, flags, s.bufRead); err != nil {
+	if err := stream.readData(hdr, flags, s.reader); err != nil {
 		if sendErr := s.sendNoWait(s.goAway(goAwayProtoErr)); sendErr != nil {
 			s.logger.Printf("[WARN] yamux: failed to send go away: %v", sendErr)
 		}
@@ -574,6 +582,10 @@ func (s *Session) handleGoAway(hdr header) error {
 
 // incomingStream is used to create a new incoming stream
 func (s *Session) incomingStream(id uint32) error {
+	if s.client != (id%2 == 0) {
+		s.logger.Printf("[ERR] yamux: both endpoints are clients")
+		return fmt.Errorf("both yamux endpoints are clients")
+	}
 	// Reject immediately if we are doing a go away
 	if atomic.LoadInt32(&s.localGoAway) == 1 {
 		hdr := header(make([]byte, headerSize))

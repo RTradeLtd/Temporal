@@ -47,6 +47,8 @@ package p2phttp
 
 import (
 	"bufio"
+	"io"
+	"net"
 	"net/http"
 
 	gostream "github.com/hsanjuan/go-libp2p-gostream"
@@ -65,13 +67,22 @@ type RoundTripper struct {
 	h host.Host
 }
 
+// we wrap the response body and close the stream
+// only when it's closed.
+type respBody struct {
+	io.ReadCloser
+	conn net.Conn
+}
+
+// Closes the response's body and the connection.
+func (rb *respBody) Close() error {
+	rb.conn.Close()
+	return rb.ReadCloser.Close()
+}
+
 // RoundTrip executes a single HTTP transaction, returning
 // a Response for the provided Request.
 func (rt *RoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	if r.Body != nil {
-		defer r.Body.Close()
-	}
-
 	addr := r.Host
 	if addr == "" {
 		addr = r.URL.Host
@@ -84,17 +95,34 @@ func (rt *RoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 
 	conn, err := gostream.Dial(rt.h, peer.ID(pid), P2PProtocol)
 	if err != nil {
+		if r.Body != nil {
+			r.Body.Close()
+		}
 		return nil, err
 	}
-	defer conn.Close()
 
-	err = r.Write(conn)
+	// Write the request while reading the response
+	go func() {
+		err := r.Write(conn)
+		if err != nil {
+			conn.Close()
+		}
+		if r.Body != nil {
+			r.Body.Close()
+		}
+	}()
+
+	resp, err := http.ReadResponse(bufio.NewReader(conn), r)
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
 
-	reader := bufio.NewReader(conn)
-	return http.ReadResponse(reader, r)
+	resp.Body = &respBody{
+		ReadCloser: resp.Body,
+		conn:       conn,
+	}
+
+	return resp, nil
 }
 
 // NewTransport returns a new RoundTripper which uses the provided

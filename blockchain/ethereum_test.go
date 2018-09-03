@@ -10,6 +10,10 @@ import (
 var configPath = "/home/solidity/config.json"
 
 func TestGenerateEthereumConnectionManager(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
 		t.Fatal(err)

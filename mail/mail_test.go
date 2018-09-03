@@ -11,6 +11,10 @@ import (
 var recipient = "insertemailhere"
 
 func TestMail(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	cfg, err := config.LoadConfig("/home/solidity/config.json")
 	if err != nil {
 		t.Fatal(err)

@@ -11,6 +11,10 @@ import (
 const testPIN = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
 
 func TestInitialize(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	im, err := rtfs.Initialize("", "")
 	if err != nil {
 		t.Fatal(err)
@@ -23,6 +27,10 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestDHTFindProvs(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	im, err := rtfs.Initialize("", "")
 	if err != nil {
 		t.Fatal(err)
@@ -34,6 +42,10 @@ func TestDHTFindProvs(t *testing.T) {
 }
 
 func TestBuildCustomRequest(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	im, err := rtfs.Initialize("", "")
 	if err != nil {
 		t.Fatal(err)
@@ -46,6 +58,10 @@ func TestBuildCustomRequest(t *testing.T) {
 }
 
 func TestPin(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	im, err := rtfs.Initialize("", "")
 	if err != nil {
 		t.Fatal(err)
@@ -57,6 +73,10 @@ func TestPin(t *testing.T) {
 }
 
 func TestGetObjectFileSizeInBytes(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	im, err := rtfs.Initialize("", "")
 	if err != nil {
 		t.Fatal(err)
@@ -68,6 +88,10 @@ func TestGetObjectFileSizeInBytes(t *testing.T) {
 }
 
 func TestObjectStat(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	im, err := rtfs.Initialize("", "")
 	if err != nil {
 		t.Fatal(err)
@@ -79,6 +103,10 @@ func TestObjectStat(t *testing.T) {
 }
 
 func TestParseLocalPinsForHash(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	im, err := rtfs.Initialize("", "")
 	if err != nil {
 		t.Fatal(err)
@@ -93,6 +121,10 @@ func TestParseLocalPinsForHash(t *testing.T) {
 }
 
 func TestPubSub(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	im, err := rtfs.Initialize("", "")
 	if err != nil {
 		t.Fatal(err)

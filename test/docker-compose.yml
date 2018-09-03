@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: "temporal"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password123"
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+    command: ["server", "/data"]
+    environment:
+      MINIO_ACCESS_KEY: "C03T49S17RP0APEZDK6M"
+      MINIO_SECRET_KEY: "q4I9t2MN/6bAgLkbF6uyS7jtQrXuNARcyrm2vvNA"

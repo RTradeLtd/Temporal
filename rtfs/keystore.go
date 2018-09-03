@@ -18,9 +18,17 @@ type KeystoreManager struct {
 	FSKeystore *keystore.FSKeystore
 }
 
-func GenerateKeystoreManager() (*KeystoreManager, error) {
-	var km KeystoreManager
-	fsk, err := keystore.NewFSKeystore(DefaultFSKeystorePath)
+// GenerateKeystoreManager instantiates a new keystore manager. Takes an optional
+// filepath for the store.
+func GenerateKeystoreManager(keystorePath ...string) (*KeystoreManager, error) {
+	var (
+		storePath = DefaultFSKeystorePath
+		km        KeystoreManager
+	)
+	if keystorePath != nil && len(keystorePath) > 0 {
+		storePath = keystorePath[0]
+	}
+	fsk, err := keystore.NewFSKeystore(storePath)
 	if err != nil {
 		return nil, err
 	}

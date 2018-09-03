@@ -2,6 +2,7 @@ package tcp
 
 import (
 	"context"
+	"time"
 
 	logging "github.com/ipfs/go-log"
 	peer "github.com/libp2p/go-libp2p-peer"
@@ -12,6 +13,10 @@ import (
 	manet "github.com/multiformats/go-multiaddr-net"
 	mafmt "github.com/whyrusleeping/mafmt"
 )
+
+// DefaultConnectTimeout is the (default) maximum amount of time the TCP
+// transport will spend on the initial TCP connect before giving up.
+var DefaultConnectTimeout = 5 * time.Second
 
 var log = logging.Logger("tcp-tpt")
 
@@ -24,6 +29,9 @@ type TcpTransport struct {
 	// Explicitly disable reuseport.
 	DisableReuseport bool
 
+	// TCP connect timeout
+	ConnectTimeout time.Duration
+
 	reuse rtpt.Transport
 }
 
@@ -32,7 +40,7 @@ var _ tpt.Transport = &TcpTransport{}
 // NewTCPTransport creates a tcp transport object that tracks dialers and listeners
 // created. It represents an entire tcp stack (though it might not necessarily be)
 func NewTCPTransport(upgrader *tptu.Upgrader) *TcpTransport {
-	return &TcpTransport{Upgrader: upgrader}
+	return &TcpTransport{Upgrader: upgrader, ConnectTimeout: DefaultConnectTimeout}
 }
 
 // CanDial returns true if this transport believes it can dial the given
@@ -42,6 +50,16 @@ func (t *TcpTransport) CanDial(addr ma.Multiaddr) bool {
 }
 
 func (t *TcpTransport) maDial(ctx context.Context, raddr ma.Multiaddr) (manet.Conn, error) {
+	// Apply the deadline iff applicable
+	if t.ConnectTimeout > 0 {
+		deadline := time.Now().Add(t.ConnectTimeout)
+		if d, ok := ctx.Deadline(); !ok || deadline.Before(d) {
+			var cancel func()
+			ctx, cancel = context.WithDeadline(ctx, deadline)
+			defer cancel()
+		}
+	}
+
 	if t.UseReuseport() {
 		return t.reuse.DialContext(ctx, raddr)
 	}

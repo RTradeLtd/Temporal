@@ -11,7 +11,6 @@ import (
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/Temporal/rtswarm"
 	"github.com/RTradeLtd/Temporal/utils"
 )
 
@@ -57,12 +56,6 @@ func main() {
 			api.Logger.Fatal(msg)
 			fmt.Printf("API execution failed for error %s\nSee logs for more details", err.Error())
 		}
-	case "swarm":
-		sm, err := rtswarm.NewSwarmManager()
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("%+v\n", sm)
 	case "queue-dfa":
 		mqConnectionURL := tCfg.RabbitMQ.URL
 		qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
