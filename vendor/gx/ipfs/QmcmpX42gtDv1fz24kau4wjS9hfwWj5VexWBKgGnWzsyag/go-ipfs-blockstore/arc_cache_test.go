@@ -208,6 +208,7 @@ func TestGetSizeMissingZeroSizeBlock(t *testing.T) {
 	}
 }
 
+
 func TestDifferentKeyObjectsWork(t *testing.T) {
 	arc, bs, cd := createStores(t)
 
