@@ -13,8 +13,8 @@
        alt="GoDocs available" />
   </a>
 
-  <a href="https://travis-ci.org/RTradeLtd/Temporal">
-    <img src="https://travis-ci.org/RTradeLtd/Temporal.svg?branch=V2"
+  <a href="https://travis-ci.com/RTradeLtd/Temporal">
+    <img src="https://travis-ci.com/RTradeLtd/Temporal.svg?branch=V2"
       alt="Travis Build Status" />
   </a>
 
