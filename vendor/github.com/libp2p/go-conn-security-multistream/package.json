@@ -9,15 +9,15 @@
   "gxDependencies": [
     {
       "author": "Stebalien",
-      "hash": "QmfCQHZGXiEqRgWBmJmWBD8p1rP3Z2T5Y5pvidfGTjsEPs",
+      "hash": "QmNPQvc3jUA7L6oHB8en9PittPGazFMdoveN2oycHL6yWF",
       "name": "go-conn-security",
-      "version": "0.1.3"
+      "version": "0.1.8"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmVf8hTAsLLFtn4WPCRNdnaF2Eag2qTBS6uR8AiHPZARXy",
+      "hash": "QmQsErDt8Qgw1XrsXf2BpEzDgGWtB1YLsTAARBup5b6B9W",
       "name": "go-libp2p-peer",
-      "version": "2.3.4"
+      "version": "2.3.7"
     },
     {
       "author": "whyrusleeping",
@@ -31,6 +31,6 @@
   "license": "MIT",
   "name": "go-conn-security-multistream",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "0.1.2"
+  "version": "0.1.7"
 }
 

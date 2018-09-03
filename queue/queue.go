@@ -236,7 +236,8 @@ func (qm *QueueManager) DeclareQueue() error {
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
 func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
-	db, err := database.OpenDBConnection(dbPass, dbURL, dbUser)
+	db, err := database.OpenDBConnection(database.DBOptions{
+		User: dbUser, Password: dbPass, Address: dbURL})
 	if err != nil {
 		return err
 	}

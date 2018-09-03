@@ -1,11 +1,8 @@
 package signer_test
 
 import (
-	"fmt"
 	"math/big"
-	"testing"
 
-	"github.com/RTradeLtd/Temporal/payment_server/signer"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -20,8 +17,6 @@ var (
 
 /*
 Used to test the signer package
-*/
-
 func TestSigner(t *testing.T) {
 	s, err := signer.GeneratePaymentSigner(path, pass)
 	if err != nil {
@@ -33,3 +28,4 @@ func TestSigner(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", sm)
 }
+*/

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/RTradeLtd/Temporal/config"
@@ -9,11 +10,13 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-var UploadObj *models.Upload
-var UserObj *models.User
-var PaymentObj *models.Payment
-var IpnsObj *models.IPNS
-var HostedIpfsNetObj *models.HostedIPFSPrivateNetwork
+var (
+	UploadObj        *models.Upload
+	UserObj          *models.User
+	PaymentObj       *models.Payment
+	IpnsObj          *models.IPNS
+	HostedIpfsNetObj *models.HostedIPFSPrivateNetwork
+)
 
 type DatabaseManager struct {
 	DB     *gorm.DB
@@ -21,15 +24,20 @@ type DatabaseManager struct {
 }
 
 func Initialize(cfg *config.TemporalConfig, runMigrations bool) (*DatabaseManager, error) {
-	dbm := DatabaseManager{}
-	db, err := OpenDBConnection(
-		cfg.Database.Password,
-		cfg.Database.URL,
-		cfg.Database.Username)
+	if cfg == nil {
+		return nil, errors.New("invalid configuration provided")
+	}
+
+	db, err := OpenDBConnection(DBOptions{
+		User:     cfg.Database.Name,
+		Password: cfg.Database.Password,
+		Address:  cfg.Database.URL,
+	})
 	if err != nil {
 		return nil, err
 	}
-	dbm.DB = db
+
+	dbm := DatabaseManager{DB: db}
 	if runMigrations {
 		dbm.RunMigrations()
 	}
@@ -47,13 +55,25 @@ func (dbm *DatabaseManager) RunMigrations() {
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
 
+// DBOptions declares options for opening a database connection
+type DBOptions struct {
+	User           string
+	Password       string
+	Address        string
+	SSLModeDisable bool
+}
+
 // OpenDBConnection is used to create a database connection
-func OpenDBConnection(dbPass, dbURL, dbUser string) (*gorm.DB, error) {
-	if dbUser == "" {
-		dbUser = "postgres"
+func OpenDBConnection(opts DBOptions) (*gorm.DB, error) {
+	if opts.User == "" {
+		opts.User = "postgres"
 	}
 	// look into whether or not we wil disable sslmode
-	dbConnURL := fmt.Sprintf("host=%s port=5432 user=%s dbname=temporal password=%s", dbURL, dbUser, dbPass)
+	dbConnURL := fmt.Sprintf("host=%s port=5433 user=%s dbname=temporal password=%s",
+		opts.Address, opts.User, opts.Password)
+	if opts.SSLModeDisable {
+		dbConnURL = "sslmode=disable " + dbConnURL
+	}
 	db, err := gorm.Open("postgres", dbConnURL)
 	if err != nil {
 		return nil, err
@@ -62,7 +82,7 @@ func OpenDBConnection(dbPass, dbURL, dbUser string) (*gorm.DB, error) {
 }
 
 func OpenTestDBConnection(dbPass string) (*gorm.DB, error) {
-	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5432 user=postgres dbname=temporal password=%s", dbPass)
+	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5433 user=postgres dbname=temporal password=%s", dbPass)
 	db, err := gorm.Open("postgres", dbConnURL)
 	if err != nil {
 		return nil, err

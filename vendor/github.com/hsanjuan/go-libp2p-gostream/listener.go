@@ -63,7 +63,7 @@ func Listen(h host.Host, tag protocol.ID) (net.Listener, error) {
 		select {
 		case l.streamCh <- s:
 		case <-ctx.Done():
-			s.Close()
+			s.Reset()
 		}
 	})
 

@@ -6,8 +6,7 @@ import (
 	"github.com/RTradeLtd/Temporal/config"
 )
 
-// Change to your home dir
-var configPath = "/home/solidity/config.json"
+var configPath = "../test/config.json"
 
 func TestConfig(t *testing.T) {
 	_, err := config.LoadConfig(configPath)

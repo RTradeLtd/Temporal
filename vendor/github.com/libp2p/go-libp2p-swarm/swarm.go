@@ -21,10 +21,11 @@ import (
 	mafilter "github.com/whyrusleeping/multiaddr-filter"
 )
 
-// DialTimeout is the maximum duration a Dial is allowed to take.
+// DialTimeoutLocal is the maximum duration a Dial to local network address
+// is allowed to take.
 // This includes the time between dialing the raw network connection,
 // protocol selection as well the handshake, if applicable.
-var DialTimeout = 60 * time.Second
+var DialTimeoutLocal = 5 * time.Second
 
 var log = logging.Logger("swarm2")
 
@@ -164,7 +165,7 @@ func (s *Swarm) Process() goprocess.Process {
 	return s.proc
 }
 
-func (s *Swarm) addConn(tc transport.Conn) (*Conn, error) {
+func (s *Swarm) addConn(tc transport.Conn, dir inet.Direction) (*Conn, error) {
 	// The underlying transport (or the dialer) *should* filter it's own
 	// connections but we should double check anyways.
 	raddr := tc.RemoteMultiaddr()
@@ -193,9 +194,11 @@ func (s *Swarm) addConn(tc transport.Conn) (*Conn, error) {
 	}
 
 	// Wrap and register the connection.
+	stat := inet.Stat{Direction: dir}
 	c := &Conn{
 		conn:  tc,
 		swarm: s,
+		stat:  stat,
 	}
 	c.streams.m = make(map[*Stream]struct{})
 	s.conns.m[p] = append(s.conns.m[p], c)
