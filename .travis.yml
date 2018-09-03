@@ -6,6 +6,7 @@ services:
 
 install:
   - docker pull koalaman/shellcheck
+  - go get -u golang.org/x/lint/golint
 
 before_script:
   - go vet ./...
