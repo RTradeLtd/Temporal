@@ -131,7 +131,50 @@ System monitoring is done using a combination of Zabbix, and Grafana. Zabbix is 
 
 All templates, and grafana graphs, as well as necessary configuration files and scripts to replicate our system monitoring backend are included in the `configs/` directory of this repository. The only configurations we don't include are our email configurations.
 
-## Developmemt
+## Development
+
+### Building
+
+Dependencies are vendored by default, so there is no need to install anything if you have the Go toolchain. Just run the following commands:
+
+```bash
+$ go get github.com/RTradeLtd/Temporal
+$ cd $GOPATH/src/github.com/RTradeLtd/Temporal
+$ make
+```
+
+### Testing
+
+Most tests can be run using the following commands:
+
+```bash
+$ make testenv
+$ make test
+```
+
+This requires Docker running and docker-compose installed.
+
+To run the full suite of tests, more advanced setup and configuration is required. If all the prerequisites are set up, you can execute the tests using `make test-all`.
+
+### Linting
+
+The following command will run some lint checks:
+
+```bash
+$ make lint
+```
+
+This requires golint and spellcheck to be installed.
+
+### Vendoring
+
+To update or rebuild the dependencies, run:
+
+```bash
+$ make vendor
+```
+
+This requires the GX dependency management tool to be installed.
 
 ### Repository Contents
 
