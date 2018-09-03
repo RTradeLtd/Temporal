@@ -1,7 +1,6 @@
 package database_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -15,14 +14,8 @@ var (
 )
 
 func TestDatabase(t *testing.T) {
-	if !travis {
-		dbPass = "password123"
-	} else {
-		dbPass = ""
-	}
-	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5433 user=postgres dbname=temporal password=%s sslmode=disable", dbPass)
-
-	db, err := gorm.Open("postgres", dbConnURL)
+	db, err := gorm.Open(
+		"postgres", "host=127.0.0.1 port=5433 user=postgres dbname=temporal password=password123 sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,14 +23,9 @@ func TestDatabase(t *testing.T) {
 }
 
 func TestDatabaseMigrations(t *testing.T) {
-	if !travis {
-		dbPass = "password123"
-	} else {
-		dbPass = ""
-	}
 	db, err := database.OpenDBConnection(database.DBOptions{
 		User:           "postgres",
-		Password:       dbPass,
+		Password:       "password123",
 		Address:        "127.0.0.1",
 		SSLModeDisable: true,
 	})
