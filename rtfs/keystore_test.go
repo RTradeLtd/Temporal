@@ -4,18 +4,29 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/rtfs"
 	ci "github.com/libp2p/go-libp2p-crypto"
 )
 
+func TestKeystoreManager_noCustomPath(t *testing.T) {
+	rtfs.GenerateKeystoreManager()
+}
+
 /*
 	if we dont disable gocache, the key generate will always be the same
 	env GOCACHE=off go test -v ....
 */
 func TestKeystoreManager(t *testing.T) {
-	km, err := rtfs.GenerateKeystoreManager()
+	defer func() {
+		if err := os.RemoveAll("temp"); err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	km, err := rtfs.GenerateKeystoreManager("temp")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,21 +79,34 @@ func TestKeystoreManager(t *testing.T) {
 }
 
 func TestGetKey(t *testing.T) {
-	k1 := "b6ec4a647a7738ef8eea3b21777ecf41630d6d0ac79dc36739d81e927f910a65"
-	k2 := "test1"
+	defer func() {
+		if err := os.RemoveAll("temp"); err != nil {
+			t.Fatal(err)
+		}
+	}()
 
-	km, err := rtfs.GenerateKeystoreManager()
+	var (
+		k1 = "b6ec4a647a7738ef8eea3b21777ecf41630d6d0ac79dc36739d81e927f910a65"
+		k2 = "test1"
+	)
+
+	km, err := rtfs.GenerateKeystoreManager("temp")
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	// Create keys
+	km.CreateAndSaveKey(k1, 1, 1)
+	km.CreateAndSaveKey(k2, 1, 1)
+
+	// Check if keys exist
 	present, err := km.CheckIfKeyExists(k1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if !present {
-		t.Error("key not present wehn it should be")
+		t.Error("key not present when it should be")
 	}
 
 	pk1, err := km.GetPrivateKeyByName(k1)

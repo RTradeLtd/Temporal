@@ -10,13 +10,11 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "password123"
 
-#  node1:
-#    image: ubuntu
-#  node2:
-#    image: ubuntu
-#  node3:
-#    image: ubuntu
-#  node4:
-#    image: ubuntu
-#  node5:
-#    image: ubuntu
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+    command: ["server", "/data"]
+    environment:
+      MINIO_ACCESS_KEY: "C03T49S17RP0APEZDK6M"
+      MINIO_SECRET_KEY: "q4I9t2MN/6bAgLkbF6uyS7jtQrXuNARcyrm2vvNA"

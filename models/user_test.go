@@ -29,6 +29,9 @@ type args struct {
 }
 
 func TestUserManager_ChangeEthereumAddress(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	cfg, err := config.LoadConfig(defaultConfigFile)
 	if err != nil {
 		t.Fatal(err)
@@ -67,6 +70,10 @@ func TestUserManager_ChangeEthereumAddress(t *testing.T) {
 }
 
 func TestUserManager_ChangePassword(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	cfg, err := config.LoadConfig(defaultConfigFile)
 	if err != nil {
 		t.Fatal(err)
@@ -108,6 +115,10 @@ func TestUserManager_ChangePassword(t *testing.T) {
 }
 
 func TestUserManager_NewAccount(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	cfg, err := config.LoadConfig(defaultConfigFile)
 	if err != nil {
 		t.Fatal(err)

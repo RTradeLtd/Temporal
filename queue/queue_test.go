@@ -14,6 +14,10 @@ const (
 )
 
 func TestInitialize(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	cfg, err := config.LoadConfig(defaultConfigFile)
 	if err != nil {
 		t.Fatal(err)
@@ -48,6 +52,10 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestQueues(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	cfg, err := config.LoadConfig(defaultConfigFile)
 	if err != nil {
 		t.Fatal(err)

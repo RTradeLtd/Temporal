@@ -26,6 +26,10 @@ func TestNewMinioManagerNoSecure(t *testing.T) {
 }
 
 func TestNewMinioManagerSecure(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test (no secure cert provided by default)")
+	}
+
 	_, err := newMM(true)
 	if err != nil {
 		t.Fatal(err)
@@ -61,6 +65,11 @@ func TestPutAndGetObject(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// create bucket, ignore errors
+	mm.MakeBucket(map[string]string{"name": bucket})
+
+	// test
 	bytesWritten, err := mm.PutObject(bucket, objName, openedFile, fileStats.Size(), minio.PutObjectOptions{})
 	if err != nil {
 		t.Fatal(err)
@@ -113,6 +122,7 @@ func TestMakeBucket(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
 func newMM(secure bool) (*MinioManager, error) {
 	return NewMinioManager(endpoint, keyID, secret, secure)
 }

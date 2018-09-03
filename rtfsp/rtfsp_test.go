@@ -7,11 +7,16 @@ import (
 	"github.com/RTradeLtd/Temporal/rtfsp"
 )
 
-var ipfsConfigPath = "/ipfs/config"
-var testIpfsMultiAddrString = "/ip4/192.168.1.242/tcp/4001/ipfs/QmXivHtDyAe8nS7cbQiS7ri9haUM2wGvbinjKws3a4EstT"
-var expectedPeerID = "QmXivHtDyAe8nS7cbQiS7ri9haUM2wGvbinjKws3a4EstT"
+const (
+	ipfsConfigPath          = "/ipfs/config"
+	testIpfsMultiAddrString = "/ip4/192.168.1.242/tcp/4001/ipfs/QmXivHtDyAe8nS7cbQiS7ri9haUM2wGvbinjKws3a4EstT"
+	expectedPeerID          = "QmXivHtDyAe8nS7cbQiS7ri9haUM2wGvbinjKws3a4EstT"
+)
 
 func TestConfigGeneration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	var pcm rtfsp.PrivateConfigManager
 	err := pcm.ParseConfigAndWrite()
 	if err != nil {
@@ -20,6 +25,10 @@ func TestConfigGeneration(t *testing.T) {
 }
 
 func TestPrivateConfig(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	pcm, err := rtfsp.GenerateConfigManager(ipfsConfigPath)
 	if err != nil {
 		t.Fatal(err)

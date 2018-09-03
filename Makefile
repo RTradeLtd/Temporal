@@ -10,7 +10,8 @@ ls:
 check:
 	@echo "===================      running checks     ==================="
 	go vet ./...
-	go test -run xxxx ./...
+	@echo "Executing dry run of tests..."
+	@go test -run xxxx ./...
 	@echo "===================          done           ==================="
 
 # Build Temporal
@@ -29,10 +30,17 @@ lint:
 testenv:
 	docker-compose -f test/docker-compose.yml up 
 
-# Execute tests
+# Execute short tests
 .PHONY: test
 test: check
-	@echo "===================     executing tests     ==================="
+	@echo "===================  executing short tests  ==================="
+	go test -race -cover -short ./...
+	@echo "===================          done           ==================="
+
+# Execute all tests
+.PHONY: test
+test-all: check
+	@echo "===================   executing all tests   ==================="
 	go test -race -cover ./...
 	@echo "===================          done           ==================="
 
