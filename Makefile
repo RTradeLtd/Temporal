@@ -19,7 +19,7 @@ check:
 
 # Build Temporal
 Temporal:
-	go build ./...
+	go build
 
 # Static analysis and style checks
 .PHONY: lint
