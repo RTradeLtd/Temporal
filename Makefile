@@ -58,6 +58,9 @@ clean:
 .PHONY: vendor
 vendor:
 	@echo "=================== generating dependencies ==================="
+	# Nuke vendor directory
+	rm -rf vendor
+
 	# Update standard dependencies
 	dep ensure -v
 
