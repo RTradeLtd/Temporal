@@ -16,6 +16,7 @@ before_script:
 script:
   # - docker run -v $(pwd):/mnt koalaman/shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
   - go fmt ./...
+  - golint $(go list ./... | grep -v /vendor/) # golint doesn't ignore vendor
   - go test -race -coverprofile=coverage.txt ./...
 
 after_success:

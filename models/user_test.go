@@ -159,7 +159,7 @@ func openDatabaseConnection(t *testing.T, cfg *config.TemporalConfig) (*gorm.DB,
 	} else {
 		dbPass = ""
 	}
-	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5432 user=postgres dbname=temporal password=%s sslmode=disable", dbPass)
+	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5433 user=postgres dbname=temporal password=%s sslmode=disable", dbPass)
 
 	db, err := gorm.Open("postgres", dbConnURL)
 	if err != nil {
