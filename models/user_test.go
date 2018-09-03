@@ -154,6 +154,10 @@ func TestUserManager_NewAccount(t *testing.T) {
 }
 
 func TestUserManager_SignIn(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	cfg, err := config.LoadConfig(defaultConfigFile)
 	if err != nil {
 		t.Fatal(err)
