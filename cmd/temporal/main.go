@@ -48,7 +48,8 @@ var commands = map[string]cmd{
 				api.Logger.Fatal(msg)
 				fmt.Printf("API execution failed for error %s\nSee logs for more details", err.Error())
 			}
-		}},
+		},
+	},
 	"queue-dfa": cmd{
 		blurb: "listen to file add requests, and add to the database",
 		action: func(cfg config.TemporalConfig, args map[string]string) {
