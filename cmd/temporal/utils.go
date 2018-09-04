@@ -23,6 +23,10 @@ commands:
 	sortedCommands := make([]string, 0)
 	longestCmdNameLen := 0
 	for name := range cmds {
+		if cmds[name].hidden {
+			continue
+		}
+
 		sortedCommands = append(sortedCommands, name)
 		if len(name) > longestCmdNameLen {
 			longestCmdNameLen = len(name)
