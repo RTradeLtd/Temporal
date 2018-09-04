@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-func printNoOp(call []string, cmds map[string]cmd) {
+func printNoOp(call []string) {
 	fmt.Printf("invalid invocation '%s'\n", strings.Join(call[:], " "))
-	printHelp(cmds)
+	println("\nUse 'temporal help' to see CLI documentation.")
 }
 
 func printHelp(cmds map[string]cmd) {

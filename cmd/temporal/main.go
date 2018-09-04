@@ -220,7 +220,7 @@ var commands = map[string]cmd{
 func main() {
 	// guard against invalid arg count
 	if len(os.Args) > 2 || len(os.Args) < 2 {
-		printNoOp(os.Args, commands)
+		printNoOp(os.Args)
 		os.Exit(1)
 	}
 
@@ -259,7 +259,7 @@ func main() {
 	// find and execute command
 	invocation, ok := commands[os.Args[1]]
 	if !ok {
-		printNoOp(os.Args, commands)
+		printNoOp(os.Args)
 		os.Exit(1)
 	}
 	if invocation.action == nil {
