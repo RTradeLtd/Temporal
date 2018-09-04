@@ -1,7 +1,14 @@
 GOFILES=`go list ./... | grep -v /vendor/`
+TEMPORALVERSION = `git describe --tags`
 IPFSVERSION=v0.4.17
 
-all: check Temporal
+all: check temporal
+
+# Installs Temporal to GOBIN
+install: cli
+	@echo "=================== installing Temporal CLI ==================="
+	go install -ldflags "-X main.Version=$(TEMPORALVERSION)" cmd/temporal
+	@echo "===================          done           ==================="
 
 # List all commands
 .PHONY: ls
@@ -18,8 +25,11 @@ check:
 	@echo "===================          done           ==================="
 
 # Build Temporal
-Temporal:
-	go build
+cli:
+	@echo "===================  building Temporal CLI  ==================="
+	rm -f temporal
+	go build -ldflags "-X main.Version=$(TEMPORALVERSION)" ./cmd/temporal
+	@echo "===================          done           ==================="
 
 # Static analysis and style checks
 .PHONY: lint
@@ -51,7 +61,7 @@ test-all: check
 # Remove assets
 .PHONY: clean
 clean:
-	rm -f Temporal
+	rm -f temporal
 	docker-compose -f test/docker-compose.yml rm -f -s -v
 
 # Rebuild vendored dependencies
