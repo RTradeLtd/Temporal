@@ -212,6 +212,8 @@ This requires the GX dependency management tool to be installed.
     * this will eventually be broken up into three seperate folders corresponding to each of the smart contracts
 * `utils`
     * contains utility code used by temporal
+* `cmd/temporal`
+    * contains the temporal command line application
 
 ## Thanks
 
