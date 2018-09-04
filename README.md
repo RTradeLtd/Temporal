@@ -1,4 +1,32 @@
-# Temporal (Heavy WIP) [![GoDoc](https://godoc.org/github.com/RTradeLtd/Temporal/api?status.svg)](https://godoc.org/github.com/RTradeLtd/Temporal/api) [![Build Status](https://travis-ci.com/RTradeLtd/Temporal.svg?branch=V2)](https://travis-ci.com/RTradeLtd/Temporal) [![Go Report Card](https://goreportcard.com/badge/github.com/RTradeLtd/Temporal)](https://goreportcard.com/report/github.com/RTradeLtd/Temporal)
+<h1 align="center">Temporal (Heavy WIP)</h1>
+
+<p align="center">
+  <a href="#about-temporal"><strong>About Temporal</strong></a> · 
+  <a href="#usage-and-features"><strong>Usage and Features</strong></a> · 
+  <a href="#development"><strong>Development</strong></a> · 
+  <a href="#thanks"><strong>Thanks</strong></a>
+</p>
+
+<p align="center">
+  <a href="https://godoc.org/github.com/RTradeLtd/Temporal/api">
+    <img src="https://godoc.org/github.com/RTradeLtd/Temporal/api?status.svg"
+       alt="GoDocs available" />
+  </a>
+
+  <a href="https://travis-ci.com/RTradeLtd/Temporal">
+    <img src="https://travis-ci.com/RTradeLtd/Temporal.svg?branch=V2"
+      alt="Travis Build Status" />
+  </a>
+
+  <a href="https://goreportcard.com/report/github.com/RTradeLtd/Temporal">
+    <img src="https://goreportcard.com/badge/github.com/RTradeLtd/Temporal"
+      alt="Clean code" />
+  </a>
+</p>
+
+<br>
+
+## About Temporal
 
 Temporal is an enterprise-grade storage solution featuring an easy to consume API that can be easily integrated into your existing application stack, providing all the benefits of the distributed web, without any of the overhead that comes with running distributed storage nodes.  Initially targetting the public+private IPFS network, the next release cycle will bring support for additional protocols such as Ethereum SWARM, STORJ, SIA. Temporal won't stop there and will continue to evolve as the space itself evolves. At RTrade we understand that the Blockchain and Distributed technology space evolve at an extremely quick pace so we are designing Temporal with modularity in mind so that as the space evolves we can evolve seamlessly with it.
 
@@ -12,76 +40,143 @@ TEMPORAL is a work in progress, and current code does not represent quality of t
 
 There is a basic web interface that allows pinning of content to IPFS through TEMPORAL. Anyone can sign up an account, but you must be manually enabled to access any of the functionality, including logging in. To get your account activated, message us on our TEMPORAL telegram chat. The website is served over IPFS, and can be viewed through through a public gate such as [ipfs.io](https://ipfs.io/ipfs/Qma7Vxmm7bVafuQV9bWTF8LGcJd3tz9B9o9hsRRPdYCJCj/website/index.html)
 
-## API Documentation
-
-Our API documentation is through [postman](https://documenter.getpostman.com/view/4295780/RWEcQM6W#intro)
-
-## Smart Contracts
-
-All smart contracts used by TEMPORAL can be viewed over here https://github.com/RTradeLtd/RT-Contracts/tree/master/TEMPORAL
-
-## Project Features
-
-* IPNS (100%):
-    * Overtime addtional IPNS functionality will be added allowing for things like automatic record republishing, however the core functionality is done!
-* IPFS (100%):
-    * Overtime additional IPFS functionality will be added, however the core functionality needed to use IPFS (upload, download, etc...) is done! Both for public and private IPFS networks
-
-## Supported Technologies
-
-Following is a list of distributed and decentralized storage technologies that Temporal currently, or plans on supporting.
-
-
-IPFS (100% complete):
-
-    Temporal supports integration with the public IPFS network, and will evolve to support new features added to IPFS so that you will have the most optimal experience possible, and never suffer from inability to access the latest and greatest features due to an API that fails to evolve as the underlying technology evolves.
-
-    Soon after release, support for Private IPFS networks will be integrated into Temporal, allowing you to get the same benefits of the public IPFS network, but with the data security and privacy that comes with running a private network. This is extremely useful to financial institutions, data archivers, and other industries to whom data security and privacy is one of the primary concerns when integrating with any new technology
-
-IPNS (100% Complete):
-
-    IPNS allows for publishing of human readable names, and immutable links to changing content. IPNS integration is an optional feature with each upload to IPFS, and will allow for creation of dnslink records on our domain. Note that for the hosted API, IPNS usage alongside of IPFS pins or file uploads will incur additional charges.
-
-    As a special/unique feature, you can plug into Temporal's IPNS setup, and use us as a trusted signer of IPNS records, while also optionally taking care of the DNS configuration, storing the DNS record underneath our domain (rtradetechnologies.com) at a URL of your choice with a subdomain name of your choosing providing it is available. Should you desire that, you can tap into our automated configuration and have that all done automatically. Optionally, we can also build out a hosted, or on-premise automated solution for your own domain as well.
-
-Swarm (5% complete):
-
-    Swarm blends the power of IPFS, with the power of Blockchain and is common place in protocols like Ethereum. Temporal will provide an interface into the Ethereum mainnet Swarm protocol, allowing you to store your data onto the Ethereum blockchain. You'll also take advantage of having that particular data persistently stored on our high quality Ethereum node infrastructure.  Currently the Swarm protocol isn't fully integrated yet with Ethereum, and as such, the SWAP accounting protocol isn't fully implemented yet, which means nodes in the network aren't guaranteed to persist your data which means it could dissapear into the Ether. Until SWAP is fully integrated we hope to offer increased utilizatinon and adoption of SWARM by taking advantage of the data persistence offered by Temporal, and our high quality Ethereum infrastructure
-
-STORJ (0% complete):
-
-    Details TBA
-
-SIA (0% complete):
-
-    Details TBA
-
-## System Monitoring
-
-System monitoring is done using a combination of Zabbix, and Grafana. Zabbix is used for operating system, and hardware metrics (network utilization, resource utilization, storage utilization, etc...) while Grafana is used for API and application level information for things like IPFS node statistics, API requests, etc...
-
-All templates, and grafana graphs, as well as necessary configuration files and scripts to replicate our system monitoring backend are included in the `configs/` directory of this repository. The only configurations we don't include are our email configurations.
-
-## Goals
+### Goals
 
 * Provide an easy to use interface into distributed and decentralized storage technologies.
 * Educate about decentralized and distributed storage technologies
 * Introduce these new storage technologies to audiences who may have otherwise not heard of them
 * Help organizations make informed decisions about whether or not integrating distributed and decentralized storage technologies is the right thing to do for your business
 
-## Data Privacy
-
-This is a huge issue and concern for any form of cloud storage. But is seldom mentioned by any of the projects promising revolutionary storage systems, global in scope. They'll talk about all the technical benefits, and features of their storage solutions which use IPFS, but data privacy isn't discussed. Data privacy is an extreme focus of RTrade, and we will not be releasing Temporal until we are absolutely certain that all data privacy laws we need to abide by, are met. This is currently one of our primary areas of focus.
-
-## How're We Different
+### How We're Different
 
 We aren't doing an ICO,  and we're not wasting our development efforts on redesigning the wheel with some new fangled storage protocol, and blockchain solution. Although we're using bleeding edge technology, we're commited to using names, and open source software that is already tested, and that has a thriving development community behind them. And finally, results matter; It is far to common in this space for companies to ask you to hand over your hand earned cash on the fleeting promise that it will lead to something, but that something is either never delivered, or extremely lack in features, and is not the original idea which was sold.
 
-## API Usage
+### Funding
 
-Currently there is no detailed API documentation beyond what is available on godoc, or in the code comments. However, there is an up to date (as of this commit) Postman collection of all the API calls that Temporal has, and can be used to interact with a Temporal cluster.
+Currently the project is paid for out of pocket, and we will *not* be doing an ICO. Any funding received through donations, or private investment will be put to the following:
 
-## Repository Contents
+* Infrastructure
+    * Servers
+    * Hard drives
+    * Misc infrastructure (networking, etc..)
+* Code Audits
+* Developer Tools
+* Legal
+    * Lawyers
+    * Ensure we meet regulatory needs
+* Media
+    * Educational resources development
+* Hiring additional talent for Temporal enterprise to bring project to completion
+
+Should you wish to consider donations, or private investment email admin@rtradetechnologies.com
+
+### Media
+
+* https://steemit.com/blockchain/@rtrade/temporal-development-update-optimizations-community-outreach-and-more-july-6th-2018
+* https://steemit.com/cryptocurrency/@rtrade/temporal-developer-update-saturday-june-30th-2018
+* https://steemit.com/cryptocurrency/@rtrade/temporal-a-distributed-platform-and-storage-infrastructure-service
+
+### Data Privacy
+
+This is a huge issue and concern for any form of cloud storage. But is seldom mentioned by any of the projects promising revolutionary storage systems, global in scope. They'll talk about all the technical benefits, and features of their storage solutions which use IPFS, but data privacy isn't discussed. Data privacy is an extreme focus of RTrade, and we will not be releasing Temporal until we are absolutely certain that all data privacy laws we need to abide by, are met. This is currently one of our primary areas of focus.
+
+## Usage and Features
+
+### API Documentation
+
+Our API documentation is through [postman](https://documenter.getpostman.com/view/4295780/RWEcQM6W#intro)
+
+### Smart Contracts
+
+All smart contracts used by TEMPORAL can be viewed over here https://github.com/RTradeLtd/RT-Contracts/tree/master/TEMPORAL
+
+### Features
+
+* IPNS (100%):
+    * Overtime addtional IPNS functionality will be added allowing for things like automatic record republishing, however the core functionality is done!
+* IPFS (100%):
+    * Overtime additional IPFS functionality will be added, however the core functionality needed to use IPFS (upload, download, etc...) is done! Both for public and private IPFS networks
+
+### Supported Technologies
+
+Following is a list of distributed and decentralized storage technologies that Temporal currently, or plans on supporting.
+
+#### IPFS (100% complete):
+
+> Temporal supports integration with the public IPFS network, and will evolve to support new features added to IPFS so that you will have the most optimal experience possible, and never suffer from inability to access the latest and greatest features due to an API that fails to evolve as the underlying technology evolves.
+
+> Soon after release, support for Private IPFS networks will be integrated into Temporal, allowing you to get the same benefits of the public IPFS network, but with the data security and privacy that comes with running a private network. This is extremely useful to financial institutions, data archivers, and other industries to whom data security and privacy is one of the primary concerns when integrating with any new technology
+
+#### IPNS (100% Complete):
+
+> IPNS allows for publishing of human readable names, and immutable links to changing content. IPNS integration is an optional feature with each upload to IPFS, and will allow for creation of dnslink records on our domain. Note that for the hosted API, IPNS usage alongside of IPFS pins or file uploads will incur additional charges.
+
+> As a special/unique feature, you can plug into Temporal's IPNS setup, and use us as a trusted signer of IPNS records, while also optionally taking care of the DNS configuration, storing the DNS record underneath our domain (rtradetechnologies.com) at a URL of your choice with a subdomain name of your choosing providing it is available. Should you desire that, you can tap into our automated configuration and have that all done automatically. Optionally, we can also build out a hosted, or on-premise automated solution for your own domain as well.
+
+#### Swarm (5% complete):
+
+> Swarm blends the power of IPFS, with the power of Blockchain and is common place in protocols like Ethereum. Temporal will provide an interface into the Ethereum mainnet Swarm protocol, allowing you to store your data onto the Ethereum blockchain. You'll also take advantage of having that particular data persistently stored on our high quality Ethereum node infrastructure.  Currently the Swarm protocol isn't fully integrated yet with Ethereum, and as such, the SWAP accounting protocol isn't fully implemented yet, which means nodes in the network aren't guaranteed to persist your data which means it could dissapear into the Ether. Until SWAP is fully integrated we hope to offer increased utilizatinon and adoption of SWARM by taking advantage of the data persistence offered by Temporal, and our high quality Ethereum infrastructure
+
+#### STORJ (0% complete):
+
+> Details TBA
+
+SIA (0% complete):
+
+> Details TBA
+
+### System Monitoring
+
+System monitoring is done using a combination of Zabbix, and Grafana. Zabbix is used for operating system, and hardware metrics (network utilization, resource utilization, storage utilization, etc...) while Grafana is used for API and application level information for things like IPFS node statistics, API requests, etc...
+
+All templates, and grafana graphs, as well as necessary configuration files and scripts to replicate our system monitoring backend are included in the `configs/` directory of this repository. The only configurations we don't include are our email configurations.
+
+## Development
+
+### Building
+
+Dependencies are vendored by default, so there is no need to install anything if you have the Go toolchain. Just run the following commands:
+
+```bash
+$ go get github.com/RTradeLtd/Temporal
+$ cd $GOPATH/src/github.com/RTradeLtd/Temporal
+$ make
+```
+
+### Testing
+
+Most tests can be run using the following commands:
+
+```bash
+$ make testenv
+$ make test
+```
+
+This requires Docker running and docker-compose installed.
+
+To run the full suite of tests, more advanced setup and configuration is required. If all the prerequisites are set up, you can execute the tests using `make test-all`.
+
+### Linting
+
+The following command will run some lint checks:
+
+```bash
+$ make lint
+```
+
+This requires golint and spellcheck to be installed.
+
+### Vendoring
+
+To update or rebuild the dependencies, run:
+
+```bash
+$ make vendor
+```
+
+This requires the GX dependency management tool to be installed.
+
+### Repository Contents
 
 * `api/`
     * This contains the API related code to temporal, as is the primary interface for interaction with temporal
@@ -117,32 +212,6 @@ Currently there is no detailed API documentation beyond what is available on god
     * this will eventually be broken up into three seperate folders corresponding to each of the smart contracts
 * `utils`
     * contains utility code used by temporal
-
-## Funding
-
-Currently the project is paid for out of pocket, and we will *not* be doing an ICO. Any funding received through donations, or private investment will be put to the following:
-
-* Infrastructure
-    * Servers
-    * Hard drives
-    * Misc infrastructure (networking, etc..)
-* Code Audits
-* Developer Tools
-* Legal
-    * Lawyers
-    * Ensure we meet regulatory needs
-* Media
-    * Educational resources development
-* Hiring additional talent for Temporal enterprise to bring project to completion
-
-Should you wish to consider donations, or private investment email admin@rtradetechnologies.com
-
-## Media
-
-* https://steemit.com/blockchain/@rtrade/temporal-development-update-optimizations-community-outreach-and-more-july-6th-2018
-* https://steemit.com/cryptocurrency/@rtrade/temporal-developer-update-saturday-june-30th-2018
-* https://steemit.com/cryptocurrency/@rtrade/temporal-a-distributed-platform-and-storage-infrastructure-service
-
 
 ## Thanks
 
