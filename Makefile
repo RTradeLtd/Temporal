@@ -2,7 +2,7 @@ GOFILES=`go list ./... | grep -v /vendor/`
 TEMPORALVERSION = `git describe --tags`
 IPFSVERSION=v0.4.17
 
-all: check temporal
+all: check cli
 
 # Installs Temporal to GOBIN
 install: cli
