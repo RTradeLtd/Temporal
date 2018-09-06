@@ -178,11 +178,14 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 	}).Info("dnslink entry created")
 
 	c.JSON(http.StatusOK, gin.H{
-		"record_name":  recordName,
-		"record_value": recordValue,
-		"zone_name":    awsZone,
-		"manager":      fmt.Sprintf("%+v", awsManager),
-		"region":       aws.USWest.Name,
-		"resp":         resp,
+		"code": http.StatusOK,
+		"response": gin.H{
+			"record_name":  recordName,
+			"record_value": recordValue,
+			"zone_name":    awsZone,
+			"manager":      fmt.Sprintf("%+v", awsManager),
+			"region":       aws.USWest.Name,
+			"resp":         resp,
+		},
 	})
 }
