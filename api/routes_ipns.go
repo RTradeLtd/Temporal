@@ -109,7 +109,8 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 	}).Info("ipns entry creation request sent to backend")
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": "ipns entry creation sent to backend",
+		"code":     http.StatusOK,
+		"response": "ipns entry creation sent to backend",
 	})
 }
 
