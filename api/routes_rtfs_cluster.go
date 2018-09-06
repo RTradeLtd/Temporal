@@ -55,7 +55,10 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		"user":    username,
 	}).Info("cluster pin request sent to backend")
 
-	c.JSON(http.StatusOK, gin.H{"status": "cluster pin request sent to backend"})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": "cluster pin request sent to backend",
+	})
 }
 
 // SyncClusterErrorsLocally is used to parse through the local cluster state and sync any errors that are detected.
@@ -85,7 +88,10 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("local cluster errors parsed")
 
-	c.JSON(http.StatusOK, gin.H{"synced-cids": syncedCids})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": syncedCids,
+	})
 }
 
 // RemovePinFromCluster is used to remove a pin from the cluster global state
@@ -115,7 +121,10 @@ func (api *API) removePinFromCluster(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("pin removal request sent to cluster")
 
-	c.JSON(http.StatusOK, gin.H{"statsu": "pin removal request sent to cluster"})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": "pin removal request sent to cluster",
+	})
 }
 
 // GetLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
@@ -146,7 +155,10 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("local cluster status for pin requested")
 
-	c.JSON(http.StatusFound, gin.H{"status": status})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": status,
+	})
 }
 
 // GetGlobalStatusForClusterPin is used to get the global cluster status for a particular pin
@@ -177,7 +189,10 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("global cluster status for pin requested")
 
-	c.JSON(http.StatusFound, gin.H{"status": status})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": status,
+	})
 }
 
 // FetchLocalClusterStatus is used to fetch the status of the localhost's cluster state, and not the rest of the cluster
@@ -216,5 +231,11 @@ func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("local cluster state fetched")
 
-	c.JSON(http.StatusOK, gin.H{"cids": cids, "statuses": statuses})
+	c.JSON(http.StatusOK, gin.H{
+		"code": http.StatusOK,
+		"response": gin.H{
+			"cids":     cids,
+			"statuses": statuses,
+		},
+	})
 }
