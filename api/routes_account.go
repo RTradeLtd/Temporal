@@ -57,7 +57,8 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 	}).Info("password changed")
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": "password changed",
+		"code":     http.StatusOK,
+		"response": "password changed",
 	})
 }
 
@@ -105,8 +106,10 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	}).Info("user account registered")
 
 	userModel.HashedPassword = "scrubbed"
-	c.JSON(http.StatusCreated, gin.H{"user": userModel})
-	return
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": userModel,
+	})
 }
 
 // CreateIPFSKey is used to create an IPFS key
