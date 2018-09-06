@@ -45,8 +45,9 @@ func (api *API) makeBucket(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("minio bucket created")
 
-	c.JSON(http.StatusCreated, gin.H{
-		"status": "bucket created",
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": "bucket created",
 	})
 
 }
