@@ -25,6 +25,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
+		return
 	}
 
 	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
@@ -58,14 +59,14 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.Logger.Error(err)
-		FailOnError(c, err)
+		FailOnServerError(c, err)
 		return
 	}
 
 	err = qm.PublishMessageWithExchange(ip, queue.PinExchange)
 	if err != nil {
 		api.Logger.Error(err)
-		FailOnError(c, err)
+		FailOnServerError(c, err)
 		return
 	}
 
@@ -75,7 +76,8 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	}).Info("ipfs pin request for private network sent to backend")
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": "content pin request sent to backend",
+		"code":     http.StatusOK,
+		"response": "content pin request sent to backend",
 	})
 }
 
@@ -121,8 +123,11 @@ func (api *API) getFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) 
 	}).Info("private ipfs object file size requested")
 
 	c.JSON(http.StatusOK, gin.H{
-		"object":        key,
-		"size_in_bytes": sizeInBytes,
+		"code": http.StatusOK,
+		"response": gin.H{
+			"object":        key,
+			"size_in_bytes": sizeInBytes,
+		},
 	})
 
 }
@@ -212,7 +217,10 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		"user":    username,
 	}).Info("advanced private ipfs file upload requested")
 
-	c.JSON(http.StatusOK, gin.H{"status": "file upload request sent to backend"})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": "file upload request sent to backend",
+	})
 }
 
 // AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network via the simple method
@@ -324,7 +332,8 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	}).Info("simple private ipfs file upload processed")
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": resp,
+		"code":     http.StatusOK,
+		"response": resp,
 	})
 }
 
@@ -373,8 +382,11 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	}).Info("private ipfs pub sub message published")
 
 	c.JSON(http.StatusOK, gin.H{
-		"topic":   topic,
-		"message": message,
+		"code": http.StatusOK,
+		"response": gin.H{
+			"topic":   topic,
+			"message": message,
+		},
 	})
 }
 
@@ -417,7 +429,8 @@ func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	}).Info("private ipfs pin removal request sent to backend")
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": "pin removal sent to backend",
+		"code":     http.StatusOK,
+		"response": "pin removal sent to backend",
 	})
 }
 
@@ -467,7 +480,10 @@ func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("private ipfs pin list requested")
 
-	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": pinInfo,
+	})
 }
 
 // GetObjectStatForIpfsForHostedIPFSNetwork is  used to get object stats from a private ipfs network
@@ -511,7 +527,10 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("private ipfs object stat requested")
 
-	c.JSON(http.StatusOK, gin.H{"stats": stats})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": stats,
+	})
 }
 
 // CheckLocalNodeForPinForHostedIPFSNetwork is used to check the serving node for a pin
@@ -558,7 +577,10 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("private ipfs pin check requested")
 
-	c.JSON(http.StatusOK, gin.H{"present": present})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": present,
+	})
 }
 
 // PublishDetailedIPNSToHostedIPFSNetwork is used to publish an IPNS record to a private network with fine grained control
@@ -670,7 +692,10 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("private ipns entry creation request sent to backend")
 
-	c.JSON(http.StatusOK, gin.H{"status": "ipns entry creation request sent to backend"})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": "ipns entry creation request sent to backend",
+	})
 }
 
 // CreateHostedIPFSNetworkEntryInDatabase is used to create an entry in the database for a private ipfs network
@@ -795,8 +820,9 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("private ipfs netwokr created")
 
-	c.JSON(http.StatusCreated, gin.H{
-		"network": network,
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": network,
 	})
 
 }
@@ -824,7 +850,8 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 	}).Info("private ipfs network by name requested")
 
 	c.JSON(http.StatusOK, gin.H{
-		"network": net,
+		"code":     http.StatusOK,
+		"response": net,
 	})
 }
 
@@ -847,7 +874,8 @@ func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 	}).Info("authorized private ipfs network listing requested")
 
 	c.JSON(http.StatusOK, gin.H{
-		"networks": networks,
+		"code":     http.StatusOK,
+		"response": networks,
 	})
 }
 
@@ -882,7 +910,8 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 	}).Info("uploads forprivate ifps network requested")
 
 	c.JSON(http.StatusOK, gin.H{
-		"uploads": uploads,
+		"code":     http.StatusOK,
+		"response": uploads,
 	})
 }
 
