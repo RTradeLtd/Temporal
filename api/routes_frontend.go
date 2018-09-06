@@ -51,7 +51,10 @@ func (api *API) calculateIPFSFileHash(c *gin.Context) {
 		"user":    username,
 	}).Info("ipfs file hash calculation requested")
 
-	c.JSON(http.StatusOK, gin.H{"hash": hash})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": hash,
+	})
 }
 
 // CalculatePinCost is used to calculate the cost of pinning something to temporal
@@ -85,7 +88,8 @@ func (api *API) calculatePinCost(c *gin.Context) {
 	}).Info("pin cost calculation requested")
 
 	c.JSON(http.StatusOK, gin.H{
-		"total_cost_usd": totalCost,
+		"code":     http.StatusOK,
+		"response": totalCost,
 	})
 }
 
@@ -115,7 +119,8 @@ func (api *API) calculateFileCost(c *gin.Context) {
 
 	cost := utils.CalculateFileCost(holdTimeInt, file.Size)
 	c.JSON(http.StatusOK, gin.H{
-		"total_cost_usd": cost,
+		"code":     http.StatusOK,
+		"response": cost,
 	})
 }
 
@@ -218,14 +223,17 @@ func (api *API) createPinPayment(c *gin.Context) {
 	}).Info("pin payment request generated")
 
 	c.JSON(http.StatusOK, gin.H{
-		"h":                    sm.H,
-		"v":                    sm.V,
-		"r":                    sm.R,
-		"s":                    sm.S,
-		"eth_address":          sm.Address,
-		"charge_amount_in_wei": sm.ChargeAmount,
-		"payment_method":       sm.PaymentMethod,
-		"payment_number":       sm.PaymentNumber,
+		"code": http.StatusOK,
+		"response": gin.H{
+			"h":                    sm.H,
+			"v":                    sm.V,
+			"r":                    sm.R,
+			"s":                    sm.S,
+			"eth_address":          sm.Address,
+			"charge_amount_in_wei": sm.ChargeAmount,
+			"payment_method":       sm.PaymentMethod,
+			"payment_number":       sm.PaymentNumber,
+		},
 	})
 }
 
@@ -358,14 +366,17 @@ func (api *API) createFilePayment(c *gin.Context) {
 	}).Info("file payment request generated")
 
 	c.JSON(http.StatusOK, gin.H{
-		"h":                    sm.H,
-		"v":                    sm.V,
-		"r":                    sm.R,
-		"s":                    sm.S,
-		"eth_address":          sm.Address,
-		"charge_amount_in_wei": sm.ChargeAmount,
-		"payment_method":       sm.PaymentMethod,
-		"payment_number":       sm.PaymentNumber,
+		"code": http.StatusOK,
+		"response": gin.H{
+			"h":                    sm.H,
+			"v":                    sm.V,
+			"r":                    sm.R,
+			"s":                    sm.S,
+			"eth_address":          sm.Address,
+			"charge_amount_in_wei": sm.ChargeAmount,
+			"payment_method":       sm.PaymentMethod,
+			"payment_number":       sm.PaymentNumber,
+		},
 	})
 }
 
@@ -424,7 +435,10 @@ func (api *API) submitPinPaymentConfirmation(c *gin.Context) {
 		"payment_number": paymentNumber,
 	}).Info("pin payment confirmation being processed")
 
-	c.JSON(http.StatusOK, gin.H{"payment": pp})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": pp,
+	})
 }
 
 // SubmitPaymentToContract is a highly "insecure" way of paying for TEMPORAL and essentially involves sending us a private key
@@ -584,6 +598,7 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 	}).Info("payment submitted to contract, user clearly ignored the warnings")
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": pps,
+		"code":     http.StatusOK,
+		"response": pps,
 	})
 }
