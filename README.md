@@ -38,8 +38,6 @@ We have a [telegram chat](https://t.me/RTradeTEMPORAL), feel free to join and as
 
 TEMPORAL is a work in progress, and current code does not represent quality of the final product. Before a production release there will be an extremely heavy review, and updates to code quality.
 
-There is a basic web interface that allows pinning of content to IPFS through TEMPORAL. Anyone can sign up an account, but you must be manually enabled to access any of the functionality, including logging in. To get your account activated, message us on our TEMPORAL telegram chat. The website is served over IPFS, and can be viewed through through a public gate such as [ipfs.io](https://ipfs.io/ipfs/Qma7Vxmm7bVafuQV9bWTF8LGcJd3tz9B9o9hsRRPdYCJCj/website/index.html)
-
 ### Goals
 
 * Provide an easy to use interface into distributed and decentralized storage technologies.
@@ -68,7 +66,9 @@ Currently the project is paid for out of pocket, and we will *not* be doing an I
     * Educational resources development
 * Hiring additional talent for Temporal enterprise to bring project to completion
 
-Should you wish to consider donations, or private investment email admin@rtradetechnologies.com
+Should you wish to consider donations, or private investment email admin@rtradetechnologies.com.
+
+Should you wish to contribute not just to TEMPORAL, but to the overall success of RTrade and our platform, you may purchase RTC for ETH from our [RTCETH Smart Contract](https://etherscan.io/address/0x40e68e3F58b9C1928954BEe5dEcC09A45aA531f8#code)
 
 ### Media
 
@@ -103,9 +103,7 @@ Following is a list of distributed and decentralized storage technologies that T
 
 #### IPFS (100% complete):
 
-> Temporal supports integration with the public IPFS network, and will evolve to support new features added to IPFS so that you will have the most optimal experience possible, and never suffer from inability to access the latest and greatest features due to an API that fails to evolve as the underlying technology evolves.
-
-> Soon after release, support for Private IPFS networks will be integrated into Temporal, allowing you to get the same benefits of the public IPFS network, but with the data security and privacy that comes with running a private network. This is extremely useful to financial institutions, data archivers, and other industries to whom data security and privacy is one of the primary concerns when integrating with any new technology
+> Temporal supports integration with the public IPFS network, and will evolve to support new features added to IPFS so that you will have the most optimal experience possible, and never suffer from inability to access the latest and greatest features due to an API that fails to evolve as the underlying technology evolves. We also have full integration with private IPFS networks.
 
 #### IPNS (100% Complete):
 
@@ -113,9 +111,9 @@ Following is a list of distributed and decentralized storage technologies that T
 
 > As a special/unique feature, you can plug into Temporal's IPNS setup, and use us as a trusted signer of IPNS records, while also optionally taking care of the DNS configuration, storing the DNS record underneath our domain (rtradetechnologies.com) at a URL of your choice with a subdomain name of your choosing providing it is available. Should you desire that, you can tap into our automated configuration and have that all done automatically. Optionally, we can also build out a hosted, or on-premise automated solution for your own domain as well.
 
-#### Swarm (5% complete):
+#### Swarm (0% complete):
 
-> Swarm blends the power of IPFS, with the power of Blockchain and is common place in protocols like Ethereum. Temporal will provide an interface into the Ethereum mainnet Swarm protocol, allowing you to store your data onto the Ethereum blockchain. You'll also take advantage of having that particular data persistently stored on our high quality Ethereum node infrastructure.  Currently the Swarm protocol isn't fully integrated yet with Ethereum, and as such, the SWAP accounting protocol isn't fully implemented yet, which means nodes in the network aren't guaranteed to persist your data which means it could dissapear into the Ether. Until SWAP is fully integrated we hope to offer increased utilizatinon and adoption of SWARM by taking advantage of the data persistence offered by Temporal, and our high quality Ethereum infrastructure
+> Details TBA
 
 #### STORJ (0% complete):
 
