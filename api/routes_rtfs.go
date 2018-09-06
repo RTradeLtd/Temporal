@@ -29,12 +29,14 @@ func (api *API) calculateContentHashForFile(c *gin.Context) {
 	reader, err := fileHandler.Open()
 	if err != nil {
 		FailOnError(c, err)
+		return
 	}
 	defer reader.Close()
 	hash, err := utils.GenerateIpfsMultiHashForFile(reader)
 	if err != nil {
 		api.Logger.Error(err)
 		FailOnError(c, err)
+		return
 	}
 
 	api.Logger.WithFields(log.Fields{
@@ -42,7 +44,10 @@ func (api *API) calculateContentHashForFile(c *gin.Context) {
 		"user":    username,
 	}).Info("content hash calculation for file requested")
 
-	c.JSON(http.StatusOK, gin.H{"hash": hash})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": hash,
+	})
 }
 
 // PinHashLocally is used to pin a hash to the local ipfs node
@@ -88,7 +93,10 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		"user":    username,
 	}).Info("ipfs pin request sent to backend")
 
-	c.JSON(http.StatusOK, gin.H{"status": "pin request sent to backend"})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": "pin request sent to backend",
+	})
 }
 
 // GetFileSizeInBytesForObject is used to retrieve the size of an object in bytes
@@ -98,7 +106,7 @@ func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		api.Logger.Error(err)
-		FailOnError(c, err)
+		FailOnServerError(c, err)
 		return
 	}
 	sizeInBytes, err := manager.GetObjectFileSizeInBytes(key)
@@ -114,8 +122,11 @@ func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
 	}).Info("ipfs object file size requested")
 
 	c.JSON(http.StatusOK, gin.H{
-		"object":        key,
-		"size_in_bytes": sizeInBytes,
+		"code": http.StatusOK,
+		"response": gin.H{
+			"object":        key,
+			"size_in_bytes": sizeInBytes,
+		},
 	})
 
 }
@@ -194,7 +205,10 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		"user":    username,
 	}).Info("advanced ipfs file upload requested")
 
-	c.JSON(http.StatusOK, gin.H{"status": "file upload request sent to backend"})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": "file upload request sent to backend",
+	})
 }
 
 // AddFileLocally is used to add a file to our local ipfs node in a simple manner
@@ -296,7 +310,10 @@ func (api *API) addFileLocally(c *gin.Context) {
 		"user":    username,
 	}).Info("simple ipfs file upload processed")
 
-	c.JSON(http.StatusOK, gin.H{"response": resp})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": resp,
+	})
 }
 
 // IpfsPubSubPublish is used to publish a pubsub msg
@@ -327,8 +344,11 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	}).Info("ipfs pub sub message published")
 
 	c.JSON(http.StatusOK, gin.H{
-		"topic":   topic,
-		"message": message,
+		"code": http.StatusOK,
+		"response": gin.H{
+			"topic":   topic,
+			"message": message,
+		},
 	})
 }
 
@@ -366,7 +386,8 @@ func (api *API) removePinFromLocalHost(c *gin.Context) {
 	}).Info("ipfs pin removal request sent to backend")
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": "pin removal sent to backend",
+		"code":     http.StatusOK,
+		"response": "pin removal sent to backend",
 	})
 }
 
@@ -399,7 +420,10 @@ func (api *API) getLocalPins(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("ipfs pin list requested")
 
-	c.JSON(http.StatusOK, gin.H{"pins": pinInfo})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": pinInfo,
+	})
 }
 
 // GetObjectStatForIpfs is used to get the object stats for the particular cid
@@ -424,7 +448,10 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 		"user":    username,
 	}).Info("ipfs object stat requested")
 
-	c.JSON(http.StatusOK, gin.H{"stats": stats})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": stats,
+	})
 }
 
 // CheckLocalNodeForPin is used to check whether or not the serving node is tacking the particular pin
@@ -453,7 +480,10 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("ipfs pin check requested")
 
-	c.JSON(http.StatusOK, gin.H{"present": present})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": present,
+	})
 }
 
 // DownloadContentHash is used to download a particular content hash from the network
