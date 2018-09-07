@@ -23,5 +23,20 @@ script:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
+before_deploy:
+  - go get -u github.com/karalabe/xgo
+  - make release-cli
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: SmSCRjP/w9DpZwXDkA17Z1h10Kd3VxcMHz5phWlzaAUO+uJkBE8Ftdvay7IJ9L4EaAMWczORz+NLNWKYerUOm8fLNwARF6yBhNA3MC/BS5qutSieg+OCbxnq+5R45kFjNlz/KHprwB5MTCFY7g6DxDM9DO5bTw82rZCThy9yPKXWbx9EOLuyiuTA7ss01JSJGO/e+3GUfjrN493e9mrHZ+Wd5SJpjag1HUOTWVEAKPl6KT5GTVs4g/ygFhvtqlq7ya7aBrvBb90VxGaslSgH5bqbT+7T97++Me8HErYJ4Q5alfIdaHYE9ITXiMv4tJHB1x8JhTd5Rm/ogrwVFpMtstFiIJYdoeTZr4FzIK+feQ8gH3S/HwzBepJjXdxMm9IoUeDs/kWtrMym0epZmdgb7E8rGU01rB1EnLDC/+KW7wyRK1iD479An6/B9E7PLgPAoxNQ2GCailwQaVhLk+s9SwyFjOv8OiZjnIl4NRi8FhLdtm8p0IAgUnuILsuxAf060ymaCfwD4+mwm7w2RSalpG232UK8U2tMKtfQ+DoAxew1vHUDCEUsyqhqL0KjuWxILMs7lzR5BPa3SsiXQNcTcxt160VdE2Wjz0HaQ6ExQUaOKMEKURZzZb7CUnvWMKVDka1Gh9yAamKWR2Hh8XRhWkYbAh6UNQuDX41nKrT/kmA=
+  file_glob: true
+  file: release/temporal-*
+  on:
+    tags: true
+    repo: RTradeLtd/Temporal
+
 notifications: 
   email: false 
