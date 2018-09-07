@@ -26,21 +26,14 @@ func CalculateFileSize(c *gin.Context) {
 		return
 	}
 	size := utils.CalculateFileSizeInGigaBytes(fileHandler.Size)
-	c.JSON(http.StatusOK, gin.H{
-		"code": http.StatusOK,
-		"response": gin.H{
-			"file_size_gb":    size,
-			"file_size_bytes": fileHandler.Size,
-		},
-	})
+	Respond(c, http.StatusOK, gin.H{"response": gin.H{"file_size_gb": size, "file_size_bytes": fileHandler.Size}})
 }
 
 // FailNoExistPostForm is a failure used when a post form does not exist
 func FailNoExistPostForm(c *gin.Context, formName string) {
-	err := fmt.Errorf("%s post form not present", formName)
 	c.JSON(http.StatusBadRequest, gin.H{
 		"code":     http.StatusBadRequest,
-		"response": err.Error(),
+		"response": fmt.Sprintf("%s post form not present", formName),
 	})
 }
 
