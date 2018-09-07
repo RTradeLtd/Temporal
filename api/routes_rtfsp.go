@@ -63,8 +63,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	err = qm.PublishMessageWithExchange(ip, queue.PinExchange)
-	if err != nil {
+	if err = qm.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnServerError(c, err)
 		return
@@ -86,8 +85,7 @@ func (api *API) getFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) 
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
-	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
-	if err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)
 		FailOnError(c, err)
 		return
@@ -134,8 +132,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		return
 	}
 
-	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
-	if err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)
 		FailOnError(c, err)
 		return
@@ -177,8 +174,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
 	fmt.Println("storing file in minio")
-	_, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{})
-	if err != nil {
+	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{}); err != nil {
 		api.LogError(err, MinioPutError)
 		FailOnError(c, err)
 		return
@@ -222,8 +218,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
-	if err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)
 		FailOnError(c, err)
 		return
@@ -331,8 +326,7 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
-	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
-	if err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)
 		FailOnError(c, err)
 		return
@@ -357,8 +351,7 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	err = manager.PublishPubSubMessage(topic, message)
-	if err != nil {
+	if err = manager.PublishPubSubMessage(topic, message); err != nil {
 		api.LogError(err, IPFSPubSubPublishError)
 		FailOnError(c, err)
 		return
@@ -381,8 +374,7 @@ func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
-	err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB)
-	if err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.DBM.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)
 		FailOnError(c, err)
 		return
@@ -399,8 +391,7 @@ func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange)
-	if err != nil {
+	if err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
@@ -470,8 +461,7 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		FailNoExistPostForm(c, "network_name")
 		return
 	}
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB)
-	if err != nil {
+	if err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)
 		FailOnError(c, err)
 		return
@@ -519,8 +509,7 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB)
-	if err != nil {
+	if err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)
 		FailOnError(c, err)
 		return
@@ -567,8 +556,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 	mqURL := api.TConfig.RabbitMQ.URL
 
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB)
-	if err != nil {
+	if err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)
 		FailOnError(c, err)
 		return
@@ -763,16 +751,14 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 
 	if len(users) > 0 {
 		for _, v := range users {
-			err := um.AddIPFSNetworkForUser(v, networkName)
-			if err != nil {
+			if err := um.AddIPFSNetworkForUser(v, networkName); err != nil {
 				api.LogError(err, NetworkCreationError)
 				FailOnError(c, err)
 				return
 			}
 		}
 	} else {
-		err := um.AddIPFSNetworkForUser(AdminAddress, networkName)
-		if err != nil {
+		if err := um.AddIPFSNetworkForUser(AdminAddress, networkName); err != nil {
 			api.LogError(err, NetworkCreationError)
 			FailOnError(c, err)
 			return
@@ -844,8 +830,7 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 		return
 	}
 
-	err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB)
-	if err != nil {
+	if err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.DBM.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)
 		FailOnError(c, err)
 		return

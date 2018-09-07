@@ -191,8 +191,7 @@ func (api *API) createPinPayment(c *gin.Context) {
 		return
 	}
 
-	_, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash, username, "pin", "public", holdTimeInt)
-	if err != nil {
+	if _, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash, username, "pin", "public", holdTimeInt); err != nil {
 		api.LogError(err, PaymentCreationError)
 		FailOnError(c, err)
 		return
@@ -287,8 +286,7 @@ func (api *API) createFilePayment(c *gin.Context) {
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
 	fmt.Println("storing file in minio")
-	_, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{})
-	if err != nil {
+	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{}); err != nil {
 		api.LogError(err, MinioPutError)
 		FailOnError(c, err)
 		return
@@ -326,8 +324,7 @@ func (api *API) createFilePayment(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	_, err = pm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, objectName, username, "file", networkName, holdTimeInMonthsInt)
-	if err != nil {
+	if _, err = pm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, objectName, username, "file", networkName, holdTimeInMonthsInt); err != nil {
 		api.LogError(err, PaymentCreationError)
 		FailOnError(c, err)
 		return
@@ -393,8 +390,7 @@ func (api *API) submitPinPaymentConfirmation(c *gin.Context) {
 		return
 	}
 	fmt.Println("publishing message")
-	err = qm.PublishMessage(ppc)
-	if err != nil {
+	if err = qm.PublishMessage(ppc); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
@@ -553,8 +549,7 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 		Sig:          sm.Sig,
 	}
 
-	_, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash, username, "pin", "public", holdTimeInt)
-	if err != nil {
+	if _, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash, username, "pin", "public", holdTimeInt); err != nil {
 		api.LogError(err, PaymentCreationError)
 		FailOnError(c, err)
 		return
@@ -566,8 +561,7 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 		return
 	}
 
-	err = qm.PublishMessage(pps)
-	if err != nil {
+	if err = qm.PublishMessage(pps); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return

@@ -96,9 +96,9 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	//TODO move to fanout exchange
-	err = qm.PublishMessage(ie)
-	if err != nil {
+	// in order to avoid generating too much IPFS dht traffic, we publish round-robin style
+	// as we announce the records to the swarm, we will eventually achieve consistency across nodes automatically
+	if err = qm.PublishMessage(ie); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
