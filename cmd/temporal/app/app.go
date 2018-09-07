@@ -8,6 +8,14 @@ import (
 	"github.com/RTradeLtd/Temporal/config"
 )
 
+const (
+	// CodeOK indicates success
+	CodeOK = 0
+
+	// CodeNoOp indicates failure
+	CodeNoOp = 1
+)
+
 // Config declares application settings
 type Config struct {
 	Name     string
@@ -29,12 +37,14 @@ func New(cmds map[string]Cmd, cfg Config) *App {
 		Blurb:       "show help text",
 		Description: fmt.Sprintf("Display help text for %s or the given command", cfg.Name),
 		Action:      func(config.TemporalConfig, map[string]string) { app.help() },
+		PreRun:      true,
 	}
 	if cfg.Version != "" {
 		cmds["version"] = Cmd{
 			Blurb:       fmt.Sprintf("show %s version", cfg.Name),
 			Description: fmt.Sprintf("Show the version of %s in use", cfg.Name),
 			Action:      func(config.TemporalConfig, map[string]string) { app.version() },
+			PreRun:      true,
 		}
 	}
 	return app
@@ -42,11 +52,11 @@ func New(cmds map[string]Cmd, cfg Config) *App {
 
 // PreRun walks the command tree and executes commands marked as "PreRun" - this
 // is useful for running commands that do not need configuration to be read,
-// for example the built-in "help" command
-func (a *App) PreRun(args []string) {
+// for example the built-in "help" command.
+func (a *App) PreRun(args []string) int {
 	if len(args) == 0 {
 		a.help()
-		os.Exit(0)
+		return CodeOK
 	}
 	prerunCmds := make(map[string]Cmd)
 	for exec, cmd := range a.cmds {
@@ -55,42 +65,26 @@ func (a *App) PreRun(args []string) {
 		}
 	}
 
-	noop := a.run(prerunCmds, config.TemporalConfig{}, nil, args)
+	noop := run(prerunCmds, config.TemporalConfig{}, nil, args)
 	if noop {
-		a.noop(args)
-		os.Exit(1)
+		return CodeNoOp
 	}
-	os.Exit(0)
+	return CodeOK
 }
 
 // Run walks the command tree and executes them as appropriate.
-func (a *App) Run(cfg config.TemporalConfig, flags map[string]string, args []string) {
+func (a *App) Run(cfg config.TemporalConfig, flags map[string]string, args []string) int {
 	if len(args) == 0 {
 		a.help()
-		os.Exit(0)
+		return CodeOK
 	}
 
-	noop := a.run(a.cmds, cfg, flags, args)
+	noop := run(a.cmds, cfg, flags, args)
 	if noop {
 		a.noop(args)
-		os.Exit(1)
+		return CodeNoOp
 	}
-}
-
-func (a *App) run(commands map[string]Cmd,
-	cfg config.TemporalConfig, flags map[string]string, args []string) (noop bool) {
-	c, ok := a.cmds[args[0]]
-	if !ok {
-		return true
-	}
-	if c.Action == nil {
-		return true
-	}
-	c.Action(cfg, flags)
-	if c.Children != nil {
-		return a.run(c.Children, cfg, flags, args[1:])
-	}
-	return false
+	return CodeOK
 }
 
 func (a *App) help() {

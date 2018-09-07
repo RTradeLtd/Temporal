@@ -221,7 +221,10 @@ func main() {
 	})
 
 	// run no-config commands
-	temporal.PreRun(os.Args[1:])
+	exit := temporal.PreRun(os.Args[1:])
+	if exit == app.CodeOK {
+		os.Exit(0)
+	}
 
 	// load config
 	configDag := os.Getenv("CONFIG_DAG")
@@ -246,5 +249,5 @@ func main() {
 	}
 
 	// execute
-	temporal.Run(*tCfg, flags, os.Args[1:])
+	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
 }

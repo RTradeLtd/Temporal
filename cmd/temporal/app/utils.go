@@ -4,7 +4,25 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/RTradeLtd/Temporal/config"
 )
+
+func run(commands map[string]Cmd, cfg config.TemporalConfig,
+	flags map[string]string, args []string) (noop bool) {
+	c, ok := commands[args[0]]
+	if !ok {
+		return true
+	}
+	if c.Action == nil {
+		return true
+	}
+	c.Action(cfg, flags)
+	if c.Children != nil {
+		return run(c.Children, cfg, flags, args[1:])
+	}
+	return false
+}
 
 func help(doc, exec string, args []string, cmds map[string]Cmd) {
 	if len(args) > 0 {
