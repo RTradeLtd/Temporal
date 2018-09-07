@@ -11,6 +11,7 @@ import (
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
 )
 
 var nilTime time.Time
@@ -86,4 +87,12 @@ func GetAuthenticatedUserFromContext(c *gin.Context) string {
 func Respond(c *gin.Context, status int, body gin.H) {
 	body["code"] = status
 	c.JSON(status, body)
+}
+
+// LogError is a wrapper used by the API to handle logging of errors
+func (api *API) LogError(err error, message string) {
+	api.Logger.WithFields(log.Fields{
+		"service": api.Service,
+		"error":   err.Error(),
+	}).Error(message)
 }
