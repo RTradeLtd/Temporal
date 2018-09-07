@@ -34,12 +34,13 @@ type API struct {
 	TConfig *config.TemporalConfig
 	DBM     *database.DatabaseManager
 	Logger  *log.Logger
+	Service string
 }
 
 // Initialize is used ot initialize our API service
 func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	// initialize an empty api struct
-	api := API{}
+	api := API{Service: "api"}
 	// setup logging
 	err := api.setupLogging()
 	if err != nil {
