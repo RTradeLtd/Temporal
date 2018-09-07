@@ -13,37 +13,37 @@ export CONFIG_DAG
 case "$1" in
 
     api)
-        Temporal api
+        temporal api
         ;;
     queue-dfa)
-        Temporal queue-dfa
+        temporal queue-dfa
         ;;
     ipfs-pin-queue)
-        Temporal ipfs-pin-queue
+        temporal ipfs-pin-queue
         ;;
     ipfs-file-queue)
-        Temporal ipfs-file-queue
+        temporal ipfs-file-queue
         ;;
     pin-payment-confirmation-queue)
-        Temporal pin-payment-confirmation-queue
+        temporal pin-payment-confirmation-queue
         ;;
     pin-payment-submission-queue)
-        Temporal pin-payment-submission-queue
+        temporal pin-payment-submission-queue
         ;;
     email-send-queue)
-        Temporal email-send-queue
+        temporal email-send-queue
         ;;
     ipns-entry-queue)
-        Temporal ipns-entry-queue
+        temporal ipns-entry-queue
         ;;
     ipfs-key-creation-queue)
-        Temporal ipfs-key-creation-queue
+        temporal ipfs-key-creation-queue
         ;;
     ipfs-cluster-queue)
-        Temporal ipfs-cluster-queue
+        temporal ipfs-cluster-queue
         ;;
     migrate)
-        Temporal migrate
+        temporal migrate
         ;;
     *)
         echo "[ERROR] Invalid command"
