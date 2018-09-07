@@ -191,7 +191,7 @@ var commands = map[string]app.Cmd{
 			},
 		},
 	},
-	"calculcate-config-checksum": app.Cmd{
+	"calculate-config-checksum": app.Cmd{
 		Blurb: "",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			fileBytes, err := ioutil.ReadFile(args["configDag"])
