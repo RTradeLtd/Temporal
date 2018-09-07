@@ -56,9 +56,7 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		"user":    username,
 	}).Info("password changed")
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "password changed",
-	})
+	Respond(c, http.StatusOK, gin.H{"response": "password changed"})
 }
 
 // RegisterUserAccount is used to sign up with temporal
@@ -105,8 +103,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	}).Info("user account registered")
 
 	userModel.HashedPassword = "scrubbed"
-	c.JSON(http.StatusCreated, gin.H{"user": userModel})
-	return
+	Respond(c, http.StatusOK, gin.H{"response": userModel})
 }
 
 // CreateIPFSKey is used to create an IPFS key
@@ -185,7 +182,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		"user":    username,
 	}).Info("key creation request sent to backend")
 
-	c.JSON(http.StatusOK, gin.H{"status": "key creation sent to backend"})
+	Respond(c, http.StatusOK, gin.H{"response": "key creation sent to backend"})
 }
 
 // GetIPFSKeyNamesForAuthUser is used to get the keys a user has setup
@@ -206,10 +203,7 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("key name list requested")
 
-	c.JSON(http.StatusOK, gin.H{
-		"key_names": keys["key_names"],
-		"key_ids":   keys["key_ids"],
-	})
+	Respond(c, http.StatusOK, gin.H{"response": gin.H{"key_names": keys["key_names"], "key_ids": keys["key_ids"]}})
 }
 
 // ChangeEthereumAddress is used to change a user's ethereum address
@@ -235,5 +229,5 @@ func (api *API) changeEthereumAddress(c *gin.Context) {
 		"user":    username,
 	}).Info("ethereum address changed")
 
-	c.JSON(http.StatusOK, gin.H{"status": "address change successful"})
+	Respond(c, http.StatusOK, gin.H{"response": "address change successful"})
 }
