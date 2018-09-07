@@ -112,8 +112,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 			d.Ack(false)
 			continue
 		}
-		err = userManager.AddIPFSKeyForUser(key.UserName, keyName, id.Pretty())
-		if err != nil {
+		if err := userManager.AddIPFSKeyForUser(key.UserName, keyName, id.Pretty()); err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"user":    key.UserName,
