@@ -33,8 +33,7 @@ func (api *API) makeBucket(c *gin.Context) {
 
 	args := make(map[string]string)
 	args["name"] = bucketName
-	err = manager.MakeBucket(args)
-	if err != nil {
+	if err = manager.MakeBucket(args); err != nil {
 		api.LogError(err, MinioBucketCreationError)
 		FailOnError(c, err)
 		return

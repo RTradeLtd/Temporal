@@ -43,8 +43,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 	}
 
-	err = qm.PublishMessage(ipfsClusterPin)
-	if err != nil {
+	if err = qm.PublishMessage(ipfsClusterPin); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
@@ -90,6 +89,7 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 
 // RemovePinFromCluster is used to remove a pin from the cluster global state
 // this will mean that all nodes in the cluster will no longer track the pin
+// TODO: use a queue
 func (api *API) removePinFromCluster(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	if ethAddress != AdminAddress {
@@ -103,8 +103,7 @@ func (api *API) removePinFromCluster(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	err = manager.RemovePinFromCluster(hash)
-	if err != nil {
+	if err = manager.RemovePinFromCluster(hash); err != nil {
 		api.LogError(err, IPFSClusterPinRemovalError)
 		FailOnError(c, err)
 		return

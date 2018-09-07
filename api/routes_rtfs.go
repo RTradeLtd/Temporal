@@ -79,8 +79,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 
-	err = qm.PublishMessageWithExchange(ip, queue.PinExchange)
-	if err != nil {
+	if err = qm.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
@@ -161,8 +160,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
 	fmt.Println("storing file in minio")
-	_, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{})
-	if err != nil {
+	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{}); err != nil {
 		api.LogError(err, MinioPutError)
 		FailOnError(c, err)
 		return
@@ -182,8 +180,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 
-	err = qm.PublishMessage(ifp)
-	if err != nil {
+	if err = qm.PublishMessage(ifp); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
@@ -262,11 +259,8 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 
-	// Consider whether or not we should trigger a cluster pin here
-
 	// publish the database file add message
-	err = qm.PublishMessage(dfa)
-	if err != nil {
+	if err = qm.PublishMessage(dfa); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
@@ -285,8 +279,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	err = qm.PublishMessageWithExchange(pin, queue.PinExchange)
-	if err != nil {
+	if err = qm.PublishMessageWithExchange(pin, queue.PinExchange); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
@@ -315,8 +308,7 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	err = manager.PublishPubSubMessage(topic, message)
-	if err != nil {
+	if err = manager.PublishPubSubMessage(topic, message); err != nil {
 		api.LogError(err, IPFSPubSubPublishError)
 		FailOnError(c, err)
 		return
@@ -351,8 +343,7 @@ func (api *API) removePinFromLocalHost(c *gin.Context) {
 		NetworkName: "public",
 		UserName:    username,
 	}
-	err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange)
-	if err != nil {
+	if err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
