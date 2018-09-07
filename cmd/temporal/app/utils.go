@@ -26,7 +26,11 @@ func run(commands map[string]Cmd, cfg config.TemporalConfig,
 			return run(c.Children, cfg, flags, args[1:])
 		}
 		if c.ChildRequired {
-			help(c.Description, strings.Join(os.Args, " "), nil, c.Children)
+			if c.Description != "" {
+				help(c.Description, strings.Join(os.Args, " "), nil, c.Children)
+			} else {
+				help(c.Blurb, strings.Join(os.Args, " "), nil, c.Children)
+			}
 		}
 	}
 
@@ -38,7 +42,11 @@ func help(doc, exec string, args []string, cmds map[string]Cmd) {
 		c, found := cmds[args[0]]
 		if found {
 			exec += " " + args[0]
-			help(c.Description, exec, args[1:], c.Children)
+			if c.Description != "" {
+				help(c.Description, exec, args[1:], c.Children)
+			} else {
+				help(c.Blurb, exec, args[1:], c.Children)
+			}
 		} else {
 			fmt.Printf("command %s %s not found\n", exec, strings.Join(args, " "))
 		}
