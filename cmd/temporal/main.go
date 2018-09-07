@@ -5,10 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
 	//_ "./docs"
 	"github.com/RTradeLtd/Temporal/api"
+	"github.com/RTradeLtd/Temporal/cmd/temporal/app"
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -24,16 +24,10 @@ var (
 	tCfg     config.TemporalConfig
 )
 
-type cmd struct {
-	blurb  string
-	action func(config.TemporalConfig, map[string]string)
-	hidden bool
-}
-
-var commands = map[string]cmd{
-	"api": cmd{
-		blurb: "start the api, used to interact with Temporal",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
+var commands = map[string]app.Cmd{
+	"api": app.Cmd{
+		Blurb: "start the api, used to interact with Temporal",
+		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			api, err := api.Initialize(&cfg, true)
 			if err != nil {
 				log.Fatal(err)
@@ -50,135 +44,156 @@ var commands = map[string]cmd{
 			}
 		},
 	},
-	"queue-dfa": cmd{
-		blurb: "listen to file add requests, and add to the database",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
-			mqConnectionURL := cfg.RabbitMQ.URL
-			qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-			if err != nil {
-				log.Fatal(err)
-			}
+	"queue": app.Cmd{
+		Blurb:         "execute commands for various queues",
+		Description:   "Interact with Temporal's various queue APIs",
+		ChildRequired: true,
+		Children: map[string]app.Cmd{
+			"dfa": app.Cmd{
+				Blurb: "listen to file add requests, and add to the database",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					if err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+			"ipfs-pin": app.Cmd{
+				Blurb: "",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					if err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+			"ipfs-file": app.Cmd{
+				Blurb: "",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					if err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+			"ipfs-pin-removal": app.Cmd{
+				Blurb: "",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					if err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+			"ipfs-key-creation": app.Cmd{
+				Blurb: "",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					if err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+			"ipfs-cluster": app.Cmd{
+				Blurb: "listen to cluster pin pubsub topic",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					if err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+			"pin-payment-confirmation": app.Cmd{
+				Blurb: "",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					if err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+			"pin-payment-submission": app.Cmd{
+				Blurb: "",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					if err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+			"email-send": app.Cmd{
+				Blurb: "",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					if err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+			"ipns-entry": app.Cmd{
+				Blurb: "",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					if err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
 		},
 	},
-	"ipfs-pin-queue": cmd{
-		blurb: "",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
-			mqConnectionURL := cfg.RabbitMQ.URL
-			qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, false, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	},
-	"ipfs-file-queue": cmd{
-		blurb: "",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
-			mqConnectionURL := cfg.RabbitMQ.URL
-			qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL, false, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	},
-	"pin-payment-confirmation-queue": cmd{
-		blurb: "",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
-			mqConnectionURL := cfg.RabbitMQ.URL
-			qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqConnectionURL, false, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	},
-	"pin-payment-submission-queue": cmd{
-		blurb: "",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
-			mqConnectionURL := cfg.RabbitMQ.URL
-			qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqConnectionURL, false, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	},
-	"email-send-queue": cmd{
-		blurb: "",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
-			mqConnectionURL := cfg.RabbitMQ.URL
-			qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL, false, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	},
-	"ipns-entry-queue": cmd{
-		blurb: "",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
-			mqConnectionURL := cfg.RabbitMQ.URL
-			qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL, false, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	},
-	"ipfs-pin-removal-queue": cmd{
-		blurb: "",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
-			mqConnectionURL := cfg.RabbitMQ.URL
-			qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, false, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	},
-	"ipfs-key-creation-queue": cmd{
-		blurb: "",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
-			mqConnectionURL := cfg.RabbitMQ.URL
-			qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, false, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	},
-	"calculcate-config-checksum": cmd{
-		blurb: "",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
+	"calculate-config-checksum": app.Cmd{
+		Blurb: "",
+		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			fileBytes, err := ioutil.ReadFile(args["configDag"])
 			if err != nil {
 				log.Fatal(err)
@@ -191,23 +206,9 @@ var commands = map[string]cmd{
 			// TODO: hardcode the checksum value so we can do a check here
 		},
 	},
-	"ipfs-cluster-queue": cmd{
-		blurb: "listen to cluster pin pubsub topic",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
-			mqConnectionURL := cfg.RabbitMQ.URL
-			qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqConnectionURL, false, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-			if err != nil {
-				log.Fatal(err)
-			}
-		},
-	},
-	"migrate": cmd{
-		blurb: "run database migrations",
-		action: func(cfg config.TemporalConfig, args map[string]string) {
+	"migrate": app.Cmd{
+		Blurb: "run database migrations",
+		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			dbm, err := database.Initialize(&cfg, false)
 			if err != nil {
 				log.Fatal(err)
@@ -218,19 +219,17 @@ var commands = map[string]cmd{
 }
 
 func main() {
-	// guard against invalid arg count
-	if len(os.Args) > 2 || len(os.Args) < 2 {
-		printNoOp(os.Args)
-		os.Exit(1)
-	}
+	// create app
+	temporal := app.New(commands, app.Config{
+		Name:     "Temporal",
+		ExecName: "temporal",
+		Version:  Version,
+		Desc:     "Temporal is an easy-to-use interface into distributed and decentralized storage technologies for personal and enterprise use cases.",
+	})
 
-	// build-in invocations
-	switch os.Args[1] {
-	case "help":
-		printHelp(commands)
-		os.Exit(0)
-	case "version":
-		println("temporal " + Version)
+	// run no-config commands
+	exit := temporal.PreRun(os.Args[1:])
+	if exit == app.CodeOK {
 		os.Exit(0)
 	}
 
@@ -245,7 +244,7 @@ func main() {
 	}
 
 	// load arguments
-	args := map[string]string{
+	flags := map[string]string{
 		"configDag":     configDag,
 		"certFilePath":  tCfg.API.Connection.Certificates.CertPath,
 		"keyFilePath":   tCfg.API.Connection.Certificates.KeyPath,
@@ -256,15 +255,6 @@ func main() {
 		"dbUser": tCfg.Database.Username,
 	}
 
-	// find and execute command
-	invocation, ok := commands[os.Args[1]]
-	if !ok {
-		printNoOp(os.Args)
-		os.Exit(1)
-	}
-	if invocation.action == nil {
-		fmt.Printf("no action found for '%s'\n", strings.Join(os.Args[:], " "))
-		os.Exit(1)
-	}
-	invocation.action(*tCfg, args)
+	// execute
+	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
 }
