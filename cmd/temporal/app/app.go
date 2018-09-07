@@ -88,7 +88,11 @@ func (a *App) Run(cfg config.TemporalConfig, flags map[string]string, args []str
 }
 
 func (a *App) help() {
-	help(a.cfg.Desc, os.Args[0], os.Args[2:], a.cmds)
+	if len(os.Args) > 2 {
+		help(a.cfg.Desc, os.Args[0], os.Args[2:], a.cmds)
+	} else {
+		help(a.cfg.Desc, os.Args[0], []string{}, a.cmds)
+	}
 }
 
 func (a *App) noop(args []string) {
