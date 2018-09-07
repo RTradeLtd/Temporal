@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -36,18 +35,14 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 	um := models.NewUserManager(api.DBM.DB)
 	suceeded, err := um.ChangePassword(username, oldPassword, newPassword)
 	if err != nil {
-		api.Logger.WithFields(log.Fields{
-			"service": "api",
-			"user":    username,
-			"error":   err.Error(),
-		}).Warn("password change failed")
+		api.LogError(err, PasswordChangeError)
 		FailOnError(c, err)
 		return
 	}
 	if !suceeded {
-		msg := fmt.Sprintf("password changed failed for user %s to due an unspecified error", username)
-		api.Logger.Error(msg)
-		FailOnError(c, errors.New("password change failed but no error occured"))
+		err = fmt.Errorf("password changed failed for user %s to due an unspecified error", username)
+		api.LogError(err, PasswordChangeError)
+		FailOnError(c, err)
 		return
 	}
 
@@ -88,11 +83,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	userManager := models.NewUserManager(api.DBM.DB)
 	userModel, err := userManager.NewUserAccount(ethAddress, username, password, email, false)
 	if err != nil {
-		api.Logger.WithFields(log.Fields{
-			"service": "api",
-			"error":   err.Error(),
-			"user":    username,
-		}).Error("user account registration failed")
+		api.LogError(err, UserAccountCreationError)
 		FailOnError(c, err)
 		return
 	}
@@ -122,6 +113,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	case "ed25519":
 		break
 	default:
+		// user error, do not log
 		err := fmt.Errorf("%s is invalid key type must be rsa, or ed25519", keyType)
 		FailOnError(c, err)
 		return
@@ -141,10 +133,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	um := models.NewUserManager(api.DBM.DB)
 	keys, err := um.GetKeysForUser(username)
 	if err != nil {
-		api.Logger.WithFields(log.Fields{
-			"service": "api",
-			"error":   err.Error(),
-		}).Error("failed to retrieve keys for user")
+		api.LogError(err, KeySearchError)
 		FailOnError(c, err)
 		return
 	}
@@ -152,10 +141,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	for _, v := range keys["key_names"] {
 		if v == keyNamePrefixed {
 			err = fmt.Errorf("key with name already exists")
-			api.Logger.WithFields(log.Fields{
-				"service": "api",
-				"error":   err.Error(),
-			}).Error("user attempting to create duplicate key")
+			api.LogError(err, DuplicateKeyCreationError)
 			FailOnError(c, err)
 			return
 		}
@@ -178,22 +164,14 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true, false)
 	if err != nil {
-		api.Logger.WithFields(log.Fields{
-			"service": "api",
-			"user":    username,
-			"error":   err.Error(),
-		}).Error("failed to initialize queue")
+		api.LogError(err, QueueInitializationError)
 		FailOnError(c, err)
 		return
 	}
 
 	err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange)
 	if err != nil {
-		api.Logger.WithFields(log.Fields{
-			"service": "api",
-			"user":    username,
-			"error":   err.Error(),
-		}).Error("failed to publish message")
+		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
 	}
@@ -213,8 +191,7 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 	um := models.NewUserManager(api.DBM.DB)
 	keys, err := um.GetKeysForUser(ethAddress)
 	if err != nil {
-		msg := fmt.Sprintf("key fetch for user %s failed due to error: %s", ethAddress, err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, KeySearchError)
 		FailOnError(c, err)
 		return
 	}
@@ -237,11 +214,7 @@ func (api *API) changeEthereumAddress(c *gin.Context) {
 	}
 	um := models.NewUserManager(api.DBM.DB)
 	if _, err := um.ChangeEthereumAddress(username, ethAddress); err != nil {
-		api.Logger.WithFields(log.Fields{
-			"service": "api",
-			"user":    username,
-			"error":   err.Error(),
-		}).Info("ethereum address change failed")
+		api.LogError(err, EthAddressChangeError)
 		FailOnError(c, err)
 		return
 	}

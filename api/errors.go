@@ -37,4 +37,38 @@ const (
 	MinioPutError = "failed to store object in minio"
 	// MinioConnectionError is an error used when connecting to minio
 	MinioConnectionError = "failed to connect to minio"
+	// MinioBucketCreationError is an error used when creating a minio bucket
+	MinioBucketCreationError = "failed to create minio bucket"
+	// IPFSMultiHashGenerationError is an error used when calculating an ipfs multihash
+	IPFSMultiHashGenerationError = "failed to generate ipfs multihash"
+	// IPFSClusterStatusError is a error used when getting the status of ipfs cluster
+	IPFSClusterStatusError = "failed to get ipfs cluster status"
+	// IPFSClusterConnectionError is an error used when connecting to ipfs cluster
+	IPFSClusterConnectionError = "failed to connect to IPFS cluster"
+	// IPFSClusterPinRemovalError is an error used when failing to remove a pin from the cluster
+	IPFSClusterPinRemovalError = "failed to remove pin from cluster"
+	// DNSLinkManagerError is an error used when creating a dns link manager
+	DNSLinkManagerError = "failed to create dnslink manager"
+	// DNSLinkEntryError is an error used when creating dns link entries
+	DNSLinkEntryError = "failed to create dns link entry"
+	// PaymentCreationError is an error used when creating payments
+	PaymentCreationError = "failed to create payment"
+	// PaymentMessageSignError is an error used when signing payment messages
+	PaymentMessageSignError = "failed to sign payment message"
+	// PaymentSignerGenerationError is an error used when generating the payment signer
+	PaymentSignerGenerationError = "failed to generate payment signer"
+	// EthAddressSearchError is an error used when searching for an eth address
+	EthAddressSearchError = "failed to search for eth address"
+	// PinCostCalculationError is an error message used when calculating pin costs
+	PinCostCalculationError = "failed to calculate pin cost"
+	// PaymentSearchError is an error used when searching for payment
+	PaymentSearchError = "failed to search for payment"
+	// EthAddressChangeError is an error used when changing your eth address
+	EthAddressChangeError = "failed to changing eth address"
+	// DuplicateKeyCreationError is an error used when creating a key of the same name
+	DuplicateKeyCreationError = "key name already exists"
+	// UserAccountCreationError is an error used when creating a user account
+	UserAccountCreationError = "failed to create user account"
+	// PasswordChangeError is an error used when changing your password
+	PasswordChangeError = "failed to change password"
 )
