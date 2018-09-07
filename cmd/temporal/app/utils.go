@@ -32,7 +32,7 @@ func help(doc, exec string, args []string, cmds map[string]Cmd) {
 			exec += " " + args[0]
 			help(c.Description, exec, args[1:], c.Children)
 		} else {
-			println("command %s %s not found", exec, strings.Join(args, " "))
+			fmt.Printf("command %s %s not found\n", exec, strings.Join(args, " "))
 		}
 		return
 	}
