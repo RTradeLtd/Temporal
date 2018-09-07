@@ -16,31 +16,31 @@ case "$1" in
         temporal api
         ;;
     queue-dfa)
-        temporal queue-dfa
+        temporal queue dfa
         ;;
     ipfs-pin-queue)
-        temporal ipfs-pin-queue
+        temporal queue ipfs-pin
         ;;
     ipfs-file-queue)
-        temporal ipfs-file-queue
+        temporal queue ipfs-file
         ;;
     pin-payment-confirmation-queue)
-        temporal pin-payment-confirmation-queue
+        temporal queue pin-payment-confirmation
         ;;
     pin-payment-submission-queue)
-        temporal pin-payment-submission-queue
+        temporal queue pin-payment-submission
         ;;
     email-send-queue)
-        temporal email-send-queue
+        temporal queue email-send
         ;;
     ipns-entry-queue)
-        temporal ipns-entry-queue
+        temporal queue ipns-entry
         ;;
     ipfs-key-creation-queue)
-        temporal ipfs-key-creation-queue
+        temporal queue ipfs-key-creation
         ;;
     ipfs-cluster-queue)
-        temporal ipfs-cluster-queue
+        temporal queue ipfs-cluster
         ;;
     migrate)
         temporal migrate
