@@ -8,6 +8,7 @@ import (
 	"github.com/RTradeLtd/Temporal/config"
 )
 
+// Config declares application settings
 type Config struct {
 	Name     string
 	ExecName string
@@ -15,11 +16,13 @@ type Config struct {
 	Desc     string
 }
 
+// App is a Temporal command line app
 type App struct {
 	cfg  Config
 	cmds map[string]Cmd
 }
 
+// New creates a new Temporal command line app
 func New(cmds map[string]Cmd, cfg Config) *App {
 	app := &App{cfg, cmds}
 	app.cmds["help"] = Cmd{
@@ -37,6 +40,9 @@ func New(cmds map[string]Cmd, cfg Config) *App {
 	return app
 }
 
+// PreRun walks the command tree and executes commands marked as "PreRun" - this
+// is useful for running commands that do not need configuration to be read,
+// for example the built-in "help" command
 func (a *App) PreRun(args []string) {
 	if len(args) == 0 {
 		a.help()
@@ -57,6 +63,7 @@ func (a *App) PreRun(args []string) {
 	os.Exit(0)
 }
 
+// Run walks the command tree and executes them as appropriate.
 func (a *App) Run(cfg config.TemporalConfig, flags map[string]string, args []string) {
 	if len(args) == 0 {
 		a.help()

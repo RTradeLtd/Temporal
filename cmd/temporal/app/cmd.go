@@ -4,6 +4,7 @@ import (
 	"github.com/RTradeLtd/Temporal/config"
 )
 
+// Cmd declares a command for a Temporal application.
 type Cmd struct {
 	Blurb       string
 	Description string
