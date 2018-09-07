@@ -169,8 +169,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		return
 	}
 
-	err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange)
-	if err != nil {
+	if err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
