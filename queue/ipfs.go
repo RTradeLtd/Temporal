@@ -90,7 +90,8 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 			d.Ack(false)
 			continue
 		}
-		pk, err := manager.KeystoreManager.CreateAndSaveKey(key.Name, keyTypeInt, bitsInt)
+		keyName := fmt.Sprintf("%s-%s", key.UserName, key.Name)
+		pk, err := manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
@@ -111,7 +112,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 			d.Ack(false)
 			continue
 		}
-		err = userManager.AddIPFSKeyForUser(key.UserName, key.Name, id.Pretty())
+		err = userManager.AddIPFSKeyForUser(key.UserName, keyName, id.Pretty())
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
