@@ -14,10 +14,11 @@ func run(commands map[string]Cmd, cfg config.TemporalConfig,
 	if !ok {
 		return true
 	}
-	if c.Action == nil {
+	if c.Action == nil && (c.Children == nil || len(c.Children) == 0) {
 		return true
+	} else if c.Action != nil {
+		c.Action(cfg, flags)
 	}
-	c.Action(cfg, flags)
 	if c.Children != nil {
 		return run(c.Children, cfg, flags, args[1:])
 	}

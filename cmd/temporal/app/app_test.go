@@ -111,7 +111,6 @@ func TestApp_Run(t *testing.T) {
 			fields{Config{}, map[string]Cmd{"me": Cmd{
 				Action: func(config.TemporalConfig, map[string]string) {},
 				Children: map[string]Cmd{"too": Cmd{
-					Action: func(config.TemporalConfig, map[string]string) {},
 					Children: map[string]Cmd{"wow": Cmd{
 						Action: func(config.TemporalConfig, map[string]string) {},
 					}},
