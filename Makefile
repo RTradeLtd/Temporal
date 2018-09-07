@@ -1,19 +1,20 @@
 GOFILES=`go list ./... | grep -v /vendor/`
-TEMPORALVERSION = `git describe --tags`
+TEMPORALVERSION=`git describe --tags`
 IPFSVERSION=v0.4.17
 
 all: check cli
-
-# Installs Temporal to GOBIN
-install: cli
-	@echo "=================== installing Temporal CLI ==================="
-	go install -ldflags "-X main.Version=$(TEMPORALVERSION)" cmd/temporal
-	@echo "===================          done           ==================="
 
 # List all commands
 .PHONY: ls
 ls:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
+
+# Installs Temporal to GOBIN
+.PHONY: install
+install: cli
+	@echo "=================== installing Temporal CLI ==================="
+	go install -ldflags "-X main.Version=$(TEMPORALVERSION)" cmd/temporal
+	@echo "===================          done           ==================="
 
 # Run simple checks
 .PHONY: check
@@ -85,4 +86,11 @@ vendor:
 	go get -u github.com/ethereum/go-ethereum
 	cp -r $(GOPATH)/src/github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1 \
   	./vendor/github.com/ethereum/go-ethereum/crypto/secp256k1/
+	@echo "===================          done           ==================="
+
+# Build release
+.PHONY: release-cli
+release-cli:
+	@echo "===================   cross-compiling CLI   ==================="
+	@bash .scripts/release.sh
 	@echo "===================          done           ==================="
