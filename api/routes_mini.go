@@ -26,7 +26,7 @@ func (api *API) makeBucket(c *gin.Context) {
 	endpoint := fmt.Sprintf("%s:%s", api.TConfig.MINIO.Connection.IP, api.TConfig.MINIO.Connection.Port)
 	manager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, MinioConnectionError)
 		FailOnError(c, err)
 		return
 	}
@@ -35,7 +35,7 @@ func (api *API) makeBucket(c *gin.Context) {
 	args["name"] = bucketName
 	err = manager.MakeBucket(args)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, MinioBucketCreationError)
 		FailOnError(c, err)
 		return
 	}

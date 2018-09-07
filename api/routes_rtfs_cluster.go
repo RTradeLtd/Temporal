@@ -31,7 +31,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL, true, false)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, QueueInitializationError)
 		FailOnError(c, err)
 		return
 	}
@@ -45,7 +45,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 
 	err = qm.PublishMessage(ipfsClusterPin)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
 	}
@@ -68,14 +68,14 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 	// initialize a conection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, IPFSConnectionError)
 		FailOnError(c, err)
 		return
 	}
 	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
 	syncedCids, err := manager.ParseLocalStatusAllAndSync()
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, IPFSClusterStatusError)
 		FailOnError(c, err)
 		return
 	}
@@ -99,13 +99,13 @@ func (api *API) removePinFromCluster(c *gin.Context) {
 	hash := c.Param("hash")
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, IPFSClusterConnectionError)
 		FailOnError(c, err)
 		return
 	}
 	err = manager.RemovePinFromCluster(hash)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, IPFSClusterPinRemovalError)
 		FailOnError(c, err)
 		return
 	}
@@ -129,14 +129,14 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 	// initialize a connection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, IPFSClusterConnectionError)
 		FailOnError(c, err)
 		return
 	}
 	// get the cluster status for the cid only asking the local cluster node
 	status, err := manager.GetStatusForCidLocally(hash)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, IPFSClusterStatusError)
 		FailOnError(c, err)
 		return
 	}
@@ -160,14 +160,14 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 	// initialize a connection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, IPFSClusterConnectionError)
 		FailOnError(c, err)
 		return
 	}
 	// get teh cluster wide status for this particular pin
 	status, err := manager.GetStatusForCidGlobally(hash)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, IPFSClusterStatusError)
 		FailOnError(c, err)
 		return
 	}
@@ -194,14 +194,14 @@ func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 	// initialize a connection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, IPFSClusterConnectionError)
 		FailOnError(c, err)
 		return
 	}
 	// fetch a map of all the statuses
 	maps, err := manager.FetchLocalStatus()
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, IPFSClusterStatusError)
 		FailOnError(c, err)
 		return
 	}
