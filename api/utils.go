@@ -88,3 +88,9 @@ func GetAuthenticatedUserFromContext(c *gin.Context) string {
 	// this is their eth address
 	return claims["id"].(string)
 }
+
+// Respond is a wrapper used to handle API responses
+func Respond(c *gin.Context, status int, body gin.H) {
+	body["code"] = status
+	c.JSON(status, body)
+}

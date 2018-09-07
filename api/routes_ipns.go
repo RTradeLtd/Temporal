@@ -108,10 +108,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		"user":    ethAddress,
 	}).Info("ipns entry creation request sent to backend")
 
-	c.JSON(http.StatusOK, gin.H{
-		"code":     http.StatusOK,
-		"response": "ipns entry creation sent to backend",
-	})
+	Respond(c, http.StatusOK, gin.H{"response": "ipns entry creation sent to backend"})
 }
 
 // GenerateDNSLinkEntry is used to generate a DNS link entry
@@ -177,15 +174,13 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 		"user":    authUser,
 	}).Info("dnslink entry created")
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": http.StatusOK,
-		"response": gin.H{
-			"record_name":  recordName,
-			"record_value": recordValue,
-			"zone_name":    awsZone,
-			"manager":      fmt.Sprintf("%+v", awsManager),
-			"region":       aws.USWest.Name,
-			"resp":         resp,
-		},
+	Respond(c, http.StatusOK, gin.H{"response": gin.H{
+		"record_name":  recordName,
+		"record_value": recordValue,
+		"zone_name":    awsZone,
+		"manager":      fmt.Sprintf("%+v", awsManager),
+		"region":       aws.USWest.Name,
+		"resp":         resp,
+	},
 	})
 }

@@ -33,10 +33,7 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 		"service": "api",
 		"user":    authenticatedUser,
 	}).Info("all uploads from database requested")
-	c.JSON(http.StatusOK, gin.H{
-		"code":     http.StatusOK,
-		"response": uploads,
-	})
+	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 
 // GetUploadsForAddress is used to read a list of uploads from a particular eth address
@@ -64,8 +61,5 @@ func (api *API) getUploadsForAddress(c *gin.Context) {
 		"user":    user,
 	}).Info("specific uploads from database requested")
 
-	c.JSON(http.StatusOK, gin.H{
-		"code":     http.StatusOK,
-		"response": uploads,
-	})
+	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
