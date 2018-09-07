@@ -183,9 +183,9 @@ func (um *UserManager) ChangePassword(username, currentPassword, newPassword str
 	if err != nil {
 		return false, err
 	}
-	check := um.DB.Model(&user).Update("hashed_password", string(newHashedPass))
-	if check.Error != nil {
-		return false, err
+	encodedNewHashedPass := hex.EncodeToString(newHashedPass)
+	if check := um.DB.Model(&user).Update("hashed_password", encodedNewHashedPass); check.Error != nil {
+		return false, check.Error
 	}
 	return true, nil
 }

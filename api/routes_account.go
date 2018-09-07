@@ -138,7 +138,28 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		FailNoExistPostForm(c, "key_name")
 		return
 	}
-
+	um := models.NewUserManager(api.DBM.DB)
+	keys, err := um.GetKeysForUser(username)
+	if err != nil {
+		api.Logger.WithFields(log.Fields{
+			"service": "api",
+			"error":   err.Error(),
+		}).Error("failed to retrieve keys for user")
+		FailOnError(c, err)
+		return
+	}
+	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
+	for _, v := range keys["key_names"] {
+		if v == keyNamePrefixed {
+			err = fmt.Errorf("key with name already exists")
+			api.Logger.WithFields(log.Fields{
+				"service": "api",
+				"error":   err.Error(),
+			}).Error("user attempting to create duplicate key")
+			FailOnError(c, err)
+			return
+		}
+	}
 	bitsInt, err := strconv.Atoi(keyBits)
 	if err != nil {
 		FailOnError(c, err)
