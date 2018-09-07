@@ -45,8 +45,9 @@ var commands = map[string]app.Cmd{
 		},
 	},
 	"queue": app.Cmd{
-		Blurb:       "execute commands for various queues",
-		Description: "Interact with Temporal's various queue APIs",
+		Blurb:         "execute commands for various queues",
+		Description:   "Interact with Temporal's various queue APIs",
+		ChildRequired: true,
 		Children: map[string]app.Cmd{
 			"dfa": app.Cmd{
 				Blurb: "listen to file add requests, and add to the database",

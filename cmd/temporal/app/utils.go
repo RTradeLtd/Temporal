@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -19,14 +20,21 @@ func run(commands map[string]Cmd, cfg config.TemporalConfig,
 	} else if c.Action != nil {
 		c.Action(cfg, flags)
 	}
-	if c.Children != nil {
-		return run(c.Children, cfg, flags, args[1:])
+
+	if c.Children != nil && len(c.Children) > 0 {
+		if len(args) > 1 {
+			return run(c.Children, cfg, flags, args[1:])
+		}
+		if c.ChildRequired {
+			help(c.Description, strings.Join(os.Args, " "), nil, c.Children)
+		}
 	}
+
 	return false
 }
 
 func help(doc, exec string, args []string, cmds map[string]Cmd) {
-	if len(args) > 0 {
+	if args != nil && len(args) > 0 {
 		c, found := cmds[args[0]]
 		if found {
 			exec += " " + args[0]
