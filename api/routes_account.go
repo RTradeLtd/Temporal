@@ -188,7 +188,10 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		"user":    username,
 	}).Info("key creation request sent to backend")
 
-	c.JSON(http.StatusOK, gin.H{"status": "key creation sent to backend"})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": "key creation sent to backend",
+	})
 }
 
 // GetIPFSKeyNamesForAuthUser is used to get the keys a user has setup
@@ -210,8 +213,11 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 	}).Info("key name list requested")
 
 	c.JSON(http.StatusOK, gin.H{
-		"key_names": keys["key_names"],
-		"key_ids":   keys["key_ids"],
+		"code": http.StatusOK,
+		"response": gin.H{
+			"key_names": keys["key_names"],
+			"key_ids":   keys["key_ids"],
+		},
 	})
 }
 
@@ -238,5 +244,8 @@ func (api *API) changeEthereumAddress(c *gin.Context) {
 		"user":    username,
 	}).Info("ethereum address changed")
 
-	c.JSON(http.StatusOK, gin.H{"status": "address change successful"})
+	c.JSON(http.StatusOK, gin.H{
+		"code":     http.StatusOK,
+		"response": "address change successful",
+	})
 }
