@@ -15,6 +15,10 @@ import (
 func (api *API) pinHashToCluster(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	holdTime, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
@@ -97,6 +101,10 @@ func (api *API) removePinFromCluster(c *gin.Context) {
 		return
 	}
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
 		api.LogError(err, IPFSClusterConnectionError)
@@ -125,6 +133,10 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 		return
 	}
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	// initialize a connection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
@@ -156,6 +168,10 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 		return
 	}
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	// initialize a connection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {

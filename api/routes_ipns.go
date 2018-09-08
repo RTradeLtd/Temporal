@@ -9,6 +9,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
+	gocid "github.com/ipfs/go-cid"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/rtns/dlink"
@@ -22,6 +23,10 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 	hash, present := c.GetPostForm("hash")
 	if !present {
 		FailNoExistPostForm(c, "hash")
+		return
+	}
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
 		return
 	}
 	lifetimeStr, present := c.GetPostForm("life_time")
