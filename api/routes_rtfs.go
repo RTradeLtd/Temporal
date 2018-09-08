@@ -8,6 +8,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/utils"
+	gocid "github.com/ipfs/go-cid"
 	"github.com/minio/minio-go"
 	log "github.com/sirupsen/logrus"
 
@@ -51,6 +52,10 @@ func (api *API) calculateContentHashForFile(c *gin.Context) {
 // PinHashLocally is used to pin a hash to the local ipfs node
 func (api *API) pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	username := GetAuthenticatedUserFromContext(c)
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
@@ -97,6 +102,10 @@ func (api *API) pinHashLocally(c *gin.Context) {
 func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	key := c.Param("key")
+	if _, err := gocid.Decode(key); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		api.LogError(err, IPFSConnectionError)
@@ -330,6 +339,10 @@ func (api *API) removePinFromLocalHost(c *gin.Context) {
 		return
 	}
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	mqURL := api.TConfig.RabbitMQ.URL
 
 	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL, true, false)
@@ -393,6 +406,10 @@ func (api *API) getLocalPins(c *gin.Context) {
 func (api *API) getObjectStatForIpfs(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	key := c.Param("key")
+	if _, err := gocid.Decode(key); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		api.LogError(err, IPFSConnectionError)
@@ -422,6 +439,10 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 		return
 	}
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		api.LogError(err, IPFSConnectionError)
@@ -459,6 +480,10 @@ func (api *API) downloadContentHash(c *gin.Context) {
 
 	// get the content hash that is to be downloaded
 	contentHash := c.Param("hash")
+	if _, err := gocid.Decode(contentHash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	// initialize our connection to IPFS
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
