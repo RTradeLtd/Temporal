@@ -18,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
+	gocid "github.com/ipfs/go-cid"
 	"github.com/jinzhu/gorm"
 	minio "github.com/minio/minio-go"
 	log "github.com/sirupsen/logrus"
@@ -56,6 +57,10 @@ func (api *API) calculateIPFSFileHash(c *gin.Context) {
 func (api *API) calculatePinCost(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	holdTime := c.Param("holdtime")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
@@ -114,6 +119,10 @@ func (api *API) calculateFileCost(c *gin.Context) {
 // CreatePinPayment is used to create a signed message for a pin payment
 func (api *API) createPinPayment(c *gin.Context) {
 	contentHash := c.Param("hash")
+	if _, err := gocid.Decode(contentHash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	username := GetAuthenticatedUserFromContext(c)
 	holdTime, exists := c.GetPostForm("hold_time")
 	if !exists {

@@ -10,6 +10,7 @@ import (
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
+	gocid "github.com/ipfs/go-cid"
 	minio "github.com/minio/minio-go"
 	log "github.com/sirupsen/logrus"
 
@@ -35,7 +36,10 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	hash := c.Param("hash")
-
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
@@ -99,6 +103,10 @@ func (api *API) getFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) 
 		return
 	}
 	key := c.Param("key")
+	if _, err := gocid.Decode(key); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	manager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
 		api.LogError(err, IPFSConnectionError)
@@ -369,6 +377,10 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailNoExistPostForm(c, "network_name")
@@ -475,6 +487,10 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	key := c.Param("key")
+	if _, err := gocid.Decode(key); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	manager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
 		api.LogError(err, IPFSConnectionError)
@@ -522,6 +538,10 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	manager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
 		api.LogError(err, IPFSConnectionError)
@@ -572,6 +592,10 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	hash, present := c.GetPostForm("hash")
 	if !present {
 		FailNoExistPostForm(c, "hash")
+		return
+	}
+	if _, err := gocid.Decode(hash); err != nil {
+		FailOnError(c, err)
 		return
 	}
 	lifetimeStr, present := c.GetPostForm("life_time")
@@ -888,7 +912,10 @@ func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
 	}
 	// get the content hash that is to be downloaded
 	contentHash := c.Param("hash")
-
+	if _, err := gocid.Decode(contentHash); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	// initialize our connection to IPFS
 	manager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
