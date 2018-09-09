@@ -71,4 +71,6 @@ const (
 	UserAccountCreationError = "failed to create user account"
 	// PasswordChangeError is an error used when changing your password
 	PasswordChangeError = "failed to change password"
+	// NoKeyError is an error message given to a user when they search for keys, but have none
+	NoKeyError = "no keys"
 )

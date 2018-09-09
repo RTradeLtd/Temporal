@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -194,7 +195,11 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-
+	// if the user has no keys, fail with an error
+	if len(keys["key_names"]) == 0 || len(keys["key_ids"]) == 0 {
+		FailOnError(c, errors.New(NoKeyError))
+		return
+	}
 	api.Logger.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
