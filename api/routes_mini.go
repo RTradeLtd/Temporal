@@ -26,16 +26,15 @@ func (api *API) makeBucket(c *gin.Context) {
 	endpoint := fmt.Sprintf("%s:%s", api.TConfig.MINIO.Connection.IP, api.TConfig.MINIO.Connection.Port)
 	manager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, MinioConnectionError)
 		FailOnError(c, err)
 		return
 	}
 
 	args := make(map[string]string)
 	args["name"] = bucketName
-	err = manager.MakeBucket(args)
-	if err != nil {
-		api.Logger.Error(err)
+	if err = manager.MakeBucket(args); err != nil {
+		api.LogError(err, MinioBucketCreationError)
 		FailOnError(c, err)
 		return
 	}

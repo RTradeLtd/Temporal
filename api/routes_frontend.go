@@ -33,15 +33,13 @@ func (api *API) calculateIPFSFileHash(c *gin.Context) {
 	}
 	fh, err := file.Open()
 	if err != nil {
-		msg := fmt.Sprintf("failed to open file due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, FileOpenError)
 		FailOnError(c, err)
 		return
 	}
 	hash, err := utils.GenerateIpfsMultiHashForFile(fh)
 	if err != nil {
-		msg := fmt.Sprintf("failed to calculate ipfs hash for file due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, IPFSMultiHashGenerationError)
 		FailOnError(c, err)
 		return
 	}
@@ -61,8 +59,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 	holdTime := c.Param("holdtime")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		msg := fmt.Sprintf("failed to initialize connection to IPFS due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, IPFSConnectionError)
 		FailOnError(c, err)
 		return
 	}
@@ -73,8 +70,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 	}
 	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell)
 	if err != nil {
-		msg := fmt.Sprintf("failed to calculate pin costfor hash %s  due to the followign error: %s", hash, err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, PinCostCalculationError)
 		FailOnError(c, err)
 		return
 	}
@@ -146,15 +142,13 @@ func (api *API) createPinPayment(c *gin.Context) {
 
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		msg := fmt.Sprintf("failed to initialize connection to IPFS due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, IPFSConnectionError)
 		FailOnError(c, err)
 		return
 	}
 	totalCost, err := utils.CalculatePinCost(contentHash, holdTimeInt, manager.Shell)
 	if err != nil {
-		msg := fmt.Sprintf("failed to calculate pin cost for hash %s due to the following error: %s", contentHash, err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, PinCostCalculationError)
 		FailOnError(c, err)
 		return
 	}
@@ -163,15 +157,14 @@ func (api *API) createPinPayment(c *gin.Context) {
 	keyPass := api.TConfig.Ethereum.Account.KeyPass
 	ps, err := signer.GeneratePaymentSigner(keyFile, keyPass)
 	if err != nil {
-		msg := fmt.Sprintf("failed to generate payment signer due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, PaymentSignerGenerationError)
 		FailOnError(c, err)
 		return
 	}
 	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, EthAddressSearchError)
 		FailOnError(c, err)
 		return
 	}
@@ -179,7 +172,7 @@ func (api *API) createPinPayment(c *gin.Context) {
 	var num *big.Int
 	num, err = ppm.RetrieveLatestPaymentNumberForUser(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		api.Logger.Error(err)
+		api.LogError(err, PaymentSearchError)
 		FailOnError(c, err)
 		return
 	}
@@ -193,16 +186,13 @@ func (api *API) createPinPayment(c *gin.Context) {
 
 	sm, err := ps.GenerateSignedPaymentMessagePrefixed(addressTyped, uint8(methodUint), num, costBig)
 	if err != nil {
-		msg := fmt.Sprintf("failed to generate signed payment message for user %s due to the following error: %s", username, err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, PaymentMessageSignError)
 		FailOnError(c, err)
 		return
 	}
 
-	_, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash, username, "pin", "public", holdTimeInt)
-	if err != nil {
-		msg := fmt.Sprintf("failed to create payment record in database for user %s due to the following error: %s", username, err.Error())
-		api.Logger.Error(msg)
+	if _, err = ppm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, contentHash, username, "pin", "public", holdTimeInt); err != nil {
+		api.LogError(err, PaymentCreationError)
 		FailOnError(c, err)
 		return
 	}
@@ -264,15 +254,13 @@ func (api *API) createFilePayment(c *gin.Context) {
 	keyPass := api.TConfig.Ethereum.Account.KeyPass
 	ps, err := signer.GeneratePaymentSigner(keyFile, keyPass)
 	if err != nil {
-		msg := fmt.Sprintf("failed to generate payment signer due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, PaymentSignerGenerationError)
 		FailOnError(c, err)
 		return
 	}
 	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
-		msg := fmt.Sprintf("failed to initialize connection to minio due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, MinioConnectionError)
 		FailOnError(c, err)
 		return
 	}
@@ -280,6 +268,7 @@ func (api *API) createFilePayment(c *gin.Context) {
 	fmt.Println("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
+		api.LogError(err, FileOpenError)
 		FailOnError(c, err)
 		return
 	}
@@ -297,10 +286,8 @@ func (api *API) createFilePayment(c *gin.Context) {
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
 	fmt.Println("storing file in minio")
-	_, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{})
-	if err != nil {
-		msg := fmt.Sprintf("failed to store file in minio due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{}); err != nil {
+		api.LogError(err, MinioPutError)
 		FailOnError(c, err)
 		return
 	}
@@ -310,14 +297,14 @@ func (api *API) createFilePayment(c *gin.Context) {
 	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, EthAddressSearchError)
 		FailOnError(c, err)
 		return
 	}
 	var num *big.Int
 	num, err = pm.RetrieveLatestPaymentNumberForUser(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		api.Logger.Error(err)
+		api.LogError(err, PaymentSearchError)
 		FailOnError(c, err)
 		return
 	}
@@ -333,15 +320,12 @@ func (api *API) createFilePayment(c *gin.Context) {
 	addressTyped := common.HexToAddress(ethAddress)
 	sm, err := ps.GenerateSignedPaymentMessagePrefixed(addressTyped, uint8(methodUint), num, costBig)
 	if err != nil {
-		msg := fmt.Sprintf("failed to generate signed message for file upload for user %s due to the following error: %s", username, err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, PaymentMessageSignError)
 		FailOnError(c, err)
 		return
 	}
-	_, err = pm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, objectName, username, "file", networkName, holdTimeInMonthsInt)
-	if err != nil {
-		msg := fmt.Sprintf("failed to store payment information in database for user %s due to the following error: %s", username, err.Error())
-		api.Logger.Error(msg)
+	if _, err = pm.NewPayment(uint8(methodUint), sm.PaymentNumber, sm.ChargeAmount, ethAddress, objectName, username, "file", networkName, holdTimeInMonthsInt); err != nil {
+		api.LogError(err, PaymentCreationError)
 		FailOnError(c, err)
 		return
 	}
@@ -381,11 +365,13 @@ func (api *API) submitPinPaymentConfirmation(c *gin.Context) {
 	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
+		api.LogError(err, EthAddressSearchError)
 		FailOnError(c, err)
 		return
 	}
 	pp, err := ppm.FindPaymentByNumberAndAddress(paymentNumber, ethAddress)
 	if err != nil {
+		api.LogError(err, PaymentSearchError)
 		FailOnError(c, err)
 		return
 	}
@@ -399,16 +385,13 @@ func (api *API) submitPinPaymentConfirmation(c *gin.Context) {
 	}
 	qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqURL, true, false)
 	if err != nil {
-		msg := fmt.Sprintf("failed to initialize connection to queue due to the following error: %s", err.Error())
-		api.Logger.Error(msg)
+		api.LogError(err, QueueInitializationError)
 		FailOnError(c, err)
 		return
 	}
 	fmt.Println("publishing message")
-	err = qm.PublishMessage(ppc)
-	if err != nil {
-		msg := fmt.Sprintf("failed to publish msg to queue %s due to the following error: %s", queue.PinPaymentConfirmationQueue, err.Error())
-		api.Logger.Error(msg)
+	if err = qm.PublishMessage(ppc); err != nil {
+		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
 	}
@@ -452,6 +435,7 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 	}
 	keyFileHandler, err := keyFile.Open()
 	if err != nil {
+		api.LogError(err, FileOpenError)
 		FailOnError(c, err)
 		return
 	}
@@ -482,11 +466,13 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
+		api.LogError(err, IPFSConnectionError)
 		FailOnError(c, err)
 		return
 	}
 	totalCost, err := utils.CalculatePinCost(contentHash, holdTimeInt, manager.Shell)
 	if err != nil {
+		api.LogError(err, PinCostCalculationError)
 		FailOnError(c, err)
 		return
 	}
@@ -498,12 +484,14 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 	um := models.NewUserManager(api.DBM.DB)
 	ethAddress, err := um.FindEthAddressByUserName(username)
 	if err != nil {
+		api.LogError(err, EthAddressSearchError)
 		FailOnError(c, err)
 		return
 	}
 	var number *big.Int
 	num, err := ppm.RetrieveLatestPaymentNumberForUser(username)
 	if err != nil {
+		api.LogError(err, PaymentSearchError)
 		FailOnError(c, err)
 		return
 	}
@@ -517,26 +505,31 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 		api.TConfig.Ethereum.Account.KeyFile,
 		api.TConfig.Ethereum.Account.KeyPass)
 	if err != nil {
+		api.LogError(err, PaymentSignerGenerationError)
 		FailOnError(c, err)
 		return
 	}
 	sm, err := ps.GenerateSignedPaymentMessagePrefixed(addressTyped, uint8(methodUint), number, costBig)
 	if err != nil {
+		api.LogError(err, PaymentMessageSignError)
 		FailOnError(c, err)
 		return
 	}
 	jsonKeyBytes, err := ioutil.ReadAll(keyFileHandler)
 	if err != nil {
+		// so in frequently used not logging
 		FailOnError(c, err)
 		return
 	}
 	pk, err := keystore.DecryptKey(jsonKeyBytes, ethPass)
 	if err != nil {
+		// so in frequently used not logging
 		FailOnError(c, err)
 		return
 	}
 	marshaledKey, err := pk.MarshalJSON()
 	if err != nil {
+		// so in frequently used not logging
 		FailOnError(c, err)
 		return
 	}
@@ -556,19 +549,20 @@ func (api *API) submitPaymentToContract(c *gin.Context) {
 		Sig:          sm.Sig,
 	}
 
-	_, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash, username, "pin", "public", holdTimeInt)
-	if err != nil {
+	if _, err = ppm.NewPayment(uint8(methodUint), number, costBig, ethAddress, contentHash, username, "pin", "public", holdTimeInt); err != nil {
+		api.LogError(err, PaymentCreationError)
 		FailOnError(c, err)
 		return
 	}
 	qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqURL, true, false)
 	if err != nil {
+		api.LogError(err, QueueInitializationError)
 		FailOnError(c, err)
 		return
 	}
 
-	err = qm.PublishMessage(pps)
-	if err != nil {
+	if err = qm.PublishMessage(pps); err != nil {
+		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
 	}

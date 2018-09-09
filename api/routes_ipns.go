@@ -51,14 +51,15 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, KeySearchError)
 		FailOnError(c, err)
 		return
 	}
 
 	if !ownsKey {
-		api.Logger.Warnf("user %s attempted to generate IPFS entry with unowned key", ethAddress)
-		FailOnError(c, errors.New("attempting to generate IPNS entry with unowned key"))
+		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", ethAddress)
+		api.LogError(err, KeyUseError)
+		FailOnError(c, err)
 		return
 	}
 	resolve, err := strconv.ParseBool(resolveString)
@@ -91,14 +92,14 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, QueueInitializationError)
 		FailOnError(c, err)
 		return
 	}
-	//TODO move to fanout exchange
-	err = qm.PublishMessage(ie)
-	if err != nil {
-		api.Logger.Error(err)
+	// in order to avoid generating too much IPFS dht traffic, we publish round-robin style
+	// as we announce the records to the swarm, we will eventually achieve consistency across nodes automatically
+	if err = qm.PublishMessage(ie); err != nil {
+		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
 	}
@@ -151,20 +152,21 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 	case "us-west-1":
 		region = aws.USWest
 	default:
+		// user error, do not log
 		FailOnError(c, errors.New("invalid region_name"))
 		return
 	}
 
 	awsManager, err := dlink.GenerateAwsLinkManager("get", aKey, aSecret, awsZone, region)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, DNSLinkManagerError)
 		FailOnError(c, err)
 		return
 	}
 
 	resp, err := awsManager.AddDNSLinkEntry(recordName, recordValue)
 	if err != nil {
-		api.Logger.Error(err)
+		api.LogError(err, DNSLinkEntryError)
 		FailOnError(c, err)
 		return
 	}
