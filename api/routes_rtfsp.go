@@ -170,6 +170,10 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	fmt.Println("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
@@ -273,7 +277,10 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-
+	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	file, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, FileOpenError)

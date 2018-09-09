@@ -27,8 +27,9 @@ type TemporalConfig struct {
 			AuthKey       string `json:"auth_key"`
 			EncryptionKey string `json:"encryption_key"`
 		} `json:"sessions"`
-		RollbarToken string `json:"rollbar_token"`
-		JwtKey       string `json:"jwt_key"`
+		RollbarToken         string `json:"rollbar_token"`
+		JwtKey               string `json:"jwt_key"`
+		SizeLimitInGigaBytes string `json:"size_limit_in_giga_bytes"`
 	} `json:"api"`
 	IPFS struct {
 		APIConnection struct {
