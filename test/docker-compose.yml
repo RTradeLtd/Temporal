@@ -1,6 +1,32 @@
 version: '3'
 
 services:
+  ipfs.1:
+    build:
+      context: .
+      dockerfile: ipfs.Dockerfile
+    ports:
+      # IPFS
+      - "8081:8080" # gateway
+      - "5001:5001" # api
+      - "4001:4001" # swarm
+      # IPFS-cluster
+      - "9091:9094" # api
+    privileged: true
+
+  ipfs.2:
+    build:
+      context: .
+      dockerfile: ipfs.Dockerfile
+    ports:
+      # IPFS
+      - "8082:8080" # gateway
+      - "5002:5001" # api
+      - "4002:4001" # swarm
+      # IPFS-cluster
+      - "9092:9094" # api
+    privileged: true
+
   postgres:
     image: postgres
     ports:
