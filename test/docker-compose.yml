@@ -18,3 +18,8 @@ services:
     environment:
       MINIO_ACCESS_KEY: "C03T49S17RP0APEZDK6M"
       MINIO_SECRET_KEY: "q4I9t2MN/6bAgLkbF6uyS7jtQrXuNARcyrm2vvNA"
+
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - "5672:5672"
