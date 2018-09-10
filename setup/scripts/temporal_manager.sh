@@ -19,10 +19,10 @@ case "$1" in
         temporal queue dfa
         ;;
     ipfs-pin-queue)
-        temporal queue ipfs-pin
+        temporal queue ipfs pin
         ;;
     ipfs-file-queue)
-        temporal queue ipfs-file
+        temporal queue ipfs file
         ;;
     pin-payment-confirmation-queue)
         temporal queue pin-payment-confirmation
@@ -37,10 +37,10 @@ case "$1" in
         temporal queue ipns-entry
         ;;
     ipfs-key-creation-queue)
-        temporal queue ipfs-key-creation
+        temporal queue ipfs key-creation
         ;;
     ipfs-cluster-queue)
-        temporal queue ipfs-cluster
+        temporal queue ipfs cluster
         ;;
     migrate)
         temporal migrate
