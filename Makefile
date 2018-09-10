@@ -43,7 +43,8 @@ lint:
 # Set up test environment
 .PHONY: testenv
 testenv:
-	docker-compose -f test/docker-compose.yml up -d
+	@echo "===================   preparing test env    ==================="
+	docker-compose -f test/docker-compose.yml up -d --remove-orphans
 
 # Execute short tests
 .PHONY: test
