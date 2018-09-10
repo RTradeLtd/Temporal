@@ -155,6 +155,10 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	fmt.Println("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
@@ -213,7 +217,10 @@ func (api *API) addFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-
+	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	username := GetAuthenticatedUserFromContext(c)
 
 	holdTimeinMonths, present := c.GetPostForm("hold_time")

@@ -96,6 +96,10 @@ func (api *API) calculateFileCost(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	if err := api.FileSizeCheck(file.Size); err != nil {
+		FailOnError(c, err)
+		return
+	}
 	holdTime, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailNoExistPostForm(c, "hold_time")
@@ -243,6 +247,10 @@ func (api *API) createFilePayment(c *gin.Context) {
 	}
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
+		FailOnError(c, err)
+		return
+	}
+	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
 		FailOnError(c, err)
 		return
 	}

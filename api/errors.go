@@ -73,4 +73,6 @@ const (
 	PasswordChangeError = "failed to change password"
 	// NoKeyError is an error message given to a user when they search for keys, but have none
 	NoKeyError = "no keys"
+	// FileTooBigError is an error message given to a user when attempting to upload a file larger than our limit
+	FileTooBigError = "attempting to upload too big of a file"
 )

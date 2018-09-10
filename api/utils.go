@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/utils"
 	jwt "github.com/appleboy/gin-jwt"
+	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
@@ -95,4 +97,21 @@ func (api *API) LogError(err error, message string) {
 		"service": api.Service,
 		"error":   err.Error(),
 	}).Error(message)
+}
+
+// FileSizeCheck is used to check and validate the size of the uploaded file
+func (api *API) FileSizeCheck(size int64) error {
+	sizeInt, err := strconv.ParseInt(
+		api.TConfig.API.SizeLimitInGigaBytes,
+		10,
+		64,
+	)
+	if err != nil {
+		return err
+	}
+	gbInt := int64(datasize.GB.Bytes()) * sizeInt
+	if size > gbInt {
+		return errors.New(FileTooBigError)
+	}
+	return nil
 }

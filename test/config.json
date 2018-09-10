@@ -19,7 +19,8 @@
 			"encryption_key": "this is a test 1"
 		},
 		"rollbar_token": "....",
-		"jwt_key": "....."
+		"jwt_key": ".....",
+		"size_limit_in_giga_bytes": "2"
 	},
 	"ipfs": {
 		"api_connection": {
