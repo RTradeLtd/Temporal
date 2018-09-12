@@ -44,7 +44,12 @@ lint:
 .PHONY: testenv
 testenv:
 	@echo "===================   preparing test env    ==================="
-	docker-compose -f test/docker-compose.yml up -d --remove-orphans
+	@echo Run 'make clean' to rebuild the images used in the test enviornment
+	@ip link set en0 up
+	@ip addr add 192.168.1.101 dev en0
+	@ip addr add 192.168.1.102 dev en0
+	@docker-compose -f test/docker-compose.yml up -d
+	@echo "===================          done           ==================="
 
 # Execute short tests
 .PHONY: test
@@ -63,8 +68,11 @@ test-all: check
 # Remove assets
 .PHONY: clean
 clean:
-	rm -f temporal
-	docker-compose -f test/docker-compose.yml rm -f -s -v
+	@echo "=================== cleaning up temp assets ==================="
+	@rm -f temporal
+	@docker-compose -f test/docker-compose.yml down --rmi all -v --remove-orphans
+	@docker-compose -f test/docker-compose.yml rm -f -v
+	@echo "===================          done           ==================="
 
 # Rebuild vendored dependencies
 .PHONY: vendor
