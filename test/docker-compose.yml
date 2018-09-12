@@ -9,7 +9,9 @@ services:
       - 192.168.1.101:5001:5001
       - 192.168.1.101:8080:8080
     volumes:
-      - ./ipfs/nodes/1:/data/ipfs
+      - ${PWD}/test/ipfs/nodes/1/config:/data/ipfs/config
+      - ${PWD}/test/ipfs/nodes/1/version:/data/ipfs/version
+      - ${PWD}/test/ipfs/nodes/1/datastore_spec:/data/ipfs/datastore_spec
 
   ipfs.cluster.1:
     container_name: "ipfs.cluster.1"
@@ -20,7 +22,7 @@ services:
     environment:
       - IPFS_API=/ip4/192.168.1.101/tcp/5001
     volumes:
-      - ./ipfs/clusters/1:/data/ipfs-cluster
+      - ${PWD}/test/ipfs/clusters/1/service.json:/data/ipfs-cluster/service.json
 
   ipfs.node.2:
     container_name: "ipfs.node.2"
@@ -30,7 +32,9 @@ services:
       - 192.168.1.102:5001:5001
       - 192.168.1.102:8080:8080
     volumes:
-      - ./ipfs/nodes/2:/data/ipfs
+      - ${PWD}/test/ipfs/nodes/2/config:/data/ipfs/config
+      - ${PWD}/test/ipfs/nodes/2/version:/data/ipfs/version
+      - ${PWD}/test/ipfs/nodes/2/datastore_spec:/data/ipfs/datastore_spec
 
   ipfs.cluster.2:
     container_name: "ipfs.cluster.2"
@@ -41,7 +45,7 @@ services:
     environment:
       - IPFS_API=/ip4/192.168.1.102/tcp/5001
     volumes:
-      - ./ipfs/clusters/2:/data/ipfs-cluster
+      - ${PWD}/test/ipfs/clusters/2/service.json:/data/ipfs-cluster/service.json
 
   # postgres:
   #   image: postgres

@@ -8,7 +8,9 @@
   },
   "Addresses": {
     "API": "/ip4/0.0.0.0/tcp/5001",
-    "Announce": [],
+    "Announce": [
+      "/ip4/192.168.1.102/tcp/4001"
+    ],
     "Gateway": "/ip4/0.0.0.0/tcp/8080",
     "NoAnnounce": [],
     "Swarm": [
