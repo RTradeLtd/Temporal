@@ -1,62 +1,67 @@
 version: '3'
 
 services:
-    ipfs.1:
-    build:
-      context: .
-      dockerfile: ipfs.Dockerfile
+  ipfs.node.1:
+    container_name: "ipfs.node.1"
+    image: ipfs/go-ipfs:v0.4.17
     ports:
-      # IPFS
-      - "192.168.1.101:8080:8080" # gateway
-      - "192.168.1.101:5001:5001" # api
-      - "192.168.1.101:4001:4001" # swarm
-      # IPFS-cluster
-      - "192.168.1.101:9094:9094" # api
-      - "192.168.1.101:9095:9095" # discovery
-      - "192.168.1.101:9096:9096"
-    privileged: true
+      - 192.168.1.101:4001:4001
+      - 192.168.1.101:5001:5001
+      - 192.168.1.101:8080:8080
     volumes:
-      - ${PWD}/test/ipfs.1.service.json:/ipfs-cluster.service.json
+      - ./ipfs/nodes/1:/data/ipfs
 
-  ipfs.2:
-    depends_on:
-      - ipfs.1
-    build:
-      context: .
-      dockerfile: ipfs.Dockerfile
+  ipfs.cluster.1:
+    container_name: "ipfs.cluster.1"
+    image: ipfs/ipfs-cluster:v0.5.0
+    ports:
+      - 192.168.1.101:9095:9095
+      - 192.168.1.101:9096:9096
+    environment:
+      - IPFS_API=/ip4/192.168.1.101/tcp/5001
+    volumes:
+      - ./ipfs/clusters/1:/data/ipfs-cluster
+
+  ipfs.node.2:
+    container_name: "ipfs.node.2"
+    image: ipfs/go-ipfs:v0.4.17
+    ports:
+      - 192.168.1.102:4001:4001
+      - 192.168.1.102:5001:5001
+      - 192.168.1.102:8080:8080
+    volumes:
+      - ./ipfs/nodes/2:/data/ipfs
+
+  ipfs.cluster.2:
+    container_name: "ipfs.cluster.2"
+    depends_on: 
+      - ipfs.cluster.1
+    image: ipfs/ipfs-cluster:v0.5.0
     command: daemon --bootstrap /ip4/192.168.1.101/tcp/9096/ipfs/QmRiwg9GM1wNx3ZeiPdZBjAsy99qvhYpzu5yt1fa75mSx5
-    ports:
-      # IPFS
-      - "192.168.1.102:8080:8080" # gateway
-      - "192.168.1.102:5001:5001" # api
-      - "192.168.1.102:4001:4001" # swarm
-      # IPFS-cluster
-      - "192.168.1.102:9094:9094" # api
-      - "192.168.1.102:9095:9095" # discovery
-      - "192.168.1.102:9096:9096"
-    privileged: true
+    environment:
+      - IPFS_API=/ip4/192.168.1.102/tcp/5001
     volumes:
-      - ${PWD}/test/ipfs.2.service.json:/ipfs-cluster.service.json
+      - ./ipfs/clusters/2:/data/ipfs-cluster
 
-  postgres:
-    image: postgres
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_DB: "temporal"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "password123"
+  # postgres:
+  #   image: postgres
+  #   ports:
+  #     - "5433:5432"
+  #   environment:
+  #     POSTGRES_DB: "temporal"
+  #     POSTGRES_USER: "postgres"
+  #     POSTGRES_PASSWORD: "password123"
 
-  minio:
-    image: minio/minio
-    ports:
-      - "9000:9000"
-    command: ["server", "/data"]
-    environment:
-      MINIO_ACCESS_KEY: "C03T49S17RP0APEZDK6M"
-      MINIO_SECRET_KEY: "q4I9t2MN/6bAgLkbF6uyS7jtQrXuNARcyrm2vvNA"
+  # minio:
+  #   image: minio/minio
+  #   ports:
+  #     - "9000:9000"
+  #   command: ["server", "/data"]
+  #   environment:
+  #     MINIO_ACCESS_KEY: "C03T49S17RP0APEZDK6M"
+  #     MINIO_SECRET_KEY: "q4I9t2MN/6bAgLkbF6uyS7jtQrXuNARcyrm2vvNA"
 
-  rabbitmq:
-    image: rabbitmq
-    ports:
-      - "5672:5672"
+  # rabbitmq:
+  #   image: rabbitmq
+  #   ports:
+  #     - "5672:5672"
