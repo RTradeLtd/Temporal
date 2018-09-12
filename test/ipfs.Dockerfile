@@ -20,5 +20,7 @@ EXPOSE 4001
 
 # ipfs-cluster
 EXPOSE 9094
+EXPOSE 9095
+EXPOSE 9096
 
 ENTRYPOINT [ "bash", "/ipfs.entry.sh" ] 

@@ -1,5 +1,11 @@
 #!/bin/sh
 
+IPFSVERSION="v0.4.17"
+CLUSTERVERSION="v0.5.0"
+
+IPFSIMAGE=ipfs/go-ipfs:$IPFSVERSION
+CLUSTERIMAGE=ipfs/ipfs-cluster:$CLUSTERVERSION
+
 # init docker
 sudo service docker start
 
@@ -10,17 +16,29 @@ while ! sudo docker stats --no-stream ; do
 done
 
 # pull images
-sudo docker pull ipfs/go-ipfs
-sudo docker pull ipfs/ipfs-cluster
+sudo docker pull $IPFSIMAGE
+sudo docker pull $CLUSTERIMAGE
+
+# create container network
+sudo docker network create container_internal
 
 # start IPFS
-sudo docker run --rm -d \
+sudo docker create \
+    --network container_internal \
+    --name node \
     -p 8080:8080 \
-    -p 5001:4001 \
+    -p 5001:5001 \
     -p 4001:4001 \
-    ipfs/go-ipfs
+    $IPFSIMAGE
+sudo docker start node
 
 # start IPFS-cluster
-sudo docker run --rm \
+sudo docker create \
+    --network container_internal \
+    --name cluster \
     -p 9094:9094 \
-    ipfs/ipfs-cluster
+    -p 9095:9095 \
+    -v /ipfs-cluster.service.json:/data/ipfs-cluster/service.json \
+    $CLUSTERIMAGE "$@"
+
+sudo docker start --attach cluster

@@ -1,31 +1,42 @@
 version: '3'
 
 services:
-  ipfs.1:
+    ipfs.1:
     build:
       context: .
       dockerfile: ipfs.Dockerfile
     ports:
       # IPFS
-      - "8081:8080" # gateway
-      - "5001:5001" # api
-      - "4001:4001" # swarm
+      - "192.168.1.101:8080:8080" # gateway
+      - "192.168.1.101:5001:5001" # api
+      - "192.168.1.101:4001:4001" # swarm
       # IPFS-cluster
-      - "9091:9094" # api
+      - "192.168.1.101:9094:9094" # api
+      - "192.168.1.101:9095:9095" # discovery
+      - "192.168.1.101:9096:9096"
     privileged: true
+    volumes:
+      - ${PWD}/test/ipfs.1.service.json:/ipfs-cluster.service.json
 
   ipfs.2:
+    depends_on:
+      - ipfs.1
     build:
       context: .
       dockerfile: ipfs.Dockerfile
+    command: daemon --bootstrap /ip4/192.168.1.101/tcp/9096/ipfs/QmRiwg9GM1wNx3ZeiPdZBjAsy99qvhYpzu5yt1fa75mSx5
     ports:
       # IPFS
-      - "8082:8080" # gateway
-      - "5002:5001" # api
-      - "4002:4001" # swarm
+      - "192.168.1.102:8080:8080" # gateway
+      - "192.168.1.102:5001:5001" # api
+      - "192.168.1.102:4001:4001" # swarm
       # IPFS-cluster
-      - "9092:9094" # api
+      - "192.168.1.102:9094:9094" # api
+      - "192.168.1.102:9095:9095" # discovery
+      - "192.168.1.102:9096:9096"
     privileged: true
+    volumes:
+      - ${PWD}/test/ipfs.2.service.json:/ipfs-cluster.service.json
 
   postgres:
     image: postgres
