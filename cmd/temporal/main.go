@@ -26,7 +26,8 @@ var (
 
 var commands = map[string]app.Cmd{
 	"api": app.Cmd{
-		Blurb: "start the api, used to interact with Temporal",
+		Blurb:       "start api",
+		Description: "Start the API used to interact with Temporal",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			api, err := api.Initialize(&cfg, true)
 			if err != nil {
@@ -50,11 +51,28 @@ var commands = map[string]app.Cmd{
 		ChildRequired: true,
 		Children: map[string]app.Cmd{
 			"ipfs": app.Cmd{
-				Blurb:         "interact with IPFS",
+				Blurb:         "IPFS queue sub commands",
+				Description:   "Used to launch the various queues that interact with IPFS",
 				ChildRequired: true,
 				Children: map[string]app.Cmd{
+					"ipns-entry": app.Cmd{
+						Blurb:       "IPNS entry creation queue",
+						Description: "Listens to requests to create IPNS records",
+						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							mqConnectionURL := cfg.RabbitMQ.URL
+							qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL, false, true)
+							if err != nil {
+								log.Fatal(err)
+							}
+							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							if err != nil {
+								log.Fatal(err)
+							}
+						},
+					},
 					"pin": app.Cmd{
-						Blurb: "",
+						Blurb:       "Pin addition queue",
+						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, false, true)
@@ -68,7 +86,8 @@ var commands = map[string]app.Cmd{
 						},
 					},
 					"pin-removal": app.Cmd{
-						Blurb: "",
+						Blurb:       "Pin removal queue",
+						Description: "Listens to pin removal requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, false, true)
@@ -82,7 +101,8 @@ var commands = map[string]app.Cmd{
 						},
 					},
 					"file": app.Cmd{
-						Blurb: "",
+						Blurb:       "File upload queue",
+						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL, false, true)
@@ -96,7 +116,8 @@ var commands = map[string]app.Cmd{
 						},
 					},
 					"key-creation": app.Cmd{
-						Blurb: "",
+						Blurb:       "Key creation queue",
+						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, false, true)
@@ -110,7 +131,8 @@ var commands = map[string]app.Cmd{
 						},
 					},
 					"cluster": app.Cmd{
-						Blurb: "listen to cluster pin pubsub topic",
+						Blurb:       "Cluster pin queue",
+						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqConnectionURL, false, true)
@@ -126,7 +148,8 @@ var commands = map[string]app.Cmd{
 				},
 			},
 			"dfa": app.Cmd{
-				Blurb: "listen to file add requests, and add to the database",
+				Blurb:       "Database file add queue",
+				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					mqConnectionURL := cfg.RabbitMQ.URL
 					qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
@@ -139,36 +162,46 @@ var commands = map[string]app.Cmd{
 					}
 				},
 			},
-			"pin-payment-confirmation": app.Cmd{
-				Blurb: "",
-				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqConnectionURL, false, true)
-					if err != nil {
-						log.Fatal(err)
-					}
-					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-					if err != nil {
-						log.Fatal(err)
-					}
-				},
-			},
-			"pin-payment-submission": app.Cmd{
-				Blurb: "",
-				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqConnectionURL, false, true)
-					if err != nil {
-						log.Fatal(err)
-					}
-					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-					if err != nil {
-						log.Fatal(err)
-					}
+			"payment": app.Cmd{
+				Blurb:         "Payment queue sub commands",
+				Description:   "Used to launch the various queues that interact with our payment backend",
+				ChildRequired: true,
+				Children: map[string]app.Cmd{
+					"pin-confirmation": app.Cmd{
+						Blurb:       "Pin payment confirmation queue",
+						Description: "Listens to pin payment confirmations and stores the pins in our system",
+						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							mqConnectionURL := cfg.RabbitMQ.URL
+							qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqConnectionURL, false, true)
+							if err != nil {
+								log.Fatal(err)
+							}
+							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							if err != nil {
+								log.Fatal(err)
+							}
+						},
+					},
+					"pin-submission": app.Cmd{
+						Blurb:       "Pin payment submission queue",
+						Description: "Listen to pin payment submissions and stores the information in our database",
+						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							mqConnectionURL := cfg.RabbitMQ.URL
+							qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqConnectionURL, false, true)
+							if err != nil {
+								log.Fatal(err)
+							}
+							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							if err != nil {
+								log.Fatal(err)
+							}
+						},
+					},
 				},
 			},
 			"email-send": app.Cmd{
-				Blurb: "",
+				Blurb:       "Email send queue",
+				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					mqConnectionURL := cfg.RabbitMQ.URL
 					qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL, false, true)
@@ -181,24 +214,11 @@ var commands = map[string]app.Cmd{
 					}
 				},
 			},
-			"ipns-entry": app.Cmd{
-				Blurb: "",
-				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL, false, true)
-					if err != nil {
-						log.Fatal(err)
-					}
-					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-					if err != nil {
-						log.Fatal(err)
-					}
-				},
-			},
 		},
 	},
 	"calculate-config-checksum": app.Cmd{
-		Blurb: "",
+		Blurb:       "Calculate config file checksum",
+		Description: "Used to calculate the checksum of the config file",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			fileBytes, err := ioutil.ReadFile(args["configDag"])
 			if err != nil {
@@ -213,7 +233,8 @@ var commands = map[string]app.Cmd{
 		},
 	},
 	"migrate": app.Cmd{
-		Blurb: "run database migrations",
+		Blurb:       "run database migrations",
+		Description: "Runs our initial database migrations, creating missing tables, etc..",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			dbm, err := database.Initialize(&cfg, false)
 			if err != nil {
