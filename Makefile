@@ -1,6 +1,12 @@
 GOFILES=`go list ./... | grep -v /vendor/`
 TEMPORALVERSION=`git describe --tags`
 IPFSVERSION=v0.4.17
+UNAME=`uname`
+INTERFACE=eth0
+
+ifeq ($(UNAME), Darwin)
+INTERFACE=en0
+endif
 
 all: check cli
 
@@ -45,9 +51,9 @@ lint:
 testenv:
 	@echo "===================   preparing test env    ==================="
 	@echo Setting up network...
-	@ip link set en0 up
-	@ip addr add 192.168.1.101 dev en0
-	@ip addr add 192.168.2.101 dev en0
+	@sudo ip link set $(INTERFACE) up
+	@sudo ip addr add 192.168.1.101 dev $(INTERFACE)
+	@sudo ip addr add 192.168.2.101 dev $(INTERFACE)
 	@echo Spinning up test env components...
 	@echo Run 'make clean' to rebuild the images used in the test enviornment
 	@docker-compose -f test/docker-compose.yml up -d

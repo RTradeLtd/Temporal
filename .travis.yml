@@ -3,6 +3,7 @@ go:
   - "1.11"
 services:
   - docker
+sudo: required
 
 install:
   - docker pull koalaman/shellcheck
