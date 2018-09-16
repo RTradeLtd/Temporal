@@ -25,16 +25,16 @@ case "$1" in
         temporal queue ipfs file
         ;;
     pin-payment-confirmation-queue)
-        temporal queue pin-payment-confirmation
+        temporal queue payment pin-confirmation
         ;;
     pin-payment-submission-queue)
-        temporal queue pin-payment-submission
+        temporal queue payment pin-submission
         ;;
     email-send-queue)
         temporal queue email-send
         ;;
     ipns-entry-queue)
-        temporal queue ipns-entry
+        temporal queue ipfs ipns-entry
         ;;
     ipfs-key-creation-queue)
         temporal queue ipfs key-creation
