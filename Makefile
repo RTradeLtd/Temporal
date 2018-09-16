@@ -1,6 +1,12 @@
 GOFILES=`go list ./... | grep -v /vendor/`
 TEMPORALVERSION=`git describe --tags`
 IPFSVERSION=v0.4.17
+UNAME=`uname`
+INTERFACE=eth0
+
+ifeq ($(UNAME), Darwin)
+INTERFACE=en0
+endif
 
 all: check cli
 
@@ -43,7 +49,15 @@ lint:
 # Set up test environment
 .PHONY: testenv
 testenv:
-	docker-compose -f test/docker-compose.yml up -d
+	@echo "===================   preparing test env    ==================="
+	@echo Setting up network...
+	@sudo ip link set $(INTERFACE) up
+	@sudo ip addr add 192.168.1.101 dev $(INTERFACE)
+	@sudo ip addr add 192.168.2.101 dev $(INTERFACE)
+	@echo Spinning up test env components...
+	@echo Run 'make clean' to rebuild the images used in the test enviornment
+	@docker-compose -f test/docker-compose.yml up -d
+	@echo "===================          done           ==================="
 
 # Execute short tests
 .PHONY: test
@@ -62,8 +76,11 @@ test-all: check
 # Remove assets
 .PHONY: clean
 clean:
-	rm -f temporal
-	docker-compose -f test/docker-compose.yml rm -f -s -v
+	@echo "=================== cleaning up temp assets ==================="
+	@rm -f temporal
+	@docker-compose -f test/docker-compose.yml down --rmi all -v --remove-orphans
+	@docker-compose -f test/docker-compose.yml rm -f -v
+	@echo "===================          done           ==================="
 
 # Rebuild vendored dependencies
 .PHONY: vendor
