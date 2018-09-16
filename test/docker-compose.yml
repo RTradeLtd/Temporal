@@ -41,6 +41,9 @@ services:
     depends_on: 
       - ipfs.cluster.1
     image: ipfs/ipfs-cluster:v0.5.0
+    ports:
+      - 192.168.1.102:9095:9095
+      - 192.168.1.102:9096:9096
     command: daemon --bootstrap /ip4/192.168.1.101/tcp/9096/ipfs/QmRiwg9GM1wNx3ZeiPdZBjAsy99qvhYpzu5yt1fa75mSx5
     environment:
       - IPFS_API=/ip4/192.168.1.102/tcp/5001
