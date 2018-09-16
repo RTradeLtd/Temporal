@@ -44,11 +44,12 @@ lint:
 .PHONY: testenv
 testenv:
 	@echo "===================   preparing test env    ==================="
-	@echo Run 'make clean' to rebuild the images used in the test enviornment
+	@echo Setting up network...
 	@ip link set en0 up
 	@ip addr add 192.168.1.101 dev en0
-	@ip link set en1 up
-	@ip addr add 192.168.2.101 dev en1
+	@ip addr add 192.168.2.101 dev en0
+	@echo Spinning up test env components...
+	@echo Run 'make clean' to rebuild the images used in the test enviornment
 	@docker-compose -f test/docker-compose.yml up -d
 	@echo "===================          done           ==================="
 
