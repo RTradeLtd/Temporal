@@ -45,7 +45,7 @@
   "ipfs_connector": {
     "ipfshttp": {
       "proxy_listen_multiaddress": "/ip4/0.0.0.0/tcp/9095",
-      "node_multiaddress": "/ip4/192.168.1.102/tcp/5001",
+      "node_multiaddress": "/ip4/192.168.2.101/tcp/5001",
       "connect_swarms_delay": "30s",
       "proxy_read_timeout": "0s",
       "proxy_read_header_timeout": "5s",

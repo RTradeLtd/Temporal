@@ -47,7 +47,8 @@ testenv:
 	@echo Run 'make clean' to rebuild the images used in the test enviornment
 	@ip link set en0 up
 	@ip addr add 192.168.1.101 dev en0
-	@ip addr add 192.168.1.102 dev en0
+	@ip link set en1 up
+	@ip addr add 192.168.2.101 dev en1
 	@docker-compose -f test/docker-compose.yml up -d
 	@echo "===================          done           ==================="
 
