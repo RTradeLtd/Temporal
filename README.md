@@ -17,6 +17,7 @@
     <img src="https://travis-ci.com/RTradeLtd/Temporal.svg?branch=V2"
       alt="Travis Build Status" />
   </a>
+<a href="https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=shield"/></a>
 
   <a href="https://goreportcard.com/report/github.com/RTradeLtd/Temporal">
     <img src="https://goreportcard.com/badge/github.com/RTradeLtd/Temporal"
@@ -225,3 +226,7 @@ Without open source, TEMPORAL wouldn't be possible, as such we would like to ext
 * https://github.com/gin-gonic/gin
 * https://github.com/minio/minio
 * https://github.com/streadway/amqp
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_large)
