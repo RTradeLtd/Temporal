@@ -18,19 +18,20 @@ type IpfsManager struct {
 	KeystoreManager *KeystoreManager
 	KeystoreEnabled bool
 	PubTopic        string
+
+	nodeAPIAddr string
 }
 
 // Initialize is used ot initialize our Ipfs manager struct
 func Initialize(pubTopic, connectionURL string) (*IpfsManager, error) {
-	manager := IpfsManager{}
-	manager.Shell = EstablishShellWithNode(connectionURL)
+	manager := IpfsManager{
+		Shell:       EstablishShellWithNode(connectionURL),
+		PubTopic:    pubTopic,
+		nodeAPIAddr: connectionURL,
+	}
 	manager.SetTimeout(time.Minute * 1)
 	_, err := manager.Shell.ID()
-	if err != nil {
-		return nil, err
-	}
-	manager.PubTopic = pubTopic
-	return &manager, nil
+	return &manager, err
 }
 
 // EstablishShellWithNode is used to establish our api shell for the ipfs node
@@ -172,18 +173,17 @@ func (im *IpfsManager) BuildCustomRequest(ctx context.Context, url, commad strin
 // DHTFindProvs is used to find providers of a given CID
 // Currently bugged and wil only fetch 1 provider
 func (im *IpfsManager) DHTFindProvs(cid, numProviders string) error {
-	opts := make(map[string]string)
-	opts["num-providers"] = numProviders
-	cmd := "dht/findprovs"
-	url := "http://127.0.0.1:5001"
-	resp, err := im.BuildCustomRequest(context.Background(), url, cmd, opts, cid)
+	var (
+		opts = map[string]string{
+			"num-providers": numProviders,
+		}
+		cmd = "dht/findprovs"
+		out = DHTFindProvsResponse{}
+	)
+	resp, err := im.BuildCustomRequest(context.Background(),
+		im.nodeAPIAddr, cmd, opts, cid)
 	if err != nil {
 		return err
 	}
-	out := DHTFindProvsResponse{}
-	err = resp.Decode(&out)
-	if err != nil {
-		return err
-	}
-	return nil
+	return resp.Decode(&out)
 }
