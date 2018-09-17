@@ -59,6 +59,13 @@ testenv:
 	@docker-compose -f test/docker-compose.yml up -d
 	@echo "===================          done           ==================="
 
+# Shut down testenv
+.PHONY: stop-testenv
+stop-testenv:
+	@echo "===================  shutting down test env ==================="
+	@docker-compose -f test/docker-compose.yml down
+	@echo "===================          done           ==================="
+
 # Execute short tests
 .PHONY: test
 test: check
@@ -75,10 +82,9 @@ test-all: check
 
 # Remove assets
 .PHONY: clean
-clean:
+clean: stop-testenv
 	@echo "=================== cleaning up temp assets ==================="
 	@rm -f temporal
-	@docker-compose -f test/docker-compose.yml down --rmi all -v --remove-orphans
 	@docker-compose -f test/docker-compose.yml rm -f -v
 	@echo "===================          done           ==================="
 
