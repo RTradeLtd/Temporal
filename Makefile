@@ -1,7 +1,7 @@
 GOFILES=`go list ./... | grep -v /vendor/`
 TEMPORALVERSION=`git describe --tags`
 IPFSVERSION=v0.4.17
-UNAME=`uname`
+UNAME=$(shell uname)
 INTERFACE=eth0
 
 ifeq ($(UNAME), Darwin)
