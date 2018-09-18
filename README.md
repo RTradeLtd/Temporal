@@ -4,7 +4,7 @@
   <a href="#about-temporal"><strong>About Temporal</strong></a> · 
   <a href="#usage-and-features"><strong>Usage and Features</strong></a> · 
   <a href="#development"><strong>Development</strong></a> · 
-  <a href="#thanks"><strong>Thanks</strong></a> .
+  <a href="#thanks"><strong>Thanks</strong></a> ·
   <a href="#license"><strong>License</strong></a> 
 </p>
 
