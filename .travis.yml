@@ -14,6 +14,8 @@ before_script:
   - go build ./...
   - go test -run xxxx ./...
   - make testenv
+  - make cli
+  - CONFIG_DAG=./test/config.json ./temporal migrate
 
 script:
   # - docker run -v $(pwd):/mnt koalaman/shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
