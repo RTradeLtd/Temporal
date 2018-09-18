@@ -4,7 +4,8 @@
   <a href="#about-temporal"><strong>About Temporal</strong></a> · 
   <a href="#usage-and-features"><strong>Usage and Features</strong></a> · 
   <a href="#development"><strong>Development</strong></a> · 
-  <a href="#thanks"><strong>Thanks</strong></a>
+  <a href="#thanks"><strong>Thanks</strong></a> ·
+  <a href="#license"><strong>License</strong></a> 
 </p>
 
 <p align="center">
@@ -229,4 +230,5 @@ Without open source, TEMPORAL wouldn't be possible, as such we would like to ext
 
 
 ## License
+As Temporal is a large and complex project, licensing is a complex subject. This is something we are actively looking into, however to minimize issues in the interm, we are defaulting to an MIT license. This will more than likely change in the future, however we want to make sure that the license we settle on for when we fully launch will be the right one.
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_large)
