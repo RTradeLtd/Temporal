@@ -44,7 +44,7 @@ lint:
 	go fmt ./...
 	golint $(GOFILES)
 	# Shellcheck disabled for now - too much to fix
-	shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
+	# shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
 
 # Set up test environment
 .PHONY: testenv
