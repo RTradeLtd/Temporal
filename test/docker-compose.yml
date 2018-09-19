@@ -4,6 +4,7 @@ services:
   ipfs.node.1:
     container_name: "ipfs.node.1"
     image: ipfs/go-ipfs:v0.4.17
+    command: daemon --migrate=true --enable-pubsub-experiment
     ports:
       - 192.168.1.101:4001:4001
       - 192.168.1.101:5001:5001
@@ -30,6 +31,7 @@ services:
   ipfs.node.2:
     container_name: "ipfs.node.2"
     image: ipfs/go-ipfs:v0.4.17
+    command: daemon --migrate=true --enable-pubsub-experiment
     ports:
       - 192.168.2.101:4001:4001
       - 192.168.2.101:5001:5001

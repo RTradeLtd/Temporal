@@ -8,14 +8,14 @@ import (
 	"github.com/RTradeLtd/Temporal/rtfs"
 )
 
-const testPIN = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
+const (
+	testPIN        = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
+	nodeOneAPIAddr = "192.168.1.101:5001"
+	nodeTwoAPIAddr = "192.168.2.101:5001"
+)
 
 func TestInitialize(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	im, err := rtfs.Initialize("", "")
+	im, err := rtfs.Initialize("", nodeOneAPIAddr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,11 +27,7 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestDHTFindProvs(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	im, err := rtfs.Initialize("", "")
+	im, err := rtfs.Initialize("", nodeOneAPIAddr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,15 +38,12 @@ func TestDHTFindProvs(t *testing.T) {
 }
 
 func TestBuildCustomRequest(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	im, err := rtfs.Initialize("", "")
+	im, err := rtfs.Initialize("", nodeOneAPIAddr)
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp, err := im.BuildCustomRequest(context.Background(), "127.0.0.1:5001", "dht/findprovs", nil, "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
+	resp, err := im.BuildCustomRequest(context.Background(),
+		nodeOneAPIAddr, "dht/findprovs", nil, "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,26 +51,28 @@ func TestBuildCustomRequest(t *testing.T) {
 }
 
 func TestPin(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
+	im, err := rtfs.Initialize("", nodeOneAPIAddr)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	im, err := rtfs.Initialize("", "")
+	// create pin
+	if err = im.Pin(testPIN); err != nil {
+		t.Fatal(err)
+	}
+
+	// check if pin was created
+	exists, err := im.ParseLocalPinsForHash(testPIN)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = im.Pin(testPIN)
-	if err != nil {
-		t.Fatal(err)
+	if !exists {
+		t.Fatal("pin not found")
 	}
 }
 
 func TestGetObjectFileSizeInBytes(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	im, err := rtfs.Initialize("", "")
+	im, err := rtfs.Initialize("", nodeOneAPIAddr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,11 +83,7 @@ func TestGetObjectFileSizeInBytes(t *testing.T) {
 }
 
 func TestObjectStat(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	im, err := rtfs.Initialize("", "")
+	im, err := rtfs.Initialize("", nodeOneAPIAddr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,30 +93,8 @@ func TestObjectStat(t *testing.T) {
 	}
 }
 
-func TestParseLocalPinsForHash(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	im, err := rtfs.Initialize("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	exists, err := im.ParseLocalPinsForHash(testPIN)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !exists {
-		t.Fatal(err)
-	}
-}
-
 func TestPubSub(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	im, err := rtfs.Initialize("", "")
+	im, err := rtfs.Initialize("", nodeOneAPIAddr)
 	if err != nil {
 		t.Fatal(err)
 	}
