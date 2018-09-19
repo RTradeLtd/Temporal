@@ -63,7 +63,7 @@ testenv: temporal
 	@echo Run 'make clean' to rebuild the images used in the test enviornment
 	@docker-compose -f test/docker-compose.yml up -d
 	@echo Running migrations...
-	@CONFIG_DAG=./test/config.json ./temporal migrate
+	@env CONFIG_DAG=./test/config.json ./temporal migrate
 	@echo "===================          done           ==================="
 
 # Shut down testenv
