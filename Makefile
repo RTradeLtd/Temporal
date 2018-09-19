@@ -12,7 +12,7 @@ all: check cli
 
 # Build temporal if binary is not already present
 temporal:
-	make cli
+	@make cli
 
 # List all commands
 .PHONY: ls
@@ -55,14 +55,14 @@ lint:
 .PHONY: testenv
 testenv: temporal
 	@echo "===================   preparing test env    ==================="
-	@echo Setting up network...
+	@echo "Setting up network..."
 	@sudo ip link set $(INTERFACE) up
 	@sudo ip addr add 192.168.1.101 dev $(INTERFACE)
 	@sudo ip addr add 192.168.2.101 dev $(INTERFACE)
-	@echo Spinning up test env components...
-	@echo Run 'make clean' to rebuild the images used in the test enviornment
+	@echo "Spinning up test env components..."
+	@echo "Run 'make clean' to update the images used in the test environment"
 	@docker-compose -f test/docker-compose.yml up -d
-	@echo Running migrations...
+	@echo "Running migrations..."
 	@env CONFIG_DAG=./test/config.json ./temporal migrate
 	@echo "===================          done           ==================="
 
