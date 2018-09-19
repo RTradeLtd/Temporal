@@ -29,7 +29,7 @@ func Initialize(cfg *config.TemporalConfig, runMigrations bool) (*DatabaseManage
 	}
 
 	db, err := OpenDBConnection(DBOptions{
-		User:     cfg.Database.Name,
+		User:     cfg.Database.Username,
 		Password: cfg.Database.Password,
 		Address:  cfg.Database.URL,
 	})
