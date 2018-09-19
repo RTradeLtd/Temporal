@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -12,7 +11,6 @@ import (
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/Temporal/utils"
 )
 
 var (
@@ -214,22 +212,6 @@ var commands = map[string]app.Cmd{
 					}
 				},
 			},
-		},
-	},
-	"calculate-config-checksum": app.Cmd{
-		Blurb:       "Calculate config file checksum",
-		Description: "Used to calculate the checksum of the config file",
-		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			fileBytes, err := ioutil.ReadFile(args["configDag"])
-			if err != nil {
-				log.Fatal(err)
-			}
-			hash, err := utils.CalculateConfigFileChecksum(fileBytes)
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Printf("calculated config file checksum is %s\n", hash)
-			// TODO: hardcode the checksum value so we can do a check here
 		},
 	},
 	"migrate": app.Cmd{

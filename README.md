@@ -183,8 +183,6 @@ This requires the GX dependency management tool to be installed.
     * all web frontends, applications, etc... use this api
 * `api/middleware`
     * This is middleware used by the API and handles common functionality such as database connection parameters, rabbitmq parameters, etc...
-* `bindings`
-    * This is the go-ethereum bindings for the smart contracts that temporal uses
 * `cli`
     * basic terminal-based cli application
 * `configs`
@@ -199,8 +197,6 @@ This requires the GX dependency management tool to be installed.
     * contains all non-readme documentation
 * `models`
     * models used by temporal
-* `payments`
-    * golang code for interacting with the payments smart contract
 * `queue`
     * all queue related code for rabbitmq and ipfs pubsub queue
 * `rtfs`
