@@ -44,7 +44,7 @@ lint:
 	go fmt ./...
 	golint $(GOFILES)
 	# Shellcheck disabled for now - too much to fix
-	# shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
+	shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
 
 # Set up test environment
 .PHONY: testenv
@@ -97,12 +97,6 @@ vendor:
 	git clone https://github.com/ipfs/go-ipfs.git vendor/github.com/ipfs/go-ipfs
 	( cd vendor/github.com/ipfs/go-ipfs ; git checkout $(IPFSVERSION) ; gx install --local --nofancy )
 	mv vendor/github.com/ipfs/go-ipfs/vendor/* vendor
-
-	# Vendor ethereum - this step is required for some of the cgo components, as
-	# dep doesn't seem to resolve them
-	go get -u github.com/ethereum/go-ethereum
-	cp -r $(GOPATH)/src/github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1 \
-  	./vendor/github.com/ethereum/go-ethereum/crypto/secp256k1/
 	@echo "===================          done           ==================="
 
 # Build release
