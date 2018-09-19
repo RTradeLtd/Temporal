@@ -53,6 +53,7 @@ lint:
 
 # Set up test environment
 .PHONY: testenv
+WAIT=3
 testenv: temporal
 	@echo "===================   preparing test env    ==================="
 	@echo "Setting up network..."
@@ -62,7 +63,7 @@ testenv: temporal
 	@echo "Spinning up test env components..."
 	@echo "Run 'make clean' to update the images used in the test environment"
 	@docker-compose -f test/docker-compose.yml up -d
-	@sleep 3
+	@sleep $(WAIT)
 	@echo "Running migrations..."
 	@env CONFIG_DAG=./test/config.json ./temporal migrate
 	@echo "===================          done           ==================="
