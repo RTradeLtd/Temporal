@@ -62,6 +62,7 @@ testenv: temporal
 	@echo "Spinning up test env components..."
 	@echo "Run 'make clean' to update the images used in the test environment"
 	@docker-compose -f test/docker-compose.yml up -d
+	@sleep 3
 	@echo "Running migrations..."
 	@env CONFIG_DAG=./test/config.json ./temporal migrate
 	@echo "===================          done           ==================="
@@ -91,6 +92,7 @@ test-all: check
 .PHONY: clean
 clean: stop-testenv
 	@echo "=================== cleaning up temp assets ==================="
+	@echo "Removing binary..."
 	@rm -f temporal
 	@docker-compose -f test/docker-compose.yml rm -f -v
 	@echo "===================          done           ==================="
