@@ -57,14 +57,8 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   version = "1.0.0-Beta"
 
 [[constraint]]
-  name = "github.com/ethereum/go-ethereum"
-  version = "1.8.11"
-
-[[constraint]]
   name = "github.com/gin-gonic/gin"
   branch = "master"
-
-
 
 [[constraint]]
   name = "github.com/jinzhu/gorm"
