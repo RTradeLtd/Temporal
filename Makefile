@@ -1,7 +1,7 @@
 GOFILES=`go list ./... | grep -v /vendor/`
 TEMPORALVERSION=`git describe --tags`
 IPFSVERSION=v0.4.17
-UNAME=`uname`
+UNAME=$(shell uname)
 INTERFACE=eth0
 
 ifeq ($(UNAME), Darwin)
@@ -59,6 +59,13 @@ testenv:
 	@docker-compose -f test/docker-compose.yml up -d
 	@echo "===================          done           ==================="
 
+# Shut down testenv
+.PHONY: stop-testenv
+stop-testenv:
+	@echo "===================  shutting down test env ==================="
+	@docker-compose -f test/docker-compose.yml down
+	@echo "===================          done           ==================="
+
 # Execute short tests
 .PHONY: test
 test: check
@@ -75,10 +82,9 @@ test-all: check
 
 # Remove assets
 .PHONY: clean
-clean:
+clean: stop-testenv
 	@echo "=================== cleaning up temp assets ==================="
 	@rm -f temporal
-	@docker-compose -f test/docker-compose.yml down --rmi all -v --remove-orphans
 	@docker-compose -f test/docker-compose.yml rm -f -v
 	@echo "===================          done           ==================="
 
@@ -97,12 +103,6 @@ vendor:
 	git clone https://github.com/ipfs/go-ipfs.git vendor/github.com/ipfs/go-ipfs
 	( cd vendor/github.com/ipfs/go-ipfs ; git checkout $(IPFSVERSION) ; gx install --local --nofancy )
 	mv vendor/github.com/ipfs/go-ipfs/vendor/* vendor
-
-	# Vendor ethereum - this step is required for some of the cgo components, as
-	# dep doesn't seem to resolve them
-	go get -u github.com/ethereum/go-ethereum
-	cp -r $(GOPATH)/src/github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1 \
-  	./vendor/github.com/ethereum/go-ethereum/crypto/secp256k1/
 	@echo "===================          done           ==================="
 
 # Build release
