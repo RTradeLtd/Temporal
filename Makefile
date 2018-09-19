@@ -10,6 +10,10 @@ endif
 
 all: check cli
 
+# Build temporal if binary is not already present
+temporal:
+	make cli
+
 # List all commands
 .PHONY: ls
 ls:
@@ -32,6 +36,7 @@ check:
 	@echo "===================          done           ==================="
 
 # Build Temporal
+.PHONY: cli
 cli:
 	@echo "===================  building Temporal CLI  ==================="
 	rm -f temporal
@@ -48,7 +53,7 @@ lint:
 
 # Set up test environment
 .PHONY: testenv
-testenv: cli
+testenv: temporal
 	@echo "===================   preparing test env    ==================="
 	@echo Setting up network...
 	@sudo ip link set $(INTERFACE) up
