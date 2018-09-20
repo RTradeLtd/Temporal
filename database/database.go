@@ -50,6 +50,7 @@ func Initialize(cfg *config.TemporalConfig, opts DatabaseOptions) (*DatabaseMana
 	return &dbm, nil
 }
 
+// RunMigrations runs all migrations
 func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(UploadObj)
 	dbm.DB.AutoMigrate(UserObj)
@@ -60,6 +61,9 @@ func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(HostedIpfsNetObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
+
+// Close shuts down database connection
+func (dbm *DatabaseManager) Close() error { return dbm.DB.Close() }
 
 // DBOptions declares options for opening a database connection
 type DBOptions struct {
@@ -85,22 +89,4 @@ func OpenDBConnection(opts DBOptions) (*gorm.DB, error) {
 		return nil, err
 	}
 	return db, nil
-}
-
-func OpenTestDBConnection(dbPass string) (*gorm.DB, error) {
-	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5433 user=postgres dbname=temporal password=%s", dbPass)
-	db, err := gorm.Open("postgres", dbConnURL)
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
-}
-
-// CloseDBConnection is used to close a db
-func CloseDBConnection(db *gorm.DB) error {
-	err := db.Close()
-	if err != nil {
-		return err
-	}
-	return nil
 }

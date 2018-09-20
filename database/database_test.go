@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/jinzhu/gorm"
 )
@@ -35,5 +36,27 @@ func TestDatabaseMigrations(t *testing.T) {
 	db.AutoMigrate(database.UploadObj)
 	db.AutoMigrate(database.UserObj)
 	db.AutoMigrate(database.PaymentObj)
+	db.Close()
+}
+
+func TestDatabaseInitialize_withMigrations(t *testing.T) {
+	db, err := database.Initialize(&config.TemporalConfig{
+		Database: struct {
+			Name     string `json:"name"`
+			URL      string `json:"url"`
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}{
+			Name:     "",
+			URL:      "127.0.0.1",
+			Username: "postgres",
+			Password: "password123",
+		},
+	}, database.DatabaseOptions{
+		RunMigrations:  true,
+		SSLModeDisable: true})
+	if err != nil {
+		t.Fatal(err)
+	}
 	db.Close()
 }
