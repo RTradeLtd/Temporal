@@ -26,6 +26,7 @@ type DatabaseManager struct {
 type DatabaseOptions struct {
 	RunMigrations  bool
 	SSLModeDisable bool
+	LogMode        bool
 }
 
 func Initialize(cfg *config.TemporalConfig, opts DatabaseOptions) (*DatabaseManager, error) {
@@ -42,6 +43,8 @@ func Initialize(cfg *config.TemporalConfig, opts DatabaseOptions) (*DatabaseMana
 	if err != nil {
 		return nil, err
 	}
+
+	db.LogMode(opts.LogMode)
 
 	dbm := DatabaseManager{DB: db}
 	if opts.RunMigrations {
