@@ -22,8 +22,7 @@ COPY --from=build-env /bin/temporal /usr/local/bin
 
 # Set up directories
 RUN mkdir /temporal \  
-    mkdir -p /var/log/temporal \
-    mkdir -p /home/solidity/certificates
+    mkdir -p /var/log/temporal
 
 # Set default configuration
 ENV CONFIG_DAG /temporal/config.json
