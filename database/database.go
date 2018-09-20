@@ -23,22 +23,28 @@ type DatabaseManager struct {
 	Upload *models.UploadManager
 }
 
-func Initialize(cfg *config.TemporalConfig, runMigrations bool) (*DatabaseManager, error) {
+type DatabaseOptions struct {
+	RunMigrations  bool
+	SSLModeDisable bool
+}
+
+func Initialize(cfg *config.TemporalConfig, opts DatabaseOptions) (*DatabaseManager, error) {
 	if cfg == nil {
 		return nil, errors.New("invalid configuration provided")
 	}
 
 	db, err := OpenDBConnection(DBOptions{
-		User:     cfg.Database.Username,
-		Password: cfg.Database.Password,
-		Address:  cfg.Database.URL,
+		User:           cfg.Database.Username,
+		Password:       cfg.Database.Password,
+		Address:        cfg.Database.URL,
+		SSLModeDisable: opts.SSLModeDisable,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	dbm := DatabaseManager{DB: db}
-	if runMigrations {
+	if opts.RunMigrations {
 		dbm.RunMigrations()
 	}
 	return &dbm, nil

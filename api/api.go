@@ -53,7 +53,7 @@ func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	prometheusListenAddress := fmt.Sprintf("%s:6768", listenAddress)
 	jwtKey := cfg.API.JwtKey
 	// setup our database connection
-	db, err := database.Initialize(cfg, false)
+	db, err := database.Initialize(cfg, database.DatabaseOptions{})
 	if err != nil {
 		return nil, err
 	}

@@ -60,15 +60,14 @@ testenv: temporal
 	@sudo ip link set $(INTERFACE) up
 	@sudo ip addr add 192.168.1.101 dev $(INTERFACE)
 	@sudo ip addr add 192.168.2.101 dev $(INTERFACE)
-	@chmod og-rwx test/cert/server.key
 	@echo "Spinning up test env components..."
 	@echo "Run 'make clean' to update the images used in the test environment"
 	@docker-compose -f test/docker-compose.yml up -d
 	@sleep $(WAIT)
-	docker ps
-	docker logs test_postgres_1
+	@echo "Containers online:"
+	@docker ps
 	@echo "Running migrations..."
-	@env CONFIG_DAG=./test/config.json ./temporal migrate
+	@env CONFIG_DAG=./test/config.json ./temporal migrate-insecure
 	@echo "===================          done           ==================="
 
 # Shut down testenv
