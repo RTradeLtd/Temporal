@@ -2,7 +2,7 @@ version: '3'
 
 services:
   ipfs.node.1:
-    container_name: "ipfs.node.1"
+    container_name: "ipfs_node_1"
     image: ipfs/go-ipfs:v0.4.17
     command: daemon --migrate=true --enable-pubsub-experiment
     ports:
@@ -15,7 +15,7 @@ services:
       - ${PWD}/test/ipfs/nodes/1/datastore_spec:/data/ipfs/datastore_spec
 
   ipfs.cluster.1:
-    container_name: "ipfs.cluster.1"
+    container_name: "ipfs_cluster_1"
     depends_on: 
       - ipfs.node.1
     image: ipfs/ipfs-cluster:v0.5.0
@@ -29,7 +29,7 @@ services:
       - ${PWD}/test/ipfs/clusters/1/service.json:/data/ipfs-cluster/service.json
 
   ipfs.node.2:
-    container_name: "ipfs.node.2"
+    container_name: "ipfs_node_2"
     image: ipfs/go-ipfs:v0.4.17
     command: daemon --migrate=true --enable-pubsub-experiment
     ports:
@@ -42,7 +42,7 @@ services:
       - ${PWD}/test/ipfs/nodes/2/datastore_spec:/data/ipfs/datastore_spec
 
   ipfs.cluster.2:
-    container_name: "ipfs.cluster.2"
+    container_name: "ipfs_cluster_2"
     depends_on: 
       - ipfs.cluster.1
       - ipfs.node.2
