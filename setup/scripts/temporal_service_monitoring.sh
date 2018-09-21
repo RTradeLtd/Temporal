@@ -28,7 +28,7 @@ case "$1" in
         fi
         ;;
     ipfs-file-queue)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7' | grep "temporal queue ipfs file" | grep -iv grep | awk '{print $2}')
+        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue ipfs file" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
             echo 0
         else
