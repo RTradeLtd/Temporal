@@ -3,6 +3,8 @@ TEMPORALVERSION=`git describe --tags`
 IPFSVERSION=v0.4.17
 UNAME=$(shell uname)
 INTERFACE=eth0
+ADDR_NODE1=192.168.1.101
+ADDR_NODE2=192.168.2.101
 
 ifeq ($(UNAME), Darwin)
 INTERFACE=en0
@@ -58,11 +60,12 @@ testenv: temporal
 	@echo "===================   preparing test env    ==================="
 	@echo "Setting up network..."
 	@sudo ip link set $(INTERFACE) up
-	@sudo ip addr add 192.168.1.101 dev $(INTERFACE)
-	@sudo ip addr add 192.168.2.101 dev $(INTERFACE)
+	@sudo ip addr add $(ADDR_NODE1) dev $(INTERFACE)
+	@sudo ip addr add $(ADDR_NODE2) dev $(INTERFACE)
 	@echo "Spinning up test env components..."
 	@echo "Run 'make clean' to update the images used in the test environment"
-	@docker-compose -f test/docker-compose.yml up -d
+	@env ADDR_NODE1=$(ADDR_NODE1) ADDR_NODE2=$(ADDR_NODE2) \
+		docker-compose -f test/docker-compose.yml up -d
 	@sleep $(WAIT)
 	@echo "Containers online:"
 	@docker ps
@@ -97,7 +100,11 @@ clean: stop-testenv
 	@echo "=================== cleaning up temp assets ==================="
 	@echo "Removing binary..."
 	@rm -f temporal
+	@echo "Removing Docker assets..."
 	@docker-compose -f test/docker-compose.yml rm -f -v
+	@echo "Cleaning network interfaces..."
+	@sudo ip addr del $(ADDR_NODE1) dev $(INTERFACE)
+	@sudo ip addr del $(ADDR_NODE2) dev $(INTERFACE)
 	@echo "===================          done           ==================="
 
 # Rebuild vendored dependencies
