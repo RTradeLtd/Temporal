@@ -4,7 +4,8 @@
 #   env API=latest BASE=/my/dir docker-compose -f prod.yml up
 #
 # Data:
-#   - Generally, component data goes in $BASE/data/$COMPONENT
+#   - Leave BASE unassigned to use the root directory.
+#   - Generally, component data goes in $BASE/data/$COMPONENT.
 #
 # Configuration:
 #   * temporal:
