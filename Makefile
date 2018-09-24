@@ -5,6 +5,7 @@ UNAME=$(shell uname)
 INTERFACE=eth0
 ADDR_NODE1=192.168.1.101
 ADDR_NODE2=192.168.2.101
+DOCKERCOMPOSE_TEST=env ADDR_NODE1=$(ADDR_NODE1) ADDR_NODE2=$(ADDR_NODE2) docker-compose -f test/docker-compose.yml
 
 ifeq ($(UNAME), Darwin)
 INTERFACE=en0
@@ -64,8 +65,7 @@ testenv: temporal
 	@sudo ip addr add $(ADDR_NODE2) dev $(INTERFACE)
 	@echo "Spinning up test env components..."
 	@echo "Run 'make clean' to update the images used in the test environment"
-	@env ADDR_NODE1=$(ADDR_NODE1) ADDR_NODE2=$(ADDR_NODE2) \
-		docker-compose -f test/docker-compose.yml up -d
+	@$(DOCKERCOMPOSE_TEST) up -d
 	@sleep $(WAIT)
 	@echo "Containers online:"
 	@docker ps
@@ -77,7 +77,7 @@ testenv: temporal
 .PHONY: stop-testenv
 stop-testenv:
 	@echo "===================  shutting down test env ==================="
-	@docker-compose -f test/docker-compose.yml down
+	@$(DOCKERCOMPOSE_TEST) down
 	@echo "===================          done           ==================="
 
 # Execute short tests
@@ -101,7 +101,7 @@ clean: stop-testenv
 	@echo "Removing binary..."
 	@rm -f temporal
 	@echo "Removing Docker assets..."
-	@docker-compose -f test/docker-compose.yml rm -f -v
+	@$(DOCKERCOMPOSE_TEST) rm -f -v
 	@echo "Cleaning network interfaces..."
 	@sudo ip addr del $(ADDR_NODE1) dev $(INTERFACE)
 	@sudo ip addr del $(ADDR_NODE2) dev $(INTERFACE)
