@@ -7,6 +7,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// Various variables used by our queue package
+
 var (
 	nilTime time.Time
 	// DatabaseFileAddQueue is a queue used for simple file adds
@@ -62,7 +64,7 @@ type QueueManager struct {
 	ExchangeName string
 }
 
-// Queue Messages
+// Queue Messages - These are used to format messages to send through rabbitmq
 
 // IPFSKeyCreation is a message used for processing key creation
 // only supported for the public IPFS network at the moment
