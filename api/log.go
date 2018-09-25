@@ -13,14 +13,17 @@ func (api *API) LogError(err error, message string) func(c *gin.Context, code ..
 		api.l.WithFields(log.Fields{
 			"service": api.service,
 		}).Error(message)
-		return func(c *gin.Context, code ...int) { FailWithMessage(c, message, code...) }
 	}
 
 	api.l.WithFields(log.Fields{
 		"service": api.service,
 		"error":   err.Error(),
 	}).Error(message)
-	return func(c *gin.Context, code ...int) { Fail(c, err, code...) }
+
+	if message == "" {
+		return func(c *gin.Context, code ...int) { Fail(c, err, code...) }
+	}
+	return func(c *gin.Context, code ...int) { FailWithMessage(c, message, code...) }
 }
 
 // LogInfo is a wrapper used by the API to handle simple info logs
