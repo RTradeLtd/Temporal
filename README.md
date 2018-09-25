@@ -2,6 +2,7 @@
 
 <p align="center">
   <a href="#about-temporal"><strong>About Temporal</strong></a> · 
+  <a href="#web-interfaces"><strong>Web Interfaces</strong></a> · 
   <a href="#usage-and-features"><strong>Usage and Features</strong></a> · 
   <a href="#development"><strong>Development</strong></a> · 
   <a href="#thanks"><strong>Thanks</strong></a> ·
@@ -39,6 +40,15 @@ Temporal is being designed with a "Plug and Play" style design such that the und
 We have a [telegram chat](https://t.me/RTradeTEMPORAL), feel free to join and ask any questions you may have that could not be answered by reading the documentation here. The documentation contained is fairly detailed, as all my notes are public, however it is fairly scattered and unorganized for now.
 
 TEMPORAL is a work in progress, and current code does not represent quality of the final product. Before a production release there will be an extremely heavy review, and updates to code quality.
+
+### Web Interfaces
+
+Temporal now has a working web interface! This provides a slick and easy way to interact with Temporal without the need for using our API. We currently have two versions of the web interface, running over regular HTTP, and one over I2P!
+
+* [Clearnet, Recommended](https://nuts.rtradetechnologies.com:6768/)
+* [I2P](http://riqdsr6ijsujw4tagdufhbv7drlghe2cljy2xow3irvy7grq34fq.b32.i2p/)
+
+Please note that support for the I2P Interface is very experimental at the moment and does not offer HTTPS.
 
 ### Goals
 
@@ -112,18 +122,6 @@ Following is a list of distributed and decentralized storage technologies that T
 > IPNS allows for publishing of human readable names, and immutable links to changing content. IPNS integration is an optional feature with each upload to IPFS, and will allow for creation of dnslink records on our domain. Note that for the hosted API, IPNS usage alongside of IPFS pins or file uploads will incur additional charges.
 
 > As a special/unique feature, you can plug into Temporal's IPNS setup, and use us as a trusted signer of IPNS records, while also optionally taking care of the DNS configuration, storing the DNS record underneath our domain (rtradetechnologies.com) at a URL of your choice with a subdomain name of your choosing providing it is available. Should you desire that, you can tap into our automated configuration and have that all done automatically. Optionally, we can also build out a hosted, or on-premise automated solution for your own domain as well.
-
-#### Swarm (0% complete):
-
-> Details TBA
-
-#### STORJ (0% complete):
-
-> Details TBA
-
-SIA (0% complete):
-
-> Details TBA
 
 ### System Monitoring
 
@@ -226,5 +224,6 @@ Without open source, TEMPORAL wouldn't be possible, as such we would like to ext
 
 
 ## License
+
 As Temporal is a large and complex project, licensing is a complex subject. This is something we are actively looking into, however to minimize issues in the interm, we are defaulting to an MIT license. This will more than likely change in the future, however we want to make sure that the license we settle on for when we fully launch will be the right one.
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_large)
