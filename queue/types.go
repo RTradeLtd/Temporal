@@ -25,6 +25,8 @@ var (
 	IpfsPinRemovalQueue = "ipns-pin-removal-queue"
 	// IpfsKeyCreationQueue is a queue used to handle ipfs key creation
 	IpfsKeyCreationQueue = "ipfs-key-creation-queue"
+	// PaymentCreationQueue is a queue used to handle payment processing
+	PaymentCreationQueue = "payment-creation-queue"
 	// AdminEmail is the email used to notify RTrade about any critical errors
 	AdminEmail = "temporal.reports@rtradetechnologies.com"
 	// IpfsPinFailedContent is a to-be formatted message sent on IPFS pin failures
@@ -141,4 +143,11 @@ type IPNSEntry struct {
 	Key         string        `json:"key"`
 	UserName    string        `json:"user_name"`
 	NetworkName string        `json:"network_name"`
+}
+
+// PaymentCreation is for the payment creation queue
+type PaymentCreation struct {
+	TxHash     string `json:"tx_hash"`
+	Blockchain string `json:"blockchain"`
+	UserName   string `json:"user_name"`
 }
