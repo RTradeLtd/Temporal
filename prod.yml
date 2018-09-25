@@ -1,0 +1,65 @@
+# Production docker-compose setup for Temporal.
+#
+# Usage:
+#   env API=latest BASE=/my/dir docker-compose -f prod.yml up
+#
+# Data:
+#   - Leave BASE unassigned to use the root directory.
+#   - Generally, component data goes in $BASE/data/$COMPONENT.
+#
+# Configuration:
+#   * temporal:
+#     - configuration file should be in data directory
+#     - set API in env to use desired version
+#   * ipfs, ipfs-cluster:
+#     - configuration files should be in data directory
+#   * minio:
+#     - place private.key, public.crt, etc in $BASE/minio/config to enable SSL
+#     - to set access keys, set MINIO_SECRET_KEY and MINIO_ACCESS_KEY in env
+#
+
+version: '3'
+
+services:
+  temporal:
+    image: rtradetech/temporal:${API}
+    network_mode: "host" # expose all
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  ipfs:
+    image: ipfs/go-ipfs:v0.4.17
+    command: daemon --migrate=true --enable-pubsub-experiment
+    ports:
+      - 4001:4001
+      - 5001:5001
+      - 8080:8080
+    volumes:
+      - ${BASE}/data/ipfs:/data/ipfs
+
+  ipfs_cluster:
+    depends_on: 
+      - ipfs
+    image: ipfs/ipfs-cluster:v0.5.0
+    ports:
+      - 9094:9094
+      - 9095:9095
+      - 9096:9096
+    environment:
+      - IPFS_API=/ip4/127.0.0.1/tcp/5001
+    volumes:
+      - ${BASE}/data/ipfs-cluster:/data/ipfs-cluster
+
+  minio:
+    image: minio/minio
+    ports:
+      - 9000:9000
+    command: ["server", "/data"]
+    environment:
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY}"
+    volumes:
+      - ${BASE}/data/minio:/data
+      - ${BASE}/minio/config:/root/.minio
