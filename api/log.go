@@ -33,17 +33,17 @@ func (api *API) LogInfo(message ...interface{}) {
 	}).Info(message...)
 }
 
+// LogDebug is a wrapper used by the API to handle simple debug logs
+func (api *API) LogDebug(message ...interface{}) {
+	api.l.WithFields(log.Fields{
+		"service": api.service,
+	}).Debug(message...)
+}
+
 // LogWithUser creates entry context with user
 func (api *API) LogWithUser(user string) *log.Entry {
 	return api.l.WithFields(log.Fields{
 		"service": api.service,
 		"user":    user,
 	})
-}
-
-// LogDebug is a wrapper used by the API to handle simple debug logs
-func (api *API) LogDebug(message ...interface{}) {
-	api.l.WithFields(log.Fields{
-		"service": api.service,
-	}).Debug(message...)
 }
