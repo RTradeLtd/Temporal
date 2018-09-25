@@ -9,37 +9,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-var (
-	// IpfsPinFailedContent is a to-be formatted message sent on IPFS pin failures
-	IpfsPinFailedContent = "Pin failed for content hash %s on IPFS network %s, for reason %s"
-	// IpfsPinFailedSubject is a subject for IPFS pin failed messages
-	IpfsPinFailedSubject = "IPFS Pin Failed"
-	// IpfsFileFailedContent is a to be formatted message sent on ipfs add failures
-	IpfsFileFailedContent = "IPFS File Add Failed for object name %s on IPFS network %s"
-	// IpfsFileFailedSubject is a subject for ipfs file add fails
-	IpfsFileFailedSubject = "IPFS File Add Failed"
-	// IpfsPrivateNetworkUnauthorizedSubject is a subject whenever someone tries to access a bad private network
-	IpfsPrivateNetworkUnauthorizedSubject = "Unauthorized access to IPFS private network"
-	// IpfsInitializationFailedSubject is a subject used when connecting to ipfs fails
-	IpfsInitializationFailedSubject = "Connection to IPFS failed"
-	// IpnsEntryFailedSubject is a subject sent upon IPNS failures
-	IpnsEntryFailedSubject = "IPNS Entry Creation Failed"
-	// IpnsEntryFailedContent is the content used when sending an email for IPNS entry creation failures
-	IpnsEntryFailedContent = "IPNS Entry creation failed for content hash %s using key %s for reason %s"
-	// PaymentConfirmationFailedSubject is a subject used when payment confirmations fail
-	PaymentConfirmationFailedSubject = "Payment Confirmation Failed"
-	// PaymentConfirmationFailedContent is a content used when a payment confirmation failure occurs
-	PaymentConfirmationFailedContent = "Payment failed for content hash %s with error %s"
-)
-
-// EmailSend is a helper struct used to contained formatted content ot send as an email
-type EmailSend struct {
-	Subject     string   `json:"subject"`
-	Content     string   `json:"content"`
-	ContentType string   `json:"content_type"`
-	UserNames   []string `json:"user_names"`
-}
-
 // ProcessMailSends is a function used to process mail send queue messages
 func (qm *QueueManager) ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.TemporalConfig) error {
 	mm, err := mail.GenerateMailManager(tCfg)

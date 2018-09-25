@@ -3,7 +3,6 @@ package queue
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/config"
@@ -13,17 +12,6 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
-
-// IPNSEntry is used to hold relevant information needed to process IPNS entry creation requests
-type IPNSEntry struct {
-	CID         string        `json:"cid"`
-	LifeTime    time.Duration `json:"life_time"`
-	TTL         time.Duration `json:"ttl"`
-	Resolve     bool          `json:"resolve"`
-	Key         string        `json:"key"`
-	UserName    string        `json:"user_name"`
-	NetworkName string        `json:"network_name"`
-}
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
