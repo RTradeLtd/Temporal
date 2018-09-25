@@ -218,11 +218,38 @@ var commands = map[string]app.Cmd{
 		Blurb:       "run database migrations",
 		Description: "Runs our initial database migrations, creating missing tables, etc..",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			dbm, err := database.Initialize(&cfg, false)
-			if err != nil {
+			if _, err := database.Initialize(&cfg, database.DatabaseOptions{
+				RunMigrations: true,
+			}); err != nil {
 				log.Fatal(err)
 			}
-			dbm.RunMigrations()
+		},
+	},
+	"migrate-insecure": app.Cmd{
+		Hidden:      true,
+		Blurb:       "run database migrations without SSL",
+		Description: "Runs our initial database migrations, creating missing tables, etc.. without SSL",
+		Action: func(cfg config.TemporalConfig, args map[string]string) {
+			if _, err := database.Initialize(&cfg, database.DatabaseOptions{
+				RunMigrations:  true,
+				SSLModeDisable: true,
+			}); err != nil {
+				log.Fatal(err)
+			}
+		},
+	},
+	"init": app.Cmd{
+		PreRun:      true,
+		Blurb:       "initialize blank Temporal configuration",
+		Description: "Initializes a blank Temporal configuration template at CONFIG_DAG.",
+		Action: func(cfg config.TemporalConfig, args map[string]string) {
+			configDag := os.Getenv("CONFIG_DAG")
+			if configDag == "" {
+				log.Fatal("CONFIG_DAG is not set")
+			}
+			if err := config.GenerateConfig(configDag); err != nil {
+				log.Fatal(err)
+			}
 		},
 	},
 }

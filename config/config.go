@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 )
 
 // TemporalConfig is a helper struct holding
@@ -100,16 +101,11 @@ func LoadConfig(configPath string) (*TemporalConfig, error) {
 	return &tCfg, nil
 }
 
-/*
-// LoadConfig is used to load a config object, from the cid
-func LoadConfig(cfgCid string) *TemporalConfig {
-	var tCfg TemporalConfig
-	configManager := ipdcfg.Initialize("")
-	config := configManager.LoadConfig(cfgCid)
-	err := json.Unmarshal(config, &tCfg)
+func GenerateConfig(configPath string) error {
+	template := &TemporalConfig{}
+	b, err := json.Marshal(template)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	return &tCfg
+	return ioutil.WriteFile(configPath, b, os.ModePerm)
 }
-*/

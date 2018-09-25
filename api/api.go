@@ -15,18 +15,18 @@ import (
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/database"
-	jwt "github.com/appleboy/gin-jwt"
 	helmet "github.com/danielkov/gin-helmet"
-	"github.com/jinzhu/gorm"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
 
-var xssMdlwr xss.XssMw
+var (
+	xssMdlwr xss.XssMw
 
-// AdminAddress is the eth address of the admin account
-var AdminAddress = "0x7E4A2359c745A982a54653128085eAC69E446DE1"
+	// AdminAddress is the eth address of the admin account
+	AdminAddress = "0x7E4A2359c745A982a54653128085eAC69E446DE1"
+)
 
 // API is our API service
 type API struct {
@@ -37,36 +37,17 @@ type API struct {
 	Service string
 }
 
-// Initialize is used ot initialize our API service
+// Initialize is used ot initialize our API service. logMode = true is useful
+// for debugging database issues.
 func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
-	// initialize an empty api struct
-	api := API{Service: "api"}
-	// setup logging
-	err := api.setupLogging()
-	if err != nil {
-		return nil, err
-	}
-	// setup some default config variables
-	api.TConfig = cfg
-	AdminAddress = cfg.API.AdminUser
-	listenAddress := cfg.API.Connection.ListenAddress
-	prometheusListenAddress := fmt.Sprintf("%s:6768", listenAddress)
-	jwtKey := cfg.API.JwtKey
-	// setup our database connection
-	db, err := database.Initialize(cfg, false)
-	if err != nil {
-		return nil, err
-	}
-	api.DBM = db
-	// set log mode to true, useful for debugging database issues
-	api.DBM.DB.LogMode(logMode)
-	// generate our default router
-	router := gin.Default()
-	// load our global middlewares
-	p := ginprometheus.NewPrometheus("gin")
-	// set the address for prometheus to collect metrics
-	p.SetListenAddress(prometheusListenAddress)
-	// load in prom to gin
+	var (
+		err    error
+		router = gin.Default()
+		p      = ginprometheus.NewPrometheus("gin")
+	)
+
+	// set up prometheus monitoring
+	p.SetListenAddress(fmt.Sprintf("%s:6768", cfg.API.Connection.ListenAddress))
 	p.Use(router)
 	// load xss mitigation middleware
 	router.Use(xssMdlwr.RemoveXss())
@@ -76,35 +57,71 @@ func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	router.Use(helmet.NoSniff())
 	// load cors
 	router.Use(middleware.CORSMiddleware())
-	// generate our auth middleware to pass to setup routes
-	authMiddleware := middleware.JwtConfigGenerate(jwtKey, db.DB, api.Logger)
-	// setup our routes
-	api.setupRoutes(router, authMiddleware, db.DB, cfg)
-	// add our router
-	api.Router = router
+
+	// set up API struct
+	api, err := new(cfg, router, logMode)
+	if err != nil {
+		return nil, err
+	}
+
+	// init routes
+	api.setupRoutes()
+	api.Logger.Info("api initialization successful")
+
 	// return our configured API service
-	return &api, nil
+	return api, nil
 }
 
-// SetupLogging is used to setup our API logging system
-func (api *API) setupLogging() error {
-	logFile, err := os.OpenFile("/var/log/temporal/api_service.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
+func new(cfg *config.TemporalConfig, router *gin.Engine, logMode bool) (*API, error) {
+	var (
+		logger = log.New()
+		dbm    *database.DatabaseManager
+		err    error
+	)
+
+	// set up logger
+	logger.Out, err = os.OpenFile("/var/log/temporal/api_service.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("logger failed to initalize: %s", err)
 	}
-	logger := log.New()
-	logger.Out = logFile
-	api.Logger = logger
-	api.Logger.Info("Logging initialized")
-	return nil
+	logger.Info("logger initialized")
+
+	// set up database manager
+	dbm, err = database.Initialize(cfg, database.DatabaseOptions{
+		LogMode: logMode,
+	})
+	if err != nil {
+		logger.Warnf("failed to connect to database: %s", err.Error())
+		logger.Warnf("failed to connect to database with secure connection - attempting insecure connection...")
+		dbm, err = database.Initialize(cfg, database.DatabaseOptions{
+			LogMode:        logMode,
+			SSLModeDisable: true,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect to database with insecure connection: %s", err.Error())
+		}
+		logger.Warnf("insecure database connection established")
+	} else {
+		logger.Info("secure database connection established")
+	}
+
+	return &API{
+		TConfig: cfg,
+		Service: "api",
+		Router:  router,
+		Logger:  logger,
+		DBM:     dbm,
+	}, nil
 }
 
 // setupRoutes is used to setup all of our api routes
-func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *gorm.DB, cfg *config.TemporalConfig) {
+func (api *API) setupRoutes() {
+	authWare := middleware.JwtConfigGenerate(api.TConfig.API.JwtKey,
+		api.DBM.DB, api.Logger)
 
-	statsProtected := g.Group("/api/v1/statistics")
+	statsProtected := api.Router.Group("/api/v1/statistics")
 	statsProtected.Use(authWare.MiddlewareFunc())
-	statsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	statsProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
 	statsProtected.Use(stats.RequestStats())
 	statsProtected.GET("/stats", func(c *gin.Context) { // admin locked
 		ethAddress := GetAuthenticatedUserFromContext(c)
@@ -117,22 +134,22 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 		c.JSON(http.StatusOK, stats.Report())
 	})
 
-	auth := g.Group("/api/v1/auth")
+	auth := api.Router.Group("/api/v1/auth")
 	auth.POST("/register", api.registerUserAccount)
 	auth.POST("/login", authWare.LoginHandler)
 
 	// PROTECTED ROUTES -- BEGIN
-	accountProtected := g.Group("/api/v1/account")
+	accountProtected := api.Router.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
-	accountProtected.Use(middleware.APIRestrictionMiddleware(db))
+	accountProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
 	accountProtected.POST("password/change", api.changeAccountPassword)
 	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
 	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
 	accountProtected.POST("/ethereum/address/change", api.changeEthereumAddress)
 
-	ipfsProtected := g.Group("/api/v1/ipfs")
+	ipfsProtected := api.Router.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
-	ipfsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	ipfsProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
 	ipfsProtected.POST("/pubsub/publish/:topic", api.ipfsPubSubPublish)
 	ipfsProtected.POST("/calculate-content-hash", api.calculateContentHashForFile)
 	ipfsProtected.GET("/pins", api.getLocalPins) // admin locked
@@ -145,9 +162,9 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 	ipfsProtected.POST("/add-file/advanced", api.addFileLocallyAdvanced)
 	ipfsProtected.DELETE("/remove-pin/:hash", api.removePinFromLocalHost) // admin locked
 
-	ipfsPrivateProtected := g.Group("/api/v1/ipfs-private")
+	ipfsPrivateProtected := api.Router.Group("/api/v1/ipfs-private")
 	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
-	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(db))
+	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
 	ipfsPrivateProtected.POST("/new/network", api.createHostedIPFSNetworkEntryInDatabase)                // admin locked
 	ipfsPrivateProtected.GET("/network/:name", api.getIPFSPrivateNetworkByName)                          // admin locked
 	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", api.checkLocalNodeForPinForHostedIPFSNetwork) // admin locked
@@ -163,15 +180,15 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 	ipfsPrivateProtected.POST("/ipns/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
 	ipfsPrivateProtected.DELETE("/ipfs/pin/remove/:hash", api.removePinFromLocalHostForHostedIPFSNetwork)
 
-	ipnsProtected := g.Group("/api/v1/ipns")
+	ipnsProtected := api.Router.Group("/api/v1/ipns")
 	ipnsProtected.Use(authWare.MiddlewareFunc())
-	ipnsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	ipnsProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
 	ipnsProtected.POST("/publish/details", api.publishToIPNSDetails)
 	ipnsProtected.POST("/dnslink/aws/add", api.generateDNSLinkEntry) // admin locked
 
-	clusterProtected := g.Group("/api/v1/ipfs-cluster")
+	clusterProtected := api.Router.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())
-	clusterProtected.Use(middleware.APIRestrictionMiddleware(db))
+	clusterProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
 	clusterProtected.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
 	clusterProtected.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
 	clusterProtected.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
@@ -179,21 +196,21 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 	clusterProtected.POST("/pin/:hash", api.pinHashToCluster)
 	clusterProtected.DELETE("/remove-pin/:hash", api.removePinFromCluster) // admin locked
 
-	databaseProtected := g.Group("/api/v1/database")
+	databaseProtected := api.Router.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
-	databaseProtected.Use(middleware.APIRestrictionMiddleware(db))
+	databaseProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
 	databaseProtected.GET("/uploads", api.getUploadsFromDatabase)     // admin locked
 	databaseProtected.GET("/uploads/:user", api.getUploadsForAddress) // partial admin locked
 
-	frontendProtected := g.Group("/api/v1/frontend/")
+	frontendProtected := api.Router.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
 	frontendProtected.POST("/utils/ipfs/hash/calculate", api.calculateIPFSFileHash)
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", api.calculatePinCost)
 	frontendProtected.POST("/cost/calculate/file", api.calculateFileCost)
 
-	adminProtected := g.Group("/api/v1/admin")
+	adminProtected := api.Router.Group("/api/v1/admin")
 	adminProtected.Use(authWare.MiddlewareFunc())
-	adminProtected.Use(middleware.APIRestrictionMiddleware(db))
+	adminProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
 	adminProtected.POST("/utils/file-size-check", CalculateFileSize)
 	mini := adminProtected.Group("/mini")
 	mini.POST("/create/bucket", api.makeBucket)
