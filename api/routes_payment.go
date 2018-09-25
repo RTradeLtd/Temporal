@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/models"
@@ -34,4 +35,29 @@ func (api *API) CreatePayment(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "payment created"})
+}
+
+// GetDepositAddress is used to get a deposit address for a user
+func (api *API) GetDepositAddress(c *gin.Context) {
+	paymentType := c.Param("type")
+	username := GetAuthenticatedUserFromContext(c)
+	var (
+		err     error
+		address string
+		um      = models.NewUserManager(api.DBM.DB)
+	)
+	switch paymentType {
+	case "ETH", "RTC":
+		address, err = um.FindEthAddressByUserName(username)
+	default:
+		err = errors.New(InvalidPaymentTypeError)
+		api.LogError(err, InvalidPaymentTypeError)
+		return
+	}
+	if err != nil {
+		api.LogError(err, EthAddressSearchError)
+		FailOnError(c, err)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": address})
 }
