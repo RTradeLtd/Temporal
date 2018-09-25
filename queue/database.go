@@ -2,15 +2,12 @@ package queue
 
 import (
 	"encoding/json"
-	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
-
-var nilTime time.Time
 
 // ProcessDatabaseFileAdds is used to process database file add messages
 func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
