@@ -71,4 +71,6 @@ const (
 	NoKeyError = "no keys"
 	// FileTooBigError is an error message given to a user when attempting to upload a file larger than our limit
 	FileTooBigError = "attempting to upload too big of a file"
+	// InvalidPaymentTypeError is an error message given to a user when using an invalid payment method
+	InvalidPaymentTypeError = "payment type not supported"
 )
