@@ -16,19 +16,17 @@ func (api *API) calculateIPFSFileHash(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	file, err := c.FormFile("file")
 	if err != nil {
-		FailOnError(c, err)
+		FailWithMissingField(c, "file")
 		return
 	}
 	fh, err := file.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)
-		FailOnError(c, err)
+		api.LogError(err, FileOpenError)(c)
 		return
 	}
 	hash, err := utils.GenerateIpfsMultiHashForFile(fh)
 	if err != nil {
-		api.LogError(err, IPFSMultiHashGenerationError)
-		FailOnError(c, err)
+		api.LogError(err, IPFSMultiHashGenerationError)(c)
 		return
 	}
 
@@ -45,25 +43,24 @@ func (api *API) calculatePinCost(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	hash := c.Param("hash")
 	if _, err := gocid.Decode(hash); err != nil {
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 	holdTime := c.Param("holdtime")
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)
-		FailOnError(c, err)
+		api.LogError(err, IPFSConnectionError)(c)
 		return
 	}
 	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
 	if err != nil {
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell)
 	if err != nil {
 		api.LogError(err, PinCostCalculationError)
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 
@@ -80,21 +77,21 @@ func (api *API) calculateFileCost(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	file, err := c.FormFile("file")
 	if err != nil {
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 	if err := api.FileSizeCheck(file.Size); err != nil {
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 	holdTime, exists := c.GetPostForm("hold_time")
 	if !exists {
-		FailNoExistPostForm(c, "hold_time")
+		FailWithMissingField(c, "hold_time")
 		return
 	}
 	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
 	if err != nil {
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 

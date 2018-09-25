@@ -21,8 +21,7 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 	// fetch the uplaods
 	uploads, err := um.GetUploads()
 	if err != nil {
-		api.LogError(err, UploadSearchError)
-		FailOnError(c, err)
+		api.LogError(err, UploadSearchError)(c, http.StatusInternalServerError)
 		return
 	}
 	api.l.WithFields(log.Fields{
@@ -46,8 +45,7 @@ func (api *API) getUploadsForAddress(c *gin.Context) {
 	// fetch all uploads for that address
 	uploads, err := um.GetUploadsForUser(queryUser)
 	if err != nil {
-		api.LogError(err, UploadSearchError)
-		FailOnError(c, err)
+		api.LogError(err, UploadSearchError)(c, http.StatusInternalServerError)
 		return
 	}
 

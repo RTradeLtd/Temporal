@@ -22,31 +22,31 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 	hash, present := c.GetPostForm("hash")
 	if !present {
-		FailNoExistPostForm(c, "hash")
+		FailWithMissingField(c, "hash")
 		return
 	}
 	if _, err := gocid.Decode(hash); err != nil {
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 	lifetimeStr, present := c.GetPostForm("life_time")
 	if !present {
-		FailNoExistPostForm(c, "lifetime")
+		FailWithMissingField(c, "lifetime")
 		return
 	}
 	ttlStr, present := c.GetPostForm("ttl")
 	if !present {
-		FailNoExistPostForm(c, "ttl")
+		FailWithMissingField(c, "ttl")
 		return
 	}
 	key, present := c.GetPostForm("key")
 	if !present {
-		FailNoExistPostForm(c, "key")
+		FailWithMissingField(c, "key")
 		return
 	}
 	resolveString, present := c.GetPostForm("resolve")
 	if !present {
-		FailNoExistPostForm(c, "resolve")
+		FailWithMissingField(c, "resolve")
 		return
 	}
 
@@ -56,30 +56,28 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
 	if err != nil {
-		api.LogError(err, KeySearchError)
-		FailOnError(c, err)
+		api.LogError(err, KeySearchError)(c)
 		return
 	}
 
 	if !ownsKey {
 		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", ethAddress)
-		api.LogError(err, KeyUseError)
-		FailOnError(c, err)
+		api.LogError(err, KeyUseError)(c)
 		return
 	}
 	resolve, err := strconv.ParseBool(resolveString)
 	if err != nil {
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 	lifetime, err := time.ParseDuration(lifetimeStr)
 	if err != nil {
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 	ttl, err := time.ParseDuration(ttlStr)
 	if err != nil {
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 
@@ -97,15 +95,13 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)
-		FailOnError(c, err)
+		api.LogError(err, QueueInitializationError)(c)
 		return
 	}
 	// in order to avoid generating too much IPFS dht traffic, we publish round-robin style
 	// as we announce the records to the swarm, we will eventually achieve consistency across nodes automatically
 	if err = qm.PublishMessage(ie); err != nil {
-		api.LogError(err, QueuePublishError)
-		FailOnError(c, err)
+		api.LogError(err, QueuePublishError)(c)
 		return
 	}
 
@@ -127,25 +123,25 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 
 	recordName, exists := c.GetPostForm("record_name")
 	if !exists {
-		FailNoExistPostForm(c, "record_name")
+		FailWithMissingField(c, "record_name")
 		return
 	}
 
 	recordValue, exists := c.GetPostForm("record_value")
 	if !exists {
-		FailNoExistPostForm(c, "record_value")
+		FailWithMissingField(c, "record_value")
 		return
 	}
 
 	awsZone, exists := c.GetPostForm("aws_zone")
 	if !exists {
-		FailNoExistPostForm(c, "aws_zone")
+		FailWithMissingField(c, "aws_zone")
 		return
 	}
 
 	regionName, exists := c.GetPostForm("region_name")
 	if !exists {
-		FailNoExistPostForm(c, "region_name")
+		FailWithMissingField(c, "region_name")
 		return
 	}
 
@@ -158,21 +154,21 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 		region = aws.USWest
 	default:
 		// user error, do not log
-		FailOnError(c, errors.New("invalid region_name"))
+		Fail(c, errors.New("invalid region_name"))
 		return
 	}
 
 	awsManager, err := dlink.GenerateAwsLinkManager("get", aKey, aSecret, awsZone, region)
 	if err != nil {
 		api.LogError(err, DNSLinkManagerError)
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 
 	resp, err := awsManager.AddDNSLinkEntry(recordName, recordValue)
 	if err != nil {
 		api.LogError(err, DNSLinkEntryError)
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 

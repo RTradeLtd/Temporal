@@ -18,13 +18,13 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 
 	oldPassword, exists := c.GetPostForm("old_password")
 	if !exists {
-		FailNoExistPostForm(c, "old_password")
+		FailWithMissingField(c, "old_password")
 		return
 	}
 
 	newPassword, exists := c.GetPostForm("new_password")
 	if !exists {
-		FailNoExistPostForm(c, "new_password")
+		FailWithMissingField(c, "new_password")
 		return
 	}
 
@@ -36,14 +36,12 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 	um := models.NewUserManager(api.dbm.DB)
 	suceeded, err := um.ChangePassword(username, oldPassword, newPassword)
 	if err != nil {
-		api.LogError(err, PasswordChangeError)
-		FailOnError(c, err)
+		api.LogError(err, PasswordChangeError)(c)
 		return
 	}
 	if !suceeded {
 		err = fmt.Errorf("password changed failed for user %s to due an unspecified error", username)
-		api.LogError(err, PasswordChangeError)
-		FailOnError(c, err)
+		api.LogError(err, PasswordChangeError)(c)
 		return
 	}
 
@@ -61,17 +59,17 @@ func (api *API) registerUserAccount(c *gin.Context) {
 
 	username, exists := c.GetPostForm("username")
 	if !exists {
-		FailNoExistPostForm(c, "username")
+		FailWithMissingField(c, "username")
 		return
 	}
 	password, exists := c.GetPostForm("password")
 	if !exists {
-		FailNoExistPostForm(c, "password")
+		FailWithMissingField(c, "password")
 		return
 	}
 	email, exists := c.GetPostForm("email_address")
 	if !exists {
-		FailNoExistPostForm(c, "email_address")
+		FailWithMissingField(c, "email_address")
 		return
 	}
 	if ethAddress == "" {
@@ -84,8 +82,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	userManager := models.NewUserManager(api.dbm.DB)
 	userModel, err := userManager.NewUserAccount(ethAddress, username, password, email, false)
 	if err != nil {
-		api.LogError(err, UserAccountCreationError)
-		FailOnError(c, err)
+		api.LogError(err, UserAccountCreationError)(c)
 		return
 	}
 
@@ -104,7 +101,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 	keyType, exists := c.GetPostForm("key_type")
 	if !exists {
-		FailNoExistPostForm(c, "key_type")
+		FailWithMissingField(c, "key_type")
 		return
 	}
 
@@ -116,40 +113,38 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	default:
 		// user error, do not log
 		err := fmt.Errorf("%s is invalid key type must be rsa, or ed25519", keyType)
-		FailOnError(c, err)
+		Fail(c, err, http.StatusBadRequest)
 		return
 	}
 
 	keyBits, exists := c.GetPostForm("key_bits")
 	if !exists {
-		FailNoExistPostForm(c, "key_bits")
+		FailWithMissingField(c, "key_bits")
 		return
 	}
 
 	keyName, exists := c.GetPostForm("key_name")
 	if !exists {
-		FailNoExistPostForm(c, "key_name")
+		FailWithMissingField(c, "key_name")
 		return
 	}
 	um := models.NewUserManager(api.dbm.DB)
 	keys, err := um.GetKeysForUser(username)
 	if err != nil {
-		api.LogError(err, KeySearchError)
-		FailOnError(c, err)
+		api.LogError(err, KeySearchError)(c, http.StatusNotFound)
 		return
 	}
 	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
 	for _, v := range keys["key_names"] {
 		if v == keyNamePrefixed {
 			err = fmt.Errorf("key with name already exists")
-			api.LogError(err, DuplicateKeyCreationError)
-			FailOnError(c, err)
+			api.LogError(err, DuplicateKeyCreationError)(c, http.StatusConflict)
 			return
 		}
 	}
 	bitsInt, err := strconv.Atoi(keyBits)
 	if err != nil {
-		FailOnError(c, err)
+		Fail(c, err)
 		return
 	}
 
@@ -165,14 +160,12 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)
-		FailOnError(c, err)
+		api.LogError(err, QueueInitializationError)(c)
 		return
 	}
 
 	if err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
-		api.LogError(err, QueuePublishError)
-		FailOnError(c, err)
+		api.LogError(err, QueuePublishError)(c)
 		return
 	}
 
@@ -191,19 +184,15 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 	um := models.NewUserManager(api.dbm.DB)
 	keys, err := um.GetKeysForUser(ethAddress)
 	if err != nil {
-		api.LogError(err, KeySearchError)
-		FailOnError(c, err)
+		api.LogError(err, KeySearchError)(c)
 		return
 	}
 	// if the user has no keys, fail with an error
 	if len(keys["key_names"]) == 0 || len(keys["key_ids"]) == 0 {
-		FailOnError(c, errors.New(NoKeyError))
+		Fail(c, errors.New(NoKeyError), http.StatusNotFound)
 		return
 	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    ethAddress,
-	}).Info("key name list requested")
+	api.LogWithUser(ethAddress).Info("key name list requested")
 
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"key_names": keys["key_names"], "key_ids": keys["key_ids"]}})
 }
@@ -213,19 +202,15 @@ func (api *API) changeEthereumAddress(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	ethAddress, exists := c.GetPostForm("eth_address")
 	if !exists {
-		FailNoExistPostForm(c, "eth_address")
+		FailWithMissingField(c, "eth_address")
 		return
 	}
 	um := models.NewUserManager(api.dbm.DB)
 	if _, err := um.ChangeEthereumAddress(username, ethAddress); err != nil {
-		api.LogError(err, EthAddressChangeError)
-		FailOnError(c, err)
+		api.LogError(err, EthAddressChangeError)(c)
 		return
 	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    username,
-	}).Info("ethereum address changed")
+	api.LogWithUser(username).Info("ethereum address changed")
 
 	Respond(c, http.StatusOK, gin.H{"response": "address change successful"})
 }
