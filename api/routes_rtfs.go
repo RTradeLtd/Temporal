@@ -41,7 +41,7 @@ func (api *API) calculateContentHashForFile(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("content hash calculation for file requested")
@@ -75,7 +75,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 	}
 
-	mqConnectionURL := api.TConfig.RabbitMQ.URL
+	mqConnectionURL := api.cfg.RabbitMQ.URL
 
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
@@ -90,7 +90,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("ipfs pin request sent to backend")
@@ -119,7 +119,7 @@ func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("ipfs object file size requested")
@@ -138,11 +138,11 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 
-	accessKey := api.TConfig.MINIO.AccessKey
-	secretKey := api.TConfig.MINIO.SecretKey
-	endpoint := fmt.Sprintf("%s:%s", api.TConfig.MINIO.Connection.IP, api.TConfig.MINIO.Connection.Port)
+	accessKey := api.cfg.MINIO.AccessKey
+	secretKey := api.cfg.MINIO.SecretKey
+	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
 
-	mqURL := api.TConfig.RabbitMQ.URL
+	mqURL := api.cfg.RabbitMQ.URL
 
 	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
@@ -159,26 +159,27 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	fmt.Println("opening file")
+
+	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, FileOpenError)
 		FailOnError(c, err)
 		return
 	}
-	fmt.Println("file opened")
-	username := GetAuthenticatedUserFromContext(c)
+	api.LogDebug("file opened")
 
+	username := GetAuthenticatedUserFromContext(c)
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
-	fmt.Println("storing file in minio")
+	api.LogDebug("storing file in minio")
 	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{}); err != nil {
 		api.LogError(err, MinioPutError)
 		FailOnError(c, err)
 		return
 	}
-	fmt.Println("file stored in minio")
+	api.LogDebug("file stored in minio")
 	ifp := queue.IPFSFile{
 		BucketName:       FilesUploadBucket,
 		ObjectName:       objectName,
@@ -199,7 +200,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("advanced ipfs file upload requested")
@@ -210,7 +211,6 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 // AddFileLocally is used to add a file to our local ipfs node in a simple manner
 // this route gives the user back a content hash for their file immedaitely
 func (api *API) addFileLocally(c *gin.Context) {
-	fmt.Println("fetching file")
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
@@ -221,7 +221,6 @@ func (api *API) addFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	username := GetAuthenticatedUserFromContext(c)
 
 	holdTimeinMonths, present := c.GetPostForm("hold_time")
 	if !present {
@@ -233,16 +232,17 @@ func (api *API) addFileLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	fmt.Println("opening file")
+
 	// open the file
+	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, FileOpenError)
 		FailOnError(c, err)
 		return
 	}
-	fmt.Println("file opened")
-	fmt.Println("initializing manager")
+	api.LogDebug("file opened")
+	api.LogDebug("initializing manager")
 	// initialize a connection to the local ipfs node
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
@@ -251,22 +251,25 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	// pin the file
-	fmt.Println("adding file")
+	api.LogDebug("adding file...")
 	resp, err := manager.Add(openFile)
 	if err != nil {
 		api.LogError(err, IPFSAddError)
 		FailOnError(c, err)
 		return
 	}
-	fmt.Println("file added")
+	api.LogDebug("file added")
+
 	// construct a message to rabbitmq to upad the database
+	username := GetAuthenticatedUserFromContext(c)
 	dfa := queue.DatabaseFileAdd{
 		Hash:             resp,
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		UserName:         username,
 		NetworkName:      "public",
 	}
-	mqConnectionURL := api.TConfig.RabbitMQ.URL
+	mqConnectionURL := api.cfg.RabbitMQ.URL
+
 	// initialize a connectino to rabbitmq
 	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, true, false)
 	if err != nil {
@@ -282,26 +285,25 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 
-	pin := queue.IPFSPin{
-		CID:              resp,
-		NetworkName:      "public",
-		UserName:         username,
-		HoldTimeInMonths: holdTimeinMonthsInt,
-	}
-
 	qm, err = queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.LogError(err, QueueInitializationError)
 		FailOnError(c, err)
 		return
 	}
-	if err = qm.PublishMessageWithExchange(pin, queue.PinExchange); err != nil {
+
+	if err = qm.PublishMessageWithExchange(queue.IPFSPin{
+		CID:              resp,
+		NetworkName:      "public",
+		UserName:         username,
+		HoldTimeInMonths: holdTimeinMonthsInt,
+	}, queue.PinExchange); err != nil {
 		api.LogError(err, QueuePublishError)
 		FailOnError(c, err)
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("simple ipfs file upload processed")
@@ -330,7 +332,7 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("ipfs pub sub message published")
@@ -350,7 +352,7 @@ func (api *API) removePinFromLocalHost(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	mqURL := api.TConfig.RabbitMQ.URL
+	mqURL := api.cfg.RabbitMQ.URL
 
 	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL, true, false)
 	if err != nil {
@@ -369,7 +371,7 @@ func (api *API) removePinFromLocalHost(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("ipfs pin removal request sent to backend")
@@ -401,7 +403,7 @@ func (api *API) getLocalPins(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
 	}).Info("ipfs pin list requested")
@@ -430,7 +432,7 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("ipfs object stat requested")
@@ -463,7 +465,7 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
 	}).Info("ipfs pin check requested")
@@ -539,7 +541,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		}
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("ipfs content download requested")

@@ -32,7 +32,7 @@ func (api *API) calculateIPFSFileHash(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": api,
 		"user":    username,
 	}).Info("ipfs file hash calculation requested")
@@ -67,7 +67,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("pin cost calculation requested")
@@ -98,7 +98,7 @@ func (api *API) calculateFileCost(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("file cost calculation requested")

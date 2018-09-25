@@ -28,12 +28,12 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("password change requested")
 
-	um := models.NewUserManager(api.DBM.DB)
+	um := models.NewUserManager(api.dbm.DB)
 	suceeded, err := um.ChangePassword(username, oldPassword, newPassword)
 	if err != nil {
 		api.LogError(err, PasswordChangeError)
@@ -47,7 +47,7 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": api,
 		"user":    username,
 	}).Info("password changed")
@@ -77,11 +77,11 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	if ethAddress == "" {
 		ethAddress = username
 	}
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 	}).Info("user account registration detected")
 
-	userManager := models.NewUserManager(api.DBM.DB)
+	userManager := models.NewUserManager(api.dbm.DB)
 	userModel, err := userManager.NewUserAccount(ethAddress, username, password, email, false)
 	if err != nil {
 		api.LogError(err, UserAccountCreationError)
@@ -89,7 +89,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("user account registered")
@@ -131,7 +131,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		FailNoExistPostForm(c, "key_name")
 		return
 	}
-	um := models.NewUserManager(api.DBM.DB)
+	um := models.NewUserManager(api.dbm.DB)
 	keys, err := um.GetKeysForUser(username)
 	if err != nil {
 		api.LogError(err, KeySearchError)
@@ -161,7 +161,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		NetworkName: "public",
 	}
 
-	mqConnectionURL := api.TConfig.RabbitMQ.URL
+	mqConnectionURL := api.cfg.RabbitMQ.URL
 
 	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true, false)
 	if err != nil {
@@ -176,7 +176,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("key creation request sent to backend")
@@ -188,7 +188,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
-	um := models.NewUserManager(api.DBM.DB)
+	um := models.NewUserManager(api.dbm.DB)
 	keys, err := um.GetKeysForUser(ethAddress)
 	if err != nil {
 		api.LogError(err, KeySearchError)
@@ -200,7 +200,7 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 		FailOnError(c, errors.New(NoKeyError))
 		return
 	}
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
 	}).Info("key name list requested")
@@ -216,13 +216,13 @@ func (api *API) changeEthereumAddress(c *gin.Context) {
 		FailNoExistPostForm(c, "eth_address")
 		return
 	}
-	um := models.NewUserManager(api.DBM.DB)
+	um := models.NewUserManager(api.dbm.DB)
 	if _, err := um.ChangeEthereumAddress(username, ethAddress); err != nil {
 		api.LogError(err, EthAddressChangeError)
 		FailOnError(c, err)
 		return
 	}
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("ethereum address changed")

@@ -31,7 +31,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		return
 	}
 
-	mqURL := api.TConfig.RabbitMQ.URL
+	mqURL := api.cfg.RabbitMQ.URL
 
 	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL, true, false)
 	if err != nil {
@@ -53,7 +53,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("cluster pin request sent to backend")
@@ -83,7 +83,7 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
 	}).Info("local cluster errors parsed")
@@ -117,7 +117,7 @@ func (api *API) removePinFromCluster(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
 	}).Info("pin removal request sent to cluster")
@@ -152,7 +152,7 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
 	}).Info("local cluster status for pin requested")
@@ -187,7 +187,7 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
 	}).Info("global cluster status for pin requested")
@@ -226,7 +226,7 @@ func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 		statuses = append(statuses, v)
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
 	}).Info("local cluster state fetched")

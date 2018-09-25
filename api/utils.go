@@ -93,16 +93,30 @@ func Respond(c *gin.Context, status int, body gin.H) {
 
 // LogError is a wrapper used by the API to handle logging of errors
 func (api *API) LogError(err error, message string) {
-	api.Logger.WithFields(log.Fields{
-		"service": api.Service,
+	api.l.WithFields(log.Fields{
+		"service": api.service,
 		"error":   err.Error(),
 	}).Error(message)
+}
+
+// LogInfo is a wrapper used by the API to handle simple info logs
+func (api *API) LogInfo(message ...interface{}) {
+	api.l.WithFields(log.Fields{
+		"service": api.service,
+	}).Info(message...)
+}
+
+// LogDebug is a wrapper used by the API to handle simple debug logs
+func (api *API) LogDebug(message ...interface{}) {
+	api.l.WithFields(log.Fields{
+		"service": api.service,
+	}).Debug(message...)
 }
 
 // FileSizeCheck is used to check and validate the size of the uploaded file
 func (api *API) FileSizeCheck(size int64) error {
 	sizeInt, err := strconv.ParseInt(
-		api.TConfig.API.SizeLimitInGigaBytes,
+		api.cfg.API.SizeLimitInGigaBytes,
 		10,
 		64,
 	)

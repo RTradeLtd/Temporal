@@ -21,9 +21,9 @@ func (api *API) makeBucket(c *gin.Context) {
 		FailNoExistPostForm(c, "bucket_name")
 		return
 	}
-	accessKey := api.TConfig.MINIO.AccessKey
-	secretKey := api.TConfig.MINIO.SecretKey
-	endpoint := fmt.Sprintf("%s:%s", api.TConfig.MINIO.Connection.IP, api.TConfig.MINIO.Connection.Port)
+	accessKey := api.cfg.MINIO.AccessKey
+	secretKey := api.cfg.MINIO.SecretKey
+	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
 	manager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
 	if err != nil {
 		api.LogError(err, MinioConnectionError)
@@ -39,7 +39,7 @@ func (api *API) makeBucket(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
 	}).Info("minio bucket created")

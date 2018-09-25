@@ -50,9 +50,9 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		return
 	}
 
-	mqURL := api.TConfig.RabbitMQ.URL
+	mqURL := api.cfg.RabbitMQ.URL
 
-	um := models.NewUserManager(api.DBM.DB)
+	um := models.NewUserManager(api.dbm.DB)
 
 	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
 	if err != nil {
@@ -109,7 +109,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    ethAddress,
 	}).Info("ipns entry creation request sent to backend")
@@ -149,8 +149,8 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 		return
 	}
 
-	aKey := api.TConfig.AWS.KeyID
-	aSecret := api.TConfig.AWS.Secret
+	aKey := api.cfg.AWS.KeyID
+	aSecret := api.cfg.AWS.Secret
 
 	var region aws.Region
 	switch regionName {
@@ -176,7 +176,7 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    authUser,
 	}).Info("dnslink entry created")

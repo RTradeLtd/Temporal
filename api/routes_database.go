@@ -17,7 +17,7 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
-	um := models.NewUploadManager(api.DBM.DB)
+	um := models.NewUploadManager(api.dbm.DB)
 	// fetch the uplaods
 	uploads, err := um.GetUploads()
 	if err != nil {
@@ -25,7 +25,7 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    authenticatedUser,
 	}).Info("all uploads from database requested")
@@ -36,7 +36,7 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 // If not called by admin  admin, will retrieve all uploads for the current authenticated user
 func (api *API) getUploadsForAddress(c *gin.Context) {
 	var queryUser string
-	um := models.NewUploadManager(api.DBM.DB)
+	um := models.NewUploadManager(api.dbm.DB)
 	user := GetAuthenticatedUserFromContext(c)
 	if user == AdminAddress {
 		queryUser = c.Param("user")
@@ -51,7 +51,7 @@ func (api *API) getUploadsForAddress(c *gin.Context) {
 		return
 	}
 
-	api.Logger.WithFields(log.Fields{
+	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    user,
 	}).Info("specific uploads from database requested")

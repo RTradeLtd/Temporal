@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/RTradeLtd/Temporal/config"
 	limit "github.com/aviddiviner/gin-limit"
 	xss "github.com/dvwright/xss-mw"
@@ -30,16 +32,16 @@ var (
 
 // API is our API service
 type API struct {
-	Router  *gin.Engine
-	TConfig *config.TemporalConfig
-	DBM     *database.DatabaseManager
-	Logger  *log.Logger
-	Service string
+	r       *gin.Engine
+	cfg     *config.TemporalConfig
+	dbm     *database.DatabaseManager
+	l       *log.Logger
+	service string
 }
 
-// Initialize is used ot initialize our API service. logMode = true is useful
+// Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
-func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
+func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	var (
 		err    error
 		router = gin.Default()
@@ -59,20 +61,20 @@ func Initialize(cfg *config.TemporalConfig, logMode bool) (*API, error) {
 	router.Use(middleware.CORSMiddleware())
 
 	// set up API struct
-	api, err := new(cfg, router, logMode)
+	api, err := new(cfg, router, debug)
 	if err != nil {
 		return nil, err
 	}
 
 	// init routes
 	api.setupRoutes()
-	api.Logger.Info("api initialization successful")
+	api.l.Info("api initialization successful")
 
 	// return our configured API service
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, logMode bool) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool) (*API, error) {
 	var (
 		logger = log.New()
 		dbm    *database.DatabaseManager
@@ -86,15 +88,18 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, logMode bool) (*API, er
 	}
 	logger.Info("logger initialized")
 
+	// enable debug mode if requested
+	if debug {
+		logger.SetLevel(logrus.DebugLevel)
+	}
+
 	// set up database manager
-	dbm, err = database.Initialize(cfg, database.DatabaseOptions{
-		LogMode: logMode,
-	})
+	dbm, err = database.Initialize(cfg, database.DatabaseOptions{LogMode: debug})
 	if err != nil {
 		logger.Warnf("failed to connect to database: %s", err.Error())
 		logger.Warnf("failed to connect to database with secure connection - attempting insecure connection...")
 		dbm, err = database.Initialize(cfg, database.DatabaseOptions{
-			LogMode:        logMode,
+			LogMode:        debug,
 			SSLModeDisable: true,
 		})
 		if err != nil {
@@ -106,22 +111,36 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, logMode bool) (*API, er
 	}
 
 	return &API{
-		TConfig: cfg,
-		Service: "api",
-		Router:  router,
-		Logger:  logger,
-		DBM:     dbm,
+		cfg:     cfg,
+		service: "api",
+		r:       router,
+		l:       logger,
+		dbm:     dbm,
 	}, nil
+}
+
+// TLSConfig is used to enable TLS on the API service
+type TLSConfig struct {
+	CertFile string
+	KeyFile  string
+}
+
+// ListenAndServe spins up the API server
+func (api *API) ListenAndServe(addr string, tls *TLSConfig) error {
+	if tls != nil {
+		return api.r.RunTLS(addr, tls.CertFile, tls.KeyFile)
+	}
+	return api.r.Run(addr)
 }
 
 // setupRoutes is used to setup all of our api routes
 func (api *API) setupRoutes() {
-	authWare := middleware.JwtConfigGenerate(api.TConfig.API.JwtKey,
-		api.DBM.DB, api.Logger)
+	authWare := middleware.JwtConfigGenerate(api.cfg.API.JwtKey,
+		api.dbm.DB, api.l)
 
-	statsProtected := api.Router.Group("/api/v1/statistics")
+	statsProtected := api.r.Group("/api/v1/statistics")
 	statsProtected.Use(authWare.MiddlewareFunc())
-	statsProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
+	statsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	statsProtected.Use(stats.RequestStats())
 	statsProtected.GET("/stats", func(c *gin.Context) { // admin locked
 		ethAddress := GetAuthenticatedUserFromContext(c)
@@ -134,22 +153,22 @@ func (api *API) setupRoutes() {
 		c.JSON(http.StatusOK, stats.Report())
 	})
 
-	auth := api.Router.Group("/api/v1/auth")
+	auth := api.r.Group("/api/v1/auth")
 	auth.POST("/register", api.registerUserAccount)
 	auth.POST("/login", authWare.LoginHandler)
 
 	// PROTECTED ROUTES -- BEGIN
-	accountProtected := api.Router.Group("/api/v1/account")
+	accountProtected := api.r.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
-	accountProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
+	accountProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	accountProtected.POST("password/change", api.changeAccountPassword)
 	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
 	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
 	accountProtected.POST("/ethereum/address/change", api.changeEthereumAddress)
 
-	ipfsProtected := api.Router.Group("/api/v1/ipfs")
+	ipfsProtected := api.r.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
-	ipfsProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
+	ipfsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	ipfsProtected.POST("/pubsub/publish/:topic", api.ipfsPubSubPublish)
 	ipfsProtected.POST("/calculate-content-hash", api.calculateContentHashForFile)
 	ipfsProtected.GET("/pins", api.getLocalPins) // admin locked
@@ -162,9 +181,9 @@ func (api *API) setupRoutes() {
 	ipfsProtected.POST("/add-file/advanced", api.addFileLocallyAdvanced)
 	ipfsProtected.DELETE("/remove-pin/:hash", api.removePinFromLocalHost) // admin locked
 
-	ipfsPrivateProtected := api.Router.Group("/api/v1/ipfs-private")
+	ipfsPrivateProtected := api.r.Group("/api/v1/ipfs-private")
 	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
-	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
+	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	ipfsPrivateProtected.POST("/new/network", api.createHostedIPFSNetworkEntryInDatabase)                // admin locked
 	ipfsPrivateProtected.GET("/network/:name", api.getIPFSPrivateNetworkByName)                          // admin locked
 	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", api.checkLocalNodeForPinForHostedIPFSNetwork) // admin locked
@@ -180,15 +199,15 @@ func (api *API) setupRoutes() {
 	ipfsPrivateProtected.POST("/ipns/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
 	ipfsPrivateProtected.DELETE("/ipfs/pin/remove/:hash", api.removePinFromLocalHostForHostedIPFSNetwork)
 
-	ipnsProtected := api.Router.Group("/api/v1/ipns")
+	ipnsProtected := api.r.Group("/api/v1/ipns")
 	ipnsProtected.Use(authWare.MiddlewareFunc())
-	ipnsProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
+	ipnsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	ipnsProtected.POST("/publish/details", api.publishToIPNSDetails)
 	ipnsProtected.POST("/dnslink/aws/add", api.generateDNSLinkEntry) // admin locked
 
-	clusterProtected := api.Router.Group("/api/v1/ipfs-cluster")
+	clusterProtected := api.r.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())
-	clusterProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
+	clusterProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	clusterProtected.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
 	clusterProtected.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
 	clusterProtected.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
@@ -196,25 +215,25 @@ func (api *API) setupRoutes() {
 	clusterProtected.POST("/pin/:hash", api.pinHashToCluster)
 	clusterProtected.DELETE("/remove-pin/:hash", api.removePinFromCluster) // admin locked
 
-	databaseProtected := api.Router.Group("/api/v1/database")
+	databaseProtected := api.r.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
-	databaseProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
+	databaseProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	databaseProtected.GET("/uploads", api.getUploadsFromDatabase)     // admin locked
 	databaseProtected.GET("/uploads/:user", api.getUploadsForAddress) // partial admin locked
 
-	frontendProtected := api.Router.Group("/api/v1/frontend/")
+	frontendProtected := api.r.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
 	frontendProtected.POST("/utils/ipfs/hash/calculate", api.calculateIPFSFileHash)
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", api.calculatePinCost)
 	frontendProtected.POST("/cost/calculate/file", api.calculateFileCost)
 
-	adminProtected := api.Router.Group("/api/v1/admin")
+	adminProtected := api.r.Group("/api/v1/admin")
 	adminProtected.Use(authWare.MiddlewareFunc())
-	adminProtected.Use(middleware.APIRestrictionMiddleware(api.DBM.DB))
+	adminProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	adminProtected.POST("/utils/file-size-check", CalculateFileSize)
 	mini := adminProtected.Group("/mini")
 	mini.POST("/create/bucket", api.makeBucket)
 	// PROTECTED ROUTES -- END
 
-	api.Logger.Info("Routes initialized")
+	api.l.Info("Routes initialized")
 }
