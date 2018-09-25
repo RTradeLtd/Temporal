@@ -23,27 +23,34 @@ type DatabaseManager struct {
 	Upload *models.UploadManager
 }
 
-func Initialize(cfg *config.TemporalConfig, runMigrations bool) (*DatabaseManager, error) {
+type DatabaseOptions struct {
+	RunMigrations  bool
+	SSLModeDisable bool
+}
+
+func Initialize(cfg *config.TemporalConfig, opts DatabaseOptions) (*DatabaseManager, error) {
 	if cfg == nil {
 		return nil, errors.New("invalid configuration provided")
 	}
 
 	db, err := OpenDBConnection(DBOptions{
-		User:     cfg.Database.Name,
-		Password: cfg.Database.Password,
-		Address:  cfg.Database.URL,
+		User:           cfg.Database.Username,
+		Password:       cfg.Database.Password,
+		Address:        cfg.Database.URL,
+		SSLModeDisable: opts.SSLModeDisable,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	dbm := DatabaseManager{DB: db}
-	if runMigrations {
+	if opts.RunMigrations {
 		dbm.RunMigrations()
 	}
 	return &dbm, nil
 }
 
+// RunMigrations runs all migrations
 func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(UploadObj)
 	dbm.DB.AutoMigrate(UserObj)
@@ -54,6 +61,9 @@ func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(HostedIpfsNetObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
+
+// Close shuts down database connection
+func (dbm *DatabaseManager) Close() error { return dbm.DB.Close() }
 
 // DBOptions declares options for opening a database connection
 type DBOptions struct {
@@ -79,22 +89,4 @@ func OpenDBConnection(opts DBOptions) (*gorm.DB, error) {
 		return nil, err
 	}
 	return db, nil
-}
-
-func OpenTestDBConnection(dbPass string) (*gorm.DB, error) {
-	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5433 user=postgres dbname=temporal password=%s", dbPass)
-	db, err := gorm.Open("postgres", dbConnURL)
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
-}
-
-// CloseDBConnection is used to close a db
-func CloseDBConnection(db *gorm.DB) error {
-	err := db.Close()
-	if err != nil {
-		return err
-	}
-	return nil
 }
