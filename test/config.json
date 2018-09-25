@@ -6,20 +6,20 @@
 		"password": "password123"
 	},
 	"api": {
-		"admin_user": "....",
+		"admin_user": "",
 		"connection": {
 			"certificates": {
-				"cert_path": "/home/solidity/certificates/api.pem",
-				"key_path": "/home/solidity/certificates/api.key"
+				"cert_path": "/certificates/api.pem",
+				"key_path": "/certificates/api.key"
 			},
 			"listen_address": "127.0.0.1"
 		},
 		"sessions": {
-			"auth_key": "this is a test",
-			"encryption_key": "this is a test 1"
+			"auth_key": "",
+			"encryption_key": ""
 		},
-		"rollbar_token": "....",
-		"jwt_key": ".....",
+		"rollbar_token": "",
+		"jwt_key": "",
 		"size_limit_in_giga_bytes": "2"
 	},
 	"ipfs": {
@@ -36,9 +36,9 @@
 	},
 	"ethereum": { 
 		"account": {
-			"address": "0xC6C35f43fDD71f86a2D8D4e3cA1Ce32564c38bd9",
-			"key_file": "/media/solidity/data/Rinkeby/keystore/UTC--2018-05-26T01-50-15.918578523Z--c6c35f43fdd71f86a2d8d4e3ca1ce32564c38bd9",
-			"key_pass": "password123"
+			"address": "",
+			"key_file": "/data/ethereum/key",
+			"key_pass": ""
 		},
 		"connection": {
 			"rpc": {
@@ -46,22 +46,22 @@
 				"port": "8545"
 			},
 			"ipc": {
-				"path": "/media/solidity/data/Rinkeby/datadir/geth.ipc"
+				"path": "/data/ethereum/geth.ipc"
 			},
 			"infura": {
-				"url": "https://rinkeby.infura.io/v3/e7e7c2534e33484f865ed9f6a7e77fca"
+				"url": ""
 			}
 		},
 		"contracts": {
-			"payment_contract_address": "....."
+			"payment_contract_address": ""
 		}
 	},
 	"rabbitmq": {
 		"url": "amqp://guest:guest@localhost:5672/"
 	},
 	"aws": {
-		"key_id": "......",
-		"secret": "......."
+		"key_id": "",
+		"secret": ""
 	},
 	"minio": {
 		"access_key": "C03T49S17RP0APEZDK6M",
@@ -72,8 +72,8 @@
 		}
 	},
 	"sendgrid":  {
-		"api_key": "wowsuchkeymajorapi",
-		"email_address": "temporal@rtradetechnologies.com",
-		"email_name": "Temporal Reports"
+		"api_key": "",
+		"email_address": "",
+		"email_name": ""
 	}
 }

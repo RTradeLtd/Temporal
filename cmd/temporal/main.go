@@ -238,6 +238,20 @@ var commands = map[string]app.Cmd{
 			}
 		},
 	},
+	"init": app.Cmd{
+		PreRun:      true,
+		Blurb:       "initialize blank Temporal configuration",
+		Description: "Initializes a blank Temporal configuration template at CONFIG_DAG.",
+		Action: func(cfg config.TemporalConfig, args map[string]string) {
+			configDag := os.Getenv("CONFIG_DAG")
+			if configDag == "" {
+				log.Fatal("CONFIG_DAG is not set")
+			}
+			if err := config.GenerateConfig(configDag); err != nil {
+				log.Fatal(err)
+			}
+		},
+	},
 }
 
 func main() {

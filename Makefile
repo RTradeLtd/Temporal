@@ -124,9 +124,17 @@ vendor:
 	mv vendor/github.com/ipfs/go-ipfs/vendor/* vendor
 	@echo "===================          done           ==================="
 
-# Build release
+# Build CLI binary release
 .PHONY: release-cli
 release-cli:
 	@echo "===================   cross-compiling CLI   ==================="
 	@bash .scripts/release.sh
+	@echo "===================          done           ==================="
+
+# Build docker release
+.PHONY: docker
+docker:
+	@echo "===================  building docker image  ==================="
+	@docker build --build-arg TEMPORALVERSION=$(TEMPORALVERSION) \
+		-t rtradetech/temporal:$(TEMPORALVERSION) .
 	@echo "===================          done           ==================="
