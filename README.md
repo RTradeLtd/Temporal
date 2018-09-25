@@ -48,7 +48,7 @@ Temporal now has a working web interface! This provides a slick and easy way to 
 * [Clearnet, Recommended](https://nuts.rtradetechnologies.com:6768/)
 * [I2P](http://riqdsr6ijsujw4tagdufhbv7drlghe2cljy2xow3irvy7grq34fq.b32.i2p/)
 
-Please note that support for the I2P Interface is very experimental at the moment and doesn't have HTTPS.
+Please note that support for the I2P Interface is very experimental at the moment and does not offer HTTPS.
 
 ### Goals
 
