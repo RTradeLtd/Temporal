@@ -53,10 +53,6 @@ const (
 	DNSLinkEntryError = "failed to create dns link entry"
 	// PaymentCreationError is an error used when creating payments
 	PaymentCreationError = "failed to create payment"
-	// PaymentMessageSignError is an error used when signing payment messages
-	PaymentMessageSignError = "failed to sign payment message"
-	// PaymentSignerGenerationError is an error used when generating the payment signer
-	PaymentSignerGenerationError = "failed to generate payment signer"
 	// EthAddressSearchError is an error used when searching for an eth address
 	EthAddressSearchError = "failed to search for eth address"
 	// PinCostCalculationError is an error message used when calculating pin costs
