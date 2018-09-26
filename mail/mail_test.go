@@ -12,7 +12,7 @@ import (
 
 var (
 	recipient = "insertemailhere"
-	cfgPath   = filepath.Join(os.Getenv("home"), "config.json")
+	cfgPath   = filepath.Join(os.Getenv("HOME"), "config.json")
 )
 
 func TestMail(t *testing.T) {
