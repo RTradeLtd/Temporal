@@ -73,4 +73,6 @@ const (
 	FileTooBigError = "attempting to upload too big of a file"
 	// InvalidPaymentTypeError is an error message given to a user when using an invalid payment method
 	InvalidPaymentTypeError = "payment type not supported"
+	// InvalidPaymentBlockchainError is an error message given to a user when they provide an invalid blockchain
+	InvalidPaymentBlockchainError = "blockchain must be one of: 'ethereum' 'bitcoin' 'litecoin' 'monero'"
 )
