@@ -5,19 +5,13 @@ import (
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/models"
-	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 )
 
 // CreatePayment is used to create a payment
 func (api *API) CreatePayment(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	paymentType, exists := c.GetPostForm("payment_type")
-	if !exists {
-		FailNoExistPostForm(c, "payment_type")
-		return
-	}
+	paymentType := c.Param("type")
 	usdValue, err := api.getUSDValue(paymentType)
 	if err != nil {
 		FailOnError(c, err)
@@ -26,7 +20,6 @@ func (api *API) CreatePayment(c *gin.Context) {
 	depositAddress, err := api.getDepositAddress(paymentType)
 	if err != nil {
 		FailOnError(c, err)
-		return
 	}
 	txHash, exists := c.GetPostForm("tx_hash")
 	if !exists {
@@ -71,28 +64,20 @@ func (api *API) CreatePayment(c *gin.Context) {
 // GetDepositAddress is used to get a deposit address for a user
 func (api *API) GetDepositAddress(c *gin.Context) {
 	paymentType := c.Param("type")
-	address, err := api.getDepositAddress(paymentType)
-	if err != nil {
+	username := GetAuthenticatedUserFromContext(c)
+	var (
+		err     error
+		address string
+		um      = models.NewUserManager(api.DBM.DB)
+	)
+	switch paymentType {
+	case "ETH", "RTC":
+		address, err = um.FindEthAddressByUserName(username)
+	default:
+		err = errors.New(InvalidPaymentTypeError)
 		api.LogError(err, InvalidPaymentTypeError)
 		FailOnError(c, err)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": address})
-}
-
-// GetUSDValue is used to retrieve the usd value of a given payment type
-func (api *API) getUSDValue(paymentType string) (float64, error) {
-	switch paymentType {
-	case "eth":
-		return utils.RetrieveUsdPrice("ethereum")
-	case "xmr":
-		return utils.RetrieveUsdPrice("monero")
-	case "btc":
-		return utils.RetrieveUsdPrice("bitcoin")
-	case "ltc":
-		return utils.RetrieveUsdPrice("litecoin")
-	case "rtc":
-		return 0.125, nil
-	}
-	return 0, errors.New(InvalidPaymentTypeError)
 }
