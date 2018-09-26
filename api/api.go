@@ -8,17 +8,17 @@ import (
 	"net/http"
 	"os"
 
+	limit "github.com/aviddiviner/gin-limit"
+	helmet "github.com/danielkov/gin-helmet"
 	"github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/config"
-	limit "github.com/aviddiviner/gin-limit"
 	xss "github.com/dvwright/xss-mw"
 	stats "github.com/semihalev/gin-stats"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/database"
-	helmet "github.com/danielkov/gin-helmet"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -52,14 +52,6 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	// set up prometheus monitoring
 	p.SetListenAddress(fmt.Sprintf("%s:6768", cfg.API.Connection.ListenAddress))
 	p.Use(router)
-	// load xss mitigation middleware
-	router.Use(xssMdlwr.RemoveXss())
-	// set a connection limit
-	router.Use(limit.MaxAllowed(20))
-	// prevent mine content sniffing
-	router.Use(helmet.NoSniff())
-	// load cors
-	router.Use(middleware.CORSMiddleware())
 
 	// open log file
 	logfile, err := os.OpenFile("/var/log/temporal/api_service.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
@@ -139,6 +131,15 @@ func (api *API) ListenAndServe(addr string, tls *TLSConfig) error {
 
 // setupRoutes is used to setup all of our api routes
 func (api *API) setupRoutes() {
+	// load xss mitigation middleware
+	api.r.Use(xssMdlwr.RemoveXss())
+	// set a connection limit
+	api.r.Use(limit.MaxAllowed(20))
+	// prevent mine content sniffing
+	api.r.Use(helmet.NoSniff())
+	// load cors
+	api.r.Use(middleware.CORSMiddleware())
+
 	authWare := middleware.JwtConfigGenerate(api.cfg.API.JwtKey,
 		api.dbm.DB, api.l)
 
