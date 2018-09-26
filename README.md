@@ -111,7 +111,7 @@ Our API documentation is through [postman](https://documenter.getpostman.com/vie
 
 ### Smart Contracts
 
-All smart contracts used by TEMPORAL can be viewed over here https://github.com/RTradeLtd/RT-Contracts/tree/master/TEMPORAL
+All smart contracts used by TEMPORAL can be viewed in our [contracts repository](https://github.com/RTradeLtd/RT-Contracts/tree/master/TEMPORAL)
 
 ### Features
 
@@ -237,4 +237,5 @@ Without open source, TEMPORAL wouldn't be possible, as such we would like to ext
 ## License
 
 As Temporal is a large and complex project, licensing is a complex subject. This is something we are actively looking into, however to minimize issues in the interm, we are defaulting to an MIT license. This will more than likely change in the future, however we want to make sure that the license we settle on for when we fully launch will be the right one.
+
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_large)
