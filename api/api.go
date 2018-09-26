@@ -4,6 +4,7 @@ package api
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 
@@ -60,21 +61,27 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	// load cors
 	router.Use(middleware.CORSMiddleware())
 
+	// open log file
+	logfile, err := os.OpenFile("/var/log/temporal/api_service.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open log file: %s", err)
+	}
+
 	// set up API struct
-	api, err := new(cfg, router, debug)
+	api, err := new(cfg, router, debug, logfile)
 	if err != nil {
 		return nil, err
 	}
 
 	// init routes
 	api.setupRoutes()
-	api.l.Info("api initialization successful")
+	api.LogInfo("api initialization successful")
 
 	// return our configured API service
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writer) (*API, error) {
 	var (
 		logger = log.New()
 		dbm    *database.DatabaseManager
@@ -82,10 +89,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool) (*API, erro
 	)
 
 	// set up logger
-	logger.Out, err = os.OpenFile("/var/log/temporal/api_service.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
-	if err != nil {
-		return nil, fmt.Errorf("logger failed to initalize: %s", err)
-	}
+	logger.Out = out
 	logger.Info("logger initialized")
 
 	// enable debug mode if requested
