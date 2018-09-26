@@ -9,13 +9,13 @@ import (
 // Payments is our payment model
 type Payments struct {
 	gorm.Model
-	DepositAddress string `gorm:"type:varchar(255)"`
-	TxHash         string `gorm:"type:varchar(255)"`
-	USDValue       string `gorm:"type:varchar(255)"` // USDValue is also a "Credit" value, since 1 USD -> 1 Credit
-	Blockchain     string `gorm:"type:varchar(255)"`
-	Type           string `gorm:"type:varchar(255)"` // ETH, RTC, XMR, BTC, LTC
-	UserName       string `gorm:"type:varchar(255)"`
-	Confirmed      bool   `gorm:"type:varchar(255)"`
+	DepositAddress string  `gorm:"type:varchar(255)"`
+	TxHash         string  `gorm:"type:varchar(255)"`
+	USDValue       float64 `gorm:"type:varchar(255)"` // USDValue is also a "Credit" value, since 1 USD -> 1 Credit
+	Blockchain     string  `gorm:"type:varchar(255)"`
+	Type           string  `gorm:"type:varchar(255)"` // ETH, RTC, XMR, BTC, LTC
+	UserName       string  `gorm:"type:varchar(255)"`
+	Confirmed      bool    `gorm:"type:varchar(255)"`
 }
 
 // PaymentManager is used to interact with payment information in our database
@@ -29,7 +29,7 @@ func NewPaymentManager(db *gorm.DB) *PaymentManager {
 }
 
 // NewPayment is used to create a payment in our database
-func (pm *PaymentManager) NewPayment(depositAddress, txHash, usdValue, blockchain, paymentType, username string) (*Payments, error) {
+func (pm *PaymentManager) NewPayment(depositAddress string, txHash string, usdValue float64, blockchain string, paymentType string, username string) (*Payments, error) {
 	p := Payments{}
 	check := pm.DB.Where("tx_hash = ?", txHash).First(&p)
 	if check.Error == nil {
