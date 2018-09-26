@@ -38,6 +38,7 @@ func Initialize(cfg *config.TemporalConfig, opts DatabaseOptions) (*DatabaseMana
 		User:           cfg.Database.Username,
 		Password:       cfg.Database.Password,
 		Address:        cfg.Database.URL,
+		Port:           cfg.Database.Port,
 		SSLModeDisable: opts.SSLModeDisable,
 	})
 	if err != nil {
@@ -73,6 +74,7 @@ type DBOptions struct {
 	User           string
 	Password       string
 	Address        string
+	Port           string
 	SSLModeDisable bool
 }
 
@@ -82,8 +84,8 @@ func OpenDBConnection(opts DBOptions) (*gorm.DB, error) {
 		opts.User = "postgres"
 	}
 	// look into whether or not we wil disable sslmode
-	dbConnURL := fmt.Sprintf("host=%s port=5433 user=%s dbname=temporal password=%s",
-		opts.Address, opts.User, opts.Password)
+	dbConnURL := fmt.Sprintf("host=%s port=%s user=%s dbname=temporal password=%s",
+		opts.Address, opts.Port, opts.User, opts.Password)
 	if opts.SSLModeDisable {
 		dbConnURL = "sslmode=disable " + dbConnURL
 	}
