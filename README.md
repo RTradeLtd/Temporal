@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://godoc.org/github.com/RTradeLtd/Temporal/api">
-    <img src="https://godoc.org/github.com/RTradeLtd/Temporal/api?status.svg"
+  <a href="https://godoc.org/github.com/RTradeLtd/Temporal">
+    <img src="https://godoc.org/github.com/RTradeLtd/Temporal?status.svg"
        alt="GoDocs available" />
   </a>
 
