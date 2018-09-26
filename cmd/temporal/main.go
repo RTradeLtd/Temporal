@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	//_ "./docs"
 	"github.com/RTradeLtd/Temporal/api"
@@ -17,8 +18,8 @@ var (
 	// Version denotes the tag of this build
 	Version string
 
-	certFile = "/home/solidity/certificates/api.pem"
-	keyFile  = "/home/solidity/certificates/api.key"
+	certFile = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
+	keyFile  = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
 	tCfg     config.TemporalConfig
 )
 

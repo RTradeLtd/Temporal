@@ -2,20 +2,25 @@ package mail_test
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/mail"
 )
 
-var recipient = "insertemailhere"
+var (
+	recipient = "insertemailhere"
+	cfgPath   = filepath.Join(os.Getenv("home"), "config.json")
+)
 
 func TestMail(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 
-	cfg, err := config.LoadConfig("/home/solidity/config.json")
+	cfg, err := config.LoadConfig(cfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}

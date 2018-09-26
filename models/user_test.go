@@ -3,6 +3,7 @@ package models_test
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/config"
@@ -11,8 +12,8 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-const (
-	defaultConfigFile = "/home/solidity/config.json"
+var (
+	cfgPath = filepath.Join(os.Getenv("home"), "config.json")
 )
 
 var (
@@ -32,7 +33,7 @@ func TestUserManager_ChangeEthereumAddress(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
-	cfg, err := config.LoadConfig(defaultConfigFile)
+	cfg, err := config.LoadConfig(cfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +75,7 @@ func TestUserManager_ChangePassword(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	cfg, err := config.LoadConfig(defaultConfigFile)
+	cfg, err := config.LoadConfig(cfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +120,7 @@ func TestUserManager_NewAccount(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	cfg, err := config.LoadConfig(defaultConfigFile)
+	cfg, err := config.LoadConfig(cfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -158,7 +159,7 @@ func TestUserManager_SignIn(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	cfg, err := config.LoadConfig(defaultConfigFile)
+	cfg, err := config.LoadConfig(cfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
