@@ -26,6 +26,7 @@ func (api *API) CreatePayment(c *gin.Context) {
 	depositAddress, err := api.getDepositAddress(paymentType)
 	if err != nil {
 		FailOnError(c, err)
+		return
 	}
 	txHash, exists := c.GetPostForm("tx_hash")
 	if !exists {
@@ -87,7 +88,15 @@ func (api *API) GetDepositAddress(c *gin.Context) {
 func (api *API) getUSDValue(paymentType string) (float64, error) {
 	switch paymentType {
 	case "eth":
-		return utils.RetrieveEthUsdPrice()
+		return utils.RetrieveUsdPrice("ethereum")
+	case "xmr":
+		return utils.RetrieveUsdPrice("monero")
+	case "btc":
+		return utils.RetrieveUsdPrice("bitcoin")
+	case "ltc":
+		return utils.RetrieveUsdPrice("litecoin")
+	case "rtc":
+		return 0.125, nil
 	}
 	return 0, errors.New(InvalidPaymentTypeError)
 }
