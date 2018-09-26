@@ -167,7 +167,7 @@ func (api *API) setupRoutes() {
 	paymentsProtected.Use(authWare.MiddlewareFunc())
 	paymentsProtected.Use(middleware.APIRestrictionMiddleware(db))
 	paymentsProtected.POST("/create", api.CreatePayment)
-	paymentsProtected.GET("/deposit/address", api.GetDepositAddress)
+	paymentsProtected.GET("/deposit/address/:type", api.GetDepositAddress)
 
 	accountProtected := g.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
