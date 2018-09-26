@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://godoc.org/github.com/RTradeLtd/Temporal/api">
-    <img src="https://godoc.org/github.com/RTradeLtd/Temporal/api?status.svg"
+  <a href="https://godoc.org/github.com/RTradeLtd/Temporal">
+    <img src="https://godoc.org/github.com/RTradeLtd/Temporal?status.svg"
        alt="GoDocs available" />
   </a>
 
@@ -94,13 +94,24 @@ This is a huge issue and concern for any form of cloud storage. But is seldom me
 
 ## Usage and Features
 
+### Spinning up a Node
+
+Once you have a `config.json` set up (a template can be generated using `temporal init`), you can run the following commands to use docker-compose to spin up Temporal:
+
+```shell
+$> curl https://raw.githubusercontent.com/RTradeLtd/Temporal/V2/temporal.yml --output temporal.yml
+$> docker-compose -f temporal.yml up
+```
+
+Refer to the `temporal.yml` documentation for more details.
+
 ### API Documentation
 
 Our API documentation is through [postman](https://documenter.getpostman.com/view/4295780/RWEcQM6W#intro)
 
 ### Smart Contracts
 
-All smart contracts used by TEMPORAL can be viewed over here https://github.com/RTradeLtd/RT-Contracts/tree/master/TEMPORAL
+All smart contracts used by TEMPORAL can be viewed in our [contracts repository](https://github.com/RTradeLtd/RT-Contracts/tree/master/TEMPORAL)
 
 ### Features
 
@@ -226,4 +237,5 @@ Without open source, TEMPORAL wouldn't be possible, as such we would like to ext
 ## License
 
 As Temporal is a large and complex project, licensing is a complex subject. This is something we are actively looking into, however to minimize issues in the interm, we are defaulting to an MIT license. This will more than likely change in the future, however we want to make sure that the license we settle on for when we fully launch will be the right one.
+
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_large)
