@@ -45,7 +45,7 @@ type TemporalConfig struct {
 type Database struct {
 	Name     string `json:"name"`
 	URL      string `json:"url"`
-	Port     string `json:"5433"`
+	Port     string `json:"port"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
