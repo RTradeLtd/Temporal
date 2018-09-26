@@ -39,10 +39,11 @@ func (api *API) CreatePayment(c *gin.Context) {
 		return
 	}
 	if check := api.validateBlockchain(blockchain); !check {
-		api.LogError(err, InvalidPaymentBlockchainError)(c, http.StatusBadRequest)
+		FailOnError(c, errors.New(InvalidPaymentBlockchainError))
 		return
 	}
-	pm := models.NewPaymentManager(api.dbm.DB)
+	username := GetAuthenticatedUserFromContext(c)
+	pm := models.NewPaymentManager(api.DBM.DB)
 	if _, err := pm.NewPayment(depositAddress, txHash, usdValue, blockchain, paymentType, username); err != nil {
 		api.LogError(err, PaymentCreationError)(c, http.StatusBadRequest)
 		return
