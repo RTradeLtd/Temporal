@@ -122,5 +122,11 @@ func (api *API) getDepositAddress(paymentType string) (string, error) {
 		return "0xc7459562777DDf3A1A7afefBE515E8479Bd3FDBD", nil
 	}
 	return "", errors.New(InvalidPaymentTypeError)
+}
 
+func (api *API) validateBlockchain(blockchain string) bool {
+	if blockchain == "ethereum" {
+		return true
+	}
+	return false
 }
