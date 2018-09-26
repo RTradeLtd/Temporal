@@ -3,9 +3,9 @@ package mail
 import (
 	"errors"
 
-	"github.com/RTradeLtd/Temporal/database"
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/database/models"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )

@@ -9,9 +9,9 @@ import (
 	//_ "./docs"
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/cmd/temporal/app"
-	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database"
 )
 
 var (

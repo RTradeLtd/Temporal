@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/RTradeLtd/database/models"
 	gocid "github.com/ipfs/go-cid"
 	log "github.com/sirupsen/logrus"
 

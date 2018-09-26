@@ -10,6 +10,18 @@
   revision = "7cf349f742bb0ebfa9517bb1c4e60787aac79907"
 
 [[projects]]
+  branch = "master"
+  digest = "1:133d4604164e519dd08055de82022b43df1ac914e3b4d538d9aa7d07d06b94ee"
+  name = "github.com/RTradeLtd/database"
+  packages = [
+    ".",
+    "models",
+    "utils",
+  ]
+  pruneopts = "UT"
+  revision = "8360521bf57b65797464238a22303dc78a29f0c5"
+
+[[projects]]
   branch = "master-rtrade"
   digest = "1:057ef275777e16de287ddbe39ae5590ab1acfa6ccb3d86f3410b998f7ce59b05"
   name = "github.com/RTradeLtd/go-ipfs-api"
@@ -1298,6 +1310,8 @@
   analyzer-version = 1
   input-imports = [
     "github.com/RTradeLtd/config",
+    "github.com/RTradeLtd/database",
+    "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
@@ -1321,8 +1335,6 @@
     "github.com/ipfs/ipfs-cluster/api",
     "github.com/ipfs/ipfs-cluster/api/rest/client",
     "github.com/jinzhu/gorm",
-    "github.com/jinzhu/gorm/dialects/postgres",
-    "github.com/lib/pq",
     "github.com/libp2p/go-libp2p-crypto",
     "github.com/libp2p/go-libp2p-peer",
     "github.com/minio/minio-go",
@@ -1336,7 +1348,6 @@
     "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
     "github.com/zsais/go-gin-prometheus",
-    "golang.org/x/crypto/bcrypt",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

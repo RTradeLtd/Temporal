@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/database/models"
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"

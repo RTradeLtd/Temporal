@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/database/models"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )

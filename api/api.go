@@ -18,7 +18,7 @@ import (
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
-	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/database"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
