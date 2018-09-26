@@ -71,17 +71,8 @@ func (api *API) CreatePayment(c *gin.Context) {
 // GetDepositAddress is used to get a deposit address for a user
 func (api *API) GetDepositAddress(c *gin.Context) {
 	paymentType := c.Param("type")
-	username := GetAuthenticatedUserFromContext(c)
-	var (
-		err     error
-		address string
-		um      = models.NewUserManager(api.DBM.DB)
-	)
-	switch paymentType {
-	case "ETH", "RTC":
-		address, err = um.FindEthAddressByUserName(username)
-	default:
-		err = errors.New(InvalidPaymentTypeError)
+	address, err := api.getDepositAddress(paymentType)
+	if err != nil {
 		api.LogError(err, InvalidPaymentTypeError)
 		FailOnError(c, err)
 		return
