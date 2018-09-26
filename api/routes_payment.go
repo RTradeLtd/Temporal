@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/models"
-	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -91,21 +90,4 @@ func (api *API) GetDepositAddress(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": address})
-}
-
-// GetUSDValue is used to retrieve the usd value of a given payment type
-func (api *API) getUSDValue(paymentType string) (float64, error) {
-	switch paymentType {
-	case "eth":
-		return utils.RetrieveUsdPrice("ethereum")
-	case "xmr":
-		return utils.RetrieveUsdPrice("monero")
-	case "btc":
-		return utils.RetrieveUsdPrice("bitcoin")
-	case "ltc":
-		return utils.RetrieveUsdPrice("litecoin")
-	case "rtc":
-		return 0.125, nil
-	}
-	return 0, errors.New(InvalidPaymentTypeError)
 }
