@@ -94,6 +94,17 @@ This is a huge issue and concern for any form of cloud storage. But is seldom me
 
 ## Usage and Features
 
+### Spinning up a Node
+
+Once you have a `config.json` set up (a template can be generated using `temporal init`), you can run the following commands to use docker-compose to spin up Temporal:
+
+```shell
+$> curl https://raw.githubusercontent.com/RTradeLtd/Temporal/V2/temporal.yml --output temporal.yml
+$> docker-compose -f temporal.yml up
+```
+
+Refer to the `temporal.yml` documentation for more details.
+
 ### API Documentation
 
 Our API documentation is through [postman](https://documenter.getpostman.com/view/4295780/RWEcQM6W#intro)
