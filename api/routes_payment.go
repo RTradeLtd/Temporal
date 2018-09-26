@@ -5,12 +5,14 @@ import (
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 )
 
 // CreatePayment is used to create a payment
 func (api *API) CreatePayment(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
 	paymentType, exists := c.GetPostForm("payment_type")
 	if !exists {
 		FailNoExistPostForm(c, "payment_type")
@@ -39,7 +41,6 @@ func (api *API) CreatePayment(c *gin.Context) {
 		FailOnError(c, errors.New(InvalidPaymentBlockchainError))
 		return
 	}
-	username := GetAuthenticatedUserFromContext(c)
 	pm := models.NewPaymentManager(api.DBM.DB)
 	if _, err := pm.NewPayment(depositAddress, txHash, usdValue, blockchain, paymentType, username); err != nil {
 		api.LogError(err, PaymentCreationError)
