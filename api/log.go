@@ -13,14 +13,14 @@ func (api *API) LogError(err error, message string) func(c *gin.Context, code ..
 		api.l.WithFields(log.Fields{
 			"service": api.service,
 		}).Error(message)
+	} else {
+		api.l.WithFields(log.Fields{
+			"service": api.service,
+			"error":   err.Error(),
+		}).Error(message)
 	}
 
-	api.l.WithFields(log.Fields{
-		"service": api.service,
-		"error":   err.Error(),
-	}).Error(message)
-
-	if message == "" {
+	if message == "" && err != nil {
 		return func(c *gin.Context, code ...int) { Fail(c, err, code...) }
 	}
 	return func(c *gin.Context, code ...int) { FailWithMessage(c, message, code...) }
