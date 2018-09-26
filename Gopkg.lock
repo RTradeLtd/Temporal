@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  branch = "master"
+  digest = "1:652359e8c33b083cc9c0e376255450e3dd96f86ccc8b100ebc7514dfbb8545e4"
+  name = "github.com/RTradeLtd/config"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "7cf349f742bb0ebfa9517bb1c4e60787aac79907"
+
+[[projects]]
   branch = "master-rtrade"
   digest = "1:057ef275777e16de287ddbe39ae5590ab1acfa6ccb3d86f3410b998f7ce59b05"
   name = "github.com/RTradeLtd/go-ipfs-api"
@@ -1289,6 +1297,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",

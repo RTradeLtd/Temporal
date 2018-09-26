@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/mail"
+	"github.com/RTradeLtd/config"
 )
 
 var (

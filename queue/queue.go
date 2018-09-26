@@ -8,8 +8,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/config"
 	"github.com/streadway/amqp"
 )
 

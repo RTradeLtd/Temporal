@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/RTradeLtd/Temporal/config"
+	"github.com/RTradeLtd/config"
 )
 
 const (

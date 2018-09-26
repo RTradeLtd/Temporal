@@ -119,3 +119,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   name = "github.com/appleboy/gin-jwt"
   revision = "f7347d7c16fc8297bf5b7215b9e4847a5ca05d90"
+
+[[constraint]]
+  name = "github.com/RTradeLtd/config"
+  branch = "master"
