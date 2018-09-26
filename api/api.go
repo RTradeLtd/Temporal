@@ -122,6 +122,12 @@ func (api *API) setupRoutes(g *gin.Engine, authWare *jwt.GinJWTMiddleware, db *g
 	auth.POST("/login", authWare.LoginHandler)
 
 	// PROTECTED ROUTES -- BEGIN
+	paymentsProtected := g.Group("/api/v1/payments")
+	paymentsProtected.Use(authWare.MiddlewareFunc())
+	paymentsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	paymentsProtected.POST("/create", api.CreatePayment)
+	paymentsProtected.GET("/deposit/address", api.GetDepositAddress)
+
 	accountProtected := g.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
 	accountProtected.Use(middleware.APIRestrictionMiddleware(db))
