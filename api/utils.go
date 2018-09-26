@@ -64,6 +64,12 @@ func (api *API) getDepositAddress(paymentType string) (string, error) {
 	switch paymentType {
 	case "eth", "rtc":
 		return "0xc7459562777DDf3A1A7afefBE515E8479Bd3FDBD", nil
+	case "btc":
+		return "0", nil
+	case "ltc":
+		return "0", nil
+	case "xmr":
+		return "0", nil
 	}
 	return "", errors.New(InvalidPaymentTypeError)
 }
