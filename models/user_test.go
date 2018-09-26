@@ -2,8 +2,6 @@ package models_test
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/config"
@@ -13,12 +11,7 @@ import (
 )
 
 var (
-	cfgPath = filepath.Join(os.Getenv("home"), "config.json")
-)
-
-var (
-	travis = os.Getenv("TRAVIS") != ""
-	dbPass string
+	testCfgPath = "../test/config.json"
 )
 
 type args struct {
@@ -30,10 +23,7 @@ type args struct {
 }
 
 func TestUserManager_ChangeEthereumAddress(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-	cfg, err := config.LoadConfig(cfgPath)
+	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,11 +61,7 @@ func TestUserManager_ChangeEthereumAddress(t *testing.T) {
 }
 
 func TestUserManager_ChangePassword(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	cfg, err := config.LoadConfig(cfgPath)
+	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,11 +102,7 @@ func TestUserManager_ChangePassword(t *testing.T) {
 }
 
 func TestUserManager_NewAccount(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	cfg, err := config.LoadConfig(cfgPath)
+	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -155,11 +137,7 @@ func TestUserManager_NewAccount(t *testing.T) {
 }
 
 func TestUserManager_SignIn(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	cfg, err := config.LoadConfig(cfgPath)
+	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -201,12 +179,8 @@ func TestUserManager_SignIn(t *testing.T) {
 }
 
 func openDatabaseConnection(t *testing.T, cfg *config.TemporalConfig) (*gorm.DB, error) {
-	if !travis {
-		dbPass = cfg.Database.Password
-	} else {
-		dbPass = ""
-	}
-	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5433 user=postgres dbname=temporal password=%s sslmode=disable", dbPass)
+	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5433 user=postgres dbname=temporal password=%s sslmode=disable",
+		cfg.Database.Password)
 
 	db, err := gorm.Open("postgres", dbConnURL)
 	if err != nil {
