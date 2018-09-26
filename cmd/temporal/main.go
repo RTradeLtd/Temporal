@@ -167,43 +167,6 @@ var commands = map[string]app.Cmd{
 					}
 				},
 			},
-			"payment": app.Cmd{
-				Blurb:         "Payment queue sub commands",
-				Description:   "Used to launch the various queues that interact with our payment backend",
-				ChildRequired: true,
-				Children: map[string]app.Cmd{
-					"pin-confirmation": app.Cmd{
-						Blurb:       "Pin payment confirmation queue",
-						Description: "Listens to pin payment confirmations and stores the pins in our system",
-						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
-							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
-						},
-					},
-					"pin-submission": app.Cmd{
-						Blurb:       "Pin payment submission queue",
-						Description: "Listen to pin payment submissions and stores the information in our database",
-						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
-							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
-						},
-					},
-				},
-			},
 			"email-send": app.Cmd{
 				Blurb:       "Email send queue",
 				Description: "Listens to requests to send emails",
