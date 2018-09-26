@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestNew(t *testing.T) {
+func Test_new(t *testing.T) {
 	cfg, err := config.LoadConfig("../test/config.json")
 	if err != nil {
 		t.Fatal(err)
