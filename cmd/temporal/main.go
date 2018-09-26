@@ -25,22 +25,28 @@ var (
 
 var commands = map[string]app.Cmd{
 	"api": app.Cmd{
-		Blurb:       "start api",
-		Description: "Start the API used to interact with Temporal",
+		Blurb:       "start Temporal api server",
+		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			api, err := api.Initialize(&cfg, true)
+			service, err := api.Initialize(&cfg, os.Getenv("DEBUG") == "true")
 			if err != nil {
 				log.Fatal(err)
 			}
-			api.Logger.Info("API service initialized")
-			err = api.Router.RunTLS(
-				fmt.Sprintf("%s:6767", args["listenAddress"]),
-				args["certFilePath"],
-				args["keyFilePath"])
+
+			addr := fmt.Sprintf("%s:6767", args["listenAddress"])
+			if args["certFilePath"] == "" || args["keyFilePath"] == "" {
+				fmt.Println("TLS config incomplete - starting API service without TLS...")
+				err = service.ListenAndServe(addr, nil)
+			} else {
+				fmt.Println("Starting API service with TLS...")
+				err = service.ListenAndServe(addr, &api.TLSConfig{
+					CertFile: args["certFilePath"],
+					KeyFile:  args["keyFilePath"],
+				})
+			}
 			if err != nil {
-				msg := fmt.Sprintf("API service execution failed due to the following error: %s", err.Error())
-				api.Logger.Fatal(msg)
-				fmt.Printf("API execution failed for error %s\nSee logs for more details", err.Error())
+				fmt.Printf("API service execution failed: %s\n", err.Error())
+				fmt.Println("Refer to the logs for more details")
 			}
 		},
 	},
