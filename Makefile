@@ -57,7 +57,7 @@ lint:
 # Set up test environment
 .PHONY: testenv
 WAIT=3
-testenv: temporal
+testenv:
 	@echo "===================   preparing test env    ==================="
 	@echo "Setting up network..."
 	@sudo ip link set $(INTERFACE) up
@@ -70,7 +70,7 @@ testenv: temporal
 	@echo "Containers online:"
 	@docker ps
 	@echo "Running migrations..."
-	@env CONFIG_DAG=./test/config.json ./temporal migrate-insecure
+	@env CONFIG_DAG=./test/config.json go run cmd/temporal/main.go migrate-insecure
 	@echo "===================          done           ==================="
 
 # Shut down testenv

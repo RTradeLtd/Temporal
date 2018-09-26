@@ -28,6 +28,7 @@ func TestDatabaseMigrations(t *testing.T) {
 		User:           "postgres",
 		Password:       "password123",
 		Address:        "127.0.0.1",
+		Port:           "5433",
 		SSLModeDisable: true,
 	})
 	if err != nil {
@@ -41,14 +42,10 @@ func TestDatabaseMigrations(t *testing.T) {
 
 func TestDatabaseInitialize_withMigrations(t *testing.T) {
 	db, err := database.Initialize(&config.TemporalConfig{
-		Database: struct {
-			Name     string `json:"name"`
-			URL      string `json:"url"`
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}{
-			Name:     "",
+		Database: config.Database{
+			Name:     "temporal",
 			URL:      "127.0.0.1",
+			Port:     "5433",
 			Username: "postgres",
 			Password: "password123",
 		},
