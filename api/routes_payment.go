@@ -11,7 +11,7 @@ import (
 
 // CreatePayment is used to create a payment
 func (api *API) CreatePayment(c *gin.Context) {
-	paymentType, exists := c.GetPostForm("type")
+	paymentType, exists := c.GetPostForm("payment_type")
 	if !exists {
 		FailNoExistPostForm(c, "payment_type")
 		return
