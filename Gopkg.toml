@@ -4,6 +4,20 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   go-tests = true
   unused-packages = true
 
+# RTradeLtd
+
+[[constraint]]
+  name = "github.com/RTradeLtd/config"
+  version = "v1.0.0"
+
+[[constraint]]
+  name = "github.com/RTradeLtd/database"
+  version = "v1.0.1"
+
+[[constraint]]
+  name = "github.com/RTradeLtd/go-ipfs-api"
+  branch = "master-rtrade"
+
 # IPFS
 
 [[override]]
@@ -100,10 +114,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/ipfs/go-ipfs-config"
   version = "0.2.4"
 
-[[constraint]]
-  name = "github.com/RTradeLtd/go-ipfs-api"
-  branch = "master-rtrade"
-
 [[override]]
   name = "github.com/rjeczalik/notify"
   branch = "master"
@@ -119,11 +129,3 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   name = "github.com/appleboy/gin-jwt"
   revision = "f7347d7c16fc8297bf5b7215b9e4847a5ca05d90"
-
-[[constraint]]
-  name = "github.com/RTradeLtd/config"
-  branch = "master"
-
-[[constraint]]
-  name = "github.com/RTradeLtd/database"
-  branch = "master"

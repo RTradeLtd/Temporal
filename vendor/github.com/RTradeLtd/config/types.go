@@ -1,10 +1,9 @@
 package config
 
-// TemporalConfig is a helper struct holding
-// our config values
+// TemporalConfig defines Temporal configuration fields
 type TemporalConfig struct {
-	Database    `json:"database"`
 	API         `json:"api"`
+	Database    `json:"database"`
 	IPFS        `json:"ipfs"`
 	IPFSCluster `json:"ipfs_cluster"`
 	MINIO       `json:"minio"`
@@ -42,14 +41,7 @@ type TemporalConfig struct {
 	} `json:"ethereum"`
 }
 
-type Database struct {
-	Name     string `json:"name"`
-	URL      string `json:"url"`
-	Port     string `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
+// API configures the Temporal API
 type API struct {
 	AdminUser  string `json:"admin_user"`
 	Connection struct {
@@ -68,6 +60,16 @@ type API struct {
 	SizeLimitInGigaBytes string `json:"size_limit_in_giga_bytes"`
 }
 
+// Database configures Temporal's connection to a Postgres database
+type Database struct {
+	Name     string `json:"name"`
+	URL      string `json:"url"`
+	Port     string `json:"port"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+// IPFS configures Temporal's connection to an IPFS node
 type IPFS struct {
 	APIConnection struct {
 		Host string `json:"host"`
@@ -75,6 +77,7 @@ type IPFS struct {
 	} `json:"api_connection"`
 }
 
+// IPFSCluster configures Temporal's connection to an IPFS cluster
 type IPFSCluster struct {
 	APIConnection struct {
 		Host string `json:"host"`
@@ -82,6 +85,7 @@ type IPFSCluster struct {
 	} `json:"api_connection"`
 }
 
+// MINIO configures Temporal's connection to a Minio instance
 type MINIO struct {
 	AccessKey  string `json:"access_key"`
 	SecretKey  string `json:"secret_key"`
@@ -91,6 +95,7 @@ type MINIO struct {
 	} `json:"connection"`
 }
 
+// RabbitMQ configures Temporal's connection to a RabbitMQ instance
 type RabbitMQ struct {
 	URL string `json:"url"`
 }

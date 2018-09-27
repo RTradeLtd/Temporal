@@ -1,6 +1,9 @@
 # Dependencies
 vendor
 
+# Test assets
+test
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

@@ -1,17 +1,12 @@
 package utils
 
 import (
-	au "github.com/ipfs/go-ipfs-addr"
-	ma "github.com/multiformats/go-multiaddr"
+	au "github.com/ipsn/go-ipfs/gxlibs/github.com/ipfs/go-ipfs-addr"
+	ma "github.com/ipsn/go-ipfs/gxlibs/github.com/multiformats/go-multiaddr"
 )
 
 func GenerateMultiAddrFromString(addr string) (ma.Multiaddr, error) {
-	var maddr ma.Multiaddr
-	maddr, err := ma.NewMultiaddr(addr)
-	if err != nil {
-		return nil, err
-	}
-	return maddr, nil
+	return ma.NewMultiaddr(addr)
 }
 
 func ParsePeerIDFromIPFSMultiAddr(address ma.Multiaddr) (string, error) {
@@ -19,6 +14,5 @@ func ParsePeerIDFromIPFSMultiAddr(address ma.Multiaddr) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	pretty := parsed.ID().Pretty()
-	return pretty, nil
+	return parsed.ID().Pretty(), nil
 }

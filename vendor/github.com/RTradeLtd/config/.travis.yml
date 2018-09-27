@@ -1,0 +1,22 @@
+language: go
+go:
+  - "1.11"
+
+install:
+  - go get -u golang.org/x/lint/golint
+
+before_script:
+  - go vet ./...
+  - go build ./...
+  - go test -run xxxx ./...
+
+script:
+  - go fmt ./...
+  - golint $(go list ./... | grep -v /vendor/) # golint doesn't ignore vendor
+  - go test -race -short -coverprofile=coverage.txt ./...
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+notifications: 
+  email: false 
