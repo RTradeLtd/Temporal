@@ -69,7 +69,7 @@ func OpenDBConnection(opts DBOptions) (*gorm.DB, error) {
 		opts.User = "postgres"
 	}
 	// look into whether or not we wil disable sslmode
-	dbConnURL := fmt.Sprintf("host=%s port=5433 user=%s dbname=temporal password=%s",
+	dbConnURL := fmt.Sprintf("host=%s port=5432 user=%s dbname=temporal password=%s",
 		opts.Address, opts.User, opts.Password)
 	if opts.SSLModeDisable {
 		dbConnURL = "sslmode=disable " + dbConnURL
