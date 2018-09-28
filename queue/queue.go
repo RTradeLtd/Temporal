@@ -236,11 +236,16 @@ func (qm *QueueManager) DeclareQueue() error {
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
 func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
-	dbm, err := database.Initialize(cfg, database.DatabaseOptions{LogMode: true})
+	db, err := database.OpenDBConnection(database.DBOptions{
+		User:           cfg.Database.Username,
+		Password:       cfg.Database.Password,
+		Address:        cfg.Database.URL,
+		Port:           cfg.Database.Password,
+		SSLModeDisable: false,
+	})
 	if err != nil {
 		return err
 	}
-	db := dbm.DB
 	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
 	switch qm.ExchangeName {
 	case PinRemovalExchange:
