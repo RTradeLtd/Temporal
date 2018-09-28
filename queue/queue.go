@@ -240,7 +240,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 		User:           cfg.Database.Username,
 		Password:       cfg.Database.Password,
 		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Password,
+		Port:           cfg.Database.Port,
 		SSLModeDisable: false,
 	})
 	if err != nil {
