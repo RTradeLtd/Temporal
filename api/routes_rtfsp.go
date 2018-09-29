@@ -34,6 +34,18 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
+	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
+	url, err := im.GetAPIURLByName(networkName)
+	if err != nil {
+		api.LogError(err, APIURLCheckError)(c, http.StatusBadRequest)
+		return
+	}
+	manager, err := rtfs.Initialize("", url)
+	if err != nil {
+		api.LogError(err, IPFSConnectionError)(c, http.StatusBadRequest)
+		return
+	}
+
 	hash := c.Param("hash")
 	if _, err := gocid.Decode(hash); err != nil {
 		Fail(c, err)
@@ -49,7 +61,15 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell, true)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	ip := queue.IPFSPin{
 		CID:              hash,
 		NetworkName:      networkName,
@@ -134,8 +154,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	}
 
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)
-		Fail(c, err)
+		api.LogError(err, PrivateNetworkAccessError)(c, http.StatusBadRequest)
 		return
 	}
 
@@ -144,7 +163,11 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		FailWithBadRequest(c, "hold_time")
 		return
 	}
-
+	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		Fail(c, err, http.StatusBadRequest)
+		return
+	}
 	accessKey := api.cfg.MINIO.AccessKey
 	secretKey := api.cfg.MINIO.SecretKey
 	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
@@ -165,6 +188,11 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	}
 	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
 		Fail(c, err)
+		return
+	}
+	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, true)
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	fmt.Println("opening file")
@@ -237,6 +265,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
@@ -265,6 +294,11 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	}
 	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
 		Fail(c, err)
+		return
+	}
+	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, true)
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	file, err := fileHandler.Open()
@@ -323,7 +357,15 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
-
+	cost, err := utils.CalculateAPICallCost("pubsub", true)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
@@ -519,7 +561,16 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		FailWithBadRequest(c, "network_name")
 		return
 	}
-
+	username := GetAuthenticatedUserFromContext(c)
+	cost, err := utils.CalculateAPICallCost("ipns", true)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
 	mqURL := api.cfg.RabbitMQ.URL

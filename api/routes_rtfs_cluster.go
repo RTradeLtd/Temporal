@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/Temporal/utils"
+
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/gin-gonic/gin"
@@ -18,9 +21,14 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	manager, err := rtfs.Initialize("", "")
+	if err != nil {
+		api.LogError(err, IPFSConnectionError)(c, http.StatusInternalServerError)
+		return
+	}
 	holdTime, exists := c.GetPostForm("hold_time")
 	if !exists {
-		FailWithBadRequest(c, "hold_time")
+		FailWithMissingField(c, "hold_time")
 		return
 	}
 
@@ -29,7 +37,15 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell, false)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	mqURL := api.cfg.RabbitMQ.URL
 
 	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL, true, false)

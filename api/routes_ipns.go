@@ -9,6 +9,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/RTradeLtd/Temporal/utils"
 	gocid "github.com/ipfs/go-cid"
 	log "github.com/sirupsen/logrus"
 
@@ -19,7 +20,7 @@ import (
 
 // PublishToIPNSDetails is used to publish a record on IPNS with more fine grained control over typical publishing methods
 func (api *API) publishToIPNSDetails(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 	hash, present := c.GetPostForm("hash")
 	if !present {
 		FailWithMissingField(c, "hash")
@@ -53,15 +54,23 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 	mqURL := api.cfg.RabbitMQ.URL
 
 	um := models.NewUserManager(api.dbm.DB)
-
-	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
+	cost, err := utils.CalculateAPICallCost("ipns", false)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
+	ownsKey, err := um.CheckIfKeyOwnedByUser(username, key)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c)
 		return
 	}
 
 	if !ownsKey {
-		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", ethAddress)
+		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", username)
 		api.LogError(err, KeyUseError)(c)
 		return
 	}
@@ -87,7 +96,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		TTL:         ttl,
 		Resolve:     resolve,
 		Key:         key,
-		UserName:    ethAddress,
+		UserName:    username,
 		NetworkName: "public",
 	}
 
@@ -107,7 +116,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	api.l.WithFields(log.Fields{
 		"service": "api",
-		"user":    ethAddress,
+		"user":    username,
 	}).Info("ipns entry creation request sent to backend")
 
 	Respond(c, http.StatusOK, gin.H{"response": "ipns entry creation sent to backend"})
@@ -115,12 +124,20 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 // GenerateDNSLinkEntry is used to generate a DNS link entry
 func (api *API) generateDNSLinkEntry(c *gin.Context) {
-	authUser := GetAuthenticatedUserFromContext(c)
-	if authUser != AdminAddress {
+	username := GetAuthenticatedUserFromContext(c)
+	if username != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
-
+	cost, err := utils.CalculateAPICallCost("dlink", false)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	recordName, exists := c.GetPostForm("record_name")
 	if !exists {
 		FailWithMissingField(c, "record_name")
@@ -174,7 +191,7 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 
 	api.l.WithFields(log.Fields{
 		"service": "api",
-		"user":    authUser,
+		"user":    username,
 	}).Info("dnslink entry created")
 
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{
