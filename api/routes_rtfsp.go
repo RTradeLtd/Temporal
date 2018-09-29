@@ -75,6 +75,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		NetworkName:      networkName,
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
+		CreditCost:       cost,
 	}
 
 	mqConnectionURL := api.cfg.RabbitMQ.URL
@@ -219,6 +220,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		UserName:         username,
 		NetworkName:      networkName,
 		HoldTimeInMonths: holdTimeInMonths,
+		CreditCost:       cost,
 	}
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
@@ -317,6 +319,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 		UserName:         username,
 		NetworkName:      networkName,
+		CreditCost:       cost,
 	}
 	if err = qm.PublishMessage(dfa); err != nil {
 		api.LogError(err, QueuePublishError)(c)
@@ -654,6 +657,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		Resolve:     resolve,
 		NetworkName: networkName,
 		UserName:    ethAddress,
+		CreditCost:  cost,
 	}
 	if err := qm.PublishMessage(ipnsUpdate); err != nil {
 		api.LogError(err, QueuePublishError)(c)
