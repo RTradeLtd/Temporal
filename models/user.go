@@ -328,3 +328,12 @@ func (um *UserManager) AddCredits(username string, credits float64) (*User, erro
 	}
 	return &u, nil
 }
+
+// GetCreditsForUser is used to get the user's current credits
+func (um *UserManager) GetCreditsForUser(username string) (float64, error) {
+	u := User{}
+	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
+		return 0, check.Error
+	}
+	return u.Credits, nil
+}
