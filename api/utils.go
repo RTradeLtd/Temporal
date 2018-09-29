@@ -25,7 +25,7 @@ func CalculateFileSize(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	size := utils.CalculateFileSizeInGigaBytes(fileHandler.Size)
+	size := utils.BytesToGigaBytes(fileHandler.Size)
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"file_size_gb": size, "file_size_bytes": fileHandler.Size}})
 }
 
