@@ -71,7 +71,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusBadRequest)
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	ip := queue.IPFSPin{
@@ -159,7 +159,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size)
 	if err = api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusBadRequest)
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	api.LogDebug("opening file")
@@ -229,7 +229,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	cost := utils.CalculateFileCost(holdTimeinMonthsInt, fileHandler.Size)
 	if err = api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusBadRequest)
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	// open the file
