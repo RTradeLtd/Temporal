@@ -151,7 +151,17 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	username := GetAuthenticatedUserFromContext(c)
+	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size)
+	if err = api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusBadRequest)
+		return
+	}
 	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
@@ -160,7 +170,6 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	}
 	api.LogDebug("file opened")
 
-	username := GetAuthenticatedUserFromContext(c)
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
@@ -217,7 +226,12 @@ func (api *API) addFileLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	username := GetAuthenticatedUserFromContext(c)
+	cost := utils.CalculateFileCost(holdTimeinMonthsInt, fileHandler.Size)
+	if err = api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusBadRequest)
+		return
+	}
 	// open the file
 	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
@@ -243,7 +257,6 @@ func (api *API) addFileLocally(c *gin.Context) {
 	api.LogDebug("file added")
 
 	// construct a message to rabbitmq to upad the database
-	username := GetAuthenticatedUserFromContext(c)
 	dfa := queue.DatabaseFileAdd{
 		Hash:             resp,
 		HoldTimeInMonths: holdTimeinMonthsInt,
