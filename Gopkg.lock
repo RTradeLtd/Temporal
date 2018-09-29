@@ -2,6 +2,26 @@
 
 
 [[projects]]
+  digest = "1:3e42118b0183e633c89399c1f27ccc3c0f01fa67c9572b6cef5d73a2b231cc6f"
+  name = "github.com/RTradeLtd/config"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "32bf3bd96b1492f280b6fd01c4b63732cd0e2478"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:19fc8a17eeddfacff5dd931838b2a33a584714f24ad9fadacf2437969765d456"
+  name = "github.com/RTradeLtd/database"
+  packages = [
+    ".",
+    "models",
+    "utils",
+  ]
+  pruneopts = "UT"
+  revision = "ae293606a220cb3343a777df24b90ac98901e2a8"
+  version = "v1.0.1"
+
+[[projects]]
   branch = "master-rtrade"
   digest = "1:057ef275777e16de287ddbe39ae5590ab1acfa6ccb3d86f3410b998f7ce59b05"
   name = "github.com/RTradeLtd/go-ipfs-api"
@@ -385,6 +405,40 @@
   pruneopts = "UT"
   revision = "2f417eb63281e53ab8273189fac20ac70267287b"
   version = "v0.5.0"
+
+[[projects]]
+  digest = "1:becc9ab46b2f3aabdd191682d2cc3435a1d16aae002b5dcf0fca26b281cb8e86"
+  name = "github.com/ipsn/go-ipfs"
+  packages = [
+    "gxlibs/github.com/ipfs/go-ipfs-addr",
+    "gxlibs/github.com/ipfs/go-log",
+    "gxlibs/github.com/ipfs/go-log/tracer",
+    "gxlibs/github.com/ipfs/go-log/tracer/wire",
+    "gxlibs/github.com/ipfs/go-log/writer",
+    "gxlibs/github.com/jbenet/goprocess",
+    "gxlibs/github.com/libp2p/go-conn-security",
+    "gxlibs/github.com/libp2p/go-libp2p-circuit",
+    "gxlibs/github.com/libp2p/go-libp2p-circuit/pb",
+    "gxlibs/github.com/libp2p/go-libp2p-crypto",
+    "gxlibs/github.com/libp2p/go-libp2p-crypto/pb",
+    "gxlibs/github.com/libp2p/go-libp2p-host",
+    "gxlibs/github.com/libp2p/go-libp2p-interface-connmgr",
+    "gxlibs/github.com/libp2p/go-libp2p-interface-pnet",
+    "gxlibs/github.com/libp2p/go-libp2p-net",
+    "gxlibs/github.com/libp2p/go-libp2p-peer",
+    "gxlibs/github.com/libp2p/go-libp2p-peerstore",
+    "gxlibs/github.com/libp2p/go-libp2p-protocol",
+    "gxlibs/github.com/libp2p/go-libp2p-transport",
+    "gxlibs/github.com/libp2p/go-libp2p-transport-upgrader",
+    "gxlibs/github.com/libp2p/go-maddr-filter",
+    "gxlibs/github.com/libp2p/go-stream-muxer",
+    "gxlibs/github.com/multiformats/go-multiaddr",
+    "gxlibs/github.com/multiformats/go-multiaddr-net",
+    "gxlibs/github.com/multiformats/go-multihash",
+    "gxlibs/github.com/multiformats/go-multistream",
+  ]
+  pruneopts = "UT"
+  revision = "43db04bb3e5d6da1c46ee64360e2bf81df327f5e"
 
 [[projects]]
   digest = "1:6b8866cc9496eada254debc24199981e21fd70fd0031ff7a581ac91be47187bb"
@@ -1289,6 +1343,9 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/RTradeLtd/config",
+    "github.com/RTradeLtd/database",
+    "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
@@ -1312,8 +1369,6 @@
     "github.com/ipfs/ipfs-cluster/api",
     "github.com/ipfs/ipfs-cluster/api/rest/client",
     "github.com/jinzhu/gorm",
-    "github.com/jinzhu/gorm/dialects/postgres",
-    "github.com/lib/pq",
     "github.com/libp2p/go-libp2p-crypto",
     "github.com/libp2p/go-libp2p-peer",
     "github.com/minio/minio-go",
@@ -1327,7 +1382,6 @@
     "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
     "github.com/zsais/go-gin-prometheus",
-    "golang.org/x/crypto/bcrypt",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

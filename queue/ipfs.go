@@ -11,10 +11,10 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mini"
 
-	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/config"
 
-	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/database/models"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 

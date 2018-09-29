@@ -3,8 +3,8 @@ package queue
 import (
 	"encoding/json"
 
-	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/mail"
+	"github.com/RTradeLtd/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )

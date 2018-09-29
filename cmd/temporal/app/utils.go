@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/RTradeLtd/Temporal/config"
+	"github.com/RTradeLtd/config"
 )
 
 func run(commands map[string]Cmd, cfg config.TemporalConfig,

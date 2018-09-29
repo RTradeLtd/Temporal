@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/utils"
+	"github.com/RTradeLtd/database/models"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"

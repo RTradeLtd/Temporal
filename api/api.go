@@ -12,13 +12,13 @@ import (
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/sirupsen/logrus"
 
-	"github.com/RTradeLtd/Temporal/config"
+	"github.com/RTradeLtd/config"
 	xss "github.com/dvwright/xss-mw"
 	stats "github.com/semihalev/gin-stats"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
-	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/database"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
