@@ -229,7 +229,6 @@ func (api *API) setupRoutes() {
 
 	frontendProtected := api.r.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
-	frontendProtected.POST("/utils/ipfs/hash/calculate", api.calculateIPFSFileHash)
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", api.calculatePinCost)
 	frontendProtected.POST("/cost/calculate/file", api.calculateFileCost)
 
