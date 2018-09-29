@@ -203,14 +203,18 @@ func (um *UserManager) NewUserAccount(ethAddress, username, password, email stri
 	if err != nil {
 		return nil, err
 	}
-	if ethAddress != "" {
-		user.EthAddress = ethAddress
+	if ethAddress == "" {
+		ethAddress = username
 	}
-	user.UserName = username
-	user.EnterpriseEnabled = enterpriseEnabled
-	user.HashedPassword = hex.EncodeToString(hashedPass)
-	user.EmailAddress = email
-	user.AccountEnabled = true
+	user = User{
+		UserName:          username,
+		EthAddress:        ethAddress,
+		EnterpriseEnabled: enterpriseEnabled,
+		HashedPassword:    hex.EncodeToString(hashedPass),
+		EmailAddress:      email,
+		AccountEnabled:    true,
+		APIAccess:         true,
+	}
 	if check := um.DB.Create(&user); check.Error != nil {
 		return nil, check.Error
 	}

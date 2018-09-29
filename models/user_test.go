@@ -50,9 +50,11 @@ func TestUserManager_ChangeEthereumAddress(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled); err != nil {
+			user, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled)
+			if err != nil {
 				t.Fatal(err)
 			}
+			defer um.DB.Delete(user)
 			if _, err := um.ChangeEthereumAddress(tt.args.userName, tt.args.ethAddress); err != nil {
 				t.Error(err)
 			}
@@ -87,9 +89,11 @@ func TestUserManager_ChangePassword(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled); err != nil {
+			user, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled)
+			if err != nil {
 				t.Fatal(err)
 			}
+			defer um.DB.Delete(user)
 			changed, err := um.ChangePassword(tt.args.userName, tt.args.password, "newpassword")
 			if err != nil {
 				t.Fatal(err)
@@ -129,9 +133,11 @@ func TestUserManager_NewAccount(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled); err != nil {
+			user, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled)
+			if err != nil {
 				t.Fatal(err)
 			}
+			um.DB.Delete(user)
 		})
 	}
 }
@@ -164,9 +170,11 @@ func TestUserManager_SignIn(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled); err != nil {
+			user, err := um.NewUserAccount(tt.args.ethAddress, tt.args.userName, tt.args.password, tt.args.email, tt.args.enterpriseEnabled)
+			if err != nil {
 				t.Fatal(err)
 			}
+			defer um.DB.Delete(user)
 			success, err := um.SignIn(tt.args.userName, tt.args.password)
 			if err != nil {
 				t.Fatal(err)
