@@ -77,4 +77,6 @@ const (
 	InvalidPaymentBlockchainError = "blockchain must be one of: 'ethereum' 'bitcoin' 'litecoin' 'monero'"
 	// CreditCheckError is an error messagen given to a user when searching for their credits fails
 	CreditCheckError = "failed to search for user credits"
+	// InvalidBalanceError is an error message given to a user when they don't have enough credits to pay
+	InvalidBalanceError = "user does not have enough"
 )
