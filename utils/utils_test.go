@@ -79,6 +79,6 @@ func TestUtils_CalculateFileCost(t *testing.T) {
 }
 
 func TestUtils_CalculateFileSizeInGigaBytes(t *testing.T) {
-	size := utils.CalculateFileSizeInGigaBytes(testSize)
+	size := utils.BytesToGigaBytes(testSize)
 	fmt.Println(size)
 }
