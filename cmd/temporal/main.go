@@ -6,11 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	//_ "./docs"
 	"github.com/RTradeLtd/Temporal/api"
-	"github.com/RTradeLtd/Temporal/cmd/temporal/app"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/RTradeLtd/cmd"
 	"github.com/RTradeLtd/config"
 )
 
@@ -23,8 +22,8 @@ var (
 	tCfg     config.TemporalConfig
 )
 
-var commands = map[string]app.Cmd{
-	"api": app.Cmd{
+var commands = map[string]cmd.Cmd{
+	"api": cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -50,17 +49,17 @@ var commands = map[string]app.Cmd{
 			}
 		},
 	},
-	"queue": app.Cmd{
+	"queue": cmd.Cmd{
 		Blurb:         "execute commands for various queues",
 		Description:   "Interact with Temporal's various queue APIs",
 		ChildRequired: true,
-		Children: map[string]app.Cmd{
-			"ipfs": app.Cmd{
+		Children: map[string]cmd.Cmd{
+			"ipfs": cmd.Cmd{
 				Blurb:         "IPFS queue sub commands",
 				Description:   "Used to launch the various queues that interact with IPFS",
 				ChildRequired: true,
-				Children: map[string]app.Cmd{
-					"ipns-entry": app.Cmd{
+				Children: map[string]cmd.Cmd{
+					"ipns-entry": cmd.Cmd{
 						Blurb:       "IPNS entry creation queue",
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -75,7 +74,7 @@ var commands = map[string]app.Cmd{
 							}
 						},
 					},
-					"pin": app.Cmd{
+					"pin": cmd.Cmd{
 						Blurb:       "Pin addition queue",
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -90,7 +89,7 @@ var commands = map[string]app.Cmd{
 							}
 						},
 					},
-					"pin-removal": app.Cmd{
+					"pin-removal": cmd.Cmd{
 						Blurb:       "Pin removal queue",
 						Description: "Listens to pin removal requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -105,7 +104,7 @@ var commands = map[string]app.Cmd{
 							}
 						},
 					},
-					"file": app.Cmd{
+					"file": cmd.Cmd{
 						Blurb:       "File upload queue",
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -120,7 +119,7 @@ var commands = map[string]app.Cmd{
 							}
 						},
 					},
-					"key-creation": app.Cmd{
+					"key-creation": cmd.Cmd{
 						Blurb:       "Key creation queue",
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -135,7 +134,7 @@ var commands = map[string]app.Cmd{
 							}
 						},
 					},
-					"cluster": app.Cmd{
+					"cluster": cmd.Cmd{
 						Blurb:       "Cluster pin queue",
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -152,7 +151,7 @@ var commands = map[string]app.Cmd{
 					},
 				},
 			},
-			"dfa": app.Cmd{
+			"dfa": cmd.Cmd{
 				Blurb:       "Database file add queue",
 				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -167,12 +166,12 @@ var commands = map[string]app.Cmd{
 					}
 				},
 			},
-			"payment": app.Cmd{
+			"payment": cmd.Cmd{
 				Blurb:         "Payment queue sub commands",
 				Description:   "Used to launch the various queues that interact with our payment backend",
 				ChildRequired: true,
-				Children: map[string]app.Cmd{
-					"pin-confirmation": app.Cmd{
+				Children: map[string]cmd.Cmd{
+					"pin-confirmation": cmd.Cmd{
 						Blurb:       "Pin payment confirmation queue",
 						Description: "Listens to pin payment confirmations and stores the pins in our system",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -187,7 +186,7 @@ var commands = map[string]app.Cmd{
 							}
 						},
 					},
-					"pin-submission": app.Cmd{
+					"pin-submission": cmd.Cmd{
 						Blurb:       "Pin payment submission queue",
 						Description: "Listen to pin payment submissions and stores the information in our database",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -204,7 +203,7 @@ var commands = map[string]app.Cmd{
 					},
 				},
 			},
-			"email-send": app.Cmd{
+			"email-send": cmd.Cmd{
 				Blurb:       "Email send queue",
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -221,7 +220,7 @@ var commands = map[string]app.Cmd{
 			},
 		},
 	},
-	"migrate": app.Cmd{
+	"migrate": cmd.Cmd{
 		Blurb:       "run database migrations",
 		Description: "Runs our initial database migrations, creating missing tables, etc..",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -232,7 +231,7 @@ var commands = map[string]app.Cmd{
 			}
 		},
 	},
-	"migrate-insecure": app.Cmd{
+	"migrate-insecure": cmd.Cmd{
 		Hidden:      true,
 		Blurb:       "run database migrations without SSL",
 		Description: "Runs our initial database migrations, creating missing tables, etc.. without SSL",
@@ -245,7 +244,7 @@ var commands = map[string]app.Cmd{
 			}
 		},
 	},
-	"init": app.Cmd{
+	"init": cmd.Cmd{
 		PreRun:      true,
 		Blurb:       "initialize blank Temporal configuration",
 		Description: "Initializes a blank Temporal configuration template at CONFIG_DAG.",
@@ -263,16 +262,15 @@ var commands = map[string]app.Cmd{
 
 func main() {
 	// create app
-	temporal := app.New(commands, app.Config{
+	temporal := cmd.New(commands, cmd.Config{
 		Name:     "Temporal",
 		ExecName: "temporal",
 		Version:  Version,
 		Desc:     "Temporal is an easy-to-use interface into distributed and decentralized storage technologies for personal and enterprise use cases.",
 	})
 
-	// run no-config commands
-	exit := temporal.PreRun(os.Args[1:])
-	if exit == app.CodeOK {
+	// run no-config commands, exit if command was run
+	if exit := temporal.PreRun(os.Args[1:]); exit == cmd.CodeOK {
 		os.Exit(0)
 	}
 

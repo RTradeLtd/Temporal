@@ -1,4 +1,4 @@
-package app
+package cmd
 
 import (
 	"fmt"
@@ -65,8 +65,7 @@ func (a *App) PreRun(args []string) int {
 		}
 	}
 
-	noop := run(prerunCmds, config.TemporalConfig{}, nil, args)
-	if noop {
+	if noop := run(prerunCmds, config.TemporalConfig{}, nil, args); noop {
 		return CodeNoOp
 	}
 	return CodeOK
@@ -79,8 +78,7 @@ func (a *App) Run(cfg config.TemporalConfig, flags map[string]string, args []str
 		return CodeOK
 	}
 
-	noop := run(a.cmds, cfg, flags, args)
-	if noop {
+	if noop := run(a.cmds, cfg, flags, args); noop {
 		a.noop(args)
 		return CodeNoOp
 	}

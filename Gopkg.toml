@@ -11,6 +11,10 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   version = "1.0.0"
 
 [[constraint]]
+  name = "github.com/RTradeLtd/cmd"
+  version = "1.0.0"
+
+[[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
   branch = "master-rtrade"
 

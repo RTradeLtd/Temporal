@@ -1,4 +1,4 @@
-package app
+package cmd
 
 import (
 	"github.com/RTradeLtd/config"
