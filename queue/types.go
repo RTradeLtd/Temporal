@@ -69,36 +69,40 @@ type QueueManager struct {
 // IPFSKeyCreation is a message used for processing key creation
 // only supported for the public IPFS network at the moment
 type IPFSKeyCreation struct {
-	UserName    string `json:"user_name"`
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Size        int    `json:"size"`
-	NetworkName string `json:"network_name"`
+	UserName    string  `json:"user_name"`
+	Name        string  `json:"name"`
+	Type        string  `json:"type"`
+	Size        int     `json:"size"`
+	NetworkName string  `json:"network_name"`
+	CreditCost  float64 `json:"credit_cost"`
 }
 
 // IPFSPin is a struct used when sending pin request
 type IPFSPin struct {
-	CID              string `json:"cid"`
-	NetworkName      string `json:"network_name"`
-	UserName         string `json:"user_name"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
+	CID              string  `json:"cid"`
+	NetworkName      string  `json:"network_name"`
+	UserName         string  `json:"user_name"`
+	HoldTimeInMonths int64   `json:"hold_time_in_months"`
+	CreditCost       float64 `json:"credit_cost"`
 }
 
 // IPFSFile is our message for the ipfs file queue
 type IPFSFile struct {
-	BucketName       string `json:"bucket_name"`
-	ObjectName       string `json:"object_name"`
-	UserName         string `json:"user_name"`
-	NetworkName      string `json:"network_name"`
-	HoldTimeInMonths string `json:"hold_time_in_months"`
+	BucketName       string  `json:"bucket_name"`
+	ObjectName       string  `json:"object_name"`
+	UserName         string  `json:"user_name"`
+	NetworkName      string  `json:"network_name"`
+	HoldTimeInMonths string  `json:"hold_time_in_months"`
+	CreditCost       float64 `json:"credit_cost"`
 }
 
 // IPFSClusterPin is a queue message used when sending a message to the cluster to pin content
 type IPFSClusterPin struct {
-	CID              string `json:"cid"`
-	NetworkName      string `json:"network_name"`
-	UserName         string `json:"user_name"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
+	CID              string  `json:"cid"`
+	NetworkName      string  `json:"network_name"`
+	UserName         string  `json:"user_name"`
+	HoldTimeInMonths int64   `json:"hold_time_in_months"`
+	CreditCost       float64 `json:"credit_cost"`
 }
 
 // IPFSPinRemoval is our message for the ipfs pin removal qeueu
@@ -110,22 +114,24 @@ type IPFSPinRemoval struct {
 
 // DatabaseFileAdd is a struct used when sending data to rabbitmq
 type DatabaseFileAdd struct {
-	Hash             string `json:"hash"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
-	UserName         string `json:"user_name"`
-	NetworkName      string `json:"network_name"`
+	Hash             string  `json:"hash"`
+	HoldTimeInMonths int64   `json:"hold_time_in_months"`
+	UserName         string  `json:"user_name"`
+	NetworkName      string  `json:"network_name"`
+	CreditCost       float64 `json:"credit_cost"`
 }
 
 // IPNSUpdate is our message for the ipns update queue
 type IPNSUpdate struct {
-	CID         string `json:"content_hash"`
-	IPNSHash    string `json:"ipns_hash"`
-	LifeTime    string `json:"life_time"`
-	TTL         string `json:"ttl"`
-	Key         string `json:"key"`
-	Resolve     bool   `json:"resolve"`
-	UserName    string `json:"user_name"`
-	NetworkName string `json:"network_name"`
+	CID         string  `json:"content_hash"`
+	IPNSHash    string  `json:"ipns_hash"`
+	LifeTime    string  `json:"life_time"`
+	TTL         string  `json:"ttl"`
+	Key         string  `json:"key"`
+	Resolve     bool    `json:"resolve"`
+	UserName    string  `json:"user_name"`
+	NetworkName string  `json:"network_name"`
+	CreditCost  float64 `json:"credit_cost"`
 }
 
 // EmailSend is a helper struct used to contained formatted content ot send as an email
@@ -145,6 +151,7 @@ type IPNSEntry struct {
 	Key         string        `json:"key"`
 	UserName    string        `json:"user_name"`
 	NetworkName string        `json:"network_name"`
+	CreditCost  float64       `json:"credit_cost"`
 }
 
 // PaymentCreation is for the payment creation queue
