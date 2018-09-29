@@ -34,12 +34,10 @@ func CalculatePinCost(contentHash string, holdTimeInMonths int64, shell *ipfsapi
 	sizeInBytes := objectStat.CumulativeSize
 	// get gigabytes convert to bytes
 	gigaInBytes := datasize.GB.Bytes()
-	// convert gigabytes to int
-	gigabytesInt := int64(gigaInBytes)
 	// convert size of content hash form int to float64
 	sizeInBytesFloat := float64(sizeInBytes)
 	// convert gigabytes to float
-	gigabytesFloat := float64(gigabytesInt)
+	gigabytesFloat := float64(gigaInBytes)
 	// convert object size from bytes to gigabytes
 	objectSizeInGigabytesFloat := sizeInBytesFloat / gigabytesFloat
 	var costPerMonthFloat float64
