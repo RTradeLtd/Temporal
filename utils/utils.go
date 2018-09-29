@@ -8,6 +8,16 @@ import (
 	"github.com/c2h5oh/datasize"
 )
 
+// prices listed here are temporary and will be changed
+const (
+	UsdPerGigaBytePerMonthPublic  = 0.134
+	UsdPerGigaBytePerMonthPrivate = 0.154
+	PubSubPublishPublic           = 0.01
+	PubSubPublishPrivate          = 0.02
+	IPNSPublishPrivate            = 10.00
+	IPNSPublishPublic             = 5.00
+)
+
 // this is a testing parameter for now, exact costs will be detailed at a later time
 var usdPerGigabytePerMonth = 0.134
 
