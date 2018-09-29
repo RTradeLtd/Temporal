@@ -82,12 +82,12 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, QueueInitializationError, CreditRefund{username, "private_pin", cost})(c)
 		return
 	}
 
 	if err = qm.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, QueuePublishError, CreditRefund{username, "private_pin", cost})(c)
 		return
 	}
 
@@ -199,7 +199,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	fmt.Println("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)
+		api.LogError(err, FileOpenError, CreditRefund{username, "private_upload", cost})
 		Fail(c, err)
 		return
 	}
@@ -209,7 +209,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	objectName := fmt.Sprintf("%s%s", username, randString)
 	fmt.Println("storing file in minio")
 	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{}); err != nil {
-		api.LogError(err, MinioPutError)
+		api.LogError(err, MinioPutError, CreditRefund{username, "private_upload", cost})
 		Fail(c, err)
 		return
 	}
@@ -224,13 +224,13 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	}
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)
+		api.LogError(err, QueueInitializationError, CreditRefund{username, "private_upload", cost})
 		Fail(c, err)
 		return
 	}
 	// we don't use an exchange for file publishes so that rabbitmq distributes round robin
 	if err = qm.PublishMessage(ifp); err != nil {
-		api.LogError(err, QueuePublishError)
+		api.LogError(err, QueuePublishError, CreditRefund{username, "private_upload", cost})
 		Fail(c, err)
 		return
 	}
@@ -305,12 +305,12 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	}
 	file, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)(c)
+		api.LogError(err, FileOpenError, CreditRefund{username, "private_upload", cost})(c)
 		return
 	}
 	resp, err := ipfsManager.Add(file)
 	if err != nil {
-		api.LogError(err, IPFSAddError)(c)
+		api.LogError(err, IPFSAddError, CreditRefund{username, "private_upload", cost})(c)
 		return
 	}
 	fmt.Println("file uploaded")

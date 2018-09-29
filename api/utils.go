@@ -11,6 +11,7 @@ import (
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
 )
 
 var nilTime time.Time
@@ -96,4 +97,19 @@ func (api *API) validateUserCredits(username string, cost float64) error {
 		return err
 	}
 	return nil
+}
+
+// refundUserCredits is used to trigger a credit refund for a user, in the event of an API level processing failure.
+// Note that we do not do any error handling here, instead we will log the information so that we may manually
+// remediate the situation
+func (api *API) refundUserCredits(username, callType string, cost float64) {
+	um := models.NewUserManager(api.dbm.DB)
+	if _, err := um.AddCredits(username, cost); err != nil {
+		api.l.WithFields(log.Fields{
+			"service":   api.service,
+			"user":      username,
+			"call_type": callType,
+			"error":     err.Error(),
+		}).Error(CreditRefundError)
+	}
 }
