@@ -9,12 +9,13 @@ import (
 )
 
 const (
-	testHash = "QmdowUuRF4YEJFJvw2TDiECVEMfq89fNVHTXqdN3Z6JM8j"
-	testSize = int64(132520817)
+	testHash       = "QmdowUuRF4YEJFJvw2TDiECVEMfq89fNVHTXqdN3Z6JM8j"
+	nodeOneAPIAddr = "192.168.1.101:5001"
+	testSize       = int64(132520817)
 )
 
 func TestUtils_CalculatePinCost(t *testing.T) {
-	manager, err := rtfs.Initialize("", "")
+	manager, err := rtfs.Initialize("", nodeOneAPIAddr)
 	if err != nil {
 		t.Fatal(err)
 	}
