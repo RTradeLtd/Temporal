@@ -304,7 +304,16 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	topic := c.Param("topic")
 	message, present := c.GetPostForm("message")
 	if !present {
-		FailWithBadRequest(c, "message")
+		FailWithMissingField(c, "message")
+		return
+	}
+	cost, err := utils.CalculateAPICallCost("pubsub", false)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	manager, err := rtfs.Initialize("", "")
