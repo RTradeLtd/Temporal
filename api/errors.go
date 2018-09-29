@@ -78,7 +78,7 @@ const (
 	// CreditCheckError is an error messagen given to a user when searching for their credits fails
 	CreditCheckError = "failed to search for user credits"
 	// InvalidBalanceError is an error message given to a user when they don't have enough credits to pay
-	InvalidBalanceError = "user does not have enough"
+	InvalidBalanceError = "user does not have enough credits to pay for api call"
 	// CmcCheckError is an error message given to a user when checking cmc fails
 	CmcCheckError = "failed to retrieve value from coinmarketcap"
 	// DepositAddressCheckError is an error message given to a user when searchign for a deposit address fails
