@@ -203,11 +203,12 @@ func (um *UserManager) NewUserAccount(ethAddress, username, password, email stri
 	if err != nil {
 		return nil, err
 	}
-	if ethAddress != "" {
-		user.EthAddress = ethAddress
+	if ethAddress == "" {
+		ethAddress = username
 	}
 	user = User{
 		UserName:          username,
+		EthAddress:        ethAddress,
 		EnterpriseEnabled: enterpriseEnabled,
 		HashedPassword:    hex.EncodeToString(hashedPass),
 		EmailAddress:      email,
