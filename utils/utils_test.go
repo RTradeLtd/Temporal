@@ -80,5 +80,7 @@ func TestUtils_CalculateFileCost(t *testing.T) {
 
 func TestUtils_CalculateFileSizeInGigaBytes(t *testing.T) {
 	size := utils.BytesToGigaBytes(testSize)
-	fmt.Println(size)
+	if size != 0.12341962847858667 {
+		t.Fatal("failed to calculate correct size")
+	}
 }
