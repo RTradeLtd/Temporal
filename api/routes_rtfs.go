@@ -65,7 +65,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		api.LogError(err, IPFSConnectionError)(c, http.StatusBadRequest)
 		return
 	}
-	cost, err := utils.CalculatePinCost(hash, holdTimeInt, shell.Shell)
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, shell.Shell, false)
 	if err != nil {
 		api.LogError(err, PinCostCalculationError)(c, http.StatusBadRequest)
 		return
@@ -157,7 +157,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 	username := GetAuthenticatedUserFromContext(c)
-	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size)
+	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, false)
 	if err = api.validateUserCredits(username, cost); err != nil {
 		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
@@ -227,7 +227,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	username := GetAuthenticatedUserFromContext(c)
-	cost := utils.CalculateFileCost(holdTimeinMonthsInt, fileHandler.Size)
+	cost := utils.CalculateFileCost(holdTimeinMonthsInt, fileHandler.Size, false)
 	if err = api.validateUserCredits(username, cost); err != nil {
 		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
