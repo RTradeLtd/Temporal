@@ -98,6 +98,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		Key:         key,
 		UserName:    username,
 		NetworkName: "public",
+		CreditCost:  cost,
 	}
 
 	fmt.Printf("IPNS Entry struct %+v\n", ie)

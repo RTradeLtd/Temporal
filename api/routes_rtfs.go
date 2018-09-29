@@ -79,6 +79,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		NetworkName:      "public",
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
+		CreditCost:       cost,
 	}
 
 	mqConnectionURL := api.cfg.RabbitMQ.URL
@@ -185,6 +186,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		UserName:         username,
 		NetworkName:      "public",
 		HoldTimeInMonths: holdTimeInMonths,
+		CreditCost:       cost,
 	}
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
@@ -262,6 +264,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		UserName:         username,
 		NetworkName:      "public",
+		CreditCost:       cost,
 	}
 	mqConnectionURL := api.cfg.RabbitMQ.URL
 

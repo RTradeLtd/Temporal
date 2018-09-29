@@ -59,6 +59,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		NetworkName:      "public",
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
+		CreditCost:       cost,
 	}
 
 	if err = qm.PublishMessage(ipfsClusterPin); err != nil {

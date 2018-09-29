@@ -180,6 +180,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		Type:        keyType,
 		Size:        bitsInt,
 		NetworkName: "public",
+		CreditCost:  cost,
 	}
 
 	mqConnectionURL := api.cfg.RabbitMQ.URL
