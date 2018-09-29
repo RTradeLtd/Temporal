@@ -18,7 +18,36 @@ func TestUtils_CalculatePinCost(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cost, err := utils.CalculatePinCost(testHash, 10, manager.Shell)
+	type args struct {
+		hash    string
+		months  int64
+		private bool
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"Test1", args{testHash, int64(10), false}},
+		{"Test2", args{testHash, int64(10), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cost, err := utils.CalculatePinCost(
+				tt.args.hash,
+				tt.args.months,
+				manager.Shell,
+				tt.args.private,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if cost <= float64(0) {
+				t.Fatal(err)
+			}
+			fmt.Println("cost: ", cost)
+		})
+	}
+	cost, err := utils.CalculatePinCost(testHash, 10, manager.Shell, false)
 	if err != nil {
 		t.Fatal(err)
 	}
