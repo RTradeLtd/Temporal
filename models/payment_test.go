@@ -11,7 +11,7 @@ func TestPaymentManager_NewPayment(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
-	cfg, err := config.LoadConfig(defaultConfigFile)
+	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,7 +24,7 @@ func TestPaymentManager_NewPayment(t *testing.T) {
 	type args struct {
 		depositAddress string
 		txHash         string
-		usdValue       string
+		usdValue       float64
 		blockchain     string
 		paymentType    string
 		username       string
@@ -33,7 +33,7 @@ func TestPaymentManager_NewPayment(t *testing.T) {
 		name string
 		args args
 	}{
-		{"Payment1", args{"depositAddress", "txHash", "usdValue", "blockchain", "paymentType", "userName"}},
+		{"Payment1", args{"depositAddress", "txHash", 0.124, "blockchain", "paymentType", "userName"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
