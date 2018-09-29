@@ -10,6 +10,7 @@ import (
 
 const (
 	testHash = "QmdowUuRF4YEJFJvw2TDiECVEMfq89fNVHTXqdN3Z6JM8j"
+	testSize = int64(132520817)
 )
 
 func TestUtils_CalculatePinCost(t *testing.T) {
@@ -42,7 +43,35 @@ func TestUtils_CalculatePinCost(t *testing.T) {
 				t.Fatal(err)
 			}
 			if cost <= float64(0) {
-				t.Fatal(err)
+				t.Fatal("invalid size returned")
+			}
+			fmt.Println("cost: ", cost)
+		})
+	}
+}
+
+func TestUtils_CalculateFileCost(t *testing.T) {
+	type args struct {
+		size    int64
+		months  int64
+		private bool
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"Public", args{testSize, int64(10), false}},
+		{"Private", args{testSize, int64(10), true}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cost := utils.CalculateFileCost(
+				tt.args.months,
+				tt.args.size,
+				tt.args.private,
+			)
+			if cost <= float64(0) {
+				t.Fatal("invalid size returned")
 			}
 			fmt.Println("cost: ", cost)
 		})
