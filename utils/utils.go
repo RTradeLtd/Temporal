@@ -64,9 +64,9 @@ func CalculateFileCost(holdTimeInMonths, size int64, privateNetwork bool) float6
 	return totalCostUSDFloat
 }
 
-func BytesToGigaBytes(size int64) int64 {
-	gigabytes := int64(datasize.GB.Bytes())
-	sizeInGigaBytes := size / gigabytes
+func BytesToGigaBytes(size int64) float64 {
+	gigabytes := float64(datasize.GB.Bytes())
+	sizeInGigaBytes := float64(size) / gigabytes
 	return sizeInGigaBytes
 }
 
