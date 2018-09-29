@@ -55,6 +55,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 			continue
 		}
 		if key.NetworkName != "public" {
+			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"user":    key.UserName,
@@ -69,6 +70,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 		case "rsa":
 			keyTypeInt = ci.RSA
 			if key.Size > 4096 {
+				qm.refundCredits(key.UserName, "key", key.CreditCost, db)
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
 					"user":    key.UserName,
@@ -82,6 +84,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 			keyTypeInt = ci.Ed25519
 			bitsInt = 256
 		default:
+			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"user":    key.UserName,
@@ -93,6 +96,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 		keyName := fmt.Sprintf("%s-%s", key.UserName, key.Name)
 		pk, err := manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
 		if err != nil {
+			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"user":    key.UserName,
@@ -101,9 +105,10 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 			d.Ack(false)
 			continue
 		}
-
+		// will need a refund, as this would mean that the key was improperly generated
 		id, err := peer.IDFromPrivateKey(pk)
 		if err != nil {
+			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"user":    key.UserName,
@@ -112,6 +117,7 @@ func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *go
 			d.Ack(false)
 			continue
 		}
+		// doesn't need a refund, key wasgenerated, but information not saved to db
 		if err := userManager.AddIPFSKeyForUser(key.UserName, keyName, id.Pretty()); err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
@@ -176,6 +182,7 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 		if pin.NetworkName != "public" {
 			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(pin.UserName, pin.NetworkName)
 			if err != nil {
+				qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
 					"user":    pin.UserName,
@@ -185,6 +192,7 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 				continue
 			}
 			if !canAccess {
+				qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
 				usernames := []string{}
 				usernames = append(usernames, pin.UserName)
 				es := EmailSend{
@@ -209,6 +217,7 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 			}
 			url, err := networkManager.GetAPIURLByName(pin.NetworkName)
 			if err != nil {
+				qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
 					"user":    pin.UserName,
@@ -225,6 +234,7 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 		}).Info("initializing connection to IPFS")
 		ipfsManager, err := rtfs.Initialize("", apiURL)
 		if err != nil {
+			qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
 			addresses := []string{}
 			addresses = append(addresses, pin.UserName)
 			es := EmailSend{
@@ -255,6 +265,7 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 		}).Infof("pinning %s to ipfs", pin.CID)
 		err = ipfsManager.Pin(pin.CID)
 		if err != nil {
+			qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
 			addresses := []string{}
 			addresses = append(addresses, pin.UserName)
 			es := EmailSend{
@@ -296,6 +307,7 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 			"network": pin.NetworkName,
 		}).Infof("publishing cluster pin request for %s", pin.CID)
 		err = qmCluster.PublishMessage(clusterAddMsg)
+		// doesn't need a reunfd as item is pinned to local IPFS nodes.
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
@@ -345,159 +357,6 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 			"user":    pin.UserName,
 			"network": pin.NetworkName,
 		}).Infof("successfully processed pin for %s", pin.CID)
-		d.Ack(false)
-	}
-	return nil
-}
-
-// ProcessIPFSPinRemovals is used to listen for and process any IPFS pin removals.
-// This queue must be running on each of the IPFS nodes, and we must eventually run checks
-// to ensure that pins were actually removed
-func (qm *QueueManager) ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
-	userManager := models.NewUserManager(db)
-	networkManager := models.NewHostedIPFSNetworkManager(db)
-	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true, false)
-	if err != nil {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"error":   err.Error(),
-		}).Error("failed to initialize email queue connection")
-		return err
-	}
-
-	qm.Logger.WithFields(log.Fields{
-		"service": qm.QueueName,
-	}).Info("processing ipfs pin removals")
-
-	for d := range msgs {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("detected new message")
-
-		rm := IPFSPinRemoval{}
-		err := json.Unmarshal(d.Body, &rm)
-		if err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"error":   err.Error(),
-			}).Error("failed to unmarshal message")
-			d.Ack(false)
-			continue
-		}
-		apiURL := ""
-		if rm.NetworkName != "public" {
-			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(rm.UserName, rm.NetworkName)
-			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    rm.UserName,
-					"network": rm.NetworkName,
-					"error":   err.Error(),
-				}).Error("failed to check database for user network access")
-				d.Ack(false)
-				continue
-			}
-			if !canAccess {
-				addresses := []string{}
-				addresses = append(addresses, rm.UserName)
-				es := EmailSend{
-					Subject:     IpfsPrivateNetworkUnauthorizedSubject,
-					Content:     fmt.Sprintf("Unauthorized access to IPFS private network %s", rm.NetworkName),
-					ContentType: "",
-					UserNames:   addresses,
-				}
-				err = qmEmail.PublishMessage(es)
-				if err != nil {
-					qm.Logger.WithFields(log.Fields{
-						"service": qm.QueueName,
-						"error":   err.Error(),
-					}).Error("failed to publish message to email send queue")
-				}
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    rm.UserName,
-					"network": rm.NetworkName,
-				}).Error("unauthorized access to private network")
-				d.Ack(false)
-				continue
-			}
-			apiURL, err = networkManager.GetAPIURLByName(rm.NetworkName)
-			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    rm.UserName,
-					"network": rm.NetworkName,
-					"error":   err.Error(),
-				}).Error("failed to look for api url by name")
-				d.Ack(false)
-				continue
-			}
-		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    rm.UserName,
-			"network": rm.NetworkName,
-		}).Info("initializing connection to ipfs")
-		ipfsManager, err := rtfs.Initialize("", apiURL)
-		if err != nil {
-			addresses := []string{rm.UserName}
-			es := EmailSend{
-				Subject:     IpfsInitializationFailedSubject,
-				Content:     fmt.Sprintf("Failed to connect to IPFS network %s for reason %s", rm.NetworkName, err),
-				ContentType: "",
-				UserNames:   addresses,
-			}
-			errOne := qmEmail.PublishMessage(es)
-			if errOne != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"error":   errOne.Error(),
-				}).Error("failed to publish message to email send queue")
-			}
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    rm.UserName,
-				"network": rm.NetworkName,
-				"error":   err.Error(),
-			}).Error("failed to initialize connection to ipfs")
-			d.Ack(false)
-			continue
-		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    rm.UserName,
-			"network": rm.NetworkName,
-		}).Infof("unpinning %s from ipfs", rm.ContentHash)
-		err = ipfsManager.Shell.Unpin(rm.ContentHash)
-		if err != nil {
-			addresses := []string{rm.UserName}
-			es := EmailSend{
-				Subject:     "Pin removal failed",
-				Content:     fmt.Sprintf("Pin removal failed for ipfs network %s due to reason %s", rm.NetworkName, err),
-				ContentType: "",
-				UserNames:   addresses,
-			}
-			errOne := qmEmail.PublishMessage(es)
-			if errOne != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"error":   errOne.Error(),
-				}).Error("failed to publish message to email send queue")
-			}
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    rm.UserName,
-				"network": rm.NetworkName,
-				"error":   err.Error(),
-			}).Errorf("failed to unpin %s", rm.ContentHash)
-			d.Ack(false)
-			continue
-		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    rm.UserName,
-			"network": rm.NetworkName,
-		}).Infof("successfully unpinned %s", rm.ContentHash)
 		d.Ack(false)
 	}
 	return nil

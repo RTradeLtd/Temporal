@@ -57,19 +57,6 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 	}
 	// Declare Non Default exchanges for the particular queue
 	switch queueName {
-	case IpfsPinRemovalQueue:
-		err = qm.parseQueueName(queueName)
-		if err != nil {
-			return nil, err
-		}
-		err = qm.DeclareIPFSPinRemovalExchange()
-		if err != nil {
-			return nil, err
-		}
-		qm.ExchangeName = PinRemovalExchange
-		if publish {
-			return &qm, nil
-		}
 	case IpfsPinQueue:
 		err = qm.parseQueueName(queueName)
 		if err != nil {
@@ -247,11 +234,6 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 		}
 	case IpnsEntryQueue:
 		err = qm.ProcessIPNSEntryCreationRequests(msgs, db, cfg)
-		if err != nil {
-			return err
-		}
-	case IpfsPinRemovalQueue:
-		err = qm.ProcessIPFSPinRemovals(msgs, cfg, db)
 		if err != nil {
 			return err
 		}

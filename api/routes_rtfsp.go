@@ -397,44 +397,6 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": message}})
 }
 
-// RemovePinFromLocalHostForHostedIPFSNetwork is used to remove a content hash from a private ipfs network
-func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	hash := c.Param("hash")
-	if _, err := gocid.Decode(hash); err != nil {
-		Fail(c, err)
-		return
-	}
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
-		return
-	}
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)
-		Fail(c, err)
-		return
-	}
-	rm := queue.IPFSPinRemoval{
-		ContentHash: hash,
-		NetworkName: networkName,
-		UserName:    username,
-	}
-	mqConnectionURL := api.cfg.RabbitMQ.URL
-	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, true, false)
-	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
-		return
-	}
-	if err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
-		return
-	}
-
-	api.LogWithUser(username).Info("private ipfs pin removal request sent to backend")
-	Respond(c, http.StatusOK, gin.H{"response": "pin removal sent to backend"})
-}
-
 // GetLocalPinsForHostedIPFSNetwork is used to get local pins from the serving private ipfs node
 func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)

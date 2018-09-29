@@ -23,8 +23,6 @@ var (
 	EmailSendQueue = "email-send-queue"
 	// IpnsEntryQueue is a queue used to handle ipns entry creation
 	IpnsEntryQueue = "ipns-entry-queue"
-	// IpfsPinRemovalQueue is a queue used to handle ipfs pin removals
-	IpfsPinRemovalQueue = "ipns-pin-removal-queue"
 	// IpfsKeyCreationQueue is a queue used to handle ipfs key creation
 	IpfsKeyCreationQueue = "ipfs-key-creation-queue"
 	// PaymentCreationQueue is a queue used to handle payment processing
@@ -103,13 +101,6 @@ type IPFSClusterPin struct {
 	UserName         string  `json:"user_name"`
 	HoldTimeInMonths int64   `json:"hold_time_in_months"`
 	CreditCost       float64 `json:"credit_cost"`
-}
-
-// IPFSPinRemoval is our message for the ipfs pin removal qeueu
-type IPFSPinRemoval struct {
-	ContentHash string `json:"content_hash"`
-	NetworkName string `json:"network_name"`
-	UserName    string `json:"user_name"`
 }
 
 // DatabaseFileAdd is a struct used when sending data to rabbitmq

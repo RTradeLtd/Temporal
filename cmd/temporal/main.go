@@ -89,22 +89,7 @@ var commands = map[string]cmd.Cmd{
 							}
 						},
 					},
-					"pin-removal": cmd.Cmd{
-						Blurb:       "Pin removal queue",
-						Description: "Listens to pin removal requests",
-						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
-							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
-						},
-					},
-					"file": cmd.Cmd{
+					"file": app.Cmd{
 						Blurb:       "File upload queue",
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {

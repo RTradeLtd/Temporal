@@ -334,39 +334,6 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": message}})
 }
 
-// RemovePinFromLocalHost is used to remove a pin from the  ipfs node
-func (api *API) removePinFromLocalHost(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to removal route")
-		return
-	}
-	hash := c.Param("hash")
-	if _, err := gocid.Decode(hash); err != nil {
-		Fail(c, err)
-		return
-	}
-	mqURL := api.cfg.RabbitMQ.URL
-
-	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
-		return
-	}
-	rm := queue.IPFSPinRemoval{
-		ContentHash: hash,
-		NetworkName: "public",
-		UserName:    username,
-	}
-	if err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
-		return
-	}
-
-	api.LogWithUser(username).Info("ipfs pin removal request sent to backend")
-	Respond(c, http.StatusOK, gin.H{"response": "pin removal sent to backend"})
-}
-
 // GetLocalPins is used to get the pins tracked by the serving ipfs node
 // This is admin locked to avoid peformance penalties from looking up the pinset
 func (api *API) getLocalPins(c *gin.Context) {

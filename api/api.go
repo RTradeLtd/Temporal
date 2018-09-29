@@ -191,7 +191,6 @@ func (api *API) setupRoutes() {
 	ipfsProtected.POST("/pin/:hash", api.pinHashLocally)
 	ipfsProtected.POST("/add-file", api.addFileLocally)
 	ipfsProtected.POST("/add-file/advanced", api.addFileLocallyAdvanced)
-	ipfsProtected.DELETE("/remove-pin/:hash", api.removePinFromLocalHost) // admin locked
 
 	ipfsPrivateProtected := api.r.Group("/api/v1/ipfs-private")
 	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
@@ -209,7 +208,6 @@ func (api *API) setupRoutes() {
 	ipfsPrivateProtected.POST("/ipfs/add-file", api.addFileToHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/ipfs/add-file/advanced", api.addFileToHostedIPFSNetworkAdvanced)
 	ipfsPrivateProtected.POST("/ipns/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
-	ipfsPrivateProtected.DELETE("/ipfs/pin/remove/:hash", api.removePinFromLocalHostForHostedIPFSNetwork)
 
 	ipnsProtected := api.r.Group("/api/v1/ipns")
 	ipnsProtected.Use(authWare.MiddlewareFunc())
