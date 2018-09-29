@@ -306,6 +306,8 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 			"user":    pin.UserName,
 			"network": pin.NetworkName,
 		}).Infof("publishing cluster pin request for %s", pin.CID)
+		// no need to do any payment processing on cluster as it has been handled already
+		clusterAddMsg.CreditCost = 0
 		err = qmCluster.PublishMessage(clusterAddMsg)
 		// doesn't need a reunfd as item is pinned to local IPFS nodes.
 		if err != nil {
@@ -429,6 +431,7 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 		if ipfsFile.NetworkName != "public" {
 			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(ipfsFile.UserName, ipfsFile.NetworkName)
 			if err != nil {
+				qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
 					"user":    ipfsFile.UserName,
@@ -439,6 +442,7 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 				continue
 			}
 			if !canAccess {
+				qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
 				addresses := []string{}
 				addresses = append(addresses, ipfsFile.UserName)
 				es := EmailSend{
@@ -464,6 +468,7 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			}
 			apiURLName, err := networkManager.GetAPIURLByName(ipfsFile.NetworkName)
 			if err != nil {
+				qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
 					"user":    ipfsFile.UserName,
@@ -481,6 +486,7 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			}).Info("initializing connection to private ipfs network")
 			ipfsManager, err = rtfs.Initialize("", apiURL)
 			if err != nil {
+				qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
 				addresses := []string{}
 				addresses = append(addresses, ipfsFile.UserName)
 				es := EmailSend{
@@ -515,6 +521,7 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 
 		obj, err := minioManager.GetObject(ipfsFile.BucketName, ipfsFile.ObjectName, minio.GetObjectOptions{})
 		if err != nil {
+			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"user":    ipfsFile.UserName,
@@ -537,7 +544,7 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 		}).Info("adding file to ipfs")
 		resp, err := ipfsManager.Add(obj)
 		if err != nil {
-			//TODO: decide how to handle email failures
+			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
 			addresses := []string{}
 			addresses = append(addresses, ipfsFile.UserName)
 			es := EmailSend{
@@ -579,11 +586,13 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			}).Warn("failed to parse string to int, using default of 1 month")
 			holdTimeInt = 1
 		}
+		// we don't need to do any credit handling, as it has been done already
 		pin := IPFSPin{
 			CID:              resp,
 			NetworkName:      ipfsFile.NetworkName,
 			UserName:         ipfsFile.UserName,
 			HoldTimeInMonths: holdTimeInt,
+			CreditCost:       0,
 		}
 
 		err = qmPin.PublishMessageWithExchange(pin, PinExchange)
