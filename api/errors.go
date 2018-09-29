@@ -87,4 +87,6 @@ const (
 	UserSearchError = "unable to find username"
 	// CallCostCalculationError is an error message given to a user when we are unable to calculate the cost of their api call
 	CallCostCalculationError = "unable to calculate api call cost"
+	// CreditRefundError is an error message used when we are unable to refund a users credits
+	CreditRefundError = "failed to refund credits for user"
 )
