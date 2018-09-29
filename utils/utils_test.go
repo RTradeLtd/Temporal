@@ -47,9 +47,4 @@ func TestUtils_CalculatePinCost(t *testing.T) {
 			fmt.Println("cost: ", cost)
 		})
 	}
-	cost, err := utils.CalculatePinCost(testHash, 10, manager.Shell, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(cost)
 }
