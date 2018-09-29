@@ -11,33 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// CalculateIPFSFileHash is used to calculate the ipfs hash of a file
-func (api *API) calculateIPFSFileHash(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	file, err := c.FormFile("file")
-	if err != nil {
-		FailWithMissingField(c, "file")
-		return
-	}
-	fh, err := file.Open()
-	if err != nil {
-		api.LogError(err, FileOpenError)(c)
-		return
-	}
-	hash, err := utils.GenerateIpfsMultiHashForFile(fh)
-	if err != nil {
-		api.LogError(err, IPFSMultiHashGenerationError)(c)
-		return
-	}
-
-	api.l.WithFields(log.Fields{
-		"service": api,
-		"user":    username,
-	}).Info("ipfs file hash calculation requested")
-
-	Respond(c, http.StatusOK, gin.H{"response": hash})
-}
-
 // CalculatePinCost is used to calculate the cost of pinning something to temporal
 func (api *API) calculatePinCost(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
