@@ -83,4 +83,8 @@ const (
 	CmcCheckError = "failed to retrieve value from coinmarketcap"
 	// DepositAddressCheckError is an error message given to a user when searchign for a deposit address fails
 	DepositAddressCheckError = "failed to get deposit address"
+	// UserSearchError is an error message given to a user when a username cant be found
+	UserSearchError = "unable to find username"
+	// CallCostCalculationError is an error message given to a user when we are unable to calculate the cost of their api call
+	CallCostCalculationError = "unable to calculate api call cost"
 )
