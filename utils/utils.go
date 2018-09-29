@@ -21,6 +21,8 @@ const (
 	RSAKeyCreationPrivate         = 2.50
 	EDKeyCreationPublic           = 1.00
 	EDKeyCreationPrivate          = 1.50
+	DNSLinkGenerationPublic       = 5.00
+	DNSLinkGenerationPrivate      = 5.00
 )
 
 // this is a testing parameter for now, exact costs will be detailed at a later time
@@ -57,6 +59,12 @@ func CalculateAPICallCost(callType string, privateNetwork bool) (float64, error)
 			cost = RSAKeyCreationPrivate
 		} else {
 			cost = RSAKeyCreationPublic
+		}
+	case "dlink":
+		if privateNetwork {
+			cost = DNSLinkGenerationPrivate
+		} else {
+			cost = DNSLinkGenerationPublic
 		}
 	default:
 		return 0, errors.New("call type unsupported")
