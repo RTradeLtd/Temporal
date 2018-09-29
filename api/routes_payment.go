@@ -39,10 +39,10 @@ func (api *API) CreatePayment(c *gin.Context) {
 		return
 	}
 	if check := api.validateBlockchain(blockchain); !check {
-		FailOnError(c, errors.New(InvalidPaymentBlockchainError))
+		api.LogError(err, InvalidPaymentBlockchainError)(c, http.StatusBadRequest)
 		return
 	}
-	pm := models.NewPaymentManager(api.DBM.DB)
+	pm := models.NewPaymentManager(api.dbm.DB)
 	if _, err := pm.NewPayment(depositAddress, txHash, usdValue, blockchain, paymentType, username); err != nil {
 		api.LogError(err, PaymentCreationError)(c, http.StatusBadRequest)
 		return
@@ -60,23 +60,6 @@ func (api *API) CreatePayment(c *gin.Context) {
 	}
 	if err = qm.PublishMessage(pc); err != nil {
 		api.LogError(err, QueuePublishError)(c, http.StatusBadRequest)
-		return
-	}
-	pc := queue.PaymentCreation{
-		TxHash:     txHash,
-		Blockchain: blockchain,
-		UserName:   username,
-	}
-	mqURL := api.TConfig.RabbitMQ.URL
-	qm, err := queue.Initialize(queue.PaymentCreationQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, QueueInitializationError)
-		FailOnError(c, err)
-		return
-	}
-	if err = qm.PublishMessage(pc); err != nil {
-		api.LogError(err, QueuePublishError)
-		FailOnError(c, err)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "payment created"})
