@@ -219,3 +219,20 @@ func (api *API) changeEthereumAddress(c *gin.Context) {
 
 	Respond(c, http.StatusOK, gin.H{"response": "address change successful"})
 }
+
+// GetCredits is used to get a users available credits
+func (api *API) getCredits(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	um := models.NewUserManager(api.DBM.DB)
+	credits, err := um.GetCreditsForUser(username)
+	if err != nil {
+		api.LogError(err, CreditCheckError)
+		FailOnError(c, err)
+		return
+	}
+	api.Logger.WithFields(log.Fields{
+		"service": "api",
+		"user":    username,
+	}).Info("credit check requested")
+	Respond(c, http.StatusOK, gin.H{"response": credits})
+}
