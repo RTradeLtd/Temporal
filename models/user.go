@@ -342,3 +342,19 @@ func (um *UserManager) GetCreditsForUser(username string) (float64, error) {
 	}
 	return u.Credits, nil
 }
+
+// RemoveCredits is used to remove credits from a users balance
+func (um *UserManager) RemoveCredits(username string, credits float64) (*User, error) {
+	user, err := um.FindByUserName(username)
+	if err != nil {
+		return nil, err
+	}
+	if user.Credits < credits {
+		return nil, errors.New("unable to remove credits, would result in negative balance")
+	}
+	user.Credits = user.Credits - credits
+	if check := um.DB.Model(user).Update("credits", user.Credits); check.Error != nil {
+		return nil, check.Error
+	}
+	return user, nil
+}
