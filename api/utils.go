@@ -92,5 +92,8 @@ func (api *API) validateUserCredits(username string, cost float64) error {
 	if availableCredits < cost {
 		return errors.New(InvalidBalanceError)
 	}
+	if _, err := um.RemoveCredits(username, cost); err != nil {
+		return err
+	}
 	return nil
 }
