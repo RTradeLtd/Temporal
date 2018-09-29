@@ -75,4 +75,6 @@ const (
 	InvalidPaymentTypeError = "payment type not supported, must be one of: 'eth' 'rtc' 'btc' 'ltc' 'xmr'"
 	// InvalidPaymentBlockchainError is an error message given to a user when they provide an invalid blockchain
 	InvalidPaymentBlockchainError = "blockchain must be one of: 'ethereum' 'bitcoin' 'litecoin' 'monero'"
+	// CreditCheckError is an error messagen given to a user when searching for their credits fails
+	CreditCheckError = "failed to search for user credits"
 )
