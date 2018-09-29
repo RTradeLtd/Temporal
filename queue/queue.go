@@ -237,11 +237,15 @@ func (qm *QueueManager) DeclareQueue() error {
 // Perhaps the error was temporary, and we allow it to be retried?
 func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
 	db, err := database.OpenDBConnection(database.DBOptions{
-		User: dbUser, Password: dbPass, Address: dbURL})
+		User:           cfg.Database.Username,
+		Password:       cfg.Database.Password,
+		Address:        cfg.Database.URL,
+		Port:           cfg.Database.Port,
+		SSLModeDisable: false,
+	})
 	if err != nil {
 		return err
 	}
-
 	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
 	switch qm.ExchangeName {
 	case PinRemovalExchange:
