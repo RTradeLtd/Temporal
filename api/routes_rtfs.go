@@ -62,28 +62,16 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	}
 	shell, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.Logger.WithFields(log.Fields{
-			"service": api.Service,
-			"error":   err.Error(),
-		}).Error(IPFSConnectionError)
-		FailOnError(c, err)
+		api.LogError(err, IPFSConnectionError)(c, http.StatusBadRequest)
 		return
 	}
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, shell.Shell)
 	if err != nil {
-		api.Logger.WithFields(log.Fields{
-			"service": api.Service,
-			"error":   err.Error(),
-		}).Error(PinCostCalculationError)
-		FailOnError(c, err)
+		api.LogError(err, PinCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.Logger.WithFields(log.Fields{
-			"service": api.Service,
-			"error":   err.Error(),
-		}).Error(InvalidBalanceError)
-		FailOnError(c, err)
+		api.LogError(err, InvalidBalanceError)(c, http.StatusBadRequest)
 		return
 	}
 	ip := queue.IPFSPin{
