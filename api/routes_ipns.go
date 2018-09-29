@@ -65,28 +65,31 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 	}
 	ownsKey, err := um.CheckIfKeyOwnedByUser(username, key)
 	if err != nil {
-		api.LogError(err, KeySearchError)(c)
+		api.LogError(err, KeySearchError, CreditRefund{username, "ipns", cost})(c)
 		return
 	}
 
 	if !ownsKey {
 		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", username)
-		api.LogError(err, KeyUseError)(c)
+		api.LogError(err, KeyUseError, CreditRefund{username, "ipns", cost})(c)
 		return
 	}
 	resolve, err := strconv.ParseBool(resolveString)
 	if err != nil {
 		Fail(c, err)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	lifetime, err := time.ParseDuration(lifetimeStr)
 	if err != nil {
 		Fail(c, err)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	ttl, err := time.ParseDuration(ttlStr)
 	if err != nil {
 		Fail(c, err)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 
@@ -105,13 +108,13 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, QueueInitializationError, CreditRefund{username, "ipns", cost})(c)
 		return
 	}
 	// in order to avoid generating too much IPFS dht traffic, we publish round-robin style
 	// as we announce the records to the swarm, we will eventually achieve consistency across nodes automatically
 	if err = qm.PublishMessage(ie); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, QueuePublishError, CreditRefund{username, "ipns", cost})(c)
 		return
 	}
 
@@ -128,15 +131,6 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if username != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
-		return
-	}
-	cost, err := utils.CalculateAPICallCost("dlink", false)
-	if err != nil {
-		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
-		return
-	}
-	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	recordName, exists := c.GetPostForm("record_name")

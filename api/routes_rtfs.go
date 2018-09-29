@@ -86,12 +86,12 @@ func (api *API) pinHashLocally(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, QueueInitializationError, CreditRefund{username, "pin", cost})(c)
 		return
 	}
 
 	if err = qm.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, QueuePublishError, CreditRefund{username, "pin", cost})(c)
 		return
 	}
 
@@ -166,7 +166,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)(c)
+		api.LogError(err, FileOpenError, CreditRefund{username, "file", cost})(c)
 		return
 	}
 	api.LogDebug("file opened")
@@ -176,7 +176,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	objectName := fmt.Sprintf("%s%s", username, randString)
 	api.LogDebug("storing file in minio")
 	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{}); err != nil {
-		api.LogError(err, MinioPutError)(c)
+		api.LogError(err, MinioPutError, CreditRefund{username, "file", cost})(c)
 		return
 	}
 	api.LogDebug("file stored in minio")
@@ -190,12 +190,12 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	}
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, QueueInitializationError, CreditRefund{username, "file", cost})(c)
 		return
 	}
 
 	if err = qm.PublishMessage(ifp); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, QueuePublishError, CreditRefund{username, "file", cost})(c)
 		return
 	}
 
@@ -238,7 +238,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)(c)
+		api.LogError(err, FileOpenError, CreditRefund{username, "file", cost})(c)
 		return
 	}
 	api.LogDebug("file opened")
@@ -246,14 +246,14 @@ func (api *API) addFileLocally(c *gin.Context) {
 	// initialize a connection to the local ipfs node
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, IPFSConnectionError, CreditRefund{username, "file", cost})(c)
 		return
 	}
 	// pin the file
 	api.LogDebug("adding file...")
 	resp, err := manager.Add(openFile)
 	if err != nil {
-		api.LogError(err, IPFSAddError)(c)
+		api.LogError(err, IPFSAddError, CreditRefund{username, "file", cost})(c)
 		return
 	}
 	api.LogDebug("file added")
@@ -321,11 +321,11 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	}
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, IPFSConnectionError, CreditRefund{username, "file", cost})(c)
 		return
 	}
 	if err = manager.PublishPubSubMessage(topic, message); err != nil {
-		api.LogError(err, IPFSPubSubPublishError)(c)
+		api.LogError(err, IPFSPubSubPublishError, CreditRefund{username, "file", cost})(c)
 		return
 	}
 
