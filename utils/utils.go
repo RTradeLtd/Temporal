@@ -25,18 +25,30 @@ var usdPerGigabytePerMonth = 0.134
 var NilTime time.Time
 
 // CalculatePinCost is used to calculate the cost of pining a particular content hash
-func CalculatePinCost(contentHash string, holdTimeInMonths int64, shell *ipfsapi.Shell) (float64, error) {
+func CalculatePinCost(contentHash string, holdTimeInMonths int64, shell *ipfsapi.Shell, privateNetwork bool) (float64, error) {
 	objectStat, err := shell.ObjectStat(contentHash)
 	if err != nil {
 		return float64(0), err
 	}
+	// get total size of content hash in bytes
 	sizeInBytes := objectStat.CumulativeSize
+	// get gigabytes convert to bytes
 	gigaInBytes := datasize.GB.Bytes()
+	// convert gigabytes to int
 	gigabytesInt := int64(gigaInBytes)
+	// convert size of content hash form int to float64
 	sizeInBytesFloat := float64(sizeInBytes)
+	// convert gigabytes to float
 	gigabytesFloat := float64(gigabytesInt)
+	// convert object size from bytes to gigabytes
 	objectSizeInGigabytesFloat := sizeInBytesFloat / gigabytesFloat
-	totalCostFloat := objectSizeInGigabytesFloat * float64(holdTimeInMonths)
+	var costPerMonthFloat float64
+	if privateNetwork {
+		costPerMonthFloat = objectSizeInGigabytesFloat * UsdPerGigaBytePerMonthPrivate
+	} else {
+		costPerMonthFloat = objectSizeInGigabytesFloat * UsdPerGigaBytePerMonthPublic
+	}
+	totalCostFloat := costPerMonthFloat * float64(holdTimeInMonths)
 	return totalCostFloat, nil
 }
 
