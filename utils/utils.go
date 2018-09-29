@@ -50,11 +50,17 @@ func CalculatePinCost(contentHash string, holdTimeInMonths int64, shell *ipfsapi
 	return totalCostFloat, nil
 }
 
-func CalculateFileCost(holdTimeInMonths, size int64) float64 {
+func CalculateFileCost(holdTimeInMonths, size int64, privateNetwork bool) float64 {
 	gigabytesFloat := float64(datasize.GB.Bytes())
 	sizeFloat := float64(size)
 	sizeGigabytesFloat := sizeFloat / gigabytesFloat
-	totalCostUSDFloat := sizeGigabytesFloat * float64(holdTimeInMonths)
+	var costPerMonthFloat float64
+	if privateNetwork {
+		costPerMonthFloat = sizeGigabytesFloat * UsdPerGigaBytePerMonthPrivate
+	} else {
+		costPerMonthFloat = sizeGigabytesFloat * UsdPerGigaBytePerMonthPublic
+	}
+	totalCostUSDFloat := costPerMonthFloat * float64(holdTimeInMonths)
 	return totalCostUSDFloat
 }
 
