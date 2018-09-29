@@ -81,3 +81,13 @@ func (api *API) validateBlockchain(blockchain string) bool {
 	}
 	return false
 }
+
+// validateUserCredits is used to validate whether or not a user has enough credits to pay for an action
+func (api *API) validateUserCredits(username string, cost float64) (bool, error) {
+	um := models.NewUserManager(api.DBM.DB)
+	availableCredits, err := um.GetCreditsForUser(username)
+	if err != nil {
+		return false, err
+	}
+	return availableCredits >= cost, nil
+}
