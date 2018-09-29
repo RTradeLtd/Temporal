@@ -8,12 +8,6 @@ import (
 	"github.com/c2h5oh/datasize"
 )
 
-// ConnectionURL is the url used to connect to geth via rpc
-var ConnectionURL = "http://192.168.1.245:8545"
-
-// IpcPath is the file path used to connect to geth via ipc
-var IpcPath = "/media/solidity/fuck/Rinkeby/datadir/geth.ipc"
-
 // this is a testing parameter for now, exact costs will be detailed at a later time
 var usdPerGigabytePerMonth = 0.134
 
