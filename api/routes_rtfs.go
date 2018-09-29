@@ -69,6 +69,15 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		FailOnError(c, err)
 		return
 	}
+	shell, err := rtfs.Initialize("", "")
+	if err != nil {
+		api.Logger.WithFields(log.Fields{
+			"service": api.Service,
+			"error":   err.Error(),
+		}).Error(IPFSConnectionError)
+		FailOnError(c, err)
+		return
+	}
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, shell.Shell)
 	if err != nil {
 		api.Logger.WithFields(log.Fields{
