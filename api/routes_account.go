@@ -146,25 +146,27 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	keyBits, exists := c.GetPostForm("key_bits")
 	if !exists {
 		FailWithMissingField(c, "key_bits")
+		api.refundUserCredits(username, "key", cost)
 		return
 	}
 
 	keyName, exists := c.GetPostForm("key_name")
 	if !exists {
 		FailWithMissingField(c, "key_name")
+		api.refundUserCredits(username, "key", cost)
 		return
 	}
 
 	keys, err := um.GetKeysForUser(username)
 	if err != nil {
-		api.LogError(err, KeySearchError)(c, http.StatusNotFound)
+		api.LogError(err, KeySearchError, CreditRefund{username, "key", cost})(c, http.StatusNotFound)
 		return
 	}
 	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
 	for _, v := range keys["key_names"] {
 		if v == keyNamePrefixed {
 			err = fmt.Errorf("key with name already exists")
-			api.LogError(err, DuplicateKeyCreationError)(c, http.StatusConflict)
+			api.LogError(err, DuplicateKeyCreationError, CreditRefund{username, "key", cost})(c, http.StatusConflict)
 			return
 		}
 	}
@@ -192,12 +194,12 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, QueueInitializationError, CreditRefund{username, "key", cost})(c)
 		return
 	}
 
 	if err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, QueuePublishError, CreditRefund{username, "key", cost})(c)
 		return
 	}
 
