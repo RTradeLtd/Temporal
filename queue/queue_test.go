@@ -25,8 +25,6 @@ func TestInitialize(t *testing.T) {
 		{"DFAQ", args{queue.DatabaseFileAddQueue, false, false}},
 		{"IPQ", args{queue.IpfsPinQueue, false, false}},
 		{"IFQ", args{queue.IpfsFileQueue, false, false}},
-		{"PPCQ", args{queue.PinPaymentConfirmationQueue, false, false}},
-		{"PPSQ", args{queue.PinPaymentSubmissionQueue, false, false}},
 		{"ESQ", args{queue.EmailSendQueue, false, false}},
 		{"IEQ", args{queue.IpnsEntryQueue, false, false}},
 		{"IPRQ", args{queue.IpfsPinRemovalQueue, false, false}},
