@@ -15,37 +15,36 @@ func (api *API) CreatePayment(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	paymentType, exists := c.GetPostForm("payment_type")
 	if !exists {
-		FailNoExistPostForm(c, "payment_type")
+		FailWithMissingField(c, "payment_type")
 		return
 	}
 	usdValue, err := api.getUSDValue(paymentType)
 	if err != nil {
-		FailOnError(c, err)
+		api.LogError(err, CmcCheckError)(c, http.StatusBadRequest)
 		return
 	}
 	depositAddress, err := api.getDepositAddress(paymentType)
 	if err != nil {
-		FailOnError(c, err)
+		api.LogError(err, DepositAddressCheckError)(c, http.StatusBadRequest)
 		return
 	}
 	txHash, exists := c.GetPostForm("tx_hash")
 	if !exists {
-		FailNoExistPostForm(c, "tx_hash")
+		FailWithMissingField(c, "tx_hash")
 		return
 	}
 	blockchain, exists := c.GetPostForm("blockchain")
 	if !exists {
-		FailNoExistPostForm(c, "blockchain")
+		FailWithMissingField(c, "blockchain")
 		return
 	}
 	if check := api.validateBlockchain(blockchain); !check {
-		FailOnError(c, errors.New(InvalidPaymentBlockchainError))
+		api.LogError(err, InvalidPaymentBlockchainError)(c, http.StatusBadRequest)
 		return
 	}
-	pm := models.NewPaymentManager(api.DBM.DB)
+	pm := models.NewPaymentManager(api.dbm.DB)
 	if _, err := pm.NewPayment(depositAddress, txHash, usdValue, blockchain, paymentType, username); err != nil {
-		api.LogError(err, PaymentCreationError)
-		FailOnError(c, err)
+		api.LogError(err, PaymentCreationError)(c, http.StatusBadRequest)
 		return
 	}
 	pc := queue.PaymentCreation{
@@ -53,16 +52,14 @@ func (api *API) CreatePayment(c *gin.Context) {
 		Blockchain: blockchain,
 		UserName:   username,
 	}
-	mqURL := api.TConfig.RabbitMQ.URL
+	mqURL := api.cfg.RabbitMQ.URL
 	qm, err := queue.Initialize(queue.PaymentCreationQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)
-		FailOnError(c, err)
+		api.LogError(err, QueueInitializationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err = qm.PublishMessage(pc); err != nil {
-		api.LogError(err, QueuePublishError)
-		FailOnError(c, err)
+		api.LogError(err, QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "payment created"})
@@ -73,8 +70,7 @@ func (api *API) GetDepositAddress(c *gin.Context) {
 	paymentType := c.Param("type")
 	address, err := api.getDepositAddress(paymentType)
 	if err != nil {
-		api.LogError(err, InvalidPaymentTypeError)
-		FailOnError(c, err)
+		api.LogError(err, InvalidPaymentTypeError)(c, http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": address})

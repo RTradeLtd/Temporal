@@ -163,13 +163,13 @@ func (api *API) setupRoutes() {
 	auth.POST("/login", authWare.LoginHandler)
 
 	// PROTECTED ROUTES -- BEGIN
-	paymentsProtected := g.Group("/api/v1/payments")
+	paymentsProtected := api.r.Group("/api/v1/payments")
 	paymentsProtected.Use(authWare.MiddlewareFunc())
-	paymentsProtected.Use(middleware.APIRestrictionMiddleware(db))
+	paymentsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	paymentsProtected.POST("/create", api.CreatePayment)
 	paymentsProtected.GET("/deposit/address/:type", api.GetDepositAddress)
 
-	accountProtected := g.Group("/api/v1/account")
+	accountProtected := api.r.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
 	accountProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	accountProtected.POST("password/change", api.changeAccountPassword)
