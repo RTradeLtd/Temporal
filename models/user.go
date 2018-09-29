@@ -277,6 +277,15 @@ func (um *UserManager) FindByAddress(address string) *User {
 	return &u
 }
 
+// FindByUserName is used to find a user by their username
+func (um *UserManager) FindByUserName(username string) (*User, error) {
+	u := User{}
+	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
+		return nil, check.Error
+	}
+	return &u, nil
+}
+
 // FindEthAddressByUserName is used to retrieve a users eth address by searching for their username
 func (um *UserManager) FindEthAddressByUserName(username string) (string, error) {
 	u := User{}

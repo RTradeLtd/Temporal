@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"math/big"
 	"time"
 
@@ -14,8 +15,12 @@ const (
 	UsdPerGigaBytePerMonthPrivate = 0.154
 	PubSubPublishPublic           = 0.01
 	PubSubPublishPrivate          = 0.02
-	IPNSPublishPrivate            = 10.00
 	IPNSPublishPublic             = 5.00
+	IPNSPublishPrivate            = 10.00
+	RSAKeyCreationPublic          = 2.00
+	RSAKeyCreationPrivate         = 2.50
+	EDKeyCreationPublic           = 1.00
+	EDKeyCreationPrivate          = 1.50
 )
 
 // this is a testing parameter for now, exact costs will be detailed at a later time
@@ -23,6 +28,41 @@ var usdPerGigabytePerMonth = 0.134
 
 // NilTime is used to compare empty time
 var NilTime time.Time
+
+// CalculateAPICallCost is used to calculate the cost associated with an API call,
+// that isn't related to uploads/pinning
+func CalculateAPICallCost(callType string, privateNetwork bool) (float64, error) {
+	var cost float64
+	switch callType {
+	case "ipns":
+		if privateNetwork {
+			cost = IPNSPublishPrivate
+		} else {
+			cost = IPNSPublishPublic
+		}
+	case "pubsub":
+		if privateNetwork {
+			cost = PubSubPublishPrivate
+		} else {
+			cost = PubSubPublishPublic
+		}
+	case "ed-key":
+		if privateNetwork {
+			cost = EDKeyCreationPrivate
+		} else {
+			cost = EDKeyCreationPublic
+		}
+	case "rsa-key":
+		if privateNetwork {
+			cost = RSAKeyCreationPrivate
+		} else {
+			cost = RSAKeyCreationPublic
+		}
+	default:
+		return 0, errors.New("call type unsupported")
+	}
+	return cost, nil
+}
 
 // CalculatePinCost is used to calculate the cost of pining a particular content hash
 func CalculatePinCost(contentHash string, holdTimeInMonths int64, shell *ipfsapi.Shell, privateNetwork bool) (float64, error) {
