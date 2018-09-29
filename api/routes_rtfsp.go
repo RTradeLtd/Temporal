@@ -319,7 +319,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 		UserName:         username,
 		NetworkName:      networkName,
-		CreditCost:       cost,
+		CreditCost:       0,
 	}
 	if err = qm.PublishMessage(dfa); err != nil {
 		api.LogError(err, QueuePublishError)(c)
@@ -331,6 +331,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		NetworkName:      networkName,
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
+		CreditCost:       0,
 	}
 
 	qm, err = queue.Initialize(queue.IpfsPinQueue, mqURL, true, false)

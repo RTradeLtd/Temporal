@@ -264,7 +264,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		UserName:         username,
 		NetworkName:      "public",
-		CreditCost:       cost,
+		CreditCost:       0,
 	}
 	mqConnectionURL := api.cfg.RabbitMQ.URL
 
@@ -292,6 +292,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		NetworkName:      "public",
 		UserName:         username,
 		HoldTimeInMonths: holdTimeinMonthsInt,
+		CreditCost:       0,
 	}, queue.PinExchange); err != nil {
 		api.LogError(err, QueuePublishError)(c)
 		return
