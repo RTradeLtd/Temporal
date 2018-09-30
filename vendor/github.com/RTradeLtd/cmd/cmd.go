@@ -1,7 +1,7 @@
-package app
+package cmd
 
 import (
-	"github.com/RTradeLtd/Temporal/config"
+	"github.com/RTradeLtd/config"
 )
 
 // Cmd declares a command for a Temporal application.

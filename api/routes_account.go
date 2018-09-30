@@ -147,7 +147,12 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	// if key type is RSA, and size is too small or too large, default to an appropriately size minimum
+	if keyType == "rsa" {
+		if bitsInt > 4096 || bitsInt < 2048 {
+			bitsInt = 2048
+		}
+	}
 	key := queue.IPFSKeyCreation{
 		UserName:    username,
 		Name:        keyName,
