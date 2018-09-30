@@ -27,7 +27,6 @@ func TestInitialize(t *testing.T) {
 		{"IFQ", args{queue.IpfsFileQueue, false, false}},
 		{"ESQ", args{queue.EmailSendQueue, false, false}},
 		{"IEQ", args{queue.IpnsEntryQueue, false, false}},
-		{"IPRQ", args{queue.IpfsPinRemovalQueue, false, false}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
