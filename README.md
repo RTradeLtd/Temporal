@@ -84,6 +84,16 @@ Should you wish to contribute not just to TEMPORAL, but to the overall success o
 
 ### Media
 
+Channels:
+
+* [Medium](https://medium.com/@rtradetechnologies)
+* [Twitter](https://twitter.com/RTradeTech)
+* [Steemit](https://steemit.com/@rtrade)
+* [LinkedIn](https://www.linkedin.com/company/rtrade-technologies/)
+
+Select Blog Posts:
+
+* https://medium.com/@rtradetechnologies/introduction-to-ipfs-the-new-improved-web-efc89f158e6f
 * https://steemit.com/blockchain/@rtrade/temporal-development-update-optimizations-community-outreach-and-more-july-6th-2018
 * https://steemit.com/cryptocurrency/@rtrade/temporal-developer-update-saturday-june-30th-2018
 * https://steemit.com/cryptocurrency/@rtrade/temporal-a-distributed-platform-and-storage-infrastructure-service
