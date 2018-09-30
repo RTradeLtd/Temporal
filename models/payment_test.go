@@ -3,8 +3,8 @@ package models_test
 import (
 	"testing"
 
-	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/config"
 )
 
 func TestPaymentManager_NewPayment(t *testing.T) {
