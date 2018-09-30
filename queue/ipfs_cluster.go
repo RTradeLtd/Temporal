@@ -3,9 +3,9 @@ package queue
 import (
 	"encoding/json"
 
-	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
+	"github.com/RTradeLtd/config"
 	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
