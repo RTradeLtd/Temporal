@@ -151,10 +151,3 @@ type PaymentCreation struct {
 	Blockchain string `json:"blockchain"`
 	UserName   string `json:"user_name"`
 }
-
-// PaymentCreation is for the payment creation queue
-type PaymentCreation struct {
-	TxHash     string `json:"tx_hash"`
-	Blockchain string `json:"blockchain"`
-	UserName   string `json:"user_name"`
-}
