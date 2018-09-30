@@ -89,7 +89,7 @@ var commands = map[string]cmd.Cmd{
 							}
 						},
 					},
-					"file": app.Cmd{
+					"file": cmd.Cmd{
 						Blurb:       "File upload queue",
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -151,7 +151,7 @@ var commands = map[string]cmd.Cmd{
 					}
 				},
 			},
-			"email-send": app.Cmd{
+			"email-send": cmd.Cmd{
 				Blurb:       "Email send queue",
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
