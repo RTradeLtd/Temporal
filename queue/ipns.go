@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/config"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/rtfs"

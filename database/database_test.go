@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/RTradeLtd/Temporal/config"
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/config"
 	"github.com/jinzhu/gorm"
 )
 

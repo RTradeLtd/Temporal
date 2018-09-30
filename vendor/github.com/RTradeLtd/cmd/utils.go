@@ -1,4 +1,4 @@
-package app
+package cmd
 
 import (
 	"fmt"
@@ -6,21 +6,26 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/RTradeLtd/Temporal/config"
+	"github.com/RTradeLtd/config"
 )
 
 func run(commands map[string]Cmd, cfg config.TemporalConfig,
 	flags map[string]string, args []string) (noop bool) {
+
+	// find command
 	c, ok := commands[args[0]]
 	if !ok {
 		return true
 	}
+
+	// check for action and children
 	if c.Action == nil && (c.Children == nil || len(c.Children) == 0) {
 		return true
 	} else if c.Action != nil {
 		c.Action(cfg, flags)
 	}
 
+	// check for children and walk through them based on conditions
 	if c.Children != nil && len(c.Children) > 0 {
 		if len(args) > 1 {
 			return run(c.Children, cfg, flags, args[1:])

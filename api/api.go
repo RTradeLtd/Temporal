@@ -12,7 +12,7 @@ import (
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/sirupsen/logrus"
 
-	"github.com/RTradeLtd/Temporal/config"
+	"github.com/RTradeLtd/config"
 	xss "github.com/dvwright/xss-mw"
 	stats "github.com/semihalev/gin-stats"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
