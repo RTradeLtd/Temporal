@@ -767,12 +767,12 @@ func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": networks})
 }
 
-// GetUploadsByNetworkName is used to getu plaods for a network by its name
+// getUploadsByNetworkName is used to get uploads for a network by its name
 func (api *API) getUploadsByNetworkName(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
+	networkName := c.Param("network_name")
+	if networkName == "" {
 		FailWithBadRequest(c, "network_name")
 		return
 	}
@@ -789,7 +789,7 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("uploads forprivate ifps network requested")
+	api.LogWithUser(ethAddress).Info("uploads for private ifps network requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 
