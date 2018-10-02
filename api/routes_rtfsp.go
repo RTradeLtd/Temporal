@@ -124,42 +124,29 @@ func (api *API) getFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) 
 
 // AddFileToHostedIPFSNetworkAdvanced is used to add a file to a private ipfs network in a more advanced and resilient manner
 func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
-
 	username := GetAuthenticatedUserFromContext(c)
 
+	// check network
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithBadRequest(c, "network_name")
 		return
 	}
-
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)
-		Fail(c, err)
+		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
 
+	// get hold time
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailWithBadRequest(c, "hold_time")
 		return
 	}
 
-	accessKey := api.cfg.MINIO.AccessKey
-	secretKey := api.cfg.MINIO.SecretKey
-	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
-
-	mqURL := api.cfg.RabbitMQ.URL
-
-	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
-	if err != nil {
-		api.LogError(err, MinioConnectionError)
-		Fail(c, err)
-		return
-	}
+	// check file
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
-		// user error, do not log
 		Fail(c, err)
 		return
 	}
@@ -167,41 +154,54 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	fmt.Println("opening file")
+
+	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)
-		Fail(c, err)
+		api.LogError(err, FileOpenError)(c)
 		return
 	}
-	fmt.Println("file opened")
+	api.LogDebug("file opened")
+
+	// generate object name
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
-	fmt.Println("storing file in minio")
-	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{}); err != nil {
-		api.LogError(err, MinioPutError)
-		Fail(c, err)
+
+	// store file in minio
+	accessKey := api.cfg.MINIO.AccessKey
+	secretKey := api.cfg.MINIO.SecretKey
+	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
+	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
+	if err != nil {
+		api.LogError(err, MinioConnectionError)(c)
 		return
 	}
-	fmt.Println("file stored in minio")
-	ifp := queue.IPFSFile{
+	api.l.Debugf("storing file in minio as %s", objectName)
+	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile,
+		fileHandler.Size, minio.PutObjectOptions{}); err != nil {
+		api.LogError(err, MinioPutError)(c)
+		return
+	}
+	api.l.Debugf("%s stored in minio", objectName)
+
+	// initialize queue
+	mqURL := api.cfg.RabbitMQ.URL
+	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
+	if err != nil {
+		api.LogError(err, QueueInitializationError)(c)
+		return
+	}
+
+	// we don't use an exchange for file publishes so that rabbitmq distributes round robin
+	if err = qm.PublishMessage(queue.IPFSFile{
 		BucketName:       FilesUploadBucket,
 		ObjectName:       objectName,
 		UserName:         username,
 		NetworkName:      networkName,
 		HoldTimeInMonths: holdTimeInMonths,
-	}
-	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, QueueInitializationError)
-		Fail(c, err)
-		return
-	}
-	// we don't use an exchange for file publishes so that rabbitmq distributes round robin
-	if err = qm.PublishMessage(ifp); err != nil {
-		api.LogError(err, QueuePublishError)
-		Fail(c, err)
+	}); err != nil {
+		api.LogError(err, QueuePublishError)(c)
 		return
 	}
 
