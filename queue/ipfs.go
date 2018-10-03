@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/minio/minio-go"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/mini"
@@ -654,7 +653,9 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			"network": ipfsFile.NetworkName,
 		}).Info("retrieving object from minio")
 
-		obj, err := minioManager.GetObject(ipfsFile.BucketName, ipfsFile.ObjectName, minio.GetObjectOptions{})
+		obj, err := minioManager.GetObject(ipfsFile.ObjectName, mini.GetObjectOptions{
+			Bucket: ipfsFile.BucketName,
+		})
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
@@ -794,11 +795,13 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			"user":    ipfsFile.UserName,
 			"network": ipfsFile.NetworkName,
 		}).Info("object removed from minio")
-		qm.Logger.WithFields(log.Fields{
+
+		entry := qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
 			"user":    ipfsFile.UserName,
 			"network": ipfsFile.NetworkName,
-		}).Info("succesfully added file into ipfs")
+		})
+		entry.Info("succesfully added file into ipfs")
 		d.Ack(false)
 	}
 	return nil
