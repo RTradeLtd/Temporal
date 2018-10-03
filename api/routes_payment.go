@@ -88,7 +88,7 @@ func (api *API) getUSDValue(paymentType string) (float64, error) {
 	case "ltc":
 		return utils.RetrieveUsdPrice("litecoin")
 	case "rtc":
-		return 0.125, nil
+		return RtcCostUsd, nil
 	}
 	return 0, errors.New(InvalidPaymentTypeError)
 }

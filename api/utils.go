@@ -16,8 +16,12 @@ import (
 
 var nilTime time.Time
 
-// FilesUploadBucket is the bucket files are stored into before being processed
-const FilesUploadBucket = "filesuploadbucket"
+const (
+	// FilesUploadBucket is the bucket files are stored into before being processed
+	FilesUploadBucket = "filesuploadbucket"
+	// RtcCostUsd is the price of a single RTC in USD
+	RtcCostUsd = 0.125
+)
 
 // CalculateFileSize helper route used to calculate the size of a file
 func CalculateFileSize(c *gin.Context) {
