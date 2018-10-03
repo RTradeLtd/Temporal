@@ -244,5 +244,5 @@ func (api *API) setupRoutes() {
 	mini.POST("/create/bucket", api.makeBucket)
 	// PROTECTED ROUTES -- END
 
-	api.l.Info("Routes initialized")
+	api.LogInfo("Routes initialized")
 }
