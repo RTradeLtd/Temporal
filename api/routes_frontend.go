@@ -33,7 +33,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 	privateNetwork := c.PostForm("private_network")
 	var isPrivate bool
 	switch privateNetwork {
-	case "yes":
+	case "true":
 		isPrivate = true
 	default:
 		isPrivate = false
