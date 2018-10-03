@@ -8,7 +8,7 @@ import (
 // LogError is a wrapper used by the API to handle logging of errors. Returns a
 // callback to also fail a gin context with an optional status code, which
 // defaults to http.StatusInternalServerError
-func (api *API) LogError(err error, message string, refund ...CreditRefund) func(c *gin.Context, code ...int) {
+func (api *API) LogError(err error, message string) func(c *gin.Context, code ...int) {
 	if err == nil {
 		api.l.WithFields(log.Fields{
 			"service": api.service,
@@ -18,9 +18,6 @@ func (api *API) LogError(err error, message string, refund ...CreditRefund) func
 			"service": api.service,
 			"error":   err.Error(),
 		}).Error(message)
-	}
-	if len(refund) > 0 {
-		api.refundUserCredits(refund[0].Username, refund[0].CallType, refund[0].Cost)
 	}
 	if message == "" && err != nil {
 		return func(c *gin.Context, code ...int) { Fail(c, err, code...) }

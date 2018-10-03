@@ -63,13 +63,15 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 	}
 	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, key)
 	if err != nil {
-		api.LogError(err, KeySearchError, CreditRefund{username, "ipns", cost})(c)
+		api.LogError(err, KeySearchError)(c)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 
 	if !ownsKey {
 		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", username)
-		api.LogError(err, KeyUseError, CreditRefund{username, "ipns", cost})(c)
+		api.LogError(err, KeyUseError)(c)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	resolve, err := strconv.ParseBool(resolveString)
@@ -104,13 +106,15 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError, CreditRefund{username, "ipns", cost})(c)
+		api.LogError(err, QueueInitializationError)(c)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	// in order to avoid generating too much IPFS dht traffic, we publish round-robin style
 	// as we announce the records to the swarm, we will eventually achieve consistency across nodes automatically
 	if err = qm.PublishMessage(ie); err != nil {
-		api.LogError(err, QueuePublishError, CreditRefund{username, "ipns", cost})(c)
+		api.LogError(err, QueuePublishError)(c)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 

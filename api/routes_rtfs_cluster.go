@@ -50,7 +50,8 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError, CreditRefund{username, "file", cost})(c)
+		api.LogError(err, QueueInitializationError)(c)
+		api.refundUserCredits(username, "cluster-pin", cost)
 		return
 	}
 
@@ -63,7 +64,8 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 	}
 
 	if err = qm.PublishMessage(ipfsClusterPin); err != nil {
-		api.LogError(err, QueuePublishError, CreditRefund{username, "file", cost})(c)
+		api.LogError(err, QueuePublishError)(c)
+		api.refundUserCredits(username, "cluster-pin", cost)
 		return
 	}
 
