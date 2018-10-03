@@ -182,8 +182,7 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 			d.Ack(false)
 			continue
 		}
-		// update entry in database, doesn't need a refund as we've actioned the ipns publishing
-		_, err = ipnsManager.UpdateIPNSEntry(response.Name, ie.CID, ie.Key, ie.NetworkName, ie.LifeTime, ie.TTL)
+		_, err = ipnsManager.UpdateIPNSEntry(response.Name, ie.CID, ie.Key, ie.NetworkName, ie.UserName, ie.LifeTime, ie.TTL)
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
