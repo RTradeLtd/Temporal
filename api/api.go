@@ -38,6 +38,7 @@ type API struct {
 	cfg     *config.TemporalConfig
 	dbm     *database.DatabaseManager
 	um      *models.UserManager
+	im      *models.IpnsManager
 	l       *log.Logger
 	service string
 }

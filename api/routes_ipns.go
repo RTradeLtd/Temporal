@@ -129,8 +129,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 // getIPNSRecordsPublishedByUser is used to fetch IPNS records published by a user
 func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	ipnsManager := models.NewIPNSManager(api.dbm.DB)
-	records, err := ipnsManager.FindByUserName(username)
+	records, err := api.im.FindByUserName(username)
 	if err != nil {
 		api.LogError(err, IpnsRecordSearchError)(c, http.StatusBadRequest)
 		return
