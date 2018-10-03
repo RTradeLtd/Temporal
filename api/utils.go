@@ -66,11 +66,11 @@ func (api *API) getDepositAddress(paymentType string) (string, error) {
 	case "eth", "rtc":
 		return "0xc7459562777DDf3A1A7afefBE515E8479Bd3FDBD", nil
 	case "btc":
-		return "0", nil
+		return "", nil
 	case "ltc":
-		return "0", nil
+		return "", nil
 	case "xmr":
-		return "0", nil
+		return "", nil
 	}
 	return "", errors.New(InvalidPaymentTypeError)
 }
@@ -85,15 +85,14 @@ func (api *API) validateBlockchain(blockchain string) bool {
 
 // validateUserCredits is used to validate whether or not a user has enough credits to pay for an action
 func (api *API) validateUserCredits(username string, cost float64) error {
-	um := models.NewUserManager(api.dbm.DB)
-	availableCredits, err := um.GetCreditsForUser(username)
+	availableCredits, err := api.um.GetCreditsForUser(username)
 	if err != nil {
 		return err
 	}
 	if availableCredits < cost {
 		return errors.New(InvalidBalanceError)
 	}
-	if _, err := um.RemoveCredits(username, cost); err != nil {
+	if _, err := api.um.RemoveCredits(username, cost); err != nil {
 		return err
 	}
 	return nil
@@ -103,8 +102,7 @@ func (api *API) validateUserCredits(username string, cost float64) error {
 // Note that we do not do any error handling here, instead we will log the information so that we may manually
 // remediate the situation
 func (api *API) refundUserCredits(username, callType string, cost float64) {
-	um := models.NewUserManager(api.dbm.DB)
-	if _, err := um.AddCredits(username, cost); err != nil {
+	if _, err := api.um.AddCredits(username, cost); err != nil {
 		api.l.WithFields(log.Fields{
 			"service":   api.service,
 			"user":      username,

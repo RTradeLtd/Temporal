@@ -78,7 +78,7 @@ func (api *API) calculateFileCost(c *gin.Context) {
 	privateNetwork := c.PostForm("private_network")
 	var isPrivate bool
 	switch privateNetwork {
-	case "yes":
+	case "true":
 		isPrivate = true
 	default:
 		isPrivate = false

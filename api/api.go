@@ -19,6 +19,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/models"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -36,6 +37,7 @@ type API struct {
 	r       *gin.Engine
 	cfg     *config.TemporalConfig
 	dbm     *database.DatabaseManager
+	um      *models.UserManager
 	l       *log.Logger
 	service string
 }
@@ -112,6 +114,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		r:       router,
 		l:       logger,
 		dbm:     dbm,
+		um:      models.NewUserManager(dbm.DB),
 	}, nil
 }
 

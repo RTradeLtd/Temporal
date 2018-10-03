@@ -546,7 +546,6 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	um := models.NewUserManager(api.dbm.DB)
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
 		api.LogError(err, QueueInitializationError)(c)
@@ -582,7 +581,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
+	ownsKey, err := api.um.CheckIfKeyOwnedByUser(ethAddress, key)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c)
 		return
@@ -728,17 +727,16 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		api.LogError(err, NetworkCreationError)(c)
 		return
 	}
-	um := models.NewUserManager(api.dbm.DB)
 
 	if len(users) > 0 {
 		for _, v := range users {
-			if err := um.AddIPFSNetworkForUser(v, networkName); err != nil {
+			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil {
 				api.LogError(err, NetworkCreationError)(c)
 				return
 			}
 		}
 	} else {
-		if err := um.AddIPFSNetworkForUser(AdminAddress, networkName); err != nil {
+		if err := api.um.AddIPFSNetworkForUser(AdminAddress, networkName); err != nil {
 			api.LogError(err, NetworkCreationError)(c)
 			return
 		}
@@ -774,8 +772,7 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
-	um := models.NewUserManager(api.dbm.DB)
-	networks, err := um.GetPrivateIPFSNetworksForUser(ethAddress)
+	networks, err := api.um.GetPrivateIPFSNetworksForUser(ethAddress)
 	if err != nil {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return

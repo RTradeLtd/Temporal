@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	gocid "github.com/ipfs/go-cid"
@@ -53,7 +52,6 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	mqURL := api.cfg.RabbitMQ.URL
 
-	um := models.NewUserManager(api.dbm.DB)
 	cost, err := utils.CalculateAPICallCost("ipns", false)
 	if err != nil {
 		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
@@ -63,7 +61,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
-	ownsKey, err := um.CheckIfKeyOwnedByUser(username, key)
+	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, key)
 	if err != nil {
 		api.LogError(err, KeySearchError, CreditRefund{username, "ipns", cost})(c)
 		return
@@ -103,8 +101,6 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		NetworkName: "public",
 		CreditCost:  cost,
 	}
-
-	fmt.Printf("IPNS Entry struct %+v\n", ie)
 
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {

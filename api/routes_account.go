@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
@@ -34,8 +33,7 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		"user":    username,
 	}).Info("password change requested")
 
-	um := models.NewUserManager(api.dbm.DB)
-	suceeded, err := um.ChangePassword(username, oldPassword, newPassword)
+	suceeded, err := api.um.ChangePassword(username, oldPassword, newPassword)
 	if err != nil {
 		api.LogError(err, PasswordChangeError)(c)
 		return
@@ -80,8 +78,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		"service": "api",
 	}).Info("user account registration detected")
 
-	userManager := models.NewUserManager(api.dbm.DB)
-	userModel, err := userManager.NewUserAccount(ethAddress, username, password, email, false)
+	userModel, err := api.um.NewUserAccount(ethAddress, username, password, email, false)
 	if err != nil {
 		api.LogError(err, UserAccountCreationError)(c)
 		return
@@ -117,8 +114,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		return
 	}
 
-	um := models.NewUserManager(api.dbm.DB)
-	user, err := um.FindByUserName(username)
+	user, err := api.um.FindByUserName(username)
 	if err != nil {
 		api.LogError(err, UserSearchError)(c, http.StatusNotFound)
 		return
@@ -157,7 +153,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		return
 	}
 
-	keys, err := um.GetKeysForUser(username)
+	keys, err := api.um.GetKeysForUser(username)
 	if err != nil {
 		api.LogError(err, KeySearchError, CreditRefund{username, "key", cost})(c, http.StatusNotFound)
 		return
@@ -215,8 +211,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
-	um := models.NewUserManager(api.dbm.DB)
-	keys, err := um.GetKeysForUser(ethAddress)
+	keys, err := api.um.GetKeysForUser(ethAddress)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c)
 		return
@@ -239,8 +234,7 @@ func (api *API) changeEthereumAddress(c *gin.Context) {
 		FailWithMissingField(c, "eth_address")
 		return
 	}
-	um := models.NewUserManager(api.dbm.DB)
-	if _, err := um.ChangeEthereumAddress(username, ethAddress); err != nil {
+	if _, err := api.um.ChangeEthereumAddress(username, ethAddress); err != nil {
 		api.LogError(err, EthAddressChangeError)(c)
 		return
 	}
@@ -252,8 +246,7 @@ func (api *API) changeEthereumAddress(c *gin.Context) {
 // GetCredits is used to get a users available credits
 func (api *API) getCredits(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	um := models.NewUserManager(api.dbm.DB)
-	credits, err := um.GetCreditsForUser(username)
+	credits, err := api.um.GetCreditsForUser(username)
 	if err != nil {
 		api.LogError(err, CreditCheckError)(c, http.StatusBadRequest)
 		return
