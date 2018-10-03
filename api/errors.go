@@ -75,4 +75,6 @@ const (
 	NoKeyError = "no keys"
 	// FileTooBigError is an error message given to a user when attempting to upload a file larger than our limit
 	FileTooBigError = "attempting to upload too big of a file"
+	// IpnsRecordSearchError is an error message given to users when we can't search for any records
+	IpnsRecordSearchError = "failed to search for IPNS records, user likely has published none"
 )

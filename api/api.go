@@ -209,6 +209,7 @@ func (api *API) setupRoutes() {
 	ipnsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	ipnsProtected.POST("/publish/details", api.publishToIPNSDetails)
 	ipnsProtected.POST("/dnslink/aws/add", api.generateDNSLinkEntry) // admin locked
+	ipnsProtected.GET("/records", api.getIPNSRecordsPublishedByUser)
 
 	clusterProtected := api.r.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())
