@@ -507,6 +507,10 @@ func (qm *QueueManager) ProcessIPFSPinRemovals(msgs <-chan amqp.Delivery, cfg *c
 // This function is invoked with the advanced method of file uploads, and is significantly more resilient than
 // the simple file upload method.
 func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
+	service := qm.Logger.WithFields(log.Fields{
+		"service": qm.QueueName,
+	})
+
 	// construct the endpoint url to access our minio server
 	endpoint := fmt.Sprintf("%s:%s", cfg.MINIO.Connection.IP, cfg.MINIO.Connection.Port)
 	// grab our credentials for minio
@@ -514,68 +518,62 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 	secretKey := cfg.MINIO.SecretKey
 	ipfsManager, err := rtfs.Initialize("", "")
 	if err != nil {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"error":   err.Error(),
-		}).Error("failed to initialize connection to ipfs")
+		service.
+			WithField("error", err.Error()).
+			Error("failed to initialize connection to ipfs")
 		return err
 	}
 	// setup our connection to minio
 	minioManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"error":   err.Error(),
-		}).Error("failed to initialize connection to minio")
+		service.
+			WithField("error", err.Error()).
+			Error("failed to initialize connection to minio")
 		return err
 	}
 	qmEmail, err := Initialize(EmailSendQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"error":   err.Error(),
-		}).Error("failed to initialize email send queue connection")
+		service.
+			WithField("error", err.Error()).
+			Error("failed to initialize email send queue connection")
 		return err
 	}
 	qmPin, err := Initialize(IpfsPinQueue, cfg.RabbitMQ.URL, true, false)
 	if err != nil {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"error":   err.Error(),
-		}).Error("failed to initialize pin queue connection")
+		service.
+			WithField("error", err.Error()).
+			Error("failed to initialize pin queue connection")
 		return err
 	}
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
 	uploadManager := models.NewUploadManager(db)
-	qm.Logger.WithFields(log.Fields{
-		"service": qm.QueueName,
-	}).Info("processing ipfs files")
+	service.Info("processing ipfs files")
 	for d := range msgs {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("new message detected")
+		service.Info("new message detected")
 
 		ipfsFile := IPFSFile{}
 		// unmarshal the messagee
 		err = json.Unmarshal(d.Body, &ipfsFile)
 		if err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"error":   err.Error(),
-			}).Error("failed to unmarshal message")
+			service.
+				WithField("error", err.Error()).
+				Error("failed to unmarshal message")
 			d.Ack(false)
 			continue
 		}
+
+		fileContext := service.WithFields(log.Fields{
+			"user":    ipfsFile.UserName,
+			"network": ipfsFile.NetworkName,
+		})
+
 		if ipfsFile.NetworkName != "public" {
 			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(ipfsFile.UserName, ipfsFile.NetworkName)
 			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    ipfsFile.UserName,
-					"network": ipfsFile.NetworkName,
-					"error":   err.Error(),
-				}).Error("failed to check database for user network access")
+				fileContext.
+					WithField("error", err.Error()).
+					Error("failed to check database for user network access")
 				d.Ack(false)
 				continue
 			}
@@ -590,36 +588,24 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 				}
 				err = qmEmail.PublishMessage(es)
 				if err != nil {
-					qm.Logger.WithFields(log.Fields{
-						"service": qm.QueueName,
-						"error":   err.Error(),
-					}).Error("failed to publish message to email send queue")
+					fileContext.
+						WithField("error", err.Error()).
+						Error("failed to publish message to email send queue")
 				}
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    ipfsFile.UserName,
-					"network": ipfsFile.NetworkName,
-				}).Error("unauthorized access to private network")
+				fileContext.Error("unauthorized access to private network")
 				d.Ack(false)
 				continue
 			}
 			apiURLName, err := networkManager.GetAPIURLByName(ipfsFile.NetworkName)
 			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    ipfsFile.UserName,
-					"network": ipfsFile.NetworkName,
-					"error":   err.Error(),
-				}).Error("failed to look for api url by name")
+				fileContext.
+					WithField("error", err.Error()).
+					Error("failed to look for api url by name")
 				d.Ack(false)
 				continue
 			}
 			apiURL := apiURLName
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    ipfsFile.UserName,
-				"network": ipfsFile.NetworkName,
-			}).Info("initializing connection to private ipfs network")
+			fileContext.Info("initializing connection to private ipfs network")
 			ipfsManager, err = rtfs.Initialize("", apiURL)
 			if err != nil {
 				addresses := []string{}
@@ -632,50 +618,30 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 				}
 				errOne := qmEmail.PublishMessage(es)
 				if errOne != nil {
-					qm.Logger.WithFields(log.Fields{
-						"service": qm.QueueName,
-						"error":   errOne.Error(),
-					}).Error("failed to publish message to email send queue")
+					fileContext.
+						WithField("error", err.Error()).
+						Error("failed to publish message to email send queue")
 				}
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    ipfsFile.UserName,
-					"network": ipfsFile.NetworkName,
-					"error":   err.Error(),
-				}).Error("failed to initialize connection to private ipfs network")
+				fileContext.
+					WithField("error", err.Error()).
+					Error("failed to initialize connection to private ipfs network")
 				d.Ack(false)
 				continue
 			}
 		}
 
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    ipfsFile.UserName,
-			"network": ipfsFile.NetworkName,
-		}).Info("retrieving object from minio")
+		fileContext.Info("retrieving object from minio")
 
 		obj, err := minioManager.GetObject(ipfsFile.BucketName, ipfsFile.ObjectName, minio.GetObjectOptions{})
 		if err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    ipfsFile.UserName,
-				"network": ipfsFile.NetworkName,
-				"error":   err.Error(),
-			}).Info("failed to retrieve object from minio")
+			fileContext.
+				WithField("error", err.Error()).
+				Info("failed to retrieve object from minio")
 			d.Ack(false)
 			continue
 		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    ipfsFile.UserName,
-			"network": ipfsFile.NetworkName,
-		}).Info("successfully retrieved object from minio")
 
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    ipfsFile.UserName,
-			"network": ipfsFile.NetworkName,
-		}).Info("adding file to ipfs")
+		fileContext.Info("successfully retrieved object from minio, adding file to ipfs")
 		resp, err := ipfsManager.Add(obj)
 		if err != nil {
 			//TODO: decide how to handle email failures
@@ -689,35 +655,24 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			}
 			errOne := qmEmail.PublishMessage(es)
 			if errOne != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"error":   errOne.Error(),
-				}).Error("failed to publish message to email send queue")
+				fileContext.
+					WithField("error", err.Error()).
+					Error("failed to publish message to email send queue")
 			}
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    ipfsFile.UserName,
-				"network": ipfsFile.NetworkName,
-				"error":   err.Error(),
-			}).Info("failed to add file to ipfs")
+			fileContext.
+				WithField("error", err.Error()).
+				Info("failed to add file to ipfs")
 			d.Ack(false)
 			continue
 		}
 
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    ipfsFile.UserName,
-			"network": ipfsFile.NetworkName,
-		}).Info("file successfully added to IPFS, forwarding pin request")
+		fileContext.Info("file successfully added to IPFS, forwarding pin request")
 
 		holdTimeInt, err := strconv.ParseInt(ipfsFile.HoldTimeInMonths, 10, 64)
 		if err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    ipfsFile.UserName,
-				"network": ipfsFile.NetworkName,
-				"error":   err.Error(),
-			}).Warn("failed to parse string to int, using default of 1 month")
+			fileContext.
+				WithField("error", err.Error()).
+				Warn("failed to parse string to int, using default of 1 month")
 			holdTimeInt = 1
 		}
 		pin := IPFSPin{
@@ -729,76 +684,50 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 
 		err = qmPin.PublishMessageWithExchange(pin, PinExchange)
 		if err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    ipfsFile.UserName,
-				"network": ipfsFile.NetworkName,
-				"error":   err.Error(),
-			}).Warn("failed to publish message to pin queue")
+			fileContext.
+				WithField("error", err.Error()).
+				Warn("failed to publish message to pin queue")
 		}
 
 		_, err = uploadManager.FindUploadByHashAndNetwork(resp, ipfsFile.NetworkName)
 		if err != nil && err != gorm.ErrRecordNotFound {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    ipfsFile.UserName,
-				"network": ipfsFile.NetworkName,
-				"error":   err.Error(),
-			}).Error("failed to look for upload in database")
+			fileContext.
+				WithField("error", err.Error()).
+				Error("failed to look for upload in database")
 			d.Ack(false)
 			continue
 		}
 		if err == gorm.ErrRecordNotFound {
 			_, err = uploadManager.NewUpload(resp, "file", ipfsFile.NetworkName, ipfsFile.UserName, holdTimeInt)
 			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    ipfsFile.UserName,
-					"network": ipfsFile.NetworkName,
-					"error":   err.Error(),
-				}).Error("failed to create new upload in database")
+				fileContext.
+					WithField("error", err.Error()).
+					Error("failed to create new upload in database")
 				d.Ack(false)
 				continue
 			}
 		} else {
 			_, err = uploadManager.UpdateUpload(holdTimeInt, ipfsFile.UserName, resp, ipfsFile.NetworkName)
 			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    ipfsFile.UserName,
-					"network": ipfsFile.NetworkName,
-					"error":   err.Error(),
-				}).Error("failed to update upload in database")
+				fileContext.
+					WithField("error", err.Error()).
+					Error("failed to update upload in database")
 				d.Ack(false)
 				continue
 			}
 		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    ipfsFile.UserName,
-			"network": ipfsFile.NetworkName,
-		}).Info("removing object from minio")
+
+		fileContext.Info("removing object from minio")
 		err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName)
 		if err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    ipfsFile.UserName,
-				"network": ipfsFile.NetworkName,
-				"error":   err.Error(),
-			}).Info("failed to remove object from minio")
+			fileContext.
+				WithField("error", err.Error()).
+				Info("failed to remove object from minio")
 			d.Ack(false)
 			continue
 		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    ipfsFile.UserName,
-			"network": ipfsFile.NetworkName,
-		}).Info("object removed from minio")
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    ipfsFile.UserName,
-			"network": ipfsFile.NetworkName,
-		}).Info("succesfully added file into ipfs")
+
+		fileContext.Info("object removed from minio, succesfully added to ipfs")
 		d.Ack(false)
 	}
 	return nil
