@@ -101,50 +101,6 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": "content pin request sent to backend"})
 }
 
-// GetFileSizeInBytesForObjectForHostedIPFSNetwork is used to get file size for an object from a private ipfs network
-func (api *API) getFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
-		return
-	}
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)
-		Fail(c, err)
-		return
-	}
-
-	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(networkName)
-	if err != nil {
-		api.LogError(err, APIURLCheckError)
-		Fail(c, err)
-		return
-	}
-	key := c.Param("key")
-	if _, err := gocid.Decode(key); err != nil {
-		Fail(c, err)
-		return
-	}
-	manager, err := rtfs.Initialize("", apiURL)
-	if err != nil {
-		api.LogError(err, IPFSConnectionError)
-		Fail(c, err)
-		return
-	}
-	sizeInBytes, err := manager.GetObjectFileSizeInBytes(key)
-	if err != nil {
-		api.LogError(err, IPFSObjectStatError)
-		Fail(c, err)
-		return
-	}
-
-	api.LogWithUser(username).Info("private ipfs object file size requested")
-	Respond(c, http.StatusOK, gin.H{"response": gin.H{"object": key, "size_in_bytes": sizeInBytes}})
-
-}
-
 // AddFileToHostedIPFSNetworkAdvanced is used to add a file to a private ipfs network in a more advanced and resilient manner
 func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 

@@ -188,7 +188,6 @@ func (api *API) setupRoutes() {
 	ipfsProtected.POST("/calculate-content-hash", api.calculateContentHashForFile)
 	ipfsProtected.GET("/pins", api.getLocalPins) // admin locked
 	ipfsProtected.GET("/object-stat/:key", api.getObjectStatForIpfs)
-	ipfsProtected.GET("/object/size/:key", api.getFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
 	ipfsProtected.POST("/download/:hash", api.downloadContentHash)
 	ipfsProtected.POST("/pin/:hash", api.pinHashLocally)
@@ -202,7 +201,6 @@ func (api *API) setupRoutes() {
 	ipfsPrivateProtected.GET("/network/:name", api.getIPFSPrivateNetworkByName)                          // admin locked
 	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", api.checkLocalNodeForPinForHostedIPFSNetwork) // admin locked
 	ipfsPrivateProtected.POST("/ipfs/object-stat/:key", api.getObjectStatForIpfsForHostedIPFSNetwork)
-	ipfsPrivateProtected.POST("/ipfs/object/size/:key", api.getFileSizeInBytesForObjectForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/pubsub/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/pins", api.getLocalPinsForHostedIPFSNetwork) // admin locked
 	ipfsPrivateProtected.GET("/networks", api.getAuthorizedPrivateNetworks)
@@ -226,7 +224,6 @@ func (api *API) setupRoutes() {
 	clusterProtected.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
 	clusterProtected.GET("/status-local", api.fetchLocalClusterStatus)                 // admin locked
 	clusterProtected.POST("/pin/:hash", api.pinHashToCluster)
-	clusterProtected.DELETE("/remove-pin/:hash", api.removePinFromCluster) // admin locked
 
 	databaseProtected := api.r.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
