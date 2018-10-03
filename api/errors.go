@@ -53,10 +53,6 @@ const (
 	DNSLinkEntryError = "failed to create dns link entry"
 	// PaymentCreationError is an error used when creating payments
 	PaymentCreationError = "failed to create payment"
-	// PaymentMessageSignError is an error used when signing payment messages
-	PaymentMessageSignError = "failed to sign payment message"
-	// PaymentSignerGenerationError is an error used when generating the payment signer
-	PaymentSignerGenerationError = "failed to generate payment signer"
 	// EthAddressSearchError is an error used when searching for an eth address
 	EthAddressSearchError = "failed to search for eth address"
 	// PinCostCalculationError is an error message used when calculating pin costs
@@ -75,4 +71,22 @@ const (
 	NoKeyError = "no keys"
 	// FileTooBigError is an error message given to a user when attempting to upload a file larger than our limit
 	FileTooBigError = "attempting to upload too big of a file"
+	// InvalidPaymentTypeError is an error message given to a user when using an invalid payment method
+	InvalidPaymentTypeError = "payment type not supported, must be one of: 'eth' 'rtc' 'btc' 'ltc' 'xmr'"
+	// InvalidPaymentBlockchainError is an error message given to a user when they provide an invalid blockchain
+	InvalidPaymentBlockchainError = "blockchain must be one of: 'ethereum' 'bitcoin' 'litecoin' 'monero'"
+	// CreditCheckError is an error messagen given to a user when searching for their credits fails
+	CreditCheckError = "failed to search for user credits"
+	// InvalidBalanceError is an error message given to a user when they don't have enough credits to pay
+	InvalidBalanceError = "user does not have enough credits to pay for api call"
+	// CmcCheckError is an error message given to a user when checking cmc fails
+	CmcCheckError = "failed to retrieve value from coinmarketcap"
+	// DepositAddressCheckError is an error message given to a user when searchign for a deposit address fails
+	DepositAddressCheckError = "failed to get deposit address"
+	// UserSearchError is an error message given to a user when a username cant be found
+	UserSearchError = "unable to find username"
+	// CallCostCalculationError is an error message given to a user when we are unable to calculate the cost of their api call
+	CallCostCalculationError = "unable to calculate api call cost"
+	// CreditRefundError is an error message used when we are unable to refund a users credits
+	CreditRefundError = "failed to refund credits for user"
 )

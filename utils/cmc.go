@@ -2,10 +2,15 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"math/big"
 	"net/http"
 	"strconv"
+)
+
+var (
+	tickerURL = "https://api.coinmarketcap.com/v1/ticker"
 )
 
 // Response used to hold response data from cmc
@@ -30,6 +35,33 @@ type Response struct {
 // RetrieveEthUsdPrice is used to retrieve eths usd pricing
 func RetrieveEthUsdPrice() (float64, error) {
 	response, err := http.Get("https://api.coinmarketcap.com/v1/ticker/ethereum/")
+	if err != nil {
+		return float64(0), err
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return float64(0), err
+	}
+	var decode []Response
+	err = json.Unmarshal(body, &decode)
+	if err != nil {
+		return float64(0), err
+	}
+
+	// TODO: add error handling
+	f, err := strconv.ParseFloat(decode[0].PriceUsd, 64)
+	if err != nil {
+		return float64(0), err
+	}
+
+	return f, nil
+}
+
+// RetrieveUsdPrice is used to retrieve the USD price for a coin from CMC
+func RetrieveUsdPrice(coin string) (float64, error) {
+	url := fmt.Sprintf("%s/%s", tickerURL, coin)
+	response, err := http.Get(url)
 	if err != nil {
 		return float64(0), err
 	}

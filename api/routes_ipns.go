@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/RTradeLtd/Temporal/utils"
 	gocid "github.com/ipfs/go-cid"
 	log "github.com/sirupsen/logrus"
 
@@ -19,7 +19,7 @@ import (
 
 // PublishToIPNSDetails is used to publish a record on IPNS with more fine grained control over typical publishing methods
 func (api *API) publishToIPNSDetails(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 	hash, present := c.GetPostForm("hash")
 	if !present {
 		FailWithMissingField(c, "hash")
@@ -52,32 +52,44 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	mqURL := api.cfg.RabbitMQ.URL
 
-	um := models.NewUserManager(api.dbm.DB)
-
-	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
+	cost, err := utils.CalculateAPICallCost("ipns", false)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
+	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, key)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 
 	if !ownsKey {
-		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", ethAddress)
+		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", username)
 		api.LogError(err, KeyUseError)(c)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	resolve, err := strconv.ParseBool(resolveString)
 	if err != nil {
 		Fail(c, err)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	lifetime, err := time.ParseDuration(lifetimeStr)
 	if err != nil {
 		Fail(c, err)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	ttl, err := time.ParseDuration(ttlStr)
 	if err != nil {
 		Fail(c, err)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 
@@ -87,27 +99,28 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		TTL:         ttl,
 		Resolve:     resolve,
 		Key:         key,
-		UserName:    ethAddress,
+		UserName:    username,
 		NetworkName: "public",
+		CreditCost:  cost,
 	}
-
-	fmt.Printf("IPNS Entry struct %+v\n", ie)
 
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
 		api.LogError(err, QueueInitializationError)(c)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	// in order to avoid generating too much IPFS dht traffic, we publish round-robin style
 	// as we announce the records to the swarm, we will eventually achieve consistency across nodes automatically
 	if err = qm.PublishMessage(ie); err != nil {
 		api.LogError(err, QueuePublishError)(c)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 
 	api.l.WithFields(log.Fields{
 		"service": "api",
-		"user":    ethAddress,
+		"user":    username,
 	}).Info("ipns entry creation request sent to backend")
 
 	Respond(c, http.StatusOK, gin.H{"response": "ipns entry creation sent to backend"})
@@ -115,12 +128,11 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 // GenerateDNSLinkEntry is used to generate a DNS link entry
 func (api *API) generateDNSLinkEntry(c *gin.Context) {
-	authUser := GetAuthenticatedUserFromContext(c)
-	if authUser != AdminAddress {
+	username := GetAuthenticatedUserFromContext(c)
+	if username != AdminAddress {
 		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
-
 	recordName, exists := c.GetPostForm("record_name")
 	if !exists {
 		FailWithMissingField(c, "record_name")
@@ -174,7 +186,7 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 
 	api.l.WithFields(log.Fields{
 		"service": "api",
-		"user":    authUser,
+		"user":    username,
 	}).Info("dnslink entry created")
 
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{

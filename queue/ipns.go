@@ -3,7 +3,6 @@ package queue
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/config"
@@ -13,17 +12,6 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
-
-// IPNSEntry is used to hold relevant information needed to process IPNS entry creation requests
-type IPNSEntry struct {
-	CID         string        `json:"cid"`
-	LifeTime    time.Duration `json:"life_time"`
-	TTL         time.Duration `json:"ttl"`
-	Resolve     bool          `json:"resolve"`
-	Key         string        `json:"key"`
-	UserName    string        `json:"user_name"`
-	NetworkName string        `json:"network_name"`
-}
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
@@ -75,6 +63,7 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 		if ie.NetworkName != "public" {
 			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(ie.UserName, ie.NetworkName)
 			if err != nil {
+				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
 					"user":    ie.UserName,
@@ -85,6 +74,7 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 				continue
 			}
 			if !canAccess {
+				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 				addresses := []string{}
 				addresses = append(addresses, ie.UserName)
 				es := EmailSend{
@@ -110,6 +100,7 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 			}
 			apiURLName, err := networkManager.GetAPIURLByName(ie.NetworkName)
 			if err != nil {
+				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
 					"user":    ie.UserName,
@@ -127,6 +118,7 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 			}).Info("initializing connection to private ipfs network")
 			ipfsManager, err = rtfs.Initialize("", apiURL)
 			if err != nil {
+				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 				addresses := []string{}
 				addresses = append(addresses, ie.UserName)
 				es := EmailSend{
@@ -159,7 +151,12 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 		}).Info("publishing ipns entry")
 		response, err := ipfsManager.PublishToIPNSDetails(ie.CID, ie.Key, ie.LifeTime, ie.TTL, ie.Resolve)
 		if err != nil {
-			fmt.Println("error publishing response")
+			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"user":    ie.UserName,
+				"network": ie.NetworkName,
+			}).Error("failed to publish ipns entry")
 			formattedContent := fmt.Sprintf(IpnsEntryFailedContent, ie.CID, ie.Key, err)
 			addresses := []string{}
 			addresses = append(addresses, ie.UserName)
@@ -185,6 +182,7 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 			d.Ack(false)
 			continue
 		}
+		// update entry in database, doesn't need a refund as we've actioned the ipns publishing
 		_, err = ipnsManager.UpdateIPNSEntry(response.Name, ie.CID, ie.Key, ie.NetworkName, ie.LifeTime, ie.TTL)
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{

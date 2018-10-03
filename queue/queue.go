@@ -13,89 +13,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-var DatabaseFileAddQueue = "dfa-queue"
-var IpfsPinQueue = "ipfs-pin-queue"
-var IpfsFileQueue = "ipfs-file-queue"
-var IpfsClusterPinQueue = "ipfs-cluster-add-queue"
-var PinPaymentConfirmationQueue = "pin-payment-confirmation-queue"
-var PinPaymentSubmissionQueue = "pin-payment-submission-queue"
-var EmailSendQueue = "email-send-queue"
-var IpnsEntryQueue = "ipns-entry-queue"
-var IpfsPinRemovalQueue = "ipns-pin-removal-queue"
-var IpfsKeyCreationQueue = "ipfs-key-creation-queue"
-
-var AdminEmail = "temporal.reports@rtradetechnologies.com"
-
-// QueueManager is a helper struct to interact with rabbitmq
-type QueueManager struct {
-	Connection   *amqp.Connection
-	Channel      *amqp.Channel
-	Queue        *amqp.Queue
-	Logger       *log.Logger
-	QueueName    string
-	Service      string
-	ExchangeName string
-}
-
-// IPFSKeyCreation is a message used for processing key creation
-// only supported for the public IPFS network at the moment
-type IPFSKeyCreation struct {
-	UserName    string `json:"user_name"`
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Size        int    `json:"size"`
-	NetworkName string `json:"network_name"`
-}
-
-// IPFSPin is a struct used when sending pin request
-type IPFSPin struct {
-	CID              string `json:"cid"`
-	NetworkName      string `json:"network_name"`
-	UserName         string `json:"user_name"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
-}
-
-type IPFSFile struct {
-	BucketName       string `json:"bucket_name"`
-	ObjectName       string `json:"object_name"`
-	UserName         string `json:"user_name"`
-	NetworkName      string `json:"network_name"`
-	HoldTimeInMonths string `json:"hold_time_in_months"`
-}
-
-// IPFSClusterPin is a queue message used when sending a message to the cluster to pin content
-type IPFSClusterPin struct {
-	CID              string `json:"cid"`
-	NetworkName      string `json:"network_name"`
-	UserName         string `json:"user_name"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
-}
-
-type IPFSPinRemoval struct {
-	ContentHash string `json:"content_hash"`
-	NetworkName string `json:"network_name"`
-	UserName    string `json:"user_name"`
-}
-
-// DatabaseFileAdd is a struct used when sending data to rabbitmq
-type DatabaseFileAdd struct {
-	Hash             string `json:"hash"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
-	UserName         string `json:"user_name"`
-	NetworkName      string `json:"network_name"`
-}
-
-type IPNSUpdate struct {
-	CID         string `json:"content_hash"`
-	IPNSHash    string `json:"ipns_hash"`
-	LifeTime    string `json:"life_time"`
-	TTL         string `json:"ttl"`
-	Key         string `json:"key"`
-	Resolve     bool   `json:"resolve"`
-	UserName    string `json:"user_name"`
-	NetworkName string `json:"network_name"`
-}
-
 func (qm *QueueManager) setupLogging() error {
 	logFileName := fmt.Sprintf("/var/log/temporal/%s_serice.log", qm.QueueName)
 	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
@@ -140,19 +57,6 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 	}
 	// Declare Non Default exchanges for the particular queue
 	switch queueName {
-	case IpfsPinRemovalQueue:
-		err = qm.parseQueueName(queueName)
-		if err != nil {
-			return nil, err
-		}
-		err = qm.DeclareIPFSPinRemovalExchange()
-		if err != nil {
-			return nil, err
-		}
-		qm.ExchangeName = PinRemovalExchange
-		if publish {
-			return &qm, nil
-		}
 	case IpfsPinQueue:
 		err = qm.parseQueueName(queueName)
 		if err != nil {
@@ -330,11 +234,6 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 		}
 	case IpnsEntryQueue:
 		err = qm.ProcessIPNSEntryCreationRequests(msgs, db, cfg)
-		if err != nil {
-			return err
-		}
-	case IpfsPinRemovalQueue:
-		err = qm.ProcessIPFSPinRemovals(msgs, cfg, db)
 		if err != nil {
 			return err
 		}

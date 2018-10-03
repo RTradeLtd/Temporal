@@ -11,12 +11,17 @@ import (
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
 )
 
 var nilTime time.Time
 
-// FilesUploadBucket is the bucket files are stored into before being processed
-const FilesUploadBucket = "filesuploadbucket"
+const (
+	// FilesUploadBucket is the bucket files are stored into before being processed
+	FilesUploadBucket = "filesuploadbucket"
+	// RtcCostUsd is the price of a single RTC in USD
+	RtcCostUsd = 0.125
+)
 
 // CalculateFileSize helper route used to calculate the size of a file
 func CalculateFileSize(c *gin.Context) {
@@ -25,7 +30,7 @@ func CalculateFileSize(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	size := utils.CalculateFileSizeInGigaBytes(fileHandler.Size)
+	size := utils.BytesToGigaBytes(fileHandler.Size)
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"file_size_gb": size, "file_size_bytes": fileHandler.Size}})
 }
 
@@ -58,4 +63,55 @@ func (api *API) FileSizeCheck(size int64) error {
 		return errors.New(FileTooBigError)
 	}
 	return nil
+}
+
+func (api *API) getDepositAddress(paymentType string) (string, error) {
+	switch paymentType {
+	case "eth", "rtc":
+		return "0xc7459562777DDf3A1A7afefBE515E8479Bd3FDBD", nil
+	case "btc":
+		return "", nil
+	case "ltc":
+		return "", nil
+	case "xmr":
+		return "", nil
+	}
+	return "", errors.New(InvalidPaymentTypeError)
+}
+
+func (api *API) validateBlockchain(blockchain string) bool {
+	switch blockchain {
+	case "ethereum", "bitcoin", "litecoin", "monero":
+		return true
+	}
+	return false
+}
+
+// validateUserCredits is used to validate whether or not a user has enough credits to pay for an action
+func (api *API) validateUserCredits(username string, cost float64) error {
+	availableCredits, err := api.um.GetCreditsForUser(username)
+	if err != nil {
+		return err
+	}
+	if availableCredits < cost {
+		return errors.New(InvalidBalanceError)
+	}
+	if _, err := api.um.RemoveCredits(username, cost); err != nil {
+		return err
+	}
+	return nil
+}
+
+// refundUserCredits is used to trigger a credit refund for a user, in the event of an API level processing failure.
+// Note that we do not do any error handling here, instead we will log the information so that we may manually
+// remediate the situation
+func (api *API) refundUserCredits(username, callType string, cost float64) {
+	if _, err := api.um.AddCredits(username, cost); err != nil {
+		api.l.WithFields(log.Fields{
+			"service":   api.service,
+			"user":      username,
+			"call_type": callType,
+			"error":     err.Error(),
+		}).Error(CreditRefundError)
+	}
 }

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
@@ -33,8 +33,7 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		"user":    username,
 	}).Info("password change requested")
 
-	um := models.NewUserManager(api.dbm.DB)
-	suceeded, err := um.ChangePassword(username, oldPassword, newPassword)
+	suceeded, err := api.um.ChangePassword(username, oldPassword, newPassword)
 	if err != nil {
 		api.LogError(err, PasswordChangeError)(c)
 		return
@@ -79,8 +78,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		"service": "api",
 	}).Info("user account registration detected")
 
-	userManager := models.NewUserManager(api.dbm.DB)
-	userModel, err := userManager.NewUserAccount(ethAddress, username, password, email, false)
+	userModel, err := api.um.NewUserAccount(ethAddress, username, password, email, false)
 	if err != nil {
 		api.LogError(err, UserAccountCreationError)(c)
 		return
@@ -98,7 +96,6 @@ func (api *API) registerUserAccount(c *gin.Context) {
 // CreateIPFSKey is used to create an IPFS key
 func (api *API) createIPFSKey(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-
 	keyType, exists := c.GetPostForm("key_type")
 	if !exists {
 		FailWithMissingField(c, "key_type")
@@ -117,21 +114,49 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		return
 	}
 
+	user, err := api.um.FindByUserName(username)
+	if err != nil {
+		api.LogError(err, UserSearchError)(c, http.StatusNotFound)
+		return
+	}
+	var cost float64
+	// if they haven't made a key before, the first one is free
+	if len(user.IPFSKeyIDs) == 0 {
+		cost = 0
+		err = nil
+	} else {
+		if keyType == "rsa" {
+			cost, err = utils.CalculateAPICallCost("rsa-key", false)
+		} else {
+			cost, err = utils.CalculateAPICallCost("ed-key", false)
+		}
+	}
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil && cost > 0 {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	keyBits, exists := c.GetPostForm("key_bits")
 	if !exists {
 		FailWithMissingField(c, "key_bits")
+		api.refundUserCredits(username, "key", cost)
 		return
 	}
 
 	keyName, exists := c.GetPostForm("key_name")
 	if !exists {
 		FailWithMissingField(c, "key_name")
+		api.refundUserCredits(username, "key", cost)
 		return
 	}
-	um := models.NewUserManager(api.dbm.DB)
-	keys, err := um.GetKeysForUser(username)
+
+	keys, err := api.um.GetKeysForUser(username)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c, http.StatusNotFound)
+		api.refundUserCredits(username, "key", cost)
 		return
 	}
 	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
@@ -139,6 +164,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		if v == keyNamePrefixed {
 			err = fmt.Errorf("key with name already exists")
 			api.LogError(err, DuplicateKeyCreationError)(c, http.StatusConflict)
+			api.refundUserCredits(username, "key", cost)
 			return
 		}
 	}
@@ -159,6 +185,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		Type:        keyType,
 		Size:        bitsInt,
 		NetworkName: "public",
+		CreditCost:  cost,
 	}
 
 	mqConnectionURL := api.cfg.RabbitMQ.URL
@@ -166,11 +193,13 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.LogError(err, QueueInitializationError)(c)
+		api.refundUserCredits(username, "key", cost)
 		return
 	}
 
 	if err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
 		api.LogError(err, QueuePublishError)(c)
+		api.refundUserCredits(username, "key", cost)
 		return
 	}
 
@@ -186,8 +215,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
-	um := models.NewUserManager(api.dbm.DB)
-	keys, err := um.GetKeysForUser(ethAddress)
+	keys, err := api.um.GetKeysForUser(ethAddress)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c)
 		return
@@ -210,12 +238,23 @@ func (api *API) changeEthereumAddress(c *gin.Context) {
 		FailWithMissingField(c, "eth_address")
 		return
 	}
-	um := models.NewUserManager(api.dbm.DB)
-	if _, err := um.ChangeEthereumAddress(username, ethAddress); err != nil {
+	if _, err := api.um.ChangeEthereumAddress(username, ethAddress); err != nil {
 		api.LogError(err, EthAddressChangeError)(c)
 		return
 	}
 	api.LogWithUser(username).Info("ethereum address changed")
 
 	Respond(c, http.StatusOK, gin.H{"response": "address change successful"})
+}
+
+// GetCredits is used to get a users available credits
+func (api *API) getCredits(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	credits, err := api.um.GetCreditsForUser(username)
+	if err != nil {
+		api.LogError(err, CreditCheckError)(c, http.StatusBadRequest)
+		return
+	}
+	api.LogWithUser(username).Info("credit check requested")
+	Respond(c, http.StatusOK, gin.H{"response": credits})
 }
