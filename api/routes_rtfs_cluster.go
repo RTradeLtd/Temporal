@@ -97,34 +97,6 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": syncedCids})
 }
 
-// RemovePinFromCluster is used to remove a pin from the cluster global state
-// this will mean that all nodes in the cluster will no longer track the pin
-// TODO: use a queue
-func (api *API) removePinFromCluster(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to cluster removal")
-		return
-	}
-	hash := c.Param("hash")
-	if _, err := gocid.Decode(hash); err != nil {
-		Fail(c, err)
-		return
-	}
-	manager, err := rtfs_cluster.Initialize("", "")
-	if err != nil {
-		api.LogError(err, IPFSClusterConnectionError)(c)
-		return
-	}
-	if err = manager.RemovePinFromCluster(hash); err != nil {
-		api.LogError(err, IPFSClusterPinRemovalError)(c)
-		return
-	}
-
-	api.LogWithUser(ethAddress).Info("pin removal request sent to cluster")
-	Respond(c, http.StatusOK, gin.H{"response": "pin removal request sent to cluster"})
-}
-
 // GetLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
 func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
