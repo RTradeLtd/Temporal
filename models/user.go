@@ -225,6 +225,7 @@ func (um *UserManager) NewUserAccount(ethAddress, username, password, email stri
 		EmailAddress:      email,
 		AccountEnabled:    true,
 		APIAccess:         true,
+		Credits:           99999999, // this is temporary and will need to be removed before production
 	}
 	if check := um.DB.Create(&user); check.Error != nil {
 		return nil, check.Error
