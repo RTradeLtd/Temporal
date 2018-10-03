@@ -108,14 +108,16 @@ func (im *IpnsManager) CreateEntry(ipnsHash, ipfsHash, key, networkName, usernam
 	if err == nil {
 		return nil, errors.New("ipns hash already exists")
 	}
-	entry.Sequence = 1
-	entry.IPNSHash = ipnsHash
-	entry.IPFSHashes = pq.StringArray{ipfsHash}
-	entry.LifeTime = lifetime.String()
-	entry.TTL = ttl.String()
-	entry.Key = key
-	entry.NetworkName = networkName
-	entry.UserName = username
+	entry = IPNS{
+		Sequence:    1,
+		IPNSHash:    ipnsHash,
+		IPFSHashes:  pq.StringArray{ipfsHash},
+		LifeTime:    lifetime.String(),
+		TTL:         ttl.String(),
+		Key:         key,
+		NetworkName: networkName,
+		UserName:    username,
+	}
 	if check := im.DB.Create(&entry); check.Error != nil {
 		return nil, check.Error
 	}
