@@ -11,7 +11,6 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	gocid "github.com/ipfs/go-cid"
-	minio "github.com/minio/minio-go"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/models"
@@ -178,8 +177,11 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		return
 	}
 	api.l.Debugf("storing file in minio as %s", objectName)
-	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile,
-		fileHandler.Size, minio.PutObjectOptions{}); err != nil {
+	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size,
+		mini.PutObjectOptions{
+			Bucket:            FilesUploadBucket,
+			EncryptPassphrase: c.PostForm("passphrase"),
+		}); err != nil {
 		api.LogError(err, MinioPutError)(c)
 		return
 	}

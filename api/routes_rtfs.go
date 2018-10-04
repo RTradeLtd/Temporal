@@ -8,7 +8,6 @@ import (
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/utils"
 	gocid "github.com/ipfs/go-cid"
-	"github.com/minio/minio-go"
 
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -148,15 +147,23 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	api.LogDebug("file opened")
 
 	username := GetAuthenticatedUserFromContext(c)
+
+	// generate object name
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
-	api.LogDebug("storing file in minio")
-	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{}); err != nil {
+
+	api.l.Debugf("storing file in minio as %s", objectName)
+	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size,
+		mini.PutObjectOptions{
+			Bucket:            FilesUploadBucket,
+			EncryptPassphrase: c.PostForm("passphrase"),
+		}); err != nil {
 		api.LogError(err, MinioPutError)(c)
 		return
 	}
-	api.LogDebug("file stored in minio")
+	api.l.Debugf("file %s stored in minio", objectName)
+
 	ifp := queue.IPFSFile{
 		BucketName:       FilesUploadBucket,
 		ObjectName:       objectName,
