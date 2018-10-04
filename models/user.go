@@ -13,7 +13,6 @@ import (
 // User is our user model for anyone who signs up with Temporal
 type User struct {
 	gorm.Model
-	EthAddress        string  `gorm:"type:varchar(255);unique"`
 	UserName          string  `gorm:"type:varchar(255);unique"`
 	EmailAddress      string  `gorm:"type:varchar(255);unique"`
 	EnterpriseEnabled bool    `gorm:"type:boolean"`
@@ -201,7 +200,7 @@ func (um *UserManager) ChangePassword(username, currentPassword, newPassword str
 }
 
 // NewUserAccount is used to create a new user account
-func (um *UserManager) NewUserAccount(ethAddress, username, password, email string, enterpriseEnabled bool) (*User, error) {
+func (um *UserManager) NewUserAccount(username, password, email string, enterpriseEnabled bool) (*User, error) {
 	user := User{}
 	check := um.DB.Where("user_name = ?", username).First(&user)
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
@@ -214,12 +213,8 @@ func (um *UserManager) NewUserAccount(ethAddress, username, password, email stri
 	if err != nil {
 		return nil, err
 	}
-	if ethAddress == "" {
-		ethAddress = username
-	}
 	user = User{
 		UserName:          username,
-		EthAddress:        ethAddress,
 		EnterpriseEnabled: enterpriseEnabled,
 		HashedPassword:    hex.EncodeToString(hashedPass),
 		EmailAddress:      email,
@@ -290,15 +285,6 @@ func (um *UserManager) FindByUserName(username string) (*User, error) {
 	return &u, nil
 }
 
-// FindEthAddressByUserName is used to retrieve a users eth address by searching for their username
-func (um *UserManager) FindEthAddressByUserName(username string) (string, error) {
-	u := User{}
-	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
-		return "", check.Error
-	}
-	return u.EthAddress, nil
-}
-
 // FindEmailByUserName is used to find an email address by searching for the users eth address
 // the returned map contains their eth address as a key, and their email address as a value
 func (um *UserManager) FindEmailByUserName(username string) (map[string]string, error) {
@@ -310,19 +296,6 @@ func (um *UserManager) FindEmailByUserName(username string) (map[string]string, 
 	emails := make(map[string]string)
 	emails[username] = u.EmailAddress
 	return emails, nil
-}
-
-// ChangeEthereumAddress is used to change a user's ethereum address
-func (um *UserManager) ChangeEthereumAddress(username, ethAddress string) (*User, error) {
-	u := User{}
-	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
-		return nil, check.Error
-	}
-	u.EthAddress = ethAddress
-	if check := um.DB.Model(u).Update("eth_address", ethAddress); check.Error != nil {
-		return nil, check.Error
-	}
-	return &u, nil
 }
 
 // AddCredits is used to add credits to a user account

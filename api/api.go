@@ -178,7 +178,6 @@ func (api *API) setupRoutes() {
 	accountProtected.POST("password/change", api.changeAccountPassword)
 	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
 	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
-	accountProtected.POST("/ethereum/address/change", api.changeEthereumAddress)
 	accountProtected.GET("/credits/available", api.getCredits)
 
 	ipfsProtected := api.r.Group("/api/v1/ipfs")

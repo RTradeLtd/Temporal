@@ -54,8 +54,6 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 
 // RegisterUserAccount is used to sign up with temporal
 func (api *API) registerUserAccount(c *gin.Context) {
-	ethAddress := c.PostForm("eth_address")
-
 	username, exists := c.GetPostForm("username")
 	if !exists {
 		FailWithMissingField(c, "username")
@@ -71,14 +69,11 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		FailWithMissingField(c, "email_address")
 		return
 	}
-	if ethAddress == "" {
-		ethAddress = username
-	}
 	api.l.WithFields(log.Fields{
 		"service": "api",
 	}).Info("user account registration detected")
 
-	userModel, err := api.um.NewUserAccount(ethAddress, username, password, email, false)
+	userModel, err := api.um.NewUserAccount(username, password, email, false)
 	if err != nil {
 		api.LogError(err, UserAccountCreationError)(c)
 		return
@@ -228,23 +223,6 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 	api.LogWithUser(ethAddress).Info("key name list requested")
 
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"key_names": keys["key_names"], "key_ids": keys["key_ids"]}})
-}
-
-// ChangeEthereumAddress is used to change a user's ethereum address
-func (api *API) changeEthereumAddress(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	ethAddress, exists := c.GetPostForm("eth_address")
-	if !exists {
-		FailWithMissingField(c, "eth_address")
-		return
-	}
-	if _, err := api.um.ChangeEthereumAddress(username, ethAddress); err != nil {
-		api.LogError(err, EthAddressChangeError)(c)
-		return
-	}
-	api.LogWithUser(username).Info("ethereum address changed")
-
-	Respond(c, http.StatusOK, gin.H{"response": "address change successful"})
 }
 
 // GetCredits is used to get a users available credits
