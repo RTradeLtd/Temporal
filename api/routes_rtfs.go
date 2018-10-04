@@ -59,12 +59,26 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	shell, err := rtfs.Initialize("", "")
+	if err != nil {
+		api.LogError(err, IPFSConnectionError)(c, http.StatusBadRequest)
+		return
+	}
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, shell.Shell, false)
+	if err != nil {
+		api.LogError(err, PinCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	ip := queue.IPFSPin{
 		CID:              hash,
 		NetworkName:      "public",
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
+		CreditCost:       cost,
 	}
 
 	mqConnectionURL := api.cfg.RabbitMQ.URL
@@ -72,11 +86,13 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.LogError(err, QueueInitializationError)(c)
+		api.refundUserCredits(username, "pin", cost)
 		return
 	}
 
 	if err = qm.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
 		api.LogError(err, QueuePublishError)(c)
+		api.refundUserCredits(username, "pin", cost)
 		return
 	}
 
@@ -137,18 +153,26 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	username := GetAuthenticatedUserFromContext(c)
+	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, false)
+	if err = api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, FileOpenError)(c)
+		api.refundUserCredits(username, "file", cost)
 		return
 	}
 	api.LogDebug("file opened")
 
-	username := GetAuthenticatedUserFromContext(c)
-
-	// generate object name
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
@@ -160,6 +184,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 			EncryptPassphrase: c.PostForm("passphrase"),
 		}); err != nil {
 		api.LogError(err, MinioPutError)(c)
+		api.refundUserCredits(username, "file", cost)
 		return
 	}
 	api.l.Debugf("file %s stored in minio", objectName)
@@ -170,15 +195,18 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		UserName:         username,
 		NetworkName:      "public",
 		HoldTimeInMonths: holdTimeInMonths,
+		CreditCost:       cost,
 	}
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
 		api.LogError(err, QueueInitializationError)(c)
+		api.refundUserCredits(username, "file", cost)
 		return
 	}
 
 	if err = qm.PublishMessage(ifp); err != nil {
 		api.LogError(err, QueuePublishError)(c)
+		api.refundUserCredits(username, "file", cost)
 		return
 	}
 
@@ -211,12 +239,18 @@ func (api *API) addFileLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	username := GetAuthenticatedUserFromContext(c)
+	cost := utils.CalculateFileCost(holdTimeinMonthsInt, fileHandler.Size, false)
+	if err = api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	// open the file
 	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, FileOpenError)(c)
+		api.refundUserCredits(username, "file", cost)
 		return
 	}
 	api.LogDebug("file opened")
@@ -225,6 +259,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		api.LogError(err, IPFSConnectionError)(c)
+		api.refundUserCredits(username, "file", cost)
 		return
 	}
 	// pin the file
@@ -232,17 +267,18 @@ func (api *API) addFileLocally(c *gin.Context) {
 	resp, err := manager.Add(openFile)
 	if err != nil {
 		api.LogError(err, IPFSAddError)(c)
+		api.refundUserCredits(username, "file", cost)
 		return
 	}
 	api.LogDebug("file added")
 
 	// construct a message to rabbitmq to upad the database
-	username := GetAuthenticatedUserFromContext(c)
 	dfa := queue.DatabaseFileAdd{
 		Hash:             resp,
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		UserName:         username,
 		NetworkName:      "public",
+		CreditCost:       0,
 	}
 	mqConnectionURL := api.cfg.RabbitMQ.URL
 
@@ -270,6 +306,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		NetworkName:      "public",
 		UserName:         username,
 		HoldTimeInMonths: holdTimeinMonthsInt,
+		CreditCost:       0,
 	}, queue.PinExchange); err != nil {
 		api.LogError(err, QueuePublishError)(c)
 		return
@@ -285,54 +322,32 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	topic := c.Param("topic")
 	message, present := c.GetPostForm("message")
 	if !present {
-		FailWithBadRequest(c, "message")
+		FailWithMissingField(c, "message")
+		return
+	}
+	cost, err := utils.CalculateAPICallCost("pubsub", false)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		api.LogError(err, IPFSConnectionError)(c)
+		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
 	if err = manager.PublishPubSubMessage(topic, message); err != nil {
 		api.LogError(err, IPFSPubSubPublishError)(c)
+		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
 
 	api.LogWithUser(username).Info("ipfs pub sub message published")
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": message}})
-}
-
-// RemovePinFromLocalHost is used to remove a pin from the  ipfs node
-func (api *API) removePinFromLocalHost(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to removal route")
-		return
-	}
-	hash := c.Param("hash")
-	if _, err := gocid.Decode(hash); err != nil {
-		Fail(c, err)
-		return
-	}
-	mqURL := api.cfg.RabbitMQ.URL
-
-	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
-		return
-	}
-	rm := queue.IPFSPinRemoval{
-		ContentHash: hash,
-		NetworkName: "public",
-		UserName:    username,
-	}
-	if err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
-		return
-	}
-
-	api.LogWithUser(username).Info("ipfs pin removal request sent to backend")
-	Respond(c, http.StatusOK, gin.H{"response": "pin removal sent to backend"})
 }
 
 // GetLocalPins is used to get the pins tracked by the serving ipfs node

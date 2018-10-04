@@ -19,6 +19,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/models"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -36,6 +37,7 @@ type API struct {
 	r       *gin.Engine
 	cfg     *config.TemporalConfig
 	dbm     *database.DatabaseManager
+	um      *models.UserManager
 	l       *log.Logger
 	service string
 }
@@ -112,6 +114,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		r:       router,
 		l:       logger,
 		dbm:     dbm,
+		um:      models.NewUserManager(dbm.DB),
 	}, nil
 }
 
@@ -163,6 +166,12 @@ func (api *API) setupRoutes() {
 	auth.POST("/login", authWare.LoginHandler)
 
 	// PROTECTED ROUTES -- BEGIN
+	paymentsProtected := api.r.Group("/api/v1/payments")
+	paymentsProtected.Use(authWare.MiddlewareFunc())
+	paymentsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	paymentsProtected.POST("/create", api.CreatePayment)
+	paymentsProtected.GET("/deposit/address/:type", api.GetDepositAddress)
+
 	accountProtected := api.r.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
 	accountProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
@@ -170,6 +179,7 @@ func (api *API) setupRoutes() {
 	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
 	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
 	accountProtected.POST("/ethereum/address/change", api.changeEthereumAddress)
+	accountProtected.GET("/credits/available", api.getCredits)
 
 	ipfsProtected := api.r.Group("/api/v1/ipfs")
 	ipfsProtected.Use(authWare.MiddlewareFunc())
@@ -184,7 +194,6 @@ func (api *API) setupRoutes() {
 	ipfsProtected.POST("/pin/:hash", api.pinHashLocally)
 	ipfsProtected.POST("/add-file", api.addFileLocally)
 	ipfsProtected.POST("/add-file/advanced", api.addFileLocallyAdvanced)
-	ipfsProtected.DELETE("/remove-pin/:hash", api.removePinFromLocalHost) // admin locked
 
 	ipfsPrivateProtected := api.r.Group("/api/v1/ipfs-private")
 	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
@@ -202,7 +211,6 @@ func (api *API) setupRoutes() {
 	ipfsPrivateProtected.POST("/ipfs/add-file", api.addFileToHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/ipfs/add-file/advanced", api.addFileToHostedIPFSNetworkAdvanced)
 	ipfsPrivateProtected.POST("/ipns/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
-	ipfsPrivateProtected.DELETE("/ipfs/pin/remove/:hash", api.removePinFromLocalHostForHostedIPFSNetwork)
 
 	ipnsProtected := api.r.Group("/api/v1/ipns")
 	ipnsProtected.Use(authWare.MiddlewareFunc())
@@ -228,7 +236,6 @@ func (api *API) setupRoutes() {
 
 	frontendProtected := api.r.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
-	frontendProtected.POST("/utils/ipfs/hash/calculate", api.calculateIPFSFileHash)
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", api.calculatePinCost)
 	frontendProtected.POST("/cost/calculate/file", api.calculateFileCost)
 

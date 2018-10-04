@@ -33,6 +33,18 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
+	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
+	url, err := im.GetAPIURLByName(networkName)
+	if err != nil {
+		api.LogError(err, APIURLCheckError)(c, http.StatusBadRequest)
+		return
+	}
+	manager, err := rtfs.Initialize("", url)
+	if err != nil {
+		api.LogError(err, IPFSConnectionError)(c, http.StatusBadRequest)
+		return
+	}
+
 	hash := c.Param("hash")
 	if _, err := gocid.Decode(hash); err != nil {
 		Fail(c, err)
@@ -48,12 +60,21 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell, true)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	ip := queue.IPFSPin{
 		CID:              hash,
 		NetworkName:      networkName,
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
+		CreditCost:       cost,
 	}
 
 	mqConnectionURL := api.cfg.RabbitMQ.URL
@@ -61,11 +82,13 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.LogError(err, QueueInitializationError)(c)
+		api.refundUserCredits(username, "private-pin", cost)
 		return
 	}
 
 	if err = qm.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
 		api.LogError(err, QueuePublishError)(c)
+		api.refundUserCredits(username, "private-pin", cost)
 		return
 	}
 
@@ -132,7 +155,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		return
 	}
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c)
+		api.LogError(err, PrivateNetworkAccessError)(c, http.StatusBadRequest)
 		return
 	}
 
@@ -142,8 +165,21 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		FailWithBadRequest(c, "hold_time")
 		return
 	}
+	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	if err != nil {
+		Fail(c, err, http.StatusBadRequest)
+		return
+	}
 
-	// check file
+	accessKey := api.cfg.MINIO.AccessKey
+	secretKey := api.cfg.MINIO.SecretKey
+	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
+	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
+	if err != nil {
+		api.LogError(err, MinioConnectionError)
+		Fail(c, err)
+		return
+	}
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		Fail(c, err)
@@ -153,11 +189,17 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, true)
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)(c)
+		api.LogError(err, FileOpenError)
+		api.refundUserCredits(username, "private-file", cost)
+		Fail(c, err)
 		return
 	}
 	api.LogDebug("file opened")
@@ -166,24 +208,24 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
-
-	// store file in minio
-	accessKey := api.cfg.MINIO.AccessKey
-	secretKey := api.cfg.MINIO.SecretKey
-	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
-	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
-	if err != nil {
-		api.LogError(err, MinioConnectionError)(c)
+	fmt.Println("storing file in minio")
+	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size, mini.PutObjectOptions{
+		Bucket:            FilesUploadBucket,
+		EncryptPassphrase: c.PostForm("passphrase"),
+	}); err != nil {
+		api.LogError(err, MinioPutError)
+		api.refundUserCredits(username, "private-file", cost)
+		Fail(c, err)
 		return
 	}
-	api.l.Debugf("storing file in minio as %s", objectName)
-	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size,
-		mini.PutObjectOptions{
-			Bucket:            FilesUploadBucket,
-			EncryptPassphrase: c.PostForm("passphrase"),
-		}); err != nil {
-		api.LogError(err, MinioPutError)(c)
-		return
+	fmt.Println("file stored in minio")
+	ifp := queue.IPFSFile{
+		BucketName:       FilesUploadBucket,
+		ObjectName:       objectName,
+		UserName:         username,
+		NetworkName:      networkName,
+		HoldTimeInMonths: holdTimeInMonths,
+		CreditCost:       cost,
 	}
 	api.l.Debugf("%s stored in minio", objectName)
 
@@ -191,19 +233,17 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	mqURL := api.cfg.RabbitMQ.URL
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, QueueInitializationError)
+		api.refundUserCredits(username, "private-file", cost)
+		Fail(c, err)
 		return
 	}
 
 	// we don't use an exchange for file publishes so that rabbitmq distributes round robin
-	if err = qm.PublishMessage(queue.IPFSFile{
-		BucketName:       FilesUploadBucket,
-		ObjectName:       objectName,
-		UserName:         username,
-		NetworkName:      networkName,
-		HoldTimeInMonths: holdTimeInMonths,
-	}); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+	if err = qm.PublishMessage(ifp); err != nil {
+		api.LogError(err, QueuePublishError)
+		api.refundUserCredits(username, "private-file", cost)
+		Fail(c, err)
 		return
 	}
 
@@ -239,6 +279,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
@@ -269,14 +310,21 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, true)
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	file, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, FileOpenError)(c)
+		api.refundUserCredits(username, "private-file", cost)
 		return
 	}
 	resp, err := ipfsManager.Add(file)
 	if err != nil {
 		api.LogError(err, IPFSAddError)(c)
+		api.refundUserCredits(username, "private-file", cost)
 		return
 	}
 	fmt.Println("file uploaded")
@@ -285,6 +333,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 		UserName:         username,
 		NetworkName:      networkName,
+		CreditCost:       0,
 	}
 	if err = qm.PublishMessage(dfa); err != nil {
 		api.LogError(err, QueuePublishError)(c)
@@ -296,6 +345,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		NetworkName:      networkName,
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
+		CreditCost:       0,
 	}
 
 	qm, err = queue.Initialize(queue.IpfsPinQueue, mqURL, true, false)
@@ -325,7 +375,15 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
-
+	cost, err := utils.CalculateAPICallCost("pubsub", true)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
@@ -351,44 +409,6 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	api.LogWithUser(username).Info("private ipfs pub sub message published")
 
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": message}})
-}
-
-// RemovePinFromLocalHostForHostedIPFSNetwork is used to remove a content hash from a private ipfs network
-func (api *API) removePinFromLocalHostForHostedIPFSNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	hash := c.Param("hash")
-	if _, err := gocid.Decode(hash); err != nil {
-		Fail(c, err)
-		return
-	}
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
-		return
-	}
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)
-		Fail(c, err)
-		return
-	}
-	rm := queue.IPFSPinRemoval{
-		ContentHash: hash,
-		NetworkName: networkName,
-		UserName:    username,
-	}
-	mqConnectionURL := api.cfg.RabbitMQ.URL
-	qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, true, false)
-	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
-		return
-	}
-	if err = qm.PublishMessageWithExchange(rm, queue.PinRemovalExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
-		return
-	}
-
-	api.LogWithUser(username).Info("private ipfs pin removal request sent to backend")
-	Respond(c, http.StatusOK, gin.H{"response": "pin removal sent to backend"})
 }
 
 // GetLocalPinsForHostedIPFSNetwork is used to get local pins from the serving private ipfs node
@@ -521,7 +541,16 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		FailWithBadRequest(c, "network_name")
 		return
 	}
-
+	username := GetAuthenticatedUserFromContext(c)
+	cost, err := utils.CalculateAPICallCost("ipns", true)
+	if err != nil {
+		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		return
+	}
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
 	mqURL := api.cfg.RabbitMQ.URL
@@ -531,7 +560,6 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	um := models.NewUserManager(api.dbm.DB)
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
 		api.LogError(err, QueueInitializationError)(c)
@@ -567,7 +595,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	ownsKey, err := um.CheckIfKeyOwnedByUser(ethAddress, key)
+	ownsKey, err := api.um.CheckIfKeyOwnedByUser(ethAddress, key)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c)
 		return
@@ -605,6 +633,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		Resolve:     resolve,
 		NetworkName: networkName,
 		UserName:    ethAddress,
+		CreditCost:  cost,
 	}
 	if err := qm.PublishMessage(ipnsUpdate); err != nil {
 		api.LogError(err, QueuePublishError)(c)
@@ -712,17 +741,16 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		api.LogError(err, NetworkCreationError)(c)
 		return
 	}
-	um := models.NewUserManager(api.dbm.DB)
 
 	if len(users) > 0 {
 		for _, v := range users {
-			if err := um.AddIPFSNetworkForUser(v, networkName); err != nil {
+			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil {
 				api.LogError(err, NetworkCreationError)(c)
 				return
 			}
 		}
 	} else {
-		if err := um.AddIPFSNetworkForUser(AdminAddress, networkName); err != nil {
+		if err := api.um.AddIPFSNetworkForUser(AdminAddress, networkName); err != nil {
 			api.LogError(err, NetworkCreationError)(c)
 			return
 		}
@@ -758,8 +786,7 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 	ethAddress := GetAuthenticatedUserFromContext(c)
 
-	um := models.NewUserManager(api.dbm.DB)
-	networks, err := um.GetPrivateIPFSNetworksForUser(ethAddress)
+	networks, err := api.um.GetPrivateIPFSNetworksForUser(ethAddress)
 	if err != nil {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return

@@ -41,6 +41,7 @@ func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *c
 		}
 
 		if clusterAdd.NetworkName != "public" {
+			qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost, db)
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"user":    clusterAdd.UserName,
@@ -56,6 +57,7 @@ func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *c
 
 		encodedCid, err := clusterManager.DecodeHashString(clusterAdd.CID)
 		if err != nil {
+			qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost, db)
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"error":   err.Error(),
@@ -70,6 +72,7 @@ func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *c
 
 		err = clusterManager.Pin(encodedCid)
 		if err != nil {
+			qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost, db)
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"error":   err.Error(),

@@ -11,33 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// CalculateIPFSFileHash is used to calculate the ipfs hash of a file
-func (api *API) calculateIPFSFileHash(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	file, err := c.FormFile("file")
-	if err != nil {
-		FailWithMissingField(c, "file")
-		return
-	}
-	fh, err := file.Open()
-	if err != nil {
-		api.LogError(err, FileOpenError)(c)
-		return
-	}
-	hash, err := utils.GenerateIpfsMultiHashForFile(fh)
-	if err != nil {
-		api.LogError(err, IPFSMultiHashGenerationError)(c)
-		return
-	}
-
-	api.l.WithFields(log.Fields{
-		"service": api,
-		"user":    username,
-	}).Info("ipfs file hash calculation requested")
-
-	Respond(c, http.StatusOK, gin.H{"response": hash})
-}
-
 // CalculatePinCost is used to calculate the cost of pinning something to temporal
 func (api *API) calculatePinCost(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
@@ -57,7 +30,15 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell)
+	privateNetwork := c.PostForm("private_network")
+	var isPrivate bool
+	switch privateNetwork {
+	case "true":
+		isPrivate = true
+	default:
+		isPrivate = false
+	}
+	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell, isPrivate)
 	if err != nil {
 		api.LogError(err, PinCostCalculationError)
 		Fail(c, err)
@@ -94,12 +75,19 @@ func (api *API) calculateFileCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
+	privateNetwork := c.PostForm("private_network")
+	var isPrivate bool
+	switch privateNetwork {
+	case "true":
+		isPrivate = true
+	default:
+		isPrivate = false
+	}
 	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("file cost calculation requested")
 
-	cost := utils.CalculateFileCost(holdTimeInt, file.Size)
+	cost := utils.CalculateFileCost(holdTimeInt, file.Size, isPrivate)
 	Respond(c, http.StatusOK, gin.H{"response": cost})
 }

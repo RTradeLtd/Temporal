@@ -13,7 +13,7 @@ import (
 var (
 	UploadObj        *models.Upload
 	UserObj          *models.User
-	PaymentObj       *models.Payment
+	PaymentObj       *models.Payments
 	IpnsObj          *models.IPNS
 	HostedIpfsNetObj *models.HostedIPFSPrivateNetwork
 )

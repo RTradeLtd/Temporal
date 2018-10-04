@@ -19,7 +19,6 @@ func (api *API) LogError(err error, message string) func(c *gin.Context, code ..
 			"error":   err.Error(),
 		}).Error(message)
 	}
-
 	if message == "" && err != nil {
 		return func(c *gin.Context, code ...int) { Fail(c, err, code...) }
 	}

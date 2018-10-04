@@ -2,94 +2,68 @@ package models
 
 import (
 	"errors"
-	"math/big"
 
 	"github.com/jinzhu/gorm"
 )
 
-type PinPayment struct {
+// Payments is our payment model
+type Payments struct {
 	gorm.Model
-	Method           uint8  `json:"method"`
-	Number           string `json:"number"`
-	ChargeAmount     string `json:"charge_amount"`
-	EthAddress       string `json:"eth_address"`
-	UserName         string `json:"user_name"`
-	ContentHash      string `json:"content_hash"`
-	NetworkName      string `json:"network_name"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
+	DepositAddress string  `gorm:"type:varchar(255)"`
+	TxHash         string  `gorm:"type:varchar(255)"`
+	USDValue       float64 `gorm:"type:varchar(255)"` // USDValue is also a "Credit" value, since 1 USD -> 1 Credit
+	Blockchain     string  `gorm:"type:varchar(255)"`
+	Type           string  `gorm:"type:varchar(255)"` // ETH, RTC, XMR, BTC, LTC
+	UserName       string  `gorm:"type:varchar(255)"`
+	Confirmed      bool    `gorm:"type:varchar(255)"`
 }
 
-// Payment is our database model for payments
-// Note that if it is of type file, then object name is the minio object
-// if it is of type pin, then the object name is the content hash
-type Payment struct {
-	gorm.Model
-	Method           uint8  `json:"method"`
-	Number           string `json:"number"`
-	ChargeAmount     string `json:"charge_amount"`
-	EthAddress       string `json:"eth_address"`
-	UserName         string `json:"user_name"`
-	NetworkName      string `json:"network_name"`
-	ObjectName       string `json:"content_hash"`
-	Type             string `json:"time"`
-	HoldTimeInMonths int64  `json:"hold_time_in_months"`
-}
+// PaymentManager is used to interact with payment information in our database
 type PaymentManager struct {
 	DB *gorm.DB
 }
 
+// NewPaymentManager is used to generate our payment manager helper
 func NewPaymentManager(db *gorm.DB) *PaymentManager {
 	return &PaymentManager{DB: db}
 }
 
-func (pm *PaymentManager) NewPayment(method uint8, number *big.Int, chargeAmount *big.Int, ethAddress, objectName, username, uploadType, networkName string, holdTimeInMonths int64) (*Payment, error) {
-	p := Payment{}
-	check := pm.DB.Where("eth_address = ? AND payment_number = ?", ethAddress, number.String()).First(&p)
+// NewPayment is used to create a payment in our database
+func (pm *PaymentManager) NewPayment(depositAddress string, txHash string, usdValue float64, blockchain string, paymentType string, username string) (*Payments, error) {
+	p := Payments{}
+	check := pm.DB.Where("tx_hash = ?", txHash).First(&p)
 	if check.Error == nil {
-		return nil, errors.New("payment number already in database for address")
-	}
-	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+		return nil, errors.New("payment with tx hash already exists")
+	} else if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
-	p.Method = method
-	p.Number = number.String()
-	p.ChargeAmount = chargeAmount.String()
-	p.EthAddress = ethAddress
-	p.UserName = username
-	p.NetworkName = networkName
-	p.ObjectName = objectName
-	p.Type = uploadType
-	p.HoldTimeInMonths = holdTimeInMonths
-	if check = pm.DB.Create(&p); check.Error != nil {
+
+	p = Payments{
+		DepositAddress: depositAddress,
+		TxHash:         txHash,
+		USDValue:       usdValue,
+		Blockchain:     blockchain,
+		Type:           paymentType,
+		UserName:       username,
+		Confirmed:      false,
+	}
+
+	if check := pm.DB.Create(&p); check.Error != nil {
 		return nil, check.Error
 	}
+
 	return &p, nil
 }
 
-func (pm *PaymentManager) FindPaymentByNumberAndAddress(paymentNumber, ethAddress string) (*Payment, error) {
-	p := Payment{}
-	if check := pm.DB.Where("eth_address = ? AND payment_number = ?", ethAddress, paymentNumber).First(&p); check.Error != nil {
+// ConfirmPayment is used to mark a payment as confirmed
+func (pm *PaymentManager) ConfirmPayment(txHash string) (*Payments, error) {
+	p := Payments{}
+	if check := pm.DB.Where("tx_hash = ?", txHash).First(&p); check.Error != nil {
+		return nil, check.Error
+	}
+	p.Confirmed = true
+	if check := pm.DB.Model(&p).Update("confirmed", p.Confirmed); check.Error != nil {
 		return nil, check.Error
 	}
 	return &p, nil
-}
-
-func (pm *PaymentManager) RetrieveLatestPaymentForUser(username string) (*Payment, error) {
-	p := Payment{}
-	if check := pm.DB.Where("user_name = ?", username).Last(&p); check.Error != nil {
-		return nil, check.Error
-	}
-	return &p, nil
-}
-
-func (pm *PaymentManager) RetrieveLatestPaymentNumberForUser(username string) (*big.Int, error) {
-	p := Payment{}
-	if check := pm.DB.Where("user_name = ?", username).Last(&p); check.Error != nil {
-		return nil, check.Error
-	}
-	num, ok := new(big.Int).SetString(p.Number, 10)
-	if !ok {
-		return nil, errors.New("failed to convert string to big int")
-	}
-	return num, nil
 }

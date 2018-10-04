@@ -89,21 +89,6 @@ var commands = map[string]cmd.Cmd{
 							}
 						},
 					},
-					"pin-removal": cmd.Cmd{
-						Blurb:       "Pin removal queue",
-						Description: "Listens to pin removal requests",
-						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsPinRemovalQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
-							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
-						},
-					},
 					"file": cmd.Cmd{
 						Blurb:       "File upload queue",
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
@@ -164,43 +149,6 @@ var commands = map[string]cmd.Cmd{
 					if err != nil {
 						log.Fatal(err)
 					}
-				},
-			},
-			"payment": cmd.Cmd{
-				Blurb:         "Payment queue sub commands",
-				Description:   "Used to launch the various queues that interact with our payment backend",
-				ChildRequired: true,
-				Children: map[string]cmd.Cmd{
-					"pin-confirmation": cmd.Cmd{
-						Blurb:       "Pin payment confirmation queue",
-						Description: "Listens to pin payment confirmations and stores the pins in our system",
-						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.PinPaymentConfirmationQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
-							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
-						},
-					},
-					"pin-submission": cmd.Cmd{
-						Blurb:       "Pin payment submission queue",
-						Description: "Listen to pin payment submissions and stores the information in our database",
-						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.PinPaymentSubmissionQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
-							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
-						},
-					},
 				},
 			},
 			"email-send": cmd.Cmd{
