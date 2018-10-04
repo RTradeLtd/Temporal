@@ -12,8 +12,8 @@ var dev = false
 // GetUploadsFromDatabase is used to read a list of uploads from our database
 func (api *API) getUploadsFromDatabase(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	um := models.NewUploadManager(api.dbm.DB)
@@ -33,7 +33,8 @@ func (api *API) getUploadsForUser(c *gin.Context) {
 	var queryUser string
 	um := models.NewUploadManager(api.dbm.DB)
 	username := GetAuthenticatedUserFromContext(c)
-	if username == AdminUser {
+	err := api.validateAdminRequest(username)
+	if err == nil {
 		queryUser = c.Param("user")
 	} else {
 		queryUser = username

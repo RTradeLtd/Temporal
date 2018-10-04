@@ -76,8 +76,8 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 // SyncClusterErrorsLocally is used to parse through the local cluster state and sync any errors that are detected.
 func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	// initialize a conection to the cluster
@@ -102,8 +102,8 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 // TODO: use a queue
 func (api *API) removePinFromCluster(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access to cluster removal")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	hash := c.Param("hash")
@@ -128,8 +128,8 @@ func (api *API) removePinFromCluster(c *gin.Context) {
 // GetLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
 func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	hash := c.Param("hash")
@@ -158,8 +158,8 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 // GetGlobalStatusForClusterPin is used to get the global cluster status for a particular pin
 func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access to cluster status")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	hash := c.Param("hash")
@@ -188,8 +188,8 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 // FetchLocalClusterStatus is used to fetch the status of the localhost's cluster state, and not the rest of the cluster
 func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	// this will hold all the retrieved content hashes

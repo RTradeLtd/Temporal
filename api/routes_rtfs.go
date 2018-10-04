@@ -349,8 +349,8 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 // This is admin locked to avoid peformance penalties from looking up the pinset
 func (api *API) getLocalPins(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	// initialize a connection toe the local ipfs node
@@ -399,8 +399,8 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 // CheckLocalNodeForPin is used to check whether or not the serving node is tacking the particular pin
 func (api *API) checkLocalNodeForPin(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	hash := c.Param("hash")

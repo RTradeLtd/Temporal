@@ -19,6 +19,7 @@ type User struct {
 	AccountEnabled    bool    `gorm:"type:boolean"`
 	APIAccess         bool    `gorm:"type:boolean"`
 	EmailEnabled      bool    `gorm:"type:boolean"`
+	AdminAccess       bool    `gorm:"type:boolean"`
 	HashedPassword    string  `gorm:"type:varchar(255)"`
 	Credits           float64 `gorm:"type:float;default:0"`
 	// IPFSKeyNames is an array of IPFS keys this user has created
@@ -220,6 +221,7 @@ func (um *UserManager) NewUserAccount(username, password, email string, enterpri
 		EmailAddress:      email,
 		AccountEnabled:    true,
 		APIAccess:         true,
+		AdminAccess:       false,
 	}
 	if check := um.DB.Create(&user); check.Error != nil {
 		return nil, check.Error
@@ -324,4 +326,13 @@ func (um *UserManager) RemoveCredits(username string, credits float64) (*User, e
 		return nil, check.Error
 	}
 	return user, nil
+}
+
+// CheckIfAdmin is used to check if an account is an administrator
+func (um *UserManager) CheckIfAdmin(username string) (bool, error) {
+	user, err := um.FindByUserName(username)
+	if err != nil {
+		return false, err
+	}
+	return user.AdminAccess, nil
 }

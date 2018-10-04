@@ -11,8 +11,8 @@ import (
 // MakeBucket is used to create a bucket in our minio container
 func (api *API) makeBucket(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	bucketName, exists := c.GetPostForm("bucket_name")

@@ -408,8 +408,8 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 // GetLocalPinsForHostedIPFSNetwork is used to get local pins from the serving private ipfs node
 func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	networkName, exists := c.GetPostForm("network_name")
@@ -487,8 +487,8 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 // CheckLocalNodeForPinForHostedIPFSNetwork is used to check the serving node for a pin
 func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	networkName, exists := c.GetPostForm("network_name")
@@ -642,11 +642,10 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	// lock down as admin route for now
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
-
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithBadRequest(c, "network_name")
@@ -756,11 +755,10 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 // GetIPFSPrivateNetworkByName is used to get connection information for a priavate ipfs network
 func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminUser {
-		FailNotAuthorized(c, "unauthorized access")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
-
 	netName := c.Param("name")
 	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	net, err := manager.GetNetworkByName(netName)

@@ -27,9 +27,6 @@ import (
 
 var (
 	xssMdlwr xss.XssMw
-
-	// AdminUser is the eth address of the admin account
-	AdminUser = "postables"
 )
 
 // API is our API service
@@ -152,10 +149,8 @@ func (api *API) setupRoutes() {
 	statsProtected.Use(stats.RequestStats())
 	statsProtected.GET("/stats", func(c *gin.Context) { // admin locked
 		username := GetAuthenticatedUserFromContext(c)
-		if username != AdminUser {
-			c.JSON(http.StatusForbidden, gin.H{
-				"error": "unauthorized access",
-			})
+		if err := api.validateAdminRequest(username); err != nil {
+			FailNotAuthorized(c, UnAuthorizedAdminAccess)
 			return
 		}
 		c.JSON(http.StatusOK, stats.Report())

@@ -85,4 +85,6 @@ const (
 	CallCostCalculationError = "unable to calculate api call cost"
 	// CreditRefundError is an error message used when we are unable to refund a users credits
 	CreditRefundError = "failed to refund credits for user"
+	// UnAuthorizedAdminAccess is an error message used whena user attempts to access an administrative route
+	UnAuthorizedAdminAccess = "user is not an administrator"
 )

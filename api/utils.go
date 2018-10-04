@@ -115,3 +115,15 @@ func (api *API) refundUserCredits(username, callType string, cost float64) {
 		}).Error(CreditRefundError)
 	}
 }
+
+// validateAdminRequest is used to validate whether or not the requesting user is an administrator
+func (api *API) validateAdminRequest(username string) error {
+	isAdmin, err := api.um.CheckIfAdmin(username)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return errors.New(UnAuthorizedAdminAccess)
+	}
+	return nil
+}
