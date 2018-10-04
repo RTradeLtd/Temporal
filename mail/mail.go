@@ -79,7 +79,3 @@ func (mm *MailManager) SendEmail(subject, content, contentType, recipientName, r
 	}
 	return response.StatusCode, nil
 }
-
-type Message struct {
-	EthAddress string `json:"eth_address"`
-}

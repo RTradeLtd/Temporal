@@ -266,16 +266,6 @@ func (um *UserManager) ComparePlaintextPasswordToHash(username, password string)
 
 }
 
-// FindByAddress is used to find a user account by their address
-func (um *UserManager) FindByAddress(address string) *User {
-	u := User{}
-	um.DB.Where("eth_address = ?", address).Find(&u)
-	if u.CreatedAt == nilTime {
-		return nil
-	}
-	return &u
-}
-
 // FindByUserName is used to find a user by their username
 func (um *UserManager) FindByUserName(username string) (*User, error) {
 	u := User{}

@@ -35,9 +35,9 @@ func CalculateFileSize(c *gin.Context) {
 }
 
 // CheckAccessForPrivateNetwork checks if a user has access to a private network
-func CheckAccessForPrivateNetwork(ethAddress, networkName string, db *gorm.DB) error {
+func CheckAccessForPrivateNetwork(username, networkName string, db *gorm.DB) error {
 	um := models.NewUserManager(db)
-	canUpload, err := um.CheckIfUserHasAccessToNetwork(ethAddress, networkName)
+	canUpload, err := um.CheckIfUserHasAccessToNetwork(username, networkName)
 	if err != nil {
 		return err
 	}

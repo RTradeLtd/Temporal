@@ -5,15 +5,14 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 )
 
 var dev = false
 
 // GetUploadsFromDatabase is used to read a list of uploads from our database
 func (api *API) getUploadsFromDatabase(c *gin.Context) {
-	authenticatedUser := GetAuthenticatedUserFromContext(c)
-	if authenticatedUser != AdminAddress {
+	username := GetAuthenticatedUserFromContext(c)
+	if username != AdminUser {
 		FailNotAuthorized(c, "unauthorized access to admin route")
 		return
 	}
@@ -24,23 +23,20 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 		api.LogError(err, UploadSearchError)(c, http.StatusInternalServerError)
 		return
 	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    authenticatedUser,
-	}).Info("all uploads from database requested")
+	api.LogInfo("all uploads from database requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 
-// GetUploadsForAddress is used to read a list of uploads from a particular eth address
+// GetUploadsForUser is used to read a list of uploads from a particular user name
 // If not called by admin  admin, will retrieve all uploads for the current authenticated user
-func (api *API) getUploadsForAddress(c *gin.Context) {
+func (api *API) getUploadsForUser(c *gin.Context) {
 	var queryUser string
 	um := models.NewUploadManager(api.dbm.DB)
-	user := GetAuthenticatedUserFromContext(c)
-	if user == AdminAddress {
+	username := GetAuthenticatedUserFromContext(c)
+	if username == AdminUser {
 		queryUser = c.Param("user")
 	} else {
-		queryUser = user
+		queryUser = username
 	}
 	// fetch all uploads for that address
 	uploads, err := um.GetUploadsForUser(queryUser)
@@ -48,11 +44,6 @@ func (api *API) getUploadsForAddress(c *gin.Context) {
 		api.LogError(err, UploadSearchError)(c, http.StatusInternalServerError)
 		return
 	}
-
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    user,
-	}).Info("specific uploads from database requested")
-
+	api.LogInfo("specific uploads from database requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }

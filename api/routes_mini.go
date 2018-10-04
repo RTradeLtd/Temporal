@@ -10,8 +10,8 @@ import (
 
 // MakeBucket is used to create a bucket in our minio container
 func (api *API) makeBucket(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
+	username := GetAuthenticatedUserFromContext(c)
+	if username != AdminUser {
 		FailNotAuthorized(c, "unauthorized access")
 		return
 	}
@@ -39,7 +39,7 @@ func (api *API) makeBucket(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("minio bucket created")
+	api.LogWithUser(username).Info("minio bucket created")
 
 	Respond(c, http.StatusOK, gin.H{"response": "bucket created"})
 }

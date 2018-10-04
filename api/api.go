@@ -28,8 +28,8 @@ import (
 var (
 	xssMdlwr xss.XssMw
 
-	// AdminAddress is the eth address of the admin account
-	AdminAddress = "0x7E4A2359c745A982a54653128085eAC69E446DE1"
+	// AdminUser is the eth address of the admin account
+	AdminUser = "postables"
 )
 
 // API is our API service
@@ -151,8 +151,8 @@ func (api *API) setupRoutes() {
 	statsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	statsProtected.Use(stats.RequestStats())
 	statsProtected.GET("/stats", func(c *gin.Context) { // admin locked
-		ethAddress := GetAuthenticatedUserFromContext(c)
-		if ethAddress != AdminAddress {
+		username := GetAuthenticatedUserFromContext(c)
+		if username != AdminUser {
 			c.JSON(http.StatusForbidden, gin.H{
 				"error": "unauthorized access",
 			})
@@ -230,8 +230,8 @@ func (api *API) setupRoutes() {
 	databaseProtected := api.r.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
 	databaseProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
-	databaseProtected.GET("/uploads", api.getUploadsFromDatabase)     // admin locked
-	databaseProtected.GET("/uploads/:user", api.getUploadsForAddress) // partial admin locked
+	databaseProtected.GET("/uploads", api.getUploadsFromDatabase)  // admin locked
+	databaseProtected.GET("/uploads/:user", api.getUploadsForUser) // partial admin locked
 
 	frontendProtected := api.r.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())

@@ -208,9 +208,9 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 // GetIPFSKeyNamesForAuthUser is used to get the keys a user has setup
 func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 
-	keys, err := api.um.GetKeysForUser(ethAddress)
+	keys, err := api.um.GetKeysForUser(username)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c)
 		return
@@ -220,7 +220,7 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 		Fail(c, errors.New(NoKeyError), http.StatusNotFound)
 		return
 	}
-	api.LogWithUser(ethAddress).Info("key name list requested")
+	api.LogWithUser(username).Info("key name list requested")
 
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"key_names": keys["key_names"], "key_ids": keys["key_ids"]}})
 }

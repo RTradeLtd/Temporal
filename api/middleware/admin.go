@@ -10,11 +10,11 @@ import (
 )
 
 // AdminRestrictionMiddleware is used to lock down admin protected routes
-func AdminRestrictionMiddleware(db *gorm.DB, adminAdress string) gin.HandlerFunc {
+func AdminRestrictionMiddleware(db *gorm.DB, adminUser string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
-		ethAddress := claims["id"]
-		if ethAddress != adminAdress {
+		username := claims["id"]
+		if username != adminUser {
 			c.AbortWithError(http.StatusForbidden, errors.New("user is not an admin"))
 			return
 		}
