@@ -104,6 +104,10 @@ func (api *API) pinHashLocally(c *gin.Context) {
 // and efficient manner than our traditional simple upload. Note that
 // it does not give the user a content hash back immediately
 func (api *API) addFileLocallyAdvanced(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	logger := api.LogWithUser(username)
+	logger.Debug("file upload request received from user")
+
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailWithBadRequest(c, "hold_time")
@@ -135,36 +139,37 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	username := GetAuthenticatedUserFromContext(c)
 	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, false)
 	if err = api.validateUserCredits(username, cost); err != nil {
 		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
-	api.LogDebug("opening file")
+	logger.Debug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)(c)
+		api.LogError(err, FileOpenError,
+			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
-	api.LogDebug("file opened")
+	logger.Debug("file opened")
 
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
 
-	api.l.Debugf("storing file in minio as %s", objectName)
+	logger.Debugf("storing file in minio as %s", objectName)
 	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size,
 		mini.PutObjectOptions{
 			Bucket:            FilesUploadBucket,
 			EncryptPassphrase: c.PostForm("passphrase"),
 		}); err != nil {
-		api.LogError(err, MinioPutError)(c)
+		api.LogError(err, MinioPutError,
+			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
-	api.l.Debugf("file %s stored in minio", objectName)
+	logger.Debugf("file %s stored in minio", objectName)
 
 	ifp := queue.IPFSFile{
 		BucketName:       FilesUploadBucket,
@@ -173,21 +178,28 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		NetworkName:      "public",
 		HoldTimeInMonths: holdTimeInMonths,
 		CreditCost:       cost,
+
+		// if passphrase was provided, this file is encrypted
+		Encrypted: c.PostForm("passphrase") != "",
 	}
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, QueueInitializationError,
+			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
 
 	if err = qm.PublishMessage(ifp); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, QueuePublishError,
+			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
 
-	api.LogWithUser(username).Info("advanced ipfs file upload requested")
+	logger.
+		WithField("request", ifp).
+		Info("advanced ipfs file upload requested")
 
 	Respond(c, http.StatusOK, gin.H{"response": "file upload request sent to backend"})
 }
