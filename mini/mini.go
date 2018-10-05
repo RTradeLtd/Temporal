@@ -126,8 +126,7 @@ func (mm *MinioManager) PutObject(objectName string, reader io.Reader, objectSiz
 }
 
 type GetObjectOptions struct {
-	Bucket            string
-	DecryptPassphrase string
+	Bucket string
 	minio.GetObjectOptions
 }
 
@@ -151,23 +150,10 @@ func (mm *MinioManager) GetObject(objectName string, opts GetObjectOptions) (io.
 		return nil, fmt.Errorf("could not get object %s", objectName)
 	}
 
-	// check if object was encrypted
-	d, err := obj.Stat()
+	// check if object is ok
+	_, err = obj.Stat()
 	if err != nil {
 		return nil, fmt.Errorf("could not get metadata for object %s", objectName)
-	}
-	if d.Metadata.Get("encrypted") == "true" {
-		if opts.DecryptPassphrase == "" {
-			return nil, fmt.Errorf("object %s is encrypted, but no passphrase was provided", objectName)
-		}
-
-		// decrypt file using given passphrase
-		decrypted, err := crypto.NewEncryptManager(opts.DecryptPassphrase).Decrypt(obj)
-		if err != nil {
-			// don't reveal too much about decryption error
-			return nil, errors.New("failed to decrypt object")
-		}
-		return bytes.NewReader(decrypted), nil
 	}
 
 	return obj, nil
