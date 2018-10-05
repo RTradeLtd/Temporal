@@ -101,29 +101,6 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": "pin request sent to backend"})
 }
 
-// GetFileSizeInBytesForObject is used to retrieve the size of an object in bytes
-func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	key := c.Param("key")
-	if _, err := gocid.Decode(key); err != nil {
-		Fail(c, err)
-		return
-	}
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
-		return
-	}
-	sizeInBytes, err := manager.GetObjectFileSizeInBytes(key)
-	if err != nil {
-		api.LogError(err, IPFSObjectStatError)(c)
-		return
-	}
-
-	api.LogWithUser(username).Info("ipfs object file size requested")
-	Respond(c, http.StatusOK, gin.H{"response": gin.H{"object": key, "size_in_bytes": sizeInBytes}})
-}
-
 // AddFileLocallyAdvanced is used to upload a file in a more resilient
 // and efficient manner than our traditional simple upload. Note that
 // it does not give the user a content hash back immediately
