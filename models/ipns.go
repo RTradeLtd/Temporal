@@ -11,17 +11,17 @@ import (
 // IPNS will hold all of the IPNS entries in our system
 type IPNS struct {
 	gorm.Model
-	Sequence int64 `gorm:"type:integer;not null;default:0" json:"sequence"`
+	Sequence int64 `gorm:"type:integer"`
 	// the ipns hash, is the peer id of the peer used to sign the entry
-	IPNSHash string `gorm:"type:varchar(255);unique;column:ipns_hash" json:"ipns_hash"`
+	IPNSHash string `gorm:"type:varchar(255);unique"`
 	// List of content hashes this IPNS entry has pointed to
-	IPFSHashes      pq.StringArray `gorm:"type:text[];column:ipfs_hash" json:"ipfs_hashes"`
-	CurrentIPFSHash string         `gorm:"type:varchar(255);column:current_ipfs_hash" json:"current_ipfs_hash"`
-	LifeTime        string         `gorm:"type:varchar(255)" json:"life_time"`
-	TTL             string         `gorm:"type:varchar(255)" json:"ttl"`
-	Key             string         `gorm:"type:varchar(255)" json:"key"`
-	NetworkName     string         `gorm:"type:varchar(255)" json:"network_name"`
-	UserName        string         `gorm:"type:varchar(255)" json:"user_name"`
+	IPFSHashes      pq.StringArray `gorm:"type:text[]"`
+	CurrentIPFSHash string         `gorm:"type:varchar(255)"`
+	LifeTime        string         `gorm:"type:varchar(255)"`
+	TTL             string         `gorm:"type:varchar(255)"`
+	Key             string         `gorm:"type:varchar(255)"`
+	NetworkName     string         `gorm:"type:varchar(255)"`
+	UserName        string         `gorm:"type:varchar(255)"`
 }
 
 // IpnsManager is used for manipulating IPNS records in our database
@@ -49,30 +49,20 @@ func (im *IpnsManager) FindByUserName(username string) (*[]IPNS, error) {
 // the public key hash of the key that was used to pulish a record
 func (im *IpnsManager) FindByIPNSHash(ipnsHash string) (*IPNS, error) {
 	var entry IPNS
-	im.DB.Table("ip_ns").Where("ipns_hash = ?", ipnsHash).First(&entry)
-	if entry.CreatedAt == nilTime {
-		return nil, errors.New("ipns hash does not exist")
+	if check := im.DB.Where("ip_ns_hash = ?", ipnsHash).First(&entry); check.Error != nil {
+		return nil, check.Error
 	}
 	return &entry, nil
 }
 
 // UpdateIPNSEntry is used to update an already existing IPNS entry, creating a no record matching the hash exists
-func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, key, networkName, username string, lifetime, ttl time.Duration) (*IPNS, error) {
+func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, networkName, username string, lifetime, ttl time.Duration) (*IPNS, error) {
 	var entry IPNS
 	// search for an IPNS entry that matches the given ipns hash
-	if check := im.DB.Where("ipns_hash = ? AND network_name = ?", ipnsHash, networkName).First(&entry); check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+	if check := im.DB.Where("ip_ns_hash = ? AND network_name = ?", ipnsHash, networkName).First(&entry); check.Error != nil {
 		return nil, check.Error
 	}
-	// if the returned model does not exist create it
-	if entry.CreatedAt == nilTime {
-		// Create the record
-		entry, err := im.CreateEntry(ipnsHash, ipfsHash, key, networkName, username, lifetime, ttl)
-		if err != nil {
-			return nil, err
-		}
-		return entry, nil
-	}
-	// increase the sequence number
+	// increase sequence
 	entry.Sequence++
 	// update the hashes it has pointed to
 	entry.IPFSHashes = append(entry.IPFSHashes, ipfsHash)
@@ -82,16 +72,13 @@ func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, key, networkName, use
 	entry.LifeTime = lifetime.String()
 	// update the ttl
 	entry.TTL = ttl.String()
-	// update the key used to sign
-	entry.Key = key
 	// only update  changed fields
-	check := im.DB.Table("ip_ns").Model(&entry).Updates(map[string]interface{}{
-		"sequence":          &entry.Sequence,
-		"ipfs_hashes":       &entry.IPFSHashes,
-		"current_ipfs_hash": &entry.CurrentIPFSHash,
-		"lifeTime":          &entry.LifeTime,
-		"ttl":               &entry.TTL,
-		"key":               &entry.Key,
+	check := im.DB.Model(&entry).Updates(map[string]interface{}{
+		"sequence":           entry.Sequence,
+		"ip_fs_hashes":       entry.IPFSHashes,
+		"current_ip_fs_hash": entry.CurrentIPFSHash,
+		"life_time":          entry.LifeTime,
+		"ttl":                entry.TTL,
 	})
 
 	if check.Error != nil {
@@ -103,20 +90,19 @@ func (im *IpnsManager) UpdateIPNSEntry(ipnsHash, ipfsHash, key, networkName, use
 // CreateEntry is used to create a brand new IPNS entry in our database
 func (im *IpnsManager) CreateEntry(ipnsHash, ipfsHash, key, networkName, username string, lifetime, ttl time.Duration) (*IPNS, error) {
 	// See above UpdateEntry function for an explanation
-	var entry IPNS
-	err := im.DB.Where("ipns_hash = ? AND network_name = ?", ipnsHash, networkName)
-	if err == nil {
-		return nil, errors.New("ipns hash already exists")
+	if _, err := im.FindByIPNSHash(ipnsHash); err == nil {
+		return nil, errors.New("ipns hash already exists in database")
 	}
-	entry = IPNS{
-		Sequence:    1,
-		IPNSHash:    ipnsHash,
-		IPFSHashes:  pq.StringArray{ipfsHash},
-		LifeTime:    lifetime.String(),
-		TTL:         ttl.String(),
-		Key:         key,
-		NetworkName: networkName,
-		UserName:    username,
+	entry := IPNS{
+		Sequence:        1,
+		IPNSHash:        ipnsHash,
+		CurrentIPFSHash: ipfsHash,
+		IPFSHashes:      pq.StringArray{ipfsHash},
+		LifeTime:        lifetime.String(),
+		TTL:             ttl.String(),
+		Key:             key,
+		NetworkName:     networkName,
+		UserName:        username,
 	}
 	if check := im.DB.Create(&entry); check.Error != nil {
 		return nil, check.Error

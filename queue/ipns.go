@@ -182,8 +182,7 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 			d.Ack(false)
 			continue
 		}
-		_, err = ipnsManager.UpdateIPNSEntry(response.Name, ie.CID, ie.Key, ie.NetworkName, ie.UserName, ie.LifeTime, ie.TTL)
-		if err != nil {
+		if _, err = ipnsManager.UpdateIPNSEntry(response.Name, ie.CID, ie.NetworkName, ie.UserName, ie.LifeTime, ie.TTL); err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.QueueName,
 				"user":    ie.UserName,
