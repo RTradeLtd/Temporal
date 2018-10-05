@@ -7,18 +7,32 @@ import (
 
 // LogError is a wrapper used by the API to handle logging of errors. Returns a
 // callback to also fail a gin context with an optional status code, which
-// defaults to http.StatusInternalServerError
-func (api *API) LogError(err error, message string) func(c *gin.Context, code ...int) {
-	if err == nil {
-		api.l.WithFields(log.Fields{
-			"service": api.service,
-		}).Error(message)
-	} else {
-		api.l.WithFields(log.Fields{
-			"service": api.service,
-			"error":   err.Error(),
-		}).Error(message)
+// defaults to http.StatusInternalServerError. Fields is an optional set of
+// params provided in pairs, where the first of a pair is the key, and the second
+// is the value
+func (api *API) LogError(err error, message string, fields ...interface{}) func(c *gin.Context, code ...int) {
+	// create base entry
+	entry := api.l.WithFields(log.Fields{
+		"service": api.service,
+	})
+
+	// add additional fields
+	if fields != nil {
+		for i := 0; i < len(fields); i += 2 {
+			if i+1 < len(fields) {
+				entry = entry.WithField(fields[i].(string), fields[i+1])
+			}
+		}
 	}
+
+	// write log
+	if err == nil {
+		entry.Error(message)
+	} else {
+		entry.WithField("error", err.Error()).Error(message)
+	}
+
+	// return utility callback
 	if message == "" && err != nil {
 		return func(c *gin.Context, code ...int) { Fail(c, err, code...) }
 	}
