@@ -11,7 +11,7 @@ import (
 // Fail fails context with given error and optional status code. Defaults to
 // http.StatusInternalServerError
 func Fail(c *gin.Context, err error, code ...int) {
-	c.JSON(http.StatusBadRequest, gin.H{
+	c.JSON(status(code), gin.H{
 		"code":     status(code),
 		"response": err.Error(),
 	})
@@ -20,7 +20,7 @@ func Fail(c *gin.Context, err error, code ...int) {
 // FailWithMessage fails context with given message and optional status code.
 // Defaults to http.StatusInternalServerError
 func FailWithMessage(c *gin.Context, message string, code ...int) {
-	c.JSON(http.StatusForbidden, gin.H{
+	c.JSON(status(code), gin.H{
 		"code":     status(code),
 		"response": message,
 	})
