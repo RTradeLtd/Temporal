@@ -101,50 +101,6 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": "content pin request sent to backend"})
 }
 
-// GetFileSizeInBytesForObjectForHostedIPFSNetwork is used to get file size for an object from a private ipfs network
-func (api *API) getFileSizeInBytesForObjectForHostedIPFSNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
-		return
-	}
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)
-		Fail(c, err)
-		return
-	}
-
-	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(networkName)
-	if err != nil {
-		api.LogError(err, APIURLCheckError)
-		Fail(c, err)
-		return
-	}
-	key := c.Param("key")
-	if _, err := gocid.Decode(key); err != nil {
-		Fail(c, err)
-		return
-	}
-	manager, err := rtfs.Initialize("", apiURL)
-	if err != nil {
-		api.LogError(err, IPFSConnectionError)
-		Fail(c, err)
-		return
-	}
-	sizeInBytes, err := manager.GetObjectFileSizeInBytes(key)
-	if err != nil {
-		api.LogError(err, IPFSObjectStatError)
-		Fail(c, err)
-		return
-	}
-
-	api.LogWithUser(username).Info("private ipfs object file size requested")
-	Respond(c, http.StatusOK, gin.H{"response": gin.H{"object": key, "size_in_bytes": sizeInBytes}})
-
-}
-
 // AddFileToHostedIPFSNetworkAdvanced is used to add a file to a private ipfs network in a more advanced and resilient manner
 func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 
@@ -407,9 +363,9 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 
 // GetLocalPinsForHostedIPFSNetwork is used to get local pins from the serving private ipfs node
 func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	username := GetAuthenticatedUserFromContext(c)
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	networkName, exists := c.GetPostForm("network_name")
@@ -417,7 +373,7 @@ func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 		FailWithBadRequest(c, "network_name")
 		return
 	}
-	if err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
@@ -441,19 +397,19 @@ func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("private ipfs pin list requested")
+	api.LogWithUser(username).Info("private ipfs pin list requested")
 	Respond(c, http.StatusOK, gin.H{"response": pinInfo})
 }
 
 // GetObjectStatForIpfsForHostedIPFSNetwork is  used to get object stats from a private ipfs network
 func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithBadRequest(c, "network_name")
 		return
 	}
-	if err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
@@ -480,15 +436,15 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("private ipfs object stat requested")
+	api.LogWithUser(username).Info("private ipfs object stat requested")
 	Respond(c, http.StatusOK, gin.H{"response": stats})
 }
 
 // CheckLocalNodeForPinForHostedIPFSNetwork is used to check the serving node for a pin
 func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	username := GetAuthenticatedUserFromContext(c)
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	networkName, exists := c.GetPostForm("network_name")
@@ -497,7 +453,7 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	if err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
@@ -523,7 +479,7 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("private ipfs pin check requested")
+	api.LogWithUser(username).Info("private ipfs pin check requested")
 	Respond(c, http.StatusOK, gin.H{"response": present})
 }
 
@@ -545,11 +501,9 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
-	ethAddress := GetAuthenticatedUserFromContext(c)
-
 	mqURL := api.cfg.RabbitMQ.URL
 
-	if err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
@@ -589,14 +543,14 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	ownsKey, err := api.um.CheckIfKeyOwnedByUser(ethAddress, key)
+	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, key)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c)
 		return
 	}
 
 	if !ownsKey {
-		err = fmt.Errorf("unauthorized access to key by user %s", ethAddress)
+		err = fmt.Errorf("unauthorized access to key by user %s", username)
 		api.LogError(err, KeyUseError)(c)
 		return
 	}
@@ -626,7 +580,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		Key:         key,
 		Resolve:     resolve,
 		NetworkName: networkName,
-		UserName:    ethAddress,
+		UserName:    username,
 		CreditCost:  cost,
 	}
 	if err := qm.PublishMessage(ipnsUpdate); err != nil {
@@ -634,7 +588,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("private ipns entry creation request sent to backend")
+	api.LogWithUser(username).Info("private ipns entry creation request sent to backend")
 
 	Respond(c, http.StatusOK, gin.H{"response": "ipns entry creation request sent to backend"})
 }
@@ -643,12 +597,11 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 // TODO: make bootstrap peers and related config optional
 func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	// lock down as admin route for now
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access")
+	username := GetAuthenticatedUserFromContext(c)
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
-
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithBadRequest(c, "network_name")
@@ -744,25 +697,24 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 			}
 		}
 	} else {
-		if err := api.um.AddIPFSNetworkForUser(AdminAddress, networkName); err != nil {
+		if err := api.um.AddIPFSNetworkForUser(username, networkName); err != nil {
 			api.LogError(err, NetworkCreationError)(c)
 			return
 		}
 	}
 
-	api.LogWithUser(ethAddress).Info("private ipfs network created")
+	api.LogWithUser(username).Info("private ipfs network created")
 	Respond(c, http.StatusOK, gin.H{"response": network})
 
 }
 
 // GetIPFSPrivateNetworkByName is used to get connection information for a priavate ipfs network
 func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access")
+	username := GetAuthenticatedUserFromContext(c)
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
-
 	netName := c.Param("name")
 	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	net, err := manager.GetNetworkByName(netName)
@@ -771,28 +723,28 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("private ipfs network by name requested")
+	api.LogWithUser(username).Info("private ipfs network by name requested")
 	Respond(c, http.StatusOK, gin.H{"response": net})
 }
 
 // GetAuthorizedPrivateNetworks is used to get the private
 // networks a user is authorized for
 func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 
-	networks, err := api.um.GetPrivateIPFSNetworksForUser(ethAddress)
+	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
 	if err != nil {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("authorized private ipfs network listing requested")
+	api.LogWithUser(username).Info("authorized private ipfs network listing requested")
 	Respond(c, http.StatusOK, gin.H{"response": networks})
 }
 
 // GetUploadsByNetworkName is used to getu plaods for a network by its name
 func (api *API) getUploadsByNetworkName(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
@@ -800,7 +752,7 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 		return
 	}
 
-	if err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
@@ -812,7 +764,7 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("uploads forprivate ifps network requested")
+	api.LogWithUser(username).Info("uploads forprivate ifps network requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 
@@ -824,9 +776,9 @@ func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
 		return
 	}
 
-	ethAddress := GetAuthenticatedUserFromContext(c)
+	username := GetAuthenticatedUserFromContext(c)
 
-	if err := CheckAccessForPrivateNetwork(ethAddress, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)(c)
 		return
 	}
@@ -899,6 +851,6 @@ func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
 		}
 	}
 
-	api.LogWithUser(ethAddress).Info("private ipfs content download served")
+	api.LogWithUser(username).Info("private ipfs content download served")
 	c.DataFromReader(200, int64(sizeInBytes), contentType, reader, extraHeaders)
 }

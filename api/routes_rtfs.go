@@ -101,29 +101,6 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": "pin request sent to backend"})
 }
 
-// GetFileSizeInBytesForObject is used to retrieve the size of an object in bytes
-func (api *API) getFileSizeInBytesForObject(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	key := c.Param("key")
-	if _, err := gocid.Decode(key); err != nil {
-		Fail(c, err)
-		return
-	}
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
-		return
-	}
-	sizeInBytes, err := manager.GetObjectFileSizeInBytes(key)
-	if err != nil {
-		api.LogError(err, IPFSObjectStatError)(c)
-		return
-	}
-
-	api.LogWithUser(username).Info("ipfs object file size requested")
-	Respond(c, http.StatusOK, gin.H{"response": gin.H{"object": key, "size_in_bytes": sizeInBytes}})
-}
-
 // AddFileLocallyAdvanced is used to upload a file in a more resilient
 // and efficient manner than our traditional simple upload. Note that
 // it does not give the user a content hash back immediately
@@ -348,9 +325,9 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 // GetLocalPins is used to get the pins tracked by the serving ipfs node
 // This is admin locked to avoid peformance penalties from looking up the pinset
 func (api *API) getLocalPins(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	username := GetAuthenticatedUserFromContext(c)
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	// initialize a connection toe the local ipfs node
@@ -367,7 +344,7 @@ func (api *API) getLocalPins(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("ipfs pin list requested")
+	api.LogWithUser(username).Info("ipfs pin list requested")
 	Respond(c, http.StatusOK, gin.H{"response": pinInfo})
 }
 
@@ -398,9 +375,9 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 
 // CheckLocalNodeForPin is used to check whether or not the serving node is tacking the particular pin
 func (api *API) checkLocalNodeForPin(c *gin.Context) {
-	ethAddress := GetAuthenticatedUserFromContext(c)
-	if ethAddress != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	username := GetAuthenticatedUserFromContext(c)
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	hash := c.Param("hash")
@@ -419,7 +396,7 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(ethAddress).Info("ipfs pin check requested")
+	api.LogWithUser(username).Info("ipfs pin check requested")
 
 	Respond(c, http.StatusOK, gin.H{"response": present})
 }

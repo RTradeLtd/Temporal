@@ -27,9 +27,6 @@ import (
 
 var (
 	xssMdlwr xss.XssMw
-
-	// AdminAddress is the eth address of the admin account
-	AdminAddress = "0x7E4A2359c745A982a54653128085eAC69E446DE1"
 )
 
 // API is our API service
@@ -152,11 +149,9 @@ func (api *API) setupRoutes() {
 	statsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	statsProtected.Use(stats.RequestStats())
 	statsProtected.GET("/stats", func(c *gin.Context) { // admin locked
-		ethAddress := GetAuthenticatedUserFromContext(c)
-		if ethAddress != AdminAddress {
-			c.JSON(http.StatusForbidden, gin.H{
-				"error": "unauthorized access",
-			})
+		username := GetAuthenticatedUserFromContext(c)
+		if err := api.validateAdminRequest(username); err != nil {
+			FailNotAuthorized(c, UnAuthorizedAdminAccess)
 			return
 		}
 		c.JSON(http.StatusOK, stats.Report())
@@ -179,7 +174,6 @@ func (api *API) setupRoutes() {
 	accountProtected.POST("password/change", api.changeAccountPassword)
 	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
 	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
-	accountProtected.POST("/ethereum/address/change", api.changeEthereumAddress)
 	accountProtected.GET("/credits/available", api.getCredits)
 
 	ipfsProtected := api.r.Group("/api/v1/ipfs")
@@ -189,7 +183,6 @@ func (api *API) setupRoutes() {
 	ipfsProtected.POST("/calculate-content-hash", api.calculateContentHashForFile)
 	ipfsProtected.GET("/pins", api.getLocalPins) // admin locked
 	ipfsProtected.GET("/object-stat/:key", api.getObjectStatForIpfs)
-	ipfsProtected.GET("/object/size/:key", api.getFileSizeInBytesForObject)
 	ipfsProtected.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
 	ipfsProtected.POST("/download/:hash", api.downloadContentHash)
 	ipfsProtected.POST("/pin/:hash", api.pinHashLocally)
@@ -203,7 +196,6 @@ func (api *API) setupRoutes() {
 	ipfsPrivateProtected.GET("/network/:name", api.getIPFSPrivateNetworkByName)                          // admin locked
 	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", api.checkLocalNodeForPinForHostedIPFSNetwork) // admin locked
 	ipfsPrivateProtected.POST("/ipfs/object-stat/:key", api.getObjectStatForIpfsForHostedIPFSNetwork)
-	ipfsPrivateProtected.POST("/ipfs/object/size/:key", api.getFileSizeInBytesForObjectForHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/pubsub/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/pins", api.getLocalPinsForHostedIPFSNetwork) // admin locked
 	ipfsPrivateProtected.GET("/networks", api.getAuthorizedPrivateNetworks)
@@ -228,13 +220,12 @@ func (api *API) setupRoutes() {
 	clusterProtected.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
 	clusterProtected.GET("/status-local", api.fetchLocalClusterStatus)                 // admin locked
 	clusterProtected.POST("/pin/:hash", api.pinHashToCluster)
-	clusterProtected.DELETE("/remove-pin/:hash", api.removePinFromCluster) // admin locked
 
 	databaseProtected := api.r.Group("/api/v1/database")
 	databaseProtected.Use(authWare.MiddlewareFunc())
 	databaseProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
-	databaseProtected.GET("/uploads", api.getUploadsFromDatabase)     // admin locked
-	databaseProtected.GET("/uploads/:user", api.getUploadsForAddress) // partial admin locked
+	databaseProtected.GET("/uploads", api.getUploadsFromDatabase)  // admin locked
+	databaseProtected.GET("/uploads/:user", api.getUploadsForUser) // partial admin locked
 
 	frontendProtected := api.r.Group("/api/v1/frontend/")
 	frontendProtected.Use(authWare.MiddlewareFunc())
@@ -249,5 +240,5 @@ func (api *API) setupRoutes() {
 	mini.POST("/create/bucket", api.makeBucket)
 	// PROTECTED ROUTES -- END
 
-	api.l.Info("Routes initialized")
+	api.LogInfo("Routes initialized")
 }

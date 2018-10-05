@@ -13,13 +13,13 @@ import (
 // User is our user model for anyone who signs up with Temporal
 type User struct {
 	gorm.Model
-	EthAddress        string  `gorm:"type:varchar(255);unique"`
 	UserName          string  `gorm:"type:varchar(255);unique"`
 	EmailAddress      string  `gorm:"type:varchar(255);unique"`
 	EnterpriseEnabled bool    `gorm:"type:boolean"`
 	AccountEnabled    bool    `gorm:"type:boolean"`
 	APIAccess         bool    `gorm:"type:boolean"`
 	EmailEnabled      bool    `gorm:"type:boolean"`
+	AdminAccess       bool    `gorm:"type:boolean"`
 	HashedPassword    string  `gorm:"type:varchar(255)"`
 	Credits           float64 `gorm:"type:float;default:0"`
 	// IPFSKeyNames is an array of IPFS keys this user has created
@@ -201,7 +201,7 @@ func (um *UserManager) ChangePassword(username, currentPassword, newPassword str
 }
 
 // NewUserAccount is used to create a new user account
-func (um *UserManager) NewUserAccount(ethAddress, username, password, email string, enterpriseEnabled bool) (*User, error) {
+func (um *UserManager) NewUserAccount(username, password, email string, enterpriseEnabled bool) (*User, error) {
 	user := User{}
 	check := um.DB.Where("user_name = ?", username).First(&user)
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
@@ -214,17 +214,15 @@ func (um *UserManager) NewUserAccount(ethAddress, username, password, email stri
 	if err != nil {
 		return nil, err
 	}
-	if ethAddress == "" {
-		ethAddress = username
-	}
 	user = User{
 		UserName:          username,
-		EthAddress:        ethAddress,
 		EnterpriseEnabled: enterpriseEnabled,
 		HashedPassword:    hex.EncodeToString(hashedPass),
 		EmailAddress:      email,
 		AccountEnabled:    true,
 		APIAccess:         true,
+		AdminAccess:       false,
+		Credits:           99999999, // this is temporary and will need to be removed before production
 	}
 	if check := um.DB.Create(&user); check.Error != nil {
 		return nil, check.Error
@@ -271,16 +269,6 @@ func (um *UserManager) ComparePlaintextPasswordToHash(username, password string)
 
 }
 
-// FindByAddress is used to find a user account by their address
-func (um *UserManager) FindByAddress(address string) *User {
-	u := User{}
-	um.DB.Where("eth_address = ?", address).Find(&u)
-	if u.CreatedAt == nilTime {
-		return nil
-	}
-	return &u
-}
-
 // FindByUserName is used to find a user by their username
 func (um *UserManager) FindByUserName(username string) (*User, error) {
 	u := User{}
@@ -288,15 +276,6 @@ func (um *UserManager) FindByUserName(username string) (*User, error) {
 		return nil, check.Error
 	}
 	return &u, nil
-}
-
-// FindEthAddressByUserName is used to retrieve a users eth address by searching for their username
-func (um *UserManager) FindEthAddressByUserName(username string) (string, error) {
-	u := User{}
-	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
-		return "", check.Error
-	}
-	return u.EthAddress, nil
 }
 
 // FindEmailByUserName is used to find an email address by searching for the users eth address
@@ -310,19 +289,6 @@ func (um *UserManager) FindEmailByUserName(username string) (map[string]string, 
 	emails := make(map[string]string)
 	emails[username] = u.EmailAddress
 	return emails, nil
-}
-
-// ChangeEthereumAddress is used to change a user's ethereum address
-func (um *UserManager) ChangeEthereumAddress(username, ethAddress string) (*User, error) {
-	u := User{}
-	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
-		return nil, check.Error
-	}
-	u.EthAddress = ethAddress
-	if check := um.DB.Model(u).Update("eth_address", ethAddress); check.Error != nil {
-		return nil, check.Error
-	}
-	return &u, nil
 }
 
 // AddCredits is used to add credits to a user account
@@ -361,4 +327,13 @@ func (um *UserManager) RemoveCredits(username string, credits float64) (*User, e
 		return nil, check.Error
 	}
 	return user, nil
+}
+
+// CheckIfAdmin is used to check if an account is an administrator
+func (um *UserManager) CheckIfAdmin(username string) (bool, error) {
+	user, err := um.FindByUserName(username)
+	if err != nil {
+		return false, err
+	}
+	return user.AdminAccess, nil
 }

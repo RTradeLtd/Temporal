@@ -35,9 +35,9 @@ func CalculateFileSize(c *gin.Context) {
 }
 
 // CheckAccessForPrivateNetwork checks if a user has access to a private network
-func CheckAccessForPrivateNetwork(ethAddress, networkName string, db *gorm.DB) error {
+func CheckAccessForPrivateNetwork(username, networkName string, db *gorm.DB) error {
 	um := models.NewUserManager(db)
-	canUpload, err := um.CheckIfUserHasAccessToNetwork(ethAddress, networkName)
+	canUpload, err := um.CheckIfUserHasAccessToNetwork(username, networkName)
 	if err != nil {
 		return err
 	}
@@ -114,4 +114,16 @@ func (api *API) refundUserCredits(username, callType string, cost float64) {
 			"error":     err.Error(),
 		}).Error(CreditRefundError)
 	}
+}
+
+// validateAdminRequest is used to validate whether or not the requesting user is an administrator
+func (api *API) validateAdminRequest(username string) error {
+	isAdmin, err := api.um.CheckIfAdmin(username)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return errors.New(UnAuthorizedAdminAccess)
+	}
+	return nil
 }
