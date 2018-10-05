@@ -53,14 +53,10 @@ const (
 	DNSLinkEntryError = "failed to create dns link entry"
 	// PaymentCreationError is an error used when creating payments
 	PaymentCreationError = "failed to create payment"
-	// EthAddressSearchError is an error used when searching for an eth address
-	EthAddressSearchError = "failed to search for eth address"
 	// PinCostCalculationError is an error message used when calculating pin costs
 	PinCostCalculationError = "failed to calculate pin cost"
 	// PaymentSearchError is an error used when searching for payment
 	PaymentSearchError = "failed to search for payment"
-	// EthAddressChangeError is an error used when changing your eth address
-	EthAddressChangeError = "failed to changing eth address"
 	// DuplicateKeyCreationError is an error used when creating a key of the same name
 	DuplicateKeyCreationError = "key name already exists"
 	// UserAccountCreationError is an error used when creating a user account
@@ -89,4 +85,6 @@ const (
 	CallCostCalculationError = "unable to calculate api call cost"
 	// CreditRefundError is an error message used when we are unable to refund a users credits
 	CreditRefundError = "failed to refund credits for user"
+	// UnAuthorizedAdminAccess is an error message used whena user attempts to access an administrative route
+	UnAuthorizedAdminAccess = "user is not an administrator"
 )

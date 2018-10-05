@@ -8,7 +8,6 @@ import (
 
 const (
 	testCID           = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
-	testEthAddress    = "0x7E4A2359c745A982a54653128085eAC69E446DE1"
 	testRabbitAddress = "amqp://127.0.0.1:5672"
 )
 

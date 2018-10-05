@@ -129,8 +129,8 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 // GenerateDNSLinkEntry is used to generate a DNS link entry
 func (api *API) generateDNSLinkEntry(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	if username != AdminAddress {
-		FailNotAuthorized(c, "unauthorized access to admin route")
+	if err := api.validateAdminRequest(username); err != nil {
+		FailNotAuthorized(c, UnAuthorizedAdminAccess)
 		return
 	}
 	recordName, exists := c.GetPostForm("record_name")
