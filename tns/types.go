@@ -87,3 +87,11 @@ type Client struct {
 type Host interface {
 	MakeHost(pk ci.PrivKey, opts *HostOpts) error
 }
+
+// HostOpts is our options for when we create our libp2p host
+type HostOpts struct {
+	IPAddress string `json:"ip_address"`
+	Port      string `json:"port"`
+	IPVersion string `json:"ip_version"`
+	Protocol  string `json:"protocol"`
+}
