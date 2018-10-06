@@ -29,7 +29,7 @@ func Initialize(pubTopic, connectionURL string) (*IpfsManager, error) {
 		PubTopic:    pubTopic,
 		nodeAPIAddr: connectionURL,
 	}
-	manager.SetTimeout(time.Minute * 1)
+	manager.SetTimeout(time.Minute * 10)
 	_, err := manager.Shell.ID()
 	return &manager, err
 }
