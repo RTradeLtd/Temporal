@@ -33,7 +33,7 @@ Now our IPLD structure looks like this:
     "records": {
         "public_key": "Qm...C",
         "name": "website",
-        "meta_data": "signed value of 2, and any other data"
+        "meta_data": "signed value of 2 which was signed by Qm...B, and any other data"
     },
     "record_names_to_public_keys": "website -> Qm...C""
 }
