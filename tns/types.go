@@ -28,3 +28,11 @@ type Record struct {
 type ZoneManager struct {
 	PublicKey ci.PubKey `json:"public_key"`
 }
+
+// HostOpts is our options for when we create our libp2p host
+type HostOpts struct {
+	IPAddress string `json:"ip_address"`
+	Port      string `json:"port"`
+	IPVersion string `json:"ip_version"`
+	Protocol  string `json:"protocol"`
+}
