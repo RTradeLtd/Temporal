@@ -2,11 +2,13 @@ package tns
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	libp2p "github.com/libp2p/go-libp2p"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	host "github.com/libp2p/go-libp2p-host"
+	ma "github.com/multiformats/go-multiaddr"
 )
 
 // Manager is used to manipulate a zone on TNS
@@ -74,7 +76,21 @@ func (m *Manager) MakeHost(opts *HostOpts) error {
 	return nil
 }
 
-// HostAddress is used to generate a formatted libp2p host address
-func (m *Manager) HostAddress() string {
-	return fmt.Sprintf("/p2p/%s", m.Host.ID().Pretty())
+// HostMultiAddress is used to get a formatted libp2p host multi address
+func (m *Manager) HostMultiAddress() (ma.Multiaddr, error) {
+	return ma.NewMultiaddr(fmt.Sprintf("/p2p/%s", m.Host.ID().Pretty()))
+}
+
+// ReachableAddress is used to get a reachable address for this host
+func (m *Manager) ReachableAddress(addressIndex int) (string, error) {
+	if addressIndex > len(m.Host.Addrs()) {
+		return "", errors.New("invalid index")
+	}
+	ipAddr := m.Host.Addrs()[addressIndex]
+	multiAddr, err := m.HostMultiAddress()
+	if err != nil {
+		return "", err
+	}
+	reachableAddr := ipAddr.Encapsulate(multiAddr)
+	return reachableAddr.String(), nil
 }

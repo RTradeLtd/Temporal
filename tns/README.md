@@ -38,3 +38,7 @@ Now our IPLD structure looks like this:
     "record_names_to_public_keys": "website -> Qm...C""
 }
 ```
+
+# libp2p
+
+Each zone file will have an associated daemon running with it, using the libp2p identity of the zone manager. Leveraging this, we can provide quick communication channels to provide information about the IPNS name space, without having to resolve the IPNS record. This is deemed okay, as we are connecting to the libp2p identity of the zone manager, who is the authorized controlling entity of this particular zone.
