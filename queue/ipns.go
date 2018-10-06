@@ -182,13 +182,41 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 			d.Ack(false)
 			continue
 		}
-		if _, err = ipnsManager.UpdateIPNSEntry(response.Name, ie.CID, ie.NetworkName, ie.UserName, ie.LifeTime, ie.TTL); err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    ie.UserName,
-				"network": ie.NetworkName,
-				"error":   err.Error(),
-			}).Error("failed to update IPNS entry in database")
+		if _, err := ipnsManager.FindByIPNSHash(response.Name); err == nil {
+			// if the previous equality check is true (err is nil) it means this entry already exists in the database
+			if _, err = ipnsManager.UpdateIPNSEntry(
+				response.Name,
+				ie.CID,
+				ie.NetworkName,
+				ie.UserName,
+				ie.LifeTime,
+				ie.TTL,
+			); err != nil {
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.QueueName,
+					"user":    ie.UserName,
+					"network": ie.NetworkName,
+					"error":   err.Error(),
+				}).Error("failed to update IPNS entry in database")
+			}
+		} else {
+			// record does not yet exist, so we must create a new one
+			if _, err = ipnsManager.CreateEntry(
+				response.Name,
+				ie.CID,
+				ie.Key,
+				ie.NetworkName,
+				ie.UserName,
+				ie.LifeTime,
+				ie.TTL,
+			); err != nil {
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.QueueName,
+					"user":    ie.UserName,
+					"network": ie.NetworkName,
+					"error":   err.Error(),
+				}).Error("failed to update IPNS entry in database")
+			}
 		}
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,
