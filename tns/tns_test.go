@@ -1,6 +1,7 @@
 package tns_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/tns"
@@ -78,5 +79,41 @@ func TestTNS_ManagerMakeHost(t *testing.T) {
 	}
 	if err = m.MakeHost(m.PrivateKey, nil); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestTNS_HostMultiAddress(t *testing.T) {
+	manager, err := tns.GenerateTNSManager(testZoneName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = manager.MakeHost(nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = manager.HostMultiAddress(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestTNS_ReachableAddress(t *testing.T) {
+	manager, err := tns.GenerateTNSManager(testZoneName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = manager.MakeHost(nil); err != nil {
+		t.Fatal(err)
+	}
+	count := 0
+	max := len(manager.Host.Addrs())
+	for count < max {
+		addr, err := manager.ReachableAddress(count)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if addr == "" {
+			t.Fatal("bad address constructed but no error")
+		}
+		fmt.Println(addr)
+		count++
 	}
 }
