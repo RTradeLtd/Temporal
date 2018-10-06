@@ -113,6 +113,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		l:       logger,
 		dbm:     dbm,
 		um:      models.NewUserManager(dbm.DB),
+		im:      models.NewIPNSManager(dbm.DB),
 	}, nil
 }
 
