@@ -198,6 +198,8 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 					"network": ie.NetworkName,
 					"error":   err.Error(),
 				}).Error("failed to update IPNS entry in database")
+				d.Ack(false)
+				continue
 			}
 		} else {
 			// record does not yet exist, so we must create a new one
@@ -216,6 +218,8 @@ func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delive
 					"network": ie.NetworkName,
 					"error":   err.Error(),
 				}).Error("failed to update IPNS entry in database")
+				d.Ack(false)
+				continue
 			}
 		}
 		qm.Logger.WithFields(log.Fields{
