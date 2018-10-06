@@ -134,6 +134,11 @@ func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
 		api.LogError(err, IpnsRecordSearchError)(c, http.StatusBadRequest)
 		return
 	}
+	// check if records is nil, or no entries. For len we must dereference first
+	if records == nil || len(*records) == 0 {
+		Respond(c, http.StatusOK, gin.H{"response": "no ipns records found"})
+		return
+	}
 	Respond(c, http.StatusOK, gin.H{"response": records})
 }
 
