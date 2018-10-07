@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -37,11 +36,6 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "run tns daemon",
 				Description: "runs a tns daemon and zone manager",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					zoneName := os.Getenv("ZONE_NAME")
-					if zoneName == "" {
-						err := errors.New("ZONE_NAME env var is empty")
-						log.Fatal(err)
-					}
 					rtfsManager, err := rtfs.Initialize("", "")
 					if err != nil {
 						log.Fatal(err)
