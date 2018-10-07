@@ -46,31 +46,34 @@ func (c *Client) QueryTNS(peerID peer.ID) error {
 }
 
 // AddPeerToPeerStore is used to add a TNS node to our peer store list
-func (c *Client) AddPeerToPeerStore(peerID peer.ID, peerAddr string) error {
+func (c *Client) AddPeerToPeerStore(peerAddr string) (peer.ID, error) {
 	ipfsaddr, err := ma.NewMultiaddr(peerAddr)
 	if err != nil {
-		return err
+		return "", err
 	}
+	fmt.Println("ipfsaddr ", ipfsaddr)
 	pid, err := ipfsaddr.ValueForProtocol(ma.P_IPFS)
 	if err != nil {
-		fmt.Println(err)
-		return err
+		return "", err
 	}
+	fmt.Println("pid ", pid)
 	peerid, err := peer.IDB58Decode(pid)
 	if err != nil {
-		return err
+		return "", err
 	}
+	fmt.Println("peerid ", peerid)
 	targetPeerAddr, err := ma.NewMultiaddr(
 		fmt.Sprintf("/ipfs/%s", peer.IDB58Encode(peerid)),
 	)
 	if err != nil {
-		return err
+		return "", err
 	}
+	fmt.Println("targetPeerAddr ", targetPeerAddr)
 	targetAddr := ipfsaddr.Decapsulate(targetPeerAddr)
 	c.Host.Peerstore().AddAddr(
 		peerid, targetAddr, pstore.PermanentAddrTTL,
 	)
-	return nil
+	return peerid, nil
 }
 
 // MakeHost is used to generate the libp2p connection for our TNS client
