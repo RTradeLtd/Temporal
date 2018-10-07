@@ -56,3 +56,16 @@ func (zm *ZoneManager) FindZoneByNameAndUser(name, username string) (*Zone, erro
 	}
 	return &z, nil
 }
+
+// UpdateLatestIPFSHashForZone is used to update hte latest IPFS hash for a zone file
+func (zm *ZoneManager) UpdateLatestIPFSHashForZone(name, username, hash string) (*Zone, error) {
+	z := Zone{}
+	if check := zm.DB.Where("name = ? AND user_name = ?", name, username).First(&z); check.Error != nil {
+		return nil, check.Error
+	}
+	z.LatestIPFSHash = hash
+	if check := zm.DB.Model(&z).Update("latest_ip_fs_hash", z.LatestIPFSHash); check.Error != nil {
+		return nil, check.Error
+	}
+	return &z, nil
+}
