@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"net/http"
 	"strconv"
@@ -149,11 +150,27 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	hEncoded := resp.GetH()
+	hDecoded, err := hex.DecodeString(hEncoded)
+	if err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	var h [32]byte
+	if len(hDecoded) > 32 || len(hDecoded) < 32 {
+		err := errors.New("h must be 32 bytes")
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	for k, v := range hDecoded {
+		h[k] = v
+	}
 	response := gin.H{
 		"charge_amount":  signRequest.ChargeAmount,
 		"method":         signRequest.Method,
 		"payment_number": paymentNumber,
 		"prefixed":       true,
+		"h":              h,
 		"sig_parts":      resp,
 	}
 	Respond(c, http.StatusOK, gin.H{"response": response})
