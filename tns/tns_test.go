@@ -118,16 +118,14 @@ func TestTNS_ReachableAddress(t *testing.T) {
 	}
 }
 
-func TestTNS_Integration(t *testing.T) {
-	daemon, err := tns.GenerateTNSManager(testZoneName)
+func TestTNSClient_AddPeerToPeerStore(t *testing.T) {
+	manager, err := tns.GenerateTNSManager(testZoneName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = daemon.MakeHost(daemon.PrivateKey, nil); err != nil {
+	if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
-	defer daemon.Host.Close()
-	go daemon.RunTNSDaemon()
 	client, err := tns.GenerateTNSClient(true, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -135,9 +133,14 @@ func TestTNS_Integration(t *testing.T) {
 	if err = client.MakeHost(client.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
-	defer client.Host.Close()
-	if err = client.QueryTNS(daemon.Host.ID()); err != nil {
+	addr, err := manager.ReachableAddress(0)
+	if err != nil {
 		t.Fatal(err)
 	}
-	select {}
+	if err = client.AddPeerToPeerStore(
+		manager.Host.ID(),
+		addr,
+	); err != nil {
+		t.Fatal(err)
+	}
 }
