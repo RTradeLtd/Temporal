@@ -43,6 +43,7 @@ type API struct {
 	dm      *models.DropManager
 	ue      *models.EncryptedUploadManager
 	ipfs    *rtfs.IpfsManager
+	zm      *models.ZoneManager
 	l       *log.Logger
 	gc      *grpc.Client
 	service string
@@ -138,6 +139,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
 		ipfs:    ipfsManager,
 		gc:      gc,
+		zm:      models.NewZoneManager(dbm.DB),
 	}, nil
 }
 
@@ -193,6 +195,10 @@ func (api *API) setupRoutes() {
 	{
 		statistics.GET("/stats", api.getStats)
 	}
+	tnsProtected := api.r.Group("/api/v1/tns")
+	tnsProtected.Use(authWare.MiddlewareFunc())
+	tnsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	tnsProtected.POST("/zone/create", api.CreateZone)
 
 	// payments
 	payments := v1.Group("/payments", authware...)
