@@ -6,10 +6,11 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"errors"
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/pbkdf2"
 	"io"
 	"io/ioutil"
 	"log"
+
+	"golang.org/x/crypto/pbkdf2"
 )
 
 const (

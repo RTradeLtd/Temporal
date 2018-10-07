@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/RTradeLtd/Temporal/crypto"
+	"github.com/RTradeLtd/crypto"
 	"github.com/minio/minio-go/pkg/encrypt"
 	"github.com/sirupsen/logrus"
 

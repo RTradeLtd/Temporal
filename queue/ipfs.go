@@ -329,7 +329,9 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 		}
 		if err == gorm.ErrRecordNotFound {
 			_, err = uploadManager.NewUpload(pin.CID, "pin", models.UploadOptions{
-				pin.NetworkName, pin.UserName, pin.HoldTimeInMonths, false})
+				NetworkName:      pin.NetworkName,
+				Username:         pin.UserName,
+				HoldTimeInMonths: pin.HoldTimeInMonths})
 			if err != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,

@@ -52,7 +52,9 @@ func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *g
 		}
 		if err != nil && err == gorm.ErrRecordNotFound {
 			_, err = uploadManager.NewUpload(dfa.Hash, "file", models.UploadOptions{
-				dfa.NetworkName, dfa.UserName, dfa.HoldTimeInMonths, false})
+				NetworkName:      dfa.NetworkName,
+				Username:         dfa.UserName,
+				HoldTimeInMonths: dfa.HoldTimeInMonths})
 			if err != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
