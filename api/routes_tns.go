@@ -1,11 +1,11 @@
 package api
 
 import (
-	"encoding/hex"
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-gonic/gin"
+	peer "github.com/libp2p/go-libp2p-peer"
 )
 
 // CreateZone is used to create a TNS zone
@@ -63,12 +63,12 @@ func (api *API) CreateZone(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	zonePublicKeyBytes, err := zonePK.GetPublic().Bytes()
+	zonePublicKeyID, err := peer.IDFromPublicKey(zonePK.GetPublic())
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	zoneManagerPublicKeyBytes, err := zoneManagerPK.GetPublic().Bytes()
+	zoneManagerPublicKeyID, err := peer.IDFromPublicKey(zoneManagerPK.GetPublic())
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
@@ -76,9 +76,9 @@ func (api *API) CreateZone(c *gin.Context) {
 	zone, err := api.zm.NewZone(
 		username,
 		zoneName,
-		hex.EncodeToString(zoneManagerPublicKeyBytes),
-		hex.EncodeToString(zonePublicKeyBytes),
-		"",
+		zoneManagerPublicKeyID.String(),
+		zonePublicKeyID.String(),
+		"qm..",
 	)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
