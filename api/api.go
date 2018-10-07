@@ -35,6 +35,7 @@ type API struct {
 	cfg     *config.TemporalConfig
 	dbm     *database.DatabaseManager
 	um      *models.UserManager
+	zm      *models.ZoneManager
 	l       *log.Logger
 	service string
 }
@@ -112,6 +113,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		l:       logger,
 		dbm:     dbm,
 		um:      models.NewUserManager(dbm.DB),
+		zm:      models.NewZoneManager(dbm.DB),
 	}, nil
 }
 
@@ -166,6 +168,11 @@ func (api *API) setupRoutes() {
 	paymentsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	paymentsProtected.POST("/create", api.CreatePayment)
 	paymentsProtected.GET("/deposit/address/:type", api.GetDepositAddress)
+
+	tnsProtected := api.r.Group("/api/v1/tns")
+	tnsProtected.Use(authWare.MiddlewareFunc())
+	tnsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	tnsProtected.POST("/zone/create", api.CreateZone)
 
 	accountProtected := api.r.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())
