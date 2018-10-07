@@ -61,6 +61,10 @@ var commands = map[string]cmd.Cmd{
 					if peerAddr == "" {
 						log.Fatal("PEER_ADDR env var is empty")
 					}
+					cmdToRun := os.Getenv("CMD_TO_RUN")
+					if cmdToRun == "" {
+						log.Fatal("CMD_TO_RUN env var is empty")
+					}
 					client, err := tns.GenerateTNSClient(true, nil)
 					if err != nil {
 						log.Fatal(err)
@@ -73,7 +77,7 @@ var commands = map[string]cmd.Cmd{
 					if err != nil {
 						log.Fatal(err)
 					}
-					if err = client.QueryTNS(id); err != nil {
+					if err = client.QueryTNS(id, cmdToRun); err != nil {
 						log.Fatal(err)
 					}
 				},

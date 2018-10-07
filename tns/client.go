@@ -2,6 +2,8 @@ package tns
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 
@@ -31,7 +33,43 @@ func GenerateTNSClient(genPK bool, pk ...ci.PrivKey) (*Client, error) {
 }
 
 // QueryTNS is used to query a peer for TNS name resolution
-func (c *Client) QueryTNS(peerID peer.ID) error {
+func (c *Client) QueryTNS(peerID peer.ID, cmd string) error {
+	switch cmd {
+	case "echo":
+		return c.queryEcho(peerID)
+	case "tns":
+		return c.queryRequest(peerID)
+	default:
+		return errors.New("unsupported cmd")
+	}
+}
+
+func (c *Client) queryRequest(peerID peer.ID) error {
+	s, err := c.Host.NewStream(context.Background(), peerID, "/tns/1.0.0")
+	if err != nil {
+		fmt.Println("failed to generate new stream ", err.Error())
+		return err
+	}
+	req := RecordRequest{
+		RecordName: "test",
+	}
+	reqBytes, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+	reqBytes = append(reqBytes, '\n')
+	_, err = s.Write(reqBytes)
+	if err != nil {
+		return err
+	}
+	resp, err := ioutil.ReadAll(s)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("response from tns...\t%s\n", string(resp))
+	return nil
+}
+func (c *Client) queryEcho(peerID peer.ID) error {
 	s, err := c.Host.NewStream(context.Background(), peerID, "/echo/1.0.0")
 	if err != nil {
 		fmt.Println("failed to generate new stream ", err.Error())
