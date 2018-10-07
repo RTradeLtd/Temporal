@@ -158,6 +158,7 @@ func (um *UserManager) CheckIfKeyOwnedByUser(username, keyName string) (bool, er
 		return false, errors.New("user account does not exist")
 	}
 	for _, v := range user.IPFSKeyNames {
+		fmt.Println(v)
 		if v == keyName {
 			return true, nil
 		}
