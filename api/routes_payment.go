@@ -162,6 +162,8 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 
 // CreatePayment is used to create a payment
 func (api *API) CreatePayment(c *gin.Context) {
+	Respond(c, http.StatusNotImplemented, gin.H{"response": "this api call isn't fully implemented yet"})
+	return
 	username := GetAuthenticatedUserFromContext(c)
 	paymentType, exists := c.GetPostForm("payment_type")
 	if !exists {
