@@ -27,6 +27,8 @@ var (
 	IpfsKeyCreationQueue = "ipfs-key-creation-queue"
 	// PaymentCreationQueue is a queue used to handle payment processing
 	PaymentCreationQueue = "payment-creation-queue"
+	// ZoneCreationQueue is a queue used to handle tns zone creations
+	ZoneCreationQueue = "zone-creation-queue"
 	// AdminEmail is the email used to notify RTrade about any critical errors
 	AdminEmail = "temporal.reports@rtradetechnologies.com"
 	// IpfsPinFailedContent is a to-be formatted message sent on IPFS pin failures
@@ -150,4 +152,12 @@ type PaymentCreation struct {
 	TxHash     string `json:"tx_hash"`
 	Blockchain string `json:"blockchain"`
 	UserName   string `json:"user_name"`
+}
+
+// ZoneCreation is used for creating tns zones
+type ZoneCreation struct {
+	Name           string `json:"name"`
+	ManagerKeyName string `json:"manager_key_name"`
+	ZoneKeyName    string `json:"zone_key_name"`
+	UserName       string `json:"user_name"`
 }

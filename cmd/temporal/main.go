@@ -226,6 +226,20 @@ var commands = map[string]cmd.Cmd{
 					}
 				},
 			},
+			"zone-creation": cmd.Cmd{
+				Blurb:       "Zone creation queue",
+				Description: "Listens to requests to create TNS zones",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mqConnectionURL := cfg.RabbitMQ.URL
+					qm, err := queue.Initialize(queue.ZoneCreationQueue, mqConnectionURL, false, true)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
 		},
 	},
 	"migrate": cmd.Cmd{
