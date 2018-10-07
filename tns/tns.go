@@ -8,6 +8,8 @@ import (
 	libp2p "github.com/libp2p/go-libp2p"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	host "github.com/libp2p/go-libp2p-host"
+	net "github.com/libp2p/go-libp2p-net"
+	log "github.com/mgutz/logxi/v1"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
@@ -45,6 +47,20 @@ func GenerateTNSManager(zoneName string) (*Manager, error) {
 		Zone:              &zone,
 	}
 	return &manager, nil
+}
+
+// RunTNS is used to run our TNS daemon
+func (m *Manager) RunTNS() {
+	m.Host.SetStreamHandler(
+		"/echo/1.0.0", func(s net.Stream) {
+			log.Info("new stream!")
+			if _, err := s.Write([]byte("hello")); err != nil {
+				log.Warn(err.Error())
+				s.Reset()
+			} else {
+				s.Close()
+			}
+		})
 }
 
 // MakeHost is used to generate the libp2p connection for our TNS daemon
