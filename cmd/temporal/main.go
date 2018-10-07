@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/RTradeLtd/Temporal/rtfs"
 
 	"github.com/RTradeLtd/Temporal/tns"
 
@@ -34,7 +37,36 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "run tns daemon",
 				Description: "runs a tns daemon and zone manager",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					manager, err := tns.GenerateTNSManager("some-zone")
+					zoneName := os.Getenv("ZONE_NAME")
+					if zoneName == "" {
+						err := errors.New("ZONE_NAME env var is empty")
+						log.Fatal(err)
+					}
+					rtfsManager, err := rtfs.Initialize("", "")
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = rtfsManager.CreateKeystoreManager(); err != nil {
+						log.Fatal(err)
+					}
+					zoneManagerPK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(
+						cfg.TNS.ZoneManagerKeyName,
+					)
+					if err != nil {
+						log.Fatal(err)
+					}
+					zonePK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(
+						cfg.TNS.ZoneManagerKeyName,
+					)
+					if err != nil {
+						log.Fatal(err)
+					}
+					managerOpts := tns.ManagerOpts{
+						ManagerPK: zoneManagerPK,
+						ZonePK:    zonePK,
+						ZoneName:  cfg.TNS.ZoneName,
+					}
+					manager, err := tns.GenerateTNSManager(&managerOpts)
 					if err != nil {
 						log.Fatal(err)
 					}
