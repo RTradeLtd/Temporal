@@ -3,12 +3,67 @@ package api
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
+	greq "github.com/RTradeLtd/gapimit/request"
 	"github.com/gin-gonic/gin"
 )
+
+// GetSignedMessage is used to get a signed message from the GRPC API Payments Server
+func (api *API) GetSignedMessage(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	paymentType, exists := c.GetPostForm("payment_type")
+	if !exists {
+		FailWithMissingField(c, "payment_type")
+		return
+	}
+	switch paymentType {
+	case "eth", "rtc":
+		break
+	default:
+		Fail(c, errors.New("payment_type must be 'eth' or 'rtc'"))
+		return
+	}
+	senderAddress, exists := c.GetPostForm("sender_address")
+	if !exists {
+		FailWithMissingField(c, "sender_address")
+		return
+	}
+	creditValue, exists := c.GetPostForm("credit_value")
+	if !exists {
+		FailWithMissingField(c, "credit_value")
+	}
+	usdValueFloat, err := api.getUSDValue(paymentType)
+	if err != nil {
+		api.LogError(err, CmcCheckError)(c, http.StatusBadRequest)
+		return
+	}
+	pm := models.NewPaymentManager(api.dbm.DB)
+	paymentNumber, err := pm.GetLatestPaymentNumber(username)
+	if err != nil {
+		api.LogError(err, PaymentSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	paymentNumber++
+	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	chargeAmountFloat := creditValueFloat / usdValueFloat
+	chargeAmountString := strconv.FormatFloat(chargeAmountFloat, 'f', 18, 64)
+	numberString := strconv.FormatInt(paymentNumber, 10)
+	signRequest := greq.SignRequest{
+		Address:      senderAddress,
+		Method:       paymentType,
+		Number:       numberString,
+		ChargeAmount: chargeAmountString,
+	}
+	Respond(c, http.StatusOK, gin.H{"response": signRequest})
+}
 
 // CreatePayment is used to create a payment
 func (api *API) CreatePayment(c *gin.Context) {
