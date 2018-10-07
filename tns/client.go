@@ -13,6 +13,12 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 )
 
+const (
+	defaultZoneName           = "myzone"
+	defaultZoneManagerKeyName = "postables-3072"
+	defaultZoneKeyName        = "postables-testkeydemo"
+)
+
 // GenerateTNSClient is used to generate a TNS Client
 func GenerateTNSClient(genPK bool, pk ...ci.PrivKey) (*Client, error) {
 	var (
@@ -37,11 +43,65 @@ func (c *Client) QueryTNS(peerID peer.ID, cmd string) error {
 	switch cmd {
 	case "echo":
 		return c.queryEcho(peerID)
-	case "tns":
-		return c.queryRequest(peerID)
+	case "zone-request":
+		return c.ZoneRequest(peerID, nil)
 	default:
 		return errors.New("unsupported cmd")
 	}
+}
+
+// ZoneRequest is a call used to request a zone from TNS
+func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) error {
+	if req == nil {
+		req = &ZoneRequest{
+			ZoneName:           defaultZoneName,
+			ZoneManagerKeyName: defaultZoneManagerKeyName,
+		}
+	}
+	s, err := c.Host.NewStream(context.Background(), peerID, "/zoneRequest/1.0.0")
+	if err != nil {
+		fmt.Println("failed to generate new stream ", err.Error())
+		return err
+	}
+	reqBytes, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+	reqBytes = append(reqBytes, '\n')
+	_, err = s.Write(reqBytes)
+	if err != nil {
+		return err
+	}
+	resp, err := ioutil.ReadAll(s)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("resposne from zone request...\t%s\n", string(resp))
+	return nil
+}
+
+// RecordRequest is a call used to request a record from TNS
+func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) error {
+	s, err := c.Host.NewStream(context.Background(), peerID, "/recordRequest/1.0.0")
+	if err != nil {
+		fmt.Println("failed to generate new stream ", err.Error())
+		return err
+	}
+	reqBytes, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+	reqBytes = append(reqBytes, '\n')
+	_, err = s.Write(reqBytes)
+	if err != nil {
+		return err
+	}
+	resp, err := ioutil.ReadAll(s)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("resposne from record request...\t%s\n", string(resp))
+	return nil
 }
 
 func (c *Client) queryRequest(peerID peer.ID) error {

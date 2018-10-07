@@ -71,11 +71,22 @@ func (m *Manager) RunTNSDaemon() {
 				s.Close()
 			}
 		})
-	fmt.Println("generating tns query stream")
+	fmt.Println("generating record request stream")
 	m.Host.SetStreamHandler(
-		"/tns/1.0.0", func(s net.Stream) {
+		"/recordRequest/1.0.0", func(s net.Stream) {
 			log.Info("new stream detected")
-			if err := m.HandleQuery(s, "tns"); err != nil {
+			if err := m.HandleQuery(s, "record-request"); err != nil {
+				log.Warn(err.Error())
+				s.Reset()
+			} else {
+				s.Close()
+			}
+		})
+	fmt.Println("generating zone request stream")
+	m.Host.SetStreamHandler(
+		"/zoneRequest/1.0.0", func(s net.Stream) {
+			log.Info("new stream detected")
+			if err := m.HandleQuery(s, "zone-request"); err != nil {
 				log.Warn(err.Error())
 				s.Reset()
 			} else {
@@ -94,7 +105,7 @@ func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 			return err
 		}
 		fmt.Printf("message sent with stream\n%s\n", bodyString)
-	case "tns":
+	case "record-request":
 		bodyBytes, err := responseBuffer.ReadBytes('\n')
 		if err != nil {
 			return err
@@ -104,6 +115,16 @@ func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 			return err
 		}
 		fmt.Printf("record request\n%+v\n", req)
+	case "zone-request":
+		bodyBytes, err := responseBuffer.ReadBytes('\n')
+		if err != nil {
+			return err
+		}
+		req := ZoneRequest{}
+		if err = json.Unmarshal(bodyBytes, &req); err != nil {
+			return err
+		}
+		fmt.Printf("zone request\n%+v\n", req)
 	default:
 		fmt.Println("unsupported command type")
 		_, err := s.Write([]byte("message received thanks"))
