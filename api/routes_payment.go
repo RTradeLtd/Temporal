@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"math/big"
 	"net/http"
 	"strconv"
 
@@ -184,16 +185,21 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		s[k] = v
 	}
 	chargeAmountBig := utils.FloatToBigInt(chargeAmountFloat)
+	paymentNumberBig := big.NewInt(paymentNumber)
+	vUint, err := strconv.ParseUint(resp.GetV(), 10, 64)
+	if err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
 	response := gin.H{
 		"charge_amount_big": chargeAmountBig,
-		"charge_amount":     signRequest.ChargeAmount,
-		"method":            signRequest.Method,
-		"payment_number":    paymentNumber,
+		"method":            uint8(method),
+		"payment_number":    paymentNumberBig,
 		"prefixed":          true,
 		"h":                 h,
 		"r":                 r,
 		"s":                 s,
-		"v":                 resp.GetV(),
+		"v":                 uint8(vUint),
 	}
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
