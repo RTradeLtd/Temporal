@@ -35,6 +35,7 @@ type ZoneRequest struct {
 
 // ZoneRequest is a message sent when requesting a reccord from TNS.
 type ZoneRequest struct {
+	UserName           string `json:"user_name"`
 	ZoneName           string `json:"zone_name"`
 	ZoneManagerKeyName string `json:"zone_manager_key_name"`
 }
