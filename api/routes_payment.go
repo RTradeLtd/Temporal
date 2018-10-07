@@ -44,8 +44,13 @@ func (api *API) CreatePayment(c *gin.Context) {
 		return
 	}
 	pm := models.NewPaymentManager(api.dbm.DB)
-	if _, err := pm.NewPayment(depositAddress, txHash, usdValue, blockchain, paymentType, username); err != nil {
-		api.LogError(err, eh.PaymentCreationError)(c, http.StatusBadRequest)
+	latestPaymentNumber, err := pm.GetLatestPaymentNumber(username)
+	if err != nil {
+		api.LogError(err, PaymentSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	if _, err := pm.NewPayment(latestPaymentNumber, depositAddress, txHash, usdValue, blockchain, paymentType, username); err != nil {
+		api.LogError(err, PaymentCreationError)(c, http.StatusBadRequest)
 		return
 	}
 	pc := queue.PaymentCreation{

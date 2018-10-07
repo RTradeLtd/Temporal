@@ -9,9 +9,10 @@ import (
 // Payments is our payment model
 type Payments struct {
 	gorm.Model
+	Number         int64   `gorm:"type:integer"`
 	DepositAddress string  `gorm:"type:varchar(255)"`
 	TxHash         string  `gorm:"type:varchar(255)"`
-	USDValue       float64 `gorm:"type:varchar(255)"` // USDValue is also a "Credit" value, since 1 USD -> 1 Credit
+	USDValue       float64 `gorm:"type:float"` // USDValue is also a "Credit" value, since 1 USD -> 1 Credit
 	Blockchain     string  `gorm:"type:varchar(255)"`
 	Type           string  `gorm:"type:varchar(255)"` // ETH, RTC, XMR, BTC, LTC
 	UserName       string  `gorm:"type:varchar(255)"`
@@ -28,8 +29,21 @@ func NewPaymentManager(db *gorm.DB) *PaymentManager {
 	return &PaymentManager{DB: db}
 }
 
+// GetLatestPaymentNumber is used to get the latest payment number for a user
+func (pm *PaymentManager) GetLatestPaymentNumber(username string) (int64, error) {
+	p := Payments{}
+	check := pm.DB.Where("user_name = ?", username).Order("number desc").First(&p)
+	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+		return 0, check.Error
+	}
+	if check.Error == gorm.ErrRecordNotFound {
+		return 0, nil
+	}
+	return p.Number, nil
+}
+
 // NewPayment is used to create a payment in our database
-func (pm *PaymentManager) NewPayment(depositAddress string, txHash string, usdValue float64, blockchain string, paymentType string, username string) (*Payments, error) {
+func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash string, usdValue float64, blockchain string, paymentType string, username string) (*Payments, error) {
 	p := Payments{}
 	check := pm.DB.Where("tx_hash = ?", txHash).First(&p)
 	if check.Error == nil {
@@ -37,7 +51,12 @@ func (pm *PaymentManager) NewPayment(depositAddress string, txHash string, usdVa
 	} else if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
-
+	check = pm.DB.Where("number = ?", number).First(&p)
+	if check.Error == nil {
+		return nil, errors.New("payment with number already exists")
+	} else if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+		return nil, check.Error
+	}
 	p = Payments{
 		DepositAddress: depositAddress,
 		TxHash:         txHash,
