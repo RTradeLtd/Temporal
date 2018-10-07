@@ -83,3 +83,20 @@ func TestTNS_ReachableAddress(t *testing.T) {
 		count++
 	}
 }
+
+func TestTNS_RunTNS(t *testing.T) {
+	manager, err := tns.GenerateTNSManager(testZoneName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = manager.MakeHost(nil); err != nil {
+		t.Fatal(err)
+	}
+	manager.RunTNS()
+	count := 0
+	max := 1000
+	for count <= max {
+		count++
+	}
+	manager.Host.Close()
+}
