@@ -24,11 +24,14 @@ func (api *API) GetSignedMessage(c *gin.Context) {
 		FailWithMissingField(c, "payment_type")
 		return
 	}
+	var method uint64
 	switch paymentType {
 	case "0":
 		paymentType = "rtc"
+		method = 0
 	case "1":
 		paymentType = "eth"
+		method = 1
 	default:
 		Fail(c, errors.New("payment_type must be '0 (rtc)' or '1 (eth)'"))
 		return
@@ -63,9 +66,10 @@ func (api *API) GetSignedMessage(c *gin.Context) {
 	chargeAmountFloat := creditValueFloat / usdValueFloat
 	chargeAmountString := strconv.FormatFloat(chargeAmountFloat, 'f', 18, 64)
 	numberString := strconv.FormatInt(paymentNumber, 10)
+	methodString := strconv.FormatUint(method, 10)
 	signRequest := greq.SignRequest{
 		Address:      senderAddress,
-		Method:       paymentType,
+		Method:       methodString,
 		Number:       numberString,
 		ChargeAmount: chargeAmountString,
 	}
