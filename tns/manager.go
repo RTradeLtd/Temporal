@@ -8,8 +8,8 @@ import (
 
 	ci "github.com/libp2p/go-libp2p-crypto"
 	net "github.com/libp2p/go-libp2p-net"
-	log "github.com/mgutz/logxi/v1"
 	ma "github.com/multiformats/go-multiaddr"
+	log "github.com/sirupsen/logrus"
 )
 
 // GenerateTNSManager is used to generate a TNS manager for a particular PKI space
