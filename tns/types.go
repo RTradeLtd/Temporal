@@ -33,6 +33,12 @@ type ZoneRequest struct {
 	ZoneManagerKeyName string `json:"zone_manager_key_name"`
 }
 
+// ZoneRequest is a message sent when requesting a reccord from TNS.
+type ZoneRequest struct {
+	ZoneName           string `json:"zone_name"`
+	ZoneManagerKeyName string `json:"zone_manager_key_name"`
+}
+
 // Zone is a mapping of human readable names, mapped to a public key. In order to retrieve the latest
 type Zone struct {
 	Manager   *ZoneManager `json:"zone_manager"`
