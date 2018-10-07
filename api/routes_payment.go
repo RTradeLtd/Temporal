@@ -24,8 +24,10 @@ func (api *API) GetSignedMessage(c *gin.Context) {
 		return
 	}
 	switch paymentType {
-	case "0", "1":
-		break
+	case "0":
+		paymentType = "rtc"
+	case "1":
+		paymentType = "eth"
 	default:
 		Fail(c, errors.New("payment_type must be '0 (rtc)' or '1 (eth)'"))
 		return
