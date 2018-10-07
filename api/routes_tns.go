@@ -10,6 +10,7 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-gonic/gin"
+	peer "github.com/libp2p/go-libp2p-peer"
 )
 
 // PerformZoneRequest is used to perform a zone request lookup
