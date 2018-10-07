@@ -117,6 +117,8 @@ func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 			return err
 		}
 		fmt.Printf("record request\n%+v\n", req)
+		_, err = s.Write([]byte(string(bodyBytes)))
+		return err
 	case "zone-request":
 		bodyBytes, err := responseBuffer.ReadBytes('\n')
 		if err != nil {
@@ -132,13 +134,14 @@ func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 			return err
 		}
 		fmt.Printf("zone file recovered from database\n%+v\n", z)
+		_, err = s.Write([]byte(z.LatestIPFSHash))
+		return err
 	default:
 		fmt.Println("unsupported command type")
 		_, err := s.Write([]byte("message received thanks"))
 		return err
 	}
-	_, err := s.Write([]byte("message received, thanks!"))
-	return err
+	return nil
 }
 
 // MakeHost is used to generate the libp2p connection for our TNS daemon
