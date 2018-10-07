@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -62,7 +63,12 @@ func (api *API) GetSignedMessage(c *gin.Context) {
 		Number:       numberString,
 		ChargeAmount: chargeAmountString,
 	}
-	Respond(c, http.StatusOK, gin.H{"response": signRequest})
+	resp, err := api.gc.GetSignedMessage(context.Background(), &signRequest)
+	if err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": resp})
 }
 
 // CreatePayment is used to create a payment
