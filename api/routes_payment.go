@@ -18,8 +18,41 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetSignedMessage is used to get a signed message from the GRPC API Payments Server
-func (api *API) GetSignedMessage(c *gin.Context) {
+// ConfirmPayment is used to confirm a payment after sending it.
+// By giving Temporal the TxHash, we can then validate that hte payment
+// was made, and validated by the appropriate blockchain.
+func (api *API) ConfirmPayment(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	paymentNumber, exists := c.GetPostForm("payment_number")
+	if !exists {
+		FailWithMissingField(c, "payment_number")
+		return
+	}
+	txHash, exists := c.GetPostForm("tx_hash")
+	if !exists {
+		FailWithMissingField(c, "tx_hash")
+		return
+	}
+	paymentNumberInt, err := strconv.ParseInt(paymentNumber, 10, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	pm := models.NewPaymentManager(api.dbm.DB)
+	if _, err := pm.FindPaymentByNumber(username, paymentNumberInt); err != nil {
+		api.LogError(err, PaymentSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	payment, err := pm.UpdatePaymentTxHash(username, txHash, paymentNumberInt)
+	if err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": payment})
+}
+
+// RequestSignedPaymentMessage is used to get a signed message from the GRPC API Payments Server
+func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	paymentType, exists := c.GetPostForm("payment_type")
 	if !exists {
@@ -115,6 +148,12 @@ func (api *API) CreatePayment(c *gin.Context) {
 	paymentType, exists := c.GetPostForm("payment_type")
 	if !exists {
 		FailWithMissingField(c, "payment_type")
+		return
+	}
+	switch paymentType {
+	case "eth", "rtc":
+		err := errors.New("for 'rtc' and 'eth' payments please use the request route")
+		Fail(c, err, http.StatusBadRequest)
 		return
 	}
 	usdValue, err := api.getUSDValue(paymentType)

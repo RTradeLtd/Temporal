@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/jinzhu/gorm"
 )
@@ -27,6 +28,15 @@ type PaymentManager struct {
 // NewPaymentManager is used to generate our payment manager helper
 func NewPaymentManager(db *gorm.DB) *PaymentManager {
 	return &PaymentManager{DB: db}
+}
+
+// FindPaymentByNumber is used to find a payment by its payment number
+func (pm *PaymentManager) FindPaymentByNumber(username string, number int64) (*Payments, error) {
+	p := Payments{}
+	if check := pm.DB.Where("user_name = ? AND number = ?", username, number).First(&p); check.Error != nil {
+		return nil, check.Error
+	}
+	return &p, nil
 }
 
 // GetLatestPaymentNumber is used to get the latest payment number for a user
@@ -100,4 +110,21 @@ func (pm *PaymentManager) FindPaymentByTxHash(txHash string) (*Payments, error) 
 		return nil, check.Error
 	}
 	return &p, nil
+}
+
+// UpdatePaymentTxHash UpdatePaymentTxHash is used to update the tx hash of a payment
+func (pm *PaymentManager) UpdatePaymentTxHash(username, txHash string, number int64) (*Payments, error) {
+	payment, err := pm.FindPaymentByNumber(username, number)
+	if err != nil {
+		return nil, err
+	}
+	numberString := strconv.FormatInt(number, 10)
+	if payment.TxHash != numberString {
+		return nil, errors.New("payment already has an updated tx hash")
+	}
+	payment.TxHash = txHash
+	if check := pm.DB.Model(payment).Update("tx_hash", payment.TxHash); check.Error != nil {
+		return nil, check.Error
+	}
+	return payment, nil
 }
