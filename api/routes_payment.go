@@ -64,6 +64,10 @@ func (api *API) GetSignedMessage(c *gin.Context) {
 		Number:       numberString,
 		ChargeAmount: chargeAmountString,
 	}
+	if dev {
+		Respond(c, http.StatusOK, gin.H{"response": signRequest})
+		return
+	}
 	resp, err := api.gc.GetSignedMessage(context.Background(), &signRequest)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
