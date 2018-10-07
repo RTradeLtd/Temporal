@@ -41,7 +41,7 @@ func (c *Client) QueryTNS(peerID peer.ID) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("response\n%s", string(resp))
+	fmt.Printf("response from tns...\t%s\n", string(resp))
 	return nil
 }
 
