@@ -127,7 +127,7 @@ func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 			return err
 		}
 		fmt.Printf("zone request\n%+v\n", req)
-		z, err := m.ZM.FindZoneByNameAndUser(req.ZoneName, "postables")
+		z, err := m.ZM.FindZoneByNameAndUser(req.ZoneName, req.UserName)
 		if err != nil {
 			return err
 		}

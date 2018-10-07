@@ -17,6 +17,7 @@ const (
 	defaultZoneName           = "myzone"
 	defaultZoneManagerKeyName = "postables-3072"
 	defaultZoneKeyName        = "postables-testkeydemo"
+	defaultZoneUserName       = "postables"
 )
 
 // GenerateTNSClient is used to generate a TNS Client
@@ -56,6 +57,7 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) error {
 		req = &ZoneRequest{
 			ZoneName:           defaultZoneName,
 			ZoneManagerKeyName: defaultZoneManagerKeyName,
+			UserName:           defaultZoneUserName,
 		}
 	}
 	s, err := c.Host.NewStream(context.Background(), peerID, "/zoneRequest/1.0.0")
