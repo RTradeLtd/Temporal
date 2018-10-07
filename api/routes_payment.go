@@ -24,10 +24,10 @@ func (api *API) GetSignedMessage(c *gin.Context) {
 		return
 	}
 	switch paymentType {
-	case "eth", "rtc":
+	case "0", "1":
 		break
 	default:
-		Fail(c, errors.New("payment_type must be 'eth' or 'rtc'"))
+		Fail(c, errors.New("payment_type must be '0 (rtc)' or '1 (eth)'"))
 		return
 	}
 	senderAddress, exists := c.GetPostForm("sender_address")
