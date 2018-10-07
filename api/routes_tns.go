@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/hex"
-	"fmt"
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -36,8 +35,7 @@ func (api *API) CreateZone(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	fmt.Println(1)
-	valid, err := api.um.CheckIfKeyOwnedByUser(zoneManagerKeyName, username)
+	valid, err := api.um.CheckIfKeyOwnedByUser(username, zoneManagerKeyName)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c, http.StatusBadRequest)
 		return
@@ -46,8 +44,7 @@ func (api *API) CreateZone(c *gin.Context) {
 		api.LogError(err, KeyUseError)(c, http.StatusBadRequest)
 		return
 	}
-	fmt.Println(2)
-	valid, err = api.um.CheckIfKeyOwnedByUser(zoneKeyName, username)
+	valid, err = api.um.CheckIfKeyOwnedByUser(username, zoneKeyName)
 	if err != nil {
 		api.LogError(err, KeySearchError)(c, http.StatusBadRequest)
 		return
@@ -56,7 +53,6 @@ func (api *API) CreateZone(c *gin.Context) {
 		api.LogError(err, KeyUseError)(c, http.StatusBadRequest)
 		return
 	}
-	fmt.Println(3)
 	zoneManagerPK, err := rManager.KeystoreManager.GetPrivateKeyByName(zoneManagerKeyName)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
