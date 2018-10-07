@@ -36,6 +36,7 @@ func (api *API) GetSignedMessage(c *gin.Context) {
 	creditValue, exists := c.GetPostForm("credit_value")
 	if !exists {
 		FailWithMissingField(c, "credit_value")
+		return
 	}
 	usdValueFloat, err := api.getUSDValue(paymentType)
 	if err != nil {
