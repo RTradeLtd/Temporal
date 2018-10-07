@@ -180,6 +180,13 @@ func (api *API) setupRoutes() {
 		auth.POST("/register", api.registerUserAccount)
 		auth.POST("/login", ginjwt.LoginHandler)
 	}
+	// PROTECTED ROUTES -- BEGIN
+	paymentsProtected := api.r.Group("/api/v1/payments")
+	paymentsProtected.Use(authWare.MiddlewareFunc())
+	paymentsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	paymentsProtected.POST("/create", api.CreatePayment)
+	paymentsProtected.POST("/request", api.GetSignedMessage)
+	paymentsProtected.GET("/deposit/address/:type", api.GetDepositAddress)
 
 	// statistics
 	statistics := v1.Group("/statistics").Use(authware...)
