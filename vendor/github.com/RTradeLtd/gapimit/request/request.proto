@@ -1,0 +1,10 @@
+syntax = 'proto3';
+
+package request;
+// ethAddress common.Address, paymentMethod uint8, paymentNumber, chargeAmountInWei *big.Int
+message SignRequest {
+    string address = 1;
+    string method = 2;
+    string number = 3;
+    string chargeAmount = 4;
+}

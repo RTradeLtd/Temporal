@@ -20,6 +20,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/gapi"
 	"github.com/RTradeLtd/Temporal/models"
 
 	"github.com/gin-gonic/gin"
@@ -39,6 +40,7 @@ type API struct {
 	im      *models.IpnsManager
 	ipfs    *rtfs.IpfsManager
 	l       *log.Logger
+	gc      *gapi.Client
 	service string
 }
 
@@ -115,6 +117,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		return nil, err
 	}
 
+	gc, err := gapi.NewGAPIClient(cfg, true)
+	if err != nil {
+		return nil, err
+	}
 	return &API{
 		cfg:     cfg,
 		service: "api",
@@ -124,6 +130,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		um:      models.NewUserManager(dbm.DB),
 		im:      models.NewIPNSManager(dbm.DB),
 		ipfs:    ipfsManager,
+		gc:      gc,
 	}, nil
 }
 
