@@ -96,7 +96,7 @@ func (qm *QueueManager) ProcessTNSZoneCreation(msgs <-chan amqp.Delivery, db *go
 			d.Ack(false)
 			continue
 		}
-		resp, err := rtfsManager.Shell.DagPut(marshaled, "json", "cbor")
+		resp, err := rtfsManager.Shell.DagPut(marshaled, "bytes", "cbor")
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
