@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/RTradeLtd/Temporal/rtfs"
+
 	ci "github.com/libp2p/go-libp2p-crypto"
 	peer "github.com/libp2p/go-libp2p-peer"
 	pstore "github.com/libp2p/go-libp2p-peerstore"
@@ -78,7 +80,16 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("resposne from zone request...\t%s\n", string(resp))
+	latestZoneHash := string(resp)
+	rtfsManager, err := rtfs.Initialize("", "")
+	if err != nil {
+		return err
+	}
+	z := Zone{}
+	if err = rtfsManager.Shell.DagGet(latestZoneHash, &z); err != nil {
+		return err
+	}
+	fmt.Printf("tns record retrieve from ipfs...\n%+v\n", z)
 	return nil
 }
 
