@@ -7,6 +7,8 @@ import (
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/jinzhu/gorm"
+
 	"github.com/RTradeLtd/Temporal/gapi"
 
 	"github.com/RTradeLtd/Temporal/models"
@@ -53,11 +55,10 @@ func (api *API) GetSignedMessage(c *gin.Context) {
 	}
 	pm := models.NewPaymentManager(api.dbm.DB)
 	paymentNumber, err := pm.GetLatestPaymentNumber(username)
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		api.LogError(err, PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
-	paymentNumber++
 	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
 	if err != nil {
 		Fail(c, err)
@@ -84,7 +85,28 @@ func (api *API) GetSignedMessage(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	Respond(c, http.StatusOK, gin.H{"response": resp})
+	paymentNumberString := strconv.FormatInt(paymentNumber, 10)
+
+	if _, err = pm.NewPayment(
+		paymentNumber,
+		paymentNumberString,
+		paymentNumberString,
+		usdValueFloat,
+		"ethereum",
+		paymentType,
+		username,
+	); err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	response := gin.H{
+		"charge_amount":  signRequest.ChargeAmount,
+		"method":         signRequest.Method,
+		"payment_number": paymentNumber,
+		"prefixed":       true,
+		"sig_parts":      resp,
+	}
+	Respond(c, http.StatusOK, gin.H{"response": response})
 }
 
 // CreatePayment is used to create a payment
