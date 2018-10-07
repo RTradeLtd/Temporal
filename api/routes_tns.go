@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-gonic/gin"
 	peer "github.com/libp2p/go-libp2p-peer"
@@ -82,6 +83,21 @@ func (api *API) CreateZone(c *gin.Context) {
 	)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	queueManager, err := queue.Initialize(queue.ZoneCreationQueue, api.cfg.RabbitMQ.URL, true, false)
+	if err != nil {
+		api.LogError(err, QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	zoneCreation := queue.ZoneCreation{
+		Name:           zone.Name,
+		ManagerKeyName: zoneManagerKeyName,
+		ZoneKeyName:    zoneKeyName,
+		UserName:       username,
+	}
+	if err = queueManager.PublishMessage(zoneCreation); err != nil {
+		api.LogError(err, QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": zone})
