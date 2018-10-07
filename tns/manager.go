@@ -1,28 +1,14 @@
 package tns
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 
-	libp2p "github.com/libp2p/go-libp2p"
 	ci "github.com/libp2p/go-libp2p-crypto"
-	host "github.com/libp2p/go-libp2p-host"
 	net "github.com/libp2p/go-libp2p-net"
-	peer "github.com/libp2p/go-libp2p-peer"
 	log "github.com/mgutz/logxi/v1"
 	ma "github.com/multiformats/go-multiaddr"
 )
-
-// Manager is used to manipulate a zone on TNS
-type Manager struct {
-	PrivateKey        ci.PrivKey
-	ZonePrivateKey    ci.PrivKey
-	RecordPrivateKeys map[string]ci.PrivKey
-	Zone              *Zone
-	Host              host.Host
-}
 
 // GenerateTNSManager is used to generate a TNS manager for a particular PKI space
 func GenerateTNSManager(zoneName string) (*Manager, error) {
@@ -51,8 +37,8 @@ func GenerateTNSManager(zoneName string) (*Manager, error) {
 	return &manager, nil
 }
 
-// RunTNS is used to run our TNS daemon
-func (m *Manager) RunTNS() {
+// RunTNSDaemon is used to run our TNS daemon
+func (m *Manager) RunTNSDaemon() {
 	m.Host.SetStreamHandler(
 		"/echo/1.0.0", func(s net.Stream) {
 			log.Info("new stream!")
@@ -65,42 +51,9 @@ func (m *Manager) RunTNS() {
 		})
 }
 
-// QueryTNS is used to query a peer for TNS name resolution
-func (m *Manager) QueryTNS(peerID peer.ID) error {
-	s, err := m.Host.NewStream(context.Background(), peerID, "/echo/1.0.0")
-	if err != nil {
-		return err
-	}
-	resp, err := ioutil.ReadAll(s)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("response\n%s", string(resp))
-	return nil
-}
-
 // MakeHost is used to generate the libp2p connection for our TNS daemon
-func (m *Manager) MakeHost(opts *HostOpts) error {
-	if opts == nil {
-		opts = &HostOpts{
-			IPAddress: "0.0.0.0",
-			Port:      "9999",
-			IPVersion: "ip4",
-			Protocol:  "tcp",
-		}
-	}
-	url := fmt.Sprintf(
-		"/%s/%s/%s/%s",
-		opts.IPVersion,
-		opts.IPAddress,
-		opts.Protocol,
-		opts.Port,
-	)
-	host, err := libp2p.New(
-		context.Background(),
-		libp2p.Identity(m.PrivateKey),
-		libp2p.ListenAddrStrings(url),
-	)
+func (m *Manager) MakeHost(pk ci.PrivKey, opts *HostOpts) error {
+	host, err := makeHost(pk, opts, false)
 	if err != nil {
 		return err
 	}
