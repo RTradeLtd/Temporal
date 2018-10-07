@@ -82,12 +82,21 @@ func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash
 
 // ConfirmPayment is used to mark a payment as confirmed
 func (pm *PaymentManager) ConfirmPayment(txHash string) (*Payments, error) {
-	p := Payments{}
-	if check := pm.DB.Where("tx_hash = ?", txHash).First(&p); check.Error != nil {
-		return nil, check.Error
+	p, err := pm.FindPaymentByTxHash(txHash)
+	if err != nil {
+		return nil, err
 	}
 	p.Confirmed = true
-	if check := pm.DB.Model(&p).Update("confirmed", p.Confirmed); check.Error != nil {
+	if check := pm.DB.Model(p).Update("confirmed", p.Confirmed); check.Error != nil {
+		return nil, check.Error
+	}
+	return p, nil
+}
+
+// FindPaymentByTxHash is used to find a payment by its tx hash
+func (pm *PaymentManager) FindPaymentByTxHash(txHash string) (*Payments, error) {
+	p := Payments{}
+	if check := pm.DB.Where("tx_hash = ?", txHash).First(&p); check.Error != nil {
 		return nil, check.Error
 	}
 	return &p, nil
