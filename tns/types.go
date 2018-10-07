@@ -1,6 +1,7 @@
 package tns
 
 import (
+	"github.com/RTradeLtd/Temporal/models"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	host "github.com/libp2p/go-libp2p-host"
 )
@@ -65,6 +66,7 @@ type Manager struct {
 	RecordPrivateKeys map[string]ci.PrivKey
 	Zone              *Zone
 	Host              host.Host
+	ZM                *models.ZoneManager
 }
 
 // Client is used to query a TNS daemon

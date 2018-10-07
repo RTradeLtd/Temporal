@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jinzhu/gorm"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	net "github.com/libp2p/go-libp2p-net"
 	ma "github.com/multiformats/go-multiaddr"
@@ -17,6 +18,7 @@ type ManagerOpts struct {
 	ManagerPK ci.PrivKey `json:"manager_pk"`
 	ZonePK    ci.PrivKey `json:"zone_pk"`
 	ZoneName  string     `json:"zone_name"`
+	DB        *gorm.DB   `json:"db"`
 }
 
 // GenerateTNSManager is used to generate a TNS manager for a particular PKI space
@@ -125,6 +127,11 @@ func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 			return err
 		}
 		fmt.Printf("zone request\n%+v\n", req)
+		z, err := m.ZM.FindZoneByNameAndUser(req.ZoneName, "postables")
+		if err != nil {
+			return err
+		}
+		fmt.Printf("zone file recovered from database\n%+v\n", z)
 	default:
 		fmt.Println("unsupported command type")
 		_, err := s.Write([]byte("message received thanks"))
