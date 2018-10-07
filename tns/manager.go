@@ -1,6 +1,7 @@
 package tns
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 
@@ -37,18 +38,31 @@ func GenerateTNSManager(zoneName string) (*Manager, error) {
 	return &manager, nil
 }
 
-// RunTNSDaemon is used to run our TNS daemon
+// RunTNSDaemon is used to run our TNS daemon, and setup the available stream handlers
 func (m *Manager) RunTNSDaemon() {
+	fmt.Println("generating echo stream")
 	m.Host.SetStreamHandler(
 		"/echo/1.0.0", func(s net.Stream) {
-			log.Info("new stream!")
-			if _, err := s.Write([]byte("hello")); err != nil {
+			log.Info("new stream detected")
+			if err := m.HandleQuery(s); err != nil {
 				log.Warn(err.Error())
 				s.Reset()
 			} else {
 				s.Close()
 			}
 		})
+}
+
+// HandleQuery is used to handle a query sent to tns
+func (m *Manager) HandleQuery(s net.Stream) error {
+	responseBuffer := bufio.NewReader(s)
+	bodyString, err := responseBuffer.ReadString('\n')
+	if err != nil {
+		return err
+	}
+	fmt.Printf("message sent with stream\n%s\n", bodyString)
+	_, err = s.Write([]byte("message received, thanks!"))
+	return err
 }
 
 // MakeHost is used to generate the libp2p connection for our TNS daemon

@@ -37,6 +37,10 @@ func (c *Client) QueryTNS(peerID peer.ID) error {
 		fmt.Println("failed to generate new stream ", err.Error())
 		return err
 	}
+	_, err = s.Write([]byte("test\n"))
+	if err != nil {
+		return err
+	}
 	resp, err := ioutil.ReadAll(s)
 	if err != nil {
 		return err
