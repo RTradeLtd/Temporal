@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/gapi"
+
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
@@ -64,11 +66,13 @@ func (api *API) GetSignedMessage(c *gin.Context) {
 		Number:       numberString,
 		ChargeAmount: chargeAmountString,
 	}
-	if dev {
-		Respond(c, http.StatusOK, gin.H{"response": signRequest})
+	gc, err := gapi.NewGAPIClient(api.cfg, true)
+	if err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	resp, err := api.gc.GetSignedMessage(context.Background(), &signRequest)
+	defer gc.GC.Close()
+	resp, err := gc.GetSignedMessage(context.Background(), &signRequest)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return

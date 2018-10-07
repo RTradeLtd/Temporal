@@ -39,5 +39,7 @@ func NewGAPIClient(cfg *config.TemporalConfig, insecure bool) (*Client, error) {
 
 // GetSignedMessage is used to return a signed a message from our GRPC API Server
 func (c *Client) GetSignedMessage(ctx context.Context, req *request.SignRequest) (*response.SignResponse, error) {
+	sconn := pb.NewSignerClient(c.GC)
+	c.SC = sconn
 	return c.SC.GetSignedMessage(ctx, req)
 }
