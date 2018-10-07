@@ -109,6 +109,7 @@ type Manager struct {
 	RecordPrivateKeys map[string]ci.PrivKey
 	Zone              *Zone
 	Host              host.Host
+	ZM                *models.ZoneManager
 }
 
 // Client is used to query a TNS daemon
