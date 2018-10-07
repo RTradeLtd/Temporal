@@ -95,3 +95,23 @@ type HostOpts struct {
 	IPVersion string `json:"ip_version"`
 	Protocol  string `json:"protocol"`
 }
+
+// Manager is used to manipulate a zone on TNS and run a daemon
+type Manager struct {
+	PrivateKey        ci.PrivKey
+	ZonePrivateKey    ci.PrivKey
+	RecordPrivateKeys map[string]ci.PrivKey
+	Zone              *Zone
+	Host              host.Host
+}
+
+// Client is used to query a TNS daemon
+type Client struct {
+	PrivateKey ci.PrivKey
+	Host       host.Host
+}
+
+// Host is an interface used by a TNS client or daemon
+type Host interface {
+	MakeHost(pk ci.PrivKey, opts *HostOpts) error
+}

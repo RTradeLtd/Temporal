@@ -1,7 +1,6 @@
 package tns_test
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
@@ -88,7 +87,7 @@ func TestTNS_HostMultiAddress(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = manager.MakeHost(nil); err != nil {
+	if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = manager.HostMultiAddress(); err != nil {
@@ -101,7 +100,7 @@ func TestTNS_ReachableAddress(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = manager.MakeHost(nil); err != nil {
+	if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
 	count := 0
@@ -119,17 +118,26 @@ func TestTNS_ReachableAddress(t *testing.T) {
 	}
 }
 
-func TestTNS_RunTNSFail(t *testing.T) {
-	manager, err := tns.GenerateTNSManager(testZoneName)
+func TestTNS_Integration(t *testing.T) {
+	daemon, err := tns.GenerateTNSManager(testZoneName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = manager.MakeHost(nil); err != nil {
+	if err = daemon.MakeHost(daemon.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
-	defer manager.Host.Close()
-	go manager.RunTNS()
-	if err = manager.QueryTNS(manager.Host.ID()); err == nil {
-		t.Fatal(errors.New("no error encountered when one should've been"))
+	defer daemon.Host.Close()
+	go daemon.RunTNSDaemon()
+	client, err := tns.GenerateTNSClient(true, nil)
+	if err != nil {
+		t.Fatal(err)
 	}
+	if err = client.MakeHost(client.PrivateKey, nil); err != nil {
+		t.Fatal(err)
+	}
+	defer client.Host.Close()
+	if err = client.QueryTNS(daemon.Host.ID()); err != nil {
+		t.Fatal(err)
+	}
+	select {}
 }
