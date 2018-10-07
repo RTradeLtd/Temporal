@@ -36,26 +36,31 @@ func (pm *PaymentManager) GetLatestPaymentNumber(username string) (int64, error)
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return 0, check.Error
 	}
+
 	if check.Error == gorm.ErrRecordNotFound {
 		return 0, nil
 	}
-	return p.Number, nil
+	return p.Number + 1, nil
 }
 
 // NewPayment is used to create a payment in our database
 func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash string, usdValue float64, blockchain string, paymentType string, username string) (*Payments, error) {
 	p := Payments{}
-	check := pm.DB.Where("tx_hash = ?", txHash).First(&p)
-	if check.Error == nil {
-		return nil, errors.New("payment with tx hash already exists")
-	} else if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+	// check for a payment with the number
+	check := pm.DB.Where("number = ?", number).First(&p)
+	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
-	check = pm.DB.Where("number = ?", number).First(&p)
 	if check.Error == nil {
-		return nil, errors.New("payment with number already exists")
-	} else if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+		return nil, errors.New("payment with number already exists in database")
+	}
+	// check for a payment with the tx hash
+	check = pm.DB.Where("tx_hash = ?", txHash).First(&p)
+	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
+	}
+	if check.Error == nil {
+		return nil, errors.New("paymnet with tx hash already exists in database")
 	}
 	p = Payments{
 		DepositAddress: depositAddress,
@@ -65,6 +70,7 @@ func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash
 		Type:           paymentType,
 		UserName:       username,
 		Confirmed:      false,
+		Number:         number,
 	}
 
 	if check := pm.DB.Create(&p); check.Error != nil {
