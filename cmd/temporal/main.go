@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/RTradeLtd/Temporal/tns"
+
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
@@ -24,6 +26,60 @@ var (
 )
 
 var commands = map[string]cmd.Cmd{
+	"tns": cmd.Cmd{
+		Blurb:         "run a tns daemon or client",
+		Description:   "allows running a tns daemon to manage a zone, or a client to query a dameon",
+		ChildRequired: true,
+		Children: map[string]cmd.Cmd{
+			"daemon": cmd.Cmd{
+				Blurb:       "run tns daemon",
+				Description: "runs a tns daemon and zone manager",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					manager, err := tns.GenerateTNSManager("some-zone")
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
+						log.Fatal(err)
+					}
+					defer manager.Host.Close()
+					manager.RunTNSDaemon()
+					lim := len(manager.Host.Addrs())
+					count := 0
+					for count < lim {
+						fmt.Println(manager.ReachableAddress(count))
+						count++
+					}
+					select {}
+				},
+			},
+			"client": cmd.Cmd{
+				Blurb:       "run tns client",
+				Description: "run a tns client to query a zone manager",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					peerAddr := os.Getenv("PEER_ADDR")
+					if peerAddr == "" {
+						log.Fatal("PEER_ADDR env var is empty")
+					}
+					client, err := tns.GenerateTNSClient(true, nil)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = client.MakeHost(client.PrivateKey, nil); err != nil {
+						log.Fatal(err)
+					}
+					defer client.Host.Close()
+					id, err := client.AddPeerToPeerStore(peerAddr)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = client.QueryTNS(id); err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+		},
+	},
 	"api": cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",

@@ -5,6 +5,15 @@ import (
 	host "github.com/libp2p/go-libp2p-host"
 )
 
+const (
+	// CommandEcho is a test command used to test if we have successfully connected to a tns daemon
+	CommandEcho = "/echo/1.0.0"
+)
+
+var (
+	commands = []string{CommandEcho}
+)
+
 // Zone is a mapping of human readable names, mapped to a public key. In order to retrieve the latest
 type Zone struct {
 	Manager   *ZoneManager `json:"zone_manager"`
