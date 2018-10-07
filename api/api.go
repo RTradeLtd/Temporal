@@ -28,6 +28,7 @@ import (
 
 var (
 	xssMdlwr xss.XssMw
+	dev      = true
 )
 
 // API is our API service

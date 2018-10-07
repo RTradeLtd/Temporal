@@ -7,8 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var dev = false
-
 // GetUploadsFromDatabase is used to read a list of uploads from our database
 func (api *API) getUploadsFromDatabase(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
