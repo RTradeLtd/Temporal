@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 
 	libp2p "github.com/libp2p/go-libp2p"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	host "github.com/libp2p/go-libp2p-host"
 	net "github.com/libp2p/go-libp2p-net"
+	peer "github.com/libp2p/go-libp2p-peer"
 	log "github.com/mgutz/logxi/v1"
 	ma "github.com/multiformats/go-multiaddr"
 )
@@ -61,6 +63,20 @@ func (m *Manager) RunTNS() {
 				s.Close()
 			}
 		})
+}
+
+// QueryTNS is used to query a peer for TNS name resolution
+func (m *Manager) QueryTNS(peerID peer.ID) error {
+	s, err := m.Host.NewStream(context.Background(), peerID, "/echo/1.0.0")
+	if err != nil {
+		return err
+	}
+	resp, err := ioutil.ReadAll(s)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("response\n%s", string(resp))
+	return nil
 }
 
 // MakeHost is used to generate the libp2p connection for our TNS daemon

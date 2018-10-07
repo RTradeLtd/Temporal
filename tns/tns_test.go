@@ -1,6 +1,7 @@
 package tns_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -118,7 +119,7 @@ func TestTNS_ReachableAddress(t *testing.T) {
 	}
 }
 
-func TestTNS_RunTNS(t *testing.T) {
+func TestTNS_RunTNSFail(t *testing.T) {
 	manager, err := tns.GenerateTNSManager(testZoneName)
 	if err != nil {
 		t.Fatal(err)
@@ -126,11 +127,9 @@ func TestTNS_RunTNS(t *testing.T) {
 	if err = manager.MakeHost(nil); err != nil {
 		t.Fatal(err)
 	}
-	manager.RunTNS()
-	count := 0
-	max := 1000
-	for count <= max {
-		count++
+	defer manager.Host.Close()
+	go manager.RunTNS()
+	if err = manager.QueryTNS(manager.Host.ID()); err == nil {
+		t.Fatal(errors.New("no error encountered when one should've been"))
 	}
-	manager.Host.Close()
 }
