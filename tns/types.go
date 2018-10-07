@@ -11,8 +11,8 @@ type Zone struct {
 	// A human readable name for this zone
 	Name string `json:"name"`
 	// A map of records managed by this zone
-	Records                 map[string]*Record   `json:"records"`
-	RecordNamesToPublicKeys map[string]ci.PubKey `json:"record_names_to_public_keys"`
+	Records                 map[ci.PubKey]*Record `json:"records"`
+	RecordNamesToPublicKeys map[string]ci.PubKey  `json:"record_names_to_public_keys"`
 }
 
 // Record is a particular name entry managed by a zone
