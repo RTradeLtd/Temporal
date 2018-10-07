@@ -151,27 +151,48 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		return
 	}
 	hEncoded := resp.GetH()
+	rEncoded := resp.GetR()
+	sEncoded := resp.GetS()
 	hDecoded, err := hex.DecodeString(hEncoded)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	var h [32]byte
-	if len(hDecoded) > 32 || len(hDecoded) < 32 {
-		err := errors.New("h must be 32 bytes")
+	rDecoded, err := hex.DecodeString(rEncoded)
+	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	sDecoded, err := hex.DecodeString(sEncoded)
+	if err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	if len(rEncoded) != len(sEncoded) && len(rEncoded) != len(hEncoded) {
+		err = errors.New("h,r,s must be all be 32 bytes")
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	var h, r, s [32]byte
 	for k, v := range hDecoded {
 		h[k] = v
 	}
+	for k, v := range rDecoded {
+		r[k] = v
+	}
+	for k, v := range sDecoded {
+		s[k] = v
+	}
+
 	response := gin.H{
 		"charge_amount":  signRequest.ChargeAmount,
 		"method":         signRequest.Method,
 		"payment_number": paymentNumber,
 		"prefixed":       true,
 		"h":              h,
-		"sig_parts":      resp,
+		"r":              r,
+		"s":              s,
+		"v":              resp.GetV(),
 	}
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
