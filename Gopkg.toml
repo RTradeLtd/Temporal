@@ -8,7 +8,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/config"
-  branch = "master"
+  version = "v1.0.4-rc1"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"
