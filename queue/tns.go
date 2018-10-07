@@ -87,7 +87,16 @@ func (qm *QueueManager) ProcessTNSZoneCreation(msgs <-chan amqp.Delivery, db *go
 			PublicKey: zoneManagerPK.GetPublic(),
 		}
 		z.Name = req.Name
-		resp, err := rtfsManager.Shell.DagPut(z, "json", "cbor")
+		marshaled, err := json.Marshal(&z)
+		if err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("failed to marshaled tns zone")
+			d.Ack(false)
+			continue
+		}
+		resp, err := rtfsManager.Shell.DagPut(marshaled, "json", "cbor")
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
