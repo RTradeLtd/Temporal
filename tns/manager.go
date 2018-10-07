@@ -2,6 +2,7 @@ package tns
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -44,7 +45,18 @@ func (m *Manager) RunTNSDaemon() {
 	m.Host.SetStreamHandler(
 		"/echo/1.0.0", func(s net.Stream) {
 			log.Info("new stream detected")
-			if err := m.HandleQuery(s); err != nil {
+			if err := m.HandleQuery(s, "echo"); err != nil {
+				log.Warn(err.Error())
+				s.Reset()
+			} else {
+				s.Close()
+			}
+		})
+	fmt.Println("generating tns query stream")
+	m.Host.SetStreamHandler(
+		"/tns/1.0.0", func(s net.Stream) {
+			log.Info("new stream detected")
+			if err := m.HandleQuery(s, "tns"); err != nil {
 				log.Warn(err.Error())
 				s.Reset()
 			} else {
@@ -54,14 +66,31 @@ func (m *Manager) RunTNSDaemon() {
 }
 
 // HandleQuery is used to handle a query sent to tns
-func (m *Manager) HandleQuery(s net.Stream) error {
+func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 	responseBuffer := bufio.NewReader(s)
-	bodyString, err := responseBuffer.ReadString('\n')
-	if err != nil {
+	switch cmd {
+	case "echo":
+		bodyString, err := responseBuffer.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		fmt.Printf("message sent with stream\n%s\n", bodyString)
+	case "tns":
+		bodyBytes, err := responseBuffer.ReadBytes('\n')
+		if err != nil {
+			return err
+		}
+		req := RecordRequest{}
+		if err = json.Unmarshal(bodyBytes, &req); err != nil {
+			return err
+		}
+		fmt.Printf("record request\n%+v\n", req)
+	default:
+		fmt.Println("unsupported command type")
+		_, err := s.Write([]byte("message received thanks"))
 		return err
 	}
-	fmt.Printf("message sent with stream\n%s\n", bodyString)
-	_, err = s.Write([]byte("message received, thanks!"))
+	_, err := s.Write([]byte("message received, thanks!"))
 	return err
 }
 
