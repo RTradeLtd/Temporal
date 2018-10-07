@@ -14,6 +14,11 @@ var (
 	commands = []string{CommandEcho}
 )
 
+// RecordRequest is a message sent when requeting a record form TNS, the response is simply Record
+type RecordRequest struct {
+	RecordName string `json:"record_name"`
+}
+
 // Zone is a mapping of human readable names, mapped to a public key. In order to retrieve the latest
 type Zone struct {
 	Manager   *ZoneManager `json:"zone_manager"`
