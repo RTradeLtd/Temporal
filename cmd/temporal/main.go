@@ -91,8 +91,11 @@ var commands = map[string]cmd.Cmd{
 			if err != nil {
 				log.Fatal(err)
 			}
-
-			addr := fmt.Sprintf("%s:6767", args["listenAddress"])
+			port := os.Getenv("API_PORT")
+			if port == "" {
+				port = "6767"
+			}
+			addr := fmt.Sprintf("%s:%s", args["listenAddress"], port)
 			if args["certFilePath"] == "" || args["keyFilePath"] == "" {
 				fmt.Println("TLS config incomplete - starting API service without TLS...")
 				err = service.ListenAndServe(addr, nil)
