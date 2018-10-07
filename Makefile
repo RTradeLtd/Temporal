@@ -122,7 +122,7 @@ vendor:
 	git clone https://github.com/ipfs/go-ipfs.git vendor/github.com/ipfs/go-ipfs
 	( cd vendor/github.com/ipfs/go-ipfs ; git checkout $(IPFSVERSION) ; gx install --local --nofancy )
 	mv vendor/github.com/ipfs/go-ipfs/vendor/* vendor
-
+	
 	# Remove problematic dependencies
 	find . -name test-vectors -type d -exec rm -r {} +
 	@echo "===================          done           ==================="
