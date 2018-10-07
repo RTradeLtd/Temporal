@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 	"net/http"
 	"strconv"
@@ -169,7 +170,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	if len(rEncoded) != len(sEncoded) && len(rEncoded) != len(hEncoded) {
+	if len(rDecoded) != len(sDecoded) && len(rDecoded) != len(hDecoded) {
 		err = errors.New("h,r,s must be all be 32 bytes")
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
@@ -191,6 +192,9 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	formattedH := fmt.Sprintf("0x%s", hEncoded)
+	formattedR := fmt.Sprintf("0x%s", rEncoded)
+	formattedS := fmt.Sprintf("0x%s", sEncoded)
 	response := gin.H{
 		"charge_amount_big": chargeAmountBig,
 		"method":            uint8(method),
@@ -200,6 +204,11 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		"r":                 r,
 		"s":                 s,
 		"v":                 uint8(vUint),
+		"formatted": gin.H{
+			"h": formattedH,
+			"r": formattedR,
+			"s": formattedS,
+		},
 	}
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
