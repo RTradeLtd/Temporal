@@ -85,11 +85,11 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) error {
 	if err != nil {
 		return err
 	}
-	z := Zone{}
-	if err = rtfsManager.Shell.DagGet(latestZoneHash, &z); err != nil {
+	var intf map[string]interface{}
+	if err = rtfsManager.Shell.DagGet(latestZoneHash, &intf); err != nil {
 		return err
 	}
-	fmt.Printf("tns record retrieve from ipfs...\n%+v\n", z)
+	fmt.Printf("tns record retrieve from ipfs...\n%+v\n", intf)
 	return nil
 }
 
