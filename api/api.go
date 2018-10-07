@@ -38,6 +38,7 @@ type API struct {
 	um      *models.UserManager
 	im      *models.IpnsManager
 	ipfs    *rtfs.IpfsManager
+	zm      *models.ZoneManager
 	l       *log.Logger
 	service string
 }
@@ -124,6 +125,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		um:      models.NewUserManager(dbm.DB),
 		im:      models.NewIPNSManager(dbm.DB),
 		ipfs:    ipfsManager,
+		zm:      models.NewZoneManager(dbm.DB),
 	}, nil
 }
 
@@ -179,6 +181,18 @@ func (api *API) setupRoutes() {
 	{
 		statistics.GET("/stats", api.getStats)
 	}
+	tnsProtected := api.r.Group("/api/v1/tns")
+	tnsProtected.Use(authWare.MiddlewareFunc())
+	tnsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	tnsProtected.POST("/zone/create", api.CreateZone)
+
+	accountProtected := api.r.Group("/api/v1/account")
+	accountProtected.Use(authWare.MiddlewareFunc())
+	accountProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	accountProtected.POST("password/change", api.changeAccountPassword)
+	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
+	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
+	accountProtected.GET("/credits/available", api.getCredits)
 
 	// payments
 	payments := v1.Group("/payments", authware...)
