@@ -202,6 +202,14 @@ func (api *API) setupRoutes() {
 	tnsProtected.POST("/record/create", api.addRecordToZone)
 	tnsProtected.POST("/query/zone-request", api.performZoneRequest)
 
+	accountProtected := api.r.Group("/api/v1/account")
+	accountProtected.Use(authWare.MiddlewareFunc())
+	accountProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	accountProtected.POST("password/change", api.changeAccountPassword)
+	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
+	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
+	accountProtected.GET("/credits/available", api.getCredits)
+
 	// payments
 	payments := v1.Group("/payments", authware...)
 	{
