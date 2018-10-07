@@ -107,9 +107,20 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	} else {
 		logger.Info("secure database connection established")
 	}
-	gc, err := gapi.NewGAPIClient(cfg, true)
-	if err != nil {
-		return nil, err
+	if !dev {
+		gc, err := gapi.NewGAPIClient(cfg, true)
+		if err != nil {
+			return nil, err
+		}
+		return &API{
+			cfg:     cfg,
+			service: "api",
+			r:       router,
+			l:       logger,
+			dbm:     dbm,
+			um:      models.NewUserManager(dbm.DB),
+			gc:      gc,
+		}, nil
 	}
 	return &API{
 		cfg:     cfg,
@@ -118,7 +129,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		l:       logger,
 		dbm:     dbm,
 		um:      models.NewUserManager(dbm.DB),
-		gc:      gc,
 	}, nil
 }
 
