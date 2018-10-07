@@ -12,27 +12,46 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// ManagerOpts defines options for controlling our TNS Manager daemon
+type ManagerOpts struct {
+	ManagerPK ci.PrivKey `json:"manager_pk"`
+	ZonePK    ci.PrivKey `json:"zone_pk"`
+	ZoneName  string     `json:"zone_name"`
+}
+
 // GenerateTNSManager is used to generate a TNS manager for a particular PKI space
-func GenerateTNSManager(zoneName string) (*Manager, error) {
-	managerPK, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
-	if err != nil {
-		return nil, err
-	}
-	zonePK, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
-	if err != nil {
-		return nil, err
+func GenerateTNSManager(opts *ManagerOpts) (*Manager, error) {
+	var (
+		managerPK ci.PrivKey
+		zonePK    ci.PrivKey
+		err       error
+	)
+	if opts == nil {
+		managerPK, _, err = ci.GenerateKeyPair(ci.Ed25519, 256)
+		if err != nil {
+			return nil, err
+		}
+		zonePK, _, err = ci.GenerateKeyPair(ci.Ed25519, 256)
+		if err != nil {
+			return nil, err
+		}
+		opts = &ManagerOpts{
+			ManagerPK: managerPK,
+			ZonePK:    zonePK,
+			ZoneName:  "default",
+		}
 	}
 	zoneManager := ZoneManager{
-		PublicKey: managerPK.GetPublic(),
+		PublicKey: opts.ManagerPK.GetPublic(),
 	}
 	zone := Zone{
-		Name:      zoneName,
-		PublicKey: zonePK.GetPublic(),
+		Name:      opts.ZoneName,
+		PublicKey: opts.ZonePK.GetPublic(),
 		Manager:   &zoneManager,
 	}
 	manager := Manager{
-		PrivateKey:        managerPK,
-		ZonePrivateKey:    zonePK,
+		PrivateKey:        opts.ManagerPK,
+		ZonePrivateKey:    opts.ZonePK,
 		RecordPrivateKeys: nil,
 		Zone:              &zone,
 	}

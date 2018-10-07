@@ -14,6 +14,7 @@ type TemporalConfig struct {
 	Wallets     `json:"wallets,omitempty"`
 	APIKeys     `json:"api_keys,omitempty"`
 	Endpoints   `json:"endpoints,omitempty"`
+	TNS         `json:"tsn,omitempty"`
 }
 
 // API configures the Temporal API
@@ -144,4 +145,11 @@ type Endpoints struct {
 		DB               string `json:"db"`
 		UploadCollection string `json:"uploads"`
 	} `json:"mongodb"`
+}
+
+// TNS configures our TNS manager
+type TNS struct {
+	ZoneName           string `json:"zone_name"`
+	ZoneManagerKeyName string `json:"zone_manager_key_name"`
+	ZoneKeyName        string `json:"zone_key_name"`
 }
