@@ -27,6 +27,8 @@ var (
 	IpfsKeyCreationQueue = "ipfs-key-creation-queue"
 	// PaymentCreationQueue is a queue used to handle payment processing
 	PaymentCreationQueue = "payment-creation-queue"
+	// PaymentConfirmationQueue is a queue used to handle payment confirmations
+	PaymentConfirmationQueue = "payment-confirmation-queue"
 	// AdminEmail is the email used to notify RTrade about any critical errors
 	AdminEmail = "temporal.reports@rtradetechnologies.com"
 	// IpfsPinFailedContent is a to-be formatted message sent on IPFS pin failures
@@ -150,4 +152,10 @@ type PaymentCreation struct {
 	TxHash     string `json:"tx_hash"`
 	Blockchain string `json:"blockchain"`
 	UserName   string `json:"user_name"`
+}
+
+// PaymentConfirmation is a message used to confirm a payment
+type PaymentConfirmation struct {
+	UserName      string `json:"user_name"`
+	PaymentNumber int64  `json:"payment_number"`
 }

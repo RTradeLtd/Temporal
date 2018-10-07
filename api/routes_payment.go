@@ -47,6 +47,24 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	paymentConfirmation := queue.PaymentConfirmation{
+		UserName:      username,
+		PaymentNumber: paymentNumberInt,
+	}
+	qm, err := queue.Initialize(
+		queue.PaymentConfirmationQueue,
+		api.cfg.RabbitMQ.URL,
+		true,
+		false,
+	)
+	if err != nil {
+		api.LogError(err, QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err = qm.PublishMessage(paymentConfirmation); err != nil {
+		api.LogError(err, QueuePublishError)(c, http.StatusBadRequest)
+		return
+	}
 	Respond(c, http.StatusOK, gin.H{"response": payment})
 }
 
