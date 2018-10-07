@@ -184,16 +184,17 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	for k, v := range sDecoded {
 		s[k] = v
 	}
-
+	chargeAmountBig := utils.FloatToBigInt(chargeAmountFloat)
 	response := gin.H{
-		"charge_amount":  signRequest.ChargeAmount,
-		"method":         signRequest.Method,
-		"payment_number": paymentNumber,
-		"prefixed":       true,
-		"h":              h,
-		"r":              r,
-		"s":              s,
-		"v":              resp.GetV(),
+		"charge_amount_big": chargeAmountBig,
+		"charge_amount":     signRequest.ChargeAmount,
+		"method":            signRequest.Method,
+		"payment_number":    paymentNumber,
+		"prefixed":          true,
+		"h":                 h,
+		"r":                 r,
+		"s":                 s,
+		"v":                 resp.GetV(),
 	}
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
