@@ -133,23 +133,28 @@ func (api *API) ListenAndServe(addr string, tls *TLSConfig) error {
 
 // setupRoutes is used to setup all of our api routes
 func (api *API) setupRoutes() {
-	// load xss mitigation middleware
-	api.r.Use(xssMdlwr.RemoveXss())
-	// set a connection limit
-	api.r.Use(limit.MaxAllowed(20))
-	// prevent mine content sniffing
-	api.r.Use(helmet.NoSniff())
-	// load cors
-	api.r.Use(middleware.CORSMiddleware())
+	// set up defaults
+	api.r.Use(
+		xssMdlwr.RemoveXss(),
+		limit.MaxAllowed(20),
+		helmet.NoSniff(),
+		middleware.CORSMiddleware())
 
-	authWare := middleware.JwtConfigGenerate(api.cfg.API.JwtKey,
-		api.dbm.DB, api.l)
+	// set up middleware
+	ginjwt := middleware.JwtConfigGenerate(api.cfg.API.JwtKey, api.dbm.DB, api.l)
+	authware := []gin.HandlerFunc{
+		ginjwt.MiddlewareFunc(),
+		middleware.APIRestrictionMiddleware(api.dbm.DB),
+	}
 
-	statsProtected := api.r.Group("/api/v1/statistics")
-	statsProtected.Use(authWare.MiddlewareFunc())
-	statsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
-	statsProtected.Use(stats.RequestStats())
-	statsProtected.GET("/stats", func(c *gin.Context) { // admin locked
+	v1 := api.r.Group("/api/v1")
+
+	auth := v1.Group("/auth")
+	auth.POST("/register", api.registerUserAccount)
+	auth.POST("/login", ginjwt.LoginHandler)
+
+	statsProtected := v1.Group("/statistics").Use(authware...).Use(stats.RequestStats())
+	statsProtected.GET("/stats", func(c *gin.Context) {
 		username := GetAuthenticatedUserFromContext(c)
 		if err := api.validateAdminRequest(username); err != nil {
 			FailNotAuthorized(c, UnAuthorizedAdminAccess)
@@ -158,28 +163,18 @@ func (api *API) setupRoutes() {
 		c.JSON(http.StatusOK, stats.Report())
 	})
 
-	auth := api.r.Group("/api/v1/auth")
-	auth.POST("/register", api.registerUserAccount)
-	auth.POST("/login", authWare.LoginHandler)
-
 	// PROTECTED ROUTES -- BEGIN
-	paymentsProtected := api.r.Group("/api/v1/payments")
-	paymentsProtected.Use(authWare.MiddlewareFunc())
-	paymentsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	paymentsProtected := v1.Group("/payments", authware...)
 	paymentsProtected.POST("/create", api.CreatePayment)
 	paymentsProtected.GET("/deposit/address/:type", api.GetDepositAddress)
 
-	accountProtected := api.r.Group("/api/v1/account")
-	accountProtected.Use(authWare.MiddlewareFunc())
-	accountProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	accountProtected := v1.Group("/account", authware...)
 	accountProtected.POST("password/change", api.changeAccountPassword)
 	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
 	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
 	accountProtected.GET("/credits/available", api.getCredits)
 
-	ipfsProtected := api.r.Group("/api/v1/ipfs")
-	ipfsProtected.Use(authWare.MiddlewareFunc())
-	ipfsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	ipfsProtected := v1.Group("/ipfs", authware...)
 	ipfsProtected.POST("/pubsub/publish/:topic", api.ipfsPubSubPublish)
 	ipfsProtected.POST("/calculate-content-hash", api.calculateContentHashForFile)
 	ipfsProtected.GET("/pins", api.getLocalPins) // admin locked
@@ -190,9 +185,7 @@ func (api *API) setupRoutes() {
 	ipfsProtected.POST("/add-file", api.addFileLocally)
 	ipfsProtected.POST("/add-file/advanced", api.addFileLocallyAdvanced)
 
-	ipfsPrivateProtected := api.r.Group("/api/v1/ipfs-private")
-	ipfsPrivateProtected.Use(authWare.MiddlewareFunc())
-	ipfsPrivateProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	ipfsPrivateProtected := v1.Group("/ipfs-private", authware...)
 	ipfsPrivateProtected.POST("/new/network", api.createHostedIPFSNetworkEntryInDatabase)                // admin locked
 	ipfsPrivateProtected.GET("/network/:name", api.getIPFSPrivateNetworkByName)                          // admin locked
 	ipfsPrivateProtected.POST("/ipfs/check-for-pin/:hash", api.checkLocalNodeForPinForHostedIPFSNetwork) // admin locked
@@ -206,36 +199,27 @@ func (api *API) setupRoutes() {
 	ipfsPrivateProtected.POST("/ipfs/add-file/advanced", api.addFileToHostedIPFSNetworkAdvanced)
 	ipfsPrivateProtected.POST("/ipns/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
 
-	ipnsProtected := api.r.Group("/api/v1/ipns")
-	ipnsProtected.Use(authWare.MiddlewareFunc())
-	ipnsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	ipnsProtected := v1.Group("/ipns", authware...)
 	ipnsProtected.POST("/publish/details", api.publishToIPNSDetails)
 	ipnsProtected.POST("/dnslink/aws/add", api.generateDNSLinkEntry) // admin locked
 	ipnsProtected.GET("/records", api.getIPNSRecordsPublishedByUser)
 
-	clusterProtected := api.r.Group("/api/v1/ipfs-cluster")
-	clusterProtected.Use(authWare.MiddlewareFunc())
-	clusterProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	clusterProtected := v1.Group("/ipfs-cluster", authware...)
 	clusterProtected.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
 	clusterProtected.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
 	clusterProtected.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
 	clusterProtected.GET("/status-local", api.fetchLocalClusterStatus)                 // admin locked
 	clusterProtected.POST("/pin/:hash", api.pinHashToCluster)
 
-	databaseProtected := api.r.Group("/api/v1/database")
-	databaseProtected.Use(authWare.MiddlewareFunc())
-	databaseProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	databaseProtected := v1.Group("/database", authware...)
 	databaseProtected.GET("/uploads", api.getUploadsFromDatabase)  // admin locked
 	databaseProtected.GET("/uploads/:user", api.getUploadsForUser) // partial admin locked
 
-	frontendProtected := api.r.Group("/api/v1/frontend/")
-	frontendProtected.Use(authWare.MiddlewareFunc())
+	frontendProtected := v1.Group("/frontend", authware...)
 	frontendProtected.GET("/cost/calculate/:hash/:holdtime", api.calculatePinCost)
 	frontendProtected.POST("/cost/calculate/file", api.calculateFileCost)
 
-	adminProtected := api.r.Group("/api/v1/admin")
-	adminProtected.Use(authWare.MiddlewareFunc())
-	adminProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
+	adminProtected := v1.Group("/admin", authware...)
 	adminProtected.POST("/utils/file-size-check", CalculateFileSize)
 	mini := adminProtected.Group("/mini")
 	mini.POST("/create/bucket", api.makeBucket)
