@@ -138,7 +138,8 @@ func (api *API) setupRoutes() {
 		xssMdlwr.RemoveXss(),
 		limit.MaxAllowed(20),
 		helmet.NoSniff(),
-		middleware.CORSMiddleware())
+		middleware.CORSMiddleware(),
+		stats.RequestStats())
 
 	// set up middleware
 	ginjwt := middleware.JwtConfigGenerate(api.cfg.API.JwtKey, api.dbm.DB, api.l)
@@ -153,7 +154,7 @@ func (api *API) setupRoutes() {
 	auth.POST("/register", api.registerUserAccount)
 	auth.POST("/login", ginjwt.LoginHandler)
 
-	statsProtected := v1.Group("/statistics").Use(authware...).Use(stats.RequestStats())
+	statsProtected := v1.Group("/statistics").Use(authware...)
 	statsProtected.GET("/stats", func(c *gin.Context) {
 		username := GetAuthenticatedUserFromContext(c)
 		if err := api.validateAdminRequest(username); err != nil {
