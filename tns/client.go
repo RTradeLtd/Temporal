@@ -85,7 +85,7 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) error {
 	if err != nil {
 		return err
 	}
-	var intf map[string]interface{}
+	var intf interface{}
 	if err = rtfsManager.Shell.DagGet(latestZoneHash, &intf); err != nil {
 		return err
 	}
