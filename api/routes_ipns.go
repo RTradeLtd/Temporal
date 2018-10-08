@@ -126,6 +126,22 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": "ipns entry creation sent to backend"})
 }
 
+// getIPNSRecordsPublishedByUser is used to fetch IPNS records published by a user
+func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	records, err := api.im.FindByUserName(username)
+	if err != nil {
+		api.LogError(err, IpnsRecordSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	// check if records is nil, or no entries. For len we must dereference first
+	if records == nil || len(*records) == 0 {
+		Respond(c, http.StatusOK, gin.H{"response": "no ipns records found"})
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": records})
+}
+
 // GenerateDNSLinkEntry is used to generate a DNS link entry
 func (api *API) generateDNSLinkEntry(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)

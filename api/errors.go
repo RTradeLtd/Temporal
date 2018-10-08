@@ -85,6 +85,8 @@ const (
 	CallCostCalculationError = "unable to calculate api call cost"
 	// CreditRefundError is an error message used when we are unable to refund a users credits
 	CreditRefundError = "failed to refund credits for user"
+	// IpnsRecordSearchError is an error message given to users when we can't search for any records
+	IpnsRecordSearchError = "failed to search for IPNS records, user likely has published none"
 	// UnAuthorizedAdminAccess is an error message used whena user attempts to access an administrative route
 	UnAuthorizedAdminAccess = "user is not an administrator"
 )
