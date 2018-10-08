@@ -15,8 +15,8 @@ func Test_status(t *testing.T) {
 		wantStatus int
 	}{
 		{"given code", args{[]int{404}}, 404},
-		{"not given code", args{[]int{}}, http.StatusInternalServerError},
-		{"given nil", args{nil}, http.StatusInternalServerError},
+		{"not given code", args{[]int{}}, http.StatusBadRequest},
+		{"given nil", args{nil}, http.StatusBadRequest},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

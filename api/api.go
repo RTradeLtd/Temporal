@@ -35,6 +35,7 @@ type API struct {
 	cfg     *config.TemporalConfig
 	dbm     *database.DatabaseManager
 	um      *models.UserManager
+	im      *models.IpnsManager
 	l       *log.Logger
 	service string
 }
@@ -112,6 +113,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		l:       logger,
 		dbm:     dbm,
 		um:      models.NewUserManager(dbm.DB),
+		im:      models.NewIPNSManager(dbm.DB),
 	}, nil
 }
 
@@ -209,6 +211,7 @@ func (api *API) setupRoutes() {
 	ipnsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	ipnsProtected.POST("/publish/details", api.publishToIPNSDetails)
 	ipnsProtected.POST("/dnslink/aws/add", api.generateDNSLinkEntry) // admin locked
+	ipnsProtected.GET("/records", api.getIPNSRecordsPublishedByUser)
 
 	clusterProtected := api.r.Group("/api/v1/ipfs-cluster")
 	clusterProtected.Use(authWare.MiddlewareFunc())

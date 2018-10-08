@@ -1,17 +1,11 @@
 package models_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/config"
-	"github.com/jinzhu/gorm"
-)
-
-var (
-	testCfgPath = "../test/config.json"
 )
 
 type args struct {
@@ -140,15 +134,4 @@ func TestUserManager_SignIn(t *testing.T) {
 			}
 		})
 	}
-}
-
-func openDatabaseConnection(t *testing.T, cfg *config.TemporalConfig) (*gorm.DB, error) {
-	dbConnURL := fmt.Sprintf("host=127.0.0.1 port=5433 user=postgres dbname=temporal password=%s sslmode=disable",
-		cfg.Database.Password)
-
-	db, err := gorm.Open("postgres", dbConnURL)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return db, nil
 }

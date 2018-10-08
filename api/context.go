@@ -60,7 +60,7 @@ func Respond(c *gin.Context, status int, body gin.H) {
 // status is used to handle optional status code params
 func status(i []int) (status int) {
 	if i == nil || len(i) == 0 {
-		status = http.StatusInternalServerError
+		status = http.StatusBadRequest
 	} else {
 		status = i[0]
 	}
