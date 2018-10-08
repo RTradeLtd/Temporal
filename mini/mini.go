@@ -105,11 +105,6 @@ func (mm *MinioManager) PutObject(objectName string, reader io.Reader, objectSiz
 		// update data and metadata
 		reader = bytes.NewReader(encrypted)
 		objectSize = int64(len(encrypted))
-		if opts.UserMetadata == nil {
-			opts.UserMetadata = map[string]string{"encrypted": "true"}
-		} else {
-			opts.UserMetadata["encrypted"] = "true"
-		}
 	}
 
 	// store object
