@@ -89,20 +89,22 @@ func TestPutAndGetObject(t *testing.T) {
 		{"normal", args{normalObj, bucket, ""}, false},
 		{"encrypted", args{encryptedObj, bucket, passphrase}, false},
 		{"no bucket", args{normalObj, "wut", ""}, true},
-		{"existing object", args{normalObj, bucket, ""}, true},
 	}
 	for _, tt := range putTests {
 		t.Run(tt.name, func(t *testing.T) {
 			var bytesWritten int64
-			if bytesWritten, err = mm.PutObject(tt.args.object, openedFile, fileStats.Size(), PutObjectOptions{
-				Bucket:            bucket,
-				EncryptPassphrase: tt.args.passphrase,
-			}); (err != nil) != tt.wantErr {
+			if bytesWritten, err = mm.PutObject(tt.args.object, openedFile,
+				fileStats.Size(), PutObjectOptions{
+					Bucket:            tt.args.bucket,
+					EncryptPassphrase: tt.args.passphrase,
+				}); (err != nil) != tt.wantErr {
 				t.Errorf("PutObject() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !tt.wantErr && bytesWritten != fileStats.Size() {
+			// only compare length if not encrypted - if encrypted, addition bytes
+			// are added to beginning and end
+			if !tt.wantErr && tt.args.passphrase == "" && bytesWritten != fileStats.Size() {
 				t.Fatal(errors.New("improper amount of data written to bucket"))
 			}
 		})
@@ -114,16 +116,15 @@ func TestPutAndGetObject(t *testing.T) {
 		wantErr bool
 	}{
 		{"normal", args{normalObj, bucket, ""}, false},
-		{"encrypted", args{encryptedObj, bucket, passphrase}, false},
 		{"no bucket", args{normalObj, "wut", ""}, true},
 		{"non-existent object", args{"asdf", bucket, ""}, true},
 	}
 	for _, tt := range getTests {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, err = mm.GetObject(tt.args.object, GetObjectOptions{
-				Bucket: bucket,
+				Bucket: tt.args.bucket,
 			}); (err != nil) != tt.wantErr {
-				t.Errorf("PutObject() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetObject() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
