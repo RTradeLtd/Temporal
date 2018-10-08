@@ -7,7 +7,6 @@ import (
 	"io"
 
 	"github.com/RTradeLtd/crypto"
-	"github.com/minio/minio-go/pkg/encrypt"
 	"github.com/sirupsen/logrus"
 
 	minio "github.com/minio/minio-go"
@@ -25,9 +24,8 @@ var DefaultBucketLocation = "us-east-1"
 
 // MinioManager is our helper methods to interface with minio
 type MinioManager struct {
-	Client    *minio.Client
-	encryptor encrypt.ServerSide
-	logger    logrus.FieldLogger
+	Client *minio.Client
+	logger logrus.FieldLogger
 }
 
 // NewMinioManager is used to generate our MinioManager helper struct
@@ -42,15 +40,8 @@ func NewMinioManager(endpoint, accessKeyID, secretAccessKey string, secure bool)
 		return nil, fmt.Errorf("failed to connect to minio: %s", err)
 	}
 
-	// create encryption method
-	enc, err := encrypt.NewSSEC([]byte{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to enable encryption: %s", err)
-	}
-
 	return &MinioManager{
-		Client:    client,
-		encryptor: enc,
+		Client: client,
 	}, nil
 }
 
