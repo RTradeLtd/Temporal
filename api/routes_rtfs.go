@@ -1,12 +1,15 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/utils"
+	"github.com/RTradeLtd/crypto"
 	gocid "github.com/ipfs/go-cid"
 
 	"github.com/RTradeLtd/Temporal/queue"
@@ -421,10 +424,9 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 // DownloadContentHash is used to download a particular content hash from the network
 func (api *API) downloadContentHash(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	var contentType string
+
 	// fetch the specified content type from the user
 	contentType, exists := c.GetPostForm("content_type")
-	// if not specified, provide a default
 	if !exists {
 		contentType = "application/octet-stream"
 	}
@@ -438,53 +440,65 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+
 	// initialize our connection to IPFS
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		api.LogError(err, IPFSConnectionError)(c)
 		return
 	}
+
+	var (
+		reader io.Reader
+		size   int
+	)
+
 	// read the contents of the file
-	reader, err := manager.Shell.Cat(contentHash)
-	if err != nil {
+	if reader, err = manager.Shell.Cat(contentHash); err != nil {
 		api.LogError(err, IPFSCatError)(c)
 		return
 	}
-	// get the size of hte file in bytes
-	sizeInBytes, err := manager.GetObjectFileSizeInBytes(contentHash)
-	if err != nil {
-		api.LogError(err, IPFSObjectStatError)(c)
-		return
+
+	// decrypt Temporal-encrypted content if key is provided
+	decryptKey := c.PostForm("decrypt_key")
+	if decryptKey != "" {
+		decrypted, err := crypto.NewEncryptManager(decryptKey).Decrypt(reader)
+		if err != nil {
+			Fail(c, err)
+			return
+		}
+		size = len(decrypted)
+		reader = bytes.NewReader(decrypted)
+	} else {
+		// get the size of the file in bytes
+		if size, err = manager.GetObjectFileSizeInBytes(contentHash); err != nil {
+			api.LogError(err, IPFSObjectStatError)(c)
+			return
+		}
 	}
+
 	// parse extra headers if there are any
 	extraHeaders := make(map[string]string)
-	var header string
-	var value string
 	// only process if there is actual data to process
-	// this will always be admin locked
 	if len(exHeaders) > 0 {
 		// the array must be of equal length, as a header has two parts
 		// the name of the header, and its value
-		// this expects the user to have properly formatted the headers
-		// we will need to restrict the headers that we process so we don't
-		// open ourselves up to being attacked
 		if len(exHeaders)%2 != 0 {
 			FailWithMessage(c, "extra_headers post form is not even in length")
 			return
 		}
 		// parse through the available headers
-		for i := 1; i < len(exHeaders)-1; i += 2 {
-			// retrieve header name
-			header = exHeaders[i-1]
-			// retrieve header value
-			value = exHeaders[i]
-			// store data
-			extraHeaders[header] = value
+		for i := 0; i < len(exHeaders); i += 2 {
+			if i+1 < len(exHeaders) {
+				header := exHeaders[i]
+				value := exHeaders[i+1]
+				extraHeaders[header] = value
+			}
 		}
 	}
 
 	api.LogWithUser(username).Info("ipfs content download requested")
 
 	// send them the file
-	c.DataFromReader(200, int64(sizeInBytes), contentType, reader, extraHeaders)
+	c.DataFromReader(200, int64(size), contentType, reader, extraHeaders)
 }
