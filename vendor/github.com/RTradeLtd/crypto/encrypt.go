@@ -8,7 +8,6 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"log"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -37,7 +36,7 @@ func (e *EncryptManager) Encrypt(r io.Reader) ([]byte, error) {
 	// generate salt, encrypt password for use as a key for a cipher
 	salt := make([]byte, saltlen)
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	key := pbkdf2.Key([]byte(e.passphrase), salt, 4096, keylen, sha256.New)
 	block, err := aes.NewCipher(key)
