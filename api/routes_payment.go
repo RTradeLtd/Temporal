@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math/big"
 	"net/http"
 	"strconv"
 
@@ -118,7 +117,8 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		return
 	}
 	chargeAmountFloat := creditValueFloat / usdValueFloat
-	chargeAmountString := strconv.FormatFloat(chargeAmountFloat, 'f', 18, 64)
+	chargeAmountBig := utils.FloatToBigInt(chargeAmountFloat)
+	chargeAmountString := chargeAmountBig.String()
 	numberString := strconv.FormatInt(paymentNumber, 10)
 	methodString := strconv.FormatUint(method, 10)
 	signRequest := greq.SignRequest{
@@ -138,7 +138,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	paymentNumberString := strconv.FormatInt(paymentNumber, 10)
+	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
 
 	if _, err = pm.NewPayment(
 		paymentNumber,
@@ -185,8 +185,8 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	for k, v := range sDecoded {
 		s[k] = v
 	}
-	chargeAmountBig := utils.FloatToBigInt(chargeAmountFloat)
-	paymentNumberBig := big.NewInt(paymentNumber)
+	fmt.Println("charge amount float ", chargeAmountFloat)
+	fmt.Println("charge amount string ", chargeAmountString)
 	vUint, err := strconv.ParseUint(resp.GetV(), 10, 64)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
@@ -196,9 +196,9 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	formattedR := fmt.Sprintf("0x%s", rEncoded)
 	formattedS := fmt.Sprintf("0x%s", sEncoded)
 	response := gin.H{
-		"charge_amount_big": chargeAmountBig,
+		"charge_amount_big": chargeAmountString,
 		"method":            uint8(method),
-		"payment_number":    paymentNumberBig,
+		"payment_number":    paymentNumber,
 		"prefixed":          true,
 		"h":                 h,
 		"r":                 r,
