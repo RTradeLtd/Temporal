@@ -5,7 +5,6 @@ package api
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 
 	limit "github.com/aviddiviner/gin-limit"
@@ -153,88 +152,141 @@ func (api *API) setupRoutes() {
 
 	// authentication
 	auth := v1.Group("/auth")
-	auth.POST("/register", api.registerUserAccount)
-	auth.POST("/login", ginjwt.LoginHandler)
+	{
+		auth.POST("/register", api.registerUserAccount)
+		auth.POST("/login", ginjwt.LoginHandler)
+	}
 
 	// statistics
 	statistics := v1.Group("/statistics").Use(authware...)
-	statistics.GET("/stats", func(c *gin.Context) {
-		username := GetAuthenticatedUserFromContext(c)
-		if err := api.validateAdminRequest(username); err != nil {
-			FailNotAuthorized(c, UnAuthorizedAdminAccess)
-			return
-		}
-		c.JSON(http.StatusOK, stats.Report())
-	})
+	{
+		statistics.GET("/stats", api.getStats)
+	}
 
 	// payments
 	payments := v1.Group("/payments", authware...)
-	payments.POST("/create", api.CreatePayment)
-	payments.GET("/deposit/address/:type", api.GetDepositAddress)
+	{
+		payments.POST("/create", api.CreatePayment)
+		deposit := payments.Group("/deposit")
+		{
+			deposit.GET("/address/:type", api.GetDepositAddress)
+		}
+	}
 
 	// accounts
 	account := v1.Group("/account", authware...)
-	account.POST("password/change", api.changeAccountPassword)
-	account.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
-	account.POST("/key/ipfs/new", api.createIPFSKey)
-	account.GET("/credits/available", api.getCredits)
+	{
+		password := account.Group("/password")
+		{
+			password.POST("/change", api.changeAccountPassword)
+		}
+		key := account.Group("/key")
+		{
+			ipfs := key.Group("/ipfs")
+			{
+				ipfs.GET("/get", api.getIPFSKeyNamesForAuthUser)
+				ipfs.POST("/new", api.createIPFSKey)
+			}
+		}
+		credits := account.Group("/credits")
+		{
+			credits.GET("/available", api.getCredits)
+		}
+	}
 
 	// ipfs
 	ipfs := v1.Group("/ipfs", authware...)
-	ipfs.POST("/pubsub/publish/:topic", api.ipfsPubSubPublish)
-	ipfs.POST("/calculate-content-hash", api.calculateContentHashForFile)
-	ipfs.GET("/pins", api.getLocalPins) // admin locked
-	ipfs.GET("/object-stat/:key", api.getObjectStatForIpfs)
-	ipfs.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
-	ipfs.POST("/download/:hash", api.downloadContentHash)
-	ipfs.POST("/pin/:hash", api.pinHashLocally)
-	ipfs.POST("/add-file", api.addFileLocally)
-	ipfs.POST("/add-file/advanced", api.addFileLocallyAdvanced)
+	{
+		ipfs.POST("/calculate-content-hash", api.calculateContentHashForFile)
+		ipfs.GET("/pins", api.getLocalPins)                        // admin locked
+		ipfs.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
+		ipfs.GET("/object-stat/:key", api.getObjectStatForIpfs)
+		ipfs.POST("/download/:hash", api.downloadContentHash)
+		ipfs.POST("/pin/:hash", api.pinHashLocally)
+		addFile := ipfs.Group("/add-file")
+		{
+			addFile.POST("/", api.addFileLocally)
+			addFile.POST("/advanced", api.addFileLocallyAdvanced)
+		}
+		pubsub := ipfs.Group("/pubsub")
+		{
+			pubsub.POST("/publish/:topic", api.ipfsPubSubPublish)
+		}
+	}
 
 	// ipfs-private
 	ipfsPrivate := v1.Group("/ipfs-private", authware...)
-	ipfsPrivate.POST("/new/network", api.createHostedIPFSNetworkEntryInDatabase)                // admin locked
-	ipfsPrivate.GET("/network/:name", api.getIPFSPrivateNetworkByName)                          // admin locked
-	ipfsPrivate.POST("/ipfs/check-for-pin/:hash", api.checkLocalNodeForPinForHostedIPFSNetwork) // admin locked
-	ipfsPrivate.POST("/ipfs/object-stat/:key", api.getObjectStatForIpfsForHostedIPFSNetwork)
-	ipfsPrivate.POST("/pubsub/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
-	ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork) // admin locked
-	ipfsPrivate.GET("/networks", api.getAuthorizedPrivateNetworks)
-	ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
-	ipfsPrivate.POST("/ipfs/pin/:hash", api.pinToHostedIPFSNetwork)
-	ipfsPrivate.POST("/ipfs/add-file", api.addFileToHostedIPFSNetwork)
-	ipfsPrivate.POST("/ipfs/add-file/advanced", api.addFileToHostedIPFSNetworkAdvanced)
-	ipfsPrivate.POST("/ipns/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
+	{
+		ipfsPrivate.GET("/networks", api.getAuthorizedPrivateNetworks)
+		ipfsPrivate.GET("/network/:name", api.getIPFSPrivateNetworkByName) // admin locked
+		ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork)    // admin locked
+		ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
+		new := ipfsPrivate.Group("/new")
+		{
+			new.POST("/network", api.createHostedIPFSNetworkEntryInDatabase)
+		}
+		ipfsRoutes := ipfsPrivate.Group("/ipfs")
+		{
+			ipfsRoutes.POST("/check-for-pin/:hash", api.checkLocalNodeForPinForHostedIPFSNetwork) // admin locked
+			ipfsRoutes.POST("/object-stat/:key", api.getObjectStatForIpfsForHostedIPFSNetwork)
+			ipfsRoutes.POST("/pin/:hash", api.pinToHostedIPFSNetwork)
+			ipfsRoutes.POST("/add-file", api.addFileToHostedIPFSNetwork)
+			ipfsRoutes.POST("/add-file/advanced", api.addFileToHostedIPFSNetworkAdvanced)
+			ipfsRoutes.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
+		}
+		pubsub := ipfsPrivate.Group("/pubsub")
+		{
+			pubsub.POST("/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
+		}
+	}
 
 	// ipns
 	ipns := v1.Group("/ipns", authware...)
-	ipns.POST("/publish/details", api.publishToIPNSDetails)
-	ipns.POST("/dnslink/aws/add", api.generateDNSLinkEntry) // admin locked
-	ipns.GET("/records", api.getIPNSRecordsPublishedByUser)
+	{
+		ipns.POST("/publish/details", api.publishToIPNSDetails)
+		ipns.POST("/dnslink/aws/add", api.generateDNSLinkEntry) // admin locked
+		ipns.GET("/records", api.getIPNSRecordsPublishedByUser)
+	}
 
 	// ipfs-cluster
 	cluster := v1.Group("/ipfs-cluster", authware...)
-	cluster.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
-	cluster.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
-	cluster.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
-	cluster.GET("/status-local", api.fetchLocalClusterStatus)                 // admin locked
-	cluster.POST("/pin/:hash", api.pinHashToCluster)
+	{
+		cluster.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
+		cluster.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
+		cluster.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
+		cluster.GET("/status-local", api.fetchLocalClusterStatus)                 // admin locked
+		cluster.POST("/pin/:hash", api.pinHashToCluster)
+	}
 
 	// database
 	database := v1.Group("/database", authware...)
-	database.GET("/uploads", api.getUploadsFromDatabase)  // admin locked
-	database.GET("/uploads/:user", api.getUploadsForUser) // partial admin locked
+	{
+		database.GET("/uploads", api.getUploadsFromDatabase)  // admin locked
+		database.GET("/uploads/:user", api.getUploadsForUser) // partial admin locked
+	}
 
 	// frontend
 	frontend := v1.Group("/frontend", authware...)
-	frontend.GET("/cost/calculate/:hash/:holdtime", api.calculatePinCost)
-	frontend.POST("/cost/calculate/file", api.calculateFileCost)
+	{
+		cost := frontend.Group("/cost")
+		{
+			calculate := cost.Group("/calculate")
+			{
+				calculate.GET("/:hash/:holdtime", api.calculatePinCost)
+				calculate.POST("/file", api.calculateFileCost)
+			}
+		}
+	}
 
 	// admin
 	admin := v1.Group("/admin", authware...)
-	admin.POST("/utils/file-size-check", CalculateFileSize)
-	mini := admin.Group("/mini")
-	mini.POST("/create/bucket", api.makeBucket)
+	{
+		admin.POST("/utils/file-size-check", CalculateFileSize)
+		mini := admin.Group("/mini")
+		{
+			mini.POST("/create/bucket", api.makeBucket)
+		}
+	}
 
 	api.LogInfo("Routes initialized")
 }
