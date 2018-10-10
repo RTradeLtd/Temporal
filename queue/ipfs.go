@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/minio/minio-go"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/mini"
@@ -329,7 +328,10 @@ func (qm *QueueManager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB,
 			continue
 		}
 		if err == gorm.ErrRecordNotFound {
-			_, err = uploadManager.NewUpload(pin.CID, "pin", pin.NetworkName, pin.UserName, pin.HoldTimeInMonths)
+			_, err = uploadManager.NewUpload(pin.CID, "pin", models.UploadOptions{
+				NetworkName:      pin.NetworkName,
+				Username:         pin.UserName,
+				HoldTimeInMonths: pin.HoldTimeInMonths})
 			if err != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
@@ -374,6 +376,7 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 
 	// construct the endpoint url to access our minio server
 	endpoint := fmt.Sprintf("%s:%s", cfg.MINIO.Connection.IP, cfg.MINIO.Connection.Port)
+
 	// grab our credentials for minio
 	accessKey := cfg.MINIO.AccessKey
 	secretKey := cfg.MINIO.SecretKey
@@ -495,7 +498,9 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 
 		fileContext.Info("retrieving object from minio")
 
-		obj, err := minioManager.GetObject(ipfsFile.BucketName, ipfsFile.ObjectName, minio.GetObjectOptions{})
+		obj, err := minioManager.GetObject(ipfsFile.ObjectName, mini.GetObjectOptions{
+			Bucket: ipfsFile.BucketName,
+		})
 		if err != nil {
 			fileContext.
 				WithField("error", err.Error()).
@@ -538,6 +543,7 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 				Warn("failed to parse string to int, using default of 1 month")
 			holdTimeInt = 1
 		}
+
 		// we don't need to do any credit handling, as it has been done already
 		pin := IPFSPin{
 			CID:              resp,
@@ -563,8 +569,12 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			continue
 		}
 		if err == gorm.ErrRecordNotFound {
-			_, err = uploadManager.NewUpload(resp, "file", ipfsFile.NetworkName, ipfsFile.UserName, holdTimeInt)
-			if err != nil {
+			if _, err = uploadManager.NewUpload(resp, "file", models.UploadOptions{
+				NetworkName:      ipfsFile.NetworkName,
+				Username:         ipfsFile.UserName,
+				HoldTimeInMonths: holdTimeInt,
+				Encrypted:        ipfsFile.Encrypted,
+			}); err != nil {
 				fileContext.
 					WithField("error", err.Error()).
 					Error("failed to create new upload in database")

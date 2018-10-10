@@ -1,8 +1,13 @@
 package mini
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"io"
+
+	"github.com/RTradeLtd/crypto"
+	"github.com/sirupsen/logrus"
 
 	minio "github.com/minio/minio-go"
 )
@@ -20,21 +25,24 @@ var DefaultBucketLocation = "us-east-1"
 // MinioManager is our helper methods to interface with minio
 type MinioManager struct {
 	Client *minio.Client
+	logger logrus.FieldLogger
 }
 
 // NewMinioManager is used to generate our MinioManager helper struct
 func NewMinioManager(endpoint, accessKeyID, secretAccessKey string, secure bool) (*MinioManager, error) {
-	mm := &MinioManager{}
 	client, err := minio.New(endpoint, accessKeyID, secretAccessKey, secure)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to instantiate MinioManager: %s", err)
 	}
-	_, err = client.ListBuckets()
-	if err != nil {
-		return nil, err
+
+	// check connection
+	if _, err = client.ListBuckets(); err != nil {
+		return nil, fmt.Errorf("failed to connect to minio: %s", err)
 	}
-	mm.Client = client
-	return mm, nil
+
+	return &MinioManager{
+		Client: client,
+	}, nil
 }
 
 // ListBuckets is used to list all known buckets
@@ -66,28 +74,75 @@ func (mm *MinioManager) MakeBucket(args map[string]string) error {
 	return mm.Client.MakeBucket(name, location)
 }
 
+type PutObjectOptions struct {
+	Bucket            string
+	EncryptPassphrase string
+	minio.PutObjectOptions
+}
+
 // PutObject is a wrapper for the minio PutObject method, returning the number of bytes put or an error
-func (mm *MinioManager) PutObject(bucketName, objectName string, reader io.Reader, objectSize int64, opts minio.PutObjectOptions) (int64, error) {
-	bucketExists, err := mm.CheckIfBucketExists(bucketName)
+func (mm *MinioManager) PutObject(objectName string, reader io.Reader, objectSize int64,
+	opts PutObjectOptions) (int64, error) {
+	if opts.Bucket == "" {
+		return 0, errors.New("no bucket provided")
+	}
+
+	bucketExists, err := mm.CheckIfBucketExists(opts.Bucket)
 	if err != nil {
 		return 0, err
 	}
 	if !bucketExists {
-		return 0, errors.New("bucket does not exist")
+		return 0, fmt.Errorf("bucket %s does not exist", opts.Bucket)
 	}
-	return mm.Client.PutObject(bucketName, objectName, reader, objectSize, opts)
+
+	// encrypt if requested
+	if opts.EncryptPassphrase != "" {
+		encrypted, err := crypto.NewEncryptManager(opts.EncryptPassphrase).Encrypt(reader)
+		if err != nil {
+			return 0, err
+		}
+
+		// update data and metadata
+		reader = bytes.NewReader(encrypted)
+		objectSize = int64(len(encrypted))
+	}
+
+	// store object
+	return mm.Client.PutObject(opts.Bucket, objectName, reader, objectSize, opts.PutObjectOptions)
+}
+
+type GetObjectOptions struct {
+	Bucket string
+	minio.GetObjectOptions
 }
 
 // GetObject is a wrapper for the minio GetObject method
-func (mm *MinioManager) GetObject(bucketName, objectName string, opts minio.GetObjectOptions) (*minio.Object, error) {
-	exists, err := mm.CheckIfBucketExists(bucketName)
+func (mm *MinioManager) GetObject(objectName string, opts GetObjectOptions) (io.Reader, error) {
+	if opts.Bucket == "" {
+		return nil, errors.New("no bucket provided")
+	}
+
+	exists, err := mm.CheckIfBucketExists(opts.Bucket)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
 		return nil, errors.New("bucket does not exist")
 	}
-	return mm.Client.GetObject(bucketName, objectName, opts)
+
+	// fetch object
+	obj, err := mm.Client.GetObject(opts.Bucket, objectName, opts.GetObjectOptions)
+	if err != nil {
+		return nil, fmt.Errorf("could not get object %s", objectName)
+	}
+
+	// check if object is ok
+	_, err = obj.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("could not get metadata for object %s", objectName)
+	}
+
+	return obj, nil
 }
 
 // RemoveObject is used to remove an object from minio

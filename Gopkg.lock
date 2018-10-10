@@ -10,11 +10,19 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:3e42118b0183e633c89399c1f27ccc3c0f01fa67c9572b6cef5d73a2b231cc6f"
+  digest = "1:aecd62b4e43d521045eb357f73cd125382c3941420491fe5c85c801617aee035"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "32bf3bd96b1492f280b6fd01c4b63732cd0e2478"
+  revision = "6ebeb7c19f1b87844fc86263b83bebe55d7125e2"
+  version = "v1.0.1"
+
+[[projects]]
+  digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
+  name = "github.com/RTradeLtd/crypto"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b12095f9d32129596d8648e13efb3b537fea1b2c"
   version = "v1.0.0"
 
 [[projects]]
@@ -1198,7 +1206,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1f310ca874e40238a083bcc32d8651b8efb5445ec90f557f1308c5eb39e562ab"
+  digest = "1:d47fb142293096bac9a0d47f3f4e840c4af914a00fdfe6e9a952dc176da28103"
   name = "golang.org/x/crypto"
   packages = [
     "argon2",
@@ -1207,6 +1215,7 @@
     "blake2s",
     "blowfish",
     "internal/subtle",
+    "pbkdf2",
     "salsa20",
     "salsa20/salsa",
     "sha3",
@@ -1307,6 +1316,7 @@
   input-imports = [
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
+    "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",

@@ -13,10 +13,11 @@ import (
 )
 
 func TestAPI_LogError(t *testing.T) {
-	api := API{l: log.New()}
+	api := API{l: log.New(), service: "test"}
 	type args struct {
 		err     error
 		message string
+		fields  []interface{}
 	}
 	tests := []struct {
 		name     string
@@ -24,10 +25,12 @@ func TestAPI_LogError(t *testing.T) {
 		wantLog  string
 		wantResp string
 	}{
-		{"with err no message", args{errors.New("hi"), ""}, "hi", "hi"},
-		{"with err and message", args{errors.New("hi"), "bye"}, "hi", "bye"},
-		{"with message and no err", args{nil, "bye"}, "bye", "bye"},
-		{"no message and no err", args{nil, ""}, "", ""},
+		{"with err no message", args{errors.New("hi"), "", nil}, "hi", "hi"},
+		{"with err and message", args{errors.New("hi"), "bye", nil}, "hi", "bye"},
+		{"with message and no err", args{nil, "bye", nil}, "bye", "bye"},
+		{"no message and no err", args{nil, "", nil}, "", ""},
+		{"message and additional fields", args{nil, "hi", []interface{}{"wow", "amazing"}}, "amazing", "hi"},
+		{"message and odd fields should ignore fields", args{nil, "hi", []interface{}{"wow"}}, "hi", "hi"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -37,7 +40,11 @@ func TestAPI_LogError(t *testing.T) {
 			c, _ := gin.CreateTestContext(r)
 
 			// log error and execute callback
-			api.LogError(tt.args.err, tt.args.message)(c)
+			if tt.args.fields != nil {
+				api.LogError(tt.args.err, tt.args.message, tt.args.fields...)(c)
+			} else {
+				api.LogError(tt.args.err, tt.args.message)(c)
+			}
 
 			// check log output
 			b, err := ioutil.ReadAll(&buf)

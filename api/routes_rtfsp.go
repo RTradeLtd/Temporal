@@ -11,7 +11,6 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	gocid "github.com/ipfs/go-cid"
-	minio "github.com/minio/minio-go"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/models"
@@ -103,20 +102,20 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 
 // AddFileToHostedIPFSNetworkAdvanced is used to add a file to a private ipfs network in a more advanced and resilient manner
 func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
-
 	username := GetAuthenticatedUserFromContext(c)
 
+	// check network
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithBadRequest(c, "network_name")
 		return
 	}
-
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, PrivateNetworkAccessError)(c, http.StatusBadRequest)
 		return
 	}
 
+	// get hold time
 	holdTimeInMonths, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailWithBadRequest(c, "hold_time")
@@ -127,12 +126,10 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
+
 	accessKey := api.cfg.MINIO.AccessKey
 	secretKey := api.cfg.MINIO.SecretKey
 	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
-
-	mqURL := api.cfg.RabbitMQ.URL
-
 	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
 		api.LogError(err, MinioConnectionError)
@@ -141,7 +138,6 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	}
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
-		// user error, do not log
 		Fail(c, err)
 		return
 	}
@@ -154,7 +150,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
-	fmt.Println("opening file")
+	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, FileOpenError)
@@ -162,12 +158,17 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	fmt.Println("file opened")
+	api.LogDebug("file opened")
+
+	// generate object name
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
 	fmt.Println("storing file in minio")
-	if _, err = miniManager.PutObject(FilesUploadBucket, objectName, openFile, fileHandler.Size, minio.PutObjectOptions{}); err != nil {
+	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size, mini.PutObjectOptions{
+		Bucket:            FilesUploadBucket,
+		EncryptPassphrase: c.PostForm("passphrase"),
+	}); err != nil {
 		api.LogError(err, MinioPutError)
 		api.refundUserCredits(username, "private-file", cost)
 		Fail(c, err)
@@ -182,6 +183,10 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInMonths,
 		CreditCost:       cost,
 	}
+	api.l.Debugf("%s stored in minio", objectName)
+
+	// initialize queue
+	mqURL := api.cfg.RabbitMQ.URL
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
 		api.LogError(err, QueueInitializationError)
@@ -189,6 +194,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+
 	// we don't use an exchange for file publishes so that rabbitmq distributes round robin
 	if err = qm.PublishMessage(ifp); err != nil {
 		api.LogError(err, QueuePublishError)
@@ -742,12 +748,12 @@ func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": networks})
 }
 
-// GetUploadsByNetworkName is used to getu plaods for a network by its name
+// getUploadsByNetworkName is used to get uploads for a network by its name
 func (api *API) getUploadsByNetworkName(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
+	networkName := c.Param("network_name")
+	if networkName == "" {
 		FailWithBadRequest(c, "network_name")
 		return
 	}

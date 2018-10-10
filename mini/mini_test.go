@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/utils"
-	"github.com/minio/minio-go"
 )
 
 const (
@@ -48,6 +47,7 @@ func TestListBuckets(t *testing.T) {
 }
 
 func TestPutAndGetObject(t *testing.T) {
+	// set up
 	mm, err := newMM(false)
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +60,6 @@ func TestPutAndGetObject(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	objName := randString(10)
 	fileStats, err := os.Stat(file)
 	if err != nil {
 		t.Fatal(err)
@@ -69,39 +68,66 @@ func TestPutAndGetObject(t *testing.T) {
 	// create bucket, ignore errors
 	mm.MakeBucket(map[string]string{"name": bucket})
 
-	// test
-	bytesWritten, err := mm.PutObject(bucket, objName, openedFile, fileStats.Size(), minio.PutObjectOptions{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if bytesWritten != fileStats.Size() {
-		t.Fatal(errors.New("improper amount of data written to bucket"))
+	// set some test vars
+	var (
+		normalObj    = randString(10)
+		encryptedObj = randString(10)
+		passphrase   = randString(10)
+	)
+
+	type args struct {
+		object     string
+		bucket     string
+		passphrase string
 	}
 
-	_, err = mm.PutObject("fake bucket name", objName, openedFile, fileStats.Size(), minio.PutObjectOptions{})
-	if err == nil {
-		t.Fatal(err)
+	putTests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"normal", args{normalObj, bucket, ""}, false},
+		{"encrypted", args{encryptedObj, bucket, passphrase}, false},
+		{"no bucket", args{normalObj, "wut", ""}, true},
+	}
+	for _, tt := range putTests {
+		t.Run(tt.name, func(t *testing.T) {
+			var bytesWritten int64
+			if bytesWritten, err = mm.PutObject(tt.args.object, openedFile,
+				fileStats.Size(), PutObjectOptions{
+					Bucket:            tt.args.bucket,
+					EncryptPassphrase: tt.args.passphrase,
+				}); (err != nil) != tt.wantErr {
+				t.Errorf("PutObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			// only compare length if not encrypted - if encrypted, addition bytes
+			// are added to beginning and end
+			if !tt.wantErr && tt.args.passphrase == "" && bytesWritten != fileStats.Size() {
+				t.Fatal(errors.New("improper amount of data written to bucket"))
+			}
+		})
 	}
 
-	objInfo, err := mm.GetObject(bucket, objName, minio.GetObjectOptions{})
-	if err != nil {
-		t.Fatal(err)
+	getTests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"normal", args{normalObj, bucket, ""}, false},
+		{"no bucket", args{normalObj, "wut", ""}, true},
+		{"non-existent object", args{"asdf", bucket, ""}, true},
 	}
-	_, err = objInfo.Stat()
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = mm.GetObject("fakse bucket namememem", objName, minio.GetObjectOptions{})
-	if err == nil {
-		t.Fatal("no encountered when one should've been")
-	}
-	objInfo, err = mm.GetObject(bucket, "definitely a fake object name", minio.GetObjectOptions{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = objInfo.Stat()
-	if err == nil {
-		t.Fatal(err)
+	for _, tt := range getTests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err = mm.GetObject(tt.args.object, GetObjectOptions{
+				Bucket: tt.args.bucket,
+			}); (err != nil) != tt.wantErr {
+				t.Errorf("GetObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
 	}
 }
 

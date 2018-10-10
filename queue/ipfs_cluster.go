@@ -90,7 +90,10 @@ func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *c
 		}
 
 		if err == gorm.ErrRecordNotFound {
-			_, err = uploadManager.NewUpload(clusterAdd.CID, "pin-cluster", clusterAdd.NetworkName, clusterAdd.UserName, clusterAdd.HoldTimeInMonths)
+			_, err = uploadManager.NewUpload(clusterAdd.CID, "pin-cluster", models.UploadOptions{
+				NetworkName:      clusterAdd.NetworkName,
+				Username:         clusterAdd.UserName,
+				HoldTimeInMonths: clusterAdd.HoldTimeInMonths})
 			if err != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,

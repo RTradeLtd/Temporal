@@ -20,6 +20,7 @@ type Upload struct {
 	UserName           string `gorm:"type:varchar(255);not null;"`
 	GarbageCollectDate time.Time
 	UserNames          pq.StringArray `gorm:"type:text[];not null;"`
+	Encrypted          bool           `gorm:"type:bool"`
 }
 
 const dev = true
@@ -33,25 +34,33 @@ func NewUploadManager(db *gorm.DB) *UploadManager {
 	return &UploadManager{DB: db}
 }
 
+type UploadOptions struct {
+	NetworkName      string
+	Username         string
+	HoldTimeInMonths int64
+	Encrypted        bool
+}
+
 // NewUpload is used to create a new upload in the database
-func (um *UploadManager) NewUpload(contentHash, uploadType, networkName, username string, holdTimeInMonths int64) (*Upload, error) {
-	_, err := um.FindUploadByHashAndNetwork(contentHash, networkName)
+func (um *UploadManager) NewUpload(contentHash, uploadType string, opts UploadOptions) (*Upload, error) {
+	_, err := um.FindUploadByHashAndNetwork(contentHash, opts.NetworkName)
 	if err == nil {
 		// this means that there is already an upload in hte database matching this content hash and network name, so we will skip
 		return nil, errors.New("attempting to create new upload entry when one already exists in database")
 	}
-	holdInt, err := strconv.Atoi(fmt.Sprintf("%+v", holdTimeInMonths))
+	holdInt, err := strconv.Atoi(fmt.Sprintf("%+v", opts.HoldTimeInMonths))
 	if err != nil {
 		return nil, err
 	}
 	upload := Upload{
 		Hash:               contentHash,
 		Type:               uploadType,
-		NetworkName:        networkName,
-		HoldTimeInMonths:   holdTimeInMonths,
-		UserName:           username,
+		NetworkName:        opts.NetworkName,
+		HoldTimeInMonths:   opts.HoldTimeInMonths,
+		UserName:           opts.Username,
 		GarbageCollectDate: utils.CalculateGarbageCollectDate(holdInt),
-		UserNames:          []string{username},
+		UserNames:          []string{opts.Username},
+		Encrypted:          opts.Encrypted,
 	}
 	if check := um.DB.Create(&upload); check.Error != nil {
 		return nil, check.Error

@@ -200,7 +200,7 @@ func (api *API) setupRoutes() {
 	ipfsPrivateProtected.POST("/pubsub/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/pins", api.getLocalPinsForHostedIPFSNetwork) // admin locked
 	ipfsPrivateProtected.GET("/networks", api.getAuthorizedPrivateNetworks)
-	ipfsPrivateProtected.POST("/uploads", api.getUploadsByNetworkName)
+	ipfsPrivateProtected.GET("/uploads/:network_name", api.getUploadsByNetworkName)
 	ipfsPrivateProtected.POST("/ipfs/pin/:hash", api.pinToHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/ipfs/add-file", api.addFileToHostedIPFSNetwork)
 	ipfsPrivateProtected.POST("/ipfs/add-file/advanced", api.addFileToHostedIPFSNetworkAdvanced)
