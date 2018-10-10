@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"strconv"
 
 	"github.com/jinzhu/gorm"
 )
@@ -57,7 +56,7 @@ func (pm *PaymentManager) GetLatestPaymentNumber(username string) (int64, error)
 func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash string, usdValue float64, blockchain string, paymentType string, username string) (*Payments, error) {
 	p := Payments{}
 	// check for a payment with the number
-	check := pm.DB.Where("number = ?", number).First(&p)
+	check := pm.DB.Where("number = ? AND user_name = ?", number, username).First(&p)
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
@@ -118,8 +117,7 @@ func (pm *PaymentManager) UpdatePaymentTxHash(username, txHash string, number in
 	if err != nil {
 		return nil, err
 	}
-	numberString := strconv.FormatInt(number, 10)
-	if payment.TxHash != numberString {
+	if payment.TxHash[0:2] == "0x" {
 		return nil, errors.New("payment already has an updated tx hash")
 	}
 	payment.TxHash = txHash
