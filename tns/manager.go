@@ -64,7 +64,7 @@ func GenerateTNSManager(opts *ManagerOpts) (*Manager, error) {
 func (m *Manager) RunTNSDaemon() {
 	fmt.Println("generating echo stream")
 	m.Host.SetStreamHandler(
-		"/echo/1.0.0", func(s net.Stream) {
+		CommandEcho, func(s net.Stream) {
 			log.Info("new stream detected")
 			if err := m.HandleQuery(s, "echo"); err != nil {
 				log.Warn(err.Error())
@@ -75,7 +75,7 @@ func (m *Manager) RunTNSDaemon() {
 		})
 	fmt.Println("generating record request stream")
 	m.Host.SetStreamHandler(
-		"/recordRequest/1.0.0", func(s net.Stream) {
+		CommandRecordRequest, func(s net.Stream) {
 			log.Info("new stream detected")
 			if err := m.HandleQuery(s, "record-request"); err != nil {
 				log.Warn(err.Error())
@@ -86,7 +86,7 @@ func (m *Manager) RunTNSDaemon() {
 		})
 	fmt.Println("generating zone request stream")
 	m.Host.SetStreamHandler(
-		"/zoneRequest/1.0.0", func(s net.Stream) {
+		CommandZoneRequest, func(s net.Stream) {
 			log.Info("new stream detected")
 			if err := m.HandleQuery(s, "zone-request"); err != nil {
 				log.Warn(err.Error())

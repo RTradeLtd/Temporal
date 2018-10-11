@@ -62,7 +62,7 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) error {
 			UserName:           defaultZoneUserName,
 		}
 	}
-	s, err := c.Host.NewStream(context.Background(), peerID, "/zoneRequest/1.0.0")
+	s, err := c.Host.NewStream(context.Background(), peerID, CommandZoneRequest)
 	if err != nil {
 		fmt.Println("failed to generate new stream ", err.Error())
 		return err
@@ -95,7 +95,7 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) error {
 
 // RecordRequest is a call used to request a record from TNS
 func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) error {
-	s, err := c.Host.NewStream(context.Background(), peerID, "/recordRequest/1.0.0")
+	s, err := c.Host.NewStream(context.Background(), peerID, CommandRecordRequest)
 	if err != nil {
 		fmt.Println("failed to generate new stream ", err.Error())
 		return err
@@ -117,31 +117,6 @@ func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) error {
 	return nil
 }
 
-func (c *Client) queryRequest(peerID peer.ID) error {
-	s, err := c.Host.NewStream(context.Background(), peerID, "/tns/1.0.0")
-	if err != nil {
-		fmt.Println("failed to generate new stream ", err.Error())
-		return err
-	}
-	req := RecordRequest{
-		RecordName: "test",
-	}
-	reqBytes, err := json.Marshal(req)
-	if err != nil {
-		return err
-	}
-	reqBytes = append(reqBytes, '\n')
-	_, err = s.Write(reqBytes)
-	if err != nil {
-		return err
-	}
-	resp, err := ioutil.ReadAll(s)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("response from tns...\t%s\n", string(resp))
-	return nil
-}
 func (c *Client) queryEcho(peerID peer.ID) error {
 	s, err := c.Host.NewStream(context.Background(), peerID, "/echo/1.0.0")
 	if err != nil {

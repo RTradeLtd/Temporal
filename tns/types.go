@@ -9,6 +9,10 @@ import (
 const (
 	// CommandEcho is a test command used to test if we have successfully connected to a tns daemon
 	CommandEcho = "/echo/1.0.0"
+	// CommandRecordRequest is a command used to request a record from tns
+	CommandRecordRequest = "/recordRequest/1.0.0"
+	// CommandZoneRequest is a command used to request a zone from tns
+	CommandZoneRequest = "/zoneRequest/1.0.0"
 )
 
 var (
