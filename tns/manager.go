@@ -57,8 +57,10 @@ func GenerateTNSManager(opts *ManagerOpts, db *gorm.DB) (*Manager, error) {
 		ZonePrivateKey:    opts.ZonePK,
 		RecordPrivateKeys: nil,
 		Zone:              &zone,
-		ZM:                models.NewZoneManager(db),
-		RM:                models.NewRecordManager(db),
+	}
+	if db != nil {
+		manager.ZM = models.NewZoneManager(db)
+		manager.RM = models.NewRecordManager(db)
 	}
 	return &manager, nil
 }
