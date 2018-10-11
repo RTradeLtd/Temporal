@@ -46,7 +46,7 @@ type Zone struct {
 
 // Record is a particular name entry managed by a zone
 type Record struct {
-	PublicKey *ci.PubKey `json:"public_key"`
+	PublicKey ci.PubKey `json:"public_key"`
 	// A human readable name for this record
 	Name string `json:"name"`
 	// User configurable meta data for this record
