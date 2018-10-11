@@ -15,8 +15,37 @@ const (
 	testPort      = "9999"
 	testIPVersion = "ip4"
 	testProtocol  = "tcp"
+	testCfgPath   = "../test/config.json"
 )
 
+func TestTNS_Echo(t *testing.T) {
+	manager, err := tns.GenerateTNSManager(nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
+		t.Fatal(err)
+	}
+	go manager.RunTNSDaemon()
+	client, err := tns.GenerateTNSClient(true, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = client.MakeHost(client.PrivateKey, nil); err != nil {
+		t.Fatal(err)
+	}
+	addr, err := manager.ReachableAddress(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pid, err := client.AddPeerToPeerStore(addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = client.QueryTNS(pid, "echo"); err != nil {
+		t.Fatal(err)
+	}
+}
 func TestTNS_GenerateTNSClient(t *testing.T) {
 	t.Skip()
 	if _, err := tns.GenerateTNSClient(true, nil); err != nil {
@@ -42,7 +71,7 @@ func TestTNS_GenerateTNSManager(t *testing.T) {
 }
 
 func TestTNS_ManagerMakeHost(t *testing.T) {
-	//t.Skip()
+	t.Skip()
 	m, err := tns.GenerateTNSManager(nil, nil)
 	if err != nil {
 		t.Fatal(err)
