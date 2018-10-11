@@ -107,11 +107,14 @@ func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 	responseBuffer := bufio.NewReader(s)
 	switch cmd {
 	case "echo":
-		bodyString, err := responseBuffer.ReadString('\n')
+		bodyBytes, err := responseBuffer.ReadString('\n')
 		if err != nil {
 			return err
 		}
-		fmt.Printf("message sent with stream\n%s\n", bodyString)
+		msg := fmt.Sprintf("echo test...\nyou sent: %s\n", string(bodyBytes))
+		fmt.Println(msg)
+		_, err = s.Write([]byte(msg))
+		return err
 	case "record-request":
 		bodyBytes, err := responseBuffer.ReadBytes('\n')
 		if err != nil {
@@ -150,7 +153,6 @@ func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 		_, err := s.Write([]byte("message received thanks"))
 		return err
 	}
-	return nil
 }
 
 // MakeHost is used to generate the libp2p connection for our TNS daemon
