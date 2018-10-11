@@ -185,6 +185,7 @@ func (api *API) setupRoutes() {
 	tnsProtected.Use(authWare.MiddlewareFunc())
 	tnsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	tnsProtected.POST("/zone/create", api.CreateZone)
+	tnsProtected.POST("/record/create", api.addRecordToZone)
 
 	accountProtected := api.r.Group("/api/v1/account")
 	accountProtected.Use(authWare.MiddlewareFunc())

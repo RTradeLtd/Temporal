@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/queue"
@@ -8,6 +9,59 @@ import (
 	"github.com/gin-gonic/gin"
 	peer "github.com/libp2p/go-libp2p-peer"
 )
+
+// AddRecordToZone is used to an a record to a TNS zone
+func (api *API) addRecordToZone(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	zoneName, exists := c.GetPostForm("zone_name")
+	if !exists {
+		FailWithMissingField(c, "zone_name")
+		return
+	}
+	recordName, exists := c.GetPostForm("record_name")
+	if !exists {
+		FailWithMissingField(c, "record_name")
+		return
+	}
+	recordKeyName, exists := c.GetPostForm("record_key_name")
+	if !exists {
+		FailWithMissingField(c, "record_key_name")
+		return
+	}
+	metadata, exists := c.GetPostForm("meta_data")
+	var intf map[string]interface{}
+	if exists {
+		marshaled, err := json.Marshal(metadata)
+		if err != nil {
+			Fail(c, err, http.StatusBadRequest)
+			return
+		}
+		if err = json.Unmarshal(marshaled, &intf); err != nil {
+			Fail(c, err, http.StatusBadRequest)
+			return
+		}
+	}
+	req := queue.RecordCreation{
+		ZoneName:      zoneName,
+		RecordName:    recordName,
+		RecordKeyName: recordKeyName,
+		UserName:      username,
+	}
+	if len(intf) > 0 {
+		req.MetaData = intf
+	}
+	mqURL := api.cfg.RabbitMQ.URL
+	qm, err := queue.Initialize(queue.RecordCreationQueue, mqURL, true, false)
+	if err != nil {
+		api.LogError(err, QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err = qm.PublishMessage(req); err != nil {
+		api.LogError(err, QueuePublishError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "record creation request sent to backend"})
+}
 
 // CreateZone is used to create a TNS zone
 func (api *API) CreateZone(c *gin.Context) {
