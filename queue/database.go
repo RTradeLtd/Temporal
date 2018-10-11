@@ -10,7 +10,7 @@ import (
 )
 
 // ProcessDatabaseFileAdds is used to process database file add messages
-func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
+func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	uploadManager := models.NewUploadManager(db)
 	qm.Logger.WithFields(log.Fields{
 		"service": qm.QueueName,
@@ -51,18 +51,18 @@ func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *g
 			continue
 		}
 		if err != nil && err == gorm.ErrRecordNotFound {
-			_, err = uploadManager.NewUpload(dfa.Hash, "file", dfa.NetworkName, dfa.UserName, dfa.HoldTimeInMonths)
-			if err != nil {
+			if _, err = uploadManager.NewUpload(dfa.Hash, "file", dfa.NetworkName, dfa.UserName, dfa.HoldTimeInMonths); err != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
 					"user":    dfa.UserName,
 					"error":   err.Error(),
 				}).Error("failed to create new upload in database")
+				d.Ack(false)
+				continue
 			}
 		} else {
 			// this isn't a new upload so we shall upload the database
-			_, err = uploadManager.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName)
-			if err != nil {
+			if _, err = uploadManager.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName); err != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
 					"user":    dfa.UserName,
@@ -78,4 +78,5 @@ func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *g
 		}).Infof("database file add for hash %s successfully processed", dfa.Hash)
 		d.Ack(false)
 	}
+	return nil
 }
