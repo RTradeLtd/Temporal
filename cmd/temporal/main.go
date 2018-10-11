@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/rtfs"
 
 	"github.com/RTradeLtd/Temporal/tns"
@@ -62,13 +61,14 @@ var commands = map[string]cmd.Cmd{
 						ZonePK:    zonePK,
 						ZoneName:  cfg.TNS.ZoneName,
 					}
-					manager, err := tns.GenerateTNSManager(&managerOpts)
+					dbm, err := database.Initialize(&cfg, database.DatabaseOptions{})
 					if err != nil {
 						log.Fatal(err)
 					}
-					dbm, err := database.Initialize(&cfg, database.DatabaseOptions{})
-					zm := models.NewZoneManager(dbm.DB)
-					manager.ZM = zm
+					manager, err := tns.GenerateTNSManager(&managerOpts, dbm.DB)
+					if err != nil {
+						log.Fatal(err)
+					}
 					if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
 						log.Fatal(err)
 					}
