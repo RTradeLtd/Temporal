@@ -10,11 +10,12 @@ import (
 // Record is an entry within a tns zone
 type Record struct {
 	gorm.Model
-	UserName      string      `gorm:"type:varchar(255)"`
-	Name          string      `gorm:"type:varchar(255)"`
-	RecordKeyName string      `gorm:"type:varchar(255)"`
-	ZoneName      string      `gorm:"type:varchar(255)"`
-	MetaData      interface{} `gorm:"type:json"` // we need to parse this to a "string json"
+	UserName       string      `gorm:"type:varchar(255)"`
+	Name           string      `gorm:"type:varchar(255)"`
+	RecordKeyName  string      `gorm:"type:varchar(255)"`
+	LatestIPFSHash string      `gorm:"type:varchar(255)"`
+	ZoneName       string      `gorm:"type:varchar(255)"`
+	MetaData       interface{} `gorm:"type:json"` // we need to parse this to a "string json"
 }
 
 // RecordManager is used to manipulate records in our db
