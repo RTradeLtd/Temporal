@@ -13,6 +13,70 @@ import (
 	"github.com/streadway/amqp"
 )
 
+func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+	zm := models.NewZoneManager(db)
+	rm := models.NewRecordManager(db)
+	qm.Logger.WithFields(log.Fields{
+		"service": qm.Service,
+	}).Info("processing messages")
+	for d := range msgs {
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.Service,
+		}).Info("new message received")
+		req := RecordCreation{}
+		if err := json.Unmarshal(d.Body, &req); err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("failed to unmarshal message")
+			d.Ack(false)
+			continue
+		}
+		if _, err := zm.FindZoneByNameAndUser(req.ZoneName, req.UserName); err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("unable to find zone")
+			d.Ack(false)
+			continue
+		}
+		if _, err := zm.AddRecordForZone(
+			req.ZoneName, req.RecordName, req.UserName,
+		); err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("unable to add record to zone")
+			d.Ack(false)
+			continue
+		}
+		if _, err := rm.FindRecordByNameAndUser(req.RecordName, req.UserName); err == nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("record already exists in database")
+			d.Ack(false)
+			continue
+		}
+		if _, err := rm.AddRecord(
+			req.UserName, req.RecordName, req.RecordKeyName, req.ZoneName, req.MetaData,
+		); err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("unable to add record to database")
+			d.Ack(false)
+			continue
+		}
+		//TODO: add calls here that store the data to IPFS as an IPLD object
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.Service,
+		}).Info("record added to zone")
+		d.Ack(false)
+	}
+	return nil
+}
+
 func (qm *QueueManager) ProcessTNSZoneCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	zm := models.NewZoneManager(db)
 	qm.Logger.WithFields(log.Fields{
