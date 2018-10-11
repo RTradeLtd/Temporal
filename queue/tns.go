@@ -13,6 +13,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// ProcessTNSRecordCreation is used to process new TNS record creation requests
 func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	zm := models.NewZoneManager(db)
 	rm := models.NewRecordManager(db)
@@ -40,6 +41,54 @@ func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *
 			d.Ack(false)
 			continue
 		}
+		rtfsManager, err := rtfs.Initialize("", "")
+		if err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("failed to initialize connection to ipfs")
+			d.Ack(false)
+			continue
+		}
+		if err = rtfsManager.CreateKeystoreManager(); err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("failed to initialize keystore manager")
+			d.Ack(false)
+			continue
+		}
+		recordPK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(req.RecordKeyName)
+		if err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("failed to get record private key")
+			d.Ack(false)
+			continue
+		}
+		r := tns.Record{
+			PublicKey: recordPK.GetPublic(),
+			Name:      req.RecordName,
+			MetaData:  req.MetaData,
+		}
+		marshaled, err := json.Marshal(&r)
+		if err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("failed to marshal tns record")
+			d.Ack(false)
+			continue
+		}
+		resp, err := rtfsManager.Shell.DagPut(marshaled, "json", "cbor")
+		if err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("failed to put record file to ipfs")
+			d.Ack(false)
+		}
 		if _, err := zm.AddRecordForZone(
 			req.ZoneName, req.RecordName, req.UserName,
 		); err != nil {
@@ -47,14 +96,6 @@ func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *
 				"service": qm.Service,
 				"error":   err.Error(),
 			}).Error("unable to add record to zone")
-			d.Ack(false)
-			continue
-		}
-		if _, err := rm.FindRecordByNameAndUser(req.RecordName, req.UserName); err == nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-				"error":   err.Error(),
-			}).Error("record already exists in database")
 			d.Ack(false)
 			continue
 		}
@@ -68,7 +109,16 @@ func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *
 			d.Ack(false)
 			continue
 		}
-		//TODO: add calls here that store the data to IPFS as an IPLD object
+		if _, err := rm.UpdateLatestIPFSHash(
+			req.UserName, req.RecordName, resp,
+		); err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("unable to update ipfs hash for record")
+			d.Ack(false)
+			continue
+		}
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.Service,
 		}).Info("record added to zone")
@@ -77,6 +127,7 @@ func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *
 	return nil
 }
 
+// ProcessTNSZoneCreation is used to process new TNS zone creation requests
 func (qm *QueueManager) ProcessTNSZoneCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	zm := models.NewZoneManager(db)
 	qm.Logger.WithFields(log.Fields{

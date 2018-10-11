@@ -28,6 +28,19 @@ func NewRecordManager(db *gorm.DB) *RecordManager {
 	return &RecordManager{DB: db}
 }
 
+// UpdateLatestIPFSHash is used to update the latest IPFS hash that can be used to examine this record
+func (rm *RecordManager) UpdateLatestIPFSHash(username, recordName, ipfsHash string) (*Record, error) {
+	r, err := rm.FindRecordByNameAndUser(username, recordName)
+	if err != nil {
+		return nil, err
+	}
+	r.LatestIPFSHash = ipfsHash
+	if check := rm.DB.Model(r).Update("latest_ip_fs_hash", r.LatestIPFSHash); check.Error != nil {
+		return nil, check.Error
+	}
+	return r, nil
+}
+
 // FindRecordByNameAndUser is used to search fro a record by name and user
 func (rm *RecordManager) FindRecordByNameAndUser(username, name string) (*Record, error) {
 	r := Record{}
