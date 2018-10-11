@@ -22,6 +22,7 @@ var (
 // RecordRequest is a message sent when requeting a record form TNS, the response is simply Record
 type RecordRequest struct {
 	RecordName string `json:"record_name"`
+	UserName   string `json:"user_name"`
 }
 
 // ZoneRequest is a message sent when requesting a reccord from TNS.
@@ -72,6 +73,7 @@ type Manager struct {
 	Zone              *Zone
 	Host              host.Host
 	ZM                *models.ZoneManager
+	RM                *models.RecordManager
 }
 
 // Client is used to query a TNS daemon

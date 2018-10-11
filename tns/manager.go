@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	net "github.com/libp2p/go-libp2p-net"
@@ -22,7 +23,7 @@ type ManagerOpts struct {
 }
 
 // GenerateTNSManager is used to generate a TNS manager for a particular PKI space
-func GenerateTNSManager(opts *ManagerOpts) (*Manager, error) {
+func GenerateTNSManager(opts *ManagerOpts, db *gorm.DB) (*Manager, error) {
 	var (
 		managerPK ci.PrivKey
 		zonePK    ci.PrivKey
@@ -56,6 +57,8 @@ func GenerateTNSManager(opts *ManagerOpts) (*Manager, error) {
 		ZonePrivateKey:    opts.ZonePK,
 		RecordPrivateKeys: nil,
 		Zone:              &zone,
+		ZM:                models.NewZoneManager(db),
+		RM:                models.NewRecordManager(db),
 	}
 	return &manager, nil
 }
@@ -116,8 +119,12 @@ func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 		if err = json.Unmarshal(bodyBytes, &req); err != nil {
 			return err
 		}
+		r, err := m.RM.FindRecordByNameAndUser(req.UserName, req.RecordName)
+		if err != nil {
+			return err
+		}
 		fmt.Printf("record request\n%+v\n", req)
-		_, err = s.Write([]byte(string(bodyBytes)))
+		_, err = s.Write([]byte(r.LatestIPFSHash))
 		return err
 	case "zone-request":
 		bodyBytes, err := responseBuffer.ReadBytes('\n')
