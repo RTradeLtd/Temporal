@@ -136,7 +136,7 @@ func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) error {
 }
 
 func (c *Client) queryEcho(peerID peer.ID) error {
-	s, err := c.Host.NewStream(context.Background(), peerID, "/echo/1.0.0")
+	s, err := c.Host.NewStream(context.Background(), peerID, CommandEcho)
 	if err != nil {
 		fmt.Println("failed to generate new stream ", err.Error())
 		return err
