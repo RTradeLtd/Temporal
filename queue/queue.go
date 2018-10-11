@@ -98,6 +98,7 @@ func setupConnection(connectionURL string) (*amqp.Connection, error) {
 	return conn, nil
 }
 
+// OpenChannel is used to open a channel to the rabbitmq server
 func (qm *QueueManager) OpenChannel() error {
 	ch, err := qm.Connection.Channel()
 	if err != nil {
@@ -216,44 +217,43 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 	switch qm.Service {
 	// only parse datbase file requests
 	case DatabaseFileAddQueue:
-		qm.ProcessDatabaseFileAdds(msgs, db)
+		if err = qm.ProcessDatabaseFileAdds(msgs, db); err != nil {
+			return err
+		}
 	case IpfsPinQueue:
-		err = qm.ProccessIPFSPins(msgs, db, cfg)
-		if err != nil {
+		if err = qm.ProccessIPFSPins(msgs, db, cfg); err != nil {
 			return err
 		}
 	case IpfsFileQueue:
-		err = qm.ProccessIPFSFiles(msgs, cfg, db)
-		if err != nil {
+		if err = qm.ProccessIPFSFiles(msgs, cfg, db); err != nil {
 			return err
 		}
 	case EmailSendQueue:
-		err = qm.ProcessMailSends(msgs, cfg)
-		if err != nil {
+		if err = qm.ProcessMailSends(msgs, cfg); err != nil {
 			return err
 		}
 	case IpnsEntryQueue:
-		err = qm.ProcessIPNSEntryCreationRequests(msgs, db, cfg)
-		if err != nil {
+		if err = qm.ProcessIPNSEntryCreationRequests(msgs, db, cfg); err != nil {
 			return err
 		}
 	case IpfsKeyCreationQueue:
-		err = qm.ProcessIPFSKeyCreation(msgs, db, cfg)
-		if err != nil {
+		if err = qm.ProcessIPFSKeyCreation(msgs, db, cfg); err != nil {
 			return err
 		}
 	case IpfsClusterPinQueue:
-		err = qm.ProcessIPFSClusterPins(msgs, cfg, db)
-		if err != nil {
+		if err = qm.ProcessIPFSClusterPins(msgs, cfg, db); err != nil {
 			return err
 		}
 	case ZoneCreationQueue:
-		err = qm.ProcessTNSZoneCreation(msgs, db, cfg)
-		if err != nil {
+		if err = qm.ProcessTNSZoneCreation(msgs, db, cfg); err != nil {
+			return err
+		}
+	case RecordCreationQueue:
+		if err = qm.ProcessTNSRecordCreation(msgs, db, cfg); err != nil {
 			return err
 		}
 	default:
-		log.Fatal("invalid queue name")
+		return errors.New("invalid queue name")
 	}
 	return nil
 }
@@ -274,7 +274,7 @@ func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeNam
 	if err != nil {
 		return err
 	}
-	err = qm.Channel.Publish(
+	if err = qm.Channel.Publish(
 		exchangeName, // exchange
 		"",           // routing key
 		false,        // mandatory
@@ -284,8 +284,7 @@ func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeNam
 			ContentType:  "text/plain",
 			Body:         bodyMarshaled,
 		},
-	)
-	if err != nil {
+	); err != nil {
 		return err
 	}
 	return nil
@@ -298,7 +297,7 @@ func (qm *QueueManager) PublishMessage(body interface{}) error {
 	if err != nil {
 		return err
 	}
-	err = qm.Channel.Publish(
+	if err = qm.Channel.Publish(
 		"",            // exchange
 		qm.Queue.Name, // routing key
 		false,         // mandatory
@@ -308,8 +307,7 @@ func (qm *QueueManager) PublishMessage(body interface{}) error {
 			ContentType:  "text/plain",
 			Body:         bodyMarshaled,
 		},
-	)
-	if err != nil {
+	); err != nil {
 		return err
 	}
 	return nil
