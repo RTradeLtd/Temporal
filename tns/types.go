@@ -16,7 +16,8 @@ const (
 )
 
 var (
-	commands = []string{CommandEcho}
+	// Commands are all the commands that TNS supports via the libp2p interface
+	Commands = []string{CommandEcho, CommandRecordRequest, CommandZoneRequest}
 )
 
 // RecordRequest is a message sent when requeting a record form TNS, the response is simply Record
