@@ -20,6 +20,9 @@ const (
 	defaultZoneManagerKeyName = "postables-3072"
 	defaultZoneKeyName        = "postables-testkeydemo"
 	defaultZoneUserName       = "postables"
+	defaultRecordName         = "myrecord"
+	defaultRecordKeyName      = "postables-testkeydemo2"
+	defaultRecordUserName     = "postables"
 )
 
 // GenerateTNSClient is used to generate a TNS Client
@@ -89,12 +92,18 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) error {
 	if err = rtfsManager.Shell.DagGet(latestZoneHash, &intf); err != nil {
 		return err
 	}
-	fmt.Printf("tns record retrieve from ipfs...\n%+v\n", intf)
+	fmt.Printf("tns zone retrieved from ipfs...\n%+v\n", intf)
 	return nil
 }
 
 // RecordRequest is a call used to request a record from TNS
 func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) error {
+	if req == nil {
+		req = &RecordRequest{
+			RecordName: req.RecordName,
+			UserName:   req.UserName,
+		}
+	}
 	s, err := c.Host.NewStream(context.Background(), peerID, CommandRecordRequest)
 	if err != nil {
 		fmt.Println("failed to generate new stream ", err.Error())
@@ -113,7 +122,16 @@ func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("resposne from record request...\t%s\n", string(resp))
+	latestRecordHash := string(resp)
+	rtfsManager, err := rtfs.Initialize("", "")
+	if err != nil {
+		return err
+	}
+	var intf interface{}
+	if err = rtfsManager.Shell.DagGet(latestRecordHash, &intf); err != nil {
+		return err
+	}
+	fmt.Printf("tns record retrieved from ipfs...\n%+v\n", intf)
 	return nil
 }
 
