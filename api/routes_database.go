@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/gin-gonic/gin"
 )
@@ -13,14 +14,14 @@ var dev = false
 func (api *API) getUploadsFromDatabase(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	um := models.NewUploadManager(api.dbm.DB)
 	// fetch the uplaods
 	uploads, err := um.GetUploads()
 	if err != nil {
-		api.LogError(err, UploadSearchError)(c, http.StatusInternalServerError)
+		api.LogError(err, eh.UploadSearchError)(c, http.StatusInternalServerError)
 		return
 	}
 	api.LogInfo("all uploads from database requested")
@@ -42,7 +43,7 @@ func (api *API) getUploadsForUser(c *gin.Context) {
 	// fetch all uploads for that address
 	uploads, err := um.GetUploadsForUser(queryUser)
 	if err != nil {
-		api.LogError(err, UploadSearchError)(c, http.StatusInternalServerError)
+		api.LogError(err, eh.UploadSearchError)(c, http.StatusInternalServerError)
 		return
 	}
 	api.LogInfo("specific uploads from database requested")

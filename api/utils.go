@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/c2h5oh/datasize"
@@ -60,7 +61,7 @@ func (api *API) FileSizeCheck(size int64) error {
 	}
 	gbInt := int64(datasize.GB.Bytes()) * sizeInt
 	if size > gbInt {
-		return errors.New(FileTooBigError)
+		return errors.New(eh.FileTooBigError)
 	}
 	return nil
 }
@@ -76,7 +77,7 @@ func (api *API) getDepositAddress(paymentType string) (string, error) {
 	case "xmr":
 		return "", nil
 	}
-	return "", errors.New(InvalidPaymentTypeError)
+	return "", errors.New(eh.InvalidPaymentTypeError)
 }
 
 func (api *API) validateBlockchain(blockchain string) bool {
@@ -94,7 +95,7 @@ func (api *API) validateUserCredits(username string, cost float64) error {
 		return err
 	}
 	if availableCredits < cost {
-		return errors.New(InvalidBalanceError)
+		return errors.New(eh.InvalidBalanceError)
 	}
 	if _, err := api.um.RemoveCredits(username, cost); err != nil {
 		return err
@@ -112,7 +113,7 @@ func (api *API) refundUserCredits(username, callType string, cost float64) {
 			"user":      username,
 			"call_type": callType,
 			"error":     err.Error(),
-		}).Error(CreditRefundError)
+		}).Error(eh.CreditRefundError)
 	}
 }
 
@@ -123,7 +124,7 @@ func (api *API) validateAdminRequest(username string) error {
 		return err
 	}
 	if !isAdmin {
-		return errors.New(UnAuthorizedAdminAccess)
+		return errors.New(eh.UnAuthorizedAdminAccess)
 	}
 	return nil
 }

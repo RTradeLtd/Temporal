@@ -1,4 +1,4 @@
-package api
+package eh
 
 const (
 	// IPFSConnectionError is an error used for ipfs connection failures
@@ -89,4 +89,8 @@ const (
 	IpnsRecordSearchError = "failed to search for IPNS records, user likely has published none"
 	// UnAuthorizedAdminAccess is an error message used whena user attempts to access an administrative route
 	UnAuthorizedAdminAccess = "user is not an administrator"
+	// DuplicateEmailError is an error used when a user attempts to register with an already taken email address
+	DuplicateEmailError = "email address already taken"
+	// DuplicateUserNameError is an error used whe na user attempts to register with an already taken user name
+	DuplicateUserNameError = "username is already taken"
 )
