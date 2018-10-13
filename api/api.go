@@ -53,7 +53,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	p.Use(router)
 
 	// open log file
-	logfile, err := os.OpenFile("/var/log/temporal/api_service.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
+	logfile, err := os.OpenFile("./templogs.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open log file: %s", err)
 	}
@@ -195,7 +195,7 @@ func (api *API) setupRoutes() {
 	}
 
 	// ipfs
-	ipfs := v1.Group("/ipfs", authware...)
+	ipfs := v1.Group("/ipfs")
 	{
 		ipfs.POST("/calculate-content-hash", api.calculateContentHashForFile)
 		ipfs.GET("/pins", api.getLocalPins)                        // admin locked
@@ -203,11 +203,8 @@ func (api *API) setupRoutes() {
 		ipfs.GET("/object-stat/:key", api.getObjectStatForIpfs)
 		ipfs.POST("/download/:hash", api.downloadContentHash)
 		ipfs.POST("/pin/:hash", api.pinHashLocally)
-		addFile := ipfs.Group("/add-file")
-		{
-			addFile.POST("/", api.addFileLocally)
-			addFile.POST("/advanced", api.addFileLocallyAdvanced)
-		}
+		ipfs.POST("/add-file/", api.addFileLocally)
+		ipfs.POST("/add-file/advanced", api.addFileLocallyAdvanced)
 		pubsub := ipfs.Group("/pubsub")
 		{
 			pubsub.POST("/publish/:topic", api.ipfsPubSubPublish)
