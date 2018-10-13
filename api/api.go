@@ -147,6 +147,7 @@ func (api *API) setupRoutes() {
 		api.dbm.DB, api.l)
 
 	statsProtected := api.r.Group("/api/v1/statistics")
+	statsProtected.GET("/systems-check", api.ExternalSystemsCheck)
 	statsProtected.Use(authWare.MiddlewareFunc())
 	statsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	statsProtected.Use(stats.RequestStats())
