@@ -232,7 +232,10 @@ func (api *API) setupRoutes() {
 			ipfsRoutes.POST("/pin/:hash", api.pinToHostedIPFSNetwork)
 			ipfsRoutes.POST("/add-file", api.addFileToHostedIPFSNetwork)
 			ipfsRoutes.POST("/add-file/advanced", api.addFileToHostedIPFSNetworkAdvanced)
-			ipfsRoutes.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
+		}
+		ipnsRoutes := ipfsPrivate.Group("/ipns")
+		{
+			ipnsRoutes.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
 		}
 		pubsub := ipfsPrivate.Group("/pubsub")
 		{
