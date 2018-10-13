@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	gocid "github.com/ipfs/go-cid"
@@ -54,23 +55,23 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	cost, err := utils.CalculateAPICallCost("ipns", false)
 	if err != nil {
-		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, key)
 	if err != nil {
-		api.LogError(err, KeySearchError)(c)
+		api.LogError(err, eh.KeySearchError)(c)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 
 	if !ownsKey {
 		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", username)
-		api.LogError(err, KeyUseError)(c)
+		api.LogError(err, eh.KeyUseError)(c)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
@@ -106,14 +107,14 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, eh.QueueInitializationError)(c)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	// in order to avoid generating too much IPFS dht traffic, we publish round-robin style
 	// as we announce the records to the swarm, we will eventually achieve consistency across nodes automatically
 	if err = qm.PublishMessage(ie); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, eh.QueuePublishError)(c)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
@@ -131,7 +132,7 @@ func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	records, err := api.im.FindByUserName(username)
 	if err != nil {
-		api.LogError(err, IpnsRecordSearchError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.IpnsRecordSearchError)(c, http.StatusBadRequest)
 		return
 	}
 	// check if records is nil, or no entries. For len we must dereference first
@@ -146,7 +147,7 @@ func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
 func (api *API) generateDNSLinkEntry(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	recordName, exists := c.GetPostForm("record_name")
@@ -188,14 +189,14 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 
 	awsManager, err := dlink.GenerateAwsLinkManager("get", aKey, aSecret, awsZone, region)
 	if err != nil {
-		api.LogError(err, DNSLinkManagerError)
+		api.LogError(err, eh.DNSLinkManagerError)
 		Fail(c, err)
 		return
 	}
 
 	resp, err := awsManager.AddDNSLinkEntry(recordName, recordValue)
 	if err != nil {
-		api.LogError(err, DNSLinkEntryError)
+		api.LogError(err, eh.DNSLinkEntryError)
 		Fail(c, err)
 		return
 	}

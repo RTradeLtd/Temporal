@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
@@ -34,7 +35,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 	}
 	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs.Shell, isPrivate)
 	if err != nil {
-		api.LogError(err, PinCostCalculationError)
+		api.LogError(err, eh.PinCostCalculationError)
 		Fail(c, err)
 		return
 	}

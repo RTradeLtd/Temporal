@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/utils"
 
 	"github.com/RTradeLtd/Temporal/queue"
@@ -33,18 +34,18 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 	}
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs.Shell, false)
 	if err != nil {
-		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	mqURL := api.cfg.RabbitMQ.URL
 
 	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, eh.QueueInitializationError)(c)
 		api.refundUserCredits(username, "cluster-pin", cost)
 		return
 	}
@@ -58,7 +59,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 	}
 
 	if err = qm.PublishMessage(ipfsClusterPin); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, eh.QueuePublishError)(c)
 		api.refundUserCredits(username, "cluster-pin", cost)
 		return
 	}
@@ -71,19 +72,19 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	// initialize a conection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
 	syncedCids, err := manager.ParseLocalStatusAllAndSync()
 	if err != nil {
-		api.LogError(err, IPFSClusterStatusError)(c)
+		api.LogError(err, eh.IPFSClusterStatusError)(c)
 		return
 	}
 
@@ -95,7 +96,7 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	hash := c.Param("hash")
@@ -106,13 +107,13 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 	// initialize a connection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSClusterConnectionError)(c)
+		api.LogError(err, eh.IPFSClusterConnectionError)(c)
 		return
 	}
 	// get the cluster status for the cid only asking the local cluster node
 	status, err := manager.GetStatusForCidLocally(hash)
 	if err != nil {
-		api.LogError(err, IPFSClusterStatusError)(c)
+		api.LogError(err, eh.IPFSClusterStatusError)(c)
 		return
 	}
 
@@ -125,7 +126,7 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	hash := c.Param("hash")
@@ -136,13 +137,13 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 	// initialize a connection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSClusterConnectionError)(c)
+		api.LogError(err, eh.IPFSClusterConnectionError)(c)
 		return
 	}
 	// get teh cluster wide status for this particular pin
 	status, err := manager.GetStatusForCidGlobally(hash)
 	if err != nil {
-		api.LogError(err, IPFSClusterStatusError)(c)
+		api.LogError(err, eh.IPFSClusterStatusError)(c)
 		return
 	}
 
@@ -155,7 +156,7 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	// this will hold all the retrieved content hashes
@@ -165,13 +166,13 @@ func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 	// initialize a connection to the cluster
 	manager, err := rtfs_cluster.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSClusterConnectionError)(c)
+		api.LogError(err, eh.IPFSClusterConnectionError)(c)
 		return
 	}
 	// fetch a map of all the statuses
 	maps, err := manager.FetchLocalStatus()
 	if err != nil {
-		api.LogError(err, IPFSClusterStatusError)(c)
+		api.LogError(err, eh.IPFSClusterStatusError)(c)
 		return
 	}
 	// parse the maps

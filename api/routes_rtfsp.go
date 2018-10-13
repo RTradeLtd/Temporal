@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -30,18 +31,18 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 
 	err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB)
 	if err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c)
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	url, err := im.GetAPIURLByName(networkName)
 	if err != nil {
-		api.LogError(err, APIURLCheckError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.APIURLCheckError)(c, http.StatusBadRequest)
 		return
 	}
 	manager, err := rtfs.Initialize("", url)
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.IPFSConnectionError)(c, http.StatusBadRequest)
 		return
 	}
 
@@ -62,11 +63,11 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	}
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell, true)
 	if err != nil {
-		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	ip := queue.IPFSPin{
@@ -81,13 +82,13 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, eh.QueueInitializationError)(c)
 		api.refundUserCredits(username, "private-pin", cost)
 		return
 	}
 
 	if err = qm.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, eh.QueuePublishError)(c)
 		api.refundUserCredits(username, "private-pin", cost)
 		return
 	}
@@ -111,7 +112,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		return
 	}
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
 		return
 	}
 
@@ -132,7 +133,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
 	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
-		api.LogError(err, MinioConnectionError)
+		api.LogError(err, eh.MinioConnectionError)
 		Fail(c, err)
 		return
 	}
@@ -147,13 +148,13 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	}
 	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, true)
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)
+		api.LogError(err, eh.FileOpenError)
 		api.refundUserCredits(username, "private-file", cost)
 		Fail(c, err)
 		return
@@ -169,7 +170,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		Bucket:            FilesUploadBucket,
 		EncryptPassphrase: c.PostForm("passphrase"),
 	}); err != nil {
-		api.LogError(err, MinioPutError)
+		api.LogError(err, eh.MinioPutError)
 		api.refundUserCredits(username, "private-file", cost)
 		Fail(c, err)
 		return
@@ -189,7 +190,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	mqURL := api.cfg.RabbitMQ.URL
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)
+		api.LogError(err, eh.QueueInitializationError)
 		api.refundUserCredits(username, "private-file", cost)
 		Fail(c, err)
 		return
@@ -197,7 +198,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 
 	// we don't use an exchange for file publishes so that rabbitmq distributes round robin
 	if err = qm.PublishMessage(ifp); err != nil {
-		api.LogError(err, QueuePublishError)
+		api.LogError(err, eh.QueuePublishError)
 		api.refundUserCredits(username, "private-file", cost)
 		Fail(c, err)
 		return
@@ -218,7 +219,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	}
 
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)
+		api.LogError(err, eh.PrivateNetworkAccessError)
 		Fail(c, err)
 		return
 	}
@@ -239,18 +240,18 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
-		api.LogError(err, APIURLCheckError)(c)
+		api.LogError(err, eh.APIURLCheckError)(c)
 		return
 	}
 
 	ipfsManager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, eh.QueueInitializationError)(c)
 		return
 	}
 
@@ -268,18 +269,18 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	}
 	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, true)
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	file, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)(c)
+		api.LogError(err, eh.FileOpenError)(c)
 		api.refundUserCredits(username, "private-file", cost)
 		return
 	}
 	resp, err := ipfsManager.Add(file)
 	if err != nil {
-		api.LogError(err, IPFSAddError)(c)
+		api.LogError(err, eh.IPFSAddError)(c)
 		api.refundUserCredits(username, "private-file", cost)
 		return
 	}
@@ -292,7 +293,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		CreditCost:       0,
 	}
 	if err = qm.PublishMessage(dfa); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, eh.QueuePublishError)(c)
 		return
 	}
 
@@ -306,11 +307,11 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 
 	qm, err = queue.Initialize(queue.IpfsPinQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, eh.QueueInitializationError)(c)
 		return
 	}
 	if err = qm.PublishMessageWithExchange(pin, queue.PinExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, eh.QueuePublishError)(c)
 		return
 	}
 
@@ -328,22 +329,22 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c)
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 	cost, err := utils.CalculateAPICallCost("pubsub", true)
 	if err != nil {
-		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
-		api.LogError(err, APIURLCheckError)(c)
+		api.LogError(err, eh.APIURLCheckError)(c)
 		return
 	}
 	topic := c.Param("topic")
@@ -354,11 +355,11 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	}
 	manager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 	if err = manager.PublishPubSubMessage(topic, message); err != nil {
-		api.LogError(err, IPFSPubSubPublishError)(c)
+		api.LogError(err, eh.IPFSPubSubPublishError)(c)
 		return
 	}
 
@@ -371,7 +372,7 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	networkName, exists := c.GetPostForm("network_name")
@@ -380,26 +381,26 @@ func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c)
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
-		api.LogError(err, APIURLCheckError)(c)
+		api.LogError(err, eh.APIURLCheckError)(c)
 		return
 	}
 	// initialize a connection toe the local ipfs node
 	manager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 	// get all the known local pins
 	// WARNING: THIS COULD BE A VERY LARGE LIST
 	pinInfo, err := manager.Shell.Pins()
 	if err != nil {
-		api.LogError(err, IPFSPinParseError)(c)
+		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
 	}
 
@@ -416,14 +417,14 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c)
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
-		api.LogError(err, APIURLCheckError)(c)
+		api.LogError(err, eh.APIURLCheckError)(c)
 		return
 	}
 	key := c.Param("key")
@@ -433,12 +434,12 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 	}
 	manager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 	stats, err := manager.ObjectStat(key)
 	if err != nil {
-		api.LogError(err, IPFSObjectStatError)(c)
+		api.LogError(err, eh.IPFSObjectStatError)(c)
 		return
 	}
 
@@ -450,7 +451,7 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	networkName, exists := c.GetPostForm("network_name")
@@ -460,13 +461,13 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	}
 
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c)
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
-		api.LogError(err, APIURLCheckError)(c)
+		api.LogError(err, eh.APIURLCheckError)(c)
 		return
 	}
 	hash := c.Param("hash")
@@ -476,12 +477,12 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	}
 	manager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 	present, err := manager.ParseLocalPinsForHash(hash)
 	if err != nil {
-		api.LogError(err, IPFSPinParseError)(c)
+		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
 	}
 
@@ -500,23 +501,23 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	cost, err := utils.CalculateAPICallCost("ipns", true)
 	if err != nil {
-		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	mqURL := api.cfg.RabbitMQ.URL
 
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c)
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, eh.QueueInitializationError)(c)
 		return
 	}
 	hash, present := c.GetPostForm("hash")
@@ -551,13 +552,13 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, key)
 	if err != nil {
-		api.LogError(err, KeySearchError)(c)
+		api.LogError(err, eh.KeySearchError)(c)
 		return
 	}
 
 	if !ownsKey {
 		err = fmt.Errorf("unauthorized access to key by user %s", username)
-		api.LogError(err, KeyUseError)(c)
+		api.LogError(err, eh.KeyUseError)(c)
 		return
 	}
 
@@ -590,7 +591,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		CreditCost:  cost,
 	}
 	if err := qm.PublishMessage(ipnsUpdate); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, eh.QueuePublishError)(c)
 		return
 	}
 
@@ -605,7 +606,7 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	// lock down as admin route for now
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	networkName, exists := c.GetPostForm("network_name")
@@ -691,20 +692,20 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	network, err := manager.CreateHostedPrivateNetwork(networkName, apiURL, swarmKey, args, users)
 	if err != nil {
-		api.LogError(err, NetworkCreationError)(c)
+		api.LogError(err, eh.NetworkCreationError)(c)
 		return
 	}
 
 	if len(users) > 0 {
 		for _, v := range users {
 			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil {
-				api.LogError(err, NetworkCreationError)(c)
+				api.LogError(err, eh.NetworkCreationError)(c)
 				return
 			}
 		}
 	} else {
 		if err := api.um.AddIPFSNetworkForUser(username, networkName); err != nil {
-			api.LogError(err, NetworkCreationError)(c)
+			api.LogError(err, eh.NetworkCreationError)(c)
 			return
 		}
 	}
@@ -718,14 +719,14 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	netName := c.Param("name")
 	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	net, err := manager.GetNetworkByName(netName)
 	if err != nil {
-		api.LogError(err, NetworkSearchError)(c)
+		api.LogError(err, eh.NetworkSearchError)(c)
 		return
 	}
 
@@ -740,7 +741,7 @@ func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 
 	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
 	if err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c)
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 
@@ -759,14 +760,14 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 	}
 
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c)
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 
 	um := models.NewUploadManager(api.dbm.DB)
 	uploads, err := um.FindUploadsByNetwork(networkName)
 	if err != nil {
-		api.LogError(err, UploadSearchError)(c)
+		api.LogError(err, eh.UploadSearchError)(c)
 		return
 	}
 
@@ -785,7 +786,7 @@ func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, PrivateNetworkAccessError)(c)
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 
@@ -803,7 +804,7 @@ func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
-		api.LogError(err, APIURLCheckError)(c)
+		api.LogError(err, eh.APIURLCheckError)(c)
 		return
 	}
 	// get the content hash that is to be downloaded
@@ -815,19 +816,19 @@ func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
 	// initialize our connection to IPFS
 	manager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 	// read the contents of the file
 	reader, err := manager.Shell.Cat(contentHash)
 	if err != nil {
-		api.LogError(err, IPFSCatError)(c)
+		api.LogError(err, eh.IPFSCatError)(c)
 		return
 	}
 	// get the size of hte file in bytes
 	sizeInBytes, err := manager.GetObjectFileSizeInBytes(contentHash)
 	if err != nil {
-		api.LogError(err, IPFSObjectStatError)(c)
+		api.LogError(err, eh.IPFSObjectStatError)(c)
 		return
 	}
 	// parse extra headers if there are any

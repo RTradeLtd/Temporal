@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/gin-gonic/gin"
 	stats "github.com/semihalev/gin-stats"
 )
@@ -10,7 +11,7 @@ import (
 func (api *API) getStats(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	c.JSON(http.StatusOK, stats.Report())
