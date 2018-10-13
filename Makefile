@@ -54,6 +54,11 @@ lint:
 	# Shellcheck disabled for now - too much to fix
 	# shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
 
+# Run development API
+.PHONY: api
+api:
+	CONFIG_DAG=./test/config.json go run cmd/temporal/main.go api
+
 # Set up test environment
 .PHONY: testenv
 WAIT=3

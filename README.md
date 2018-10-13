@@ -164,6 +164,15 @@ $ make
 
 Due to our very large dependency tree which is vendored, running the initial `go get` will take a very long time, anywhere from 15 -> 30 minutes depending on your computer processing capabilities, internet connection, and such. This isn't likely to change anytime soon, so patience is greatly appreciated!
 
+### Running Locally
+
+To run the API locally:
+
+```bash
+$ make testenv
+$ make api
+```
+
 ### Testing
 
 Most tests can be run using the following commands:
