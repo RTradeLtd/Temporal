@@ -18,12 +18,12 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:a9df9a909a8a7179cda824705589435b47937ac9dbc4247d54640b08b9c2e41a"
+  digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
   name = "github.com/RTradeLtd/crypto"
   packages = ["."]
   pruneopts = "UT"
-  revision = "0b23adce8b4ff3265121b9c6643a2e82befb0436"
+  revision = "b12095f9d32129596d8648e13efb3b537fea1b2c"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master-rtrade"
@@ -1345,7 +1345,6 @@
     "github.com/libp2p/go-libp2p-crypto",
     "github.com/libp2p/go-libp2p-peer",
     "github.com/minio/minio-go",
-    "github.com/minio/minio-go/pkg/encrypt",
     "github.com/mitchellh/goamz/aws",
     "github.com/mitchellh/goamz/route53",
     "github.com/multiformats/go-multiaddr",
