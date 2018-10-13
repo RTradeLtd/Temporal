@@ -56,7 +56,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	p.Use(router)
 
 	// open log file
-	logfile, err := os.OpenFile("./templogs.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
+	logfile, err := os.OpenFile(cfg.API.LogFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open log file: %s", err)
 	}
