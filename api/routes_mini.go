@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +13,7 @@ import (
 func (api *API) makeBucket(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	bucketName, exists := c.GetPostForm("bucket_name")
@@ -28,14 +29,14 @@ func (api *API) makeBucket(c *gin.Context) {
 	)
 	manager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
 	if err != nil {
-		api.LogError(err, MinioConnectionError)(c)
+		api.LogError(err, eh.MinioConnectionError)(c)
 		return
 	}
 
 	args := make(map[string]string)
 	args["name"] = bucketName
 	if err = manager.MakeBucket(args); err != nil {
-		api.LogError(err, MinioBucketCreationError)(c)
+		api.LogError(err, eh.MinioBucketCreationError)(c)
 		return
 	}
 

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
@@ -35,12 +36,12 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 
 	suceeded, err := api.um.ChangePassword(username, oldPassword, newPassword)
 	if err != nil {
-		api.LogError(err, PasswordChangeError)(c)
+		api.LogError(err, eh.PasswordChangeError)(c)
 		return
 	}
 	if !suceeded {
 		err = fmt.Errorf("password changed failed for user %s to due an unspecified error", username)
-		api.LogError(err, PasswordChangeError)(c)
+		api.LogError(err, eh.PasswordChangeError)(c)
 		return
 	}
 
@@ -74,11 +75,13 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	}).Info("user account registration detected")
 
 	userModel, err := api.um.NewUserAccount(username, password, email, false)
-	if err != nil {
-		api.LogError(err, UserAccountCreationError)(c)
+	if err.Error() != eh.DuplicateEmailError || err.Error() != eh.DuplicateUserNameError {
+		api.LogError(err, eh.UserAccountCreationError)(c, http.StatusBadRequest)
+		return
+	} else if err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-
 	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
@@ -111,7 +114,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 	user, err := api.um.FindByUserName(username)
 	if err != nil {
-		api.LogError(err, UserSearchError)(c, http.StatusNotFound)
+		api.LogError(err, eh.UserSearchError)(c, http.StatusNotFound)
 		return
 	}
 	var cost float64
@@ -127,11 +130,11 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		}
 	}
 	if err != nil {
-		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil && cost > 0 {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	keyBits, exists := c.GetPostForm("key_bits")
@@ -150,7 +153,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 	keys, err := api.um.GetKeysForUser(username)
 	if err != nil {
-		api.LogError(err, KeySearchError)(c, http.StatusNotFound)
+		api.LogError(err, eh.KeySearchError)(c, http.StatusNotFound)
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
@@ -158,7 +161,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	for _, v := range keys["key_names"] {
 		if v == keyNamePrefixed {
 			err = fmt.Errorf("key with name already exists")
-			api.LogError(err, DuplicateKeyCreationError)(c, http.StatusConflict)
+			api.LogError(err, eh.DuplicateKeyCreationError)(c, http.StatusConflict)
 			api.refundUserCredits(username, "key", cost)
 			return
 		}
@@ -187,13 +190,13 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, eh.QueueInitializationError)(c)
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
 
 	if err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, eh.QueuePublishError)(c)
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
@@ -212,12 +215,12 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 
 	keys, err := api.um.GetKeysForUser(username)
 	if err != nil {
-		api.LogError(err, KeySearchError)(c)
+		api.LogError(err, eh.KeySearchError)(c)
 		return
 	}
 	// if the user has no keys, fail with an error
 	if len(keys["key_names"]) == 0 || len(keys["key_ids"]) == 0 {
-		Fail(c, errors.New(NoKeyError), http.StatusNotFound)
+		Fail(c, errors.New(eh.NoKeyError), http.StatusNotFound)
 		return
 	}
 	api.LogWithUser(username).Info("key name list requested")
@@ -230,7 +233,7 @@ func (api *API) getCredits(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	credits, err := api.um.GetCreditsForUser(username)
 	if err != nil {
-		api.LogError(err, CreditCheckError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.CreditCheckError)(c, http.StatusBadRequest)
 		return
 	}
 	api.LogWithUser(username).Info("credit check requested")

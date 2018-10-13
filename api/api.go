@@ -19,6 +19,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/models"
 
 	"github.com/gin-gonic/gin"
@@ -152,7 +153,7 @@ func (api *API) setupRoutes() {
 	statsProtected.GET("/stats", func(c *gin.Context) { // admin locked
 		username := GetAuthenticatedUserFromContext(c)
 		if err := api.validateAdminRequest(username); err != nil {
-			FailNotAuthorized(c, UnAuthorizedAdminAccess)
+			FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 			return
 		}
 		c.JSON(http.StatusOK, stats.Report())

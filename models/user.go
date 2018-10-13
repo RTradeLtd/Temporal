@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -207,8 +208,15 @@ func (um *UserManager) NewUserAccount(username, password, email string, enterpri
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
-	if user.CreatedAt != nilTime {
-		return nil, errors.New("user account already created")
+	if check.Error == nil {
+		return nil, errors.New(eh.DuplicateUserNameError)
+	}
+	check = um.DB.Where("email_address = ?", email).First(&user)
+	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+		return nil, check.Error
+	}
+	if check.Error == nil {
+		return nil, errors.New(eh.DuplicateEmailError)
 	}
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

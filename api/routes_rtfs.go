@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/crypto"
@@ -29,13 +30,13 @@ func (api *API) calculateContentHashForFile(c *gin.Context) {
 
 	reader, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)(c)
+		api.LogError(err, eh.FileOpenError)(c)
 		return
 	}
 	defer reader.Close()
 	hash, err := utils.GenerateIpfsMultiHashForFile(reader)
 	if err != nil {
-		api.LogError(err, IPFSMultiHashGenerationError)(c)
+		api.LogError(err, eh.IPFSMultiHashGenerationError)(c)
 		return
 	}
 
@@ -64,16 +65,16 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	}
 	shell, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.IPFSConnectionError)(c, http.StatusBadRequest)
 		return
 	}
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, shell.Shell, false)
 	if err != nil {
-		api.LogError(err, PinCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.PinCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	ip := queue.IPFSPin{
@@ -88,13 +89,13 @@ func (api *API) pinHashLocally(c *gin.Context) {
 
 	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, eh.QueueInitializationError)(c)
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}
 
 	if err = qm.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, eh.QueuePublishError)(c)
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}
@@ -125,7 +126,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 
 	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
-		api.LogError(err, MinioConnectionError)(c)
+		api.LogError(err, eh.MinioConnectionError)(c)
 		return
 	}
 	fileHandler, err := c.FormFile("file")
@@ -144,13 +145,13 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	}
 	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, false)
 	if err = api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	logger.Debug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError,
+		api.LogError(err, eh.FileOpenError,
 			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
@@ -167,7 +168,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 			Bucket:            FilesUploadBucket,
 			EncryptPassphrase: c.PostForm("passphrase"),
 		}); err != nil {
-		api.LogError(err, MinioPutError,
+		api.LogError(err, eh.MinioPutError,
 			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
@@ -187,14 +188,14 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	}
 	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError,
+		api.LogError(err, eh.QueueInitializationError,
 			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
 
 	if err = qm.PublishMessage(ifp); err != nil {
-		api.LogError(err, QueuePublishError,
+		api.LogError(err, eh.QueuePublishError,
 			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
@@ -234,14 +235,14 @@ func (api *API) addFileLocally(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	cost := utils.CalculateFileCost(holdTimeinMonthsInt, fileHandler.Size, false)
 	if err = api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	// open the file
 	api.LogDebug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, FileOpenError)(c)
+		api.LogError(err, eh.FileOpenError)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
@@ -250,7 +251,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	// initialize a connection to the local ipfs node
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
@@ -258,7 +259,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	api.LogDebug("adding file...")
 	resp, err := manager.Add(openFile)
 	if err != nil {
-		api.LogError(err, IPFSAddError)(c)
+		api.LogError(err, eh.IPFSAddError)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
@@ -277,19 +278,19 @@ func (api *API) addFileLocally(c *gin.Context) {
 	// initialize a connectino to rabbitmq
 	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, eh.QueueInitializationError)(c)
 		return
 	}
 
 	// publish the database file add message
 	if err = qm.PublishMessage(dfa); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, eh.QueuePublishError)(c)
 		return
 	}
 
 	qm, err = queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c)
+		api.LogError(err, eh.QueueInitializationError)(c)
 		return
 	}
 
@@ -300,7 +301,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		CreditCost:       0,
 	}, queue.PinExchange); err != nil {
-		api.LogError(err, QueuePublishError)(c)
+		api.LogError(err, eh.QueuePublishError)(c)
 		return
 	}
 
@@ -319,21 +320,21 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	}
 	cost, err := utils.CalculateAPICallCost("pubsub", false)
 	if err != nil {
-		api.LogError(err, CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
 	if err = manager.PublishPubSubMessage(topic, message); err != nil {
-		api.LogError(err, IPFSPubSubPublishError)(c)
+		api.LogError(err, eh.IPFSPubSubPublishError)(c)
 		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
@@ -347,20 +348,20 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 func (api *API) getLocalPins(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	// initialize a connection toe the local ipfs node
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 	// get all the known local pins
 	// WARNING: THIS COULD BE A VERY LARGE LIST
 	pinInfo, err := manager.Shell.Pins()
 	if err != nil {
-		api.LogError(err, IPFSPinParseError)(c)
+		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
 	}
 
@@ -378,13 +379,13 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 	}
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)
+		api.LogError(err, eh.IPFSConnectionError)
 		Fail(c, err)
 		return
 	}
 	stats, err := manager.ObjectStat(key)
 	if err != nil {
-		api.LogError(err, IPFSObjectStatError)
+		api.LogError(err, eh.IPFSObjectStatError)
 		Fail(c, err)
 		return
 	}
@@ -397,7 +398,7 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 func (api *API) checkLocalNodeForPin(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, UnAuthorizedAdminAccess)
+		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
 	hash := c.Param("hash")
@@ -407,12 +408,12 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 	}
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 	present, err := manager.ParseLocalPinsForHash(hash)
 	if err != nil {
-		api.LogError(err, IPFSPinParseError)(c)
+		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
 	}
 
@@ -444,7 +445,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	// initialize our connection to IPFS
 	manager, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c)
+		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 
@@ -455,7 +456,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 
 	// read the contents of the file
 	if reader, err = manager.Shell.Cat(contentHash); err != nil {
-		api.LogError(err, IPFSCatError)(c)
+		api.LogError(err, eh.IPFSCatError)(c)
 		return
 	}
 
@@ -472,7 +473,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	} else {
 		// get the size of the file in bytes
 		if size, err = manager.GetObjectFileSizeInBytes(contentHash); err != nil {
-			api.LogError(err, IPFSObjectStatError)(c)
+			api.LogError(err, eh.IPFSObjectStatError)(c)
 			return
 		}
 	}
