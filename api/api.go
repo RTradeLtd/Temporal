@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/RTradeLtd/Temporal/rtfs"
+
 	limit "github.com/aviddiviner/gin-limit"
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/sirupsen/logrus"
@@ -35,6 +37,7 @@ type API struct {
 	dbm     *database.DatabaseManager
 	um      *models.UserManager
 	im      *models.IpnsManager
+	ipfs    *rtfs.IpfsManager
 	l       *log.Logger
 	service string
 }
@@ -105,6 +108,13 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		logger.Info("secure database connection established")
 	}
 
+	// set up default ipfs shell
+	ipfsManager, err := rtfs.Initialize("",
+		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port)
+	if err != nil {
+		return nil, err
+	}
+
 	return &API{
 		cfg:     cfg,
 		service: "api",
@@ -113,6 +123,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		dbm:     dbm,
 		um:      models.NewUserManager(dbm.DB),
 		im:      models.NewIPNSManager(dbm.DB),
+		ipfs:    ipfsManager,
 	}, nil
 }
 
@@ -203,7 +214,7 @@ func (api *API) setupRoutes() {
 		ipfs.GET("/object-stat/:key", api.getObjectStatForIpfs)
 		ipfs.POST("/download/:hash", api.downloadContentHash)
 		ipfs.POST("/pin/:hash", api.pinHashLocally)
-		ipfs.POST("/add-file/", api.addFileLocally)
+		ipfs.POST("/add-file", api.addFileLocally)
 		ipfs.POST("/add-file/advanced", api.addFileLocallyAdvanced)
 		pubsub := ipfs.Group("/pubsub")
 		{

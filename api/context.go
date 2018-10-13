@@ -47,8 +47,16 @@ func FailNotAuthorized(c *gin.Context, message string) {
 // GetAuthenticatedUserFromContext is used to pull the eth address of hte user
 func GetAuthenticatedUserFromContext(c *gin.Context) string {
 	claims := jwt.ExtractClaims(c)
+	id, ok := claims["id"]
+	if !ok {
+		return ""
+	}
+	strID, ok := id.(string)
+	if !ok {
+		return ""
+	}
 	// this is their eth address
-	return claims["id"].(string)
+	return strID
 }
 
 // Respond is a wrapper used to handle API responses
