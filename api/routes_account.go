@@ -75,13 +75,15 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	}).Info("user account registration detected")
 
 	userModel, err := api.um.NewUserAccount(username, password, email, false)
-	if err.Error() != eh.DuplicateEmailError || err.Error() != eh.DuplicateUserNameError {
-		api.LogError(err, eh.UserAccountCreationError)(c, http.StatusBadRequest)
-		return
-	} else if err != nil {
+	if err != nil && err.Error() == eh.DuplicateEmailError || err != nil && err.Error() == eh.DuplicateUserNameError {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	if err != nil {
+		api.LogError(err, eh.UserAccountCreationError)(c, http.StatusBadRequest)
+		return
+	}
+
 	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
