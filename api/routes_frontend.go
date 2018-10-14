@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
@@ -21,11 +20,6 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		return
 	}
 	holdTime := c.Param("holdtime")
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c)
-		return
-	}
 	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
 	if err != nil {
 		Fail(c, err)
@@ -39,7 +33,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 	default:
 		isPrivate = false
 	}
-	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell, isPrivate)
+	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs.Shell, isPrivate)
 	if err != nil {
 		api.LogError(err, eh.PinCostCalculationError)
 		Fail(c, err)

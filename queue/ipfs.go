@@ -23,7 +23,7 @@ import (
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
 func (qm *QueueManager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	manager, err := rtfs.Initialize("", "")
+	manager, err := rtfs.Initialize("", cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port)
 	if err != nil {
 		return err
 	}
@@ -380,7 +380,7 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 	// grab our credentials for minio
 	accessKey := cfg.MINIO.AccessKey
 	secretKey := cfg.MINIO.SecretKey
-	ipfsManager, err := rtfs.Initialize("", "")
+	ipfsManager, err := rtfs.Initialize("", cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port)
 	if err != nil {
 		service.
 			WithField("error", err.Error()).
