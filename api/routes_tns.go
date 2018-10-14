@@ -44,9 +44,9 @@ func (api *API) performZoneRequest(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	id, err := peer.IDFromString(peerID)
+	id, err := client.AddPeerToPeerStore(peerID)
 	if err != nil {
-		Fail(c, err)
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
 	resp, err := client.QueryTNS(id, "zone-request", req)
