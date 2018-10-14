@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ExternalStatusCheck is a systems status check which requires no special permissions
-func (api *API) ExternalSystemsCheck(c *gin.Context) {
+// SystemsCheck is a basic check of system integrity
+func (api *API) SystemsCheck(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": "systems online"})
 }
