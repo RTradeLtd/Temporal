@@ -161,6 +161,12 @@ func (api *API) setupRoutes() {
 	// V1 API
 	v1 := api.r.Group("/api/v1")
 
+	// external checks used by services like load balances
+	externalChecksProtected := v1.Group("/external-checks")
+	{
+		externalChecksProtected.GET("/systems-check", api.ExternalSystemsCheck)
+	}
+
 	// authentication
 	auth := v1.Group("/auth")
 	{
