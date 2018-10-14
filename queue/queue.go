@@ -237,10 +237,10 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 		if err = qm.ProcessTNSZoneCreation(msgs, db, cfg); err != nil {
 			return err
 		}
-	case RecordCreationQueue:
-		if err = qm.ProcessTNSRecordCreation(msgs, db, cfg); err != nil {
-			return err
-		}
+	/*case RecordCreationQueue:
+	if err = qm.ProcessTNSRecordCreation(msgs, db, cfg); err != nil {
+		return err
+	}*/
 	default:
 		return errors.New("invalid queue name")
 	}
