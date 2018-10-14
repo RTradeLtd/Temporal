@@ -51,6 +51,7 @@ func (c *Client) QueryTNS(peerID peer.ID, cmd string, requestArgs interface{}) (
 		return nil, c.queryEcho(peerID)
 	case "zone-request":
 		args := requestArgs.(ZoneRequest)
+		fmt.Println(args)
 		return c.ZoneRequest(peerID, &args)
 	default:
 		return nil, errors.New("unsupported cmd")
