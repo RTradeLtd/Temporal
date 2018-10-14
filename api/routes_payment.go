@@ -269,7 +269,15 @@ func (api *API) CreatePayment(c *gin.Context) {
 	}
 	chargeAmountFloat := creditValueFloat / usdValue
 	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
-
+	switch paymentType {
+	case "dash":
+		chargeAmountParsed := fmt.Sprintf("%.8f", chargeAmountFloat)
+		chargeAmountFloat, err = strconv.ParseFloat(chargeAmountParsed, 64)
+		if err != nil {
+			Fail(c, err)
+			return
+		}
+	}
 	payment, err := pm.NewPayment(
 		paymentNumber,
 		paymentNumberString,
