@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/utils"
 
 	"github.com/RTradeLtd/Temporal/queue"
@@ -22,11 +21,6 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c, http.StatusInternalServerError)
-		return
-	}
 	holdTime, exists := c.GetPostForm("hold_time")
 	if !exists {
 		FailWithMissingField(c, "hold_time")
@@ -38,7 +32,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	cost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell, false)
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs.Shell, false)
 	if err != nil {
 		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return

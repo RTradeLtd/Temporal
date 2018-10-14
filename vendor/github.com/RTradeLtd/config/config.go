@@ -9,21 +9,25 @@ import (
 
 // LoadConfig loads a TemporalConfig from given filepath
 func LoadConfig(configPath string) (*TemporalConfig, error) {
-	var tCfg TemporalConfig
 	raw, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(raw, &tCfg)
-	if err != nil {
+
+	var tCfg TemporalConfig
+	if err = json.Unmarshal(raw, &tCfg); err != nil {
 		return nil, err
 	}
+
+	tCfg.setDefaults()
+
 	return &tCfg, nil
 }
 
 // GenerateConfig writes a empty TemporalConfig template to given filepath
 func GenerateConfig(configPath string) error {
 	template := &TemporalConfig{}
+	template.setDefaults()
 	b, err := json.Marshal(template)
 	if err != nil {
 		return err
@@ -34,4 +38,10 @@ func GenerateConfig(configPath string) error {
 		return err
 	}
 	return ioutil.WriteFile(configPath, pretty.Bytes(), os.ModePerm)
+}
+
+func (t *TemporalConfig) setDefaults() {
+	if t.LogFile == "" {
+		t.LogFile = "/var/log/temporal/api_service.log"
+	}
 }

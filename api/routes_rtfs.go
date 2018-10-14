@@ -14,7 +14,6 @@ import (
 	gocid "github.com/ipfs/go-cid"
 
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-gonic/gin"
 )
 
@@ -63,12 +62,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	shell, err := rtfs.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c, http.StatusBadRequest)
-		return
-	}
-	cost, err := utils.CalculatePinCost(hash, holdTimeInt, shell.Shell, false)
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs.Shell, false)
 	if err != nil {
 		api.LogError(err, eh.PinCostCalculationError)(c, http.StatusBadRequest)
 		return
@@ -249,7 +243,6 @@ func (api *API) addFileLocally(c *gin.Context) {
 	api.LogDebug("file opened")
 	api.LogDebug("initializing manager")
 	// initialize a connection to the local ipfs node
-	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
 		api.refundUserCredits(username, "file", cost)
@@ -257,7 +250,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	}
 	// pin the file
 	api.LogDebug("adding file...")
-	resp, err := manager.Add(openFile)
+	resp, err := api.ipfs.Add(openFile)
 	if err != nil {
 		api.LogError(err, eh.IPFSAddError)(c)
 		api.refundUserCredits(username, "file", cost)
@@ -327,13 +320,12 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
-	manager, err := rtfs.Initialize("", "")
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
 		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
-	if err = manager.PublishPubSubMessage(topic, message); err != nil {
+	if err = api.ipfs.PublishPubSubMessage(topic, message); err != nil {
 		api.LogError(err, eh.IPFSPubSubPublishError)(c)
 		api.refundUserCredits(username, "pubsub", cost)
 		return
@@ -351,15 +343,9 @@ func (api *API) getLocalPins(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	// initialize a connection toe the local ipfs node
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c)
-		return
-	}
 	// get all the known local pins
 	// WARNING: THIS COULD BE A VERY LARGE LIST
-	pinInfo, err := manager.Shell.Pins()
+	pinInfo, err := api.ipfs.Shell.Pins()
 	if err != nil {
 		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
@@ -377,13 +363,7 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)
-		Fail(c, err)
-		return
-	}
-	stats, err := manager.ObjectStat(key)
+	stats, err := api.ipfs.ObjectStat(key)
 	if err != nil {
 		api.LogError(err, eh.IPFSObjectStatError)
 		Fail(c, err)
@@ -406,12 +386,7 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c)
-		return
-	}
-	present, err := manager.ParseLocalPinsForHash(hash)
+	present, err := api.ipfs.ParseLocalPinsForHash(hash)
 	if err != nil {
 		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
@@ -442,20 +417,14 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		return
 	}
 
-	// initialize our connection to IPFS
-	manager, err := rtfs.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c)
-		return
-	}
-
 	var (
+		err    error
 		reader io.Reader
 		size   int
 	)
 
 	// read the contents of the file
-	if reader, err = manager.Shell.Cat(contentHash); err != nil {
+	if reader, err = api.ipfs.Shell.Cat(contentHash); err != nil {
 		api.LogError(err, eh.IPFSCatError)(c)
 		return
 	}
@@ -472,7 +441,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		reader = bytes.NewReader(decrypted)
 	} else {
 		// get the size of the file in bytes
-		if size, err = manager.GetObjectFileSizeInBytes(contentHash); err != nil {
+		if size, err = api.ipfs.GetObjectFileSizeInBytes(contentHash); err != nil {
 			api.LogError(err, eh.IPFSObjectStatError)(c)
 			return
 		}

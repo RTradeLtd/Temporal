@@ -36,8 +36,7 @@ type UserManager struct {
 
 // NewUserManager is used to generate our user manager helper
 func NewUserManager(db *gorm.DB) *UserManager {
-	um := UserManager{}
-	um.DB = db
+	um := UserManager{DB: db}
 	return &um
 }
 
@@ -196,6 +195,19 @@ func (um *UserManager) ChangePassword(username, currentPassword, newPassword str
 	}
 	encodedNewHashedPass := hex.EncodeToString(newHashedPass)
 	if check := um.DB.Model(&user).Update("hashed_password", encodedNewHashedPass); check.Error != nil {
+		return false, check.Error
+	}
+	return true, nil
+}
+
+// ToggleAdmin toggles the admin permissions of given user
+func (um *UserManager) ToggleAdmin(username string) (bool, error) {
+	var user User
+	um.DB.Where("user_name = ?", username).First(&user)
+	if user.CreatedAt == nilTime {
+		return false, errors.New("user account does not exist")
+	}
+	if check := um.DB.Model(&user).Update("admin_access", !user.AdminAccess); check.Error != nil {
 		return false, check.Error
 	}
 	return true, nil

@@ -10,8 +10,8 @@
 		"admin_user": "",
 		"connection": {
 			"certificates": {
-				"cert_path": "/certificates/api.pem",
-				"key_path": "/certificates/api.key"
+				"cert_path": "./test/api.cert",
+				"key_path": "./test/api.key"
 			},
 			"listen_address": "127.0.0.1"
 		},
@@ -21,17 +21,18 @@
 		},
 		"rollbar_token": "",
 		"jwt_key": "",
-		"size_limit_in_giga_bytes": "2"
+		"size_limit_in_giga_bytes": "2",
+		"logfile": "./templogs.log"
 	},
 	"ipfs": {
 		"api_connection": {
-			"host": "127.0.0.1",
+			"host": "192.168.1.101",
 			"port": "5001"
 		}
 	},
 	"ipfs_cluster": {
 		"api_connection": {
-			"host": "127.0.0.1",
+			"host": "192.168.1.101",
 			"Port": "9094"
 		}
 	},

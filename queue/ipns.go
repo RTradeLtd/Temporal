@@ -15,7 +15,7 @@ import (
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *QueueManager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	ipfsManager, err := rtfs.Initialize("", "")
+	ipfsManager, err := rtfs.Initialize("", cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port)
 	if err != nil {
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.QueueName,

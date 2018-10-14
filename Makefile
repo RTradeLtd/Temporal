@@ -141,3 +141,20 @@ docker:
 	@docker build --build-arg TEMPORALVERSION=$(TEMPORALVERSION) \
 		-t rtradetech/temporal:$(TEMPORALVERSION) .
 	@echo "===================          done           ==================="
+
+# Run development API
+.PHONY: api
+api:
+	CONFIG_DAG=./test/config.json go run cmd/temporal/main.go api
+
+USER=testuser
+PASSWORD=admin
+EMAIL=test@email.com
+
+.PHONY: api-user
+api-user:
+	CONFIG_DAG=./test/config.json go run cmd/temporal/main.go user $(USER) $(PASSWORD) $(EMAIL)
+
+.PHONY: api-admin
+api-admin:
+	CONFIG_DAG=./test/config.json go run cmd/temporal/main.go admin $(USER)

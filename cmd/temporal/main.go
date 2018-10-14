@@ -8,6 +8,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd"
 	"github.com/RTradeLtd/config"
@@ -203,6 +204,50 @@ var commands = map[string]cmd.Cmd{
 			}
 			if err := config.GenerateConfig(configDag); err != nil {
 				log.Fatal(err)
+			}
+		},
+	},
+	"user": cmd.Cmd{
+		Hidden:      true,
+		Blurb:       "create a user",
+		Description: "Create a Temporal user. Provide args as username, password, email. Do not use in production.",
+		Action: func(cfg config.TemporalConfig, args map[string]string) {
+			if len(os.Args) < 5 {
+				log.Fatal("insufficient fields provided")
+			}
+			d, err := database.Initialize(&cfg, database.DatabaseOptions{
+				SSLModeDisable: true,
+			})
+			if err != nil {
+				log.Fatal(err)
+			}
+			if _, err := models.NewUserManager(d.DB).NewUserAccount(
+				os.Args[2], os.Args[3], os.Args[4], false,
+			); err != nil {
+				log.Fatal(err)
+			}
+		},
+	},
+	"admin": cmd.Cmd{
+		Hidden:      true,
+		Blurb:       "assign user as an admin",
+		Description: "Assign an existing Temporal user as an administrator.",
+		Action: func(cfg config.TemporalConfig, args map[string]string) {
+			if len(os.Args) < 3 {
+				log.Fatal("no user provided")
+			}
+			d, err := database.Initialize(&cfg, database.DatabaseOptions{
+				SSLModeDisable: true,
+			})
+			if err != nil {
+				log.Fatal(err)
+			}
+			found, err := models.NewUserManager(d.DB).ToggleAdmin(os.Args[2])
+			if err != nil {
+				log.Fatal(err)
+			}
+			if !found {
+				log.Fatalf("user %s not found", os.Args[2])
 			}
 		},
 	},
