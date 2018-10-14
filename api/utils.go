@@ -76,6 +76,8 @@ func (api *API) getDepositAddress(paymentType string) (string, error) {
 		return "", nil
 	case "xmr":
 		return "", nil
+	case "dash":
+		return "yfLFuyfSNHNtwKbfaGXh17maGKAAgd2A4z", nil
 	}
 	return "", errors.New(eh.InvalidPaymentTypeError)
 }
