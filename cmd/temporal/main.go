@@ -82,35 +82,6 @@ var commands = map[string]cmd.Cmd{
 					select {}
 				},
 			},
-			"client": cmd.Cmd{
-				Blurb:       "run tns client",
-				Description: "run a tns client to query a zone manager",
-				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					peerAddr := os.Getenv("PEER_ADDR")
-					if peerAddr == "" {
-						log.Fatal("PEER_ADDR env var is empty")
-					}
-					cmdToRun := os.Getenv("CMD_TO_RUN")
-					if cmdToRun == "" {
-						log.Fatal("CMD_TO_RUN env var is empty")
-					}
-					client, err := tns.GenerateTNSClient(true, nil)
-					if err != nil {
-						log.Fatal(err)
-					}
-					if err = client.MakeHost(client.PrivateKey, nil); err != nil {
-						log.Fatal(err)
-					}
-					defer client.Host.Close()
-					id, err := client.AddPeerToPeerStore(peerAddr)
-					if err != nil {
-						log.Fatal(err)
-					}
-					if err = client.QueryTNS(id, cmdToRun); err != nil {
-						log.Fatal(err)
-					}
-				},
-			},
 		},
 	},
 	"api": cmd.Cmd{

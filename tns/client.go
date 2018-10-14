@@ -45,19 +45,20 @@ func GenerateTNSClient(genPK bool, pk ...ci.PrivKey) (*Client, error) {
 }
 
 // QueryTNS is used to query a peer for TNS name resolution
-func (c *Client) QueryTNS(peerID peer.ID, cmd string) error {
+func (c *Client) QueryTNS(peerID peer.ID, cmd string, requestArgs interface{}) (interface{}, error) {
 	switch cmd {
 	case "echo":
-		return c.queryEcho(peerID)
+		return nil, c.queryEcho(peerID)
 	case "zone-request":
-		return c.ZoneRequest(peerID, nil)
+		args := requestArgs.(ZoneRequest)
+		return c.ZoneRequest(peerID, &args)
 	default:
-		return errors.New("unsupported cmd")
+		return nil, errors.New("unsupported cmd")
 	}
 }
 
 // ZoneRequest is a call used to request a zone from TNS
-func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) error {
+func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) (interface{}, error) {
 	if req == nil {
 		req = &ZoneRequest{
 			ZoneName:           defaultZoneName,
@@ -68,32 +69,31 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) error {
 	s, err := c.Host.NewStream(context.Background(), peerID, CommandZoneRequest)
 	if err != nil {
 		fmt.Println("failed to generate new stream ", err.Error())
-		return err
+		return nil, err
 	}
 	reqBytes, err := json.Marshal(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	reqBytes = append(reqBytes, '\n')
 	_, err = s.Write(reqBytes)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	resp, err := ioutil.ReadAll(s)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	latestZoneHash := string(resp)
 	rtfsManager, err := rtfs.Initialize("", "")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var intf interface{}
 	if err = rtfsManager.Shell.DagGet(latestZoneHash, &intf); err != nil {
-		return err
+		return nil, err
 	}
-	fmt.Printf("tns zone retrieved from ipfs...\n%+v\n", intf)
-	return nil
+	return intf, nil
 }
 
 // RecordRequest is a call used to request a record from TNS
