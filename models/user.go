@@ -201,28 +201,29 @@ func (um *UserManager) ChangePassword(username, currentPassword, newPassword str
 	return true, nil
 }
 
+func (um *UserManager) FindByEmail(email string) (*User, error) {
+	user := &User{}
+	if check := um.DB.Where("email_address = ?", email).First(user); check.Error != nil {
+		return nil, check.Error
+	}
+	return user, nil
+}
+
 // NewUserAccount is used to create a new user account
 func (um *UserManager) NewUserAccount(username, password, email string, enterpriseEnabled bool) (*User, error) {
-	user := User{}
-	check := um.DB.Where("user_name = ?", username).First(&user)
-	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
-		return nil, check.Error
-	}
-	if check.Error == nil {
-		return nil, errors.New(eh.DuplicateUserNameError)
-	}
-	check = um.DB.Where("email_address = ?", email).First(&user)
-	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
-		return nil, check.Error
-	}
-	if check.Error == nil {
+	user, err := um.FindByEmail(email)
+	if err == nil {
 		return nil, errors.New(eh.DuplicateEmailError)
+	}
+	user, err = um.FindByUserName(username)
+	if err == nil {
+		return nil, errors.New(eh.DuplicateUserNameError)
 	}
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
-	user = User{
+	user = &User{
 		UserName:          username,
 		EnterpriseEnabled: enterpriseEnabled,
 		HashedPassword:    hex.EncodeToString(hashedPass),
@@ -232,10 +233,10 @@ func (um *UserManager) NewUserAccount(username, password, email string, enterpri
 		AdminAccess:       false,
 		Credits:           99999999, // this is temporary and will need to be removed before production
 	}
-	if check := um.DB.Create(&user); check.Error != nil {
+	if check := um.DB.Create(user); check.Error != nil {
 		return nil, check.Error
 	}
-	return &user, nil
+	return user, nil
 }
 
 // SignIn is used to authenticate a user, and check if their account is enabled.
