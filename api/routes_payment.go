@@ -213,10 +213,8 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
 
-// CreatePayment is used to create a payment
+// CreatePayment is used to create a payment for non ethereum payment types
 func (api *API) CreatePayment(c *gin.Context) {
-	Respond(c, http.StatusNotImplemented, gin.H{"response": "this api call isn't fully implemented yet"})
-	return
 	username := GetAuthenticatedUserFromContext(c)
 	paymentType, exists := c.GetPostForm("payment_type")
 	if !exists {
@@ -229,56 +227,75 @@ func (api *API) CreatePayment(c *gin.Context) {
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
-	usdValue, err := api.getUSDValue(paymentType)
-	if err != nil {
-		api.LogError(err, CmcCheckError)(c, http.StatusBadRequest)
-		return
-	}
-	depositAddress, err := api.getDepositAddress(paymentType)
-	if err != nil {
-		api.LogError(err, DepositAddressCheckError)(c, http.StatusBadRequest)
-		return
-	}
-	txHash, exists := c.GetPostForm("tx_hash")
-	if !exists {
-		FailWithMissingField(c, "tx_hash")
-		return
-	}
 	blockchain, exists := c.GetPostForm("blockchain")
 	if !exists {
 		FailWithMissingField(c, "blockchain")
 		return
 	}
-	if check := api.validateBlockchain(blockchain); !check {
-		api.LogError(err, InvalidPaymentBlockchainError)(c, http.StatusBadRequest)
+	if paymentType == "xmr" && blockchain != "monero" {
+		Fail(c, errors.New("mismatching blockchain and payment type"))
+		return
+	} else if paymentType == "dash" && blockchain != "dash" {
+		Fail(c, errors.New("mismatching blockchain and payment type"))
+		return
+	} else if paymentType == "btc" && blockchain != "bitcoin" {
+		Fail(c, errors.New("mismatching blockchain and payment type"))
+		return
+	} else if paymentType == "ltc" && blockchain != "litecoin" {
+		Fail(c, errors.New("mismatching blockchain and payment type"))
+		return
+	}
+
+	usdValue, err := api.getUSDValue(paymentType)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	creditValue, exists := c.GetPostForm("credit_value")
+	if !exists {
+		FailWithMissingField(c, "credit_value")
 		return
 	}
 	pm := models.NewPaymentManager(api.dbm.DB)
-	latestPaymentNumber, err := pm.GetLatestPaymentNumber(username)
+	paymentNumber, err := pm.GetLatestPaymentNumber(username)
 	if err != nil {
 		api.LogError(err, PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
-	if _, err := pm.NewPayment(latestPaymentNumber, depositAddress, txHash, usdValue, blockchain, paymentType, username); err != nil {
-		api.LogError(err, PaymentCreationError)(c, http.StatusBadRequest)
-		return
-	}
-	pc := queue.PaymentCreation{
-		TxHash:     txHash,
-		Blockchain: blockchain,
-		UserName:   username,
-	}
-	mqURL := api.cfg.RabbitMQ.URL
-	qm, err := queue.Initialize(queue.PaymentCreationQueue, mqURL, true, false)
+	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c, http.StatusBadRequest)
+		Fail(c, err)
 		return
 	}
-	if err = qm.PublishMessage(pc); err != nil {
-		api.LogError(err, QueuePublishError)(c, http.StatusBadRequest)
+	chargeAmountFloat := creditValueFloat / usdValue
+	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
+
+	payment, err := pm.NewPayment(
+		paymentNumber,
+		paymentNumberString,
+		paymentNumberString,
+		chargeAmountFloat,
+		blockchain,
+		paymentType,
+		username,
+	)
+	if err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	Respond(c, http.StatusOK, gin.H{"response": "payment created"})
+	type pay struct {
+		PaymentNumber int64
+		ChargeAmount  float64
+		Blockchain    string
+		Status        string
+	}
+	p := pay{
+		PaymentNumber: payment.Number,
+		ChargeAmount:  payment.USDValue,
+		Blockchain:    blockchain,
+		Status:        "please send exactly the charge amount",
+	}
+	Respond(c, http.StatusOK, gin.H{"response": p})
 }
 
 // GetDepositAddress is used to get a deposit address for a user
@@ -299,6 +316,8 @@ func (api *API) getUSDValue(paymentType string) (float64, error) {
 		return utils.RetrieveUsdPrice("ethereum")
 	case "xmr":
 		return utils.RetrieveUsdPrice("monero")
+	case "dash":
+		return utils.RetrieveUsdPrice("dash")
 	case "btc":
 		return utils.RetrieveUsdPrice("bitcoin")
 	case "ltc":
