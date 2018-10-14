@@ -145,7 +145,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		paymentNumber,
 		paymentNumberString,
 		paymentNumberString,
-		chargeAmountFloat,
+		creditValueFloat,
 		"ethereum",
 		paymentType,
 		username,
@@ -275,7 +275,7 @@ func (api *API) CreatePayment(c *gin.Context) {
 		paymentNumber,
 		paymentNumberString,
 		paymentNumberString,
-		chargeAmountFloat,
+		creditValueFloat,
 		blockchain,
 		paymentType,
 		username,
@@ -292,7 +292,7 @@ func (api *API) CreatePayment(c *gin.Context) {
 	}
 	p := pay{
 		PaymentNumber: payment.Number,
-		ChargeAmount:  payment.USDValue,
+		ChargeAmount:  chargeAmountFloat,
 		Blockchain:    blockchain,
 		Status:        "please send exactly the charge amount",
 	}
