@@ -41,7 +41,11 @@ func (api *API) performZoneRequest(c *gin.Context) {
 	}
 	client, err := tns.GenerateTNSClient(true, nil)
 	if err != nil {
-		Fail(c, err)
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	if err = client.MakeHost(client.PrivateKey, nil); err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
 	id, err := client.AddPeerToPeerStore(peerID)
