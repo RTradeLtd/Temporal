@@ -10,6 +10,7 @@ import (
 	"github.com/jinzhu/gorm"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	net "github.com/libp2p/go-libp2p-net"
+	peer "github.com/libp2p/go-libp2p-peer"
 	ma "github.com/multiformats/go-multiaddr"
 	log "github.com/sirupsen/logrus"
 )
@@ -44,12 +45,20 @@ func GenerateTNSManager(opts *ManagerOpts, db *gorm.DB) (*Manager, error) {
 			ZoneName:  "default",
 		}
 	}
+	managerPKID, err := peer.IDFromPublicKey(opts.ManagerPK.GetPublic())
+	if err != nil {
+		return nil, err
+	}
 	zoneManager := ZoneManager{
-		PublicKey: opts.ManagerPK.GetPublic(),
+		PublicKey: managerPKID.String(),
+	}
+	zonePKID, err := peer.IDFromPublicKey(opts.ZonePK.GetPublic())
+	if err != nil {
+		return nil, err
 	}
 	zone := Zone{
 		Name:      opts.ZoneName,
-		PublicKey: opts.ZonePK.GetPublic(),
+		PublicKey: zonePKID.String(),
 		Manager:   &zoneManager,
 	}
 	manager := Manager{
