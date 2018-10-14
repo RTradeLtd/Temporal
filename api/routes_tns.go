@@ -4,11 +4,58 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/tns"
+
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-gonic/gin"
 	peer "github.com/libp2p/go-libp2p-peer"
 )
+
+// PerformZoneRequest is used to perform a zone request lookup
+func (api *API) performZoneRequest(c *gin.Context) {
+	userToQuery, exists := c.GetPostForm("user_name")
+	if !exists {
+		FailWithMissingField(c, "user_name")
+		return
+	}
+	zoneName, exists := c.GetPostForm("zone_name")
+	if !exists {
+		FailWithMissingField(c, "zone_name")
+		return
+	}
+	zoneManagerKeyName, exists := c.GetPostForm("zone_manager_key_name")
+	if !exists {
+		FailWithMissingField(c, "zone_manager_key_name")
+		return
+	}
+	peerID, exists := c.GetPostForm("peer_id")
+	if !exists {
+		FailWithMissingField(c, "peer_id")
+		return
+	}
+	req := tns.ZoneRequest{
+		UserName:           userToQuery,
+		ZoneName:           zoneName,
+		ZoneManagerKeyName: zoneManagerKeyName,
+	}
+	client, err := tns.GenerateTNSClient(true, nil)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	id, err := peer.IDFromString(peerID)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	resp, err := client.QueryTNS(id, "zone-request", req)
+	if err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": resp})
+}
 
 // AddRecordToZone is used to an a record to a TNS zone
 func (api *API) addRecordToZone(c *gin.Context) {
