@@ -161,6 +161,12 @@ func (api *API) setupRoutes() {
 	// V1 API
 	v1 := api.r.Group("/api/v1")
 
+	// system checks used to verify the integrity of our services
+	systemChecks := v1.Group("/systems")
+	{
+		systemChecks.GET("/check", api.SystemsCheck)
+	}
+
 	// authentication
 	auth := v1.Group("/auth")
 	{
