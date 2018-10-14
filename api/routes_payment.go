@@ -145,7 +145,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		paymentNumber,
 		paymentNumberString,
 		paymentNumberString,
-		usdValueFloat,
+		chargeAmountFloat,
 		"ethereum",
 		paymentType,
 		username,
