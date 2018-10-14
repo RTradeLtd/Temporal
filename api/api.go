@@ -200,6 +200,7 @@ func (api *API) setupRoutes() {
 	tnsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
 	tnsProtected.POST("/zone/create", api.CreateZone)
 	tnsProtected.POST("/record/create", api.addRecordToZone)
+	tnsProtected.POST("/query/zone-request", api.performZoneRequest)
 
 	// payments
 	payments := v1.Group("/payments", authware...)
