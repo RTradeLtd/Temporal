@@ -68,6 +68,15 @@ func (rm *RecordManager) AddRecord(username, recordName, recordKeyName, zoneName
 	return &r, nil
 }
 
+// FindRecordsByZone is used to find records by zone
+func (rm *RecordManager) FindRecordsByZone(username, zoneName string) (*[]Record, error) {
+	records := []Record{}
+	if check := rm.DB.Where("user_name = ? AND zone_name = ?", username, zoneName).Find(&records); check.Error != nil {
+		return nil, check.Error
+	}
+	return &records, nil
+}
+
 // StringifyMetaData is sued to convert metadata, into a string object json object
 func (rm *RecordManager) stringifyMetaData(data map[string]interface{}) string {
 	s := "{"

@@ -12,8 +12,8 @@ type Zone struct {
 	gorm.Model
 	UserName             string         `gorm:"type:varchar(255)"`
 	Name                 string         `gorm:"type:varchar(255)"`
-	ManagerPublicKeyHash string         `gorm:"type:varchar(255)"`
-	ZonePublicKeyHash    string         `gorm:"type:varchar(255)"`
+	ManagerPublicKeyName string         `gorm:"type:varchar(255)"`
+	ZonePublicKeyName    string         `gorm:"type:varchar(255)"`
 	LatestIPFSHash       string         `gorm:"type:varchar(255)"`
 	RecordNames          pq.StringArray `gorm:"type:text[]"`
 }
@@ -40,8 +40,8 @@ func (zm *ZoneManager) NewZone(username, name, managerPK, zonePK, latestIPFSHash
 	zone = &Zone{
 		UserName:             username,
 		Name:                 name,
-		ManagerPublicKeyHash: managerPK,
-		ZonePublicKeyHash:    zonePK,
+		ManagerPublicKeyName: managerPK,
+		ZonePublicKeyName:    zonePK,
 		LatestIPFSHash:       latestIPFSHash,
 	}
 	if check := zm.DB.Create(zone); check.Error != nil {

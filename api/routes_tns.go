@@ -10,7 +10,6 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-gonic/gin"
-	peer "github.com/libp2p/go-libp2p-peer"
 )
 
 // PerformZoneRequest is used to perform a zone request lookup
@@ -162,31 +161,11 @@ func (api *API) CreateZone(c *gin.Context) {
 		api.LogError(err, KeyUseError)(c, http.StatusBadRequest)
 		return
 	}
-	zoneManagerPK, err := rManager.KeystoreManager.GetPrivateKeyByName(zoneManagerKeyName)
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	zonePK, err := rManager.KeystoreManager.GetPrivateKeyByName(zoneKeyName)
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	zonePublicKeyID, err := peer.IDFromPublicKey(zonePK.GetPublic())
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	zoneManagerPublicKeyID, err := peer.IDFromPublicKey(zoneManagerPK.GetPublic())
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
 	zone, err := api.zm.NewZone(
 		username,
 		zoneName,
-		zoneManagerPublicKeyID.String(),
-		zonePublicKeyID.String(),
+		zoneManagerKeyName,
+		zoneKeyName,
 		"qm..",
 	)
 	if err != nil {
