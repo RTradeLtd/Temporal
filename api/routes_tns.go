@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/tns"
@@ -53,11 +54,13 @@ func (api *API) performZoneRequest(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	fmt.Println("querying tns")
 	resp, err := client.QueryTNS(id, "zone-request", req)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	fmt.Println("tns queried")
 	Respond(c, http.StatusOK, gin.H{"response": resp})
 }
 
