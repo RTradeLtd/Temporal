@@ -42,7 +42,7 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 	}
 	pm := models.NewPaymentManager(api.dbm.DB)
 	if _, err := pm.FindPaymentByNumber(username, paymentNumberInt); err != nil {
-		api.LogError(err, PaymentSearchError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
 	payment, err := pm.UpdatePaymentTxHash(username, txHash, paymentNumberInt)
@@ -61,11 +61,11 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 		false,
 	)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err = qm.PublishMessage(paymentConfirmation); err != nil {
-		api.LogError(err, QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": payment})
@@ -103,13 +103,13 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	}
 	usdValueFloat, err := api.getUSDValue(paymentType)
 	if err != nil {
-		api.LogError(err, CmcCheckError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.CmcCheckError)(c, http.StatusBadRequest)
 		return
 	}
 	pm := models.NewPaymentManager(api.dbm.DB)
 	paymentNumber, err := pm.GetLatestPaymentNumber(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		api.LogError(err, PaymentSearchError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
 	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
@@ -260,7 +260,7 @@ func (api *API) CreatePayment(c *gin.Context) {
 	pm := models.NewPaymentManager(api.dbm.DB)
 	paymentNumber, err := pm.GetLatestPaymentNumber(username)
 	if err != nil {
-		api.LogError(err, PaymentSearchError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
 	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
