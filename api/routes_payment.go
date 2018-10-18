@@ -292,17 +292,24 @@ func (api *API) CreatePayment(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	depositAddress, err := api.getDepositAddress(paymentType)
+	if err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
 	type pay struct {
-		PaymentNumber int64
-		ChargeAmount  float64
-		Blockchain    string
-		Status        string
+		PaymentNumber  int64
+		ChargeAmount   float64
+		Blockchain     string
+		Status         string
+		DepositAddress string
 	}
 	p := pay{
-		PaymentNumber: payment.Number,
-		ChargeAmount:  chargeAmountFloat,
-		Blockchain:    blockchain,
-		Status:        "please send exactly the charge amount",
+		PaymentNumber:  payment.Number,
+		ChargeAmount:   chargeAmountFloat,
+		Blockchain:     blockchain,
+		Status:         "please send exactly the charge amount",
+		DepositAddress: depositAddress,
 	}
 	Respond(c, http.StatusOK, gin.H{"response": p})
 }
