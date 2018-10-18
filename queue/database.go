@@ -29,6 +29,12 @@ func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *g
 			d.Ack(false)
 			continue
 		}
+		opts := models.UploadOptions{
+			NetworkName:      dfa.NetworkName,
+			Username:         dfa.UserName,
+			HoldTimeInMonths: dfa.HoldTimeInMonths,
+			Encrypted:        false,
+		}
 		if err != nil && err == gorm.ErrRecordNotFound {
 			if _, err = uploadManager.NewUpload(
 				dfa.Hash, "file",
