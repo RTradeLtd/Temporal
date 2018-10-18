@@ -98,15 +98,14 @@ func setupConnection(connectionURL string) (*amqp.Connection, error) {
 	return conn, nil
 }
 
+// OpenChannel is used to open a channel with rabbitmq
 func (qm *QueueManager) OpenChannel() error {
 	ch, err := qm.Connection.Channel()
 	if err != nil {
 		return err
 	}
 	if qm.Logger != nil {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("channel opened")
+		qm.LogInfo("channel opened")
 	}
 	qm.Channel = ch
 	return nil
@@ -128,9 +127,7 @@ func (qm *QueueManager) DeclareQueue() error {
 		return err
 	}
 	if qm.Logger != nil {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("queue declared")
+		qm.LogInfo("queue declared")
 	}
 	qm.Queue = &q
 	return nil
@@ -163,9 +160,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 		if err != nil {
 			return err
 		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("queue bound")
+		qm.LogInfo("queue bound")
 	case PinExchange:
 		err = qm.Channel.QueueBind(
 			qm.QueueName, // name of the queue
@@ -177,9 +172,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 		if err != nil {
 			return err
 		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("queue bound")
+		qm.LogInfo("queue bound")
 	case IpfsKeyExchange:
 		err = qm.Channel.QueueBind(
 			qm.QueueName,    // name of the queue
@@ -191,9 +184,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 		if err != nil {
 			return err
 		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("queue bound")
+		qm.LogInfo("queue bound")
 	default:
 		break
 	}
@@ -248,7 +239,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 			return err
 		}
 	default:
-		log.Fatal("invalid queue name")
+		return errors.New("invalid queue name")
 	}
 	return nil
 }
@@ -310,6 +301,7 @@ func (qm *QueueManager) PublishMessage(body interface{}) error {
 	return nil
 }
 
+// Close is used to close our queue connection
 func (qm *QueueManager) Close() error {
 	return qm.Connection.Close()
 }
