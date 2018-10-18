@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	recipient = "insertemailhere"
+	recipient = "alext@rtradetechnologies.com"
 	cfgPath   = filepath.Join(os.Getenv("HOME"), "config.json")
 )
 

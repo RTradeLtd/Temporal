@@ -10,12 +10,8 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-/*
-This package is used to handle sending email messages to
-TEMPORAL users
-*/
-
-type MailManager struct {
+// Manager is our manager that handles email sending
+type Manager struct {
 	APIKey       string              `json:"api_key"`
 	EmailAddress string              `json:"email_address"` // EmailAddress is the address from which messages will be sent from
 	EmailName    string              `json:"email_name"`    // EmailName is the name of the email address
@@ -23,7 +19,8 @@ type MailManager struct {
 	UserManager  *models.UserManager `json:"user_manager"`
 }
 
-func GenerateMailManager(tCfg *config.TemporalConfig) (*MailManager, error) {
+// GenerateMailManager is used to generate our mail manager service
+func GenerateMailManager(tCfg *config.TemporalConfig) (*Manager, error) {
 	apiKey := tCfg.Sendgrid.APIKey
 	emailAddress := tCfg.Sendgrid.EmailAddress
 	emailName := tCfg.Sendgrid.EmailName
@@ -32,13 +29,19 @@ func GenerateMailManager(tCfg *config.TemporalConfig) (*MailManager, error) {
 	dbPass := tCfg.Database.Password
 	dbURL := tCfg.Database.URL
 	dbUser := tCfg.Database.Username
+	var port string
+	if tCfg.Database.Port == "" {
+		port = "5432"
+	} else {
+		port = tCfg.Database.Port
+	}
 	db, err := database.OpenDBConnection(database.DBOptions{
-		User: dbUser, Password: dbPass, Address: dbURL, Port: "5432"})
+		User: dbUser, Password: dbPass, Address: dbURL, Port: port, SSLModeDisable: true})
 	if err != nil {
 		return nil, err
 	}
 	um := models.NewUserManager(db)
-	mm := MailManager{
+	mm := Manager{
 		APIKey:       apiKey,
 		EmailAddress: emailAddress,
 		EmailName:    emailName,
@@ -48,7 +51,8 @@ func GenerateMailManager(tCfg *config.TemporalConfig) (*MailManager, error) {
 	return &mm, nil
 }
 
-func (mm *MailManager) BulkSend(subject, content, contentType string, recipientNames, recipientEmails []string) error {
+// BulkSend is used to handle sending a single email, to multiple recipients
+func (mm *Manager) BulkSend(subject, content, contentType string, recipientNames, recipientEmails []string) error {
 	if len(recipientNames) != len(recipientEmails) {
 		return errors.New("recipientNames and recipientEmails must be fo equal length")
 	}
@@ -62,7 +66,7 @@ func (mm *MailManager) BulkSend(subject, content, contentType string, recipientN
 }
 
 // SendEmail is used to send an email to temporal users
-func (mm *MailManager) SendEmail(subject, content, contentType, recipientName, recipientEmail string) (int, error) {
+func (mm *Manager) SendEmail(subject, content, contentType, recipientName, recipientEmail string) (int, error) {
 	if contentType == "" {
 		contentType = "text/html"
 	}

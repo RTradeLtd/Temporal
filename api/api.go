@@ -209,6 +209,14 @@ func (api *API) setupRoutes() {
 		{
 			credits.GET("/available", api.getCredits)
 		}
+		email := account.Group("/email")
+		{
+			token := email.Group("/token")
+			{
+				token.GET("/get", api.getEmailVerificationToken)
+				token.POST("/verify", api.verifyEmailAddress)
+			}
+		}
 	}
 
 	// ipfs
