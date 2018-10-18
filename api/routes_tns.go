@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/tns"
 
 	"github.com/RTradeLtd/Temporal/queue"
@@ -106,11 +107,11 @@ func (api *API) addRecordToZone(c *gin.Context) {
 	mqURL := api.cfg.RabbitMQ.URL
 	qm, err := queue.Initialize(queue.RecordCreationQueue, mqURL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err = qm.PublishMessage(req); err != nil {
-		api.LogError(err, QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "record creation request sent to backend"})
@@ -136,7 +137,7 @@ func (api *API) CreateZone(c *gin.Context) {
 	}
 	rManager, err := rtfs.Initialize("", "")
 	if err != nil {
-		api.LogError(err, IPFSConnectionError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.IPFSConnectionError)(c, http.StatusBadRequest)
 		return
 	}
 	if err = rManager.CreateKeystoreManager(); err != nil {
@@ -145,20 +146,20 @@ func (api *API) CreateZone(c *gin.Context) {
 	}
 	valid, err := api.um.CheckIfKeyOwnedByUser(username, zoneManagerKeyName)
 	if err != nil {
-		api.LogError(err, KeySearchError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.KeySearchError)(c, http.StatusBadRequest)
 		return
 	}
 	if !valid {
-		api.LogError(err, KeyUseError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.KeyUseError)(c, http.StatusBadRequest)
 		return
 	}
 	valid, err = api.um.CheckIfKeyOwnedByUser(username, zoneKeyName)
 	if err != nil {
-		api.LogError(err, KeySearchError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.KeySearchError)(c, http.StatusBadRequest)
 		return
 	}
 	if !valid {
-		api.LogError(err, KeyUseError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.KeyUseError)(c, http.StatusBadRequest)
 		return
 	}
 	zone, err := api.zm.NewZone(
@@ -174,7 +175,7 @@ func (api *API) CreateZone(c *gin.Context) {
 	}
 	queueManager, err := queue.Initialize(queue.ZoneCreationQueue, api.cfg.RabbitMQ.URL, true, false)
 	if err != nil {
-		api.LogError(err, QueueInitializationError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
 		return
 	}
 	zoneCreation := queue.ZoneCreation{
@@ -184,7 +185,7 @@ func (api *API) CreateZone(c *gin.Context) {
 		UserName:       username,
 	}
 	if err = queueManager.PublishMessage(zoneCreation); err != nil {
-		api.LogError(err, QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": zone})

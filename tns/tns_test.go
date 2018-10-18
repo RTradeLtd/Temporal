@@ -42,7 +42,7 @@ func TestTNS_Echo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = client.QueryTNS(pid, "echo"); err != nil {
+	if _, err = client.QueryTNS(pid, "echo", nil); err != nil {
 		t.Fatal(err)
 	}
 }

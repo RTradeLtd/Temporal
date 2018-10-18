@@ -50,8 +50,14 @@ func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *g
 			d.Ack(false)
 			continue
 		}
+		opts := models.UploadOptions{
+			NetworkName:      dfa.NetworkName,
+			Username:         dfa.UserName,
+			HoldTimeInMonths: dfa.HoldTimeInMonths,
+			Encrypted:        false,
+		}
 		if err != nil && err == gorm.ErrRecordNotFound {
-			if _, err = uploadManager.NewUpload(dfa.Hash, "file", dfa.NetworkName, dfa.UserName, dfa.HoldTimeInMonths); err != nil {
+			if _, err = uploadManager.NewUpload(dfa.Hash, "file", opts); err != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.QueueName,
 					"user":    dfa.UserName,

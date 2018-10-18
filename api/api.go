@@ -181,20 +181,14 @@ func (api *API) setupRoutes() {
 	{
 		statistics.GET("/stats", api.getStats)
 	}
-	tnsProtected := api.r.Group("/api/v1/tns")
-	tnsProtected.Use(authWare.MiddlewareFunc())
-	tnsProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
-	tnsProtected.POST("/zone/create", api.CreateZone)
-	tnsProtected.POST("/record/create", api.addRecordToZone)
-	tnsProtected.POST("/query/zone-request", api.performZoneRequest)
 
-	accountProtected := api.r.Group("/api/v1/account")
-	accountProtected.Use(authWare.MiddlewareFunc())
-	accountProtected.Use(middleware.APIRestrictionMiddleware(api.dbm.DB))
-	accountProtected.POST("password/change", api.changeAccountPassword)
-	accountProtected.GET("/key/ipfs/get", api.getIPFSKeyNamesForAuthUser)
-	accountProtected.POST("/key/ipfs/new", api.createIPFSKey)
-	accountProtected.GET("/credits/available", api.getCredits)
+	// tns
+	tnsProtected := v1.Group("/tns", authware...)
+	{
+		tnsProtected.POST("/zone/create", api.CreateZone)
+		tnsProtected.POST("/record/create", api.addRecordToZone)
+		tnsProtected.POST("/query/zone-request", api.performZoneRequest)
+	}
 
 	// payments
 	payments := v1.Group("/payments", authware...)
