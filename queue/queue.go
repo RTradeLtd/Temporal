@@ -138,11 +138,10 @@ func (qm *QueueManager) DeclareQueue() error {
 // Perhaps the error was temporary, and we allow it to be retried?
 func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
 	db, err := database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
-		SSLModeDisable: true,
+		User:     cfg.Database.Username,
+		Password: cfg.Database.Password,
+		Address:  cfg.Database.URL,
+		Port:     cfg.Database.Port,
 	})
 	if err != nil {
 		return err
