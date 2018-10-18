@@ -20,10 +20,7 @@ func (qm *QueueManager) ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config
 		qm.LogInfo("detected new message")
 		es := EmailSend{}
 		if err = json.Unmarshal(d.Body, &es); err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"error":   err.Error(),
-			}).Error("failed to unmarshal message")
+			qm.LogError(err, "failed to unmarshal message")
 			d.Ack(false)
 			continue
 		}
@@ -31,11 +28,7 @@ func (qm *QueueManager) ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config
 		for k, v := range es.Emails {
 			_, err = mm.SendEmail(es.Subject, es.Content, es.ContentType, es.UserNames[k], v)
 			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    k,
-					"error":   err.Error(),
-				}).Error("failed to send email")
+				qm.LogError(err, "failed to send email")
 				d.Ack(false)
 				emailSent = false
 				continue
