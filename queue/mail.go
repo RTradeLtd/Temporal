@@ -19,29 +19,31 @@ func (qm *QueueManager) ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config
 	for d := range msgs {
 		qm.LogInfo("detected new message")
 		es := EmailSend{}
-		err = json.Unmarshal(d.Body, &es)
-		if err != nil {
-			qm.LogError(err, "failed to unmarshal message")
+		if err = json.Unmarshal(d.Body, &es); err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.QueueName,
+				"error":   err.Error(),
+			}).Error("failed to unmarshal message")
 			d.Ack(false)
 			continue
 		}
-		emails := make(map[string]string)
-		for _, v := range es.UserNames {
-			resp, err := mm.UserManager.FindEmailByUserName(v)
+		var emailSent bool
+		for k, v := range es.Emails {
+			_, err = mm.SendEmail(es.Subject, es.Content, es.ContentType, es.UserNames[k], v)
 			if err != nil {
-				qm.LogError(err, "failed to find email by user name")
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.QueueName,
+					"user":    k,
+					"error":   err.Error(),
+				}).Error("failed to send email")
 				d.Ack(false)
+				emailSent = false
 				continue
 			}
-			emails[v] = resp[v]
+			emailSent = true
 		}
-		for k, v := range emails {
-			_, err = mm.SendEmail(es.Subject, es.Content, es.ContentType, k, v)
-			if err != nil {
-				qm.LogError(err, "failed to send email")
-				d.Ack(false)
-				continue
-			}
+		if !emailSent {
+			continue
 		}
 		qm.LogInfo("successfuly sent email(s)")
 		d.Ack(false)

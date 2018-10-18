@@ -41,6 +41,7 @@ func (api *API) getEmailVerificationToken(c *gin.Context) {
 		Content:     fmt.Sprintf("Please submit the following email verification token: %s\n", user.EmailVerificationToken),
 		ContentType: "text/html",
 		UserNames:   []string{user.UserName},
+		Emails:      []string{user.EmailAddress},
 	}
 	mqURL := api.cfg.RabbitMQ.URL
 	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
