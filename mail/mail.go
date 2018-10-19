@@ -19,8 +19,8 @@ type Manager struct {
 	UserManager  *models.UserManager `json:"user_manager"`
 }
 
-// GenerateMailManager is used to generate our mail manager service
-func GenerateMailManager(tCfg *config.TemporalConfig) (*Manager, error) {
+// NewManager is used to create our mail manager, allowing us to send email
+func NewManager(tCfg *config.TemporalConfig) (*Manager, error) {
 	apiKey := tCfg.Sendgrid.APIKey
 	emailAddress := tCfg.Sendgrid.EmailAddress
 	emailName := tCfg.Sendgrid.EmailName

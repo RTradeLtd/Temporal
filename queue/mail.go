@@ -10,7 +10,7 @@ import (
 
 // ProcessMailSends is a function used to process mail send queue messages
 func (qm *QueueManager) ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.TemporalConfig) error {
-	mm, err := mail.GenerateMailManager(tCfg)
+	mm, err := mail.NewManager(tCfg)
 	if err != nil {
 		qm.LogError(err, "failed to generate mail manager")
 		return err
