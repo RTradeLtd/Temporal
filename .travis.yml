@@ -14,7 +14,6 @@ before_script:
   - go build ./...
   - go test -run xxxx ./...
   - make testenv
-  - mkdir /var/log/temporal
 
 script:
   # - docker run -v $(pwd):/mnt koalaman/shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
