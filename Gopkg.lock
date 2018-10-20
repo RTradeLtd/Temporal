@@ -26,24 +26,24 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:8ae0ac5b8947162fe3f2d8d19ff68b034c311fa83577a1d3ae3ad9a7123b5e30"
-  name = "github.com/RTradeLtd/gapimit"
-  packages = [
-    "request",
-    "response",
-    "service",
-  ]
-  pruneopts = "UT"
-  revision = "e14f7051a44ab9e0382fa9d29c20b796e60d7ff4"
-  version = "v1.0.0"
-
-[[projects]]
   branch = "master-rtrade"
   digest = "1:057ef275777e16de287ddbe39ae5590ab1acfa6ccb3d86f3410b998f7ce59b05"
   name = "github.com/RTradeLtd/go-ipfs-api"
   packages = ["."]
   pruneopts = "UT"
   revision = "7a707aa6805a8737f57d6623f62fe5b37862626a"
+
+[[projects]]
+  digest = "1:1eed9cf7d187791d1b7bbcc1713fd4a1177829bcf6a6c4dd9fac178aac551373"
+  name = "github.com/RTradeLtd/grpc"
+  packages = [
+    "temporal/request",
+    "temporal/response",
+    "temporal/service",
+  ]
+  pruneopts = "UT"
+  revision = "a873cc9dfc4d596ec742df1744b257d3b0a22f6d"
+  version = "v1.0.3"
 
 [[projects]]
   branch = "master"
@@ -1382,10 +1382,10 @@
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",
-    "github.com/RTradeLtd/gapimit/request",
-    "github.com/RTradeLtd/gapimit/response",
-    "github.com/RTradeLtd/gapimit/service",
     "github.com/RTradeLtd/go-ipfs-api",
+    "github.com/RTradeLtd/grpc/temporal/request",
+    "github.com/RTradeLtd/grpc/temporal/response",
+    "github.com/RTradeLtd/grpc/temporal/service",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",

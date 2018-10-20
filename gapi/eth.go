@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/gapimit/request"
-	"github.com/RTradeLtd/gapimit/response"
-	pb "github.com/RTradeLtd/gapimit/service"
+	"github.com/RTradeLtd/grpc/temporal/request"
+	"github.com/RTradeLtd/grpc/temporal/response"
+	pb "github.com/RTradeLtd/grpc/temporal/service"
 	"google.golang.org/grpc"
 )
 

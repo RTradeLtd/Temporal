@@ -14,8 +14,8 @@ package service
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import request "github.com/RTradeLtd/gapimit/request"
-import response "github.com/RTradeLtd/gapimit/response"
+import request "github.com/RTradeLtd/grpc/temporal/request"
+import response "github.com/RTradeLtd/grpc/temporal/response"
 
 import (
 	context "golang.org/x/net/context"
