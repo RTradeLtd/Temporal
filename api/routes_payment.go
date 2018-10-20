@@ -101,46 +101,63 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		FailWithMissingField(c, "credit_value")
 		return
 	}
+	// get the current value of a single (ie, 1.0 eth) unit of currency of the given payment type
 	usdValueFloat, err := api.getUSDValue(paymentType)
 	if err != nil {
 		api.LogError(err, eh.CmcCheckError)(c, http.StatusBadRequest)
 		return
 	}
 	pm := models.NewPaymentManager(api.dbm.DB)
+	// get the number of the current payment we are processing
 	paymentNumber, err := pm.GetLatestPaymentNumber(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
+	// convert the credits the user wnats to buy from string to float
 	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
 	if err != nil {
 		Fail(c, err)
 		return
 	}
+	// calculate how much of the given currency we  need to charge them
 	chargeAmountFloat := creditValueFloat / usdValueFloat
+	// convert the float to a big int, as whenever we are processing uint256 in our smart contracts, this is the equivalent of a big.Int in golang
 	chargeAmountBig := utils.FloatToBigInt(chargeAmountFloat)
+	// format the big int, as a string
 	chargeAmountString := chargeAmountBig.String()
+	// do some formatting
 	numberString := strconv.FormatInt(paymentNumber, 10)
 	methodString := strconv.FormatUint(method, 10)
+	// the following pieces of information are used to construct a hash which we then sign
+	// using this signed hash, we can then present it to the smart contract, along with the data needed to reconstruct the hash
+	// by presenting this information to the smart contract via a transaction sent by the senderAddress, we can validate our payment
+	// on-chain, in a trustless manner ensuring transfer of payment and validation of payment within a single smart contract call.
 	signRequest := greq.SignRequest{
-		Address:      senderAddress,
-		Method:       methodString,
-		Number:       numberString,
+		// the address that will be sending the transactoin
+		Address: senderAddress,
+		// the method of the payment
+		Method: methodString,
+		// the number of the current payment
+		Number: numberString,
+		// the amount we are charging them
 		ChargeAmount: chargeAmountString,
 	}
+	// generate the grpc client so we can connect to the service we use to generate signed messages
 	gc, err := gapi.NewGAPIClient(api.cfg, true)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
 	defer gc.GC.Close()
+	// send a call to the signer service, which will take the data, hash it, and sign it
+	// using the returned values, we have the information needed to send a call to the smart contract
 	resp, err := gc.GetSignedMessage(context.Background(), &signRequest)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
 	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
-
 	if _, err = pm.NewPayment(
 		paymentNumber,
 		paymentNumberString,
@@ -153,9 +170,11 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	// we need to do some formatting on this data in order to submit it to the smart contract
 	hEncoded := resp.GetH()
 	rEncoded := resp.GetR()
 	sEncoded := resp.GetS()
+	// we need to decode the data into a byte array for h, r, and s
 	hDecoded, err := hex.DecodeString(hEncoded)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
@@ -171,20 +190,11 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	// we need to make sure that they are all exactly 32 bytes
 	if len(rDecoded) != len(sDecoded) && len(rDecoded) != len(hDecoded) {
 		err = errors.New("h,r,s must be all be 32 bytes")
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
-	}
-	var h, r, s [32]byte
-	for k, v := range hDecoded {
-		h[k] = v
-	}
-	for k, v := range rDecoded {
-		r[k] = v
-	}
-	for k, v := range sDecoded {
-		s[k] = v
 	}
 	fmt.Println("charge amount float ", chargeAmountFloat)
 	fmt.Println("charge amount string ", chargeAmountString)
@@ -201,9 +211,9 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		"method":            uint8(method),
 		"payment_number":    paymentNumber,
 		"prefixed":          true,
-		"h":                 h,
-		"r":                 r,
-		"s":                 s,
+		"h":                 hDecoded,
+		"r":                 rDecoded,
+		"s":                 sDecoded,
 		"v":                 uint8(vUint),
 		"formatted": gin.H{
 			"h": formattedH,
