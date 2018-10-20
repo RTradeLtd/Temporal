@@ -10,12 +10,20 @@
   version = "v1.0.1-rc1"
 
 [[projects]]
-  digest = "1:7a9cc64d30e6628cdb3b183326fd0ff1274b907b5ba6ba3e8f312df0a518da0b"
+  digest = "1:c674d86e742a40ce4824355c5723205ca5f1a0f6ef99698a1e2d3875e7648fd5"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a127385eeeaab29107992f4e5c14119f873ea7c0"
-  version = "v1.0.2"
+  revision = "24630411e8320c02ed80f9f40cb5f9ebab5c1f1e"
+  version = "v1.0.3"
+
+[[projects]]
+  digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
+  name = "github.com/RTradeLtd/crypto"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b12095f9d32129596d8648e13efb3b537fea1b2c"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:8ae0ac5b8947162fe3f2d8d19ff68b034c311fa83577a1d3ae3ad9a7123b5e30"
@@ -1373,6 +1381,7 @@
   input-imports = [
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
+    "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/gapimit/request",
     "github.com/RTradeLtd/gapimit/response",
     "github.com/RTradeLtd/gapimit/service",

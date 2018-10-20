@@ -12,6 +12,8 @@ type TemporalConfig struct {
 	Sendgrid    `json:"sendgrid,omitempty"`
 	Ethereum    `json:"ethereum,omitempty"`
 	Wallets     `json:"wallets,omitempty"`
+	APIKeys     `json:"api_keys,omitempty"`
+	Endpoints   `json:"endpoints,omitempty"`
 }
 
 // API configures the Temporal API
@@ -126,4 +128,14 @@ type Wallets struct {
 	DASH string `json:"dash"`
 	BTC  string `json:"btc"`
 	LTC  string `json:"ltc"`
+}
+
+// APIKeys are the various API keys we use
+type APIKeys struct {
+	ChainRider string `json:"chain_rider"`
+}
+
+// Endpoints are various endpoints we connect to
+type Endpoints struct {
+	MoneroRPC string `json:"monero_rpc"`
 }
