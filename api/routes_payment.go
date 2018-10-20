@@ -13,7 +13,6 @@ import (
 
 	"github.com/RTradeLtd/Temporal/gapi"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	greq "github.com/RTradeLtd/gapimit/request"
@@ -40,12 +39,11 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	pm := models.NewPaymentManager(api.dbm.DB)
-	if _, err := pm.FindPaymentByNumber(username, paymentNumberInt); err != nil {
+	if _, err := api.pm.FindPaymentByNumber(username, paymentNumberInt); err != nil {
 		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
-	payment, err := pm.UpdatePaymentTxHash(username, txHash, paymentNumberInt)
+	payment, err := api.pm.UpdatePaymentTxHash(username, txHash, paymentNumberInt)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
@@ -107,9 +105,8 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(err, eh.CmcCheckError)(c, http.StatusBadRequest)
 		return
 	}
-	pm := models.NewPaymentManager(api.dbm.DB)
 	// get the number of the current payment we are processing
-	paymentNumber, err := pm.GetLatestPaymentNumber(username)
+	paymentNumber, err := api.pm.GetLatestPaymentNumber(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
@@ -158,7 +155,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		return
 	}
 	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
-	if _, err = pm.NewPayment(
+	if _, err = api.pm.NewPayment(
 		paymentNumber,
 		paymentNumberString,
 		paymentNumberString,
@@ -267,8 +264,7 @@ func (api *API) CreatePayment(c *gin.Context) {
 		FailWithMissingField(c, "credit_value")
 		return
 	}
-	pm := models.NewPaymentManager(api.dbm.DB)
-	paymentNumber, err := pm.GetLatestPaymentNumber(username)
+	paymentNumber, err := api.pm.GetLatestPaymentNumber(username)
 	if err != nil {
 		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
@@ -289,7 +285,7 @@ func (api *API) CreatePayment(c *gin.Context) {
 			return
 		}
 	}
-	payment, err := pm.NewPayment(
+	payment, err := api.pm.NewPayment(
 		paymentNumber,
 		paymentNumberString,
 		paymentNumberString,
