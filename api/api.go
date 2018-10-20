@@ -39,6 +39,7 @@ type API struct {
 	dbm     *database.DatabaseManager
 	um      *models.UserManager
 	im      *models.IpnsManager
+	pm      *models.PaymentManager
 	ipfs    *rtfs.IpfsManager
 	l       *log.Logger
 	gc      *gapi.Client
@@ -130,6 +131,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		dbm:     dbm,
 		um:      models.NewUserManager(dbm.DB),
 		im:      models.NewIPNSManager(dbm.DB),
+		pm:      models.NewPaymentManager(dbm.DB),
 		ipfs:    ipfsManager,
 		gc:      gc,
 	}, nil
