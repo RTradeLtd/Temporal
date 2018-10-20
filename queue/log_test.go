@@ -8,12 +8,12 @@ import (
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/queue"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestQueue_LogError(t *testing.T) {
-	qm, err := queue.Initialize(queue.IpfsPinQueue, testRabbitAddress, false, true)
-	if err != nil {
-		t.Fatal(err)
+	qm := queue.QueueManager{
+		Logger: log.New(),
 	}
 	type args struct {
 		err     error
