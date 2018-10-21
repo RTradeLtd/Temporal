@@ -9,7 +9,7 @@ import (
 // Drop is a users registered airdrop
 type Drop struct {
 	gorm.Model
-	UserName   string `gorm:"type:varchar(255)" json:"user_name"`
+	UserName   string `gorm:"type:varchar(255);unique" json:"user_name"`
 	DropID     string `gorm:"type:varchar(255);unique" json:"drop"`
 	EthAddress string `gorm:"Type:varchar(255);unique" json:"eth_address"`
 }
@@ -26,6 +26,7 @@ func NewDropManager(db *gorm.DB) *DropManager {
 
 // RegisterAirDrop is used to register an airdrop
 func (dm *DropManager) RegisterAirDrop(dropID, ethAddress, username string) (*Drop, error) {
+	// make sure airdrop id hasnt been used
 	d, err := dm.FindByDropID(dropID)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, errors.New("unexpected error occured")
@@ -33,7 +34,7 @@ func (dm *DropManager) RegisterAirDrop(dropID, ethAddress, username string) (*Dr
 	if err == nil {
 		return nil, errors.New("airdrop with id already exists")
 	}
-
+	// make sure eth address hasn't been used
 	d, err = dm.FindByEthAddress(ethAddress)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, errors.New("unexpected error occured")
@@ -41,7 +42,15 @@ func (dm *DropManager) RegisterAirDrop(dropID, ethAddress, username string) (*Dr
 	if err == nil {
 		return nil, errors.New("airdrop with eth address already exists")
 	}
-
+	// make sure username hasn't been used
+	d, err = dm.FindByUserName(username)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, errors.New("unexpected error occured")
+	}
+	if err == nil {
+		return nil, errors.New("aidrop with username already exists")
+	}
+	// create the airdrop
 	d = &Drop{
 		UserName:   username,
 		DropID:     dropID,
@@ -66,6 +75,15 @@ func (dm *DropManager) FindByDropID(dropID string) (*Drop, error) {
 func (dm *DropManager) FindByEthAddress(ethAddress string) (*Drop, error) {
 	d := Drop{}
 	if err := dm.DB.Where("eth_address = ?", ethAddress).First(&d).Error; err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+// FindByUserName is used to find an airdrop by a username
+func (dm *DropManager) FindByUserName(username string) (*Drop, error) {
+	d := Drop{}
+	if err := dm.DB.Where("user_name = ?", username).First(&d).Error; err != nil {
 		return nil, err
 	}
 	return &d, nil
