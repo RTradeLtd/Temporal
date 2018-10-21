@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/jinzhu/gorm"
 )
@@ -117,9 +116,6 @@ func (pm *PaymentManager) UpdatePaymentTxHash(username, txHash string, number in
 	payment, err := pm.FindPaymentByNumber(username, number)
 	if err != nil {
 		return nil, err
-	}
-	if payment.TxHash != fmt.Sprintf("%s-%v", username, number) {
-		return nil, errors.New("payment already has an updated tx hash")
 	}
 	payment.TxHash = txHash
 	if check := pm.DB.Model(payment).Update("tx_hash", payment.TxHash); check.Error != nil {
