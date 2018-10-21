@@ -205,6 +205,8 @@ func (api *API) setupRoutes() {
 	// accounts
 	account := v1.Group("/account", authware...)
 	{
+		account.POST("/rekt", api.selfRekt)
+
 		token := account.Group("/token")
 		{
 			token.GET("/username", api.getUserFromToken)

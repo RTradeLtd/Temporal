@@ -93,4 +93,6 @@ const (
 	DuplicateEmailError = "email address already taken"
 	// DuplicateUserNameError is an error used whe na user attempts to register with an already taken user name
 	DuplicateUserNameError = "username is already taken"
+	// UnableToSaveUserError is an error that occurs when saving the user account
+	UnableToSaveUserError = "saving user account to database failed"
 )
