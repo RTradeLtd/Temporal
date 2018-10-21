@@ -59,6 +59,27 @@ func TestDrop(t *testing.T) {
 			); err == nil {
 				t.Fatal("no error received when one should've been")
 			}
+			if _, err := dropManager.RegisterAirDrop(
+				tt.args.dropID,
+				"shouldnotexist",
+				"shouldnotexist",
+			); err == nil {
+				t.Fatal("no error received when one should've been")
+			}
+			if _, err := dropManager.RegisterAirDrop(
+				"shouldnotexist",
+				tt.args.ethAddress,
+				"shouldnotexist",
+			); err == nil {
+				t.Fatal("no error received when one should've been")
+			}
+			if _, err := dropManager.RegisterAirDrop(
+				"shouldnotexist",
+				"shouldnotexist",
+				tt.args.username,
+			); err == nil {
+				t.Fatal("no error received when one should've been")
+			}
 		})
 	}
 }
