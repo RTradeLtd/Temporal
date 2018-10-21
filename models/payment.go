@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 )
@@ -11,7 +12,7 @@ type Payments struct {
 	gorm.Model
 	Number         int64   `gorm:"type:integer"`
 	DepositAddress string  `gorm:"type:varchar(255)"`
-	TxHash         string  `gorm:"type:varchar(255)"`
+	TxHash         string  `gorm:"type:varchar(255);unique"`
 	USDValue       float64 `gorm:"type:float"` // USDValue is also a "Credit" value, since 1 USD -> 1 Credit
 	Blockchain     string  `gorm:"type:varchar(255)"`
 	Type           string  `gorm:"type:varchar(255)"` // ETH, RTC, XMR, BTC, LTC
@@ -117,7 +118,7 @@ func (pm *PaymentManager) UpdatePaymentTxHash(username, txHash string, number in
 	if err != nil {
 		return nil, err
 	}
-	if payment.TxHash[0:2] == "0x" {
+	if payment.TxHash != fmt.Sprintf("%s-%v", username, number) {
 		return nil, errors.New("payment already has an updated tx hash")
 	}
 	payment.TxHash = txHash
