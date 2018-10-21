@@ -16,6 +16,7 @@ var (
 	PaymentObj       *models.Payments
 	IpnsObj          *models.IPNS
 	HostedIpfsNetObj *models.HostedIPFSPrivateNetwork
+	DropObj          *models.Drop
 )
 
 type DatabaseManager struct {
@@ -63,6 +64,7 @@ func (dbm *DatabaseManager) RunMigrations() {
 	// so we will override with ipns
 	dbm.DB.AutoMigrate(IpnsObj)
 	dbm.DB.AutoMigrate(HostedIpfsNetObj)
+	dbm.DB.AutoMigrate(DropObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
 

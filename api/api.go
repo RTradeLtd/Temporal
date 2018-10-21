@@ -40,6 +40,7 @@ type API struct {
 	um      *models.UserManager
 	im      *models.IpnsManager
 	pm      *models.PaymentManager
+	dm      *models.DropManager
 	ipfs    *rtfs.IpfsManager
 	l       *log.Logger
 	gc      *gapi.Client
@@ -132,6 +133,8 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		um:      models.NewUserManager(dbm.DB),
 		im:      models.NewIPNSManager(dbm.DB),
 		pm:      models.NewPaymentManager(dbm.DB),
+		dm:      models.NewDropManager(dbm.DB),
+
 		ipfs:    ipfsManager,
 		gc:      gc,
 	}, nil
@@ -206,10 +209,13 @@ func (api *API) setupRoutes() {
 	account := v1.Group("/account", authware...)
 	{
 		account.POST("/rekt", api.selfRekt)
-
 		token := account.Group("/token")
 		{
 			token.GET("/username", api.getUserFromToken)
+		}
+    airdrop := account.Group("/airdrop")
+		{
+			airdrop.POST("/register", api.registerAirDrop)
 		}
 		password := account.Group("/password")
 		{

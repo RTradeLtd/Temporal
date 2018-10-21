@@ -13,6 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+
 // selfRekt is an undocumented API call used to auto-ban users who may engaging in malicious activity
 func (api *API) selfRekt(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
@@ -37,6 +38,28 @@ func (api *API) selfRekt(c *gin.Context) {
 func (api *API) getUserFromToken(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	Respond(c, http.StatusOK, gin.H{"response": username})
+// registerAirDrop is used to register an airdrop
+func (api *API) registerAirDrop(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	aidropID, exists := c.GetPostForm("airdrop_id")
+	if !exists {
+		FailWithMissingField(c, "airdrop_id")
+		return
+	}
+	ethAddress, exists := c.GetPostForm("eth_address")
+	if !exists {
+		FailWithMissingField(c, "eth_address")
+		return
+	}
+	if len(ethAddress) > 42 || len(ethAddress) < 42 {
+		Fail(c, errors.New("eth_address is invalid"))
+		return
+	}
+	if _, err := api.dm.RegisterAirDrop(aidropID, ethAddress, username); err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "airdrop registered, good luck!"})
 }
 
 // ChangeAccountPassword is used to change a users password
