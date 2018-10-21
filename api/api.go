@@ -37,6 +37,7 @@ type API struct {
 	dbm     *database.DatabaseManager
 	um      *models.UserManager
 	im      *models.IpnsManager
+	dm      *models.DropManager
 	ipfs    *rtfs.IpfsManager
 	l       *log.Logger
 	service string
@@ -123,6 +124,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		dbm:     dbm,
 		um:      models.NewUserManager(dbm.DB),
 		im:      models.NewIPNSManager(dbm.DB),
+		dm:      models.NewDropManager(dbm.DB),
 		ipfs:    ipfsManager,
 	}, nil
 }
@@ -193,6 +195,11 @@ func (api *API) setupRoutes() {
 	// accounts
 	account := v1.Group("/account", authware...)
 	{
+		airdrop := account.Group("/airdrop")
+		{
+			airdrop.POST("/register", api.registerAirDrop)
+		}
+
 		password := account.Group("/password")
 		{
 			password.POST("/change", api.changeAccountPassword)

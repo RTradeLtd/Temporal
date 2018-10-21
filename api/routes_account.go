@@ -13,6 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+
 // verifyEmailAddress is used to verify a users email address
 func (api *API) verifyEmailAddress(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
@@ -54,6 +55,29 @@ func (api *API) getEmailVerificationToken(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "Email verification token sent to email. Please check and follow instructions"})
+
+// registerAirDrop is used to register an airdrop
+func (api *API) registerAirDrop(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	aidropID, exists := c.GetPostForm("airdrop_id")
+	if !exists {
+		FailWithMissingField(c, "airdrop_id")
+		return
+	}
+	ethAddress, exists := c.GetPostForm("eth_address")
+	if !exists {
+		FailWithMissingField(c, "eth_address")
+		return
+	}
+	if len(ethAddress) > 42 || len(ethAddress) < 42 {
+		Fail(c, errors.New("eth_address is invalid"))
+		return
+	}
+	if _, err := api.dm.RegisterAirDrop(aidropID, ethAddress, username); err != nil {
+		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "airdrop registered, good luck!"})
 }
 
 // ChangeAccountPassword is used to change a users password
