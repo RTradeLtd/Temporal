@@ -13,7 +13,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-
 // selfRekt is an undocumented API call used to auto-ban users who may engaging in malicious activity
 func (api *API) selfRekt(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
@@ -38,6 +37,8 @@ func (api *API) selfRekt(c *gin.Context) {
 func (api *API) getUserFromToken(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	Respond(c, http.StatusOK, gin.H{"response": username})
+}
+
 // registerAirDrop is used to register an airdrop
 func (api *API) registerAirDrop(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
