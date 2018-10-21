@@ -13,6 +13,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// GetUserFromToken is a call made by the frontend to validate the user attached with the token
+func (api *API) getUserFromToken(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	Respond(c, http.StatusOK, gin.H{"response": username})
+}
+
 // ChangeAccountPassword is used to change a users password
 func (api *API) changeAccountPassword(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
