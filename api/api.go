@@ -205,6 +205,10 @@ func (api *API) setupRoutes() {
 	// accounts
 	account := v1.Group("/account", authware...)
 	{
+		token := account.Group("/token")
+		{
+			token.GET("/username", api.getUserFromToken)
+		}
 		password := account.Group("/password")
 		{
 			password.POST("/change", api.changeAccountPassword)
