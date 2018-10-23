@@ -170,6 +170,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	logger.Debugf("file %s stored in minio", objectName)
 
 	ifp := queue.IPFSFile{
+		FileSize:         fileHandler.Size,
 		FileName:         fileHandler.Filename,
 		BucketName:       FilesUploadBucket,
 		ObjectName:       objectName,

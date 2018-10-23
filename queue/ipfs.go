@@ -239,6 +239,12 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			Error("failed to initialize pin queue connection")
 		return err
 	}
+	qmMongo, err := Initialize(MongoUpdateQueue, cfg.RabbitMQ.URL, true, false)
+	if err != nil {
+		service.WithField("error", err.Error()).
+			Error("failed to initialize mongodb update queue")
+		return err
+	}
 	ue := models.NewEncryptedUploadManager(db)
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
@@ -394,6 +400,20 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 				fileContext.
 					WithField("error", err.Error()).
 					Error("failed to upload database with encrypted upload")
+			}
+			sizeString := strconv.FormatInt(ipfsFile.FileSize, 10)
+			mongoUpdate := MongoUpdate{
+				DatabaseName:   cfg.Endpoints.MongoDB.DB,
+				CollectionName: cfg.Endpoints.MongoDB.UploadCollection,
+				Fields: map[string]string{
+					"size": sizeString,
+				},
+			}
+			if err = qmMongo.PublishMessage(mongoUpdate); err != nil {
+				//TODO: better handling
+				fileContext.
+					WithField("error", err.Error()).
+					Error("failed to publish message to mongo update queue")
 			}
 		}
 		fileContext.Info("removing object from minio")
