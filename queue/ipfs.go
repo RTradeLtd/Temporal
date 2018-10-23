@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -406,7 +407,12 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 				DatabaseName:   cfg.Endpoints.MongoDB.DB,
 				CollectionName: cfg.Endpoints.MongoDB.UploadCollection,
 				Fields: map[string]string{
-					"size": sizeString,
+					"size":          sizeString,
+					"user":          ipfsFile.UserName,
+					"fileName":      ipfsFile.FileName,
+					"fileNameLower": strings.ToLower(ipfsFile.FileName),
+					"hash":          resp,
+					"encrypted":     "true",
 				},
 			}
 			if err = qmMongo.PublishMessage(mongoUpdate); err != nil {
