@@ -11,12 +11,13 @@ import (
 )
 
 var (
-	UploadObj        *models.Upload
-	UserObj          *models.User
-	PaymentObj       *models.Payments
-	IpnsObj          *models.IPNS
-	HostedIpfsNetObj *models.HostedIPFSPrivateNetwork
-	DropObj          *models.Drop
+	UploadObj          *models.Upload
+	EncryptedUploadObj *models.EncryptedUpload
+	UserObj            *models.User
+	PaymentObj         *models.Payments
+	IpnsObj            *models.IPNS
+	HostedIpfsNetObj   *models.HostedIPFSPrivateNetwork
+	DropObj            *models.Drop
 )
 
 type DatabaseManager struct {
@@ -65,6 +66,7 @@ func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(IpnsObj)
 	dbm.DB.AutoMigrate(HostedIpfsNetObj)
 	dbm.DB.AutoMigrate(DropObj)
+	dbm.DB.AutoMigrate(EncryptedUploadObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
 
