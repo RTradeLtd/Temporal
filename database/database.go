@@ -66,6 +66,7 @@ func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(IpnsObj)
 	dbm.DB.AutoMigrate(HostedIpfsNetObj)
 	dbm.DB.AutoMigrate(DropObj)
+	dbm.DB.AutoMigrate(EncryptedUploadObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
 

@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
@@ -91,12 +93,12 @@ func (api *API) calculateFileCost(c *gin.Context) {
 func (api *API) getEncryptedUploadsForUser(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	uploads, err := api.ue.FindUploadsByUser(username)
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		api.LogError(err, eh.UploadSearchError)(c, http.StatusBadRequest)
 		return
 	}
 	if len(*uploads) == 0 {
-		Respond(c, http.StatusOK, gin.H{"response": "user has no encrypted uploads"})
+		Respond(c, http.StatusOK, gin.H{"response": "no encrypted uploads found, try them out :D"})
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
