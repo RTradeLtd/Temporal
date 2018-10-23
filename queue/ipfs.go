@@ -246,12 +246,6 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			Error("failed to initialize mongodb update queue")
 		return err
 	}
-	qmMongo, err := Initialize(MongoUpdateQueue, cfg.RabbitMQ.URL, true, false)
-	if err != nil {
-		service.WithField("error", err.Error()).
-			Error("failed to initialize mongodb update queue")
-		return err
-	}
 	ue := models.NewEncryptedUploadManager(db)
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
