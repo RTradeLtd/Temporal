@@ -5,80 +5,52 @@ import (
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
 // ProcessDatabaseFileAdds is used to process database file add messages
 func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
 	uploadManager := models.NewUploadManager(db)
-	qm.Logger.WithFields(log.Fields{
-		"service": qm.QueueName,
-	}).Info("processing database file adds")
-
+	qm.LogInfo("processing database file adds")
 	for d := range msgs {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("detected new message")
-
+		qm.LogInfo("detected new message")
 		dfa := DatabaseFileAdd{}
 		// unmarshal the message body into the dfa struct
 		err := json.Unmarshal(d.Body, &dfa)
 		if err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"error":   err.Error(),
-			}).Error("failed to unmarshal message")
+			qm.LogError(err, "failed to unmarshal message")
 			d.Ack(false)
 			continue
 		}
-
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    dfa.UserName,
-		}).Info("message successfully unmarshaled")
-
+		qm.LogInfo("message successfully unmarshaled")
 		_, err = uploadManager.FindUploadByHashAndNetwork(dfa.Hash, dfa.NetworkName)
 		if err != nil && err != gorm.ErrRecordNotFound {
-
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    dfa.UserName,
-				"error":   err.Error(),
-			}).Error("database check for upload failed")
-
+			qm.LogError(err, "database check for upload failed")
 			d.Ack(false)
 			continue
 		}
 		if err != nil && err == gorm.ErrRecordNotFound {
-			_, err = uploadManager.NewUpload(dfa.Hash, "file", models.UploadOptions{
-				NetworkName:      dfa.NetworkName,
-				Username:         dfa.UserName,
-				HoldTimeInMonths: dfa.HoldTimeInMonths})
-			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    dfa.UserName,
-					"error":   err.Error(),
-				}).Error("failed to create new upload in database")
+			if _, err = uploadManager.NewUpload(
+				dfa.Hash, "file",
+				models.UploadOptions{
+					NetworkName:      dfa.NetworkName,
+					Username:         dfa.UserName,
+					HoldTimeInMonths: dfa.HoldTimeInMonths,
+				},
+			); err != nil {
+				qm.LogError(err, "failed to create new upload in database")
+				d.Ack(false)
+				continue
 			}
 		} else {
-			// this isn't a new upload so we shall upload the database
-			_, err = uploadManager.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName)
-			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    dfa.UserName,
-					"error":   err.Error(),
-				}).Error("failed to update upload in database")
+			// this isn't a new upload so we shall upload the database;
+			if _, err = uploadManager.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName); err != nil {
+				qm.LogError(err, "failed to update upload")
 				d.Ack(false)
 				continue
 			}
 		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    dfa.UserName,
-		}).Infof("database file add for hash %s successfully processed", dfa.Hash)
+		qm.LogInfo("database file add processed")
 		d.Ack(false)
 	}
 }

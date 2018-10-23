@@ -38,7 +38,7 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestQueues(t *testing.T) {
-	qm, err := queue.Initialize(queue.IpfsPinQueue, testRabbitAddress, false, false)
+	qm, err := queue.Initialize(queue.IpfsPinQueue, testRabbitAddress, true, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,8 +49,18 @@ func TestQueues(t *testing.T) {
 		HoldTimeInMonths: 10,
 	}
 
-	err = qm.PublishMessageWithExchange(pin, queue.PinExchange)
-	if err != nil {
+	if err = qm.PublishMessageWithExchange(pin, queue.PinExchange); err != nil {
+		t.Fatal(err)
+	}
+	qm, err = queue.Initialize(queue.EmailSendQueue, testRabbitAddress, true, false)
+	es := queue.EmailSend{
+		Subject:     "test email",
+		Content:     "this is a test email",
+		ContentType: "text/html",
+		UserNames:   []string{"postables"},
+		Emails:      []string{"postables@rtradetechnologies.com"},
+	}
+	if err = qm.PublishMessage(es); err != nil {
 		t.Fatal(err)
 	}
 }

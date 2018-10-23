@@ -13,6 +13,49 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// verifyEmailAddress is used to verify a users email address
+func (api *API) verifyEmailAddress(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	token, exists := c.GetPostForm("token")
+	if !exists {
+		FailWithMissingField(c, "token")
+		return
+	}
+	if _, err := api.um.ValidateEmailVerificationToken(username, token); err != nil {
+		api.LogError(err, eh.EmailVerificationError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "email verified"})
+}
+
+// getEmailVerificationToken is used to generate a token which can be used to validate an email address
+func (api *API) getEmailVerificationToken(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	user, err := api.um.GenerateEmailVerificationToken(username)
+	if err != nil {
+		api.LogError(err, eh.EmailTokenGenerationError)(c, http.StatusBadRequest)
+		return
+	}
+	es := queue.EmailSend{
+		Subject:     "TEMPORAL Email Verification",
+		Content:     fmt.Sprintf("Please submit the following email verification token: %s\n", user.EmailVerificationToken),
+		ContentType: "text/html",
+		UserNames:   []string{user.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	mqURL := api.cfg.RabbitMQ.URL
+	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
+	if err != nil {
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err = qm.PublishMessage(es); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "Email verification token sent to email. Please check and follow instructions"})
+}
+
 // registerAirDrop is used to register an airdrop
 func (api *API) registerAirDrop(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)

@@ -133,6 +133,7 @@ type EmailSend struct {
 	Content     string   `json:"content"`
 	ContentType string   `json:"content_type"`
 	UserNames   []string `json:"user_names"`
+	Emails      []string `json:"emails,omitempty"`
 }
 
 // IPNSEntry is used to hold relevant information needed to process IPNS entry creation requests

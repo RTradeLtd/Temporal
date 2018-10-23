@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	recipient = "insertemailhere"
+	recipient = "alext@rtradetechnologies.com"
 	cfgPath   = filepath.Join(os.Getenv("HOME"), "config.json")
 )
 
@@ -24,7 +24,7 @@ func TestMail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mm, err := mail.GenerateMailManager(cfg)
+	mm, err := mail.NewManager(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}

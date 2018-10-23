@@ -93,4 +93,8 @@ const (
 	DuplicateEmailError = "email address already taken"
 	// DuplicateUserNameError is an error used whe na user attempts to register with an already taken user name
 	DuplicateUserNameError = "username is already taken"
+	// EmailVerificationError is an error used when a user fails to validate their email address
+	EmailVerificationError = "failed to verify email address"
+	// EmailTokenGenerationError is an error messaged used when failing to generate a token
+	EmailTokenGenerationError = "failed to generate email verification token"
 )
