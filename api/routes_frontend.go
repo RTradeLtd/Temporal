@@ -95,5 +95,9 @@ func (api *API) getEncryptedUploadsForUser(c *gin.Context) {
 		api.LogError(err, eh.UploadSearchError)(c, http.StatusBadRequest)
 		return
 	}
+	if len(*uploads) == 0 {
+		Respond(c, http.StatusOK, gin.H{"response": "user has no encrypted uploads"})
+		return
+	}
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }

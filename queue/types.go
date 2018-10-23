@@ -86,6 +86,7 @@ type IPFSPin struct {
 
 // IPFSFile is our message for the ipfs file queue
 type IPFSFile struct {
+	FileName         string  `json:"file_name,omitempty"`
 	BucketName       string  `json:"bucket_name"`
 	ObjectName       string  `json:"object_name"`
 	UserName         string  `json:"user_name"`

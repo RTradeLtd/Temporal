@@ -170,13 +170,13 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	logger.Debugf("file %s stored in minio", objectName)
 
 	ifp := queue.IPFSFile{
+		FileName:         fileHandler.Filename,
 		BucketName:       FilesUploadBucket,
 		ObjectName:       objectName,
 		UserName:         username,
 		NetworkName:      "public",
 		HoldTimeInMonths: holdTimeInMonths,
 		CreditCost:       cost,
-
 		// if passphrase was provided, this file is encrypted
 		Encrypted: c.PostForm("passphrase") != "",
 	}
