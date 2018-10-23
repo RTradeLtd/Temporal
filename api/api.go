@@ -219,7 +219,7 @@ func (api *API) setupRoutes() {
 	}
 
 	// ipfs
-	ipfs := v1.Group("/ipfs")
+	ipfs := v1.Group("/ipfs", authware...)
 	{
 		ipfs.POST("/calculate-content-hash", api.calculateContentHashForFile)
 		ipfs.GET("/pins", api.getLocalPins)                        // admin locked
