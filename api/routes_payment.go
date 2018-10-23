@@ -15,7 +15,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
-	greq "github.com/RTradeLtd/gapimit/request"
+	greq "github.com/RTradeLtd/grpc/temporal/request"
 	"github.com/gin-gonic/gin"
 )
 
