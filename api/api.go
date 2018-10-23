@@ -38,6 +38,7 @@ type API struct {
 	um      *models.UserManager
 	im      *models.IpnsManager
 	dm      *models.DropManager
+	ue      *models.EncryptedUploadManager
 	ipfs    *rtfs.IpfsManager
 	l       *log.Logger
 	service string
@@ -125,6 +126,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		um:      models.NewUserManager(dbm.DB),
 		im:      models.NewIPNSManager(dbm.DB),
 		dm:      models.NewDropManager(dbm.DB),
+		ue:      models.NewEncryptedUploadManager(dbm.DB),
 		ipfs:    ipfsManager,
 	}, nil
 }
@@ -300,6 +302,10 @@ func (api *API) setupRoutes() {
 	// frontend
 	frontend := v1.Group("/frontend", authware...)
 	{
+		uploads := frontend.Group("/uploads")
+		{
+			uploads.GET("/encrypted", api.getEncryptedUploadsForUser)
+		}
 		cost := frontend.Group("/cost")
 		{
 			calculate := cost.Group("/calculate")

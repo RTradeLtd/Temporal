@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
@@ -85,4 +87,19 @@ func (api *API) calculateFileCost(c *gin.Context) {
 
 	cost := utils.CalculateFileCost(holdTimeInt, file.Size, isPrivate)
 	Respond(c, http.StatusOK, gin.H{"response": cost})
+}
+
+// GetEncryptedUploadsForUser is used to get all the encrypted uploads a user has
+func (api *API) getEncryptedUploadsForUser(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	uploads, err := api.ue.FindUploadsByUser(username)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		api.LogError(err, eh.UploadSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	if len(*uploads) == 0 {
+		Respond(c, http.StatusOK, gin.H{"response": "no encrypted uploads found, try them out :D"})
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }

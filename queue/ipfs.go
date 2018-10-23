@@ -239,6 +239,7 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			Error("failed to initialize pin queue connection")
 		return err
 	}
+	ue := models.NewEncryptedUploadManager(db)
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
 	uploadManager := models.NewUploadManager(db)
@@ -379,7 +380,22 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 				continue
 			}
 		}
-
+		// if encrypted upload, do some special processing
+		if ipfsFile.Encrypted {
+			if _, err = ue.NewUpload(
+				ipfsFile.UserName,
+				ipfsFile.FileName,
+				ipfsFile.NetworkName,
+				resp,
+			); err != nil {
+				// we won't ack this, since we have already processed the upload and this is "extra processing"
+				// the object should still be removed from minio and ack+continue would prevent this from happening
+				// that being said, we will need to make sure we monitor errors properly
+				fileContext.
+					WithField("error", err.Error()).
+					Error("failed to upload database with encrypted upload")
+			}
+		}
 		fileContext.Info("removing object from minio")
 		err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName)
 		if err != nil {
