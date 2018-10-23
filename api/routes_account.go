@@ -13,7 +13,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-
 // verifyEmailAddress is used to verify a users email address
 func (api *API) verifyEmailAddress(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
@@ -55,6 +54,7 @@ func (api *API) getEmailVerificationToken(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "Email verification token sent to email. Please check and follow instructions"})
+}
 
 // registerAirDrop is used to register an airdrop
 func (api *API) registerAirDrop(c *gin.Context) {
