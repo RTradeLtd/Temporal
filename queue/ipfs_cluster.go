@@ -7,7 +7,6 @@ import (
 	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 	"github.com/RTradeLtd/config"
 	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -19,74 +18,43 @@ func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *c
 		return err
 	}
 	uploadManager := models.NewUploadManager(db)
-	qm.Logger.WithFields(log.Fields{
-		"service": qm.QueueName,
-	}).Info("processing ipfs cluster pins")
-
+	qm.LogInfo("processing ipfs cluster pins")
 	for d := range msgs {
-
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("new message detected")
-
+		qm.LogInfo("new message detected")
 		clusterAdd := IPFSClusterPin{}
 		err = json.Unmarshal(d.Body, &clusterAdd)
 		if err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"error":   err.Error(),
-			}).Error("error unmarshaling message")
+			qm.LogError(err, "failed to unmarshal message")
 			d.Ack(false)
 			continue
 		}
-
 		if clusterAdd.NetworkName != "public" {
 			qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost, db)
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    clusterAdd.UserName,
-				"error":   "private networks not supported",
-			}).Error("private networks not supported for ipfs cluster")
+			qm.LogError(err, "private networks not supported for ipfs cluster")
 			d.Ack(false)
 			continue
 		}
-
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Info("successfully unmarshaled message, decoding hash string")
-
+		qm.LogInfo("successfully unmarshaled message, decoding hash string")
 		encodedCid, err := clusterManager.DecodeHashString(clusterAdd.CID)
 		if err != nil {
 			qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost, db)
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"error":   err.Error(),
-			}).Error("failed to decode hash string")
+			qm.LogError(err, "failed to decode hash string")
 			d.Ack(false)
 			continue
 		}
-
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-		}).Infof("pinning %s to cluster", clusterAdd.CID)
-
+		qm.LogInfo("pinning hash to cluster")
 		err = clusterManager.Pin(encodedCid)
 		if err != nil {
 			qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost, db)
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"error":   err.Error(),
-			}).Errorf("failed to pin %s to cluster", clusterAdd.CID)
+			qm.LogError(err, "failed to pin hash to cluster")
 			d.Ack(false)
 			continue
 		}
 		_, err = uploadManager.FindUploadByHashAndNetwork(clusterAdd.CID, clusterAdd.NetworkName)
 		if err != nil && err != gorm.ErrRecordNotFound {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.QueueName,
-				"user":    clusterAdd.UserName,
-				"error":   err.Error(),
-			}).Error("error occured searching database for upload")
+			qm.LogError(err, "failed to search database for upload")
+			d.Ack(false)
+			continue
 		}
 
 		if err == gorm.ErrRecordNotFound {
@@ -95,29 +63,19 @@ func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *c
 				Username:         clusterAdd.UserName,
 				HoldTimeInMonths: clusterAdd.HoldTimeInMonths})
 			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    clusterAdd.UserName,
-					"error":   err.Error(),
-				}).Error("failed to create upload in database")
+				qm.LogError(err, "failed to create upload in database")
 				d.Ack(false)
 				continue
 			}
 		} else {
 			_, err = uploadManager.UpdateUpload(clusterAdd.HoldTimeInMonths, clusterAdd.UserName, clusterAdd.CID, clusterAdd.NetworkName)
 			if err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.QueueName,
-					"user":    clusterAdd.UserName,
-					"error":   err.Error(),
-				}).Error("failed to update upload in database")
+				qm.LogError(err, "failed to update upload in database")
+				d.Ack(false)
+				continue
 			}
 		}
-
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.QueueName,
-			"user":    clusterAdd.UserName,
-		}).Infof("successfully pinned %s to cluster", clusterAdd.CID)
+		qm.LogInfo("successfully pinned hash to cluster")
 		d.Ack(false)
 	}
 	return nil

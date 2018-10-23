@@ -95,4 +95,8 @@ const (
 	DuplicateUserNameError = "username is already taken"
 	// UnableToSaveUserError is an error that occurs when saving the user account
 	UnableToSaveUserError = "saving user account to database failed"
+	// EmailVerificationError is an error used when a user fails to validate their email address
+	EmailVerificationError = "failed to verify email address"
+	// EmailTokenGenerationError is an error messaged used when failing to generate a token
+	EmailTokenGenerationError = "failed to generate email verification token"
 )

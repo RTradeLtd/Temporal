@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -14,15 +15,16 @@ import (
 // User is our user model for anyone who signs up with Temporal
 type User struct {
 	gorm.Model
-	UserName          string  `gorm:"type:varchar(255);unique"`
-	EmailAddress      string  `gorm:"type:varchar(255);unique"`
-	EnterpriseEnabled bool    `gorm:"type:boolean"`
-	AccountEnabled    bool    `gorm:"type:boolean"`
-	APIAccess         bool    `gorm:"type:boolean"`
-	EmailEnabled      bool    `gorm:"type:boolean"`
-	AdminAccess       bool    `gorm:"type:boolean"`
-	HashedPassword    string  `gorm:"type:varchar(255)"`
-	Credits           float64 `gorm:"type:float;default:0"`
+	UserName               string  `gorm:"type:varchar(255);unique"`
+	EmailAddress           string  `gorm:"type:varchar(255);unique"`
+	EnterpriseEnabled      bool    `gorm:"type:boolean"`
+	AccountEnabled         bool    `gorm:"type:boolean"`
+	APIAccess              bool    `gorm:"type:boolean"`
+	EmailEnabled           bool    `gorm:"type:boolean"`
+	EmailVerificationToken string  `gorm:"type:varchar(255)"`
+	AdminAccess            bool    `gorm:"type:boolean"`
+	HashedPassword         string  `gorm:"type:varchar(255)"`
+	Credits                float64 `gorm:"type:float;default:0"`
 	// IPFSKeyNames is an array of IPFS keys this user has created
 	IPFSKeyNames     pq.StringArray `gorm:"type:text[];column:ipfs_key_names"`
 	IPFSKeyIDs       pq.StringArray `gorm:"type:text[];column:ipfs_key_ids"`
@@ -357,4 +359,43 @@ func (um *UserManager) CheckIfAdmin(username string) (bool, error) {
 		return false, err
 	}
 	return user.AdminAccess, nil
+}
+
+// GenerateEmailVerificationToken is used to generate a token we use to validate that the user
+// actually owns the email they are signing up with
+func (um *UserManager) GenerateEmailVerificationToken(username string) (*User, error) {
+	user, err := um.FindByUserName(username)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: make sure its a genuine email
+	if user.EmailAddress == "" {
+		return nil, errors.New("user has no email address associated with their account")
+	}
+	if user.EmailVerificationToken != "" {
+		return nil, errors.New("user already has pending verification token")
+	}
+	randUtils := utils.GenerateRandomUtils()
+	token := randUtils.GenerateString(32, utils.LetterBytes)
+	user.EmailVerificationToken = token
+	if err := um.DB.Model(user).Update("email_verification_token", user.EmailVerificationToken).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+// ValidateEmailVerificationToken is used to validate an email token to enable email access
+func (um *UserManager) ValidateEmailVerificationToken(username, token string) (*User, error) {
+	user, err := um.FindByUserName(username)
+	if err != nil {
+		return nil, err
+	}
+	if user.EmailVerificationToken != token {
+		return nil, errors.New("invalid token provided")
+	}
+	user.EmailEnabled = true
+	if err := um.DB.Model(user).Update("email_enabled", user.EmailEnabled).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
 }
