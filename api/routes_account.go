@@ -13,6 +13,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// getUserFromToken is used to get the username of the associated token
+func (api *API) getUserFromToken(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	Respond(c, http.StatusOK, gin.H{"response": username})
+}
+
 // selfRekt is an undocumented API call used to auto-ban users who may engaging in malicious activity
 func (api *API) selfRekt(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
