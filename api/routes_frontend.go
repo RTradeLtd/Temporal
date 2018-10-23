@@ -86,3 +86,14 @@ func (api *API) calculateFileCost(c *gin.Context) {
 	cost := utils.CalculateFileCost(holdTimeInt, file.Size, isPrivate)
 	Respond(c, http.StatusOK, gin.H{"response": cost})
 }
+
+// GetEncryptedUploadsForUser is used to get all the encrypted uploads a user has
+func (api *API) getEncryptedUploadsForUser(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	uploads, err := api.ue.FindUploadsByUser(username)
+	if err != nil {
+		api.LogError(err, eh.UploadSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": uploads})
+}
