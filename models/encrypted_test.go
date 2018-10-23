@@ -9,6 +9,9 @@ import (
 )
 
 func TestEncryptedUploads(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
