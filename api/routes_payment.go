@@ -11,8 +11,6 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/jinzhu/gorm"
 
-	"github.com/RTradeLtd/Temporal/gapi"
-
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	greq "github.com/RTradeLtd/grpc/temporal/request"
@@ -140,16 +138,9 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		// the amount we are charging them
 		ChargeAmount: chargeAmountString,
 	}
-	// generate the grpc client so we can connect to the service we use to generate signed messages
-	gc, err := gapi.NewGAPIClient(api.cfg, true)
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	defer gc.GC.Close()
 	// send a call to the signer service, which will take the data, hash it, and sign it
 	// using the returned values, we have the information needed to send a call to the smart contract
-	resp, err := gc.GetSignedMessage(context.Background(), &signRequest)
+	resp, err := api.gc.GetSignedMessage(context.Background(), &signRequest)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return

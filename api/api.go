@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/RTradeLtd/Temporal/grpc"
 	"github.com/RTradeLtd/Temporal/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
@@ -20,7 +21,6 @@ import (
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/Temporal/database"
-	"github.com/RTradeLtd/Temporal/gapi"
 	"github.com/RTradeLtd/Temporal/models"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +43,7 @@ type API struct {
 	dm      *models.DropManager
 	ipfs    *rtfs.IpfsManager
 	l       *log.Logger
-	gc      *gapi.Client
+	gc      *grpc.Client
 	service string
 }
 
@@ -120,7 +120,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		return nil, err
 	}
 
-	gc, err := gapi.NewGAPIClient(cfg, true)
+	gc, err := grpc.NewGRPCClient(cfg, true)
 	if err != nil {
 		return nil, err
 	}

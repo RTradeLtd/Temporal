@@ -1,4 +1,4 @@
-package gapi
+package grpc
 
 import (
 	"context"
@@ -17,8 +17,8 @@ type Client struct {
 	SC pb.SignerClient
 }
 
-// NewGAPIClient generates our GRPC API client
-func NewGAPIClient(cfg *config.TemporalConfig, insecure bool) (*Client, error) {
+// NewGRPCClient generates our GRPC API client
+func NewGRPCClient(cfg *config.TemporalConfig, insecure bool) (*Client, error) {
 	grpcAPI := fmt.Sprintf("%s:%s", cfg.API.Payment.Address, cfg.API.Payment.Port)
 	var (
 		gconn *grpc.ClientConn
