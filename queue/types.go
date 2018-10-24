@@ -29,6 +29,8 @@ var (
 	PaymentCreationQueue = "payment-creation-queue"
 	// PaymentConfirmationQueue is a queue used to handle payment confirmations
 	PaymentConfirmationQueue = "payment-confirmation-queue"
+	// MongoUpdateQueue is a queue used to trigger mongodb updates
+	MongoUpdateQueue = "mongo-update-queue"
 	// AdminEmail is the email used to notify RTrade about any critical errors
 	AdminEmail = "temporal.reports@rtradetechnologies.com"
 	// IpfsPinFailedContent is a to-be formatted message sent on IPFS pin failures
@@ -89,6 +91,7 @@ type IPFSPin struct {
 // IPFSFile is our message for the ipfs file queue
 type IPFSFile struct {
 	FileName         string  `json:"file_name,omitempty"`
+	FileSize         int64   `json:"file_size,omitempty"`
 	BucketName       string  `json:"bucket_name"`
 	ObjectName       string  `json:"object_name"`
 	UserName         string  `json:"user_name"`
@@ -161,4 +164,11 @@ type PaymentCreation struct {
 type PaymentConfirmation struct {
 	UserName      string `json:"user_name"`
 	PaymentNumber int64  `json:"payment_number"`
+}
+
+// MongoUpdate is an update used to trigger
+type MongoUpdate struct {
+	DatabaseName   string            `json:"database_name"`
+	CollectionName string            `json:"collection_name"`
+	Fields         map[string]string `json:"fields"`
 }
