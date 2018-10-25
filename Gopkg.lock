@@ -26,12 +26,12 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master-rtrade"
-  digest = "1:057ef275777e16de287ddbe39ae5590ab1acfa6ccb3d86f3410b998f7ce59b05"
+  digest = "1:7304b11d7d7cce4b00d32075b56d2266443f12af31ac7777eb143f3f0ee870dd"
   name = "github.com/RTradeLtd/go-ipfs-api"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7a707aa6805a8737f57d6623f62fe5b37862626a"
+  revision = "08c411b67689a098b484b5b18ada2a78f48990b1"
+  version = "v2.0.1"
 
 [[projects]]
   digest = "1:1eed9cf7d187791d1b7bbcc1713fd4a1177829bcf6a6c4dd9fac178aac551373"
