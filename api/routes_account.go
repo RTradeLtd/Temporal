@@ -88,7 +88,7 @@ func (api *API) registerAirDrop(c *gin.Context) {
 		Content:     fmt.Sprintf("user %s with airdrop code %s to eth address %s is registered", username, aidropID, ethAddress),
 		ContentType: "text/html",
 		UserNames:   []string{"admin"},
-		Emails:      []string{"admin@rtradetechnologies.com"},
+		Emails:      []string{os.Getenv("TEMPORAL_ADMIN_EMAIL")},
 	}
 	if err = qm.PublishMessage(es); err != nil {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
