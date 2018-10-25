@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/eh"
@@ -101,6 +102,23 @@ func (api *API) registerAirDrop(c *gin.Context) {
 	}
 	if _, err := api.dm.RegisterAirDrop(aidropID, ethAddress, username); err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		return
+	}
+	mqURL := api.cfg.RabbitMQ.URL
+	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
+	if err != nil {
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	es := queue.EmailSend{
+		Subject:     "airdrop registered",
+		Content:     fmt.Sprintf("user %s with airdrop code %s to eth address %s is registered", username, aidropID, ethAddress),
+		ContentType: "text/html",
+		UserNames:   []string{"admin"},
+		Emails:      []string{os.Getenv("TEMPORAL_ADMIN_EMAIL")},
+	}
+	if err = qm.PublishMessage(es); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "airdrop registered, good luck!"})
