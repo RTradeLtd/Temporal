@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package models;
+
+import "request.proto";
+import "response.proto";
+
+service Signer {
+    rpc GetSignedMessage(request.SignRequest) returns (response.SignResponse) {}
+}

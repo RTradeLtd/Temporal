@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/RTradeLtd/Temporal/grpc"
 	"github.com/RTradeLtd/Temporal/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
@@ -28,6 +29,7 @@ import (
 
 var (
 	xssMdlwr xss.XssMw
+	dev      = true
 )
 
 // API is our API service
@@ -37,10 +39,12 @@ type API struct {
 	dbm     *database.DatabaseManager
 	um      *models.UserManager
 	im      *models.IpnsManager
+	pm      *models.PaymentManager
 	dm      *models.DropManager
 	ue      *models.EncryptedUploadManager
 	ipfs    *rtfs.IpfsManager
 	l       *log.Logger
+	gc      *grpc.Client
 	service string
 }
 
@@ -117,6 +121,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		return nil, err
 	}
 
+	gc, err := grpc.NewGRPCClient(cfg, true)
+	if err != nil {
+		return nil, err
+	}
 	return &API{
 		cfg:     cfg,
 		service: "api",
@@ -125,9 +133,11 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		dbm:     dbm,
 		um:      models.NewUserManager(dbm.DB),
 		im:      models.NewIPNSManager(dbm.DB),
+		pm:      models.NewPaymentManager(dbm.DB),
 		dm:      models.NewDropManager(dbm.DB),
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
 		ipfs:    ipfsManager,
+		gc:      gc,
 	}, nil
 }
 
@@ -188,6 +198,8 @@ func (api *API) setupRoutes() {
 	payments := v1.Group("/payments", authware...)
 	{
 		payments.POST("/create", api.CreatePayment)
+		payments.POST("/request", api.RequestSignedPaymentMessage)
+		payments.POST("/confirm", api.ConfirmPayment)
 		deposit := payments.Group("/deposit")
 		{
 			deposit.GET("/address/:type", api.GetDepositAddress)
@@ -197,11 +209,15 @@ func (api *API) setupRoutes() {
 	// accounts
 	account := v1.Group("/account", authware...)
 	{
+		account.POST("/rekt", api.selfRekt)
+		token := account.Group("/token")
+		{
+			token.GET("/username", api.getUserFromToken)
+		}
 		airdrop := account.Group("/airdrop")
 		{
 			airdrop.POST("/register", api.registerAirDrop)
 		}
-
 		password := account.Group("/password")
 		{
 			password.POST("/change", api.changeAccountPassword)

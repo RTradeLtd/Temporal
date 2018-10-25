@@ -1,4 +1,4 @@
-ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/ipfs/go-ipfs"]
+ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/ipfs/go-ipfs", "github.com/RTradeLtd/Temporal_Payment-ETH"]
 
 [prune]
   go-tests = true
@@ -6,13 +6,17 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 # RTrade
 
-[[override]]
+[[constraint]]
+  name = "github.com/RTradeLtd/grpc"
+  version = "v1.0.3"
+  
+[[constraint]]
   name = "github.com/RTradeLtd/config"
   version = "v1.0.5"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"
-  version = "v1.0.0"
+  version = "v1.0.1-rc1"
 
 [[constraint]]
   name = "github.com/RTradeLtd/crypto"
@@ -20,7 +24,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
-  branch = "master-rtrade"
+  version = "v2.0.0"
 
 # IPFS
 

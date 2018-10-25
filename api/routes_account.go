@@ -13,6 +13,32 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// getUserFromToken is used to get the username of the associated token
+func (api *API) getUserFromToken(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	Respond(c, http.StatusOK, gin.H{"response": username})
+}
+
+// selfRekt is an undocumented API call used to auto-ban users who may engaging in malicious activity
+func (api *API) selfRekt(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	user, err := api.um.FindByUserName(username)
+	if err != nil {
+		api.LogError(err, eh.UserSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	user.AccountEnabled = false
+	user.APIAccess = false
+	user.AdminAccess = false
+	user.EnterpriseEnabled = false
+	if err = api.dbm.DB.Save(user).Error; err != nil {
+		api.LogError(err, eh.UnableToSaveUserError)(c, http.StatusBadRequest)
+		return
+	}
+	api.LogWithUser(username).Info("malicious activity detected")
+	Respond(c, http.StatusOK, gin.H{"response": "4 hour ban ... you been messin around with our shit, aint you son?"})
+}
+
 // verifyEmailAddress is used to verify a users email address
 func (api *API) verifyEmailAddress(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
