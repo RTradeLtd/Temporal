@@ -90,6 +90,8 @@ type IPFSPin struct {
 
 // IPFSFile is our message for the ipfs file queue
 type IPFSFile struct {
+	// MinioHostIP is the ip address of the minio host this object is stored on
+	MinioHostIP      string  `json:"minio_host_ip"`
 	FileName         string  `json:"file_name,omitempty"`
 	FileSize         int64   `json:"file_size,omitempty"`
 	BucketName       string  `json:"bucket_name"`

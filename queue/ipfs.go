@@ -211,26 +211,11 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 	service := qm.Logger.WithFields(log.Fields{
 		"service": qm.QueueName,
 	})
-
-	// construct the endpoint url to access our minio server
-	endpoint := fmt.Sprintf("%s:%s", cfg.MINIO.Connection.IP, cfg.MINIO.Connection.Port)
-
-	// grab our credentials for minio
-	accessKey := cfg.MINIO.AccessKey
-	secretKey := cfg.MINIO.SecretKey
 	ipfsManager, err := rtfs.Initialize("", cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port)
 	if err != nil {
 		service.
 			WithField("error", err.Error()).
 			Error("failed to initialize connection to ipfs")
-		return err
-	}
-	// setup our connection to minio
-	minioManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
-	if err != nil {
-		service.
-			WithField("error", err.Error()).
-			Error("failed to initialize connection to minio")
 		return err
 	}
 	qmPin, err := Initialize(IpfsPinQueue, cfg.RabbitMQ.URL, true, false)
@@ -264,7 +249,22 @@ func (qm *QueueManager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config
 			d.Ack(false)
 			continue
 		}
+		// now that we have the minio host which is storing htis object, we can connect
+		// construct the endpoint url to access our minio server
+		endpoint := fmt.Sprintf("%s:%s", ipfsFile.MinioHostIP, cfg.MINIO.Connection.Port)
 
+		// grab our credentials for minio
+		accessKey := cfg.MINIO.AccessKey
+		secretKey := cfg.MINIO.SecretKey
+		// setup our connection to minio
+		minioManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
+		if err != nil {
+			service.
+				WithField("error", err.Error()).
+				Error("failed to initialize connection to minio")
+			d.Ack(false)
+			continue
+		}
 		fileContext := service.WithFields(log.Fields{
 			"user":    ipfsFile.UserName,
 			"network": ipfsFile.NetworkName,

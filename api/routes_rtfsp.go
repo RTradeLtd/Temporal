@@ -177,6 +177,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	}
 	fmt.Println("file stored in minio")
 	ifp := queue.IPFSFile{
+		MinioHostIP:      api.cfg.MINIO.Connection.IP,
 		FileName:         fileHandler.Filename,
 		FileSize:         fileHandler.Size,
 		BucketName:       FilesUploadBucket,
