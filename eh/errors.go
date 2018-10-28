@@ -99,4 +99,8 @@ const (
 	EmailVerificationError = "failed to verify email address"
 	// EmailTokenGenerationError is an error messaged used when failing to generate a token
 	EmailTokenGenerationError = "failed to generate email verification token"
+	// ChainRiderInitializationError is an error message used when we fail to conenct to chainrider
+	ChainRiderInitializationError = "failed to connect to chainrider api"
+	// ChainRiderAPICallError is an error message used when a call to chainrider api fails
+	ChainRiderAPICallError = "failed to call chainrider api"
 )
