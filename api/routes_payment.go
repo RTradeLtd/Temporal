@@ -11,6 +11,7 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/jinzhu/gorm"
 
+	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	greq "github.com/RTradeLtd/grpc/temporal/request"
@@ -308,6 +309,80 @@ func (api *API) CreatePayment(c *gin.Context) {
 		Status:         "please send exactly the charge amount",
 		DepositAddress: depositAddress,
 	}
+	Respond(c, http.StatusOK, gin.H{"response": p})
+}
+
+// CreateDashPayment is used to create a dash payment via chainrider
+func (api *API) CreateDashPayment(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	creditValue, exists := c.GetPostForm("credit_value")
+	if !exists {
+		FailWithMissingField(c, "credit_value")
+		return
+	}
+	usdValueFloat, err := api.getUSDValue("dash")
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	chargeAmountFloat := creditValueFloat / usdValueFloat
+	paymentNumber, err := api.pm.GetLatestPaymentNumber(username)
+	if err != nil {
+		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	// as we require tx hashes be unique in the database
+	// we need to create a fake, but also unique value as a temporary place holder
+	fakeTxHash := fmt.Sprintf("%s-%v", username, paymentNumber)
+	// dash is only up to 8 decimals, so we must parse accordingly
+	chargeAmountParsed := fmt.Sprintf("%.8f", chargeAmountFloat)
+	chargeAmountFloat, err = strconv.ParseFloat(chargeAmountParsed, 64)
+	if err != nil {
+		Fail(c, err)
+	}
+	chainClient, err := dash.NewClient(&dash.ConfigOpts{
+		APIVersion:      "v1",
+		DigitalCurrency: "dash",
+		//TODO: change to main before production release
+		Blockchain: "testnet",
+		Token:      api.cfg.APIKeys.ChainRider,
+	})
+	if err != nil {
+		api.LogError(err, eh.ChainRiderInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	response, err := chainClient.CreatePaymentForward(
+		&dash.PaymentForwardOpts{
+			DestinationAddress: api.cfg.Wallets.DASH,
+		},
+	)
+	if err != nil {
+		api.LogError(err, eh.ChainRiderAPICallError)(c, http.StatusBadRequest)
+		return
+	}
+	type pay struct {
+		PaymentNumber  int64
+		ChargeAmount   float64
+		Blockchain     string
+		Status         string
+		Network        string
+		DepositAddress string
+	}
+	p := pay{
+		PaymentNumber: paymentNumber,
+		ChargeAmount:  chargeAmountFloat,
+		Blockchain:    "dash",
+		Status:        "please send exactly the charge amount",
+		//TODO: change to main before production release
+		Network:        "testnet",
+		DepositAddress: response.PaymentAddress,
+	}
+	//TODO: call queue to start watching the payment and processing any tx's
 	Respond(c, http.StatusOK, gin.H{"response": p})
 }
 
