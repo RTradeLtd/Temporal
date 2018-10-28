@@ -365,18 +365,6 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		api.LogError(err, eh.ChainRiderAPICallError)(c, http.StatusBadRequest)
 		return
 	}
-	if _, err = api.pm.NewPayment(
-		paymentNumber,
-		response.PaymentAddress,
-		fakeTxHash,
-		creditValueFloat,
-		"dash",
-		"dash",
-		username,
-	); err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
 	type pay struct {
 		PaymentNumber  int64
 		ChargeAmount   float64
