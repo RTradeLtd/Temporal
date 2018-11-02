@@ -279,12 +279,12 @@
   revision = "1395d1447324cbea88d249fbfcfd70ea878fdfca"
 
 [[projects]]
-  digest = "1:c6276054735b6423adbb7b92dcabd7a2317c565632db8ce2be96def465255b52"
+  digest = "1:9999472bf9c934426d967c507d61f2de84affb8318b8d8c8bc38b3486edbd826"
   name = "github.com/ipfs/go-cid"
   packages = ["."]
   pruneopts = "UT"
-  revision = "5b04f3043387b02aeeee6a35899f0e767bae3b33"
-  version = "v0.7.21"
+  revision = "6e296c5c49ad84dc6a44af69fa1fe4e1245cd0cf"
+  version = "v0.9.0"
 
 [[projects]]
   branch = "master"
@@ -328,6 +328,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:89819897a46a0fe46c1794ba087803f433a6e1041489103c005cc9bd408c146d"
+  name = "github.com/ipfs/go-ipfs-files"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "90d206a6f3947f904673ebffd376a2dcbbd84942"
+
+[[projects]]
+  branch = "master"
   digest = "1:02df66d8098a1087e74f74326883e1e104844f528227431c7290510fd165ced7"
   name = "github.com/ipfs/go-ipfs-keystore"
   packages = ["."]
@@ -367,15 +375,15 @@
   version = "v1.5.3"
 
 [[projects]]
-  digest = "1:edc30a44d67fed3bafbe01fd32f9ca636082b9c836604f9acb04720bdae922f0"
+  branch = "master"
+  digest = "1:cb15e8bd77bf5b98be5500ae656df1f51dcac8b153ac22bcf422403139358338"
   name = "github.com/ipfs/ipfs-cluster"
   packages = [
     "api",
     "api/rest/client",
   ]
   pruneopts = "UT"
-  revision = "2f417eb63281e53ab8273189fac20ac70267287b"
-  version = "v0.5.0"
+  revision = "6f72ab2e67b46f245ed0e8144b065a321d6cb9a9"
 
 [[projects]]
   digest = "1:6b8866cc9496eada254debc24199981e21fd70fd0031ff7a581ac91be47187bb"
@@ -879,12 +887,12 @@
   version = "v1.6.2"
 
 [[projects]]
-  digest = "1:10e61e8194b43fffdfcb5e3018a66db48c5ee2c48bea74585c14fa21fe08d607"
+  digest = "1:28e83f2abf3e3c83b9ad533a4295bdff102f94868b06d5f7bfe71c5477d81c8f"
   name = "github.com/multiformats/go-multibase"
   packages = ["."]
   pruneopts = "UT"
-  revision = "dfd5076869faca5aed2886dcba60b44a0d0e9c01"
-  version = "v0.2.6"
+  revision = "bb91b53e5695e699a86654d77d03db7bc7506d12"
+  version = "v0.3.0"
 
 [[projects]]
   digest = "1:d25da73ef0957c39c4c8d273566918e310949db06eb863cd55955cef7219b59e"

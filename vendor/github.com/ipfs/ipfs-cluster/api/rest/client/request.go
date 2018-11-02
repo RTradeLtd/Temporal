@@ -12,7 +12,7 @@ import (
 
 type responseDecoder func(d *json.Decoder) error
 
-func (c *Client) do(
+func (c *defaultClient) do(
 	method, path string,
 	headers map[string]string,
 	body io.Reader,
@@ -26,7 +26,7 @@ func (c *Client) do(
 	return c.handleResponse(resp, obj)
 }
 
-func (c *Client) doStream(
+func (c *defaultClient) doStream(
 	method, path string,
 	headers map[string]string,
 	body io.Reader,
@@ -40,7 +40,7 @@ func (c *Client) doStream(
 	return c.handleStreamResponse(resp, outHandler)
 }
 
-func (c *Client) doRequest(
+func (c *defaultClient) doRequest(
 	method, path string,
 	headers map[string]string,
 	body io.Reader,
@@ -73,7 +73,7 @@ func (c *Client) doRequest(
 
 	return c.client.Do(r)
 }
-func (c *Client) handleResponse(resp *http.Response, obj interface{}) error {
+func (c *defaultClient) handleResponse(resp *http.Response, obj interface{}) error {
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 
@@ -92,9 +92,10 @@ func (c *Client) handleResponse(resp *http.Response, obj interface{}) error {
 			var apiErr api.Error
 			err = json.Unmarshal(body, &apiErr)
 			if err != nil {
+				// not json. 404s etc.
 				return &api.Error{
 					Code:    resp.StatusCode,
-					Message: err.Error(),
+					Message: string(body),
 				}
 			}
 			return &apiErr
@@ -110,7 +111,7 @@ func (c *Client) handleResponse(resp *http.Response, obj interface{}) error {
 	return nil
 }
 
-func (c *Client) handleStreamResponse(resp *http.Response, handler responseDecoder) error {
+func (c *defaultClient) handleStreamResponse(resp *http.Response, handler responseDecoder) error {
 	if resp.StatusCode > 399 && resp.StatusCode < 600 {
 		return c.handleResponse(resp, nil)
 	}
@@ -119,7 +120,7 @@ func (c *Client) handleStreamResponse(resp *http.Response, handler responseDecod
 
 	if resp.StatusCode != http.StatusOK {
 		return &api.Error{
-			Code:    500,
+			Code:    resp.StatusCode,
 			Message: "expected streaming response with code 200",
 		}
 	}
@@ -128,11 +129,21 @@ func (c *Client) handleStreamResponse(resp *http.Response, handler responseDecod
 	for {
 		err := handler(dec)
 		if err == io.EOF {
-			return nil
+			// we need to check trailers
+			break
 		}
 		if err != nil {
 			logger.Error(err)
 			return err
 		}
 	}
+
+	errTrailer := resp.Trailer.Get("X-Stream-Error")
+	if errTrailer != "" {
+		return &api.Error{
+			Code:    500,
+			Message: errTrailer,
+		}
+	}
+	return nil
 }

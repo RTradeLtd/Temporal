@@ -9,6 +9,8 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"sort"
@@ -158,7 +160,7 @@ var ipfsPinStatus2TrackerStatusMap = map[IPFSPinStatus]TrackerStatus{
 // GlobalPinInfo contains cluster-wide status information about a tracked Cid,
 // indexed by cluster peer.
 type GlobalPinInfo struct {
-	Cid     *cid.Cid
+	Cid     cid.Cid
 	PeerMap map[peer.ID]PinInfo
 }
 
@@ -171,7 +173,7 @@ type GlobalPinInfoSerial struct {
 // ToSerial converts a GlobalPinInfo to its serializable version.
 func (gpi GlobalPinInfo) ToSerial() GlobalPinInfoSerial {
 	s := GlobalPinInfoSerial{}
-	if gpi.Cid != nil {
+	if gpi.Cid.Defined() {
 		s.Cid = gpi.Cid.String()
 	}
 	s.PeerMap = make(map[string]PinInfoSerial)
@@ -203,27 +205,29 @@ func (gpis GlobalPinInfoSerial) ToGlobalPinInfo() GlobalPinInfo {
 
 // PinInfo holds information about local pins.
 type PinInfo struct {
-	Cid    *cid.Cid
-	Peer   peer.ID
-	Status TrackerStatus
-	TS     time.Time
-	Error  string
+	Cid      cid.Cid
+	Peer     peer.ID
+	PeerName string
+	Status   TrackerStatus
+	TS       time.Time
+	Error    string
 }
 
 // PinInfoSerial is a serializable version of PinInfo.
 // information is marked as
 type PinInfoSerial struct {
-	Cid    string `json:"cid"`
-	Peer   string `json:"peer"`
-	Status string `json:"status"`
-	TS     string `json:"timestamp"`
-	Error  string `json:"error"`
+	Cid      string `json:"cid"`
+	Peer     string `json:"peer"`
+	PeerName string `json:"peername"`
+	Status   string `json:"status"`
+	TS       string `json:"timestamp"`
+	Error    string `json:"error"`
 }
 
 // ToSerial converts a PinInfo to its serializable version.
 func (pi PinInfo) ToSerial() PinInfoSerial {
 	c := ""
-	if pi.Cid != nil {
+	if pi.Cid.Defined() {
 		c = pi.Cid.String()
 	}
 	p := ""
@@ -232,11 +236,12 @@ func (pi PinInfo) ToSerial() PinInfoSerial {
 	}
 
 	return PinInfoSerial{
-		Cid:    c,
-		Peer:   p,
-		Status: pi.Status.String(),
-		TS:     pi.TS.UTC().Format(time.RFC3339),
-		Error:  pi.Error,
+		Cid:      c,
+		Peer:     p,
+		PeerName: pi.PeerName,
+		Status:   pi.Status.String(),
+		TS:       pi.TS.UTC().Format(time.RFC3339),
+		Error:    pi.Error,
 	}
 }
 
@@ -255,11 +260,12 @@ func (pis PinInfoSerial) ToPinInfo() PinInfo {
 		logger.Debug(pis.TS, err)
 	}
 	return PinInfo{
-		Cid:    c,
-		Peer:   p,
-		Status: TrackerStatusFromString(pis.Status),
-		TS:     ts,
-		Error:  pis.Error,
+		Cid:      c,
+		Peer:     p,
+		PeerName: pis.PeerName,
+		Status:   TrackerStatusFromString(pis.Status),
+		TS:       ts,
+		Error:    pis.Error,
 	}
 }
 
@@ -531,7 +537,7 @@ func (addrsS MultiaddrsSerial) ToMultiaddrs() []ma.Multiaddr {
 }
 
 // CidsToStrings encodes cid.Cids to strings.
-func CidsToStrings(cids []*cid.Cid) []string {
+func CidsToStrings(cids []cid.Cid) []string {
 	strs := make([]string, len(cids))
 	for i, c := range cids {
 		strs[i] = c.String()
@@ -649,7 +655,7 @@ type PinOptions struct {
 type Pin struct {
 	PinOptions
 
-	Cid *cid.Cid
+	Cid cid.Cid
 
 	// See PinType comments
 	Type PinType
@@ -665,12 +671,12 @@ type Pin struct {
 	// ClusterDAGs, it is the MetaPin CID. For the
 	// MetaPin it is the ClusterDAG CID. For Shards,
 	// it is the previous shard CID.
-	Reference *cid.Cid
+	Reference cid.Cid
 }
 
 // PinCid is a shortcut to create a Pin only with a Cid.  Default is for pin to
 // be recursive and the pin to be of DataType.
-func PinCid(c *cid.Cid) Pin {
+func PinCid(c cid.Cid) Pin {
 	return Pin{
 		Cid:         c,
 		Type:        DataType,
@@ -681,7 +687,7 @@ func PinCid(c *cid.Cid) Pin {
 
 // PinWithOpts creates a new Pin calling PinCid(c) and then sets
 // its PinOptions fields with the given options.
-func PinWithOpts(c *cid.Cid, opts PinOptions) Pin {
+func PinWithOpts(c cid.Cid, opts PinOptions) Pin {
 	p := PinCid(c)
 	p.ReplicationFactorMin = opts.ReplicationFactorMin
 	p.ReplicationFactorMax = opts.ReplicationFactorMax
@@ -704,11 +710,11 @@ type PinSerial struct {
 // ToSerial converts a Pin to PinSerial.
 func (pin Pin) ToSerial() PinSerial {
 	c := ""
-	if pin.Cid != nil {
+	if pin.Cid.Defined() {
 		c = pin.Cid.String()
 	}
 	ref := ""
-	if pin.Reference != nil {
+	if pin.Reference.Defined() {
 		ref = pin.Reference.String()
 	}
 
@@ -800,7 +806,7 @@ func (pins PinSerial) ToPin() Pin {
 	if err != nil {
 		logger.Debug(pins.Cid, err)
 	}
-	var ref *cid.Cid
+	var ref cid.Cid
 	if pins.Reference != "" {
 		ref, err = cid.Decode(pins.Reference)
 		if err != nil {
@@ -823,6 +829,25 @@ func (pins PinSerial) ToPin() Pin {
 	}
 }
 
+// Clone returns a deep copy of the PinSerial.
+func (pins PinSerial) Clone() PinSerial {
+	new := pins // this copy all the simple fields.
+	// slices are pointers. We need to explicitally copy them.
+	new.Allocations = make([]string, len(pins.Allocations))
+	copy(new.Allocations, pins.Allocations)
+	return new
+}
+
+// DecodeCid retrieves just the cid from a PinSerial without
+// allocating a Pin.
+func (pins PinSerial) DecodeCid() cid.Cid {
+	c, err := cid.Decode(pins.Cid)
+	if err != nil {
+		logger.Debug(pins.Cid, err)
+	}
+	return c
+}
+
 // NodeWithMeta specifies a block of data and a set of optional metadata fields
 // carrying information about the encoded ipld node
 type NodeWithMeta struct {
@@ -843,10 +868,10 @@ func (n *NodeWithMeta) Size() uint64 {
 // the Value, which should be interpreted by the PinAllocator.
 type Metric struct {
 	Name   string
-	Peer   peer.ID // filled-in by Cluster.
+	Peer   peer.ID
 	Value  string
-	Expire int64 // UnixNano
-	Valid  bool  // if the metric is not valid it will be discarded
+	Expire int64
+	Valid  bool
 }
 
 // SetTTL sets Metric to expire after the given time.Duration
@@ -870,6 +895,51 @@ func (m *Metric) Expired() bool {
 // Discard returns if the metric not valid or has expired
 func (m *Metric) Discard() bool {
 	return !m.Valid || m.Expired()
+}
+
+// helper for JSON marshaling. The Metric type is already
+// serializable, but not pretty to humans (API).
+type metricSerial struct {
+	Name   string `json:"name"`
+	Peer   string `json:"peer"`
+	Value  string `json:"value"`
+	Expire int64  `json:"expire"`
+	Valid  bool   `json:"valid"`
+}
+
+// MarshalJSON allows a Metric to produce a JSON representation
+// of itself.
+func (m *Metric) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&metricSerial{
+		Name:   m.Name,
+		Peer:   peer.IDB58Encode(m.Peer),
+		Value:  m.Value,
+		Expire: m.Expire,
+	})
+}
+
+// UnmarshalJSON decodes JSON on top of the Metric.
+func (m *Metric) UnmarshalJSON(j []byte) error {
+	if bytes.Equal(j, []byte("null")) {
+		return nil
+	}
+
+	ms := &metricSerial{}
+	err := json.Unmarshal(j, ms)
+	if err != nil {
+		return err
+	}
+
+	p, err := peer.IDB58Decode(ms.Peer)
+	if err != nil {
+		return err
+	}
+
+	m.Name = ms.Name
+	m.Peer = p
+	m.Value = ms.Value
+	m.Expire = ms.Expire
+	return nil
 }
 
 // Alert carries alerting information about a peer. WIP.

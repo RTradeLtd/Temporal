@@ -23,7 +23,7 @@ func Fuzz(data []byte) int {
 	if err != nil {
 		panic(err.Error())
 	}
-	cid2 := &Cid{}
+	cid2 := Cid{}
 	err = cid2.UnmarshalJSON(json)
 	if err != nil {
 		panic(err.Error())

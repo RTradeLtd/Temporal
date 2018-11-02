@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -15,19 +16,19 @@ import (
 	"github.com/ipfs/ipfs-cluster/api"
 
 	cid "github.com/ipfs/go-cid"
-	"github.com/ipfs/go-ipfs-cmdkit/files"
+	files "github.com/ipfs/go-ipfs-files"
 	peer "github.com/libp2p/go-libp2p-peer"
 )
 
 // ID returns information about the cluster Peer.
-func (c *Client) ID() (api.ID, error) {
+func (c *defaultClient) ID() (api.ID, error) {
 	var id api.IDSerial
 	err := c.do("GET", "/id", nil, nil, &id)
 	return id.ToID(), err
 }
 
 // Peers requests ID information for all cluster peers.
-func (c *Client) Peers() ([]api.ID, error) {
+func (c *defaultClient) Peers() ([]api.ID, error) {
 	var ids []api.IDSerial
 	err := c.do("GET", "/peers", nil, nil, &ids)
 	result := make([]api.ID, len(ids))
@@ -42,7 +43,7 @@ type peerAddBody struct {
 }
 
 // PeerAdd adds a new peer to the cluster.
-func (c *Client) PeerAdd(pid peer.ID) (api.ID, error) {
+func (c *defaultClient) PeerAdd(pid peer.ID) (api.ID, error) {
 	pidStr := peer.IDB58Encode(pid)
 	body := peerAddBody{pidStr}
 
@@ -56,13 +57,13 @@ func (c *Client) PeerAdd(pid peer.ID) (api.ID, error) {
 }
 
 // PeerRm removes a current peer from the cluster
-func (c *Client) PeerRm(id peer.ID) error {
+func (c *defaultClient) PeerRm(id peer.ID) error {
 	return c.do("DELETE", fmt.Sprintf("/peers/%s", id.Pretty()), nil, nil, nil)
 }
 
 // Pin tracks a Cid with the given replication factor and a name for
 // human-friendliness.
-func (c *Client) Pin(ci *cid.Cid, replicationFactorMin, replicationFactorMax int, name string) error {
+func (c *defaultClient) Pin(ci cid.Cid, replicationFactorMin, replicationFactorMax int, name string) error {
 	escName := url.QueryEscape(name)
 	err := c.do(
 		"POST",
@@ -81,13 +82,13 @@ func (c *Client) Pin(ci *cid.Cid, replicationFactorMin, replicationFactorMax int
 }
 
 // Unpin untracks a Cid from cluster.
-func (c *Client) Unpin(ci *cid.Cid) error {
+func (c *defaultClient) Unpin(ci cid.Cid) error {
 	return c.do("DELETE", fmt.Sprintf("/pins/%s", ci.String()), nil, nil, nil)
 }
 
 // Allocations returns the consensus state listing all tracked items and
 // the peers that should be pinning them.
-func (c *Client) Allocations(filter api.PinType) ([]api.Pin, error) {
+func (c *defaultClient) Allocations(filter api.PinType) ([]api.Pin, error) {
 	var pins []api.PinSerial
 
 	types := []api.PinType{
@@ -109,7 +110,8 @@ func (c *Client) Allocations(filter api.PinType) ([]api.Pin, error) {
 		}
 	}
 
-	err := c.do("GET", fmt.Sprintf("/allocations?filter=%s", strings.Join(strFilter, ",")), nil, nil, &pins)
+	f := url.QueryEscape(strings.Join(strFilter, ","))
+	err := c.do("GET", fmt.Sprintf("/allocations?filter=%s", f), nil, nil, &pins)
 	result := make([]api.Pin, len(pins))
 	for i, p := range pins {
 		result[i] = p.ToPin()
@@ -118,7 +120,7 @@ func (c *Client) Allocations(filter api.PinType) ([]api.Pin, error) {
 }
 
 // Allocation returns the current allocations for a given Cid.
-func (c *Client) Allocation(ci *cid.Cid) (api.Pin, error) {
+func (c *defaultClient) Allocation(ci cid.Cid) (api.Pin, error) {
 	var pin api.PinSerial
 	err := c.do("GET", fmt.Sprintf("/allocations/%s", ci.String()), nil, nil, &pin)
 	return pin.ToPin(), err
@@ -127,14 +129,14 @@ func (c *Client) Allocation(ci *cid.Cid) (api.Pin, error) {
 // Status returns the current ipfs state for a given Cid. If local is true,
 // the information affects only the current peer, otherwise the information
 // is fetched from all cluster peers.
-func (c *Client) Status(ci *cid.Cid, local bool) (api.GlobalPinInfo, error) {
+func (c *defaultClient) Status(ci cid.Cid, local bool) (api.GlobalPinInfo, error) {
 	var gpi api.GlobalPinInfoSerial
 	err := c.do("GET", fmt.Sprintf("/pins/%s?local=%t", ci.String(), local), nil, nil, &gpi)
 	return gpi.ToGlobalPinInfo(), err
 }
 
 // StatusAll gathers Status() for all tracked items.
-func (c *Client) StatusAll(local bool) ([]api.GlobalPinInfo, error) {
+func (c *defaultClient) StatusAll(local bool) ([]api.GlobalPinInfo, error) {
 	var gpis []api.GlobalPinInfoSerial
 	err := c.do("GET", fmt.Sprintf("/pins?local=%t", local), nil, nil, &gpis)
 	result := make([]api.GlobalPinInfo, len(gpis))
@@ -147,7 +149,7 @@ func (c *Client) StatusAll(local bool) ([]api.GlobalPinInfo, error) {
 // Sync makes sure the state of a Cid corresponds to the state reported by
 // the ipfs daemon, and returns it. If local is true, this operation only
 // happens on the current peer, otherwise it happens on every cluster peer.
-func (c *Client) Sync(ci *cid.Cid, local bool) (api.GlobalPinInfo, error) {
+func (c *defaultClient) Sync(ci cid.Cid, local bool) (api.GlobalPinInfo, error) {
 	var gpi api.GlobalPinInfoSerial
 	err := c.do("POST", fmt.Sprintf("/pins/%s/sync?local=%t", ci.String(), local), nil, nil, &gpi)
 	return gpi.ToGlobalPinInfo(), err
@@ -157,7 +159,7 @@ func (c *Client) Sync(ci *cid.Cid, local bool) (api.GlobalPinInfo, error) {
 // informations for items that were de-synced or have an error state. If
 // local is true, the operation is limited to the current peer. Otherwise
 // it happens on every cluster peer.
-func (c *Client) SyncAll(local bool) ([]api.GlobalPinInfo, error) {
+func (c *defaultClient) SyncAll(local bool) ([]api.GlobalPinInfo, error) {
 	var gpis []api.GlobalPinInfoSerial
 	err := c.do("POST", fmt.Sprintf("/pins/sync?local=%t", local), nil, nil, &gpis)
 	result := make([]api.GlobalPinInfo, len(gpis))
@@ -170,7 +172,7 @@ func (c *Client) SyncAll(local bool) ([]api.GlobalPinInfo, error) {
 // Recover retriggers pin or unpin ipfs operations for a Cid in error state.
 // If local is true, the operation is limited to the current peer, otherwise
 // it happens on every cluster peer.
-func (c *Client) Recover(ci *cid.Cid, local bool) (api.GlobalPinInfo, error) {
+func (c *defaultClient) Recover(ci cid.Cid, local bool) (api.GlobalPinInfo, error) {
 	var gpi api.GlobalPinInfoSerial
 	err := c.do("POST", fmt.Sprintf("/pins/%s/recover?local=%t", ci.String(), local), nil, nil, &gpi)
 	return gpi.ToGlobalPinInfo(), err
@@ -179,7 +181,7 @@ func (c *Client) Recover(ci *cid.Cid, local bool) (api.GlobalPinInfo, error) {
 // RecoverAll triggers Recover() operations on all tracked items. If local is
 // true, the operation is limited to the current peer. Otherwise, it happens
 // everywhere.
-func (c *Client) RecoverAll(local bool) ([]api.GlobalPinInfo, error) {
+func (c *defaultClient) RecoverAll(local bool) ([]api.GlobalPinInfo, error) {
 	var gpis []api.GlobalPinInfoSerial
 	err := c.do("POST", fmt.Sprintf("/pins/recover?local=%t", local), nil, nil, &gpis)
 	result := make([]api.GlobalPinInfo, len(gpis))
@@ -190,7 +192,7 @@ func (c *Client) RecoverAll(local bool) ([]api.GlobalPinInfo, error) {
 }
 
 // Version returns the ipfs-cluster peer's version.
-func (c *Client) Version() (api.Version, error) {
+func (c *defaultClient) Version() (api.Version, error) {
 	var ver api.Version
 	err := c.do("GET", "/version", nil, nil, &ver)
 	return ver, err
@@ -198,16 +200,32 @@ func (c *Client) Version() (api.Version, error) {
 
 // GetConnectGraph returns an ipfs-cluster connection graph.
 // The serialized version, strings instead of pids, is returned
-func (c *Client) GetConnectGraph() (api.ConnectGraphSerial, error) {
+func (c *defaultClient) GetConnectGraph() (api.ConnectGraphSerial, error) {
 	var graphS api.ConnectGraphSerial
 	err := c.do("GET", "/health/graph", nil, nil, &graphS)
 	return graphS, err
 }
 
-// WaitFor is a utility function that allows for a caller to
-// wait for a paticular status for a CID. It returns a channel
-// upon which the caller can wait for the targetStatus.
-func (c *Client) WaitFor(ctx context.Context, fp StatusFilterParams) (api.GlobalPinInfo, error) {
+// Metrics returns a map with the latest valid metrics of the given name
+// for the current cluster peers.
+func (c *defaultClient) Metrics(name string) ([]api.Metric, error) {
+	if name == "" {
+		return nil, errors.New("bad metric name")
+	}
+	var metrics []api.Metric
+	err := c.do("GET", fmt.Sprintf("/monitor/metrics/%s", name), nil, nil, &metrics)
+	return metrics, err
+}
+
+// WaitFor is a utility function that allows for a caller to wait for a
+// paticular status for a CID (as defined by StatusFilterParams).
+// It returns the final status for that CID and an error, if there was.
+//
+// WaitFor works by calling Status() repeatedly and checking that all
+// peers have transitioned to the target TrackerStatus or are Remote.
+// If an error of some type happens, WaitFor returns immediately with an
+// empty GlobalPinInfo.
+func WaitFor(ctx context.Context, c Client, fp StatusFilterParams) (api.GlobalPinInfo, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -236,7 +254,7 @@ func (c *Client) WaitFor(ctx context.Context, fp StatusFilterParams) (api.Global
 // StatusFilterParams contains the parameters required
 // to filter a stream of status results.
 type StatusFilterParams struct {
-	Cid       *cid.Cid
+	Cid       cid.Cid
 	Local     bool
 	Target    api.TrackerStatus
 	CheckFreq time.Duration
@@ -285,7 +303,7 @@ func (sf *statusFilter) filter(ctx context.Context, fp StatusFilterParams) {
 	}
 }
 
-func (sf *statusFilter) pollStatus(ctx context.Context, c *Client, fp StatusFilterParams) {
+func (sf *statusFilter) pollStatus(ctx context.Context, c Client, fp StatusFilterParams) {
 	ticker := time.NewTicker(fp.CheckFreq)
 	defer ticker.Stop()
 
@@ -365,7 +383,7 @@ func makeSerialFile(fpath string, params *api.AddParams) (files.File, error) {
 // sharding the resulting DAG across the IPFS daemons of multiple cluster
 // peers. The output channel will receive regular updates as the adding
 // process progresses.
-func (c *Client) Add(
+func (c *defaultClient) Add(
 	paths []string,
 	params *api.AddParams,
 	out chan<- *api.AddedOutput,
@@ -400,7 +418,7 @@ func (c *Client) Add(
 }
 
 // AddMultiFile imports new files from a MultiFileReader. See Add().
-func (c *Client) AddMultiFile(
+func (c *defaultClient) AddMultiFile(
 	multiFileR *files.MultiFileReader,
 	params *api.AddParams,
 	out chan<- *api.AddedOutput,
@@ -411,6 +429,8 @@ func (c *Client) AddMultiFile(
 	headers["Content-Type"] = "multipart/form-data; boundary=" + multiFileR.Boundary()
 	queryStr := params.ToQueryString()
 
+	// our handler decodes an AddedOutput and puts it
+	// in the out channel.
 	handler := func(dec *json.Decoder) error {
 		if out == nil {
 			return nil
@@ -420,9 +440,7 @@ func (c *Client) AddMultiFile(
 		if err != nil {
 			return err
 		}
-		select {
-		case out <- &obj:
-		}
+		out <- &obj
 		return nil
 	}
 

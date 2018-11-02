@@ -12,7 +12,8 @@ import (
 // Encoding identifies the type of base-encoding that a multibase is carrying.
 type Encoding int
 
-// These are the supported encodings
+// These are the encodings specified in the standard, not are all
+// supported yet
 const (
 	Identity          = 0x00
 	Base1             = '1'
@@ -36,6 +37,48 @@ const (
 	Base64pad         = 'M'
 	Base64urlPad      = 'U'
 )
+
+// Encodigs is a map of the supported encoding, unsupported encoding
+// specified in standard are left out
+var Encodings = map[string]Encoding{
+	"identity":          0x00,
+	"base16":            'f',
+	"base16upper":       'F',
+	"base32":            'b',
+	"base32upper":       'B',
+	"base32pad":         'c',
+	"base32padupper":    'C',
+	"base32hex":         'v',
+	"base32hexupper":    'V',
+	"base32hexpad":      't',
+	"base32hexpadupper": 'T',
+	"base58flickr":      'Z',
+	"base58btc":         'z',
+	"base64":            'm',
+	"base64url":         'u',
+	"base64pad":         'M',
+	"base64urlpad":      'U',
+}
+
+var EncodingToStr = map[Encoding]string{
+	0x00: "identity",
+	'f':  "base16",
+	'F':  "base16upper",
+	'b':  "base32",
+	'B':  "base32upper",
+	'c':  "base32pad",
+	'C':  "base32padupper",
+	'v':  "base32hex",
+	'V':  "base32hexupper",
+	't':  "base32hexpad",
+	'T':  "base32hexpadupper",
+	'Z':  "base58flickr",
+	'z':  "base58btc",
+	'm':  "base64",
+	'u':  "base64url",
+	'M':  "base64pad",
+	'U':  "base64urlpad",
+}
 
 // ErrUnsupportedEncoding is returned when the selected encoding is not known or
 // implemented.
