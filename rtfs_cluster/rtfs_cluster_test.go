@@ -1,10 +1,21 @@
 package rtfs_cluster_test
 
-const testPIN = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
+import (
+	"fmt"
+	"testing"
 
-/*
+	"github.com/RTradeLtd/Temporal/rtfs_cluster"
+)
+
+const (
+	testPIN        = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
+	nodeOneAPIAddr = "192.168.1.101"
+	nodeTwoAPIAddr = "192.168.2.101"
+	nodePort       = "9094"
+)
+
 func TestInitialize(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize("", "")
+	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -16,7 +27,7 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestParseLocalStatusAllAndSync(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize("", "")
+	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +45,7 @@ func TestParseLocalStatusAllAndSync(t *testing.T) {
 }
 
 func TestClusterPin(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize("", "")
+	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +59,7 @@ func TestClusterPin(t *testing.T) {
 }
 
 func TestRemovePinFromCluster(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize("", "")
+	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +69,7 @@ func TestRemovePinFromCluster(t *testing.T) {
 }
 
 func TestFetchLocalStatus(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize("", "")
+	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,4 +82,3 @@ func TestFetchLocalStatus(t *testing.T) {
 	}
 	fmt.Println(cidStatuses)
 }
-*/

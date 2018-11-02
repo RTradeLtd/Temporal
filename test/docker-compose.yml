@@ -3,7 +3,7 @@ version: '3'
 services:
   ipfs.node.1:
     container_name: "ipfs_node_1"
-    image: ipfs/go-ipfs:v0.4.17
+    image: ipfs/go-ipfs:v0.4.18
     command: daemon --migrate=true --enable-pubsub-experiment
     ports:
       - ${ADDR_NODE1}:4001:4001
@@ -18,7 +18,7 @@ services:
     container_name: "ipfs_cluster_1"
     depends_on: 
       - ipfs.node.1
-    image: ipfs/ipfs-cluster:v0.5.0
+    image: ipfs/ipfs-cluster:v0.7.0
     ports:
       - ${ADDR_NODE1}:9094:9094
       - ${ADDR_NODE1}:9095:9095
@@ -30,7 +30,7 @@ services:
 
   ipfs.node.2:
     container_name: "ipfs_node_2"
-    image: ipfs/go-ipfs:v0.4.17
+    image: ipfs/go-ipfs:v0.4.18
     command: daemon --migrate=true --enable-pubsub-experiment
     ports:
       - ${ADDR_NODE2}:4001:4001
@@ -46,7 +46,7 @@ services:
     depends_on: 
       - ipfs.cluster.1
       - ipfs.node.2
-    image: ipfs/ipfs-cluster:v0.5.0
+    image: ipfs/ipfs-cluster:v0.7.0
     ports:
       - ${ADDR_NODE2}:9094:9094
       - ${ADDR_NODE2}:9095:9095
