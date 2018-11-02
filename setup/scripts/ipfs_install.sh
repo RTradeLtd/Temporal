@@ -2,7 +2,7 @@
 
 IPFS_PATH="/ipfs"
 PRIVATE_NODE="yes"
-IPFS_DOWNLOAD_URL="https://dist.ipfs.io/go-ipfs/v0.4.17/go-ipfs_v0.4.17_linux-amd64.tar.gz"
+IPFS_DOWNLOAD_URL="https://dist.ipfs.io/go-ipfs/v0.4.18/go-ipfs_v0.4.18_linux-amd64.tar.gz"
 export IPFS_PATH="/ipfs"
 
 cd ~ || exit
