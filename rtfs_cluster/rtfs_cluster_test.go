@@ -23,6 +23,9 @@ func TestInitialize(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if id.Version == "" {
+		t.Fatal("version is empty string when it shouldn't be")
+	}
 	fmt.Println(id)
 }
 
@@ -58,16 +61,6 @@ func TestClusterPin(t *testing.T) {
 	}
 }
 
-func TestRemovePinFromCluster(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = cm.RemovePinFromCluster(testPIN); err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestFetchLocalStatus(t *testing.T) {
 	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
@@ -81,4 +74,54 @@ func TestFetchLocalStatus(t *testing.T) {
 		fmt.Println("no cids detected")
 	}
 	fmt.Println(cidStatuses)
+}
+
+func TestGetStatusForCidLocally(t *testing.T) {
+	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	status, err := cm.GetStatusForCidLocally(testPIN)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if status == nil {
+		t.Fatal("status is nil when it shouldn't be")
+	}
+}
+
+func TestGetStatusForCidGlobally(t *testing.T) {
+	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	if err != nil {
+		t.Fatal(err)
+	}
+	status, err := cm.GetStatusForCidGlobally(testPIN)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if status == nil {
+		t.Fatal("status is nil when it shouldn't be")
+	}
+}
+
+func TestListPeers(t *testing.T) {
+	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = cm.ListPeers(); err != nil {
+		t.Fatal(err)
+	}
+}
+func TestRemovePinFromCluster(t *testing.T) {
+	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = cm.RemovePinFromCluster(testPIN); err != nil {
+		t.Fatal(err)
+	}
 }
