@@ -11,9 +11,9 @@ import (
 	"testing"
 	"unicode"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/testtext"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/message"
+	"golang.org/x/text/internal/testtext"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 // TODO: test that tables are properly dropped by the linker for various use

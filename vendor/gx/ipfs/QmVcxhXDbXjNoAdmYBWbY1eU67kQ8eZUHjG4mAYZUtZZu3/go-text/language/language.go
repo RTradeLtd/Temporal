@@ -12,8 +12,8 @@ package language
 import (
 	"strings"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/language"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/language/compact"
+	"golang.org/x/text/internal/language"
+	"golang.org/x/text/internal/language/compact"
 )
 
 // Tag represents a BCP 47 language tag. It is used to specify an instance of a

@@ -4,7 +4,7 @@
 
 package icmp
 
-import "gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/iana"
+import "golang.org/x/net/internal/iana"
 
 // multipartMessageBodyDataLen takes b as an original datagram and
 // exts as extensions, and returns a required length for message body

@@ -4,7 +4,7 @@
 
 package ipv6
 
-import "gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/iana"
+import "golang.org/x/net/internal/iana"
 
 // BUG(mikio): On Windows, methods related to ICMPFilter are not
 // implemented.

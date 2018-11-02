@@ -6,7 +6,7 @@
 
 package trace
 
-import "gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/context"
+import "golang.org/x/net/context"
 
 // NewContext returns a copy of the parent context
 // and associates it with a Trace.

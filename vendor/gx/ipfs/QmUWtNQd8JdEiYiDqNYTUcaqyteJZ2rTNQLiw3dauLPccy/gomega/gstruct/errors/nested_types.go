@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/types"
+	"github.com/onsi/gomega/types"
 )
 
 // A stateful matcher that nests other matchers within it and preserves the error types of the

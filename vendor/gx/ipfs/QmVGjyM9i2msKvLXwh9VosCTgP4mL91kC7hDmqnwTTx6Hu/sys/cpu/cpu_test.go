@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"testing"
 
-	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/cpu"
+	"golang.org/x/sys/cpu"
 )
 
 func TestAMD64minimalFeatures(t *testing.T) {

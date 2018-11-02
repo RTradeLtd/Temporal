@@ -19,9 +19,9 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/collate/build"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/gen"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"golang.org/x/text/collate/build"
+	"golang.org/x/text/internal/gen"
+	"golang.org/x/text/language"
 )
 
 var long = flag.Bool("long", false,

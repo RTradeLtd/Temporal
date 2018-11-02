@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"log"
 
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/scrypt"
+	"golang.org/x/crypto/scrypt"
 )
 
 func Example() {

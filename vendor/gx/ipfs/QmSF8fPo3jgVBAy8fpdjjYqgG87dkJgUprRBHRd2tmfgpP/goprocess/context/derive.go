@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	goprocess "gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess"
+	goprocess "github.com/jbenet/goprocess"
 )
 
 const (

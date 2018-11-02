@@ -18,7 +18,7 @@ import (
 	"strings"
 	"testing"
 
-	"gx/ipfs/QmdCgRBcahWLSq3a2xdbcPb4ksrRREAhisYdfAaGfJ8hWb/procfs/nfs"
+	"github.com/prometheus/procfs/nfs"
 )
 
 func TestNewNFSdServerRPCStats(t *testing.T) {

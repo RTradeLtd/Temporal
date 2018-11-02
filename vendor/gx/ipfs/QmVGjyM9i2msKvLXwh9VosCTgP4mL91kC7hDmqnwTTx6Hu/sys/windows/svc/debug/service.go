@@ -13,7 +13,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/windows/svc"
+	"golang.org/x/sys/windows/svc"
 )
 
 // Run executes service name by calling appropriate handler function.

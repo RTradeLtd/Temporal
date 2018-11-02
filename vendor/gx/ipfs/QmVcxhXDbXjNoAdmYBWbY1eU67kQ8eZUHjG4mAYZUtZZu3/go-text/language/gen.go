@@ -18,9 +18,9 @@ import (
 	"strconv"
 	"strings"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/gen"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/language"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/unicode/cldr"
+	"golang.org/x/text/internal/gen"
+	"golang.org/x/text/internal/language"
+	"golang.org/x/text/unicode/cldr"
 )
 
 var (

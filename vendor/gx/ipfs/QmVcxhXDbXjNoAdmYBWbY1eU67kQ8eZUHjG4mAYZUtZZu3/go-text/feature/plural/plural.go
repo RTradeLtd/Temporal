@@ -13,9 +13,9 @@
 package plural
 
 import (
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/language/compact"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/number"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"golang.org/x/text/internal/language/compact"
+	"golang.org/x/text/internal/number"
+	"golang.org/x/text/language"
 )
 
 // Rules defines the plural rules for all languages for a certain plural type.

@@ -3,10 +3,10 @@
 
 package import_public // import "github.com/golang/protobuf/protoc-gen-go/testdata/import_public"
 
-import proto "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
+import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import sub "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/import_public/sub"
+import sub "github.com/golang/protobuf/protoc-gen-go/testdata/import_public/sub"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	"gx/ipfs/QmV3bVtkAhSZqWncYGonUmsVcJcV6cpzWztsFwc3A9so5m/dns"
+	"github.com/miekg/dns"
 )
 
 // Retrieve the MX records for miek.nl.

@@ -17,33 +17,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CalculateContentHashForFile is used to calculate the content hash
-// for a particular file, without actually storing it or processing it
-func (api *API) calculateContentHashForFile(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	fileHandler, err := c.FormFile("file")
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-
-	reader, err := fileHandler.Open()
-	if err != nil {
-		api.LogError(err, eh.FileOpenError)(c)
-		return
-	}
-	defer reader.Close()
-	hash, err := utils.GenerateIpfsMultiHashForFile(reader)
-	if err != nil {
-		api.LogError(err, eh.IPFSMultiHashGenerationError)(c)
-		return
-	}
-
-	api.LogWithUser(username).Info("content hash calculation for file requested")
-
-	Respond(c, http.StatusOK, gin.H{"response": hash})
-}
-
 // PinHashLocally is used to pin a hash to the local ipfs node
 func (api *API) pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")

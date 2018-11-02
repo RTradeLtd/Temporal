@@ -4,7 +4,7 @@
 
 package cases
 
-import "gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/transform"
+import "golang.org/x/text/transform"
 
 type caseFolder struct{ transform.NopResetter }
 

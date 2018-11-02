@@ -7,8 +7,8 @@ package pkg
 import (
 	"net/http"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/message"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 var matcher = language.NewMatcher(message.DefaultCatalog.Languages())

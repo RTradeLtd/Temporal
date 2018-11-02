@@ -33,7 +33,7 @@ import (
 	"os"
 	"runtime/pprof"
 
-	lz4 "gx/ipfs/Qmbvv2urkn5Wtwws4yzjE85qRjB293EodchZofJsrTRuvN/go-lz4"
+	lz4 "github.com/bkaradzic/go-lz4"
 )
 
 var (

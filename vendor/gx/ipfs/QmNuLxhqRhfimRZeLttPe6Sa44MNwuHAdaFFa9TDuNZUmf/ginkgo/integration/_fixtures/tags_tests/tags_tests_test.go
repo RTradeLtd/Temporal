@@ -1,7 +1,7 @@
 package tags_tests_test
 
 import (
-	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo"
+	. "github.com/onsi/ginkgo"
 )
 
 var _ = Describe("TagsTests", func() {

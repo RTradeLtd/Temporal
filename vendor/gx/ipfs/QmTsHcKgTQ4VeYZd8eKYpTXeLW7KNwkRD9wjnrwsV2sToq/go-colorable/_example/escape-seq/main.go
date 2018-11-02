@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 
-	"gx/ipfs/QmTsHcKgTQ4VeYZd8eKYpTXeLW7KNwkRD9wjnrwsV2sToq/go-colorable"
+	"github.com/mattn/go-colorable"
 )
 
 func main() {

@@ -10,7 +10,7 @@ import (
 	"log"
 	"net/http"
 
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/acme/autocert"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 func ExampleNewListener() {

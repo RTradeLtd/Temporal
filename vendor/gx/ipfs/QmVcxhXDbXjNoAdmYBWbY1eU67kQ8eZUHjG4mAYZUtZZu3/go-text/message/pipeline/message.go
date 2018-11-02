@@ -9,7 +9,7 @@ import (
 	"errors"
 	"strings"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"golang.org/x/text/language"
 )
 
 // TODO: these definitions should be moved to a package so that the can be used

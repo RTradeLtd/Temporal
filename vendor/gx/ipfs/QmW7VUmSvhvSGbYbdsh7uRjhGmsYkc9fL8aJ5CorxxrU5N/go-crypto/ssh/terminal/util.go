@@ -17,7 +17,7 @@
 package terminal
 
 import (
-	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/unix"
+	"golang.org/x/sys/unix"
 )
 
 // State contains the state of a terminal.

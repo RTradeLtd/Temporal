@@ -3,7 +3,7 @@ package yaml_test
 import (
 	"errors"
 	. "gopkg.in/check.v1"
-	"gx/ipfs/QmNNARAR2ncSEDKGVAjsE77VYAtNE6qMMPEC7hfWMwMdF9/yaml.v2"
+	"gopkg.in/yaml.v2"
 	"math"
 	"net"
 	"reflect"

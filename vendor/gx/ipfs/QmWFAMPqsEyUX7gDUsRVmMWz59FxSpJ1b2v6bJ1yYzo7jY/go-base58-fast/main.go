@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"gx/ipfs/QmWFAMPqsEyUX7gDUsRVmMWz59FxSpJ1b2v6bJ1yYzo7jY/go-base58-fast/base58"
+	"github.com/mr-tron/base58/base58"
 )
 
 func checkSum(b []byte) []byte {

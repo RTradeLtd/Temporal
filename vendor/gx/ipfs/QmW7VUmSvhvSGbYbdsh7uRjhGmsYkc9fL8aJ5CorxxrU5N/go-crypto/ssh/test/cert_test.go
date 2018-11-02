@@ -11,7 +11,7 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/ssh"
+	"golang.org/x/crypto/ssh"
 )
 
 // Test both logging in with a cert, and also that the certificate presented by an OpenSSH host can be validated correctly

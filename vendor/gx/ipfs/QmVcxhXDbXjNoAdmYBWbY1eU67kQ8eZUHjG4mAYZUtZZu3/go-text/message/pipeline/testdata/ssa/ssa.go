@@ -1,8 +1,8 @@
 package main
 
 import (
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/message"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 // In this test, lowercap strings are ones that need to be picked up for

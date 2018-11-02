@@ -7,7 +7,7 @@ package colltab
 import (
 	"unicode/utf8"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/unicode/norm"
+	"golang.org/x/text/unicode/norm"
 )
 
 // Table holds all collation data for a given collation ordering.

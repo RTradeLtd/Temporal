@@ -2,9 +2,9 @@ package matchers_test
 
 import (
 	. "github.com/onsi/ginkgo"
-	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega"
+	. "github.com/onsi/gomega"
 
-	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/matchers"
+	. "github.com/onsi/gomega/matchers"
 )
 
 var _ = Describe("MatchYAMLMatcher", func() {

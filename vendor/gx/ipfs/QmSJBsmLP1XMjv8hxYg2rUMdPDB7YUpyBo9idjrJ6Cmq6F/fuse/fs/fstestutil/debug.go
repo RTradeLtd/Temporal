@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse"
+	"bazil.org/fuse"
 )
 
 type flagDebug bool

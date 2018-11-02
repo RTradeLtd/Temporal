@@ -7,7 +7,7 @@ import (
 	"strings"
 	"syscall"
 
-	humanize "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
+	humanize "github.com/dustin/go-humanize"
 )
 
 func init() {

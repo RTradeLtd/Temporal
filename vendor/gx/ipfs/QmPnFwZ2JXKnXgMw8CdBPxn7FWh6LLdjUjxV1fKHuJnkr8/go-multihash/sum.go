@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 
-	blake2s "gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/blake2s"
-	sha3 "gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/sha3"
-	sha256 "gx/ipfs/QmXTpwq2AkzQsPjKqFQDNY2bMdsAT53hUBETeyj8QRHTZU/sha256-simd"
-	blake2b "gx/ipfs/QmZp3eKdYQHHAneECmeK6HhiMwTPufmjC8DuuaGKv3unvx/blake2b-simd"
-	keccak "gx/ipfs/QmZtJMfZZvoD3EKpQaf8xsFi83HMtX5acQekY8exMbcWEi/keccakpg"
-	murmur3 "gx/ipfs/QmfJHywXQu98UeZtGJBQrPAR6AtmDjjbe3qjTo9piXHPnx/murmur3"
+	keccak "github.com/gxed/hashland/keccakpg"
+	blake2b "github.com/minio/blake2b-simd"
+	sha256 "github.com/minio/sha256-simd"
+	murmur3 "github.com/spaolacci/murmur3"
+	blake2s "golang.org/x/crypto/blake2s"
+	sha3 "golang.org/x/crypto/sha3"
 )
 
 // ErrSumNotSupported is returned when the Sum function code is not implemented

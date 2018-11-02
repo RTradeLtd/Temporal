@@ -4,9 +4,9 @@ import (
 	"errors"
 
 	. "github.com/onsi/ginkgo"
-	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega"
-	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/internal/assertion"
-	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/internal/fakematcher"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/internal/assertion"
+	"github.com/onsi/gomega/internal/fakematcher"
 )
 
 var _ = Describe("Assertion", func() {

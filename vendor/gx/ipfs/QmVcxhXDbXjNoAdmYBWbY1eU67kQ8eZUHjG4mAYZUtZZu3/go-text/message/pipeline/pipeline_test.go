@@ -17,7 +17,7 @@ import (
 	"strings"
 	"testing"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"golang.org/x/text/language"
 )
 
 var genFiles = flag.Bool("gen", false, "generate output files instead of comparing")

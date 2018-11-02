@@ -3,7 +3,7 @@ package nodot_test
 import (
 	"strings"
 
-	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/ginkgo/nodot"
+	. "github.com/onsi/ginkgo/ginkgo/nodot"
 )
 
 var _ = Describe("ApplyNoDot", func() {

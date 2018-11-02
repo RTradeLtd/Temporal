@@ -14,8 +14,8 @@ import (
 	"errors"
 	"sort"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/tag"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"golang.org/x/text/internal/tag"
+	"golang.org/x/text/language"
 )
 
 // TODO:

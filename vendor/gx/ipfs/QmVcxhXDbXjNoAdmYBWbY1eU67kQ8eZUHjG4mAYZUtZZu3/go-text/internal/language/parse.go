@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"sort"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/tag"
+	"golang.org/x/text/internal/tag"
 )
 
 // isAlpha returns true if the byte is not a digit.

@@ -20,8 +20,8 @@ import (
 import (
 	"bytes"
 
-	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse"
-	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse/fuseutil"
+	"bazil.org/fuse"
+	"bazil.org/fuse/fuseutil"
 )
 
 const (
