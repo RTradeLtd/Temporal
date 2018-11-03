@@ -15,7 +15,7 @@ type Record struct {
 	RecordKeyName  string      `gorm:"type:varchar(255)"`
 	LatestIPFSHash string      `gorm:"type:varchar(255)"`
 	ZoneName       string      `gorm:"type:varchar(255)"`
-	MetaData       interface{} `gorm:"type:json"` // we need to parse this to a "string json"
+	MetaData       interface{} `gorm:"type:text"` // we need to parse this to a "string json"
 }
 
 // RecordManager is used to manipulate records in our db
@@ -44,7 +44,7 @@ func (rm *RecordManager) UpdateLatestIPFSHash(username, recordName, ipfsHash str
 // FindRecordByNameAndUser is used to search fro a record by name and user
 func (rm *RecordManager) FindRecordByNameAndUser(username, name string) (*Record, error) {
 	r := Record{}
-	if check := rm.DB.Where("user_name = ? AND name = ?", username, name); check.Error != nil {
+	if check := rm.DB.Where("user_name = ? AND name = ?", username, name).First(&r); check.Error != nil {
 		return nil, check.Error
 	}
 	return &r, nil
@@ -60,7 +60,9 @@ func (rm *RecordManager) AddRecord(username, recordName, recordKeyName, zoneName
 		Name:          recordName,
 		RecordKeyName: recordKeyName,
 		ZoneName:      zoneName,
-		MetaData:      rm.stringifyMetaData(metadata),
+	}
+	if len(metadata) > 0 {
+		r.MetaData = rm.stringifyMetaData(metadata)
 	}
 	if check := rm.DB.Create(&r); check.Error != nil {
 		return nil, check.Error

@@ -18,7 +18,8 @@ var (
 	IpnsObj            *models.IPNS
 	HostedIpfsNetObj   *models.HostedIPFSPrivateNetwork
 	DropObj            *models.Drop
-	TnsZoneObj       *models.Zone
+	TnsZoneObj         *models.Zone
+	TnsRecordObj       *models.Record
 )
 
 type DatabaseManager struct {
@@ -69,6 +70,7 @@ func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(DropObj)
 	dbm.DB.AutoMigrate(EncryptedUploadObj)
 	dbm.DB.AutoMigrate(TnsZoneObj)
+	dbm.DB.AutoMigrate(TnsRecordObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
 
@@ -89,6 +91,7 @@ func OpenDBConnection(opts DBOptions) (*gorm.DB, error) {
 	if opts.User == "" {
 		opts.User = "postgres"
 	}
+	opts.SSLModeDisable = true
 	// look into whether or not we wil disable sslmode
 	dbConnURL := fmt.Sprintf("host=%s port=%s user=%s dbname=temporal password=%s",
 		opts.Address, opts.Port, opts.User, opts.Password)
