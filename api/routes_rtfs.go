@@ -372,6 +372,17 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": present})
 }
 
+// GetDagObject is used to retrieve an IPLD object from ipfs
+func (api *API) getDagObject(c *gin.Context) {
+	hash := c.Param("hash")
+	var out interface{}
+	if err := api.ipfs.Shell.DagGet(hash, &out); err != nil {
+		api.LogError(err, eh.IPFSDagGetError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": out})
+}
+
 // DownloadContentHash is used to download a particular content hash from the network
 func (api *API) downloadContentHash(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
