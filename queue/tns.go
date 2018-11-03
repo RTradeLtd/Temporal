@@ -37,7 +37,7 @@ func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *
 			continue
 		}
 		// connect to ipfs
-		rtfsManager, err := rtfs.Initialize("", "")
+		rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
 		if err != nil {
 			qm.LogError(err, "failed to initialize connection to ipfs")
 			d.Ack(false)
@@ -151,9 +151,9 @@ func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *
 			mr[v.Name] = v.RecordKeyName
 		}
 		z := tns.Zone{
-			PublicKey: zonePKID.String(),
+			PublicKey: zonePKID.Pretty(),
 			Manager: &tns.ZoneManager{
-				PublicKey: zomeManagerPKID.String(),
+				PublicKey: zomeManagerPKID.Pretty(),
 			},
 			Name:                    zone.Name,
 			Records:                 m,
