@@ -2,7 +2,7 @@
 
 package currency
 
-import "gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/tag"
+import "golang.org/x/text/internal/tag"
 
 // CLDRVersion is the CLDR version from which the tables in this package are derived.
 const CLDRVersion = "32"

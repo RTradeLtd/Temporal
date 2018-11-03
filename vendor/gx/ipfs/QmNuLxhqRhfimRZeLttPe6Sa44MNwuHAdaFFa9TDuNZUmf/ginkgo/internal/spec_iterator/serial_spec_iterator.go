@@ -1,7 +1,7 @@
 package spec_iterator
 
 import (
-	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/internal/spec"
+	"github.com/onsi/ginkgo/internal/spec"
 )
 
 type SerialIterator struct {

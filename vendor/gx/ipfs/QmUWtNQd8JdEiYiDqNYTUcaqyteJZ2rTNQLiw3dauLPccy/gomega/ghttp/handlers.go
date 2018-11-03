@@ -10,8 +10,8 @@ import (
 	"reflect"
 
 	"github.com/golang/protobuf/proto"
-	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega"
-	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/types"
+	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/types"
 )
 
 //CombineHandler takes variadic list of handlers and produces one handler

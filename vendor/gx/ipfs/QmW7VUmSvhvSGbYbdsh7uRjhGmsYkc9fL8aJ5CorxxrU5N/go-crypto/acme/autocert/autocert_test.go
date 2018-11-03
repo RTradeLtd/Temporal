@@ -30,7 +30,7 @@ import (
 	"testing"
 	"time"
 
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/acme"
+	"golang.org/x/crypto/acme"
 )
 
 var (

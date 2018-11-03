@@ -9,7 +9,7 @@ package main
 import (
 	"unicode/utf8"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/language/compact"
+	"golang.org/x/text/internal/language/compact"
 )
 
 // A system identifies a CLDR numbering system.

@@ -17,12 +17,12 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	fmtparser "golang.org/x/text/internal/format"
 	"golang.org/x/tools/go/callgraph"
 	"golang.org/x/tools/go/callgraph/cha"
 	"golang.org/x/tools/go/loader"
 	"golang.org/x/tools/go/ssa"
 	"golang.org/x/tools/go/ssa/ssautil"
-	fmtparser "gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/format"
 )
 
 const debug = false

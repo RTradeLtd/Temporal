@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/currency"
+	"golang.org/x/text/currency"
 )
 
 func ExampleQuery() {

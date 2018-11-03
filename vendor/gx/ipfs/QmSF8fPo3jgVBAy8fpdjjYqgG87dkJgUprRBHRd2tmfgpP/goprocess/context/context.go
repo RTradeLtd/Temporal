@@ -3,7 +3,7 @@ package goprocessctx
 import (
 	"context"
 
-	goprocess "gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess"
+	goprocess "github.com/jbenet/goprocess"
 )
 
 // WithContext constructs and returns a Process that respects

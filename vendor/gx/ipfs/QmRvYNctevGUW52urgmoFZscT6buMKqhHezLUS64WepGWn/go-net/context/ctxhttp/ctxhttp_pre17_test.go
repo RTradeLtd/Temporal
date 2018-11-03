@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/context"
+	"golang.org/x/net/context"
 )
 
 // golang.org/issue/14065

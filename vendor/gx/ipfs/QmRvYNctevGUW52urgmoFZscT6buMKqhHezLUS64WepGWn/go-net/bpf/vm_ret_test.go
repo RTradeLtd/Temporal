@@ -7,7 +7,7 @@ package bpf_test
 import (
 	"testing"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/bpf"
+	"golang.org/x/net/bpf"
 )
 
 func TestVMRetA(t *testing.T) {

@@ -32,7 +32,7 @@ import (
 	"sort"
 	"strings"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/idna"
+	"golang.org/x/net/idna"
 )
 
 const (

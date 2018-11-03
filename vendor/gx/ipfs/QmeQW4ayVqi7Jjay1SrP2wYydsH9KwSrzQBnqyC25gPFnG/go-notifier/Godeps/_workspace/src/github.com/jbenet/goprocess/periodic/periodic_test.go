@@ -5,7 +5,7 @@ import (
 	"time"
 
 	ci "github.com/jbenet/go-cienv"
-	gp "gx/ipfs/QmeQW4ayVqi7Jjay1SrP2wYydsH9KwSrzQBnqyC25gPFnG/go-notifier/Godeps/_workspace/src/github.com/jbenet/goprocess"
+	gp "github.com/whyrusleeping/go-notifier/Godeps/_workspace/src/github.com/jbenet/goprocess"
 )
 
 var (

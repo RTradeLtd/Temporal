@@ -11,10 +11,10 @@ import (
 	"runtime"
 	"syscall"
 
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/scrypt"
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/ssh/terminal"
+	"golang.org/x/crypto/scrypt"
+	"golang.org/x/crypto/ssh/terminal"
 
-	"gx/ipfs/QmNi5J1mEQKAKWbPRBEMKKYVNok9EN4MsGM4YUqPvraPEX/go-crypto-dav/encoding/base32"
+	"github.com/davidlazar/go-crypto/encoding/base32"
 )
 
 type Key [32]byte

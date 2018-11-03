@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/ssh"
+	"golang.org/x/crypto/ssh"
 )
 
 // test cases

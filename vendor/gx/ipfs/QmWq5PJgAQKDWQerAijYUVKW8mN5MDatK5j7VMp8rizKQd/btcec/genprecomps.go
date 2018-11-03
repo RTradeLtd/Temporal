@@ -17,7 +17,7 @@ import (
 	"log"
 	"os"
 
-	"gx/ipfs/QmWq5PJgAQKDWQerAijYUVKW8mN5MDatK5j7VMp8rizKQd/btcec"
+	"github.com/btcsuite/btcd/btcec"
 )
 
 func main() {

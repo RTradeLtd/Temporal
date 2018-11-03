@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo"
+	"github.com/onsi/ginkgo"
 )
 
 /*

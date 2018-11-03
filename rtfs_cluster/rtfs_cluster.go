@@ -13,7 +13,7 @@ import (
 // ClusterManager is a helper interface to interact with the cluster apis
 type ClusterManager struct {
 	Config *client.Config
-	Client *client.Client
+	Client client.Client
 }
 
 // Initialize is used to init, and return a cluster manager object
@@ -40,7 +40,7 @@ func (cm *ClusterManager) GenRestAPIConfig() {
 
 // GenClient is used to generate a client to interact with the cluster
 func (cm *ClusterManager) GenClient() error {
-	cl, err := client.NewClient(cm.Config)
+	cl, err := client.NewDefaultClient(cm.Config)
 	if err != nil {
 		return err
 	}
@@ -51,9 +51,9 @@ func (cm *ClusterManager) GenClient() error {
 // ParseLocalStatusAllAndSync is used to parse through any errors
 // and resync them
 // TODO: make more robust
-func (cm *ClusterManager) ParseLocalStatusAllAndSync() ([]*gocid.Cid, error) {
+func (cm *ClusterManager) ParseLocalStatusAllAndSync() ([]gocid.Cid, error) {
 	// this will hold all the cids that have been synced
-	var syncedCids []*gocid.Cid
+	var syncedCids []gocid.Cid
 	// only fetch the local status for all pins
 	pinInfo, err := cm.Client.StatusAll(true)
 	if err != nil {
@@ -102,8 +102,8 @@ func (cm *ClusterManager) RemovePinFromCluster(cidString string) error {
 }
 
 // FetchLocalStatus is used to fetch the local status of all pins
-func (cm *ClusterManager) FetchLocalStatus() (map[*gocid.Cid]string, error) {
-	var response = make(map[*gocid.Cid]string)
+func (cm *ClusterManager) FetchLocalStatus() (map[gocid.Cid]string, error) {
+	var response = make(map[gocid.Cid]string)
 	pinInfo, err := cm.Client.StatusAll(true)
 	if err != nil {
 		return response, err
@@ -158,16 +158,16 @@ func (cm *ClusterManager) ListPeers() ([]api.ID, error) {
 }
 
 // DecodeHashString is used to take a hash string, and turn it into a CID
-func (cm *ClusterManager) DecodeHashString(cidString string) (*gocid.Cid, error) {
+func (cm *ClusterManager) DecodeHashString(cidString string) (gocid.Cid, error) {
 	cid, err := gocid.Decode(cidString)
 	if err != nil {
-		return nil, err
+		return gocid.Cid{}, err
 	}
 	return cid, nil
 }
 
 // Pin is used to add a pin to the cluster
-func (cm *ClusterManager) Pin(cid *gocid.Cid) error {
+func (cm *ClusterManager) Pin(cid gocid.Cid) error {
 	err := cm.Client.Pin(cid, -1, -1, cid.String())
 	if err != nil {
 		return err

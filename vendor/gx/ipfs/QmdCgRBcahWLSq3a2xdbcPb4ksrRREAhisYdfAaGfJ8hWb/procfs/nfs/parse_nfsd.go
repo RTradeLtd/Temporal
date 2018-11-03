@@ -19,7 +19,7 @@ import (
 	"io"
 	"strings"
 
-	"gx/ipfs/QmdCgRBcahWLSq3a2xdbcPb4ksrRREAhisYdfAaGfJ8hWb/procfs/internal/util"
+	"github.com/prometheus/procfs/internal/util"
 )
 
 // ParseServerRPCStats returns stats read from /proc/net/rpc/nfsd

@@ -3,13 +3,13 @@
 
 package imports // import "github.com/golang/protobuf/protoc-gen-go/testdata/imports"
 
-import proto "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
+import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import fmt1 "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/imports/fmt"
-import test_a_1 "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/imports/test_a_1"
-import test_a_2 "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/imports/test_a_2"
-import test_b_1 "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/imports/test_b_1"
+import fmt1 "github.com/golang/protobuf/protoc-gen-go/testdata/imports/fmt"
+import test_a_1 "github.com/golang/protobuf/protoc-gen-go/testdata/imports/test_a_1"
+import test_a_2 "github.com/golang/protobuf/protoc-gen-go/testdata/imports/test_a_2"
+import test_b_1 "github.com/golang/protobuf/protoc-gen-go/testdata/imports/test_b_1"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

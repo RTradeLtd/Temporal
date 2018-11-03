@@ -247,7 +247,6 @@ func (api *API) setupRoutes() {
 	// ipfs
 	ipfs := v1.Group("/ipfs", authware...)
 	{
-		ipfs.POST("/calculate-content-hash", api.calculateContentHashForFile)
 		ipfs.GET("/pins", api.getLocalPins)                        // admin locked
 		ipfs.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
 		ipfs.GET("/object-stat/:key", api.getObjectStatForIpfs)

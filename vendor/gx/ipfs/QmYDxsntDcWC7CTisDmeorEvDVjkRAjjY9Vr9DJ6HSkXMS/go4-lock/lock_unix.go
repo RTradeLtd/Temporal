@@ -24,7 +24,7 @@ import (
 	"io"
 	"os"
 
-	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/unix"
+	"golang.org/x/sys/unix"
 )
 
 func init() {

@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strconv"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/tag"
+	"golang.org/x/text/internal/tag"
 )
 
 // findIndex tries to find the given tag in idx and returns a standardized error

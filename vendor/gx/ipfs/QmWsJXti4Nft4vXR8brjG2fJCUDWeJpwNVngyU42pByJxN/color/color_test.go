@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"gx/ipfs/QmTsHcKgTQ4VeYZd8eKYpTXeLW7KNwkRD9wjnrwsV2sToq/go-colorable"
+	"github.com/mattn/go-colorable"
 )
 
 // Testing colors is kinda different. First we test for given colors and their

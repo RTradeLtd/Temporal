@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	process "gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess"
+	process "github.com/jbenet/goprocess"
 )
 
 func TestRateLimitLimitedGoBlocks(t *testing.T) {

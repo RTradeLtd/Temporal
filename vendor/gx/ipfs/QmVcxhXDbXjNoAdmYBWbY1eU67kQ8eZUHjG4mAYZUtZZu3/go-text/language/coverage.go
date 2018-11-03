@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"sort"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/language"
+	"golang.org/x/text/internal/language"
 )
 
 // The Coverage interface is used to define the level of coverage of an

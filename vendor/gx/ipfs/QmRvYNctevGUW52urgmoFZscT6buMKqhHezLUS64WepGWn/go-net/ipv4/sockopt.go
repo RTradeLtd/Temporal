@@ -4,7 +4,7 @@
 
 package ipv4
 
-import "gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/socket"
+import "golang.org/x/net/internal/socket"
 
 // Sticky socket options
 const (

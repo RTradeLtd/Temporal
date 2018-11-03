@@ -11,7 +11,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	mh "gx/ipfs/QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8/go-multihash"
+	mh "github.com/multiformats/go-multihash"
 )
 
 // package errors

@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/bpf"
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/ipv6"
+	"golang.org/x/net/bpf"
+	"golang.org/x/net/ipv6"
 )
 
 func TestBPF(t *testing.T) {

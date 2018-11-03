@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"gx/ipfs/QmPfFaAVvKzacBFh2UBqUzczkPNQxGcLyAXKKD1hjC22re/go-nat"
+	"github.com/fd/go-nat"
 )
 
 func main() {

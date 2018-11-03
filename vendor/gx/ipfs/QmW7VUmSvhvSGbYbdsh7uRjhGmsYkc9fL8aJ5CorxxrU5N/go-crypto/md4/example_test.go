@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io"
 
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/md4"
+	"golang.org/x/crypto/md4"
 )
 
 func ExampleNew() {

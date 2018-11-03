@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 )
 
 const mockTextMapIdsPrefix = "mockpfx-ids-"

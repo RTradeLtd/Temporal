@@ -160,7 +160,7 @@ func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 		return
 	}
 	// this will hold all the retrieved content hashes
-	var cids []*gocid.Cid
+	var cids []gocid.Cid
 	// this will hold all the statuses of the content hashes
 	var statuses []string
 	// initialize a connection to the cluster

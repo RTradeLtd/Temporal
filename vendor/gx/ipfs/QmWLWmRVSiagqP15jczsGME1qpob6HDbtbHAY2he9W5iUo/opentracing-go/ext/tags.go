@@ -1,6 +1,6 @@
 package ext
 
-import opentracing "gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
+import opentracing "github.com/opentracing/opentracing-go"
 
 // These constants define common tag names recommended for better portability across
 // tracing systems and languages/platforms.

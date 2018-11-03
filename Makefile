@@ -1,6 +1,6 @@
 GOFILES=`go list ./... | grep -v /vendor/`
 TEMPORALVERSION=`git describe --tags`
-IPFSVERSION=v0.4.17
+IPFSVERSION=v0.4.18
 UNAME=$(shell uname)
 INTERFACE=eth0
 ADDR_NODE1=192.168.1.101

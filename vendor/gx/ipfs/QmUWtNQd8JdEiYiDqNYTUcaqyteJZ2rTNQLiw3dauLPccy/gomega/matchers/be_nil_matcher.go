@@ -1,6 +1,6 @@
 package matchers
 
-import "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/format"
+import "github.com/onsi/gomega/format"
 
 type BeNilMatcher struct {
 }

@@ -6,7 +6,7 @@ package clearsign
 
 import (
 	"bytes"
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/openpgp"
+	"golang.org/x/crypto/openpgp"
 	"testing"
 )
 

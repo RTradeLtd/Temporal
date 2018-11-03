@@ -12,9 +12,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/colltab"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/unicode/norm"
+	"golang.org/x/text/internal/colltab"
+	"golang.org/x/text/language"
+	"golang.org/x/text/unicode/norm"
 )
 
 // TODO: optimizations:
