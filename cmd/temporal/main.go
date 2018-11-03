@@ -37,13 +37,14 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "run tns daemon",
 				Description: "runs a tns daemon and zone manager",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					rtfsManager, err := rtfs.Initialize("", "")
+					rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
 					if err != nil {
 						log.Fatal(err)
 					}
 					if err = rtfsManager.CreateKeystoreManager(); err != nil {
 						log.Fatal(err)
 					}
+					fmt.Println(cfg.TNS)
 					zoneManagerPK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(
 						cfg.TNS.ZoneManagerKeyName,
 					)
