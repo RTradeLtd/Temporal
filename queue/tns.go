@@ -2,6 +2,7 @@ package queue
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/RTradeLtd/Temporal/rtfs"
 
@@ -208,7 +209,7 @@ func (qm *QueueManager) ProcessTNSZoneCreation(msgs <-chan amqp.Delivery, db *go
 			continue
 		}
 		// connect to ipfs
-		rtfsManager, err := rtfs.Initialize("", "")
+		rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
 		if err != nil {
 			qm.LogError(err, "failed to initialize connection to ipfs")
 			d.Ack(false)
