@@ -121,11 +121,12 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	if err != nil {
 		return nil, err
 	}
-	// create our keystore manager
-	if err = ipfsManager.CreateKeystoreManager(); err != nil {
-		return nil, err
+	if !dev {
+		// create our keystore manager
+		if err = ipfsManager.CreateKeystoreManager(); err != nil {
+			return nil, err
+		}
 	}
-
 	gc, err := grpc.NewGRPCClient(cfg, true)
 	if err != nil {
 		return nil, err
