@@ -250,9 +250,9 @@ func (qm *QueueManager) ProcessTNSZoneCreation(msgs <-chan amqp.Delivery, db *go
 		}
 		// generate initial zone object
 		z := tns.Zone{
-			PublicKey: zonePKID.String(),
+			PublicKey: zonePKID.Pretty(),
 			Manager: &tns.ZoneManager{
-				PublicKey: zoneManagerPKID.String(),
+				PublicKey: zoneManagerPKID.Pretty(),
 			},
 			Name: req.Name,
 		}
