@@ -101,6 +101,8 @@ const (
 	EmailTokenGenerationError = "failed to generate email verification token"
 	// ZoneSearchError is an error message used when failing to search for a zone
 	ZoneSearchError = "failed to search for zone"
-	// IPFSDagGetERror is an error message when failing to retrieve a dag from ipfs
+	// RecordSearchError is an error message used when failing to search for a record
+	RecordSearchError = "failed to search for record"
+	// IPFSDagGetError is an error message when failing to retrieve a dag from ipfs
 	IPFSDagGetError = "failed to get dag from ipfs"
 )

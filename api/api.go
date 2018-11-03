@@ -44,6 +44,7 @@ type API struct {
 	ue      *models.EncryptedUploadManager
 	ipfs    *rtfs.IpfsManager
 	zm      *models.ZoneManager
+	rm      *models.RecordManager
 	l       *log.Logger
 	gc      *grpc.Client
 	service string
@@ -145,6 +146,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		ipfs:    ipfsManager,
 		gc:      gc,
 		zm:      models.NewZoneManager(dbm.DB),
+		rm:      models.NewRecordManager(dbm.DB),
 	}, nil
 }
 
@@ -214,6 +216,7 @@ func (api *API) setupRoutes() {
 			request := query.Group("/request")
 			{
 				request.POST("/zone", api.performZoneRequest)
+				request.POST("/record", api.performRecordRequest)
 			}
 		}
 	}

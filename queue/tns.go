@@ -65,7 +65,7 @@ func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *
 		}
 		// create record object
 		r := tns.Record{
-			PublicKey: recordPKID.String(),
+			PublicKey: recordPKID.Pretty(),
 			Name:      req.RecordName,
 			MetaData:  req.MetaData,
 		}

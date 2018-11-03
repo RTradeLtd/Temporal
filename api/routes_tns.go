@@ -30,6 +30,26 @@ func (api *API) performZoneRequest(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": zone})
 }
 
+// PerformRecordRequest is used to perform a request request lookup
+func (api *API) performRecordRequest(c *gin.Context) {
+	userToQuery, exists := c.GetPostForm("user_name")
+	if !exists {
+		FailWithMissingField(c, "user_name")
+		return
+	}
+	recordName, exists := c.GetPostForm("record_name")
+	if !exists {
+		FailWithMissingField(c, "record_name")
+		return
+	}
+	record, err := api.rm.FindRecordByNameAndUser(userToQuery, recordName)
+	if err != nil {
+		api.LogError(err, eh.RecordSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": record})
+}
+
 // AddRecordToZone is used to an a record to a TNS zone
 func (api *API) addRecordToZone(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
