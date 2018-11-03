@@ -99,4 +99,6 @@ const (
 	EmailVerificationError = "failed to verify email address"
 	// EmailTokenGenerationError is an error messaged used when failing to generate a token
 	EmailTokenGenerationError = "failed to generate email verification token"
+	// ZoneSearchError is an error message used when failing to search for a zone
+	ZoneSearchError = "failed to search for zone"
 )

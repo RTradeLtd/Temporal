@@ -2,11 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/tns"
 
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/gin-gonic/gin"
@@ -24,43 +22,12 @@ func (api *API) performZoneRequest(c *gin.Context) {
 		FailWithMissingField(c, "zone_name")
 		return
 	}
-	zoneManagerKeyName, exists := c.GetPostForm("zone_manager_key_name")
-	if !exists {
-		FailWithMissingField(c, "zone_manager_key_name")
-		return
-	}
-	peerID, exists := c.GetPostForm("peer_id")
-	if !exists {
-		FailWithMissingField(c, "peer_id")
-		return
-	}
-	req := tns.ZoneRequest{
-		UserName:           userToQuery,
-		ZoneName:           zoneName,
-		ZoneManagerKeyName: zoneManagerKeyName,
-	}
-	client, err := tns.GenerateTNSClient(true, nil)
+	zone, err := api.zm.FindZoneByNameAndUser(zoneName, userToQuery)
 	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		api.LogError(err, eh.ZoneSearchError)(c, http.StatusBadRequest)
 		return
 	}
-	if err = client.MakeHost(client.PrivateKey, nil); err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	id, err := client.AddPeerToPeerStore(peerID)
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	fmt.Println("querying tns")
-	resp, err := client.QueryTNS(id, "zone-request", req)
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	fmt.Println("tns queried")
-	Respond(c, http.StatusOK, gin.H{"response": resp})
+	Respond(c, http.StatusOK, gin.H{"response": zone})
 }
 
 // AddRecordToZone is used to an a record to a TNS zone
