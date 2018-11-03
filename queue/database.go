@@ -38,11 +38,7 @@ func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *g
 		if err != nil && err == gorm.ErrRecordNotFound {
 			if _, err = uploadManager.NewUpload(
 				dfa.Hash, "file",
-				models.UploadOptions{
-					NetworkName:      dfa.NetworkName,
-					Username:         dfa.UserName,
-					HoldTimeInMonths: dfa.HoldTimeInMonths,
-				},
+				opts,
 			); err != nil {
 				qm.LogError(err, "failed to create new upload in database")
 				d.Ack(false)

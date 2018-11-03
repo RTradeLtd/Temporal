@@ -1,7 +1,6 @@
 package tns_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/tns"
@@ -84,7 +83,7 @@ func TestTNS_ManagerMakeHost(t *testing.T) {
 
 func TestTNS_HostMultiAddress(t *testing.T) {
 	t.Skip()
-	manager, err := tns.GenerateTNSManager(testZoneName)
+	manager, err := tns.GenerateTNSManager(nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +97,7 @@ func TestTNS_HostMultiAddress(t *testing.T) {
 
 func TestTNS_ReachableAddress(t *testing.T) {
 	t.Skip()
-	manager, err := tns.GenerateTNSManager(testZoneName)
+	manager, err := tns.GenerateTNSManager(nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,7 +120,7 @@ func TestTNS_ReachableAddress(t *testing.T) {
 
 func TestTNSClient_AddPeerToPeerStore(t *testing.T) {
 	t.Skip()
-	manager, err := tns.GenerateTNSManager(testZoneName)
+	manager, err := tns.GenerateTNSManager(nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,36 +139,6 @@ func TestTNSClient_AddPeerToPeerStore(t *testing.T) {
 		t.Fatal(err)
 	}
 	if _, err = client.AddPeerToPeerStore(addr); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestTNSClient_QueryTNS(t *testing.T) {
-	manager, err := tns.GenerateTNSManager(testZoneName)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
-		t.Fatal(err)
-	}
-	go manager.RunTNSDaemon()
-	client, err := tns.GenerateTNSClient(true, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = client.MakeHost(client.PrivateKey, nil); err != nil {
-		t.Fatal(err)
-	}
-	addr, err := manager.ReachableAddress(0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	pid, err := client.AddPeerToPeerStore(addr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println("querying tns...")
-	if err = client.QueryTNS(pid); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -33,13 +33,6 @@ type ZoneRequest struct {
 	ZoneManagerKeyName string `json:"zone_manager_key_name"`
 }
 
-// ZoneRequest is a message sent when requesting a reccord from TNS.
-type ZoneRequest struct {
-	UserName           string `json:"user_name"`
-	ZoneName           string `json:"zone_name"`
-	ZoneManagerKeyName string `json:"zone_manager_key_name"`
-}
-
 // Zone is a mapping of human readable names, mapped to a public key. In order to retrieve the latest
 type Zone struct {
 	Manager   *ZoneManager `json:"zone_manager"`
@@ -82,35 +75,6 @@ type Manager struct {
 	Host              host.Host
 	ZM                *models.ZoneManager
 	RM                *models.RecordManager
-}
-
-// Client is used to query a TNS daemon
-type Client struct {
-	PrivateKey ci.PrivKey
-	Host       host.Host
-}
-
-// Host is an interface used by a TNS client or daemon
-type Host interface {
-	MakeHost(pk ci.PrivKey, opts *HostOpts) error
-}
-
-// HostOpts is our options for when we create our libp2p host
-type HostOpts struct {
-	IPAddress string `json:"ip_address"`
-	Port      string `json:"port"`
-	IPVersion string `json:"ip_version"`
-	Protocol  string `json:"protocol"`
-}
-
-// Manager is used to manipulate a zone on TNS and run a daemon
-type Manager struct {
-	PrivateKey        ci.PrivKey
-	ZonePrivateKey    ci.PrivKey
-	RecordPrivateKeys map[string]ci.PrivKey
-	Zone              *Zone
-	Host              host.Host
-	ZM                *models.ZoneManager
 }
 
 // Client is used to query a TNS daemon
