@@ -8,10 +8,13 @@ import (
 )
 
 const (
-	testPIN        = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
+	testPIN = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
+	// ip address of our first ipfs and ipfs cluster node as per our makefile
 	nodeOneAPIAddr = "192.168.1.101"
+	// ip addres of our second ipfs and ipfs cluster node as per our makefile
 	nodeTwoAPIAddr = "192.168.2.101"
-	nodePort       = "9094"
+	// this is the port of the IPFS Cluster API
+	nodePort = "9094"
 )
 
 func TestInitialize(t *testing.T) {
