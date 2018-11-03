@@ -9,7 +9,6 @@ import (
 	"github.com/RTradeLtd/Temporal/tns"
 
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/gin-gonic/gin"
 )
 
@@ -133,15 +132,6 @@ func (api *API) CreateZone(c *gin.Context) {
 	zoneKeyName, exists := c.GetPostForm("zone_key_name")
 	if !exists {
 		FailWithMissingField(c, "zone_key_name")
-		return
-	}
-	rManager, err := rtfs.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c, http.StatusBadRequest)
-		return
-	}
-	if err = rManager.CreateKeystoreManager(); err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
 	valid, err := api.um.CheckIfKeyOwnedByUser(username, zoneManagerKeyName)
