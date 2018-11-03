@@ -212,7 +212,7 @@ func (api *API) setupRoutes() {
 		{
 			request := query.Group("/request")
 			{
-				request.POST("/zone")
+				request.POST("/zone", api.performZoneRequest)
 			}
 		}
 	}
