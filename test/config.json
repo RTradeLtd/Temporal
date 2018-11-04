@@ -78,7 +78,7 @@
 		"email_address": "",
 		"email_name": ""
 	},
-	"tsn": {
+	"tns": {
 		"zone_name": "myzone1",
 		"zone_manager_key_name": "testuser-key10",
 		"zone_key_name": "testuser-key11"
