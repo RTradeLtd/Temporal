@@ -23,6 +23,7 @@ const (
 	defaultRecordName         = "myrecord"
 	defaultRecordKeyName      = "postables-testkeydemo2"
 	defaultRecordUserName     = "postables"
+	dev                       = true
 )
 
 // GenerateTNSClient is used to generate a TNS Client
@@ -94,7 +95,7 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) (interface{}, err
 	// stringify the response
 	latestZoneHash := string(resp)
 	// connect to a local ipfs daemon
-	rtfsManager, err := rtfs.Initialize("", "")
+	rtfsManager, err := rtfs.Initialize("", c.IPFSAPI)
 	if err != nil {
 		return nil, err
 	}

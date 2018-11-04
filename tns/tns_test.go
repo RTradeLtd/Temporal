@@ -1,9 +1,11 @@
 package tns_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/tns"
 	"github.com/RTradeLtd/config"
 )
@@ -26,6 +28,7 @@ const (
 	defaultRecordKeyName      = "postables-testkeydemo2"
 	defaultRecordUserName     = "postables"
 	testPIN                   = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
+	nodeOneAPIAddr            = "192.168.1.101:5001"
 )
 
 func TestTNS_Echo(t *testing.T) {
@@ -63,7 +66,25 @@ func TestTNS_Echo(t *testing.T) {
 	}
 }
 
-func TestTNS_ZoneRequestFail(t *testing.T) {
+func TestTNS_ZoneRequest(t *testing.T) {
+	im, err := rtfs.Initialize("", nodeOneAPIAddr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	z := tns.Zone{
+		Manager:                 nil,
+		PublicKey:               defaultZoneKeyName,
+		Records:                 nil,
+		RecordNamesToPublicKeys: nil,
+	}
+	marshaled, err := json.Marshal(&z)
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash, err := im.Shell.DagPut(marshaled, "json", "cbor")
+	if err != nil {
+		t.Fatal(err)
+	}
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -81,7 +102,7 @@ func TestTNS_ZoneRequestFail(t *testing.T) {
 		defaultZoneName,
 		defaultZoneManagerKeyName,
 		defaultZoneKeyName,
-		testPIN,
+		hash,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -94,6 +115,7 @@ func TestTNS_ZoneRequestFail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	client.IPFSAPI = nodeOneAPIAddr
 	if err = client.MakeHost(client.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}

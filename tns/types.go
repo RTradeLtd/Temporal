@@ -81,6 +81,7 @@ type Manager struct {
 type Client struct {
 	PrivateKey ci.PrivKey
 	Host       host.Host
+	IPFSAPI    string
 }
 
 // Host is an interface used by a TNS client or daemon
