@@ -26,6 +26,7 @@ func TestTNS_Echo(t *testing.T) {
 	if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
+	defer manager.Host.Close()
 	go manager.RunTNSDaemon()
 	client, err := tns.GenerateTNSClient(true, nil)
 	if err != nil {
@@ -34,6 +35,7 @@ func TestTNS_Echo(t *testing.T) {
 	if err = client.MakeHost(client.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
+	defer client.Host.Close()
 	addr, err := manager.ReachableAddress(0)
 	if err != nil {
 		t.Fatal(err)
@@ -47,13 +49,11 @@ func TestTNS_Echo(t *testing.T) {
 	}
 }
 func TestTNS_GenerateTNSClient(t *testing.T) {
-	t.Skip()
 	if _, err := tns.GenerateTNSClient(true, nil); err != nil {
 		t.Fatal(err)
 	}
 }
 func TestTNS_ClientMakeHost(t *testing.T) {
-	t.Skip()
 	c, err := tns.GenerateTNSClient(true, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -61,17 +61,16 @@ func TestTNS_ClientMakeHost(t *testing.T) {
 	if err = c.MakeHost(c.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
+	c.Host.Close()
 }
 
 func TestTNS_GenerateTNSManager(t *testing.T) {
-	t.Skip()
 	if _, err := tns.GenerateTNSManager(nil, nil); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestTNS_ManagerMakeHost(t *testing.T) {
-	t.Skip()
 	m, err := tns.GenerateTNSManager(nil, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -79,10 +78,10 @@ func TestTNS_ManagerMakeHost(t *testing.T) {
 	if err = m.MakeHost(m.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
+	m.Host.Close()
 }
 
 func TestTNS_HostMultiAddress(t *testing.T) {
-	t.Skip()
 	manager, err := tns.GenerateTNSManager(nil, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -90,13 +89,13 @@ func TestTNS_HostMultiAddress(t *testing.T) {
 	if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
+	defer manager.Host.Close()
 	if _, err = manager.HostMultiAddress(); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestTNS_ReachableAddress(t *testing.T) {
-	t.Skip()
 	manager, err := tns.GenerateTNSManager(nil, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -104,6 +103,7 @@ func TestTNS_ReachableAddress(t *testing.T) {
 	if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
+	defer manager.Host.Close()
 	count := 0
 	max := len(manager.Host.Addrs())
 	for count < max {
@@ -119,7 +119,6 @@ func TestTNS_ReachableAddress(t *testing.T) {
 }
 
 func TestTNSClient_AddPeerToPeerStore(t *testing.T) {
-	t.Skip()
 	manager, err := tns.GenerateTNSManager(nil, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -127,6 +126,7 @@ func TestTNSClient_AddPeerToPeerStore(t *testing.T) {
 	if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
+	defer manager.Host.Close()
 	client, err := tns.GenerateTNSClient(true, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -134,6 +134,7 @@ func TestTNSClient_AddPeerToPeerStore(t *testing.T) {
 	if err = client.MakeHost(client.PrivateKey, nil); err != nil {
 		t.Fatal(err)
 	}
+	defer client.Host.Close()
 	addr, err := manager.ReachableAddress(0)
 	if err != nil {
 		t.Fatal(err)
