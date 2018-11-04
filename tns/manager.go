@@ -30,6 +30,8 @@ func GenerateTNSManager(opts *ManagerOpts, db *gorm.DB) (*Manager, error) {
 		zonePK    ci.PrivKey
 		err       error
 	)
+	// if opts is nil, generate a new identity
+	// this is only particularly useful for running the echo test
 	if opts == nil {
 		managerPK, _, err = ci.GenerateKeyPair(ci.Ed25519, 256)
 		if err != nil {
@@ -45,32 +47,34 @@ func GenerateTNSManager(opts *ManagerOpts, db *gorm.DB) (*Manager, error) {
 			ZoneName:  "default",
 		}
 	}
+	// extract a peer id for the zone manager
 	managerPKID, err := peer.IDFromPublicKey(opts.ManagerPK.GetPublic())
 	if err != nil {
 		return nil, err
 	}
+	// format our zone manager
 	zoneManager := ZoneManager{
 		PublicKey: managerPKID.String(),
 	}
+	// extract a peer id for the zone
 	zonePKID, err := peer.IDFromPublicKey(opts.ZonePK.GetPublic())
 	if err != nil {
 		return nil, err
 	}
+	// format our zone
 	zone := Zone{
 		Name:      opts.ZoneName,
 		PublicKey: zonePKID.String(),
 		Manager:   &zoneManager,
 	}
+	// create our manager struct which serves as the basis for the TNS manager daemon
 	manager := Manager{
 		PrivateKey:        opts.ManagerPK,
 		ZonePrivateKey:    opts.ZonePK,
 		RecordPrivateKeys: nil,
 		Zone:              &zone,
 	}
-	if db != nil {
-		manager.ZM = models.NewZoneManager(db)
-		manager.RM = models.NewRecordManager(db)
-	}
+	// while a DB connection isn't necessary, it can allow for lower-latency answers
 	if db != nil {
 		manager.ZM = models.NewZoneManager(db)
 		manager.RM = models.NewRecordManager(db)
@@ -81,6 +85,7 @@ func GenerateTNSManager(opts *ManagerOpts, db *gorm.DB) (*Manager, error) {
 // RunTNSDaemon is used to run our TNS daemon, and setup the available stream handlers
 func (m *Manager) RunTNSDaemon() {
 	fmt.Println("generating echo stream")
+	// our echo stream is a basic test used to determine whether or not a tns manager daemon is functioning properly
 	m.Host.SetStreamHandler(
 		CommandEcho, func(s net.Stream) {
 			log.Info("new stream detected")
@@ -92,6 +97,7 @@ func (m *Manager) RunTNSDaemon() {
 			}
 		})
 	fmt.Println("generating record request stream")
+	// our record request stream allows clients to request a record from the tns manager daemon
 	m.Host.SetStreamHandler(
 		CommandRecordRequest, func(s net.Stream) {
 			log.Info("new stream detected")
@@ -103,6 +109,7 @@ func (m *Manager) RunTNSDaemon() {
 			}
 		})
 	fmt.Println("generating zone request stream")
+	// our zone request stream allows clients to request a zone from the tns manager daemon
 	m.Host.SetStreamHandler(
 		CommandZoneRequest, func(s net.Stream) {
 			log.Info("new stream detected")
@@ -120,49 +127,61 @@ func (m *Manager) HandleQuery(s net.Stream, cmd string) error {
 	responseBuffer := bufio.NewReader(s)
 	switch cmd {
 	case "echo":
+		// read the message being sent by the client
+		// it must end with a new line
 		bodyBytes, err := responseBuffer.ReadString('\n')
 		if err != nil {
 			return err
 		}
+		// format a response
 		msg := fmt.Sprintf("echo test...\nyou sent: %s\n", string(bodyBytes))
-		fmt.Println(msg)
+		// send a response to th eclient
 		_, err = s.Write([]byte(msg))
 		return err
 	case "record-request":
+		// read the message being sent by the client
+		// it must end wit ha new line
 		bodyBytes, err := responseBuffer.ReadBytes('\n')
 		if err != nil {
 			return err
 		}
+		// unmarshal the message into a record request type
 		req := RecordRequest{}
 		if err = json.Unmarshal(bodyBytes, &req); err != nil {
 			return err
 		}
+		// search for the record  in the database
+		// this is temporary, and will be expanded to allow the client to specify the source of information
 		r, err := m.RM.FindRecordByNameAndUser(req.UserName, req.RecordName)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("record request\n%+v\n", req)
+		// send the latest ipfs hash for this record to the client, allowing them to extract information from ipfs
 		_, err = s.Write([]byte(r.LatestIPFSHash))
 		return err
 	case "zone-request":
+		// read the message being sent by the client
+		// it must end wit ha new line
 		bodyBytes, err := responseBuffer.ReadBytes('\n')
 		if err != nil {
 			return err
 		}
+		// unmarshal the message into a zone request type
 		req := ZoneRequest{}
 		if err = json.Unmarshal(bodyBytes, &req); err != nil {
 			return err
 		}
-		fmt.Printf("zone request\n%+v\n", req)
+		// search for the zone in the database
+		// this is temporary, and will be expanded to allow the client to specify the source of information
 		z, err := m.ZM.FindZoneByNameAndUser(req.ZoneName, req.UserName)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("zone file recovered from database\n%+v\n", z)
+		// send the latest ipfs hash for this zone to the client, allowing them to extract information from ipfs
 		_, err = s.Write([]byte(z.LatestIPFSHash))
 		return err
 	default:
-		fmt.Println("unsupported command type")
+		// basic handler for a generic stream
 		_, err := s.Write([]byte("message received thanks"))
 		return err
 	}
