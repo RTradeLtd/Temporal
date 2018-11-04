@@ -44,7 +44,6 @@ var commands = map[string]cmd.Cmd{
 					if err = rtfsManager.CreateKeystoreManager(); err != nil {
 						log.Fatal(err)
 					}
-					fmt.Println(cfg.TNS)
 					zoneManagerPK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(
 						cfg.TNS.ZoneManagerKeyName,
 					)
@@ -82,6 +81,38 @@ var commands = map[string]cmd.Cmd{
 						count++
 					}
 					select {}
+				},
+			},
+			"client": cmd.Cmd{
+				Blurb:       "run tns client",
+				Description: "runs a tns client to make libp2p connections to a tns daemon",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					peerAddr := os.Getenv("PEER_ADDR")
+					if peerAddr == "" {
+						log.Fatal("PEER_ADDR env var is empty")
+					}
+					rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = rtfsManager.CreateKeystoreManager(); err != nil {
+						log.Fatal(err)
+					}
+					client, err := tns.GenerateTNSClient(true, nil)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = client.MakeHost(client.PrivateKey, nil); err != nil {
+						log.Fatal(err)
+					}
+					defer client.Host.Close()
+					pid, err := client.AddPeerToPeerStore(peerAddr)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if _, err = client.QueryTNS(pid, "echo", nil); err != nil {
+						log.Fatal(err)
+					}
 				},
 			},
 		},
