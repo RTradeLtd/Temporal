@@ -87,9 +87,9 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "run tns client",
 				Description: "runs a tns client to make libp2p connections to a tns daemon",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					peerAddr := os.Getenv("PEER_ADDR")
+					peerAddr := args["peerAddr"]
 					if peerAddr == "" {
-						log.Fatal("PEER_ADDR env var is empty")
+						log.Fatal("peerAddr argument is empty")
 					}
 					rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
 					if err != nil {
@@ -418,6 +418,25 @@ func main() {
 		"dbPass": tCfg.Database.Password,
 		"dbURL":  tCfg.Database.URL,
 		"dbUser": tCfg.Database.Username,
+	}
+	var (
+		peerAddr string
+		isTns    bool
+	)
+	// check for tns client operation and load peer addr
+	for _, v := range os.Args {
+		if v == "tns" {
+			isTns = true
+		}
+		if isTns && v == "client" {
+			peerAddr = os.Getenv("PEER_ADDR")
+			if peerAddr == "" {
+				log.Fatal("PEER_ADDR env var is empty")
+			}
+		}
+	}
+	if isTns && peerAddr != "" {
+		flags["peerAddr"] = peerAddr
 	}
 
 	// execute
