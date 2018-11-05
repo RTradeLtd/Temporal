@@ -3,6 +3,8 @@ package rtfscluster_test
 import (
 	"fmt"
 	"testing"
+
+	"github.com/RTradeLtd/Temporal/rtfscluster"
 )
 
 const (

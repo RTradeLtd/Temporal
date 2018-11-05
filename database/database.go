@@ -13,15 +13,24 @@ import (
 )
 
 var (
-	uploadObj          *models.Upload
-	encryptedUploadObj *models.EncryptedUpload
-	userObj            *models.User
-	paymentObj         *models.Payments
-	ipnsObj            *models.IPNS
-	hostedIpfsNetObj   *models.HostedIPFSPrivateNetwork
-	dropObj            *models.Drop
-	tnsZoneObj         *models.Zone
-	tnsRecordObj       *models.Record
+	// UploadObj is our upload model
+	UploadObj *models.Upload
+	// EncryptedUploadObj is our encrypted upload model
+	EncryptedUploadObj *models.EncryptedUpload
+	// UserObj is our user model
+	UserObj *models.User
+	// PaymentObj is our payment model
+	PaymentObj *models.Payments
+	// IpnsObj is our ipns model
+	IpnsObj *models.IPNS
+	// HostedIpfsNetObj is our hosted ipfs network model
+	HostedIpfsNetObj *models.HostedIPFSPrivateNetwork
+	// DropObj is our airdrop model
+	DropObj *models.Drop
+	// TnsZoneObj is our tns zone model
+	TnsZoneObj *models.Zone
+	// TnsRecordObj is our tns record model
+	TnsRecordObj *models.Record
 )
 
 // Manager is used to manage databases
@@ -65,17 +74,15 @@ func Initialize(cfg *config.TemporalConfig, opts Options) (*Manager, error) {
 
 // RunMigrations runs all migrations
 func (dbm *Manager) RunMigrations() {
-	dbm.DB.AutoMigrate(uploadObj)
-	dbm.DB.AutoMigrate(userObj)
-	dbm.DB.AutoMigrate(paymentObj)
-	// gorm will default table to name of ip_ns
-	// so we will override with ipns
-	dbm.DB.AutoMigrate(ipnsObj)
-	dbm.DB.AutoMigrate(hostedIpfsNetObj)
-	dbm.DB.AutoMigrate(dropObj)
-	dbm.DB.AutoMigrate(encryptedUploadObj)
-	dbm.DB.AutoMigrate(tnsZoneObj)
-	dbm.DB.AutoMigrate(tnsRecordObj)
+	dbm.DB.AutoMigrate(UploadObj)
+	dbm.DB.AutoMigrate(UserObj)
+	dbm.DB.AutoMigrate(PaymentObj)
+	dbm.DB.AutoMigrate(IpnsObj)
+	dbm.DB.AutoMigrate(HostedIpfsNetObj)
+	dbm.DB.AutoMigrate(DropObj)
+	dbm.DB.AutoMigrate(EncryptedUploadObj)
+	dbm.DB.AutoMigrate(TnsZoneObj)
+	dbm.DB.AutoMigrate(TnsRecordObj)
 }
 
 // Close shuts down database connection

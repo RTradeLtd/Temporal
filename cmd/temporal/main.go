@@ -61,7 +61,7 @@ var commands = map[string]cmd.Cmd{
 						ZonePK:    zonePK,
 						ZoneName:  cfg.TNS.ZoneName,
 					}
-					dbm, err := database.Initialize(&cfg, database.DatabaseOptions{})
+					dbm, err := database.Initialize(&cfg, database.Options{})
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -304,7 +304,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "run database migrations",
 		Description: "Runs our initial database migrations, creating missing tables, etc..",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if _, err := database.Initialize(&cfg, database.DatabaseOptions{
+			if _, err := database.Initialize(&cfg, database.Options{
 				RunMigrations: true,
 			}); err != nil {
 				log.Fatal(err)
@@ -316,7 +316,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "run database migrations without SSL",
 		Description: "Runs our initial database migrations, creating missing tables, etc.. without SSL",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if _, err := database.Initialize(&cfg, database.DatabaseOptions{
+			if _, err := database.Initialize(&cfg, database.Options{
 				RunMigrations:  true,
 				SSLModeDisable: true,
 			}); err != nil {
@@ -346,7 +346,7 @@ var commands = map[string]cmd.Cmd{
 			if len(os.Args) < 5 {
 				log.Fatal("insufficient fields provided")
 			}
-			d, err := database.Initialize(&cfg, database.DatabaseOptions{
+			d, err := database.Initialize(&cfg, database.Options{
 				SSLModeDisable: true,
 			})
 			if err != nil {
@@ -367,7 +367,7 @@ var commands = map[string]cmd.Cmd{
 			if len(os.Args) < 3 {
 				log.Fatal("no user provided")
 			}
-			d, err := database.Initialize(&cfg, database.DatabaseOptions{
+			d, err := database.Initialize(&cfg, database.Options{
 				SSLModeDisable: true,
 			})
 			if err != nil {
