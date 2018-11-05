@@ -117,7 +117,7 @@ var commands = map[string]cmd.Cmd{
 			},
 		},
 	},
-	"api": cmd.Cmd{
+	"api": {
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -146,17 +146,17 @@ var commands = map[string]cmd.Cmd{
 			}
 		},
 	},
-	"queue": cmd.Cmd{
+	"queue": {
 		Blurb:         "execute commands for various queues",
 		Description:   "Interact with Temporal's various queue APIs",
 		ChildRequired: true,
 		Children: map[string]cmd.Cmd{
-			"ipfs": cmd.Cmd{
+			"ipfs": {
 				Blurb:         "IPFS queue sub commands",
 				Description:   "Used to launch the various queues that interact with IPFS",
 				ChildRequired: true,
 				Children: map[string]cmd.Cmd{
-					"ipns-entry": cmd.Cmd{
+					"ipns-entry": {
 						Blurb:       "IPNS entry creation queue",
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -171,7 +171,7 @@ var commands = map[string]cmd.Cmd{
 							}
 						},
 					},
-					"pin": cmd.Cmd{
+					"pin": {
 						Blurb:       "Pin addition queue",
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -186,7 +186,7 @@ var commands = map[string]cmd.Cmd{
 							}
 						},
 					},
-					"file": cmd.Cmd{
+					"file": {
 						Blurb:       "File upload queue",
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -201,7 +201,7 @@ var commands = map[string]cmd.Cmd{
 							}
 						},
 					},
-					"key-creation": cmd.Cmd{
+					"key-creation": {
 						Blurb:       "Key creation queue",
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -216,7 +216,7 @@ var commands = map[string]cmd.Cmd{
 							}
 						},
 					},
-					"cluster": cmd.Cmd{
+					"cluster": {
 						Blurb:       "Cluster pin queue",
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -233,7 +233,7 @@ var commands = map[string]cmd.Cmd{
 					},
 				},
 			},
-			"dfa": cmd.Cmd{
+			"dfa": {
 				Blurb:       "Database file add queue",
 				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -248,7 +248,7 @@ var commands = map[string]cmd.Cmd{
 					}
 				},
 			},
-			"email-send": cmd.Cmd{
+			"email-send": {
 				Blurb:       "Email send queue",
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -300,7 +300,7 @@ var commands = map[string]cmd.Cmd{
 			},
 		},
 	},
-	"migrate": cmd.Cmd{
+	"migrate": {
 		Blurb:       "run database migrations",
 		Description: "Runs our initial database migrations, creating missing tables, etc..",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -311,7 +311,7 @@ var commands = map[string]cmd.Cmd{
 			}
 		},
 	},
-	"migrate-insecure": cmd.Cmd{
+	"migrate-insecure": {
 		Hidden:      true,
 		Blurb:       "run database migrations without SSL",
 		Description: "Runs our initial database migrations, creating missing tables, etc.. without SSL",
@@ -324,7 +324,7 @@ var commands = map[string]cmd.Cmd{
 			}
 		},
 	},
-	"init": cmd.Cmd{
+	"init": {
 		PreRun:      true,
 		Blurb:       "initialize blank Temporal configuration",
 		Description: "Initializes a blank Temporal configuration template at CONFIG_DAG.",
@@ -338,7 +338,7 @@ var commands = map[string]cmd.Cmd{
 			}
 		},
 	},
-	"user": cmd.Cmd{
+	"user": {
 		Hidden:      true,
 		Blurb:       "create a user",
 		Description: "Create a Temporal user. Provide args as username, password, email. Do not use in production.",
@@ -359,7 +359,7 @@ var commands = map[string]cmd.Cmd{
 			}
 		},
 	},
-	"admin": cmd.Cmd{
+	"admin": {
 		Hidden:      true,
 		Blurb:       "assign user as an admin",
 		Description: "Assign an existing Temporal user as an administrator.",

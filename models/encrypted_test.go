@@ -28,8 +28,8 @@ func TestEncryptedUploads(t *testing.T) {
 		hash    string
 	}
 	tests := []args{
-		args{"user1", "file1", "network1", "hash1"},
-		args{"user1", "file2", "public", "hash2"},
+		{"user1", "file1", "network1", "hash1"},
+		{"user1", "file2", "public", "hash2"},
 	}
 	upload1, err := ecm.NewUpload(tests[0].user, tests[0].file, tests[0].network, tests[0].hash)
 	if err != nil {
