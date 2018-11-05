@@ -12,6 +12,7 @@ type TemporalConfig struct {
 	Sendgrid    `json:"sendgrid,omitempty"`
 	Ethereum    `json:"ethereum,omitempty"`
 	Wallets     `json:"wallets,omitempty"`
+	TNS         `json:"tns,omitempty"`
 	APIKeys     `json:"api_keys,omitempty"`
 	Endpoints   `json:"endpoints,omitempty"`
 }
@@ -128,6 +129,14 @@ type Wallets struct {
 	DASH string `json:"dash"`
 	BTC  string `json:"btc"`
 	LTC  string `json:"ltc"`
+}
+
+// TNS configures our TNS manager
+type TNS struct {
+	ZoneName           string `json:"zone_name"`
+	ZoneManagerKeyName string `json:"zone_manager_key_name"`
+	ZoneKeyName        string `json:"zone_key_name"`
+	LogFile            string `json:"log_file"`
 }
 
 // APIKeys are the various API keys we use

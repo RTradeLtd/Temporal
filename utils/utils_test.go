@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	testHash       = "QmdowUuRF4YEJFJvw2TDiECVEMfq89fNVHTXqdN3Z6JM8j"
+	testHash       = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
 	nodeOneAPIAddr = "192.168.1.101:5001"
 	testSize       = int64(132520817)
 )
@@ -86,5 +86,37 @@ func TestUtils_CalculateFileSizeInGigaBytes(t *testing.T) {
 	size := utils.BytesToGigaBytes(testSize)
 	if size != 0.12341962847858667 {
 		t.Fatal("failed to calculate correct size")
+	}
+}
+
+func TestUtils_CalculateAPICallCost(t *testing.T) {
+	type args struct {
+		callType string
+		private  bool
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"ipns", args{"ipns", false}},
+		{"pubsub", args{"pubsub", false}},
+		{"ed-key", args{"ed-key", false}},
+		{"rsa-key", args{"rsa-key", false}},
+		{"dlink", args{"dlink", false}},
+		{"invalid", args{"invalid", false}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cost, err := utils.CalculateAPICallCost(tt.args.callType, tt.args.private)
+			if err != nil && tt.name != "invalid" {
+				t.Fatal(err)
+			}
+			if cost == 0 && tt.name != "invalid" {
+				t.Fatal("invalid cost returned")
+			}
+			if err == nil && tt.name == "invalid" {
+				t.Fatal("failed to recognize invalid test name")
+			}
+		})
 	}
 }

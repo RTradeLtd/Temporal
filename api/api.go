@@ -43,6 +43,8 @@ type API struct {
 	dm      *models.DropManager
 	ue      *models.EncryptedUploadManager
 	ipfs    *rtfs.IpfsManager
+	zm      *models.ZoneManager
+	rm      *models.RecordManager
 	l       *log.Logger
 	gc      *grpc.Client
 	service string
@@ -120,7 +122,12 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	if err != nil {
 		return nil, err
 	}
-
+	if !dev {
+		// create our keystore manager
+		if err = ipfsManager.CreateKeystoreManager(); err != nil {
+			return nil, err
+		}
+	}
 	gc, err := grpc.NewGRPCClient(cfg, true)
 	if err != nil {
 		return nil, err
@@ -138,6 +145,8 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
 		ipfs:    ipfsManager,
 		gc:      gc,
+		zm:      models.NewZoneManager(dbm.DB),
+		rm:      models.NewRecordManager(dbm.DB),
 	}, nil
 }
 
@@ -192,6 +201,24 @@ func (api *API) setupRoutes() {
 	statistics := v1.Group("/statistics").Use(authware...)
 	{
 		statistics.GET("/stats", api.getStats)
+	}
+
+	// tns
+	tnsProtected := v1.Group("/tns", authware...)
+	{
+		create := tnsProtected.Group("create")
+		{
+			create.POST("/zone", api.CreateZone)
+			create.POST("/record", api.addRecordToZone)
+		}
+		query := tnsProtected.Group("/query")
+		{
+			request := query.Group("/request")
+			{
+				request.POST("/zone", api.performZoneRequest)
+				request.POST("/record", api.performRecordRequest)
+			}
+		}
 	}
 
 	// payments
@@ -250,6 +277,7 @@ func (api *API) setupRoutes() {
 		ipfs.GET("/pins", api.getLocalPins)                        // admin locked
 		ipfs.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
 		ipfs.GET("/object-stat/:key", api.getObjectStatForIpfs)
+		ipfs.GET("/dag/:hash", api.getDagObject)
 		ipfs.POST("/download/:hash", api.downloadContentHash)
 		ipfs.POST("/pin/:hash", api.pinHashLocally)
 		ipfs.POST("/add-file", api.addFileLocally)

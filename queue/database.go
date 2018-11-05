@@ -9,7 +9,7 @@ import (
 )
 
 // ProcessDatabaseFileAdds is used to process database file add messages
-func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) {
+func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	uploadManager := models.NewUploadManager(db)
 	qm.LogInfo("processing database file adds")
 	for d := range msgs {
@@ -29,14 +29,16 @@ func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *g
 			d.Ack(false)
 			continue
 		}
+		opts := models.UploadOptions{
+			NetworkName:      dfa.NetworkName,
+			Username:         dfa.UserName,
+			HoldTimeInMonths: dfa.HoldTimeInMonths,
+			Encrypted:        false,
+		}
 		if err != nil && err == gorm.ErrRecordNotFound {
 			if _, err = uploadManager.NewUpload(
 				dfa.Hash, "file",
-				models.UploadOptions{
-					NetworkName:      dfa.NetworkName,
-					Username:         dfa.UserName,
-					HoldTimeInMonths: dfa.HoldTimeInMonths,
-				},
+				opts,
 			); err != nil {
 				qm.LogError(err, "failed to create new upload in database")
 				d.Ack(false)
@@ -53,4 +55,5 @@ func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *g
 		qm.LogInfo("database file add processed")
 		d.Ack(false)
 	}
+	return nil
 }

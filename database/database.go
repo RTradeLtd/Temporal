@@ -18,6 +18,8 @@ var (
 	IpnsObj            *models.IPNS
 	HostedIpfsNetObj   *models.HostedIPFSPrivateNetwork
 	DropObj            *models.Drop
+	TnsZoneObj         *models.Zone
+	TnsRecordObj       *models.Record
 )
 
 type DatabaseManager struct {
@@ -67,6 +69,8 @@ func (dbm *DatabaseManager) RunMigrations() {
 	dbm.DB.AutoMigrate(HostedIpfsNetObj)
 	dbm.DB.AutoMigrate(DropObj)
 	dbm.DB.AutoMigrate(EncryptedUploadObj)
+	dbm.DB.AutoMigrate(TnsZoneObj)
+	dbm.DB.AutoMigrate(TnsRecordObj)
 	//dbm.DB.Model(userObj).Related(uploadObj.Users)
 }
 

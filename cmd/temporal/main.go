@@ -6,6 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/RTradeLtd/Temporal/rtfs"
+
+	"github.com/RTradeLtd/Temporal/tns"
+
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/database"
 	"github.com/RTradeLtd/Temporal/models"
@@ -24,6 +28,95 @@ var (
 )
 
 var commands = map[string]cmd.Cmd{
+	"tns": {
+		Blurb:         "run a tns daemon or client",
+		Description:   "allows running a tns daemon to manage a zone, or a client to query a dameon",
+		ChildRequired: true,
+		Children: map[string]cmd.Cmd{
+			"daemon": {
+				Blurb:       "run tns daemon",
+				Description: "runs a tns daemon and zone manager",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = rtfsManager.CreateKeystoreManager(); err != nil {
+						log.Fatal(err)
+					}
+					zoneManagerPK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(
+						cfg.TNS.ZoneManagerKeyName,
+					)
+					if err != nil {
+						log.Fatal(err)
+					}
+					zonePK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(
+						cfg.TNS.ZoneManagerKeyName,
+					)
+					if err != nil {
+						log.Fatal(err)
+					}
+					managerOpts := tns.ManagerOpts{
+						ManagerPK: zoneManagerPK,
+						ZonePK:    zonePK,
+						ZoneName:  cfg.TNS.ZoneName,
+					}
+					dbm, err := database.Initialize(&cfg, database.DatabaseOptions{})
+					if err != nil {
+						log.Fatal(err)
+					}
+					manager, err := tns.GenerateTNSManager(&managerOpts, dbm.DB)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
+						log.Fatal(err)
+					}
+					defer manager.Host.Close()
+					manager.RunTNSDaemon()
+					lim := len(manager.Host.Addrs())
+					count := 0
+					for count < lim {
+						fmt.Println(manager.ReachableAddress(count))
+						count++
+					}
+					select {}
+				},
+			},
+			"client": {
+				Blurb:       "run tns client",
+				Description: "runs a tns client to make libp2p connections to a tns daemon",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					peerAddr := args["peerAddr"]
+					if peerAddr == "" {
+						log.Fatal("peerAddr argument is empty")
+					}
+					rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = rtfsManager.CreateKeystoreManager(); err != nil {
+						log.Fatal(err)
+					}
+					client, err := tns.GenerateTNSClient(true, nil)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if err = client.MakeHost(client.PrivateKey, nil); err != nil {
+						log.Fatal(err)
+					}
+					defer client.Host.Close()
+					pid, err := client.AddPeerToPeerStore(peerAddr)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if _, err = client.QueryTNS(pid, "echo", nil); err != nil {
+						log.Fatal(err)
+					}
+				},
+			},
+		},
+	},
 	"api": {
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
@@ -32,8 +125,11 @@ var commands = map[string]cmd.Cmd{
 			if err != nil {
 				log.Fatal(err)
 			}
-
-			addr := fmt.Sprintf("%s:6767", args["listenAddress"])
+			port := os.Getenv("API_PORT")
+			if port == "" {
+				port = "6767"
+			}
+			addr := fmt.Sprintf("%s:%s", args["listenAddress"], port)
 			if args["certFilePath"] == "" || args["keyFilePath"] == "" {
 				fmt.Println("TLS config incomplete - starting API service without TLS...")
 				err = service.ListenAndServe(addr, nil)
@@ -167,6 +263,41 @@ var commands = map[string]cmd.Cmd{
 					}
 				},
 			},
+			"tns": {
+				Blurb:         "run tns queues",
+				Description:   "Allows running the various tns queue services",
+				ChildRequired: true,
+				Children: map[string]cmd.Cmd{
+					"zone-creation": {
+						Blurb:       "Zone creation queue",
+						Description: "Listens to requests to create TNS zones",
+						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							mqConnectionURL := cfg.RabbitMQ.URL
+							qm, err := queue.Initialize(queue.ZoneCreationQueue, mqConnectionURL, false, true)
+							if err != nil {
+								log.Fatal(err)
+							}
+							if err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+								log.Fatal(err)
+							}
+						},
+					},
+					"record-creation": {
+						Blurb:       "record creation queue",
+						Description: "Listens to requests to create TNS records",
+						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							mqConnectionURL := cfg.RabbitMQ.URL
+							qm, err := queue.Initialize(queue.RecordCreationQueue, mqConnectionURL, false, true)
+							if err != nil {
+								log.Fatal(err)
+							}
+							if err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+								log.Fatal(err)
+							}
+						},
+					},
+				},
+			},
 		},
 	},
 	"migrate": {
@@ -287,6 +418,25 @@ func main() {
 		"dbPass": tCfg.Database.Password,
 		"dbURL":  tCfg.Database.URL,
 		"dbUser": tCfg.Database.Username,
+	}
+	var (
+		peerAddr string
+		isTns    bool
+	)
+	// check for tns client operation and load peer addr
+	for _, v := range os.Args {
+		if v == "tns" {
+			isTns = true
+		}
+		if isTns && v == "client" {
+			peerAddr = os.Getenv("PEER_ADDR")
+			if peerAddr == "" {
+				log.Fatal("PEER_ADDR env var is empty")
+			}
+		}
+	}
+	if isTns && peerAddr != "" {
+		flags["peerAddr"] = peerAddr
 	}
 
 	// execute
