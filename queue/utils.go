@@ -8,7 +8,7 @@ import (
 
 // refundCredits is used to refund a users credits. We do not check for errors,
 // as these are logged and manually corrected if they occur
-func (qm *QueueManager) refundCredits(username, callType string, cost float64, db *gorm.DB) {
+func (qm *Manager) refundCredits(username, callType string, cost float64, db *gorm.DB) {
 	if cost == 0 {
 		return
 	}

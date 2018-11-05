@@ -12,7 +12,7 @@ import (
 )
 
 func TestQueue_LogError(t *testing.T) {
-	qm := queue.QueueManager{
+	qm := queue.Manager{
 		Logger: log.New(),
 	}
 	type args struct {

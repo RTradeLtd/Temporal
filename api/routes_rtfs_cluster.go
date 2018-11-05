@@ -8,7 +8,7 @@ import (
 	"github.com/RTradeLtd/Temporal/utils"
 
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/Temporal/rtfs_cluster"
+	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -76,7 +76,7 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 		return
 	}
 	// initialize a conection to the cluster
-	manager, err := rtfs_cluster.Initialize("", "")
+	manager, err := rtfscluster.Initialize("", "")
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
@@ -105,7 +105,7 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 		return
 	}
 	// initialize a connection to the cluster
-	manager, err := rtfs_cluster.Initialize("", "")
+	manager, err := rtfscluster.Initialize("", "")
 	if err != nil {
 		api.LogError(err, eh.IPFSClusterConnectionError)(c)
 		return
@@ -135,7 +135,7 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 		return
 	}
 	// initialize a connection to the cluster
-	manager, err := rtfs_cluster.Initialize("", "")
+	manager, err := rtfscluster.Initialize("", "")
 	if err != nil {
 		api.LogError(err, eh.IPFSClusterConnectionError)(c)
 		return
@@ -164,7 +164,7 @@ func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 	// this will hold all the statuses of the content hashes
 	var statuses []string
 	// initialize a connection to the cluster
-	manager, err := rtfs_cluster.Initialize("", "")
+	manager, err := rtfscluster.Initialize("", "")
 	if err != nil {
 		api.LogError(err, eh.IPFSClusterConnectionError)(c)
 		return

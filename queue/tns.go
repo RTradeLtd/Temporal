@@ -15,7 +15,7 @@ import (
 )
 
 // ProcessTNSRecordCreation is used to process new TNS record creation requests
-func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *Manager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	zm := models.NewZoneManager(db)
 	rm := models.NewRecordManager(db)
 	qm.LogInfo("processing messages")
@@ -187,7 +187,7 @@ func (qm *QueueManager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *
 }
 
 // ProcessTNSZoneCreation is used to process new TNS zone creation requests
-func (qm *QueueManager) ProcessTNSZoneCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *Manager) ProcessTNSZoneCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	zm := models.NewZoneManager(db)
 	qm.LogInfo("processing messages")
 	// process messages

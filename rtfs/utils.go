@@ -1,5 +1,6 @@
 package rtfs
 
+// DefaultFSKeystorePath is the default location of a file-system based keystore
 var DefaultFSKeystorePath = "/ipfs/keystore"
 
 /*
@@ -19,6 +20,7 @@ var DefaultFSKeystorePath = "/ipfs/keystore"
 
 */
 
+// DHTFindProvsResponse is a response from the dht/findprovs api call
 type DHTFindProvsResponse struct {
 	ID        string `json:"id,omitempty"`
 	Type      int    `json:"type,omitempty"`

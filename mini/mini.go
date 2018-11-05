@@ -16,10 +16,9 @@ import (
 Mini is Temporal's interface with our Minio object storage backend
 It provides helper methods to temporal store file ojects that are uploaded to Temporal.
 Once objects have been stored in Minio, it can then be uploaded to IPFS
-
-TODO: Add in encryption module that mkaes use of minio server side encryption, allowing a user provided pasword
 */
 
+// DefaultBucketLocation is the default location of a minio bucket, satisfying S3 similarity
 var DefaultBucketLocation = "us-east-1"
 
 // MinioManager is our helper methods to interface with minio
@@ -74,6 +73,7 @@ func (mm *MinioManager) MakeBucket(args map[string]string) error {
 	return mm.Client.MakeBucket(name, location)
 }
 
+// PutObjectOptions are options used to configure storing an object in a bucket
 type PutObjectOptions struct {
 	Bucket            string
 	EncryptPassphrase string
@@ -111,6 +111,7 @@ func (mm *MinioManager) PutObject(objectName string, reader io.Reader, objectSiz
 	return mm.Client.PutObject(opts.Bucket, objectName, reader, objectSize, opts.PutObjectOptions)
 }
 
+// GetObjectOptions are options used to configure retrieving an object from a bucket
 type GetObjectOptions struct {
 	Bucket string
 	minio.GetObjectOptions

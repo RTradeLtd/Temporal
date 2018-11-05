@@ -36,7 +36,7 @@ var (
 type API struct {
 	r       *gin.Engine
 	cfg     *config.TemporalConfig
-	dbm     *database.DatabaseManager
+	dbm     *database.Manager
 	um      *models.UserManager
 	im      *models.IpnsManager
 	pm      *models.PaymentManager
@@ -86,7 +86,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writer) (*API, error) {
 	var (
 		logger = log.New()
-		dbm    *database.DatabaseManager
+		dbm    *database.Manager
 		err    error
 	)
 
@@ -100,11 +100,11 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	}
 
 	// set up database manager
-	dbm, err = database.Initialize(cfg, database.DatabaseOptions{LogMode: debug})
+	dbm, err = database.Initialize(cfg, database.Options{LogMode: debug})
 	if err != nil {
 		logger.Warnf("failed to connect to database: %s", err.Error())
 		logger.Warnf("failed to connect to database with secure connection - attempting insecure connection...")
-		dbm, err = database.Initialize(cfg, database.DatabaseOptions{
+		dbm, err = database.Initialize(cfg, database.Options{
 			LogMode:        debug,
 			SSLModeDisable: true,
 		})

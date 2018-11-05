@@ -4,16 +4,15 @@ import (
 	"encoding/json"
 
 	"github.com/RTradeLtd/Temporal/models"
-	"github.com/RTradeLtd/Temporal/rtfs_cluster"
+	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/config"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
 
 // ProcessIPFSClusterPins is used to process messages sent to rabbitmq requesting be pinned to our cluster
-// TODO: add in email notification and metric strategies
-func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
-	clusterManager, err := rtfs_cluster.Initialize(cfg.IPFSCluster.APIConnection.Host, cfg.IPFSCluster.APIConnection.Port)
+func (qm *Manager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
+	clusterManager, err := rtfscluster.Initialize(cfg.IPFSCluster.APIConnection.Host, cfg.IPFSCluster.APIConnection.Port)
 	if err != nil {
 		return err
 	}

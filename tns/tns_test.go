@@ -95,7 +95,7 @@ func TestTNS_ZoneRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dbm, err := database.Initialize(cfg, database.DatabaseOptions{SSLModeDisable: true})
+	dbm, err := database.Initialize(cfg, database.Options{SSLModeDisable: true})
 	if err != nil {
 		t.Fatal(err)
 	}
