@@ -11,8 +11,7 @@ import (
 )
 
 // ProcessIPFSClusterPins is used to process messages sent to rabbitmq requesting be pinned to our cluster
-// TODO: add in email notification and metric strategies
-func (qm *QueueManager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
+func (qm *Manager) ProcessIPFSClusterPins(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
 	clusterManager, err := rtfs_cluster.Initialize(cfg.IPFSCluster.APIConnection.Host, cfg.IPFSCluster.APIConnection.Port)
 	if err != nil {
 		return err

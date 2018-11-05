@@ -59,8 +59,8 @@ var (
 	PaymentConfirmationFailedContent = "Payment failed for content hash %s with error %s"
 )
 
-// QueueManager is a helper struct to interact with rabbitmq
-type QueueManager struct {
+// Manager is a helper struct to interact with rabbitmq
+type Manager struct {
 	Connection   *amqp.Connection
 	Channel      *amqp.Channel
 	Queue        *amqp.Queue

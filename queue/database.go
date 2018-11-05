@@ -9,7 +9,7 @@ import (
 )
 
 // ProcessDatabaseFileAdds is used to process database file add messages
-func (qm *QueueManager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) error {
+func (qm *Manager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	uploadManager := models.NewUploadManager(db)
 	qm.LogInfo("processing database file adds")
 	for d := range msgs {

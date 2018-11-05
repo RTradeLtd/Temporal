@@ -13,7 +13,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func (qm *QueueManager) setupLogging() error {
+func (qm *Manager) setupLogging() error {
 	logFileName := fmt.Sprintf("/var/log/temporal/%s_serice.log", qm.QueueName)
 	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {
@@ -26,7 +26,7 @@ func (qm *QueueManager) setupLogging() error {
 	return nil
 }
 
-func (qm *QueueManager) parseQueueName(queueName string) error {
+func (qm *Manager) parseQueueName(queueName string) error {
 	host, err := os.Hostname()
 	if err != nil {
 		return err
@@ -36,12 +36,12 @@ func (qm *QueueManager) parseQueueName(queueName string) error {
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
-func Initialize(queueName, connectionURL string, publish, service bool) (*QueueManager, error) {
+func Initialize(queueName, connectionURL string, publish, service bool) (*Manager, error) {
 	conn, err := setupConnection(connectionURL)
 	if err != nil {
 		return nil, err
 	}
-	qm := QueueManager{Connection: conn}
+	qm := Manager{Connection: conn}
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func setupConnection(connectionURL string) (*amqp.Connection, error) {
 }
 
 // OpenChannel is used to open a channel to the rabbitmq server
-func (qm *QueueManager) OpenChannel() error {
+func (qm *Manager) OpenChannel() error {
 	ch, err := qm.Connection.Channel()
 	if err != nil {
 		return err
@@ -112,7 +112,7 @@ func (qm *QueueManager) OpenChannel() error {
 }
 
 // DeclareQueue is used to declare a queue for which messages will be sent to
-func (qm *QueueManager) DeclareQueue() error {
+func (qm *Manager) DeclareQueue() error {
 	// we declare the queue as durable so that even if rabbitmq server stops
 	// our messages won't be lost
 	q, err := qm.Channel.QueueDeclare(
@@ -136,7 +136,7 @@ func (qm *QueueManager) DeclareQueue() error {
 // ConsumeMessage is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
+func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
 	db, err := database.OpenDBConnection(database.DBOptions{
 		User:     cfg.Database.Username,
 		Password: cfg.Database.Password,
@@ -248,7 +248,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 }
 
 //PublishMessageWithExchange is used to publish a message to a given exchange
-func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
+func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
 	switch exchangeName {
 	case PinExchange:
 		break
@@ -280,7 +280,7 @@ func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeNam
 }
 
 // PublishMessage is used to produce messages that are sent to the queue, with a worker queue (one consumer)
-func (qm *QueueManager) PublishMessage(body interface{}) error {
+func (qm *Manager) PublishMessage(body interface{}) error {
 	// we use a persistent delivery mode to combine with the durable queue
 	bodyMarshaled, err := json.Marshal(body)
 	if err != nil {
@@ -303,6 +303,6 @@ func (qm *QueueManager) PublishMessage(body interface{}) error {
 }
 
 // Close is used to close our queue connection
-func (qm *QueueManager) Close() error {
+func (qm *Manager) Close() error {
 	return qm.Connection.Close()
 }
