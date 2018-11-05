@@ -92,8 +92,6 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) (interface{}, err
 	if err != nil {
 		return nil, err
 	}
-	// stringify the response
-	latestZoneHash := string(resp)
 	// connect to a local ipfs daemon
 	rtfsManager, err := rtfs.Initialize("", c.IPFSAPI)
 	if err != nil {
