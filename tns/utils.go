@@ -2,11 +2,16 @@ package tns
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/ioutil"
 
+	"github.com/RTradeLtd/Temporal/rtfs"
 	libp2p "github.com/libp2p/go-libp2p"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	host "github.com/libp2p/go-libp2p-host"
+	inet "github.com/libp2p/go-libp2p-net"
+	peer "github.com/libp2p/go-libp2p-peer"
 )
 
 // MakeHost is used to generate the libp2p connection for our TNS daemon
@@ -42,4 +47,46 @@ func makeHost(pk ci.PrivKey, opts *HostOpts, client bool) (host.Host, error) {
 		return nil, err
 	}
 	return host, nil
+}
+
+func GenerateStreamAndWrite(ctx context.Context, hst host.Host, peerID peer.ID, cmd, ipfsAPI string, reqBytes []byte) (interface{}, error) {
+	var (
+		s    inet.Stream
+		intf interface{}
+		err  error
+	)
+	switch cmd {
+	case "record-record":
+		s, err = hst.NewStream(ctx, peerID, CommandRecordRequest)
+	case "zone-request":
+		s, err = hst.NewStream(ctx, peerID, CommandZoneRequest)
+	case "echo":
+		s, err = hst.NewStream(ctx, peerID, CommandEcho)
+	default:
+		return nil, errors.New("unsupported command")
+	}
+	if err != nil {
+		return nil, err
+	}
+	// send a message
+	_, err = s.Write(append(reqBytes, '\n'))
+	if err != nil {
+		return nil, err
+	}
+	// read the message
+	resp, err := ioutil.ReadAll(s)
+	if err != nil {
+		return nil, err
+	}
+	if cmd == "echo" {
+		return string(resp), nil
+	}
+	rtfsManager, err := rtfs.Initialize("", ipfsAPI)
+	if err != nil {
+		return nil, err
+	}
+	if err = rtfsManager.Shell.DagGet(string(resp), &intf); err != nil {
+		return nil, err
+	}
+	return intf, nil
 }

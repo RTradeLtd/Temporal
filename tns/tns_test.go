@@ -2,6 +2,7 @@ package tns_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/database"
@@ -61,9 +62,14 @@ func TestTNS_Echo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if intf != nil {
-		t.Fatal("intf is not nil when it should be")
+	if intf == nil {
+		t.Fatal("intf is nil when it shouldn't be")
 	}
+	resp, ok := intf.(string)
+	if !ok {
+		t.Fatal("failed to unmarshal response into type string")
+	}
+	fmt.Println(resp)
 }
 
 func TestTNS_ZoneRequest(t *testing.T) {

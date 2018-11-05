@@ -5,9 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-
-	"github.com/RTradeLtd/Temporal/rtfs"
 
 	ci "github.com/libp2p/go-libp2p-crypto"
 	peer "github.com/libp2p/go-libp2p-peer"
@@ -51,7 +48,7 @@ func (c *Client) QueryTNS(peerID peer.ID, cmd string, requestArgs interface{}) (
 	switch cmd {
 	case "echo":
 		// send a basic echo test
-		return nil, c.queryEcho(peerID)
+		return c.queryEcho(peerID)
 	case "zone-request":
 		// ensure the request argument is of type zone request
 		args := requestArgs.(ZoneRequest)
@@ -73,39 +70,13 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) (interface{}, err
 			UserName:           defaultZoneUserName,
 		}
 	}
-	// connect to the tns manager, and generate a stream to send/receive information on
-	s, err := c.Host.NewStream(context.Background(), peerID, CommandZoneRequest)
+	marshaledData, err := json.Marshal(&req)
 	if err != nil {
 		return nil, err
 	}
-	// marshal the message to be sent
-	reqBytes, err := json.Marshal(req)
-	if err != nil {
-		return nil, err
-	}
-	// add a new line character to the end of the message
-	reqBytes = append(reqBytes, '\n')
-	// send a message
-	_, err = s.Write(append(reqBytes, '\n'))
-	if err != nil {
-		return nil, err
-	}
-	// read the message
-	resp, err := ioutil.ReadAll(s)
-	if err != nil {
-		return nil, err
-	}
-	// connect to a local ipfs daemon
-	rtfsManager, err := rtfs.Initialize("", c.IPFSAPI)
-	if err != nil {
-		return nil, err
-	}
-	// retrieve the dag from ipfs
-	var intf interface{}
-	if err = rtfsManager.Shell.DagGet(string(resp), &intf); err != nil {
-		return nil, err
-	}
-	return intf, nil
+	return GenerateStreamAndWrite(
+		context.Background(), c.Host, peerID, "zone-request", c.IPFSAPI, marshaledData,
+	)
 }
 
 // RecordRequest is a call used to request a record from TNS
@@ -116,60 +87,19 @@ func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) (interface{},
 			UserName:   defaultRecordUserName,
 		}
 	}
-	// connect to the tns manager, and generate a stream to send/receive information on
-	s, err := c.Host.NewStream(context.Background(), peerID, CommandRecordRequest)
+	marshaledData, err := json.Marshal(&req)
 	if err != nil {
 		return nil, err
 	}
-	// marshal the message to be sent
-	reqBytes, err := json.Marshal(req)
-	if err != nil {
-		return nil, err
-	}
-	// add a new line character to the end of the message
-	reqBytes = append(reqBytes, '\n')
-	// send a message
-	_, err = s.Write(reqBytes)
-	if err != nil {
-		return nil, err
-	}
-	// read the message
-	resp, err := ioutil.ReadAll(s)
-	if err != nil {
-		return nil, err
-	}
-	// connect to a local ipfs daemon
-	rtfsManager, err := rtfs.Initialize("", c.IPFSAPI)
-	if err != nil {
-		return nil, err
-	}
-	// retrieve the dag from ipfs
-	var intf interface{}
-	if err = rtfsManager.Shell.DagGet(string(resp), &intf); err != nil {
-		return nil, err
-	}
-	return intf, nil
+	return GenerateStreamAndWrite(
+		context.Background(), c.Host, peerID, "record-request", c.IPFSAPI, marshaledData,
+	)
 }
 
-func (c *Client) queryEcho(peerID peer.ID) error {
-	// connect to the tns manager, and generate a stream to send/receive information on
-	s, err := c.Host.NewStream(context.Background(), peerID, CommandEcho)
-	if err != nil {
-		return err
-	}
-	// write a generic message
-	_, err = s.Write([]byte("test\n"))
-	if err != nil {
-		return err
-	}
-	// read the message
-	resp, err := ioutil.ReadAll(s)
-	if err != nil {
-		return err
-	}
-	// print the message
-	fmt.Printf("response from tns...\t%s\n", string(resp))
-	return nil
+func (c *Client) queryEcho(peerID peer.ID) (interface{}, error) {
+	return GenerateStreamAndWrite(
+		context.Background(), c.Host, peerID, "echo", c.IPFSAPI, []byte("test\n"),
+	)
 }
 
 // AddPeerToPeerStore is used to add a TNS node to our peer store list
