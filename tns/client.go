@@ -83,7 +83,7 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) (interface{}, err
 	// add a new line character to the end of the message
 	reqBytes = append(reqBytes, '\n')
 	// send a message
-	_, err = s.Write(reqBytes)
+	_, err = s.Write(append(reqBytes, '\n'))
 	if err != nil {
 		return nil, err
 	}
