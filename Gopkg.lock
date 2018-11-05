@@ -10,12 +10,12 @@
   version = "v1.0.1-rc1"
 
 [[projects]]
-  digest = "1:3d62473c23e56cc950e032a60de2cdb32e5edea71d57c32014bc88d1110e0deb"
+  digest = "1:7da19ea40f5a32ee70518df3c6cb93de698b2385e4eadf9787e82b137abe2977"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "60755a6071414accf37799a4d63071dfe5957557"
-  version = "v1.0.6"
+  revision = "017bc455111827434831703a17ebe64efe14c4e1"
+  version = "v1.0.7"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -1362,12 +1362,8 @@
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/postgres",
     "github.com/lib/pq",
-    "github.com/libp2p/go-libp2p",
     "github.com/libp2p/go-libp2p-crypto",
-    "github.com/libp2p/go-libp2p-host",
-    "github.com/libp2p/go-libp2p-net",
     "github.com/libp2p/go-libp2p-peer",
-    "github.com/libp2p/go-libp2p-peerstore",
     "github.com/minio/minio-go",
     "github.com/mitchellh/goamz/aws",
     "github.com/mitchellh/goamz/route53",

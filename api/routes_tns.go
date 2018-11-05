@@ -86,9 +86,7 @@ func (api *API) addRecordToZone(c *gin.Context) {
 		RecordName:    recordName,
 		RecordKeyName: recordKeyName,
 		UserName:      username,
-	}
-	if len(intf) > 0 {
-		req.MetaData = intf
+		MetaData:      intf,
 	}
 	mqURL := api.cfg.RabbitMQ.URL
 	qm, err := queue.Initialize(queue.RecordCreationQueue, mqURL, true, false)

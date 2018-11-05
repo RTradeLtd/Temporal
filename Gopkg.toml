@@ -12,7 +12,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   
 [[constraint]]
   name = "github.com/RTradeLtd/config"
-  version = "v1.0.6"
+  version = "v1.0.7"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"

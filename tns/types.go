@@ -1,6 +1,8 @@
 package tns
 
 import (
+	log "github.com/sirupsen/logrus"
+
 	"github.com/RTradeLtd/Temporal/models"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	host "github.com/libp2p/go-libp2p-host"
@@ -75,6 +77,8 @@ type Manager struct {
 	Host              host.Host
 	ZM                *models.ZoneManager
 	RM                *models.RecordManager
+	l                 *log.Logger
+	service           string
 }
 
 // Client is used to query a TNS daemon

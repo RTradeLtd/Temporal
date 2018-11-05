@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/jinzhu/gorm"
@@ -20,12 +21,14 @@ type ManagerOpts struct {
 	ManagerPK ci.PrivKey `json:"manager_pk"`
 	ZonePK    ci.PrivKey `json:"zone_pk"`
 	ZoneName  string     `json:"zone_name"`
+	LogFile   string     `json:"log_file"`
 	DB        *gorm.DB   `json:"db"`
 }
 
 // GenerateTNSManager is used to generate a TNS manager for a particular PKI space
 func GenerateTNSManager(opts *ManagerOpts, db *gorm.DB) (*Manager, error) {
 	var (
+		logger    = log.New()
 		managerPK ci.PrivKey
 		zonePK    ci.PrivKey
 		err       error
@@ -45,6 +48,7 @@ func GenerateTNSManager(opts *ManagerOpts, db *gorm.DB) (*Manager, error) {
 			ManagerPK: managerPK,
 			ZonePK:    zonePK,
 			ZoneName:  "default",
+			LogFile:   "./templogs.log",
 		}
 	}
 	// extract a peer id for the zone manager
@@ -73,22 +77,31 @@ func GenerateTNSManager(opts *ManagerOpts, db *gorm.DB) (*Manager, error) {
 		ZonePrivateKey:    opts.ZonePK,
 		RecordPrivateKeys: nil,
 		Zone:              &zone,
+		service:           "tns-manager",
 	}
 	// while a DB connection isn't necessary, it can allow for lower-latency answers
 	if db != nil {
 		manager.ZM = models.NewZoneManager(db)
 		manager.RM = models.NewRecordManager(db)
 	}
+	// open log file
+	logfile, err := os.OpenFile(opts.LogFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open log file: %s", err)
+	}
+	logger.Out = logfile
+	logger.Info("logger initialized")
+	manager.l = logger
 	return &manager, nil
 }
 
 // RunTNSDaemon is used to run our TNS daemon, and setup the available stream handlers
 func (m *Manager) RunTNSDaemon() {
-	fmt.Println("generating echo stream")
+	m.LogInfo("generating echo stream")
 	// our echo stream is a basic test used to determine whether or not a tns manager daemon is functioning properly
 	m.Host.SetStreamHandler(
 		CommandEcho, func(s net.Stream) {
-			log.Info("new stream detected")
+			m.LogInfo("new stream detected")
 			if err := m.HandleQuery(s, "echo"); err != nil {
 				log.Warn(err.Error())
 				s.Reset()
@@ -96,11 +109,11 @@ func (m *Manager) RunTNSDaemon() {
 				s.Close()
 			}
 		})
-	fmt.Println("generating record request stream")
+	m.LogInfo("generating record request stream")
 	// our record request stream allows clients to request a record from the tns manager daemon
 	m.Host.SetStreamHandler(
 		CommandRecordRequest, func(s net.Stream) {
-			log.Info("new stream detected")
+			m.LogInfo("new stream detected")
 			if err := m.HandleQuery(s, "record-request"); err != nil {
 				log.Warn(err.Error())
 				s.Reset()
@@ -108,11 +121,11 @@ func (m *Manager) RunTNSDaemon() {
 				s.Close()
 			}
 		})
-	fmt.Println("generating zone request stream")
+	m.LogInfo("generating zone request stream")
 	// our zone request stream allows clients to request a zone from the tns manager daemon
 	m.Host.SetStreamHandler(
 		CommandZoneRequest, func(s net.Stream) {
-			log.Info("new stream detected")
+			m.LogInfo("new stream detected")
 			if err := m.HandleQuery(s, "zone-request"); err != nil {
 				log.Warn(err.Error())
 				s.Reset()

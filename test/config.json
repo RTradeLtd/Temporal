@@ -81,6 +81,7 @@
 	"tns": {
 		"zone_name": "myzone1",
 		"zone_manager_key_name": "testuser-key10",
-		"zone_key_name": "testuser-key11"
+		"zone_key_name": "testuser-key11",
+		"log_file": "./templogs.log"
 	}
 }
