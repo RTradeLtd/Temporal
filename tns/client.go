@@ -56,6 +56,9 @@ func (c *Client) QueryTNS(peerID peer.ID, cmd string, requestArgs interface{}) (
 		// ensure the request argument is of type zone request
 		args := requestArgs.(ZoneRequest)
 		return c.ZoneRequest(peerID, &args)
+	case "record-request":
+		args := requestArgs.(RecordRequest)
+		return c.RecordRequest(peerID, &args)
 	default:
 		return nil, errors.New("unsupported cmd")
 	}
@@ -106,7 +109,7 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) (interface{}, err
 }
 
 // RecordRequest is a call used to request a record from TNS
-func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) error {
+func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) (interface{}, error) {
 	if req == nil {
 		req = &RecordRequest{
 			RecordName: defaultRecordName,
@@ -116,39 +119,36 @@ func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) error {
 	// connect to the tns manager, and generate a stream to send/receive information on
 	s, err := c.Host.NewStream(context.Background(), peerID, CommandRecordRequest)
 	if err != nil {
-		fmt.Println("failed to generate new stream ", err.Error())
-		return err
+		return nil, err
 	}
 	// marshal the message to be sent
 	reqBytes, err := json.Marshal(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// add a new line character to the end of the message
 	reqBytes = append(reqBytes, '\n')
 	// send a message
 	_, err = s.Write(reqBytes)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// read the message
 	resp, err := ioutil.ReadAll(s)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	// stringify the response
-	latestRecordHash := string(resp)
 	// connect to a local ipfs daemon
-	rtfsManager, err := rtfs.Initialize("", "")
+	rtfsManager, err := rtfs.Initialize("", c.IPFSAPI)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// retrieve the dag from ipfs
 	var intf interface{}
-	if err = rtfsManager.Shell.DagGet(latestRecordHash, &intf); err != nil {
-		return err
+	if err = rtfsManager.Shell.DagGet(string(resp), &intf); err != nil {
+		return nil, err
 	}
-	return nil
+	return intf, nil
 }
 
 func (c *Client) queryEcho(peerID peer.ID) error {
