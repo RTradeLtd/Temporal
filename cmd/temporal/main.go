@@ -28,12 +28,12 @@ var (
 )
 
 var commands = map[string]cmd.Cmd{
-	"tns": cmd.Cmd{
+	"tns": {
 		Blurb:         "run a tns daemon or client",
 		Description:   "allows running a tns daemon to manage a zone, or a client to query a dameon",
 		ChildRequired: true,
 		Children: map[string]cmd.Cmd{
-			"daemon": cmd.Cmd{
+			"daemon": {
 				Blurb:       "run tns daemon",
 				Description: "runs a tns daemon and zone manager",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -83,7 +83,7 @@ var commands = map[string]cmd.Cmd{
 					select {}
 				},
 			},
-			"client": cmd.Cmd{
+			"client": {
 				Blurb:       "run tns client",
 				Description: "runs a tns client to make libp2p connections to a tns daemon",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -263,12 +263,12 @@ var commands = map[string]cmd.Cmd{
 					}
 				},
 			},
-			"tns": cmd.Cmd{
+			"tns": {
 				Blurb:         "run tns queues",
 				Description:   "Allows running the various tns queue services",
 				ChildRequired: true,
 				Children: map[string]cmd.Cmd{
-					"zone-creation": cmd.Cmd{
+					"zone-creation": {
 						Blurb:       "Zone creation queue",
 						Description: "Listens to requests to create TNS zones",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -282,7 +282,7 @@ var commands = map[string]cmd.Cmd{
 							}
 						},
 					},
-					"record-creation": cmd.Cmd{
+					"record-creation": {
 						Blurb:       "record creation queue",
 						Description: "Listens to requests to create TNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
