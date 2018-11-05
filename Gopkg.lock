@@ -10,12 +10,12 @@
   version = "v1.0.1-rc1"
 
 [[projects]]
-  digest = "1:457e86933f6a08a066ce09cafb5adfc562257dbdb6b2c7f3871100f4fd298455"
+  branch = "orchestrator"
+  digest = "1:eb55176cacc338850d4bb5f6e99f5b399bd488e3e5815a8ced3a3c8dd473aff5"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "259af0cb5fee02c8d887b50fba337b361f4fd7fa"
-  version = "v1.0.5"
+  revision = "e33c3f7df46a70f2ab6c98d295ed84e322e97ca8"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -34,16 +34,25 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:1eed9cf7d187791d1b7bbcc1713fd4a1177829bcf6a6c4dd9fac178aac551373"
+  branch = "orchestrator"
+  digest = "1:39a0e0090dc84745a1cf47238e74b5a911610618f6480588dceea6f9e447dc08"
   name = "github.com/RTradeLtd/grpc"
   packages = [
+    "temporal",
     "temporal/request",
     "temporal/response",
-    "temporal/service",
+    "utils",
   ]
   pruneopts = "UT"
-  revision = "a873cc9dfc4d596ec742df1744b257d3b0a22f6d"
-  version = "v1.0.3"
+  revision = "2860e5b60b18cd0820c60c35dcf6ba09cc928f6b"
+
+[[projects]]
+  branch = "master"
+  digest = "1:4106797be3d7e6168cbdab94a15dea1c144ee07f7eca5338993b4d620ff347cc"
+  name = "github.com/RTradeLtd/ipfs-orchestrator"
+  packages = ["protobuf"]
+  pruneopts = "UT"
+  revision = "35d929198af2753e7b1917f6cbc499bb4b030322"
 
 [[projects]]
   branch = "master"
@@ -1340,9 +1349,11 @@
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/go-ipfs-api",
+    "github.com/RTradeLtd/grpc/temporal",
     "github.com/RTradeLtd/grpc/temporal/request",
     "github.com/RTradeLtd/grpc/temporal/response",
-    "github.com/RTradeLtd/grpc/temporal/service",
+    "github.com/RTradeLtd/grpc/utils",
+    "github.com/RTradeLtd/ipfs-orchestrator/protobuf",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",
@@ -1377,6 +1388,7 @@
     "github.com/zsais/go-gin-prometheus",
     "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
+    "google.golang.org/grpc/credentials",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

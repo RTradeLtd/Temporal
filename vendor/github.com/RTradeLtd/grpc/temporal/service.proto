@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package models;
+package temporal;
 
-import "request.proto";
-import "response.proto";
+import "request/request.proto";
+import "response/response.proto";
 
 service Signer {
     rpc GetSignedMessage(request.SignRequest) returns (response.SignResponse) {}

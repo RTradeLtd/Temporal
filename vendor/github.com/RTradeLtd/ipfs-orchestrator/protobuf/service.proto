@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ipfs_orchestrator;
+
+service Service {
+  rpc Ping(Empty) returns (Empty) {}
+}
+
+message Empty{}
