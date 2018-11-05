@@ -24,7 +24,7 @@ const (
 )
 
 // GenerateTNSClient is used to generate a TNS Client
-func GenerateTNSClient(genPK bool, pk ...ci.PrivKey) (*Client, error) {
+func GenerateTNSClient(genPK bool, pk ci.PrivKey) (*Client, error) {
 	var (
 		privateKey ci.PrivKey
 		err        error
@@ -36,7 +36,7 @@ func GenerateTNSClient(genPK bool, pk ...ci.PrivKey) (*Client, error) {
 			return nil, err
 		}
 	} else {
-		privateKey = pk[0]
+		privateKey = pk
 	}
 	return &Client{
 		PrivateKey: privateKey,

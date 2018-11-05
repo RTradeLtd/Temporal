@@ -59,7 +59,7 @@ func (zm *ZoneManager) FindZoneByNameAndUser(name, username string) (*Zone, erro
 	return &z, nil
 }
 
-// UpdateLatestIPFSHashForZone is used to update hte latest IPFS hash for a zone file
+// UpdateLatestIPFSHashForZone is used to update the latest IPFS hash for a zone file
 func (zm *ZoneManager) UpdateLatestIPFSHashForZone(name, username, hash string) (*Zone, error) {
 	z, err := zm.FindZoneByNameAndUser(name, username)
 	if err != nil {
