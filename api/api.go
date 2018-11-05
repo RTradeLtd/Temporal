@@ -277,7 +277,7 @@ func (api *API) setupRoutes() {
 		ipfs.GET("/pins", api.getLocalPins)                        // admin locked
 		ipfs.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
 		ipfs.GET("/object-stat/:key", api.getObjectStatForIpfs)
-		ipfs.GET("/dag/get/:hash", api.getDagObject)
+		ipfs.GET("/dag/:hash", api.getDagObject)
 		ipfs.POST("/download/:hash", api.downloadContentHash)
 		ipfs.POST("/pin/:hash", api.pinHashLocally)
 		ipfs.POST("/add-file", api.addFileLocally)
