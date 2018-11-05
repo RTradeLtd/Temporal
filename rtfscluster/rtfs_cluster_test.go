@@ -1,10 +1,8 @@
-package rtfs_cluster_test
+package rtfscluster_test
 
 import (
 	"fmt"
 	"testing"
-
-	"github.com/RTradeLtd/Temporal/rtfs_cluster"
 )
 
 const (
@@ -18,7 +16,7 @@ const (
 )
 
 func TestInitialize(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +31,7 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestParseLocalStatusAllAndSync(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +49,7 @@ func TestParseLocalStatusAllAndSync(t *testing.T) {
 }
 
 func TestClusterPin(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +63,7 @@ func TestClusterPin(t *testing.T) {
 }
 
 func TestFetchLocalStatus(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +78,7 @@ func TestFetchLocalStatus(t *testing.T) {
 }
 
 func TestGetStatusForCidLocally(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,7 +94,7 @@ func TestGetStatusForCidLocally(t *testing.T) {
 }
 
 func TestGetStatusForCidGlobally(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +109,7 @@ func TestGetStatusForCidGlobally(t *testing.T) {
 }
 
 func TestListPeers(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,7 +118,7 @@ func TestListPeers(t *testing.T) {
 	}
 }
 func TestRemovePinFromCluster(t *testing.T) {
-	cm, err := rtfs_cluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}

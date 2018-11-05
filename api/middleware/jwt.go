@@ -12,6 +12,7 @@ import (
 
 var realmName = "temporal-realm"
 
+// Login is used to unmarshal a login in request so that we can parse it
 type Login struct {
 	Username string `form:"username" json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`

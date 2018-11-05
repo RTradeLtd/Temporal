@@ -18,6 +18,7 @@ api middleware is used to secure access to the api
 var user models.User
 var nilTime time.Time
 
+// APIRestrictionMiddleware is used to restrict access to API calls
 func APIRestrictionMiddleware(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)

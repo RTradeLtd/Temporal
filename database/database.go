@@ -7,33 +7,38 @@ import (
 	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/config"
 	"github.com/jinzhu/gorm"
+
+	// import our postgres dialect used to talk with a postgres databse
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 var (
-	UploadObj          *models.Upload
-	EncryptedUploadObj *models.EncryptedUpload
-	UserObj            *models.User
-	PaymentObj         *models.Payments
-	IpnsObj            *models.IPNS
-	HostedIpfsNetObj   *models.HostedIPFSPrivateNetwork
-	DropObj            *models.Drop
-	TnsZoneObj         *models.Zone
-	TnsRecordObj       *models.Record
+	uploadObj          *models.Upload
+	encryptedUploadObj *models.EncryptedUpload
+	userObj            *models.User
+	paymentObj         *models.Payments
+	ipnsObj            *models.IPNS
+	hostedIpfsNetObj   *models.HostedIPFSPrivateNetwork
+	dropObj            *models.Drop
+	tnsZoneObj         *models.Zone
+	tnsRecordObj       *models.Record
 )
 
-type DatabaseManager struct {
+// Manager is used to manage databases
+type Manager struct {
 	DB     *gorm.DB
 	Upload *models.UploadManager
 }
 
-type DatabaseOptions struct {
+// Options is used to configure a connection to the database
+type Options struct {
 	RunMigrations  bool
 	SSLModeDisable bool
 	LogMode        bool
 }
 
-func Initialize(cfg *config.TemporalConfig, opts DatabaseOptions) (*DatabaseManager, error) {
+// Initialize is used to init our connection to a database, and return a manager struct
+func Initialize(cfg *config.TemporalConfig, opts Options) (*Manager, error) {
 	if cfg == nil {
 		return nil, errors.New("invalid configuration provided")
 	}
@@ -51,7 +56,7 @@ func Initialize(cfg *config.TemporalConfig, opts DatabaseOptions) (*DatabaseMana
 
 	db.LogMode(opts.LogMode)
 
-	dbm := DatabaseManager{DB: db}
+	dbm := Manager{DB: db}
 	if opts.RunMigrations {
 		dbm.RunMigrations()
 	}
@@ -59,23 +64,22 @@ func Initialize(cfg *config.TemporalConfig, opts DatabaseOptions) (*DatabaseMana
 }
 
 // RunMigrations runs all migrations
-func (dbm *DatabaseManager) RunMigrations() {
-	dbm.DB.AutoMigrate(UploadObj)
-	dbm.DB.AutoMigrate(UserObj)
-	dbm.DB.AutoMigrate(PaymentObj)
+func (dbm *Manager) RunMigrations() {
+	dbm.DB.AutoMigrate(uploadObj)
+	dbm.DB.AutoMigrate(userObj)
+	dbm.DB.AutoMigrate(paymentObj)
 	// gorm will default table to name of ip_ns
 	// so we will override with ipns
-	dbm.DB.AutoMigrate(IpnsObj)
-	dbm.DB.AutoMigrate(HostedIpfsNetObj)
-	dbm.DB.AutoMigrate(DropObj)
-	dbm.DB.AutoMigrate(EncryptedUploadObj)
-	dbm.DB.AutoMigrate(TnsZoneObj)
-	dbm.DB.AutoMigrate(TnsRecordObj)
-	//dbm.DB.Model(userObj).Related(uploadObj.Users)
+	dbm.DB.AutoMigrate(ipnsObj)
+	dbm.DB.AutoMigrate(hostedIpfsNetObj)
+	dbm.DB.AutoMigrate(dropObj)
+	dbm.DB.AutoMigrate(encryptedUploadObj)
+	dbm.DB.AutoMigrate(tnsZoneObj)
+	dbm.DB.AutoMigrate(tnsRecordObj)
 }
 
 // Close shuts down database connection
-func (dbm *DatabaseManager) Close() error { return dbm.DB.Close() }
+func (dbm *Manager) Close() error { return dbm.DB.Close() }
 
 // DBOptions declares options for opening a database connection
 type DBOptions struct {

@@ -14,6 +14,7 @@ import (
 	ci "github.com/libp2p/go-libp2p-crypto"
 )
 
+// KeystoreManager is used to manage ipfs keys
 type KeystoreManager struct {
 	FSKeystore *keystore.FSKeystore
 }
@@ -36,6 +37,7 @@ func GenerateKeystoreManager(keystorePath ...string) (*KeystoreManager, error) {
 	return &km, nil
 }
 
+// CheckIfKeyExists is used to check if the specified key exists
 func (km *KeystoreManager) CheckIfKeyExists(keyName string) (bool, error) {
 	present, err := km.FSKeystore.Has(keyName)
 	if err != nil {
@@ -44,6 +46,7 @@ func (km *KeystoreManager) CheckIfKeyExists(keyName string) (bool, error) {
 	return present, nil
 }
 
+// GetPrivateKeyByName is used search for a key by its name
 func (km *KeystoreManager) GetPrivateKeyByName(keyName string) (ci.PrivKey, error) {
 	pk, err := km.FSKeystore.Get(keyName)
 	if err != nil {
@@ -52,6 +55,7 @@ func (km *KeystoreManager) GetPrivateKeyByName(keyName string) (ci.PrivKey, erro
 	return pk, nil
 }
 
+// ListKeyIdentifiers is used to list all known key IDs
 func (km *KeystoreManager) ListKeyIdentifiers() ([]string, error) {
 	keys, err := km.FSKeystore.List()
 	if err != nil {
@@ -60,6 +64,7 @@ func (km *KeystoreManager) ListKeyIdentifiers() ([]string, error) {
 	return keys, nil
 }
 
+// SavePrivateKey is used to store a private key
 func (km *KeystoreManager) SavePrivateKey(keyName string, pk ci.PrivKey) error {
 	err := km.FSKeystore.Put(keyName, pk)
 	if err != nil {
@@ -68,6 +73,7 @@ func (km *KeystoreManager) SavePrivateKey(keyName string, pk ci.PrivKey) error {
 	return nil
 }
 
+// CreateAndSaveKey is used to create, and save a key
 func (km *KeystoreManager) CreateAndSaveKey(keyName string, keyType, bits int) (ci.PrivKey, error) {
 	var pk ci.PrivKey
 	var err error

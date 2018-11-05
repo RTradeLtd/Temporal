@@ -213,6 +213,7 @@ func (um *UserManager) ToggleAdmin(username string) (bool, error) {
 	return true, nil
 }
 
+// FindByEmail is used to find a particular user based on their email address
 func (um *UserManager) FindByEmail(email string) (*User, error) {
 	user := &User{}
 	if check := um.DB.Where("email_address = ?", email).First(user); check.Error != nil {

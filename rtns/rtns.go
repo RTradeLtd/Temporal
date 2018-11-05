@@ -60,6 +60,7 @@ func (im *IpnsManager) GenerateEDKeyPair(bits int) error {
 	return nil
 }
 
+// CreateEntryWithEmbed is used to create a IPNS record, embedding the public key for the private key which was used to generate this entry
 func (im *IpnsManager) CreateEntryWithEmbed(ipfsPath string, eol time.Time) (*pb.IpnsEntry, error) {
 	if im.KeyType == lci.Ed25519 {
 		// see https://github.com/ipfs/go-ipns/pull/5 for more information

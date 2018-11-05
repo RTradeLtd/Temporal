@@ -1,4 +1,4 @@
-package rtfs_cluster
+package rtfscluster
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	gocid "github.com/ipfs/go-cid"
 	"github.com/ipfs/ipfs-cluster/api"
 	"github.com/ipfs/ipfs-cluster/api/rest/client"
-	//"github.com/ipfs/ipfs-cluster/api/rest/client"
 )
 
 // ClusterManager is a helper interface to interact with the cluster apis
