@@ -49,7 +49,8 @@ func makeHost(pk ci.PrivKey, opts *HostOpts, client bool) (host.Host, error) {
 	return host, nil
 }
 
-func GenerateStreamAndWrite(ctx context.Context, hst host.Host, peerID peer.ID, cmd, ipfsAPI string, reqBytes []byte) (interface{}, error) {
+// GenerateStreamAndWrite is a helper function used to generate, and interact with a stream
+func (c *Client) GenerateStreamAndWrite(ctx context.Context, peerID peer.ID, cmd, ipfsAPI string, reqBytes []byte) (interface{}, error) {
 	var (
 		s    inet.Stream
 		intf interface{}
@@ -57,11 +58,11 @@ func GenerateStreamAndWrite(ctx context.Context, hst host.Host, peerID peer.ID, 
 	)
 	switch cmd {
 	case "record-record":
-		s, err = hst.NewStream(ctx, peerID, CommandRecordRequest)
+		s, err = c.Host.NewStream(ctx, peerID, CommandRecordRequest)
 	case "zone-request":
-		s, err = hst.NewStream(ctx, peerID, CommandZoneRequest)
+		s, err = c.Host.NewStream(ctx, peerID, CommandZoneRequest)
 	case "echo":
-		s, err = hst.NewStream(ctx, peerID, CommandEcho)
+		s, err = c.Host.NewStream(ctx, peerID, CommandEcho)
 	default:
 		return nil, errors.New("unsupported command")
 	}

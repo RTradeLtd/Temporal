@@ -74,8 +74,8 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) (interface{}, err
 	if err != nil {
 		return nil, err
 	}
-	return GenerateStreamAndWrite(
-		context.Background(), c.Host, peerID, "zone-request", c.IPFSAPI, marshaledData,
+	return c.GenerateStreamAndWrite(
+		context.Background(), peerID, "zone-request", c.IPFSAPI, marshaledData,
 	)
 }
 
@@ -91,14 +91,14 @@ func (c *Client) RecordRequest(peerID peer.ID, req *RecordRequest) (interface{},
 	if err != nil {
 		return nil, err
 	}
-	return GenerateStreamAndWrite(
-		context.Background(), c.Host, peerID, "record-request", c.IPFSAPI, marshaledData,
+	return c.GenerateStreamAndWrite(
+		context.Background(), peerID, "record-request", c.IPFSAPI, marshaledData,
 	)
 }
 
 func (c *Client) queryEcho(peerID peer.ID) (interface{}, error) {
-	return GenerateStreamAndWrite(
-		context.Background(), c.Host, peerID, "echo", c.IPFSAPI, []byte("test\n"),
+	return c.GenerateStreamAndWrite(
+		context.Background(), peerID, "echo", c.IPFSAPI, []byte("test\n"),
 	)
 }
 
