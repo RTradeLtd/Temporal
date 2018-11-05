@@ -101,7 +101,7 @@ func (c *Client) ZoneRequest(peerID peer.ID, req *ZoneRequest) (interface{}, err
 	}
 	// retrieve the dag from ipfs
 	var intf interface{}
-	if err = rtfsManager.Shell.DagGet(latestZoneHash, &intf); err != nil {
+	if err = rtfsManager.Shell.DagGet(string(resp), &intf); err != nil {
 		return nil, err
 	}
 	return intf, nil
