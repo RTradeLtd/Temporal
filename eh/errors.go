@@ -109,12 +109,4 @@ const (
 	ChainRiderInitializationError = "failed to connect to chainrider api"
 	// ChainRiderAPICallError is an error message used when a call to chainrider api fails
 	ChainRiderAPICallError = "failed to call chainrider api"
-	// ChainRiderInitializationError is an error message used when we fail to conenct to chainrider
-	ChainRiderInitializationError = "failed to connect to chainrider api"
-	// ChainRiderAPICallError is an error message used when a call to chainrider api fails
-	ChainRiderAPICallError = "failed to call chainrider api"
-	// ChainRiderInitializationError is an error message used when we fail to conenct to chainrider
-	ChainRiderInitializationError = "failed to connect to chainrider api"
-	// ChainRiderAPICallError is an error message used when a call to chainrider api fails
-	ChainRiderAPICallError = "failed to call chainrider api"
 )
