@@ -377,13 +377,29 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
+	fmt.Println(response)
+	qm, err := queue.Initialize(queue.DashPaymentConfirmationQueue, api.cfg.RabbitMQ.URL, true, false)
+	if err != nil {
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	confirmation := &queue.DashPaymenConfirmation{
+		UserName:         username,
+		PaymentForwardID: response.PaymentForwardID,
+		PaymentNumber:    paymentNumber,
+	}
+	if err = qm.PublishMessage(confirmation); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		return
+	}
 	type pay struct {
-		PaymentNumber  int64
-		ChargeAmount   float64
-		Blockchain     string
-		Status         string
-		Network        string
-		DepositAddress string
+		PaymentNumber    int64
+		ChargeAmount     float64
+		Blockchain       string
+		Status           string
+		Network          string
+		DepositAddress   string
+		PaymentForwardID string
 	}
 	p := pay{
 		PaymentNumber: paymentNumber,
@@ -391,8 +407,9 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		Blockchain:    "dash",
 		Status:        "please send exactly the charge amount",
 		//TODO: change to main before production release
-		Network:        "testnet",
-		DepositAddress: response.PaymentAddress,
+		Network:          "testnet",
+		DepositAddress:   response.PaymentAddress,
+		PaymentForwardID: response.PaymentForwardID,
 	}
 	//TODO: call queue to start watching the payment and processing any tx's
 	Respond(c, http.StatusOK, gin.H{"response": p})

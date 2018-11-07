@@ -83,5 +83,11 @@
 		"zone_manager_key_name": "testuser-key10",
 		"zone_key_name": "testuser-key11",
 		"log_file": "./templogs.log"
+	},
+	"api_keys": {
+		"chain_rider": "..."
+	},
+	"wallets": {
+		"dash": "yfLFuyfSNHNtwKbfaGXh17maGKAAgd2A4z"
 	}
 }

@@ -2,7 +2,7 @@ GOFILES=`go list ./... | grep -v /vendor/`
 TEMPORALVERSION=`git describe --tags`
 IPFSVERSION=v0.4.18
 UNAME=$(shell uname)
-INTERFACE=eth0
+INTERFACE=enp3s0f1
 ADDR_NODE1=192.168.1.101
 ADDR_NODE2=192.168.2.101
 DOCKERCOMPOSE_TEST=env ADDR_NODE1=$(ADDR_NODE1) ADDR_NODE2=$(ADDR_NODE2) docker-compose -f test/docker-compose.yml

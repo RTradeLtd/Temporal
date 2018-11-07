@@ -29,6 +29,8 @@ var (
 	PaymentCreationQueue = "payment-creation-queue"
 	// PaymentConfirmationQueue is a queue used to handle payment confirmations
 	PaymentConfirmationQueue = "payment-confirmation-queue"
+	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
+	DashPaymentConfirmationQueue = "dash-payment-confirmation-queue"
 	// MongoUpdateQueue is a queue used to trigger mongodb updates
 	MongoUpdateQueue = "mongo-update-queue"
 	// ZoneCreationQueue is a queue used to handle tns zone creations
@@ -164,6 +166,13 @@ type PaymentCreation struct {
 	TxHash     string `json:"tx_hash"`
 	Blockchain string `json:"blockchain"`
 	UserName   string `json:"user_name"`
+}
+
+// DashPaymenConfirmation is a message used to signal processing of a dash payment
+type DashPaymenConfirmation struct {
+	UserName         string `json:"user_name"`
+	PaymentForwardID string `json:"payment_forward_id"`
+	PaymentNumber    int64  `json:"payment_number"`
 }
 
 // PaymentConfirmation is a message used to confirm a payment

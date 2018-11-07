@@ -224,6 +224,10 @@ func (api *API) setupRoutes() {
 	// payments
 	payments := v1.Group("/payments", authware...)
 	{
+		dash := payments.Group("/dash")
+		{
+			dash.POST("/create", api.CreateDashPayment)
+		}
 		payments.POST("/create", api.CreatePayment)
 		payments.POST("/request", api.RequestSignedPaymentMessage)
 		payments.POST("/confirm", api.ConfirmPayment)
