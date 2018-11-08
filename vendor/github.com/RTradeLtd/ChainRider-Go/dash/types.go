@@ -29,6 +29,7 @@ const (
 
 // RateLimitResponse is the response given by the rate limit request
 type RateLimitResponse struct {
+	Error   string `json:"error,omitempty"`
 	Message struct {
 		Hour struct {
 			Usage    int `json:"usage"`
@@ -50,7 +51,8 @@ type RateLimitResponse struct {
 
 // InformationResponse is the resposne from the information request
 type InformationResponse struct {
-	Info struct {
+	Error string `json:"error,omitempty"`
+	Info  struct {
 		Version         int     `json:"version"`
 		InsightVerison  string  `json:"insightversion"`
 		ProtocolVersion int     `json:"protocolversion"`
@@ -68,6 +70,7 @@ type InformationResponse struct {
 
 // TransactionByHashResponse is a response for a given transaction hash request
 type TransactionByHashResponse struct {
+	Error    string `json:"error,omitempty"`
 	TxID     string `json:"txid"`
 	Version  int    `json:"version"`
 	Locktime int    `json:"locktime"`
@@ -111,12 +114,14 @@ type TransactionByHashResponse struct {
 
 // TransactionsForAddressResponse is a collection of multiple transactions
 type TransactionsForAddressResponse struct {
+	Error        string                      `json:"error,omitempty"`
 	PagesTotal   int                         `json:"pagesTotal"`
 	Transactions []TransactionByHashResponse `json:"txs"`
 }
 
 // BlockByHashResponse is information fro a particular block
 type BlockByHashResponse struct {
+	Error             string      `json:"error,omitempty"`
 	Hash              string      `json:"hash"`
 	Size              int         `json:"size"`
 	Height            int         `json:"height"`
@@ -136,22 +141,24 @@ type BlockByHashResponse struct {
 
 // LastBlockHashResponse is a resposne from the last block hash call
 type LastBlockHashResponse struct {
+	Error         string `json:"error,omitempty"`
 	SyncTipHash   string `json:"syncTipHash"`
 	LastBlockHash string `json:"lastblockhash"`
 }
 
 // BlockchainDataSyncStatusResponse is a response from the blockchain data sync call
 type BlockchainDataSyncStatusResponse struct {
+	Error            string `json:"error,omitempty"`
 	Status           string `json:"status"`
 	BlockchainHeight int    `json:"blockChainHeight"`
 	SyncPercentage   int    `json:"syncPercentage"`
 	Height           int    `json:"height"`
-	Error            string `json:"error"`
 	Type             string `json:"type"`
 }
 
 // CreatePaymentForwardResponse is a resposne from the create payment forward call
 type CreatePaymentForwardResponse struct {
+	Error                string  `json:"error,omitempty"`
 	PaymentForwardID     string  `json:"paymentforward_id"`
 	PaymentAddress       string  `json:"payment_address"`
 	DestinationAddress   string  `json:"destination_address"`
@@ -161,6 +168,7 @@ type CreatePaymentForwardResponse struct {
 
 // GetPaymentForwardByIDResponse is a response a from get payment forward by id
 type GetPaymentForwardByIDResponse struct {
+	Error                string              `json:"error,omitempty"`
 	PaymentForwardID     string              `json:"paymentforward_id"`
 	PaymentAddress       string              `json:"payment_address"`
 	DestinationAddress   string              `json:"destination_address"`
@@ -174,6 +182,7 @@ type GetPaymentForwardByIDResponse struct {
 
 // ProcessedTxObject is a transaction that has been processed for a payment forward
 type ProcessedTxObject struct {
+	Error                string `json:"error,omitempty"`
 	InputTransactionHash string `json:"input_transaction_hash"`
 	ReceivedAmountDuffs  int    `json:"received_amount_duffs"`
 	TransactionHash      string `json:"transaction_hash"`

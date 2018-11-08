@@ -7,6 +7,10 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 # RTrade
 
 [[constraint]]
+  name = "github.com/RTradeLtd/ChainRider-Go"
+  version = "v1.0.4"
+  
+[[constraint]]
   name = "github.com/RTradeLtd/grpc"
   version = "v1.0.3"
   

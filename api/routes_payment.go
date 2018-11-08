@@ -227,6 +227,10 @@ func (api *API) CreatePayment(c *gin.Context) {
 		err := errors.New("for 'rtc' and 'eth' payments please use the request route")
 		Fail(c, err, http.StatusBadRequest)
 		return
+	case "dash":
+		err := errors.New("for dash payment use the dash specific route")
+		Fail(c, err, http.StatusBadRequest)
+		return
 	}
 	blockchain, exists := c.GetPostForm("blockchain")
 	if !exists {
@@ -363,7 +367,7 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 			DestinationAddress: api.cfg.Wallets.DASH,
 		},
 	)
-	if err != nil {
+	if err != nil || response.Error != "" {
 		api.LogError(err, eh.ChainRiderAPICallError)(c, http.StatusBadRequest)
 		return
 	}

@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:7ca67e8555e965486c141338442222effb369c2a333befddb74f00c492d7a462"
+  digest = "1:cc9987dc4d03422d0b9a87c67ccc376d6341de6d8744a0b735657851b9427e4f"
   name = "github.com/RTradeLtd/ChainRider-Go"
   packages = ["dash"]
   pruneopts = "UT"
-  revision = "7d8995d139110f17c8f9f8e1361bc090cec3ea0f"
-  version = "v1.0.1"
+  revision = "ebefe2f0b98a9e397f305b9b6c4d2f67140dd3a0"
+  version = "v1.0.4"
 
 [[projects]]
   digest = "1:4c9f0df01e3c32aa2a34633730208751a8b348666be4c0049fc913fc7576be06"
@@ -1371,8 +1371,12 @@
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/postgres",
     "github.com/lib/pq",
+    "github.com/libp2p/go-libp2p",
     "github.com/libp2p/go-libp2p-crypto",
+    "github.com/libp2p/go-libp2p-host",
+    "github.com/libp2p/go-libp2p-net",
     "github.com/libp2p/go-libp2p-peer",
+    "github.com/libp2p/go-libp2p-peerstore",
     "github.com/minio/minio-go",
     "github.com/mitchellh/goamz/aws",
     "github.com/mitchellh/goamz/route53",
