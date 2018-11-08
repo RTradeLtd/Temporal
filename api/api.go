@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/RTradeLtd/Temporal/grpc"
+	"github.com/RTradeLtd/Temporal/lens"
 	"github.com/RTradeLtd/Temporal/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
@@ -47,6 +48,7 @@ type API struct {
 	rm      *models.RecordManager
 	l       *log.Logger
 	gc      *grpc.Client
+	lc      *lens.Client
 	service string
 }
 
@@ -132,6 +134,13 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	if err != nil {
 		return nil, err
 	}
+	lensClient, err := lens.NewClient(
+		cfg.Endpoints.LensGRPC,
+		true,
+	)
+	if err != nil {
+		return nil, err
+	}
 	return &API{
 		cfg:     cfg,
 		service: "api",
@@ -145,6 +154,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
 		ipfs:    ipfsManager,
 		gc:      gc,
+		lc:      lensClient,
 		zm:      models.NewZoneManager(dbm.DB),
 		rm:      models.NewRecordManager(dbm.DB),
 	}, nil
@@ -201,6 +211,16 @@ func (api *API) setupRoutes() {
 	statistics := v1.Group("/statistics").Use(authware...)
 	{
 		statistics.GET("/stats", api.getStats)
+	}
+
+	// lens search engine
+	lens := v1.Group("/lens", authware...)
+	{
+		requests := lens.Group("/requests")
+		{
+			requests.POST("/index", api.submitIndexRequest)
+			requests.POST("/search", api.submitSearchRequest)
+		}
 	}
 
 	// tns

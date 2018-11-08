@@ -34,9 +34,10 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:1eed9cf7d187791d1b7bbcc1713fd4a1177829bcf6a6c4dd9fac178aac551373"
+  digest = "1:43416b29f446a45b6891a3b687d5c3052bdf949c29b6d8c0c8a30f23eac06301"
   name = "github.com/RTradeLtd/grpc"
   packages = [
+    "lens",
     "temporal/request",
     "temporal/response",
     "temporal/service",
@@ -1340,6 +1341,7 @@
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/go-ipfs-api",
+    "github.com/RTradeLtd/grpc/lens",
     "github.com/RTradeLtd/grpc/temporal/request",
     "github.com/RTradeLtd/grpc/temporal/response",
     "github.com/RTradeLtd/grpc/temporal/service",
@@ -1362,8 +1364,12 @@
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/postgres",
     "github.com/lib/pq",
+    "github.com/libp2p/go-libp2p",
     "github.com/libp2p/go-libp2p-crypto",
+    "github.com/libp2p/go-libp2p-host",
+    "github.com/libp2p/go-libp2p-net",
     "github.com/libp2p/go-libp2p-peer",
+    "github.com/libp2p/go-libp2p-peerstore",
     "github.com/minio/minio-go",
     "github.com/mitchellh/goamz/aws",
     "github.com/mitchellh/goamz/route53",

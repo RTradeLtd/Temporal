@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "request.proto";
+import "response.proto"; 
+
+service IndexerAPI {
+    // SubmitIndexRequest is used to submit content to be indexed by the lens system
+    rpc SubmitIndexRequest(request.IndexRequest) returns (response.IndexResponse) {}
+    // SubmitSearchRequest is used to search the lens system
+    rpc SubmitSearchRequest(request.SearchRequest) returns (response.SearchResponse) {}
+} 

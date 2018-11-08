@@ -105,4 +105,12 @@ const (
 	RecordSearchError = "failed to search for record"
 	// IPFSDagGetError is an error message when failing to retrieve a dag from ipfs
 	IPFSDagGetError = "failed to get dag from ipfs"
+	// InvalidObjectIdentifierError is a generic error to indicate that the object identifier that was provided is invalid
+	InvalidObjectIdentifierError = "object identifier is of an invalid format"
+	// InvalidObjectTypeError is an error message when a user submits an incorrect type to be indexed
+	InvalidObjectTypeError = "object type is invalid, must be ipld"
+	// FailedToIndexError is an error message when a lens index request fails
+	FailedToIndexError = "an error occured while trying to index this object"
+	// FailedToSearchError is an error message when a lens search request fails
+	FailedToSearchError = "an error occured while submitting your search to lens"
 )

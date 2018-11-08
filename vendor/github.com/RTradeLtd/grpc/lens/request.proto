@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package request;
+
+message IndexRequest {
+    // dataType is the "type" of data, such as IPLD
+    string dataType = 1;
+    // objectIdentifier is the identifier of the object, such as an IPFS content hash
+    string objectIdentifier = 2;
+}
+
+message SearchRequest {
+    // repeated means there can be 0 or more "keywords"
+    repeated string keywords = 1;
+}
