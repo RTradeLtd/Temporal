@@ -415,7 +415,7 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		PaymentNumber: paymentNumber,
 		ChargeAmount:  chargeAmountFloat,
 		Blockchain:    "dash",
-		Status:        "please send exactly the charge amount",
+		Status:        "please send exactly the charge amount. The mining fee required by the chainrider payment forward api call is incldued in the charge amount",
 		//TODO: change to main before production release
 		Network:          "testnet",
 		DepositAddress:   response.PaymentAddress,
