@@ -85,7 +85,7 @@
 		"log_file": "./templogs.log"
 	},
 	"api_keys": {
-		"chain_rider": "..."
+		"chain_rider": ""
 	},
 	"wallets": {
 		"dash": "yfLFuyfSNHNtwKbfaGXh17maGKAAgd2A4z"

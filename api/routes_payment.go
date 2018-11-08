@@ -384,7 +384,6 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	fmt.Println(response)
 	qm, err := queue.Initialize(queue.DashPaymentConfirmationQueue, api.cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
@@ -408,6 +407,10 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		DepositAddress   string
 		PaymentForwardID string
 	}
+	// calculate the mining fee
+	miningFeeDash := dash.DuffsToDash(float64(int64(response.MiningFeeDuffs)))
+	// update the charge amount with the mining fee
+	chargeAmountFloat = chargeAmountFloat + miningFeeDash
 	p := pay{
 		PaymentNumber: paymentNumber,
 		ChargeAmount:  chargeAmountFloat,
