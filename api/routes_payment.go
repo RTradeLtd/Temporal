@@ -247,11 +247,6 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 	if err != nil {
 		Fail(c, err)
 	}
-
-	if err != nil {
-		api.LogError(err, eh.ChainRiderInitializationError)(c, http.StatusBadRequest)
-		return
-	}
 	response, err := api.dc.CreatePaymentForward(
 		&dash.PaymentForwardOpts{
 			DestinationAddress: api.cfg.Wallets.DASH,

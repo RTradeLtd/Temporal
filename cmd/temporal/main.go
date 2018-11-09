@@ -407,18 +407,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if tCfg.APIKeys.ChainRider == "" {
-		for _, arg := range os.Args {
-			if arg == "api" {
-				chainRiderToken := os.Getenv("TOKEN")
-				if chainRiderToken == "" {
-					log.Fatal("TOKEN env var is empty, please set a valid chainrider api token")
-				}
-				tCfg.APIKeys.ChainRider = chainRiderToken
-				continue
-			}
-		}
-	}
 	// load arguments
 	flags := map[string]string{
 		"configDag":     configDag,
