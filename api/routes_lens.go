@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	pb "github.com/RTradeLtd/grpc/lens"
+	pb "github.com/RTradeLtd/grpc/lens/request"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )

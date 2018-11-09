@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package request;
+option go_package = "github.com/RTradeLtd/grpc/lens/request";
 
 message IndexRequest {
     // dataType is the "type" of data, such as IPLD

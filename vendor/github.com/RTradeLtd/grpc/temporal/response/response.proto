@@ -1,6 +1,7 @@
 syntax = 'proto3';
 
 package response;
+option go_package = "github.com/RTradeLtd/grpc/temporal/response";
 
 message SignResponse {
     string h = 1;

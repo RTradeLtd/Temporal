@@ -34,17 +34,19 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:43416b29f446a45b6891a3b687d5c3052bdf949c29b6d8c0c8a30f23eac06301"
+  digest = "1:82b6248b80ab5a668ef51fd7ca953b916d385ec0bdf514dab7cfa5337c0d3c6e"
   name = "github.com/RTradeLtd/grpc"
   packages = [
     "lens",
+    "lens/request",
+    "lens/response",
+    "temporal",
     "temporal/request",
     "temporal/response",
-    "temporal/service",
   ]
   pruneopts = "UT"
-  revision = "a873cc9dfc4d596ec742df1744b257d3b0a22f6d"
-  version = "v1.0.3"
+  revision = "1f2cbda75e1b38d96f4495794a66e76fa975af1e"
+  version = "v1.0.5"
 
 [[projects]]
   branch = "master"
@@ -1342,9 +1344,9 @@
     "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/grpc/lens",
+    "github.com/RTradeLtd/grpc/temporal",
     "github.com/RTradeLtd/grpc/temporal/request",
     "github.com/RTradeLtd/grpc/temporal/response",
-    "github.com/RTradeLtd/grpc/temporal/service",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",

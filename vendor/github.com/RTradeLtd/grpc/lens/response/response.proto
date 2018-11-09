@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package response;
+option go_package = "github.com/RTradeLtd/grpc/lens/response";
 
 message IndexResponse {
     // lensIdentifier is the identifier of the indexed object according to the lens system
