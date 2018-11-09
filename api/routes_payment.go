@@ -214,110 +214,6 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
 
-// CreatePayment is used to create a payment for non ethereum payment types
-func (api *API) CreatePayment(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	paymentType, exists := c.GetPostForm("payment_type")
-	if !exists {
-		FailWithMissingField(c, "payment_type")
-		return
-	}
-	switch paymentType {
-	case "eth", "rtc":
-		err := errors.New("for 'rtc' and 'eth' payments please use the request route")
-		Fail(c, err, http.StatusBadRequest)
-		return
-	case "dash":
-		err := errors.New("for dash payment use the dash specific route")
-		Fail(c, err, http.StatusBadRequest)
-		return
-	}
-	blockchain, exists := c.GetPostForm("blockchain")
-	if !exists {
-		FailWithMissingField(c, "blockchain")
-		return
-	}
-	if paymentType == "xmr" && blockchain != "monero" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	} else if paymentType == "dash" && blockchain != "dash" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	} else if paymentType == "btc" && blockchain != "bitcoin" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	} else if paymentType == "ltc" && blockchain != "litecoin" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	}
-
-	usdValue, err := api.getUSDValue(paymentType)
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	creditValue, exists := c.GetPostForm("credit_value")
-	if !exists {
-		FailWithMissingField(c, "credit_value")
-		return
-	}
-	paymentNumber, err := api.pm.GetLatestPaymentNumber(username)
-	if err != nil {
-		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
-		return
-	}
-	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	chargeAmountFloat := creditValueFloat / usdValue
-	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
-	switch paymentType {
-	case "dash":
-		chargeAmountParsed := fmt.Sprintf("%.8f", chargeAmountFloat)
-		chargeAmountFloat, err = strconv.ParseFloat(chargeAmountParsed, 64)
-		if err != nil {
-			Fail(c, err)
-			return
-		}
-	}
-	payment, err := api.pm.NewPayment(
-		paymentNumber,
-		paymentNumberString,
-		paymentNumberString,
-		creditValueFloat,
-		chargeAmountFloat,
-		blockchain,
-		paymentType,
-		username,
-	)
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	depositAddress, err := api.getDepositAddress(paymentType)
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	type pay struct {
-		PaymentNumber  int64
-		ChargeAmount   float64
-		Blockchain     string
-		Status         string
-		DepositAddress string
-	}
-	p := pay{
-		PaymentNumber:  payment.Number,
-		ChargeAmount:   chargeAmountFloat,
-		Blockchain:     blockchain,
-		Status:         "please send exactly the charge amount",
-		DepositAddress: depositAddress,
-	}
-	Respond(c, http.StatusOK, gin.H{"response": p})
-}
-
 // CreateDashPayment is used to create a dash payment via chainrider
 func (api *API) CreateDashPayment(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
@@ -351,18 +247,12 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 	if err != nil {
 		Fail(c, err)
 	}
-	chainClient, err := dash.NewClient(&dash.ConfigOpts{
-		APIVersion:      "v1",
-		DigitalCurrency: "dash",
-		//TODO: change to main before production release
-		Blockchain: "testnet",
-		Token:      api.cfg.APIKeys.ChainRider,
-	})
+
 	if err != nil {
 		api.LogError(err, eh.ChainRiderInitializationError)(c, http.StatusBadRequest)
 		return
 	}
-	response, err := chainClient.CreatePaymentForward(
+	response, err := api.dc.CreatePaymentForward(
 		&dash.PaymentForwardOpts{
 			DestinationAddress: api.cfg.Wallets.DASH,
 		},
@@ -407,7 +297,7 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		DepositAddress   string
 		PaymentForwardID string
 	}
-	// calculate the mining fee
+	// calculate the mining fee required by chainrider to forward the payment
 	miningFeeDash := dash.DuffsToDash(float64(int64(response.MiningFeeDuffs)))
 	// update the charge amount with the mining fee
 	chargeAmountFloat = chargeAmountFloat + miningFeeDash
@@ -421,7 +311,6 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		DepositAddress:   response.PaymentAddress,
 		PaymentForwardID: response.PaymentForwardID,
 	}
-	//TODO: call queue to start watching the payment and processing any tx's
 	Respond(c, http.StatusOK, gin.H{"response": p})
 }
 
