@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	pb "github.com/RTradeLtd/grpc/lens"
@@ -53,8 +54,12 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 		FailWithMissingField(c, "keywords")
 		return
 	}
+	var keywordsLower []string
+	for _, word := range keywords {
+		keywordsLower = append(keywordsLower, strings.ToLower(word))
+	}
 	req := &pb.SearchRequest{
-		Keywords: keywords,
+		Keywords: keywordsLower,
 	}
 	resp, err := api.lc.SubmitSearchRequest(context.Background(), req)
 	if err != nil {
