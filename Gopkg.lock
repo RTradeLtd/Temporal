@@ -10,12 +10,12 @@
   version = "v1.0.1-rc1"
 
 [[projects]]
-  digest = "1:7da19ea40f5a32ee70518df3c6cb93de698b2385e4eadf9787e82b137abe2977"
+  digest = "1:85b96e99377a2d1b7fba5b8f3d4f48e99aa9f84cffd5f1793c984a712edb530d"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "017bc455111827434831703a17ebe64efe14c4e1"
-  version = "v1.0.7"
+  revision = "bb92c485347b7fcb2ea6aa130b1c1ebd493018ae"
+  version = "v1.0.8-rc2"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -34,12 +34,14 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:82b6248b80ab5a668ef51fd7ca953b916d385ec0bdf514dab7cfa5337c0d3c6e"
+  digest = "1:916d0584a8c2393f79fdc2624615d52f8ebb13516cfc5bcaf5693e8d214ca727"
   name = "github.com/RTradeLtd/grpc"
   packages = [
+    "dialer",
     "lens",
     "lens/request",
     "lens/response",
+    "middleware",
     "temporal",
     "temporal/request",
     "temporal/response",
@@ -1343,7 +1345,9 @@
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/go-ipfs-api",
+    "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/lens",
+    "github.com/RTradeLtd/grpc/lens/request",
     "github.com/RTradeLtd/grpc/temporal",
     "github.com/RTradeLtd/grpc/temporal/request",
     "github.com/RTradeLtd/grpc/temporal/response",
@@ -1385,6 +1389,7 @@
     "github.com/zsais/go-gin-prometheus",
     "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
+    "google.golang.org/grpc/credentials",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

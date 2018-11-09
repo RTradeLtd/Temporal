@@ -134,10 +134,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	if err != nil {
 		return nil, err
 	}
-	lensClient, err := lens.NewClient(
-		cfg.Endpoints.LensGRPC,
-		true,
-	)
+	lensClient, err := lens.NewClient(cfg.Endpoints)
 	if err != nil {
 		return nil, err
 	}
