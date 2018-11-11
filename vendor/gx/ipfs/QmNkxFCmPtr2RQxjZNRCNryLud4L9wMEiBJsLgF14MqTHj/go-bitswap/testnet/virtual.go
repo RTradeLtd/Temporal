@@ -6,17 +6,17 @@ import (
 	"sync"
 	"time"
 
-	bsmsg "github.com/ipfs/go-bitswap/message"
-	bsnet "github.com/ipfs/go-bitswap/network"
+	bsmsg "gx/ipfs/QmNkxFCmPtr2RQxjZNRCNryLud4L9wMEiBJsLgF14MqTHj/go-bitswap/message"
+	bsnet "gx/ipfs/QmNkxFCmPtr2RQxjZNRCNryLud4L9wMEiBJsLgF14MqTHj/go-bitswap/network"
 
-	cid "github.com/ipfs/go-cid"
-	delay "github.com/ipfs/go-ipfs-delay"
-	mockrouting "github.com/ipfs/go-ipfs-routing/mock"
-	logging "github.com/ipfs/go-log"
-	ifconnmgr "github.com/libp2p/go-libp2p-interface-connmgr"
-	peer "github.com/libp2p/go-libp2p-peer"
-	routing "github.com/libp2p/go-libp2p-routing"
-	testutil "github.com/libp2p/go-testutil"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	delay "gx/ipfs/QmRJVNatYJwTAHgdSM1Xef9QVQ1Ch3XHdmcrykjP5Y4soL/go-ipfs-delay"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	ifconnmgr "gx/ipfs/QmWRvjn5BHMLCGkf48Hk1LDc4W72RPA9H59AAVCXmn9esJ/go-libp2p-interface-connmgr"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	testutil "gx/ipfs/Qma6ESRQTf1ZLPgzpCwDTqQJefPnU6uLvMjP18vK8EWp8L/go-testutil"
+	routing "gx/ipfs/QmcQ81jSyWCp1jpkQ8CMbtpXT3jK7Wg6ZtYmoyWFgBoF9c/go-libp2p-routing"
+	mockrouting "gx/ipfs/QmcjvUP25nLSwELgUeqWe854S3XVbtsntTr7kZxG63yKhe/go-ipfs-routing/mock"
 )
 
 var log = logging.Logger("bstestnet")

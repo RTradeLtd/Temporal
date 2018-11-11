@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"os"
 
-	dag "github.com/ipfs/go-merkledag"
+	dag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
 
-	ft "github.com/ipfs/go-unixfs"
+	ft "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs"
 
-	cid "github.com/ipfs/go-cid"
-	pi "github.com/ipfs/go-ipfs-posinfo"
-	ipld "github.com/ipfs/go-ipld-format"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	pi "gx/ipfs/QmQyUyYcpKG1u53V7N25qRTGw5XwaAxTMKXbduqHotQztg/go-ipfs-posinfo"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
 )
 
 // BlockSizeLimit specifies the maximum size an imported block can have.

@@ -3,11 +3,11 @@ package tcp
 import (
 	"testing"
 
-	insecure "github.com/libp2p/go-conn-security/insecure"
-	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
-	utils "github.com/libp2p/go-libp2p-transport/test"
-	ma "github.com/multiformats/go-multiaddr"
-	mplex "github.com/whyrusleeping/go-smux-multiplex"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	insecure "gx/ipfs/QmZ3XKH272gU9px86XqWYeZHU65ayHxWs6Wbswvdj2VqVK/go-conn-security/insecure"
+	mplex "gx/ipfs/QmaveCPGVaKJU57tBErGCDjzLaqEMZkFygoiv4BhYwWUGc/go-smux-multiplex"
+	utils "gx/ipfs/QmbCkisBsdejwSzusQcdbYjpSX3yvUw1ek2YSsJ89QbZYX/go-libp2p-transport/test"
+	tptu "gx/ipfs/QmeUjhpfGkrMtE6s7JjU2xLhfzprSDh16QUxGVr3wTrKSx/go-libp2p-transport-upgrader"
 )
 
 func TestTcpTransport(t *testing.T) {

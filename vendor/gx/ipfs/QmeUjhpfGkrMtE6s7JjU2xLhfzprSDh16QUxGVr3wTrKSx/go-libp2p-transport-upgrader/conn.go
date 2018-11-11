@@ -3,9 +3,9 @@ package stream
 import (
 	"fmt"
 
-	inet "github.com/libp2p/go-libp2p-net"
-	transport "github.com/libp2p/go-libp2p-transport"
-	smux "github.com/libp2p/go-stream-muxer"
+	inet "gx/ipfs/QmXuRkCR7BNQa9uqfpTiFWsTQLzmTWYg91Ja1w95gnqb6u/go-libp2p-net"
+	smux "gx/ipfs/QmY9JXR3FupnYAYJWK9aMr9bCpqWKcToQ1tz8DVGTrHpHw/go-stream-muxer"
+	transport "gx/ipfs/QmbCkisBsdejwSzusQcdbYjpSX3yvUw1ek2YSsJ89QbZYX/go-libp2p-transport"
 )
 
 type transportConn struct {

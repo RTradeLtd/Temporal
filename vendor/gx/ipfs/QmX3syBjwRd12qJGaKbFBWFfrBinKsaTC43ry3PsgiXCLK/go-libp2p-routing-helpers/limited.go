@@ -4,11 +4,11 @@ import (
 	"context"
 	"strings"
 
-	routing "github.com/libp2p/go-libp2p-routing"
-	ropts "github.com/libp2p/go-libp2p-routing/options"
+	routing "gx/ipfs/QmcQ81jSyWCp1jpkQ8CMbtpXT3jK7Wg6ZtYmoyWFgBoF9c/go-libp2p-routing"
+	ropts "gx/ipfs/QmcQ81jSyWCp1jpkQ8CMbtpXT3jK7Wg6ZtYmoyWFgBoF9c/go-libp2p-routing/options"
 
-	ci "github.com/libp2p/go-libp2p-crypto"
-	peer "github.com/libp2p/go-libp2p-peer"
+	ci "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
 )
 
 // LimitedValueStore limits the internal value store to the given namespaces.

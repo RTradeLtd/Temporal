@@ -12,6 +12,7 @@ import (
 	cg "github.com/ipfs/go-ipfs-config"
 )
 
+// PrivateConfigManager is used to manage a private ifps network
 type PrivateConfigManager struct {
 	Config *cg.Config
 }
@@ -35,6 +36,7 @@ func GenerateConfigManager(configFilePath string) (*PrivateConfigManager, error)
 	return &pcm, err
 }
 
+// GenerateIPFSMultiAddr is used to generate a multiaddress from a string
 func (pcm *PrivateConfigManager) GenerateIPFSMultiAddr(address string) (addrUtil.IPFSAddr, error) {
 	ipfsAddr, err := addrUtil.ParseString(address)
 	if err != nil {
@@ -43,6 +45,7 @@ func (pcm *PrivateConfigManager) GenerateIPFSMultiAddr(address string) (addrUtil
 	return ipfsAddr, nil
 }
 
+// GenerateBootstrapPeer is used to take generate a bootstrap peer from a string
 func (pcm *PrivateConfigManager) GenerateBootstrapPeer(address string) (cg.BootstrapPeer, error) {
 	bpeer, err := cg.ParseBootstrapPeer(address)
 	if err != nil {
@@ -112,6 +115,7 @@ func (pcm *PrivateConfigManager) ParseConfigAndWrite(peers ...string) error {
 	return nil
 }
 
+// generateSwarmKey is used to generate a new swarm key
 func genererateSwarmKey() (string, error) {
 	var output string
 	key := make([]byte, 32)

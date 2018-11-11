@@ -9,9 +9,9 @@ import (
 	"time"
 
 	_ "github.com/lucas-clemente/quic-clients" // download clients
-	"github.com/lucas-clemente/quic-go/integrationtests/tools/proxy"
-	"github.com/lucas-clemente/quic-go/integrationtests/tools/testserver"
-	"github.com/lucas-clemente/quic-go/internal/protocol"
+	"gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/integrationtests/tools/proxy"
+	"gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/integrationtests/tools/testserver"
+	"gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/internal/protocol"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

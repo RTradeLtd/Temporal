@@ -4,14 +4,14 @@ import (
 	"context"
 	"time"
 
-	cid "github.com/ipfs/go-cid"
-	logging "github.com/ipfs/go-log"
-	peer "github.com/libp2p/go-libp2p-peer"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	routing "github.com/libp2p/go-libp2p-routing"
-	ropts "github.com/libp2p/go-libp2p-routing/options"
-	"github.com/libp2p/go-testutil"
-	ma "github.com/multiformats/go-multiaddr"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	"gx/ipfs/Qma6ESRQTf1ZLPgzpCwDTqQJefPnU6uLvMjP18vK8EWp8L/go-testutil"
+	routing "gx/ipfs/QmcQ81jSyWCp1jpkQ8CMbtpXT3jK7Wg6ZtYmoyWFgBoF9c/go-libp2p-routing"
+	ropts "gx/ipfs/QmcQ81jSyWCp1jpkQ8CMbtpXT3jK7Wg6ZtYmoyWFgBoF9c/go-libp2p-routing/options"
 )
 
 var log = logging.Logger("mockrouter")

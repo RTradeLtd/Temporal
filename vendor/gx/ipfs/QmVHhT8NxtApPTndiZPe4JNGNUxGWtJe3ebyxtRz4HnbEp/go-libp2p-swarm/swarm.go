@@ -9,16 +9,16 @@ import (
 	"sync/atomic"
 	"time"
 
-	logging "github.com/ipfs/go-log"
-	"github.com/jbenet/goprocess"
-	goprocessctx "github.com/jbenet/goprocess/context"
-	metrics "github.com/libp2p/go-libp2p-metrics"
-	inet "github.com/libp2p/go-libp2p-net"
-	peer "github.com/libp2p/go-libp2p-peer"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	transport "github.com/libp2p/go-libp2p-transport"
-	filter "github.com/libp2p/go-maddr-filter"
-	mafilter "github.com/whyrusleeping/multiaddr-filter"
+	"gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess"
+	goprocessctx "gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess/context"
+	mafilter "gx/ipfs/QmSMZwvs3n4GBikZ7hKzT17c3bk65FmyZo2JqtJ16swqCv/multiaddr-filter"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	inet "gx/ipfs/QmXuRkCR7BNQa9uqfpTiFWsTQLzmTWYg91Ja1w95gnqb6u/go-libp2p-net"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	transport "gx/ipfs/QmbCkisBsdejwSzusQcdbYjpSX3yvUw1ek2YSsJ89QbZYX/go-libp2p-transport"
+	filter "gx/ipfs/QmbuCmYjYK5GQo4zKrK2h3NVsyBYf81ZQXgiE69CLLGHgB/go-maddr-filter"
+	metrics "gx/ipfs/QmeaTjsfPf6vQ3WU2BUdjakgvKUHpuv3Fjxvb75N5iksMx/go-libp2p-metrics"
 )
 
 // DialTimeoutLocal is the maximum duration a Dial to local network address

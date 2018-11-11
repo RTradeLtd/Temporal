@@ -37,7 +37,7 @@ package periodicproc
 import (
 	"time"
 
-	gp "github.com/jbenet/goprocess"
+	gp "gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess"
 )
 
 // Every calls the given ProcessFunc at periodic intervals. Internally, it uses

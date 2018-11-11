@@ -11,6 +11,7 @@ import (
 	"github.com/lib/pq"
 )
 
+// Upload is a file or pin based upload to temporal
 type Upload struct {
 	gorm.Model
 	Hash               string `gorm:"type:varchar(255);not null;"`
@@ -25,6 +26,7 @@ type Upload struct {
 
 const dev = true
 
+// UploadManager is used to manipulate upload objects in the database
 type UploadManager struct {
 	DB *gorm.DB
 }
@@ -34,6 +36,7 @@ func NewUploadManager(db *gorm.DB) *UploadManager {
 	return &UploadManager{DB: db}
 }
 
+// UploadOptions is used to configure an upload
 type UploadOptions struct {
 	NetworkName      string
 	Username         string
@@ -143,6 +146,7 @@ func (um *UploadManager) RunTestDatabaseGarbageCollection() (*[]Upload, error) {
 	return &deletedUploads, nil
 }
 
+// FindUploadsByNetwork is used to find all uploads corresponding to a given network
 func (um *UploadManager) FindUploadsByNetwork(networkName string) (*[]Upload, error) {
 	uploads := &[]Upload{}
 	if check := um.DB.Where("network_name = ?", networkName).Find(uploads); check.Error != nil {
@@ -150,6 +154,8 @@ func (um *UploadManager) FindUploadsByNetwork(networkName string) (*[]Upload, er
 	}
 	return uploads, nil
 }
+
+// FindUploadByHashAndNetwork is used to search for an upload by its hash, and the network it was stored on
 func (um *UploadManager) FindUploadByHashAndNetwork(hash, networkName string) (*Upload, error) {
 	upload := &Upload{}
 	if check := um.DB.Where("hash = ? AND network_name = ?", hash, networkName).First(upload); check.Error != nil {
@@ -158,8 +164,7 @@ func (um *UploadManager) FindUploadByHashAndNetwork(hash, networkName string) (*
 	return upload, nil
 }
 
-// FindUploadsByHash is used to return all instances of uploads matching the
-// given hash
+// FindUploadsByHash is used to return all instances of uploads matching the given hash
 func (um *UploadManager) FindUploadsByHash(hash string) *[]Upload {
 
 	uploads := []Upload{}

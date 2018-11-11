@@ -5,16 +5,16 @@ import (
 	"io"
 	"os"
 
-	dag "github.com/ipfs/go-merkledag"
+	dag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
 
-	ft "github.com/ipfs/go-unixfs"
-	pb "github.com/ipfs/go-unixfs/pb"
+	ft "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs"
+	pb "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/pb"
 
-	cid "github.com/ipfs/go-cid"
-	chunker "github.com/ipfs/go-ipfs-chunker"
-	files "github.com/ipfs/go-ipfs-files"
-	pi "github.com/ipfs/go-ipfs-posinfo"
-	ipld "github.com/ipfs/go-ipld-format"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	pi "gx/ipfs/QmQyUyYcpKG1u53V7N25qRTGw5XwaAxTMKXbduqHotQztg/go-ipfs-posinfo"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
+	chunker "gx/ipfs/QmTUTG9Jg9ZRA1EzTPGTDvnwfcfKhDMnqANnP9fe4rSjMR/go-ipfs-chunker"
+	files "gx/ipfs/QmZMWMvWMVKCbHetJ4RgndbuEF1io2UpUxwQwtNjtYPzSC/go-ipfs-files"
 )
 
 // DagBuilderHelper wraps together a bunch of objects needed to

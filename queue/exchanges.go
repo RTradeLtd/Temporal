@@ -16,7 +16,7 @@ const (
 )
 
 // DeclareIPFSPinRemovalExchange is used to declare the exchange used to handle ipfs pins
-func (qm *QueueManager) DeclareIPFSPinRemovalExchange() error {
+func (qm *Manager) DeclareIPFSPinRemovalExchange() error {
 	return qm.Channel.ExchangeDeclare(
 		PinRemovalExchange, // name
 		"fanout",           // type
@@ -29,7 +29,7 @@ func (qm *QueueManager) DeclareIPFSPinRemovalExchange() error {
 }
 
 // DeclareIPFSPinExchange is used to declare the exchange used to handle ipfs pins
-func (qm *QueueManager) DeclareIPFSPinExchange() error {
+func (qm *Manager) DeclareIPFSPinExchange() error {
 	return qm.Channel.ExchangeDeclare(
 		PinExchange, // name
 		"fanout",    // type
@@ -42,7 +42,7 @@ func (qm *QueueManager) DeclareIPFSPinExchange() error {
 }
 
 // DeclareIPFSKeyExchange is used to declare the exchange used to handle ipfs key creation requests
-func (qm *QueueManager) DeclareIPFSKeyExchange() error {
+func (qm *Manager) DeclareIPFSKeyExchange() error {
 	return qm.Channel.ExchangeDeclare(
 		IpfsKeyExchange, // name
 		"fanout",        // type

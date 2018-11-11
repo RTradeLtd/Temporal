@@ -12,7 +12,7 @@ import (
 
 	"go/build"
 
-	"github.com/onsi/ginkgo/ginkgo/nodot"
+	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/ginkgo/nodot"
 )
 
 func BuildBootstrapCommand() *Command {

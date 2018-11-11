@@ -3,7 +3,7 @@
 
 package wrappers // import "github.com/golang/protobuf/ptypes/wrappers"
 
-import proto "github.com/golang/protobuf/proto"
+import proto "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

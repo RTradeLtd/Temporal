@@ -7,11 +7,11 @@ package mockrouting
 import (
 	"context"
 
-	ds "github.com/ipfs/go-datastore"
-	delay "github.com/ipfs/go-ipfs-delay"
-	peer "github.com/libp2p/go-libp2p-peer"
-	routing "github.com/libp2p/go-libp2p-routing"
-	"github.com/libp2p/go-testutil"
+	delay "gx/ipfs/QmRJVNatYJwTAHgdSM1Xef9QVQ1Ch3XHdmcrykjP5Y4soL/go-ipfs-delay"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	"gx/ipfs/Qma6ESRQTf1ZLPgzpCwDTqQJefPnU6uLvMjP18vK8EWp8L/go-testutil"
+	ds "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
+	routing "gx/ipfs/QmcQ81jSyWCp1jpkQ8CMbtpXT3jK7Wg6ZtYmoyWFgBoF9c/go-libp2p-routing"
 )
 
 // MockValidator is a record validator that always returns success.

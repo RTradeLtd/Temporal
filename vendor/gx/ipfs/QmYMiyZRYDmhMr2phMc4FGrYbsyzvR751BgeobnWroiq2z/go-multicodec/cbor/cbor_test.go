@@ -4,7 +4,7 @@ import (
 	"testing"
 	"testing/quick"
 
-	mctest "github.com/multiformats/go-multicodec/test"
+	mctest "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/test"
 )
 
 var testCases []interface{}

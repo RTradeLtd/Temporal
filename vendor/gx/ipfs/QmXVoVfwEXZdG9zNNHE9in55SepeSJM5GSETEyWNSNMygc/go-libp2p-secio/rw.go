@@ -9,8 +9,8 @@ import (
 	"io"
 	"sync"
 
-	pool "github.com/libp2p/go-buffer-pool"
-	msgio "github.com/libp2p/go-msgio"
+	pool "gx/ipfs/QmQDvJoB6aJWN3sjr3xsgXqKCXf4jU5zdMXpDMsBkYVNqa/go-buffer-pool"
+	msgio "gx/ipfs/QmcxL9MDzSU5Mj1GcWZD8CXkAFuJXjdbjotZ93o371bKSf/go-msgio"
 )
 
 // ErrMACInvalid signals that a MAC verification failed

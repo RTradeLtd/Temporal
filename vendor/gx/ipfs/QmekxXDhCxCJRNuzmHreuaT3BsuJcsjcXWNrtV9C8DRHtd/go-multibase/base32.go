@@ -1,7 +1,7 @@
 package multibase
 
 import (
-	b32 "github.com/whyrusleeping/base32"
+	b32 "gx/ipfs/QmfVj3x4D6Jkq9SEoi5n2NmoUomLwoeiwnYz2KQa15wRw6/base32"
 )
 
 var base32StdLowerPad = b32.NewEncodingCI("abcdefghijklmnopqrstuvwxyz234567")

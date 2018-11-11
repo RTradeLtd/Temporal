@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/miekg/dns"
+	"gx/ipfs/QmV3bVtkAhSZqWncYGonUmsVcJcV6cpzWztsFwc3A9so5m/dns"
 )
 
 const (

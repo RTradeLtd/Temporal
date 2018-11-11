@@ -7,10 +7,10 @@ package traditionalchinese
 import (
 	"unicode/utf8"
 
-	"golang.org/x/text/encoding"
-	"golang.org/x/text/encoding/internal"
-	"golang.org/x/text/encoding/internal/identifier"
-	"golang.org/x/text/transform"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/encoding"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/encoding/internal"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/encoding/internal/identifier"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/transform"
 )
 
 // All is a list of all defined encodings in this package.

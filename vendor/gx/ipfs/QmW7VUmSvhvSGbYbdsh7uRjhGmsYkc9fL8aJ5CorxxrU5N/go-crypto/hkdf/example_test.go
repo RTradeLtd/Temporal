@@ -9,7 +9,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
-	"golang.org/x/crypto/hkdf"
+	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/hkdf"
 	"io"
 )
 

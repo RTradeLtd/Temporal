@@ -5,15 +5,15 @@ import (
 	"testing"
 	"time"
 
-	ic "github.com/libp2p/go-libp2p-crypto"
-	peer "github.com/libp2p/go-libp2p-peer"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	swarmt "github.com/libp2p/go-libp2p-swarm/testing"
-	identify "github.com/libp2p/go-libp2p/p2p/protocol/identify"
+	ic "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	identify "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/protocol/identify"
+	swarmt "gx/ipfs/QmVHhT8NxtApPTndiZPe4JNGNUxGWtJe3ebyxtRz4HnbEp/go-libp2p-swarm/testing"
 
-	blhost "github.com/libp2p/go-libp2p-blankhost"
-	host "github.com/libp2p/go-libp2p-host"
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	blhost "gx/ipfs/Qmcwep23T9AwwbuQRRhVyjk9PBRbMFCyGKCKGZfTPteiFU/go-libp2p-blankhost"
+	host "gx/ipfs/QmdJfsSbKSZnMkfZ1kpopiyB9i3Hd6cp8VKWZmtWPa7Moc/go-libp2p-host"
 )
 
 func subtestIDService(t *testing.T) {

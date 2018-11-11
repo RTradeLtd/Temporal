@@ -1,8 +1,8 @@
 package synchronized_setup_tests_test
 
 import (
-	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo"
 
 	"fmt"
 	"os"

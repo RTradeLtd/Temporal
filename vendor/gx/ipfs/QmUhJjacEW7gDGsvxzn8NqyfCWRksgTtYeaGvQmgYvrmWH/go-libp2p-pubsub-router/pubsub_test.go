@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	bhost "github.com/libp2p/go-libp2p-blankhost"
-	p2phost "github.com/libp2p/go-libp2p-host"
-	pubsub "github.com/libp2p/go-libp2p-pubsub"
-	record "github.com/libp2p/go-libp2p-record"
-	routing "github.com/libp2p/go-libp2p-routing"
-	rhelper "github.com/libp2p/go-libp2p-routing-helpers"
-	swarmt "github.com/libp2p/go-libp2p-swarm/testing"
+	swarmt "gx/ipfs/QmVHhT8NxtApPTndiZPe4JNGNUxGWtJe3ebyxtRz4HnbEp/go-libp2p-swarm/testing"
+	rhelper "gx/ipfs/QmX3syBjwRd12qJGaKbFBWFfrBinKsaTC43ry3PsgiXCLK/go-libp2p-routing-helpers"
+	pubsub "gx/ipfs/QmY4dowpPFCBsbaoaJc9mNWso64eDJsm32LJznwPNaAiJG/go-libp2p-pubsub"
+	record "gx/ipfs/Qma9Eqp16mNHDX1EL73pcxhFfzbyXVcAYtaDd1xdmDRDtL/go-libp2p-record"
+	routing "gx/ipfs/QmcQ81jSyWCp1jpkQ8CMbtpXT3jK7Wg6ZtYmoyWFgBoF9c/go-libp2p-routing"
+	bhost "gx/ipfs/Qmcwep23T9AwwbuQRRhVyjk9PBRbMFCyGKCKGZfTPteiFU/go-libp2p-blankhost"
+	p2phost "gx/ipfs/QmdJfsSbKSZnMkfZ1kpopiyB9i3Hd6cp8VKWZmtWPa7Moc/go-libp2p-host"
 )
 
 func newNetHost(ctx context.Context, t *testing.T) p2phost.Host {

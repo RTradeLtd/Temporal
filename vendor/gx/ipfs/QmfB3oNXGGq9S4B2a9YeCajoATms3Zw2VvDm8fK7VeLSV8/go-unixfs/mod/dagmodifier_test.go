@@ -7,12 +7,12 @@ import (
 	"io/ioutil"
 	"testing"
 
-	h "github.com/ipfs/go-unixfs/importer/helpers"
-	trickle "github.com/ipfs/go-unixfs/importer/trickle"
-	uio "github.com/ipfs/go-unixfs/io"
-	testu "github.com/ipfs/go-unixfs/test"
+	h "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/importer/helpers"
+	trickle "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/importer/trickle"
+	uio "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/io"
+	testu "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/test"
 
-	u "github.com/ipfs/go-ipfs-util"
+	u "gx/ipfs/QmPdKqUcHGFdeSpvjVoaTRPPstGif9GBZb5Q56RVw9o69A/go-ipfs-util"
 )
 
 func testModWrite(t *testing.T, beg, size uint64, orig []byte, dm *DagModifier, opts testu.NodeOpts) []byte {

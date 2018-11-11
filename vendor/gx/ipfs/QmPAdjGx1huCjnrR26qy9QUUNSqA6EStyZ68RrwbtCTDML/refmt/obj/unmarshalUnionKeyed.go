@@ -3,8 +3,8 @@ package obj
 import (
 	"reflect"
 
-	"github.com/polydawn/refmt/obj/atlas"
-	. "github.com/polydawn/refmt/tok"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/obj/atlas"
+	. "gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/tok"
 )
 
 type unmarshalMachineUnionKeyed struct {

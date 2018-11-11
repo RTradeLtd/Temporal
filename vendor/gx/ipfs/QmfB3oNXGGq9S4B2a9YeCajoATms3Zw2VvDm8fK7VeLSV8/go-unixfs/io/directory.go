@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	mdag "github.com/ipfs/go-merkledag"
-	format "github.com/ipfs/go-unixfs"
-	hamt "github.com/ipfs/go-unixfs/hamt"
+	mdag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
+	format "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs"
+	hamt "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/hamt"
 
-	cid "github.com/ipfs/go-cid"
-	ipld "github.com/ipfs/go-ipld-format"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
 )
 
 // UseHAMTSharding is a global flag that signifies whether or not to use the

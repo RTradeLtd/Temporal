@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	ds "github.com/ipfs/go-datastore"
-	badger "github.com/ipfs/go-ds-badger"
-	leveldb "github.com/ipfs/go-ds-leveldb"
+	ds "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
+	badger "gx/ipfs/QmaixNkKwtinV3umL5VD1VDD5CQjnZhXY31awM2YHTzbui/go-ds-badger"
+	leveldb "gx/ipfs/QmccqjKZUTqp4ikWNyAbjBuP5HEdqSqRuAr9mcEhYab54a/go-ds-leveldb"
 
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	pt "github.com/libp2p/go-libp2p-peerstore/test"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	pt "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore/test"
 )
 
 type datastoreFactory func(tb testing.TB) (ds.TxnDatastore, func())

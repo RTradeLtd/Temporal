@@ -1,9 +1,9 @@
 package crypto_test
 
 import (
-	. "github.com/libp2p/go-libp2p-crypto"
-	pb "github.com/libp2p/go-libp2p-crypto/pb"
-	tu "github.com/libp2p/go-libp2p-crypto/test"
+	. "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	pb "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto/pb"
+	tu "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto/test"
 
 	"bytes"
 	"crypto/rand"

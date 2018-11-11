@@ -6,10 +6,10 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 # RTrade
 
-[[constraint]]
+[[override]] # temporary
   name = "github.com/RTradeLtd/grpc"
-  branch = "orchestrator" # temporary
-  
+  branch = "orchestrator"
+
 [[override]] # temporary
   name = "github.com/RTradeLtd/config"
   branch = "orchestrator"
@@ -24,7 +24,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
-  version = "v2.0.0"
+  version = "v2.0.4"
 
 # IPFS
 

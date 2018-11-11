@@ -53,21 +53,194 @@ func (m *Empty) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Empty proto.InternalMessageInfo
 
+type NetworkRequest struct {
+	Network              string   `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *NetworkRequest) Reset()         { *m = NetworkRequest{} }
+func (m *NetworkRequest) String() string { return proto.CompactTextString(m) }
+func (*NetworkRequest) ProtoMessage()    {}
+func (*NetworkRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a0b84a42fa06f626, []int{1}
+}
+
+func (m *NetworkRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NetworkRequest.Unmarshal(m, b)
+}
+func (m *NetworkRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NetworkRequest.Marshal(b, m, deterministic)
+}
+func (m *NetworkRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NetworkRequest.Merge(m, src)
+}
+func (m *NetworkRequest) XXX_Size() int {
+	return xxx_messageInfo_NetworkRequest.Size(m)
+}
+func (m *NetworkRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_NetworkRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NetworkRequest proto.InternalMessageInfo
+
+func (m *NetworkRequest) GetNetwork() string {
+	if m != nil {
+		return m.Network
+	}
+	return ""
+}
+
+type StartNetworkResponse struct {
+	Api                  string   `protobuf:"bytes,1,opt,name=api,proto3" json:"api,omitempty"`
+	SwarmKey             string   `protobuf:"bytes,2,opt,name=swarm_key,json=swarmKey,proto3" json:"swarm_key,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *StartNetworkResponse) Reset()         { *m = StartNetworkResponse{} }
+func (m *StartNetworkResponse) String() string { return proto.CompactTextString(m) }
+func (*StartNetworkResponse) ProtoMessage()    {}
+func (*StartNetworkResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a0b84a42fa06f626, []int{2}
+}
+
+func (m *StartNetworkResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StartNetworkResponse.Unmarshal(m, b)
+}
+func (m *StartNetworkResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StartNetworkResponse.Marshal(b, m, deterministic)
+}
+func (m *StartNetworkResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StartNetworkResponse.Merge(m, src)
+}
+func (m *StartNetworkResponse) XXX_Size() int {
+	return xxx_messageInfo_StartNetworkResponse.Size(m)
+}
+func (m *StartNetworkResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_StartNetworkResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StartNetworkResponse proto.InternalMessageInfo
+
+func (m *StartNetworkResponse) GetApi() string {
+	if m != nil {
+		return m.Api
+	}
+	return ""
+}
+
+func (m *StartNetworkResponse) GetSwarmKey() string {
+	if m != nil {
+		return m.SwarmKey
+	}
+	return ""
+}
+
+type NetworkStatusReponse struct {
+	Network              string   `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
+	Api                  string   `protobuf:"bytes,2,opt,name=api,proto3" json:"api,omitempty"`
+	Uptime               int64    `protobuf:"varint,3,opt,name=uptime,proto3" json:"uptime,omitempty"`
+	DiskUsage            int64    `protobuf:"varint,4,opt,name=disk_usage,json=diskUsage,proto3" json:"disk_usage,omitempty"`
+	Stats                []byte   `protobuf:"bytes,5,opt,name=stats,proto3" json:"stats,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *NetworkStatusReponse) Reset()         { *m = NetworkStatusReponse{} }
+func (m *NetworkStatusReponse) String() string { return proto.CompactTextString(m) }
+func (*NetworkStatusReponse) ProtoMessage()    {}
+func (*NetworkStatusReponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a0b84a42fa06f626, []int{3}
+}
+
+func (m *NetworkStatusReponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NetworkStatusReponse.Unmarshal(m, b)
+}
+func (m *NetworkStatusReponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NetworkStatusReponse.Marshal(b, m, deterministic)
+}
+func (m *NetworkStatusReponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NetworkStatusReponse.Merge(m, src)
+}
+func (m *NetworkStatusReponse) XXX_Size() int {
+	return xxx_messageInfo_NetworkStatusReponse.Size(m)
+}
+func (m *NetworkStatusReponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_NetworkStatusReponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NetworkStatusReponse proto.InternalMessageInfo
+
+func (m *NetworkStatusReponse) GetNetwork() string {
+	if m != nil {
+		return m.Network
+	}
+	return ""
+}
+
+func (m *NetworkStatusReponse) GetApi() string {
+	if m != nil {
+		return m.Api
+	}
+	return ""
+}
+
+func (m *NetworkStatusReponse) GetUptime() int64 {
+	if m != nil {
+		return m.Uptime
+	}
+	return 0
+}
+
+func (m *NetworkStatusReponse) GetDiskUsage() int64 {
+	if m != nil {
+		return m.DiskUsage
+	}
+	return 0
+}
+
+func (m *NetworkStatusReponse) GetStats() []byte {
+	if m != nil {
+		return m.Stats
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*Empty)(nil), "ipfs_orchestrator.Empty")
+	proto.RegisterType((*NetworkRequest)(nil), "ipfs_orchestrator.NetworkRequest")
+	proto.RegisterType((*StartNetworkResponse)(nil), "ipfs_orchestrator.StartNetworkResponse")
+	proto.RegisterType((*NetworkStatusReponse)(nil), "ipfs_orchestrator.NetworkStatusReponse")
 }
 
 func init() { proto.RegisterFile("service.proto", fileDescriptor_a0b84a42fa06f626) }
 
 var fileDescriptor_a0b84a42fa06f626 = []byte{
-	// 100 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2d, 0x4e, 0x2d, 0x2a,
-	0xcb, 0x4c, 0x4e, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0xcc, 0x2c, 0x48, 0x2b, 0x8e,
-	0xcf, 0x2f, 0x4a, 0xce, 0x48, 0x2d, 0x2e, 0x29, 0x4a, 0x2c, 0xc9, 0x2f, 0x52, 0x62, 0xe7, 0x62,
-	0x75, 0xcd, 0x2d, 0x28, 0xa9, 0x34, 0x72, 0xe7, 0x62, 0x0f, 0x86, 0x28, 0x16, 0xb2, 0xe1, 0x62,
-	0x09, 0xc8, 0xcc, 0x4b, 0x17, 0x92, 0xd0, 0xc3, 0x50, 0xaf, 0x07, 0x56, 0x2c, 0x85, 0x53, 0x46,
-	0x89, 0x21, 0x89, 0x0d, 0x6c, 0x97, 0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0xaf, 0xcf, 0xb9, 0x36,
-	0x7c, 0x00, 0x00, 0x00,
+	// 308 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0xcb, 0x4a, 0x33, 0x41,
+	0x10, 0x85, 0x33, 0xb9, 0xfe, 0xa9, 0x3f, 0x8a, 0x36, 0x41, 0x9a, 0x88, 0x10, 0x7b, 0x63, 0x70,
+	0x91, 0x85, 0x6e, 0xdd, 0x66, 0xa5, 0x88, 0xcc, 0xe0, 0x4e, 0x08, 0x6d, 0x2c, 0x63, 0x13, 0x32,
+	0xdd, 0x76, 0xd5, 0x18, 0xe6, 0x29, 0x7c, 0x36, 0xdf, 0x48, 0xe6, 0x12, 0x8d, 0x38, 0x41, 0x74,
+	0x37, 0x75, 0xaa, 0xe6, 0x9c, 0xe2, 0xab, 0x86, 0x1d, 0x42, 0xff, 0x62, 0x66, 0x38, 0x76, 0xde,
+	0xb2, 0x15, 0xfb, 0xc6, 0x3d, 0xd2, 0xd4, 0xfa, 0xd9, 0x13, 0x12, 0x7b, 0xcd, 0xd6, 0xab, 0x0e,
+	0xb4, 0x26, 0x4b, 0xc7, 0xa9, 0x3a, 0x85, 0xdd, 0x6b, 0xe4, 0x95, 0xf5, 0x8b, 0x10, 0x9f, 0x13,
+	0x24, 0x16, 0x12, 0x3a, 0x71, 0xa1, 0xc8, 0x60, 0x18, 0x8c, 0xba, 0xe1, 0xba, 0x54, 0x13, 0xe8,
+	0x47, 0xac, 0x3d, 0x7f, 0xfc, 0x40, 0xce, 0xc6, 0x84, 0x62, 0x0f, 0x1a, 0xda, 0x99, 0x72, 0x3a,
+	0xfb, 0x14, 0x87, 0xd0, 0xa5, 0x95, 0xf6, 0xcb, 0xe9, 0x02, 0x53, 0x59, 0xcf, 0xf5, 0x7f, 0xb9,
+	0x70, 0x89, 0xa9, 0x7a, 0x0d, 0xa0, 0x5f, 0x5a, 0x44, 0xac, 0x39, 0xa1, 0x10, 0x0b, 0x9f, 0xad,
+	0xc9, 0xeb, 0x84, 0xfa, 0x67, 0xc2, 0x01, 0xb4, 0x13, 0xc7, 0x66, 0x89, 0xb2, 0x31, 0x0c, 0x46,
+	0x8d, 0xb0, 0xac, 0xc4, 0x11, 0xc0, 0x83, 0xa1, 0xc5, 0x34, 0x21, 0x3d, 0x47, 0xd9, 0xcc, 0x7b,
+	0xdd, 0x4c, 0xb9, 0xcd, 0x04, 0xd1, 0x87, 0x16, 0xb1, 0x66, 0x92, 0xad, 0x61, 0x30, 0xea, 0x85,
+	0x45, 0x71, 0xf6, 0x56, 0x87, 0x4e, 0x54, 0x20, 0x13, 0x17, 0xd0, 0xbc, 0x31, 0xf1, 0x5c, 0xc8,
+	0xf1, 0x37, 0x6a, 0xe3, 0x1c, 0xd9, 0x60, 0x6b, 0x47, 0xd5, 0xc4, 0x1d, 0xf4, 0x36, 0x11, 0x89,
+	0xe3, 0x8a, 0xd9, 0xaf, 0xbc, 0x07, 0x27, 0x15, 0x23, 0x55, 0x98, 0x55, 0x4d, 0x5c, 0xc1, 0xff,
+	0x88, 0xad, 0xfb, 0x85, 0xf9, 0x0f, 0xbb, 0x6e, 0x9c, 0x81, 0xfe, 0xba, 0x6b, 0xd5, 0x29, 0x55,
+	0xed, 0xbe, 0x9d, 0xbf, 0xbd, 0xf3, 0xf7, 0x00, 0x00, 0x00, 0xff, 0xff, 0x8e, 0xc1, 0x96, 0xe8,
+	0x8c, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -83,6 +256,9 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type ServiceClient interface {
 	Ping(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	StartNetwork(ctx context.Context, in *NetworkRequest, opts ...grpc.CallOption) (*StartNetworkResponse, error)
+	StopNetwork(ctx context.Context, in *NetworkRequest, opts ...grpc.CallOption) (*Empty, error)
+	NetworkStats(ctx context.Context, in *NetworkRequest, opts ...grpc.CallOption) (*NetworkStatusReponse, error)
 }
 
 type serviceClient struct {
@@ -102,9 +278,39 @@ func (c *serviceClient) Ping(ctx context.Context, in *Empty, opts ...grpc.CallOp
 	return out, nil
 }
 
+func (c *serviceClient) StartNetwork(ctx context.Context, in *NetworkRequest, opts ...grpc.CallOption) (*StartNetworkResponse, error) {
+	out := new(StartNetworkResponse)
+	err := c.cc.Invoke(ctx, "/ipfs_orchestrator.Service/StartNetwork", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serviceClient) StopNetwork(ctx context.Context, in *NetworkRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/ipfs_orchestrator.Service/StopNetwork", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serviceClient) NetworkStats(ctx context.Context, in *NetworkRequest, opts ...grpc.CallOption) (*NetworkStatusReponse, error) {
+	out := new(NetworkStatusReponse)
+	err := c.cc.Invoke(ctx, "/ipfs_orchestrator.Service/NetworkStats", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServiceServer is the server API for Service service.
 type ServiceServer interface {
 	Ping(context.Context, *Empty) (*Empty, error)
+	StartNetwork(context.Context, *NetworkRequest) (*StartNetworkResponse, error)
+	StopNetwork(context.Context, *NetworkRequest) (*Empty, error)
+	NetworkStats(context.Context, *NetworkRequest) (*NetworkStatusReponse, error)
 }
 
 func RegisterServiceServer(s *grpc.Server, srv ServiceServer) {
@@ -129,6 +335,60 @@ func _Service_Ping_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Service_StartNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NetworkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).StartNetwork(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ipfs_orchestrator.Service/StartNetwork",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).StartNetwork(ctx, req.(*NetworkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Service_StopNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NetworkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).StopNetwork(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ipfs_orchestrator.Service/StopNetwork",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).StopNetwork(ctx, req.(*NetworkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Service_NetworkStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NetworkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).NetworkStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ipfs_orchestrator.Service/NetworkStats",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).NetworkStats(ctx, req.(*NetworkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Service_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ipfs_orchestrator.Service",
 	HandlerType: (*ServiceServer)(nil),
@@ -136,6 +396,18 @@ var _Service_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Ping",
 			Handler:    _Service_Ping_Handler,
+		},
+		{
+			MethodName: "StartNetwork",
+			Handler:    _Service_StartNetwork_Handler,
+		},
+		{
+			MethodName: "StopNetwork",
+			Handler:    _Service_StopNetwork_Handler,
+		},
+		{
+			MethodName: "NetworkStats",
+			Handler:    _Service_NetworkStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

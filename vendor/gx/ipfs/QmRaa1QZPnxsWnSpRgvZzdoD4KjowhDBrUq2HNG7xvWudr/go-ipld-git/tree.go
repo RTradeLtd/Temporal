@@ -7,8 +7,8 @@ import (
 	"io"
 
 	"errors"
-	cid "github.com/ipfs/go-cid"
-	node "github.com/ipfs/go-ipld-format"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	node "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
 )
 
 type Tree struct {

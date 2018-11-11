@@ -9,12 +9,6 @@
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "QmZ4Qi3GaRbjcx28Sme5eMH7RQjGkt8wHxt2a65oLaeFEV",
-      "name": "gogo-protobuf",
-      "version": "0.0.0"
-    },
-    {
-      "author": "whyrusleeping",
       "hash": "QmWBug6eBS7AxRdCDVuSY5CnSit7cS2XnPFYJWqWDumhCG",
       "name": "go-msgio",
       "version": "0.0.3"
@@ -30,6 +24,12 @@
       "hash": "QmVTAmbCaPqdfbmpWDCJMQNFxbyJoG2USFsumXmTWY5LFp",
       "name": "go-codec",
       "version": "2017.10.18"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8",
+      "name": "gogo-protobuf",
+      "version": "0.0.0"
     }
   ],
   "gxVersion": "0.10.0",
@@ -37,6 +37,6 @@
   "license": "MIT",
   "name": "go-multicodec",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "0.1.5"
+  "version": "0.1.6"
 }
 

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	mc "github.com/multiformats/go-multicodec"
+	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
 )
 
 func RoundTripTest(t *testing.T, codec mc.Codec, o1, o2 interface{}) bool {

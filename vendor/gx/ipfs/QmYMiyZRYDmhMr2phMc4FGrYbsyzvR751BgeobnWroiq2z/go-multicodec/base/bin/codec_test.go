@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	mc "github.com/multiformats/go-multicodec"
+	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
 )
 
 func TestBinaryDecoding(t *testing.T) {

@@ -3,8 +3,8 @@ package verifcid
 import (
 	"fmt"
 
-	cid "github.com/ipfs/go-cid"
-	mh "github.com/multiformats/go-multihash"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	mh "gx/ipfs/QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8/go-multihash"
 )
 
 var ErrPossiblyInsecureHashFunction = fmt.Errorf("potentially insecure hash functions not allowed")

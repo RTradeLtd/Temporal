@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"bazil.org/fuse"
-	"bazil.org/fuse/fs"
+	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse"
+	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse/fs"
 )
 
 // Mount contains information about the mount for the test to use.

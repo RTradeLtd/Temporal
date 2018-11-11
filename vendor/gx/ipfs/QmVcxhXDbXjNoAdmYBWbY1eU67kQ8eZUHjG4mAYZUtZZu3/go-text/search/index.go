@@ -7,7 +7,7 @@
 
 package search
 
-import "golang.org/x/text/internal/colltab"
+import "gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/colltab"
 
 const blockSize = 64
 

@@ -12,9 +12,9 @@ import (
 	"crypto/sha512"
 	"hash"
 
-	ci "github.com/libp2p/go-libp2p-crypto"
-	sha256 "github.com/minio/sha256-simd"
-	bfish "golang.org/x/crypto/blowfish"
+	ci "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	bfish "gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/blowfish"
+	sha256 "gx/ipfs/QmXTpwq2AkzQsPjKqFQDNY2bMdsAT53hUBETeyj8QRHTZU/sha256-simd"
 )
 
 // SupportedExchanges is the list of supported ECDH curves

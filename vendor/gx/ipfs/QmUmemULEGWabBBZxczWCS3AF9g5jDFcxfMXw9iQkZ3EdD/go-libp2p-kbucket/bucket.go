@@ -4,7 +4,7 @@ import (
 	"container/list"
 	"sync"
 
-	peer "github.com/libp2p/go-libp2p-peer"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
 )
 
 // Bucket holds a list of peers.

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/hashicorp/golang-lru/simplelru"
+	"gx/ipfs/QmQjMHF8ptRgx4E57UFMiT4YM6kqaJeYxZ1MCDX23aw4rK/golang-lru/simplelru"
 )
 
 const (

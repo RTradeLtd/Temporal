@@ -4,11 +4,11 @@
 package temporal
 
 import (
+	context "context"
 	fmt "fmt"
 	request "github.com/RTradeLtd/grpc/temporal/request"
 	response "github.com/RTradeLtd/grpc/temporal/response"
 	proto "github.com/golang/protobuf/proto"
-	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 	math "math"
 )

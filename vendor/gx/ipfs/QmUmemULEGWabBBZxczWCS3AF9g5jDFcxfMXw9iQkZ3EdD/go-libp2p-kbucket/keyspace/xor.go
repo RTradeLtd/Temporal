@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"math/bits"
 
-	u "github.com/ipfs/go-ipfs-util"
+	u "gx/ipfs/QmPdKqUcHGFdeSpvjVoaTRPPstGif9GBZb5Q56RVw9o69A/go-ipfs-util"
 )
 
 // XORKeySpace is a KeySpace which:

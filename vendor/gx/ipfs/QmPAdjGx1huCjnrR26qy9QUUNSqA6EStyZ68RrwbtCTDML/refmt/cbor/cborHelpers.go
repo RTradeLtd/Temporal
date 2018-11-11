@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/polydawn/refmt/obj"
-	"github.com/polydawn/refmt/obj/atlas"
-	"github.com/polydawn/refmt/shared"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/obj"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/obj/atlas"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/shared"
 )
 
 // All of the methods in this file are exported,

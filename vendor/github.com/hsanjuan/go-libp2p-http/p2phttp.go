@@ -57,14 +57,51 @@ import (
 	protocol "github.com/libp2p/go-libp2p-protocol"
 )
 
-// P2PProtocol is used to tag and identify streams
+// DefaultP2PProtocol is used to tag and identify streams
 // handled by go-libp2p-http
-var P2PProtocol protocol.ID = "/libp2p-http"
+var DefaultP2PProtocol protocol.ID = "/libp2p-http"
+
+// options holds configuration options for the transport.
+type options struct {
+	Protocol protocol.ID
+}
+
+// Option allows to set the libp2p transport options.
+type Option func(o *options)
+
+// ProtocolOption sets the Protocol Tag associated to the libp2p roundtripper.
+func ProtocolOption(p protocol.ID) Option {
+	return func(o *options) {
+		o.Protocol = p
+	}
+}
 
 // RoundTripper implemenets http.RoundTrip and can be used as
 // custom transport with Go http.Client.
 type RoundTripper struct {
-	h host.Host
+	h    host.Host
+	opts options
+}
+
+// NewTransport returns a new RoundTripper which uses the provided
+// libP2P host to perform an http request and obtain the response.
+//
+// The typical use case for NewTransport is to register the "libp2p"
+// protocol with a Transport, as in:
+//     t := &http.Transport{}
+//     t.RegisterProtocol("libp2p", p2phttp.NewTransport(host, ProtocolOption(DefaultP2PProtocol)))
+//     c := &http.Client{Transport: t}
+//     res, err := c.Get("libp2p://Qmaoi4isbcTbFfohQyn28EiYM5CDWQx9QRCjDh3CTeiY7P/index.html")
+//     ...
+func NewTransport(h host.Host, opts ...Option) *RoundTripper {
+	defOpts := options{
+		Protocol: DefaultP2PProtocol,
+	}
+	for _, o := range opts {
+		o(&defOpts)
+	}
+
+	return &RoundTripper{h, defOpts}
 }
 
 // we wrap the response body and close the stream
@@ -93,7 +130,7 @@ func (rt *RoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	conn, err := gostream.Dial(rt.h, peer.ID(pid), P2PProtocol)
+	conn, err := gostream.Dial(rt.h, peer.ID(pid), rt.opts.Protocol)
 	if err != nil {
 		if r.Body != nil {
 			r.Body.Close()
@@ -123,18 +160,4 @@ func (rt *RoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	}
 
 	return resp, nil
-}
-
-// NewTransport returns a new RoundTripper which uses the provided
-// libP2P host to perform an http request and obtain the response.
-//
-// The typical use case for NewTransport is to register the "libp2p"
-// protocol with a Transport, as in:
-//     t := &http.Transport{}
-//     t.RegisterProtocol("libp2p", p2phttp.NewTransport(host))
-//     c := &http.Client{Transport: t}
-//     res, err := c.Get("libp2p://Qmaoi4isbcTbFfohQyn28EiYM5CDWQx9QRCjDh3CTeiY7P/index.html")
-//     ...
-func NewTransport(h host.Host) *RoundTripper {
-	return &RoundTripper{h}
 }

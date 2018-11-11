@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/prometheus/common/model"
+	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/model"
 )
 
 // metricVec is a Collector to bundle metrics of the same name that differ in

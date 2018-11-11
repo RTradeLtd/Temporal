@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"sync"
 
-	ic "github.com/libp2p/go-libp2p-crypto"
-	inet "github.com/libp2p/go-libp2p-net"
-	peer "github.com/libp2p/go-libp2p-peer"
-	transport "github.com/libp2p/go-libp2p-transport"
-	smux "github.com/libp2p/go-stream-muxer"
-	ma "github.com/multiformats/go-multiaddr"
+	ic "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	inet "gx/ipfs/QmXuRkCR7BNQa9uqfpTiFWsTQLzmTWYg91Ja1w95gnqb6u/go-libp2p-net"
+	smux "gx/ipfs/QmY9JXR3FupnYAYJWK9aMr9bCpqWKcToQ1tz8DVGTrHpHw/go-stream-muxer"
+	transport "gx/ipfs/QmbCkisBsdejwSzusQcdbYjpSX3yvUw1ek2YSsJ89QbZYX/go-libp2p-transport"
 )
 
 // TODO: Put this elsewhere.

@@ -15,10 +15,10 @@ import (
 	"strings"
 	"time"
 
-	files "github.com/ipfs/go-ipfs-cmdkit/files"
 	homedir "github.com/mitchellh/go-homedir"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr-net"
+	files "github.com/whyrusleeping/go-multipart-files"
 	tar "github.com/whyrusleeping/tar-utils"
 )
 
@@ -62,7 +62,6 @@ func NewLocalShell() *Shell {
 func NewShell(url string) *Shell {
 	c := &gohttp.Client{
 		Transport: &gohttp.Transport{
-			Proxy:             gohttp.ProxyFromEnvironment,
 			DisableKeepAlives: true,
 		},
 	}
@@ -148,15 +147,15 @@ type object struct {
 
 // Add a file to ipfs from the given reader, returns the hash of the added file
 func (s *Shell) Add(r io.Reader) (string, error) {
-	return s.AddWithOpts(r, true, false)
+	return s.addWithOpts(r, true)
 }
 
 // AddNoPin a file to ipfs from the given reader, returns the hash of the added file without pinning the file
 func (s *Shell) AddNoPin(r io.Reader) (string, error) {
-	return s.AddWithOpts(r, false, false)
+	return s.addWithOpts(r, false)
 }
 
-func (s *Shell) AddWithOpts(r io.Reader, pin bool, rawLeaves bool) (string, error) {
+func (s *Shell) addWithOpts(r io.Reader, pin bool) (string, error) {
 	var rc io.ReadCloser
 	if rclose, ok := r.(io.ReadCloser); ok {
 		rc = rclose
@@ -174,10 +173,6 @@ func (s *Shell) AddWithOpts(r io.Reader, pin bool, rawLeaves bool) (string, erro
 	req.Opts["progress"] = "false"
 	if !pin {
 		req.Opts["pin"] = "false"
-	}
-
-	if rawLeaves {
-		req.Opts["raw-leaves"] = "true"
 	}
 
 	resp, err := req.Send(s.httpcli)
@@ -231,7 +226,7 @@ func (s *Shell) AddDir(dir string) (string, error) {
 		return "", err
 	}
 
-	sf, err := files.NewSerialFile(path.Base(dir), dir, false, stat)
+	sf, err := files.NewSerialFile("", dir, stat)
 	if err != nil {
 		return "", err
 	}
@@ -583,7 +578,7 @@ func (s *Shell) NewObject(template string) (string, error) {
 }
 
 func (s *Shell) ResolvePath(path string) (string, error) {
-	resp, err := s.newRequest(context.Background(), "resolve", path).Send(s.httpcli)
+	resp, err := s.newRequest(context.Background(), "object/stat", path).Send(s.httpcli)
 	if err != nil {
 		return "", err
 	}
@@ -593,17 +588,13 @@ func (s *Shell) ResolvePath(path string) (string, error) {
 		return "", resp.Error
 	}
 
-	var out struct {
-		Path string
-	}
+	var out object
 	err = json.NewDecoder(resp.Output).Decode(&out)
 	if err != nil {
 		return "", err
 	}
 
-	p := strings.TrimPrefix(out.Path, "/ipfs/")
-
-	return p, nil
+	return out.Hash, nil
 }
 
 // returns ipfs version and commit sha
@@ -825,4 +816,25 @@ func (s *Shell) ObjectStat(key string) (*ObjectStats, error) {
 	}
 
 	return stat, nil
+}
+
+func (s *Shell) DiagNet(format string) ([]byte, error) {
+	var result = new(bytes.Buffer)
+
+	req := s.newRequest(context.Background(), "diag/net")
+	req.Opts["vis"] = format
+
+	resp, err := req.Send(s.httpcli)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	defer resp.Close()
+	if resp.Error != nil {
+		return []byte{}, resp.Error
+	}
+
+	result.ReadFrom(resp.Output)
+
+	return result.Bytes(), nil
 }

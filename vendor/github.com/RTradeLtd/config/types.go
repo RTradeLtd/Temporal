@@ -137,6 +137,7 @@ type TNS struct {
 	ZoneName           string `json:"zone_name"`
 	ZoneManagerKeyName string `json:"zone_manager_key_name"`
 	ZoneKeyName        string `json:"zone_key_name"`
+	LogFile            string `json:"log_file"`
 }
 
 // APIKeys are the various API keys we use

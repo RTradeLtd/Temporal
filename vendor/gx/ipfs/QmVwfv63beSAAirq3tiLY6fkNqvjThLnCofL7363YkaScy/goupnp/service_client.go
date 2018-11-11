@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/huin/goupnp/soap"
+	"gx/ipfs/QmVwfv63beSAAirq3tiLY6fkNqvjThLnCofL7363YkaScy/goupnp/soap"
 )
 
 // ServiceClient is a SOAP client, root device and the service for the SOAP

@@ -49,7 +49,7 @@ func TestDatabaseInitialize_withMigrations(t *testing.T) {
 			Username: "postgres",
 			Password: "password123",
 		},
-	}, database.DatabaseOptions{
+	}, database.Options{
 		RunMigrations:  true,
 		SSLModeDisable: true})
 	if err != nil {

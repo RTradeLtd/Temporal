@@ -16,7 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/crypto/ssh"
+	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/ssh"
 )
 
 // startOpenSSHAgent executes ssh-agent, and returns an Agent interface to it.

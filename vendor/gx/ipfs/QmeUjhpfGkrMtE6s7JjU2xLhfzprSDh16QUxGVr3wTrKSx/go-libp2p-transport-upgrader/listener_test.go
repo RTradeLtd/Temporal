@@ -7,17 +7,17 @@ import (
 	"sync"
 	"time"
 
-	insecure "github.com/libp2p/go-conn-security/insecure"
-	peer "github.com/libp2p/go-libp2p-peer"
-	tpt "github.com/libp2p/go-libp2p-transport"
-	st "github.com/libp2p/go-libp2p-transport-upgrader"
-	smux "github.com/libp2p/go-stream-muxer"
-	ma "github.com/multiformats/go-multiaddr"
-	manet "github.com/multiformats/go-multiaddr-net"
-	mplex "github.com/whyrusleeping/go-smux-multiplex"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	smux "gx/ipfs/QmY9JXR3FupnYAYJWK9aMr9bCpqWKcToQ1tz8DVGTrHpHw/go-stream-muxer"
+	insecure "gx/ipfs/QmZ3XKH272gU9px86XqWYeZHU65ayHxWs6Wbswvdj2VqVK/go-conn-security/insecure"
+	manet "gx/ipfs/Qmaabb1tJZ2CX5cp6MuuiGgns71NYoxdgQP6Xdid1dVceC/go-multiaddr-net"
+	mplex "gx/ipfs/QmaveCPGVaKJU57tBErGCDjzLaqEMZkFygoiv4BhYwWUGc/go-smux-multiplex"
+	tpt "gx/ipfs/QmbCkisBsdejwSzusQcdbYjpSX3yvUw1ek2YSsJ89QbZYX/go-libp2p-transport"
+	st "gx/ipfs/QmeUjhpfGkrMtE6s7JjU2xLhfzprSDh16QUxGVr3wTrKSx/go-libp2p-transport-upgrader"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo"
+	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega"
 )
 
 // negotiatingMuxer sets up a new mplex connection

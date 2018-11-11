@@ -13,6 +13,7 @@ import (
 	route53 "github.com/segmentio/go-route53"
 )
 
+// AwsLinkManager is used to manage a connection to aws
 type AwsLinkManager struct {
 	Auth   aws.Auth
 	Region aws.Region

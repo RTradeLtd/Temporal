@@ -40,8 +40,8 @@ import (
 	"strconv"
 	"strings"
 
-	pb "github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/golang/protobuf/protoc-gen-go/generator"
+	pb "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/descriptor"
+	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/generator"
 )
 
 // generatedCodeVersion indicates a version of the generated code.

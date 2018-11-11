@@ -17,7 +17,7 @@
 package badger
 
 import (
-	"github.com/dgraph-io/badger/options"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger/options"
 )
 
 // NOTE: Keep the comments in the following to 75 chars width, so they

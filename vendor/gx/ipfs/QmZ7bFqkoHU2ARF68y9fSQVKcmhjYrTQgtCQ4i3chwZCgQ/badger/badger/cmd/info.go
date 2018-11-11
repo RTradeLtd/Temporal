@@ -25,11 +25,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgraph-io/badger"
-	"github.com/dgraph-io/badger/table"
-	"github.com/dgraph-io/badger/y"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger/table"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger/y"
 )
 
 var infoCmd = &cobra.Command{

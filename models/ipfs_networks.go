@@ -8,6 +8,7 @@ import (
 	"github.com/lib/pq"
 )
 
+// HostedIPFSPrivateNetwork is a private network for which we are responsible of the infrastructure
 type HostedIPFSPrivateNetwork struct {
 	gorm.Model
 	Name                   string         `gorm:"type:varchar(255)"`
@@ -20,14 +21,17 @@ type HostedIPFSPrivateNetwork struct {
 	BootstrapPeerIDs       pq.StringArray `gorm:"type:text[];column:bootstrap_peer_ids"`
 }
 
+// IPFSNetworkManager is used to manipulate IPFS network models in the database
 type IPFSNetworkManager struct {
 	DB *gorm.DB
 }
 
+// NewHostedIPFSNetworkManager is used to initialize our database connection
 func NewHostedIPFSNetworkManager(db *gorm.DB) *IPFSNetworkManager {
 	return &IPFSNetworkManager{DB: db}
 }
 
+// GetNetworkByName is used to retrieve a network from the database based off of its name
 func (im *IPFSNetworkManager) GetNetworkByName(name string) (*HostedIPFSPrivateNetwork, error) {
 	var pnet HostedIPFSPrivateNetwork
 	if check := im.DB.Model(&pnet).Where("name = ?", name).First(&pnet); check.Error != nil {
@@ -36,6 +40,7 @@ func (im *IPFSNetworkManager) GetNetworkByName(name string) (*HostedIPFSPrivateN
 	return &pnet, nil
 }
 
+// GetAPIURLByName is used to retrieve the API url for a private network by its network name
 func (im *IPFSNetworkManager) GetAPIURLByName(name string) (string, error) {
 	pnet, err := im.GetNetworkByName(name)
 	if err != nil {
@@ -44,7 +49,7 @@ func (im *IPFSNetworkManager) GetAPIURLByName(name string) (string, error) {
 	return pnet.APIURL, nil
 }
 
-// TODO: Validate swarm key and API url
+// CreateHostedPrivateNetwork is used to store a new hosted private network in the database
 func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, apiURL, swarmKey string, arrayParameters map[string][]string, users []string) (*HostedIPFSPrivateNetwork, error) {
 	pnet := &HostedIPFSPrivateNetwork{}
 	if check := im.DB.Where("name = ?", name).First(pnet); check.Error != nil && check.Error != gorm.ErrRecordNotFound {

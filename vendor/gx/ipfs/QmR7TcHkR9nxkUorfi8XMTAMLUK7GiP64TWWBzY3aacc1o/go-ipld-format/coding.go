@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	blocks "github.com/ipfs/go-block-format"
+	blocks "gx/ipfs/QmRcHuYzAyswytBuMF78rj3LTChYszomRFXNg4685ZN1WM/go-block-format"
 )
 
 // DecodeBlockFunc functions decode blocks into nodes.

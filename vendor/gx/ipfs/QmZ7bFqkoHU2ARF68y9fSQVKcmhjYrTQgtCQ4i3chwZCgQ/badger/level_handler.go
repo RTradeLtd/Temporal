@@ -21,9 +21,9 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/dgraph-io/badger/table"
-	"github.com/dgraph-io/badger/y"
-	"github.com/pkg/errors"
+	"gx/ipfs/QmVmDhyTTUcQXFD1rRQ64fGLMSAoaQvNH3hwuaCFAPq2hy/errors"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger/table"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger/y"
 )
 
 type levelHandler struct {

@@ -41,14 +41,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/url"
-	//"reflect" // debugging type
-	//"html"
-	"io/ioutil"
-	//"net/url"
 	"github.com/microcosm-cc/bluemonday"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
+	"net/url"
+	//"reflect" // debugging type
 	"strconv"
 	"strings"
 )
@@ -162,12 +160,12 @@ func (mw *XssMw) XssRemove(c *gin.Context) error {
 	//fmt.Printf("%v URL\n", ReqBody)
 
 	// [application/json] only supported
-	ct_hdr := c.Request.Header.Get("Content-Type")
-	//fmt.Printf("%v\n", ct_hdr)
+	ctHdr := c.Request.Header.Get("Content-Type")
+	//fmt.Printf("%v\n", ctHdr)
 
-	cts_len := c.Request.Header.Get("Content-Length")
-	//fmt.Printf("%v\n", cts_len)
-	ct_len, _ := strconv.Atoi(cts_len)
+	ctsLen := c.Request.Header.Get("Content-Length")
+	//fmt.Printf("%v\n", ctsLen)
+	ctLen, _ := strconv.Atoi(ctsLen)
 
 	// https://golang.org/src/net/http/request.go
 	// check expected application type
@@ -187,18 +185,18 @@ func (mw *XssMw) XssRemove(c *gin.Context) error {
 		//	return nil
 		//}
 
-		if ct_len > 1 && ct_hdr == "application/json" {
+		if ctLen > 1 && ctHdr == "application/json" {
 			err := mw.HandleJson(c)
 			if err != nil {
 				return err
 			}
-		} else if ct_hdr == "application/x-www-form-urlencoded" {
+		} else if ctHdr == "application/x-www-form-urlencoded" {
 			err := mw.HandleXFormEncoded(c)
 			if err != nil {
 				return err
 			}
-		} else if strings.Contains(ct_hdr, "multipart/form-data") {
-			err := mw.HandleMultiPartFormData(c, ct_hdr)
+		} else if strings.Contains(ctHdr, "multipart/form-data") {
+			err := mw.HandleMultiPartFormData(c, ctHdr)
 			if err != nil {
 				return err
 			}
@@ -317,10 +315,10 @@ func (mw *XssMw) HandleXFormEncoded(c *gin.Context) error {
 //   --3af5c5b7adcb2142f404a8e1ce280c47c58e563e3d4c1e172490737c9909--
 //
 // NOTE: form-data name 'password' is skipped (not sanitized)
-func (mw *XssMw) HandleMultiPartFormData(c *gin.Context, ct_hdr string) error {
+func (mw *XssMw) HandleMultiPartFormData(c *gin.Context, ctHdr string) error {
 	var ioreader io.Reader = c.Request.Body
 
-	boundary := ct_hdr[strings.Index(ct_hdr, "boundary=")+9 : len(ct_hdr)]
+	boundary := ctHdr[strings.Index(ctHdr, "boundary=")+9 : len(ctHdr)]
 
 	reader := multipart.NewReader(ioreader, boundary)
 
@@ -379,7 +377,7 @@ func (mw *XssMw) HandleMultiPartFormData(c *gin.Context, ct_hdr string) error {
 
 // Handles request Content-Type = application/json
 //
-// The three types of data handled.
+// The four types of data handled.
 //
 // * 1st type filter - basic key:value - most common
 //
@@ -403,53 +401,78 @@ func (mw *XssMw) HandleMultiPartFormData(c *gin.Context, ct_hdr string) error {
 //      ...
 //   }
 //
+// * 4th type "complex array/nested records"
+//
+//  map[string]interface {}{
+//      "id":"1",
+//      "users":[]interface {}{
+//           map[string]interface {}{"id":"1", "flt":"1.345", "user":"TestUser1", "email":"testUser1@example.com", "password":"!@$%^ASDF<html>1", "comment":"<img src=x onerror=alert(0)>", "cre_at":"1481017167"},
+//           map[string]interface {}{"cre_at":"1481017167", "id":"2", "flt":"2.345", "user":"TestUser2", "email":"testUser2@example.com", "password":"!@$%^ASDF<html>2", "comment":"<img src=x onerror=alert(0)>"}
+//      }
+//}
+//
 func (mw *XssMw) HandleJson(c *gin.Context) error {
-	var jsonBod interface{}
-	d := json.NewDecoder(c.Request.Body)
-	d.UseNumber()
-	jsnErr := d.Decode(&jsonBod)
-	//fmt.Printf("JSON BOD: %#v\n", jsonBod)
+	jsonBod, err := decodeJson(c.Request.Body)
+	if err != nil {
+		return err
+	}
 
-	if jsnErr == nil {
-		switch jbt := jsonBod.(type) {
-		// most common
-		case map[string]interface{}:
-			//fmt.Printf("\n\n\n1st type\n\n\n")
-			xmj := jsonBod.(map[string]interface{})
-			buff := mw.ApplyXssPolicyJson(xmj)
-			err := mw.SetRequestBodyJson(c, buff)
-			if err != nil {
-				//fmt.Println("Set request body failed")
-				return errors.New("Set Request.Body Error")
-			}
-		// a multi records request
-		case []interface{}:
-			var multiRec bytes.Buffer
-			multiRec.WriteByte('[')
-			for _, n := range jbt {
-				//fmt.Printf("Item: %v= %v\n", i, n)
-				xmj := n.(map[string]interface{})
-				buff := mw.ApplyXssPolicyJson(xmj)
-				multiRec.WriteString(buff.String())
-				multiRec.WriteByte(',')
-			}
-			multiRec.Truncate(multiRec.Len() - 1) // remove last ','
-			multiRec.WriteByte(']')
-			err := mw.SetRequestBodyJson(c, multiRec)
-			if err != nil {
-				//fmt.Println("Set request body failed")
-				return errors.New("Set Request.Body Error")
-			}
-		default:
-			//var r = reflect.TypeOf(jbt) // debug type
-			//fmt.Printf("Unknown Type!:%v\n", r)
-			return errors.New("Unknown Content Type Received")
-		}
+	buff, err := mw.jsonToStringMap(bytes.Buffer{}, jsonBod)
+	if err != nil {
+		return err
+	}
+	//fmt.Println("DONE JSON")
+	//fmt.Println(buff.String())
 
-	} else {
-		return errors.New("Error attempting to decode JSON")
+	err = mw.SetRequestBodyJson(c, buff)
+	if err != nil {
+		//fmt.Println("Set request body failed")
+		return errors.New("Set Request.Body Error")
 	}
 	return nil
+}
+
+func decodeJson(content io.Reader) (interface{}, error) {
+	var jsonBod interface{}
+	d := json.NewDecoder(content)
+	d.UseNumber()
+	err := d.Decode(&jsonBod)
+	if err != nil {
+		return nil, err
+	}
+	//fmt.Printf("JSON BOD: %#v\n", jsonBod)
+	return jsonBod, err
+}
+
+func (mw *XssMw) jsonToStringMap(buff bytes.Buffer, jsonBod interface{}) (bytes.Buffer, error) {
+	switch jbt := jsonBod.(type) {
+	case map[string]interface{}:
+		//fmt.Printf("\n\n\n1st type\n\n\n")
+		xmj := jsonBod.(map[string]interface{})
+		var sbuff bytes.Buffer
+		buff := mw.ConstructJson(xmj, sbuff)
+		return buff, nil
+	// TODO: need a test to prove this
+	case []interface{}:
+		var multiRec bytes.Buffer
+		multiRec.WriteByte('[')
+		for _, n := range jbt {
+			//fmt.Printf("Item: %v= %v\n", i, n)
+			xmj := n.(map[string]interface{})
+			var sbuff bytes.Buffer
+			buff = mw.ConstructJson(xmj, sbuff)
+			multiRec.WriteString(buff.String())
+			multiRec.WriteByte(',')
+		}
+		multiRec.Truncate(multiRec.Len() - 1) // remove last ','
+		multiRec.WriteByte(']')
+		return multiRec, nil
+	default:
+		//var r = reflect.TypeOf(jbt) // debug type
+		//fmt.Printf("Unknown Type!:%v\n", r)
+		return bytes.Buffer{}, errors.New("Unknown Content Type Received")
+	}
+	return bytes.Buffer{}, errors.New("Unknown Error")
 }
 
 // encode processed body back to json and re-set http request body
@@ -480,18 +503,15 @@ func (mw *XssMw) SetRequestBodyJson(c *gin.Context, buff bytes.Buffer) error {
 // removes undesirable content
 // keeps the good content to construct
 // returns the cleaned http request
-func (mw *XssMw) ApplyXssPolicyJson(xmj XssMwJson) bytes.Buffer {
-	//fmt.Printf("JSON BOD: %#v\n", xmj)
-
-	var buff bytes.Buffer
+// Map to Bytes (struct to json string...)
+func (mw *XssMw) ConstructJson(xmj XssMwJson, buff bytes.Buffer) bytes.Buffer {
+	//var buff bytes.Buffer
 	buff.WriteByte('{')
 
 	p := mw.GetBlueMondayPolicy()
 
-	m := xmj //m := jsonBod.(map[string]interface{})
+	m := xmj
 	for k, v := range m {
-		//fmt.Println(k, v)
-
 		buff.WriteByte('"')
 		buff.WriteString(k)
 		buff.WriteByte('"')
@@ -512,47 +532,9 @@ func (mw *XssMw) ApplyXssPolicyJson(xmj XssMwJson) bytes.Buffer {
 			continue
 		}
 
-		switch vv := v.(type) { // FYI, JSON data is string or float
-		case string:
-			//fmt.Println(k, "is string", vv)
-			//buff.WriteString(`"` + p.Sanitize(vv) + `",`)
-			buff.WriteString(fmt.Sprintf("%q", p.Sanitize(vv)))
-			buff.WriteByte(',')
-		case float64:
-			//fmt.Println(k, "is float", vv)
-			//buff.WriteString(strconv.FormatFloat(vv, 'g', 0, 64))
-			//buff.WriteString(html.EscapeString(strconv.FormatFloat(vv, 'g', 0, 64)))
-			buff.WriteString(p.Sanitize(strconv.FormatFloat(vv, 'g', 0, 64)))
-			buff.WriteByte(',')
-		default:
-			switch vvv := vv.(type) {
-			// probably not very common request but I do it
-			// map[string]interface {}{"id":"1", "assoc_ids":[]interface {}{"1", "4", "8"}}
-			case []interface{}:
-				var lst bytes.Buffer
-				lst.WriteByte('[')
-				for _, n := range vvv {
-					//fmt.Printf("Iter: %v= %v\n", i, n)
-					//lst.WriteString(p.Sanitize(fmt.Sprintf("\"%v\"", n)))
-					// NOTE changes from ["1", "4", "8"] to [1,4,8]
-					lst.WriteString(p.Sanitize(fmt.Sprintf("%v", n)))
-					lst.WriteByte(',')
-				}
-				lst.Truncate(lst.Len() - 1) // remove last ','
-				lst.WriteByte(']')
-				buff.WriteString(lst.String())
-				buff.WriteByte(',') // add cause expected
-			default:
-				//fmt.Println(k, "don't know how to handle")
-				//fmt.Println("%#v", vvv) ; fmt.Sprintf("%v", vvv)
-				if vvv == nil {
-					buff.WriteString(fmt.Sprintf("%s", "null"))
-				} else {
-					buff.WriteString(p.Sanitize(fmt.Sprintf("%v", vvv)))
-				}
-				buff.WriteByte(',')
-			}
-		}
+		var b bytes.Buffer
+		apndBuff := mw.buildJsonApplyPolicy(v, b, p)
+		buff.WriteString(apndBuff.String())
 	}
 	buff.Truncate(buff.Len() - 1) // remove last ','
 	buff.WriteByte('}')
@@ -560,20 +542,51 @@ func (mw *XssMw) ApplyXssPolicyJson(xmj XssMwJson) bytes.Buffer {
 	return buff
 }
 
-// TODO
-// add feature to accept all content in Request and filter out on Response
-// NOTE: I don't know how to achieve this yet... will something like this help?
-// gin help said call Next first to capture Response
-//func ConstructRequest(next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		fmt.Println(r.Method, "-", r.RequestURI)
-//		cookie, _ := r.Cookie("username")
-//		if cookie != nil {
-//			//Add data to context
-//			ctx := context.WithValue(r.Context(), "Username", cookie.Value)
-//			next.ServeHTTP(w, r.WithContext(ctx))
-//		} else {
-//			next.ServeHTTP(w, r)
-//		}
-//	})
-//}
+func (mw *XssMw) buildJsonApplyPolicy(interf interface{}, buff bytes.Buffer, p *bluemonday.Policy) bytes.Buffer {
+	switch v := interf.(type) {
+	case map[string]interface{}:
+		var sbuff bytes.Buffer
+		scnd := mw.ConstructJson(v, sbuff)
+		buff.WriteString(scnd.String())
+		buff.WriteByte(',')
+	case []interface{}:
+		b := mw.unravelSlice(v)
+		buff.WriteString(b.String())
+		buff.WriteByte(',')
+	case json.Number:
+		buff.WriteString(p.Sanitize(fmt.Sprintf("%v", v)))
+		buff.WriteByte(',')
+	case string:
+		buff.WriteString(fmt.Sprintf("%q", p.Sanitize(v)))
+		buff.WriteByte(',')
+	case float64:
+		buff.WriteString(p.Sanitize(strconv.FormatFloat(v, 'g', 0, 64)))
+		buff.WriteByte(',')
+	default:
+		if v == nil {
+			buff.WriteString(fmt.Sprintf("%s", "null"))
+			buff.WriteByte(',')
+		} else {
+			buff.WriteString(p.Sanitize(fmt.Sprintf("%v", v)))
+			buff.WriteByte(',')
+		}
+	}
+	return buff
+}
+
+func (mw *XssMw) unravelSlice(slce []interface{}) bytes.Buffer {
+	var buff bytes.Buffer
+	buff.WriteByte('[')
+	for _, n := range slce {
+		switch nn := n.(type) {
+		case map[string]interface{}:
+			var sbuff bytes.Buffer
+			scnd := mw.ConstructJson(nn, sbuff)
+			buff.WriteString(scnd.String())
+			buff.WriteByte(',')
+		}
+	}
+	buff.Truncate(buff.Len() - 1) // remove last ','
+	buff.WriteByte(']')
+	return buff
+}

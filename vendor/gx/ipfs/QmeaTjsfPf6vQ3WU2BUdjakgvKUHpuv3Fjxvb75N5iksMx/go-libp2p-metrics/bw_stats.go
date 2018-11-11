@@ -1,9 +1,9 @@
 package metrics
 
 import (
-	flow "github.com/libp2p/go-flow-metrics"
-	peer "github.com/libp2p/go-libp2p-peer"
-	protocol "github.com/libp2p/go-libp2p-protocol"
+	flow "gx/ipfs/QmQFXpvKpF34dK9HcE7k8Ksk8V4BwWYZtdEcjzu5aUgRVr/go-flow-metrics"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	protocol "gx/ipfs/QmZNkThpqfVXs9GNbexPrfBbXSLNYeKrE7jwFM2oqHbyqN/go-libp2p-protocol"
 )
 
 type Stats struct {

@@ -9,11 +9,11 @@ import (
 	"os"
 
 	// Include features to facilitate generated catalogs.
-	_ "golang.org/x/text/feature/plural"
+	_ "gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/feature/plural"
 
-	"golang.org/x/text/internal/number"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message/catalog"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/number"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/message/catalog"
 )
 
 // A Printer implements language-specific formatted I/O analogous to the fmt

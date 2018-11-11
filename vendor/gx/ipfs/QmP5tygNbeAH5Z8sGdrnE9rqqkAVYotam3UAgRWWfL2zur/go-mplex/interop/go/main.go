@@ -7,7 +7,7 @@ import (
 	"net"
 	"sync"
 
-	mplex "github.com/libp2p/go-mplex"
+	mplex "gx/ipfs/QmP5tygNbeAH5Z8sGdrnE9rqqkAVYotam3UAgRWWfL2zur/go-mplex"
 )
 
 var jsTestData = "test data from js %d"

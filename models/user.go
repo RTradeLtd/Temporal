@@ -151,14 +151,12 @@ func (um *UserManager) GetKeyIDByName(username, keyName string) (string, error) 
 // CheckIfKeyOwnedByUser is used to check if a key is owned by a user
 func (um *UserManager) CheckIfKeyOwnedByUser(username, keyName string) (bool, error) {
 	var user User
-	if errCheck := um.DB.Where("user_name = ?", username).First(&user); errCheck.Error != nil {
-		return false, errCheck.Error
+	if check := um.DB.Where("user_name = ?", username).First(&user); check.Error != nil {
+		return false, check.Error
 	}
-
 	if user.CreatedAt == nilTime {
 		return false, errors.New("user account does not exist")
 	}
-
 	for _, v := range user.IPFSKeyNames {
 		if v == keyName {
 			return true, nil
@@ -215,6 +213,7 @@ func (um *UserManager) ToggleAdmin(username string) (bool, error) {
 	return true, nil
 }
 
+// FindByEmail is used to find a particular user based on their email address
 func (um *UserManager) FindByEmail(email string) (*User, error) {
 	user := &User{}
 	if check := um.DB.Where("email_address = ?", email).First(user); check.Error != nil {

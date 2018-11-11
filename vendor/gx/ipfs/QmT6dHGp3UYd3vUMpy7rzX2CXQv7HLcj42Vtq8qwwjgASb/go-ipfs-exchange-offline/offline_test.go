@@ -4,13 +4,13 @@ import (
 	"context"
 	"testing"
 
-	blocks "github.com/ipfs/go-block-format"
-	cid "github.com/ipfs/go-cid"
-	ds "github.com/ipfs/go-datastore"
-	ds_sync "github.com/ipfs/go-datastore/sync"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	blocksutil "github.com/ipfs/go-ipfs-blocksutil"
-	u "github.com/ipfs/go-ipfs-util"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	u "gx/ipfs/QmPdKqUcHGFdeSpvjVoaTRPPstGif9GBZb5Q56RVw9o69A/go-ipfs-util"
+	blocks "gx/ipfs/QmRcHuYzAyswytBuMF78rj3LTChYszomRFXNg4685ZN1WM/go-block-format"
+	blocksutil "gx/ipfs/QmUf9xAmbHndjh31YNRugNeyNX6mDTUDuWN1bVTmUriwdZ/go-ipfs-blocksutil"
+	ds "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
+	ds_sync "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore/sync"
+	blockstore "gx/ipfs/QmcDDgAXDbpDUpadCJKLr49KYR4HuL7T8Z1dZTHt6ixsoR/go-ipfs-blockstore"
 )
 
 func TestBlockReturnsErr(t *testing.T) {

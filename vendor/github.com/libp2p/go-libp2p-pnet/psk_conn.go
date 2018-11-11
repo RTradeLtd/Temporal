@@ -7,8 +7,8 @@ import (
 	"net"
 
 	salsa20 "github.com/davidlazar/go-crypto/salsa20"
+	pool "github.com/libp2p/go-buffer-pool"
 	ipnet "github.com/libp2p/go-libp2p-interface-pnet"
-	mpool "github.com/libp2p/go-msgio/mpool"
 )
 
 // we are using buffer pool as user needs their slice back
@@ -37,14 +37,9 @@ func (c *pskConn) Read(out []byte) (int, error) {
 		c.readS20 = salsa20.New(c.psk, nonce)
 	}
 
-	maxn := uint32(len(out))
-	in := mpool.ByteSlicePool.Get(maxn).([]byte) // get buffer
-	defer mpool.ByteSlicePool.Put(maxn, in)      // put the buffer back
-
-	in = in[:maxn]            // truncate to required length
-	n, err := c.Conn.Read(in) // read to in
+	n, err := c.Conn.Read(out) // read to in
 	if n > 0 {
-		c.readS20.XORKeyStream(out[:n], in[:n]) // decrypt to out buffer
+		c.readS20.XORKeyStream(out[:n], out[:n]) // decrypt to out buffer
 	}
 	return n, err
 }
@@ -63,11 +58,9 @@ func (c *pskConn) Write(in []byte) (int, error) {
 
 		c.writeS20 = salsa20.New(c.psk, nonce)
 	}
-	n := uint32(len(in))
-	out := mpool.ByteSlicePool.Get(n).([]byte) // get buffer
-	defer mpool.ByteSlicePool.Put(n, out)      // put the buffer back
+	out := pool.Get(len(in))
+	defer pool.Put(out)
 
-	out = out[:n]                    // truncate to required length
 	c.writeS20.XORKeyStream(out, in) // encrypt
 
 	return c.Conn.Write(out) // send

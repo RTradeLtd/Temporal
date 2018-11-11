@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/grpc/utils"
+	"github.com/RTradeLtd/grpc/dialer"
 	ipfs_orchestrator "github.com/RTradeLtd/ipfs-orchestrator/protobuf"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -29,7 +29,7 @@ func New(opts config.Orchestrator, devMode bool) (*IPFSOrchestratorClient, error
 		}
 		dialOpts = append(dialOpts,
 			grpc.WithTransportCredentials(creds),
-			grpc.WithPerRPCCredentials(utils.NewCredentials(opts.Key, !devMode)))
+			grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Key, !devMode)))
 	} else {
 		dialOpts = append(dialOpts, grpc.WithInsecure())
 	}

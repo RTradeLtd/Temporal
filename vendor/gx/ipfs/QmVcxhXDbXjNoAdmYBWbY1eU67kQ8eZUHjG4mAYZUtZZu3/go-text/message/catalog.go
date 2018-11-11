@@ -8,8 +8,8 @@ package message
 // Documentation and method names will reflect this by using the exported name.
 
 import (
-	"golang.org/x/text/language"
-	"golang.org/x/text/message/catalog"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/message/catalog"
 )
 
 // MatchLanguage reports the matched tag obtained from language.MatchStrings for

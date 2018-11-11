@@ -8,7 +8,7 @@ package idna
 import (
 	"log"
 
-	"golang.org/x/text/internal/ucd"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/ucd"
 )
 
 func catFromEntry(p *ucd.Parser) (cat category) {

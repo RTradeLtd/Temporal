@@ -8,14 +8,14 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/libp2p/go-libp2p-circuit"
+	. "gx/ipfs/QmVYDvJjiKb9iFEyHxx4i1TJSRBLkQhGb5Fc8XpmDuNCEA/go-libp2p-circuit"
 
-	host "github.com/libp2p/go-libp2p-host"
-	inet "github.com/libp2p/go-libp2p-net"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	swarm "github.com/libp2p/go-libp2p-swarm"
-	swarmt "github.com/libp2p/go-libp2p-swarm/testing"
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	swarm "gx/ipfs/QmVHhT8NxtApPTndiZPe4JNGNUxGWtJe3ebyxtRz4HnbEp/go-libp2p-swarm"
+	swarmt "gx/ipfs/QmVHhT8NxtApPTndiZPe4JNGNUxGWtJe3ebyxtRz4HnbEp/go-libp2p-swarm/testing"
+	inet "gx/ipfs/QmXuRkCR7BNQa9uqfpTiFWsTQLzmTWYg91Ja1w95gnqb6u/go-libp2p-net"
+	host "gx/ipfs/QmdJfsSbKSZnMkfZ1kpopiyB9i3Hd6cp8VKWZmtWPa7Moc/go-libp2p-host"
 )
 
 const TestProto = "test/relay-transport"

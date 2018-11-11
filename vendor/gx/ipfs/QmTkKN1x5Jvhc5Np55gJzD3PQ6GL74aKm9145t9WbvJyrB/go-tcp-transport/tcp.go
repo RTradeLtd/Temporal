@@ -4,14 +4,14 @@ import (
 	"context"
 	"time"
 
-	logging "github.com/ipfs/go-log"
-	peer "github.com/libp2p/go-libp2p-peer"
-	tpt "github.com/libp2p/go-libp2p-transport"
-	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
-	rtpt "github.com/libp2p/go-reuseport-transport"
-	ma "github.com/multiformats/go-multiaddr"
-	manet "github.com/multiformats/go-multiaddr-net"
-	mafmt "github.com/whyrusleeping/mafmt"
+	rtpt "gx/ipfs/QmPrXbjDqfuthJ1Ddesmz7gw1VWkhnWMkfJxxSXgxUsGqs/go-reuseport-transport"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	manet "gx/ipfs/Qmaabb1tJZ2CX5cp6MuuiGgns71NYoxdgQP6Xdid1dVceC/go-multiaddr-net"
+	tpt "gx/ipfs/QmbCkisBsdejwSzusQcdbYjpSX3yvUw1ek2YSsJ89QbZYX/go-libp2p-transport"
+	mafmt "gx/ipfs/QmcASJiigZMaU3dKghcQo6FtcbqwfZ7UFp5W4fp62f8KJE/mafmt"
+	tptu "gx/ipfs/QmeUjhpfGkrMtE6s7JjU2xLhfzprSDh16QUxGVr3wTrKSx/go-libp2p-transport-upgrader"
 )
 
 // DefaultConnectTimeout is the (default) maximum amount of time the TCP

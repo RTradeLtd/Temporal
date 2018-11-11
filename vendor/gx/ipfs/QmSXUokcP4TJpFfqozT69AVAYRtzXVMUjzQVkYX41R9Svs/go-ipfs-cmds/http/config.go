@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"sync"
 
-	cors "github.com/rs/cors"
+	cors "gx/ipfs/QmPG2kW5t27LuHgHnvhUwbHCNHAt2eUcb4gPHqofrESUdB/cors"
 )
 
 const (

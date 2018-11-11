@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/onsi/gomega/format"
-	"golang.org/x/net/html/charset"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/html/charset"
+	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/format"
 )
 
 type MatchXMLMatcher struct {

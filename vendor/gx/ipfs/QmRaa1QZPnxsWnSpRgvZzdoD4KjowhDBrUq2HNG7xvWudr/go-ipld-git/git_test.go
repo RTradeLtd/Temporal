@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	node "github.com/ipfs/go-ipld-format"
+	node "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
 )
 
 type GitObj interface {

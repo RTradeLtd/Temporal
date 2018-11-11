@@ -8,13 +8,13 @@ import (
 	"sync"
 	"time"
 
-	logging "github.com/ipfs/go-log"
-	"github.com/libp2p/go-libp2p-host"
-	"github.com/libp2p/go-libp2p-peer"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	ma "github.com/multiformats/go-multiaddr"
-	manet "github.com/multiformats/go-multiaddr-net"
-	"github.com/whyrusleeping/mdns"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	"gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	manet "gx/ipfs/Qmaabb1tJZ2CX5cp6MuuiGgns71NYoxdgQP6Xdid1dVceC/go-multiaddr-net"
+	"gx/ipfs/QmdJfsSbKSZnMkfZ1kpopiyB9i3Hd6cp8VKWZmtWPa7Moc/go-libp2p-host"
+	"gx/ipfs/QmekaTKpWkYGcn4ZEC5PwJDRCQHapwugmmG86g2Xpz5GBH/mdns"
 )
 
 func init() {

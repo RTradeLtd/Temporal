@@ -10,8 +10,8 @@ import (
 	"net"
 	"unsafe"
 
-	"golang.org/x/net/bpf"
-	"golang.org/x/net/internal/socket"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/bpf"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/socket"
 )
 
 func (so *sockOpt) getMulticastInterface(c *socket.Conn) (*net.Interface, error) {

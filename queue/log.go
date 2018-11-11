@@ -3,7 +3,7 @@ package queue
 import log "github.com/sirupsen/logrus"
 
 // LogError is a wrapper used to log an error message
-func (qm *QueueManager) LogError(err error, message string, fields ...interface{}) {
+func (qm *Manager) LogError(err error, message string, fields ...interface{}) {
 	// base entry
 	entry := qm.Logger.WithFields(log.Fields{
 		"service": qm.Service,
@@ -27,7 +27,7 @@ func (qm *QueueManager) LogError(err error, message string, fields ...interface{
 }
 
 // LogInfo is a wrapper used to log an info message
-func (qm *QueueManager) LogInfo(message string) {
+func (qm *Manager) LogInfo(message string) {
 	qm.Logger.WithFields(log.Fields{
 		"service": qm.Service,
 	}).Info(message)

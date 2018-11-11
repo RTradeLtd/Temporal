@@ -7,8 +7,8 @@ package main
 //go:generate gotext update -out catalog.go
 
 import (
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/message"
 )
 
 func main() {

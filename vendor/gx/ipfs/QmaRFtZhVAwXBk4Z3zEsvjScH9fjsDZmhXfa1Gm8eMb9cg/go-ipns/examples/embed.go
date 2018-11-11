@@ -3,10 +3,10 @@ package examples
 import (
 	"time"
 
-	pb "github.com/ipfs/go-ipns/pb"
+	pb "gx/ipfs/QmaRFtZhVAwXBk4Z3zEsvjScH9fjsDZmhXfa1Gm8eMb9cg/go-ipns/pb"
 
-	ipns "github.com/ipfs/go-ipns"
-	crypto "github.com/libp2p/go-libp2p-crypto"
+	crypto "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	ipns "gx/ipfs/QmaRFtZhVAwXBk4Z3zEsvjScH9fjsDZmhXfa1Gm8eMb9cg/go-ipns"
 )
 
 // CreateEntryWithEmbed shows how you can create an IPNS entry

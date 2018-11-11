@@ -3,9 +3,9 @@ package fstestutil
 import (
 	"os"
 
-	"bazil.org/fuse"
-	"bazil.org/fuse/fs"
 	"context"
+	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse"
+	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse/fs"
 )
 
 // SimpleFS is a trivial FS that just implements the Root method.

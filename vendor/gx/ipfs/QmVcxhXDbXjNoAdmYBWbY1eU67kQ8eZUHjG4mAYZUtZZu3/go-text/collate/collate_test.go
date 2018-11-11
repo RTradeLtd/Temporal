@@ -8,8 +8,8 @@ import (
 	"bytes"
 	"testing"
 
-	"golang.org/x/text/internal/colltab"
-	"golang.org/x/text/language"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/colltab"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
 )
 
 type weightsTest struct {

@@ -4,9 +4,9 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"bazil.org/fuse"
-	"bazil.org/fuse/fs"
 	"context"
+	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse"
+	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse/fs"
 )
 
 // Writes gathers data from FUSE Write calls.

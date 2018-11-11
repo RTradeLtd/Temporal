@@ -11,18 +11,30 @@ import (
 
 // prices listed here are temporary and will be changed
 const (
-	UsdPerGigaBytePerMonthPublic  = 0.134
+	// UsdPerGigaBytePerMonthPublic is the usd cost of storing a gigabyte of data in public networks for a month
+	UsdPerGigaBytePerMonthPublic = 0.134
+	// UsdPerGigaBytePerMonthPrivate is the usd cost of storing a gigabyte of data in private networks for a month
 	UsdPerGigaBytePerMonthPrivate = 0.154
-	PubSubPublishPublic           = 0.01
-	PubSubPublishPrivate          = 0.02
-	IPNSPublishPublic             = 5.00
-	IPNSPublishPrivate            = 10.00
-	RSAKeyCreationPublic          = 2.00
-	RSAKeyCreationPrivate         = 2.50
-	EDKeyCreationPublic           = 1.00
-	EDKeyCreationPrivate          = 1.50
-	DNSLinkGenerationPublic       = 5.00
-	DNSLinkGenerationPrivate      = 5.00
+	// PubSubPublishPublic is the of cost of sending a pubsub message to the public ipfs network
+	PubSubPublishPublic = 0.01
+	// PubSubPublishPrivate is the cost of sending a pubsub message to a private ipfs network
+	PubSubPublishPrivate = 0.02
+	// IPNSPublishPublic is the cost of publishing an IPNS record to the public ipfs network
+	IPNSPublishPublic = 5.00
+	// IPNSPublishPrivate is the cost of publishing an IPNS record to the a private ipfs network
+	IPNSPublishPrivate = 10.00
+	// RSAKeyCreationPublic is the cost of creating an rsa key on the public ipfs network
+	RSAKeyCreationPublic = 2.00
+	// RSAKeyCreationPrivate is the cost of creating an rsa key on a private ifps network
+	RSAKeyCreationPrivate = 2.50
+	// EDKeyCreationPublic is the cost of creating an ed25519 key on the public ipfs network
+	EDKeyCreationPublic = 1.00
+	// EDKeyCreationPrivate is the cost of creating an ed25519 key on a private ipfs network
+	EDKeyCreationPrivate = 1.50
+	// DNSLinkGenerationPublic is the cost of publishing a dnslink entry for the public ipfs network
+	DNSLinkGenerationPublic = 5.00
+	// DNSLinkGenerationPrivate is the cost of publishign a dnslink entry for a private ipfs network
+	DNSLinkGenerationPrivate = 5.00
 )
 
 // this is a testing parameter for now, exact costs will be detailed at a later time
@@ -98,6 +110,7 @@ func CalculatePinCost(contentHash string, holdTimeInMonths int64, shell *ipfsapi
 	return totalCostFloat, nil
 }
 
+// CalculateFileCost is used to calculate the cost of storing a file
 func CalculateFileCost(holdTimeInMonths, size int64, privateNetwork bool) float64 {
 	gigabytesFloat := float64(datasize.GB.Bytes())
 	sizeFloat := float64(size)
@@ -112,6 +125,7 @@ func CalculateFileCost(holdTimeInMonths, size int64, privateNetwork bool) float6
 	return totalCostUSDFloat
 }
 
+// BytesToGigaBytes is used to convert the given bytes to its gigabyte size
 func BytesToGigaBytes(size int64) float64 {
 	gigabytes := float64(datasize.GB.Bytes())
 	sizeInGigaBytes := float64(size) / gigabytes

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/ipfs/go-ipfs-cmdkit"
-	"github.com/ipfs/go-ipfs-files"
+	"gx/ipfs/QmZMWMvWMVKCbHetJ4RgndbuEF1io2UpUxwQwtNjtYPzSC/go-ipfs-files"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 // Request represents a call to a command from a consumer

@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gogo/protobuf/proto"
-	"github.com/ipfs/go-log/tracer/wire"
-	opentracing "github.com/opentracing/opentracing-go"
+	opentracing "gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
+	"gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log/tracer/wire"
+	"gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 )
 
 type textMapPropagator struct {

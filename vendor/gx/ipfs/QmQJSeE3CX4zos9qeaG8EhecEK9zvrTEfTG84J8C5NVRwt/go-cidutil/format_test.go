@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	c "github.com/ipfs/go-cid"
-	mb "github.com/multiformats/go-multibase"
+	c "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	mb "gx/ipfs/QmekxXDhCxCJRNuzmHreuaT3BsuJcsjcXWNrtV9C8DRHtd/go-multibase"
 )
 
 func TestFmt(t *testing.T) {
