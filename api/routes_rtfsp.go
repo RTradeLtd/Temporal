@@ -625,8 +625,7 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 
 	// create entry for network
-	network, err := manager.CreateHostedPrivateNetwork(
-		networkName, swarmKey, bPeers)
+	network, err := manager.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, users)
 	if err != nil {
 		api.LogError(err, eh.NetworkCreationError)(c)
 		return
