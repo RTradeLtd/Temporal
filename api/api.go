@@ -130,12 +130,12 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		}
 	}
 
-	signer, err := grpc.NewSignerClient(cfg, os.Getenv("MODE") == "development")
+	signer, err := clients.NewSignerClient(cfg, os.Getenv("MODE") == "development")
 	if err != nil {
 		return nil, err
 	}
 
-	orch, err := grpc.NewOcrhestratorClient(cfg.Orchestrator, os.Getenv("MODE") == "development")
+	orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator, os.Getenv("MODE") == "development")
 	if err != nil {
 		return nil, err
 	}
