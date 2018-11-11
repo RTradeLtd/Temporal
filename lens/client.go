@@ -37,6 +37,8 @@ func NewClient(opts config.Endpoints) (*Client, error) {
 	var url string
 	if opts.Lens.URL == "" {
 		url = defaultURL
+	} else {
+		url = opts.Lens.URL
 	}
 	gConn, err := grpc.Dial(url, dialOpts...)
 	if err != nil {
