@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/RTradeLtd/Temporal/grpc"
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
@@ -46,8 +46,8 @@ type API struct {
 	zm      *models.ZoneManager
 	rm      *models.RecordManager
 	l       *log.Logger
-	signer  *grpc.SignerClient
-	orch    *grpc.IPFSOrchestratorClient
+	signer  *clients.SignerClient
+	orch    *clients.IPFSOrchestratorClient
 	service string
 }
 
