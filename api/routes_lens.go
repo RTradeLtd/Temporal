@@ -61,7 +61,7 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 	req := &pb.SearchRequest{
 		Keywords: keywordsLower,
 	}
-	resp, err := api.lc.SubmitSearchRequest(context.Background(), req)
+	resp, err := api.lc.SubmitSimpleSearchRequest(context.Background(), req)
 	if err != nil {
 		api.LogError(err, eh.FailedToSearchError)(c, http.StatusBadRequest)
 		return

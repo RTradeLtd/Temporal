@@ -34,7 +34,7 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:916d0584a8c2393f79fdc2624615d52f8ebb13516cfc5bcaf5693e8d214ca727"
+  digest = "1:ae395efa6c0f03db111eb515437dd2c42898dcac3d14bb05f02f13610067ed7b"
   name = "github.com/RTradeLtd/grpc"
   packages = [
     "dialer",
@@ -47,8 +47,8 @@
     "temporal/response",
   ]
   pruneopts = "UT"
-  revision = "1f2cbda75e1b38d96f4495794a66e76fa975af1e"
-  version = "v1.0.5"
+  revision = "7d8322a88cebeabac74ec3d23719b9e9ae5a0904"
+  version = "v1.0.6-rc2"
 
 [[projects]]
   branch = "master"
