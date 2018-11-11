@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -63,6 +64,7 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 	}
 	resp, err := api.lc.SubmitSimpleSearchRequest(context.Background(), req)
 	if err != nil {
+		fmt.Println(err)
 		api.LogError(err, eh.FailedToSearchError)(c, http.StatusBadRequest)
 		return
 	}
