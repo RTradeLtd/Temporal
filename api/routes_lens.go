@@ -68,5 +68,9 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 		api.LogError(err, eh.FailedToSearchError)(c, http.StatusBadRequest)
 		return
 	}
+	if len(resp.Names) == 0 {
+		api.LogError(err, eh.NoSearchResultsError)(c, http.StatusBadRequest)
+		return
+	}
 	Respond(c, http.StatusOK, gin.H{"response": resp.Names})
 }

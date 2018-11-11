@@ -113,4 +113,6 @@ const (
 	FailedToIndexError = "an error occured while trying to index this object"
 	// FailedToSearchError is an error message when a lens search request fails
 	FailedToSearchError = "an error occured while submitting your search to lens"
+	// NoSearchResultsError is an error message used when no search results were returned
+	NoSearchResultsError = "there were no entries matching your search query"
 )
