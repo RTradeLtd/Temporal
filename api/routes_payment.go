@@ -11,6 +11,7 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/jinzhu/gorm"
 
+	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	greq "github.com/RTradeLtd/grpc/temporal/request"
@@ -150,6 +151,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		paymentNumber,
 		paymentNumberString,
 		paymentNumberString,
+		chargeAmountFloat,
 		creditValueFloat,
 		"ethereum",
 		paymentType,
@@ -212,52 +214,17 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
 
-// CreatePayment is used to create a payment for non ethereum payment types
-func (api *API) CreatePayment(c *gin.Context) {
+// CreateDashPayment is used to create a dash payment via chainrider
+func (api *API) CreateDashPayment(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	paymentType, exists := c.GetPostForm("payment_type")
-	if !exists {
-		FailWithMissingField(c, "payment_type")
-		return
-	}
-	switch paymentType {
-	case "eth", "rtc":
-		err := errors.New("for 'rtc' and 'eth' payments please use the request route")
-		Fail(c, err, http.StatusBadRequest)
-		return
-	}
-	blockchain, exists := c.GetPostForm("blockchain")
-	if !exists {
-		FailWithMissingField(c, "blockchain")
-		return
-	}
-	if paymentType == "xmr" && blockchain != "monero" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	} else if paymentType == "dash" && blockchain != "dash" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	} else if paymentType == "btc" && blockchain != "bitcoin" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	} else if paymentType == "ltc" && blockchain != "litecoin" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	}
-
-	usdValue, err := api.getUSDValue(paymentType)
-	if err != nil {
-		Fail(c, err)
-		return
-	}
 	creditValue, exists := c.GetPostForm("credit_value")
 	if !exists {
 		FailWithMissingField(c, "credit_value")
 		return
 	}
-	paymentNumber, err := api.pm.GetLatestPaymentNumber(username)
+	usdValueFloat, err := api.getUSDValue("dash")
 	if err != nil {
-		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
+		Fail(c, err)
 		return
 	}
 	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
@@ -265,48 +232,79 @@ func (api *API) CreatePayment(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	chargeAmountFloat := creditValueFloat / usdValue
-	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
-	switch paymentType {
-	case "dash":
-		chargeAmountParsed := fmt.Sprintf("%.8f", chargeAmountFloat)
-		chargeAmountFloat, err = strconv.ParseFloat(chargeAmountParsed, 64)
-		if err != nil {
-			Fail(c, err)
-			return
-		}
-	}
-	payment, err := api.pm.NewPayment(
-		paymentNumber,
-		paymentNumberString,
-		paymentNumberString,
-		creditValueFloat,
-		blockchain,
-		paymentType,
-		username,
-	)
+	chargeAmountFloat := creditValueFloat / usdValueFloat
+	paymentNumber, err := api.pm.GetLatestPaymentNumber(username)
 	if err != nil {
+		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	// as we require tx hashes be unique in the database
+	// we need to create a fake, but also unique value as a temporary place holder
+	fakeTxHash := fmt.Sprintf("%s-%v", username, paymentNumber)
+	// dash is only up to 8 decimals, so we must parse accordingly
+	chargeAmountParsed := fmt.Sprintf("%.8f", chargeAmountFloat)
+	chargeAmountFloat, err = strconv.ParseFloat(chargeAmountParsed, 64)
+	if err != nil {
+		Fail(c, err)
+	}
+	response, err := api.dc.CreatePaymentForward(
+		&dash.PaymentForwardOpts{
+			DestinationAddress: api.cfg.Wallets.DASH,
+		},
+	)
+	if err != nil || response.Error != "" {
+		api.LogError(err, eh.ChainRiderAPICallError)(c, http.StatusBadRequest)
+		return
+	}
+	if _, err = api.pm.NewPayment(
+		paymentNumber,
+		response.PaymentAddress,
+		fakeTxHash,
+		creditValueFloat,
+		chargeAmountFloat,
+		"dash",
+		"dash",
+		username,
+	); err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	depositAddress, err := api.getDepositAddress(paymentType)
+	qm, err := queue.Initialize(queue.DashPaymentConfirmationQueue, api.cfg.RabbitMQ.URL, true, false)
 	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	confirmation := &queue.DashPaymenConfirmation{
+		UserName:         username,
+		PaymentForwardID: response.PaymentForwardID,
+		PaymentNumber:    paymentNumber,
+	}
+	if err = qm.PublishMessage(confirmation); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
 	type pay struct {
-		PaymentNumber  int64
-		ChargeAmount   float64
-		Blockchain     string
-		Status         string
-		DepositAddress string
+		PaymentNumber    int64
+		ChargeAmount     float64
+		Blockchain       string
+		Status           string
+		Network          string
+		DepositAddress   string
+		PaymentForwardID string
 	}
+	// calculate the mining fee required by chainrider to forward the payment
+	miningFeeDash := dash.DuffsToDash(float64(int64(response.MiningFeeDuffs)))
+	// update the charge amount with the mining fee
+	chargeAmountFloat = chargeAmountFloat + miningFeeDash
 	p := pay{
-		PaymentNumber:  payment.Number,
-		ChargeAmount:   chargeAmountFloat,
-		Blockchain:     blockchain,
-		Status:         "please send exactly the charge amount",
-		DepositAddress: depositAddress,
+		PaymentNumber: paymentNumber,
+		ChargeAmount:  chargeAmountFloat,
+		Blockchain:    "dash",
+		Status:        "please send exactly the charge amount. The mining fee required by the chainrider payment forward api call is incldued in the charge amount",
+		//TODO: change to main before production release
+		Network:          "testnet",
+		DepositAddress:   response.PaymentAddress,
+		PaymentForwardID: response.PaymentForwardID,
 	}
 	Respond(c, http.StatusOK, gin.H{"response": p})
 }

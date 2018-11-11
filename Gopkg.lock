@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:cf2939df30718bf7e5ba78886eced2a4688e404ea166c7e3374a328752741c9f"
+  name = "github.com/RTradeLtd/ChainRider-Go"
+  packages = ["dash"]
+  pruneopts = "UT"
+  revision = "03c00f1c5be65db05c0dc67ce3c9891dcba558e7"
+  version = "v1.0.6"
+
+[[projects]]
   digest = "1:624c10d65a64b9bed655388d3c15ce053b9a60c05a7fb963bb9aaa8bc45966bb"
   name = "github.com/RTradeLtd/cmd"
   packages = ["."]
@@ -1467,6 +1475,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/RTradeLtd/ChainRider-Go/dash",
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",

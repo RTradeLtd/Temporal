@@ -13,6 +13,7 @@ type Payments struct {
 	DepositAddress string  `gorm:"type:varchar(255)"`
 	TxHash         string  `gorm:"type:varchar(255);unique"`
 	USDValue       float64 `gorm:"type:float"` // USDValue is also a "Credit" value, since 1 USD -> 1 Credit
+	ChargeAmount   float64 `gorm:"type:float"`
 	Blockchain     string  `gorm:"type:varchar(255)"`
 	Type           string  `gorm:"type:varchar(255)"` // ETH, RTC, XMR, BTC, LTC
 	UserName       string  `gorm:"type:varchar(255)"`
@@ -53,7 +54,7 @@ func (pm *PaymentManager) GetLatestPaymentNumber(username string) (int64, error)
 }
 
 // NewPayment is used to create a payment in our database
-func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash string, usdValue float64, blockchain string, paymentType string, username string) (*Payments, error) {
+func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash string, usdValue, chargeAmount float64, blockchain string, paymentType string, username string) (*Payments, error) {
 	p := Payments{}
 	// check for a payment with the number
 	check := pm.DB.Where("number = ? AND user_name = ?", number, username).First(&p)
@@ -80,6 +81,7 @@ func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash
 		UserName:       username,
 		Confirmed:      false,
 		Number:         number,
+		ChargeAmount:   chargeAmount,
 	}
 
 	if check := pm.DB.Create(&p); check.Error != nil {
