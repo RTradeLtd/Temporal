@@ -8,11 +8,11 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]] # temporary
   name = "github.com/RTradeLtd/grpc"
-  branch = "orchestrator"
+  branch = "master"
 
 [[override]] # temporary
   name = "github.com/RTradeLtd/config"
-  branch = "orchestrator"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"

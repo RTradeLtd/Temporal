@@ -10,12 +10,12 @@
   version = "v1.0.2"
 
 [[projects]]
-  branch = "orchestrator"
-  digest = "1:58515e882b049c1472bb6295b15de2e8160e101bc33d6c288a73585cd714cc24"
+  branch = "master"
+  digest = "1:837cd48b87e7d34c6cd93090bf52da0d946a43de95353e5b542fec9c4770db01"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a711fff965bff8d961ccf548b9eca80c584f09db"
+  revision = "45e7b662bec56e29ca1ee63d6ace9a6a91e5040e"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -34,7 +34,7 @@
   version = "v2.0.4"
 
 [[projects]]
-  branch = "orchestrator"
+  branch = "master"
   digest = "1:057a2fbc40628aabb900a800ffbad3d43b0beaaaeecdffdab52eb0e0999b5828"
   name = "github.com/RTradeLtd/grpc"
   packages = [
@@ -46,7 +46,7 @@
     "temporal/response",
   ]
   pruneopts = "UT"
-  revision = "b4b1cda04e09f4d76bdabac63d86cf52c7e7aded"
+  revision = "d795eba06e3727d701eaaf5f797386a511646285"
 
 [[projects]]
   branch = "master"
