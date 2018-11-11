@@ -8,14 +8,14 @@ import (
 	"google.golang.org/grpc"
 )
 
-// SignerClient is how we interface with the GRPC server as a client
+// SignerClient is how we interface with the Signer server as a client
 type SignerClient struct {
 	pb.SignerClient
 	conn *grpc.ClientConn
 }
 
-// NewGRPCClient generates our GRPC API client
-func NewGRPCClient(cfg *config.TemporalConfig, insecure bool) (*SignerClient, error) {
+// NewSignerClient instantiates a new Signerclient
+func NewSignerClient(cfg *config.TemporalConfig, insecure bool) (*SignerClient, error) {
 	grpcAPI := fmt.Sprintf("%s:%s", cfg.API.Payment.Address, cfg.API.Payment.Port)
 	var (
 		gconn *grpc.ClientConn

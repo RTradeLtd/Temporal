@@ -5,7 +5,7 @@ import (
 
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/grpc/dialer"
-	ipfs_orchestrator "github.com/RTradeLtd/ipfs-orchestrator/protobuf"
+	ipfs_orchestrator "github.com/RTradeLtd/grpc/ipfs-orchestrator"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -17,8 +17,8 @@ type IPFSOrchestratorClient struct {
 	conn *grpc.ClientConn
 }
 
-// New instantiates a new orchestrator API client
-func New(opts config.Orchestrator, devMode bool) (*IPFSOrchestratorClient, error) {
+// NewOcrhestratorClient instantiates a new orchestrator API client
+func NewOcrhestratorClient(opts config.Orchestrator, devMode bool) (*IPFSOrchestratorClient, error) {
 	c := &IPFSOrchestratorClient{}
 	// set up parameters for core conn
 	dialOpts := make([]grpc.DialOption, 0)

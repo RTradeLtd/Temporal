@@ -35,10 +35,11 @@
 
 [[projects]]
   branch = "orchestrator"
-  digest = "1:c2cdbde1a6486e7983922d7165cfb7d210ef3884c91e009f5da77ff49c87797d"
+  digest = "1:057a2fbc40628aabb900a800ffbad3d43b0beaaaeecdffdab52eb0e0999b5828"
   name = "github.com/RTradeLtd/grpc"
   packages = [
     "dialer",
+    "ipfs-orchestrator",
     "middleware",
     "temporal",
     "temporal/request",
@@ -46,14 +47,6 @@
   ]
   pruneopts = "UT"
   revision = "b4b1cda04e09f4d76bdabac63d86cf52c7e7aded"
-
-[[projects]]
-  digest = "1:3a995e2e96b0845c7a6a6cd073adf516b162f8ae212346e53dab0f914bc8e2e4"
-  name = "github.com/RTradeLtd/ipfs-orchestrator"
-  packages = ["protobuf"]
-  pruneopts = "UT"
-  revision = "2acf3656d1313e966ad1ba2b451a6bf6cb4d2446"
-  version = "v0.1.0-rc1"
 
 [[projects]]
   branch = "master"
@@ -1479,10 +1472,9 @@
     "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/grpc/dialer",
+    "github.com/RTradeLtd/grpc/ipfs-orchestrator",
     "github.com/RTradeLtd/grpc/temporal",
     "github.com/RTradeLtd/grpc/temporal/request",
-    "github.com/RTradeLtd/grpc/temporal/response",
-    "github.com/RTradeLtd/ipfs-orchestrator/protobuf",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",

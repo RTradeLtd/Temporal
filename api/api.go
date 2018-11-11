@@ -46,7 +46,8 @@ type API struct {
 	zm      *models.ZoneManager
 	rm      *models.RecordManager
 	l       *log.Logger
-	gc      *grpc.Client
+	signer  *grpc.SignerClient
+	orch    *grpc.IPFSOrchestratorClient
 	service string
 }
 
@@ -128,10 +129,17 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 			return nil, err
 		}
 	}
-	gc, err := grpc.NewGRPCClient(cfg, true)
+
+	signer, err := grpc.NewSignerClient(cfg, os.Getenv("MODE") == "development")
 	if err != nil {
 		return nil, err
 	}
+
+	orch, err := grpc.NewOcrhestratorClient(cfg.Orchestrator, os.Getenv("MODE") == "development")
+	if err != nil {
+		return nil, err
+	}
+
 	return &API{
 		cfg:     cfg,
 		service: "api",
@@ -144,7 +152,8 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		dm:      models.NewDropManager(dbm.DB),
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
 		ipfs:    ipfsManager,
-		gc:      gc,
+		signer:  signer,
+		orch:    orch,
 		zm:      models.NewZoneManager(dbm.DB),
 		rm:      models.NewRecordManager(dbm.DB),
 	}, nil
