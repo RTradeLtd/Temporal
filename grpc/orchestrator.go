@@ -14,7 +14,7 @@ import (
 // gRPC API client
 type IPFSOrchestratorClient struct {
 	ipfs_orchestrator.ServiceClient
-	grpc *grpc.ClientConn
+	conn *grpc.ClientConn
 }
 
 // New instantiates a new orchestrator API client
@@ -36,13 +36,13 @@ func New(opts config.Orchestrator, devMode bool) (*IPFSOrchestratorClient, error
 
 	// connect to orchestrator
 	var err error
-	c.grpc, err = grpc.Dial(opts.Host+":"+opts.Port, dialOpts...)
+	c.conn, err = grpc.Dial(opts.Host+":"+opts.Port, dialOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to core service: %s", err.Error())
 	}
-	c.ServiceClient = ipfs_orchestrator.NewServiceClient(c.grpc)
+	c.ServiceClient = ipfs_orchestrator.NewServiceClient(c.conn)
 	return c, nil
 }
 
 // Close shuts down the client's gRPC connection
-func (i *IPFSOrchestratorClient) Close() { i.grpc.Close() }
+func (i *IPFSOrchestratorClient) Close() { i.conn.Close() }
