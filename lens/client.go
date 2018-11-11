@@ -32,6 +32,7 @@ func NewClient(opts config.Endpoints) (*Client, error) {
 			grpc.WithTransportCredentials(creds),
 			grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Lens.AuthKey, false)))
 	} else {
+		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Lens.AuthKey, false)))
 		dialOpts = append(dialOpts, grpc.WithInsecure())
 	}
 	var url string
