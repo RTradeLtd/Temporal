@@ -407,7 +407,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	// load arguments
 	flags := map[string]string{
 		"configDag":     configDag,
@@ -438,7 +437,7 @@ func main() {
 	if isTns && peerAddr != "" {
 		flags["peerAddr"] = peerAddr
 	}
-
+	fmt.Println(tCfg.APIKeys.ChainRider)
 	// execute
 	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
 }

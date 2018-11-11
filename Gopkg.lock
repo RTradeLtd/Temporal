@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:0aca9fb0086c5871f7d2ac7a358ac8a8f3bb3eaa56be8efd73edf34180f99fb5"
+  name = "github.com/RTradeLtd/ChainRider-Go"
+  packages = ["dash"]
+  pruneopts = "UT"
+  revision = "835c4a8deba854bf8945903f9d17042e591bb0f5"
+  version = "v1.0.5"
+
+[[projects]]
   digest = "1:4c9f0df01e3c32aa2a34633730208751a8b348666be4c0049fc913fc7576be06"
   name = "github.com/RTradeLtd/cmd"
   packages = ["."]
@@ -1336,6 +1344,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/RTradeLtd/ChainRider-Go/dash",
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",
@@ -1362,8 +1371,12 @@
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/postgres",
     "github.com/lib/pq",
+    "github.com/libp2p/go-libp2p",
     "github.com/libp2p/go-libp2p-crypto",
+    "github.com/libp2p/go-libp2p-host",
+    "github.com/libp2p/go-libp2p-net",
     "github.com/libp2p/go-libp2p-peer",
+    "github.com/libp2p/go-libp2p-peerstore",
     "github.com/minio/minio-go",
     "github.com/mitchellh/goamz/aws",
     "github.com/mitchellh/goamz/route53",

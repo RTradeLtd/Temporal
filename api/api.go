@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/grpc"
 	"github.com/RTradeLtd/Temporal/rtfs"
 
@@ -47,6 +48,7 @@ type API struct {
 	rm      *models.RecordManager
 	l       *log.Logger
 	gc      *grpc.Client
+	dc      *dash.Client
 	service string
 }
 
@@ -132,6 +134,22 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	if err != nil {
 		return nil, err
 	}
+	var networkVersion string
+	if dev {
+		networkVersion = "testnet"
+	} else {
+		networkVersion = "main"
+	}
+	dc, err := dash.NewClient(&dash.ConfigOpts{
+		APIVersion:      "v1",
+		DigitalCurrency: "dash",
+		//TODO: change to main before production release
+		Blockchain: networkVersion,
+		Token:      cfg.APIKeys.ChainRider,
+	})
+	if err != nil {
+		return nil, err
+	}
 	return &API{
 		cfg:     cfg,
 		service: "api",
@@ -145,6 +163,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
 		ipfs:    ipfsManager,
 		gc:      gc,
+		dc:      dc,
 		zm:      models.NewZoneManager(dbm.DB),
 		rm:      models.NewRecordManager(dbm.DB),
 	}, nil
@@ -224,7 +243,10 @@ func (api *API) setupRoutes() {
 	// payments
 	payments := v1.Group("/payments", authware...)
 	{
-		payments.POST("/create", api.CreatePayment)
+		dash := payments.Group("/create")
+		{
+			dash.POST("/dash", api.CreateDashPayment)
+		}
 		payments.POST("/request", api.RequestSignedPaymentMessage)
 		payments.POST("/confirm", api.ConfirmPayment)
 		deposit := payments.Group("/deposit")

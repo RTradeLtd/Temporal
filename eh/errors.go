@@ -105,4 +105,6 @@ const (
 	RecordSearchError = "failed to search for record"
 	// IPFSDagGetError is an error message when failing to retrieve a dag from ipfs
 	IPFSDagGetError = "failed to get dag from ipfs"
+	// ChainRiderAPICallError is an error message used when a call to chainrider api fails
+	ChainRiderAPICallError = "failed to call chainrider api"
 )
