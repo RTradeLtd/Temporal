@@ -666,6 +666,48 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	})
 }
 
+func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailWithBadRequest(c, "network_name")
+		return
+	}
+	api.LogWithUser(username).Info("private ipfs network shutdown requested", networkName)
+
+	// retrieve authorized networks to check if person has access
+	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
+	if err != nil {
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
+		return
+	}
+	var found bool
+	for _, n := range networks {
+		if n == networkName {
+			found = true
+			break
+		}
+	}
+	if !found {
+		Respond(c, http.StatusUnauthorized, gin.H{
+			"response": "user does not have access to requested network",
+		})
+		return
+	}
+
+	if _, err := api.orch.StopNetwork(c, &ipfs_orchestrator.NetworkRequest{
+		Network: networkName}); err != nil {
+		api.LogError(err, "failed to stop network")(c)
+		return
+	}
+
+	Respond(c, http.StatusOK, gin.H{
+		"response": gin.H{
+			"network_name": networkName,
+		},
+	})
+}
+
 // GetIPFSPrivateNetworkByName is used to get connection information for a priavate ipfs network
 func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)

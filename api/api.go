@@ -327,7 +327,7 @@ func (api *API) setupRoutes() {
 		ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
 		remove := ipfsPrivate.Group("/remove")
 		{
-			remove.POST("/network", api.createHostedIPFSNetworkEntryInDatabase)
+			remove.POST("/network", api.stopIPFSPrivateNetwork)
 		}
 		new := ipfsPrivate.Group("/new")
 		{
