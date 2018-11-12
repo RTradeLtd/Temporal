@@ -27,9 +27,12 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	privateNetwork := c.PostForm("private_network")
+	forms := api.extractPostForms(c, "private_network")
+	if len(forms) == 0 {
+		return
+	}
 	var isPrivate bool
-	switch privateNetwork {
+	switch forms["private_network"] {
 	case "true":
 		isPrivate = true
 	default:
@@ -41,12 +44,10 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
 	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("pin cost calculation requested")
-
 	Respond(c, http.StatusOK, gin.H{"response": totalCost})
 }
 
@@ -62,12 +63,11 @@ func (api *API) calculateFileCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	holdTime, exists := c.GetPostForm("hold_time")
-	if !exists {
-		FailWithMissingField(c, "hold_time")
+	forms := api.extractPostForms(c, "hold_time", "private_network")
+	if len(forms) == 0 {
 		return
 	}
-	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
