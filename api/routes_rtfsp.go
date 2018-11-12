@@ -604,7 +604,7 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
-		FailWithBadRequest(c, "network_name")
+		FailWithMissingField(c, "network_name")
 		return
 	}
 	logger := api.LogWithUser(username).WithField("network_name", networkName)
