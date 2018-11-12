@@ -27,7 +27,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	forms := api.extractPostForms([]string{"private_network"}, c)
+	forms := api.extractPostForms(c, "private_network")
 	if len(forms) == 0 {
 		return
 	}
@@ -63,7 +63,7 @@ func (api *API) calculateFileCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	forms := api.extractPostForms([]string{"hold_time", "private_network"}, c)
+	forms := api.extractPostForms(c, "hold_time", "private_network")
 	if len(forms) == 0 {
 		return
 	}

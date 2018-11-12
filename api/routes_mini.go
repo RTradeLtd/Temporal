@@ -16,7 +16,7 @@ func (api *API) makeBucket(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	forms := api.extractPostForms([]string{"bucket_name"}, c)
+	forms := api.extractPostForms(c, "bucket_name")
 	if len(forms) == 0 {
 		return
 	}

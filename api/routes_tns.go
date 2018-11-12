@@ -12,7 +12,7 @@ import (
 
 // PerformZoneRequest is used to perform a zone request lookup
 func (api *API) performZoneRequest(c *gin.Context) {
-	forms := api.extractPostForms([]string{"user_name", "zone_name"}, c)
+	forms := api.extractPostForms(c, "user_name", "zone_name")
 	if len(forms) == 0 {
 		return
 	}
@@ -26,7 +26,7 @@ func (api *API) performZoneRequest(c *gin.Context) {
 
 // PerformRecordRequest is used to perform a request request lookup
 func (api *API) performRecordRequest(c *gin.Context) {
-	forms := api.extractPostForms([]string{"user_name", "record_name"}, c)
+	forms := api.extractPostForms(c, "user_name", "record_name")
 	if len(forms) == 0 {
 		return
 	}
@@ -41,7 +41,7 @@ func (api *API) performRecordRequest(c *gin.Context) {
 // AddRecordToZone is used to an a record to a TNS zone
 func (api *API) addRecordToZone(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"zone_name", "record_name", "record_key_name"}, c)
+	forms := api.extractPostForms(c, "zone_name", "record_name", "record_key_name")
 	if len(forms) == 0 {
 		return
 	}
@@ -82,10 +82,7 @@ func (api *API) addRecordToZone(c *gin.Context) {
 // CreateZone is used to create a TNS zone
 func (api *API) CreateZone(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms(
-		[]string{"zone_name", "zone_manager_key_name", "zone_key_name"},
-		c,
-	)
+	forms := api.extractPostForms(c, "zone_name", "zone_manager_key_name", "zone_key_name")
 	if len(forms) == 0 {
 		return
 	}

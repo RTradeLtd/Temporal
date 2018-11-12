@@ -21,7 +21,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	forms := api.extractPostForms([]string{"hold_time"}, c)
+	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
 		return
 	}

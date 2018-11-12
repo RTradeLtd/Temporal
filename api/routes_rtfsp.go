@@ -28,7 +28,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	forms := api.extractPostForms([]string{"network_name", "hold_time"}, c)
+	forms := api.extractPostForms(c, "network_name", "hold_time")
 	if len(forms) == 0 {
 		return
 	}
@@ -97,7 +97,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 // AddFileToHostedIPFSNetworkAdvanced is used to add a file to a private ipfs network in a more advanced and resilient manner
 func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"network_name", "hold_time"}, c)
+	forms := api.extractPostForms(c, "network_name", "hold_time")
 	if len(forms) == 0 {
 		return
 	}
@@ -196,7 +196,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 // AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network via the simple method
 func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"network_name", "hold_time"}, c)
+	forms := api.extractPostForms(c, "network_name", "hold_time")
 	if len(forms) == 0 {
 		return
 	}
@@ -299,7 +299,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	topic := c.Param("topic")
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"network_name", "message"}, c)
+	forms := api.extractPostForms(c, "network_name", "message")
 	if len(forms) == 0 {
 		return
 	}
@@ -344,7 +344,7 @@ func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	forms := api.extractPostForms([]string{"network_name"}, c)
+	forms := api.extractPostForms(c, "network_name")
 	if len(forms) == 0 {
 		return
 	}
@@ -383,7 +383,7 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"network_name"}, c)
+	forms := api.extractPostForms(c, "network_name")
 	if len(forms) == 0 {
 		return
 	}
@@ -425,7 +425,7 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	forms := api.extractPostForms([]string{"network_name"}, c)
+	forms := api.extractPostForms(c, "network_name")
 	if len(forms) == 0 {
 		return
 	}
@@ -456,7 +456,7 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 // PublishDetailedIPNSToHostedIPFSNetwork is used to publish an IPNS record to a private network with fine grained control
 func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"network_name", "hash", "life_time", "ttl", "key", "resolve"}, c)
+	forms := api.extractPostForms(c, "network_name", "hash", "life_time", "ttl", "key", "resolve")
 	if len(forms) == 0 {
 		return
 	}
@@ -538,7 +538,7 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	forms := api.extractPostForms([]string{"network_name", "api_url", "swarm_key"}, c)
+	forms := api.extractPostForms(c, "network_name", "api_url", "swarm_key")
 	if len(forms) == 0 {
 		return
 	}

@@ -21,7 +21,7 @@ import (
 // PublishToIPNSDetails is used to publish a record on IPNS with more fine grained control over typical publishing methods
 func (api *API) publishToIPNSDetails(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"network_name", "hash", "life_time", "ttl", "key", "resolve"}, c)
+	forms := api.extractPostForms(c, "network_name", "hash", "life_time", "ttl", "key", "resolve")
 	if len(forms) == 0 {
 		return
 	}
@@ -122,7 +122,7 @@ func (api *API) generateDNSLinkEntry(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	forms := api.extractPostForms([]string{"record_name", "record_value", "aws_zone", "region_name"}, c)
+	forms := api.extractPostForms(c, "record_name", "record_value", "aws_zone", "region_name")
 	if len(forms) == 0 {
 		return
 	}

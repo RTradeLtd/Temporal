@@ -25,7 +25,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"hold_time"}, c)
+	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
 		return
 	}
@@ -77,7 +77,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	logger := api.LogWithUser(username)
 	logger.Debug("file upload request received from user")
-	forms := api.extractPostForms([]string{"hold_time"}, c)
+	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
 		return
 	}
@@ -176,7 +176,10 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 // AddFileLocally is used to add a file to our local ipfs node in a simple manner
 // this route gives the user back a content hash for their file immedaitely
 func (api *API) addFileLocally(c *gin.Context) {
-	forms := api.extractPostForms([]string{"hold_time"}, c)
+	forms := api.extractPostForms(c, "hold_time")
+	if len(forms) == 0 {
+		return
+	}
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
@@ -272,7 +275,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	topic := c.Param("topic")
-	forms := api.extractPostForms([]string{"message"}, c)
+	forms := api.extractPostForms(c, "message")
 	if len(forms) == 0 {
 		return
 	}

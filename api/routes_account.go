@@ -43,7 +43,7 @@ func (api *API) selfRekt(c *gin.Context) {
 // verifyEmailAddress is used to verify a users email address
 func (api *API) verifyEmailAddress(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"token"}, c)
+	forms := api.extractPostForms(c, "token")
 	if len(forms) == 0 {
 		return
 	}
@@ -85,7 +85,7 @@ func (api *API) getEmailVerificationToken(c *gin.Context) {
 // registerAirDrop is used to register an airdrop
 func (api *API) registerAirDrop(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"airdrop_id", "eth_address"}, c)
+	forms := api.extractPostForms(c, "airdrop_id", "eth_address")
 	if len(forms) == 0 {
 		return
 	}
@@ -120,7 +120,7 @@ func (api *API) registerAirDrop(c *gin.Context) {
 // ChangeAccountPassword is used to change a users password
 func (api *API) changeAccountPassword(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"old_assword", "new_password"}, c)
+	forms := api.extractPostForms(c, "old_assword", "new_password")
 	if len(forms) == 0 {
 		return
 	}
@@ -147,7 +147,7 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 
 // RegisterUserAccount is used to sign up with temporal
 func (api *API) registerUserAccount(c *gin.Context) {
-	forms := api.extractPostForms([]string{"username", "password", "email_address"}, c)
+	forms := api.extractPostForms(c, "username", "password", "email_address")
 	if len(forms) == 0 {
 		return
 	}
@@ -174,7 +174,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 // CreateIPFSKey is used to create an IPFS key
 func (api *API) createIPFSKey(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms([]string{"key_type", "key_bits", "key_name"}, c)
+	forms := api.extractPostForms(c, "key_type", "key_bits", "key_name")
 	if len(forms) == 0 {
 		return
 	}
