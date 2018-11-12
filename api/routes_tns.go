@@ -27,6 +27,9 @@ func (api *API) performZoneRequest(c *gin.Context) {
 // PerformRecordRequest is used to perform a request request lookup
 func (api *API) performRecordRequest(c *gin.Context) {
 	forms := api.extractPostForms([]string{"user_name", "record_name"}, c)
+	if len(forms) == 0 {
+		return
+	}
 	record, err := api.rm.FindRecordByNameAndUser(forms["user_name"], forms["record_name"])
 	if err != nil {
 		api.LogError(err, eh.RecordSearchError)(c, http.StatusBadRequest)
@@ -39,6 +42,9 @@ func (api *API) performRecordRequest(c *gin.Context) {
 func (api *API) addRecordToZone(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	forms := api.extractPostForms([]string{"zone_name", "record_name", "record_key_name"}, c)
+	if len(forms) == 0 {
+		return
+	}
 	// slightly more complex form unmarshaling so this will be seperated
 	metadata, exists := c.GetPostForm("meta_data")
 	var intf map[string]interface{}
@@ -76,22 +82,14 @@ func (api *API) addRecordToZone(c *gin.Context) {
 // CreateZone is used to create a TNS zone
 func (api *API) CreateZone(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	zoneName, exists := c.GetPostForm("zone_name")
-	if !exists {
-		FailWithMissingField(c, "zone_name")
+	forms := api.extractPostForms(
+		[]string{"zone_name", "zone_manager_key_name", "zone_key_name"},
+		c,
+	)
+	if len(forms) == 0 {
 		return
 	}
-	zoneManagerKeyName, exists := c.GetPostForm("zone_manager_key_name")
-	if !exists {
-		FailWithMissingField(c, "zone_manager_key_name")
-		return
-	}
-	zoneKeyName, exists := c.GetPostForm("zone_key_name")
-	if !exists {
-		FailWithMissingField(c, "zone_key_name")
-		return
-	}
-	valid, err := api.um.CheckIfKeyOwnedByUser(username, zoneManagerKeyName)
+	valid, err := api.um.CheckIfKeyOwnedByUser(username, forms["zone_mananger_key_name"])
 	if err != nil {
 		api.LogError(err, eh.KeySearchError)(c, http.StatusBadRequest)
 		return
@@ -100,7 +98,7 @@ func (api *API) CreateZone(c *gin.Context) {
 		api.LogError(err, eh.KeyUseError)(c, http.StatusBadRequest)
 		return
 	}
-	valid, err = api.um.CheckIfKeyOwnedByUser(username, zoneKeyName)
+	valid, err = api.um.CheckIfKeyOwnedByUser(username, forms["zone_key_name"])
 	if err != nil {
 		api.LogError(err, eh.KeySearchError)(c, http.StatusBadRequest)
 		return
@@ -111,9 +109,9 @@ func (api *API) CreateZone(c *gin.Context) {
 	}
 	zone, err := api.zm.NewZone(
 		username,
-		zoneName,
-		zoneManagerKeyName,
-		zoneKeyName,
+		forms["zone_name"],
+		forms["zone_manager_key_name"],
+		forms["zone_key_name"],
 		"qm..",
 	)
 	if err != nil {
@@ -127,8 +125,8 @@ func (api *API) CreateZone(c *gin.Context) {
 	}
 	zoneCreation := queue.ZoneCreation{
 		Name:           zone.Name,
-		ManagerKeyName: zoneManagerKeyName,
-		ZoneKeyName:    zoneKeyName,
+		ManagerKeyName: forms["zone_manager_key_name"],
+		ZoneKeyName:    forms["zone_key_name"],
 		UserName:       username,
 	}
 	if err = queueManager.PublishMessage(zoneCreation); err != nil {
