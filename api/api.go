@@ -325,6 +325,10 @@ func (api *API) setupRoutes() {
 		ipfsPrivate.GET("/network/:name", api.getIPFSPrivateNetworkByName) // admin locked
 		ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork)    // admin locked
 		ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
+		remove := ipfsPrivate.Group("/remove")
+		{
+			remove.POST("/network", api.createHostedIPFSNetworkEntryInDatabase)
+		}
 		new := ipfsPrivate.Group("/new")
 		{
 			new.POST("/network", api.createHostedIPFSNetworkEntryInDatabase)

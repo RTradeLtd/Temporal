@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -647,7 +646,7 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	}
 
 	// request orchestrator to start up network
-	resp, err := api.orch.StartNetwork(context.Background(), &ipfs_orchestrator.NetworkRequest{
+	resp, err := api.orch.StartNetwork(c, &ipfs_orchestrator.NetworkRequest{
 		Network: networkName,
 	})
 	if err != nil {
@@ -674,6 +673,8 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
+	api.LogWithUser(username).Info("private ipfs network by name requested")
+
 	netName := c.Param("name")
 	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	net, err := manager.GetNetworkByName(netName)
@@ -682,8 +683,22 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("private ipfs network by name requested")
-	Respond(c, http.StatusOK, gin.H{"response": net})
+	if c.Param("stats") == "true" {
+		stats, err := api.orch.NetworkStats(c, &ipfs_orchestrator.NetworkRequest{Network: netName})
+		if err != nil {
+			api.LogError(err, eh.NetworkSearchError)(c)
+			return
+		}
+
+		Respond(c, http.StatusOK, gin.H{"response": gin.H{
+			"database":      net,
+			"network_stats": stats,
+		}})
+	} else {
+		Respond(c, http.StatusOK, gin.H{"response": gin.H{
+			"database": net,
+		}})
+	}
 }
 
 // GetAuthorizedPrivateNetworks is used to get the private
