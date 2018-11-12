@@ -130,3 +130,18 @@ func (api *API) validateAdminRequest(username string) error {
 	}
 	return nil
 }
+
+func (api *API) extractPostForms(formNames []string, c *gin.Context) map[string]string {
+	var (
+		forms = make(map[string]string)
+	)
+	for _, name := range formNames {
+		value, exists := c.GetPostForm(name)
+		if !exists {
+			FailWithMissingField(c, name)
+			return nil
+		}
+		forms[name] = value
+	}
+	return forms
+}

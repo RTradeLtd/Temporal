@@ -12,17 +12,11 @@ import (
 
 // PerformZoneRequest is used to perform a zone request lookup
 func (api *API) performZoneRequest(c *gin.Context) {
-	userToQuery, exists := c.GetPostForm("user_name")
-	if !exists {
-		FailWithMissingField(c, "user_name")
+	forms := api.extractPostForms([]string{"user_name", "zone_name"}, c)
+	if len(forms) == 0 {
 		return
 	}
-	zoneName, exists := c.GetPostForm("zone_name")
-	if !exists {
-		FailWithMissingField(c, "zone_name")
-		return
-	}
-	zone, err := api.zm.FindZoneByNameAndUser(zoneName, userToQuery)
+	zone, err := api.zm.FindZoneByNameAndUser(forms["zone_name"], forms["user_name"])
 	if err != nil {
 		api.LogError(err, eh.ZoneSearchError)(c, http.StatusBadRequest)
 		return
@@ -32,17 +26,8 @@ func (api *API) performZoneRequest(c *gin.Context) {
 
 // PerformRecordRequest is used to perform a request request lookup
 func (api *API) performRecordRequest(c *gin.Context) {
-	userToQuery, exists := c.GetPostForm("user_name")
-	if !exists {
-		FailWithMissingField(c, "user_name")
-		return
-	}
-	recordName, exists := c.GetPostForm("record_name")
-	if !exists {
-		FailWithMissingField(c, "record_name")
-		return
-	}
-	record, err := api.rm.FindRecordByNameAndUser(userToQuery, recordName)
+	forms := api.extractPostForms([]string{"user_name", "record_name"}, c)
+	record, err := api.rm.FindRecordByNameAndUser(forms["user_name"], forms["record_name"])
 	if err != nil {
 		api.LogError(err, eh.RecordSearchError)(c, http.StatusBadRequest)
 		return
@@ -53,21 +38,8 @@ func (api *API) performRecordRequest(c *gin.Context) {
 // AddRecordToZone is used to an a record to a TNS zone
 func (api *API) addRecordToZone(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	zoneName, exists := c.GetPostForm("zone_name")
-	if !exists {
-		FailWithMissingField(c, "zone_name")
-		return
-	}
-	recordName, exists := c.GetPostForm("record_name")
-	if !exists {
-		FailWithMissingField(c, "record_name")
-		return
-	}
-	recordKeyName, exists := c.GetPostForm("record_key_name")
-	if !exists {
-		FailWithMissingField(c, "record_key_name")
-		return
-	}
+	forms := api.extractPostForms([]string{"zone_name", "record_name", "record_key_name"}, c)
+	// slightly more complex form unmarshaling so this will be seperated
 	metadata, exists := c.GetPostForm("meta_data")
 	var intf map[string]interface{}
 	if exists {
@@ -82,9 +54,9 @@ func (api *API) addRecordToZone(c *gin.Context) {
 		}
 	}
 	req := queue.RecordCreation{
-		ZoneName:      zoneName,
-		RecordName:    recordName,
-		RecordKeyName: recordKeyName,
+		ZoneName:      forms["zone_name"],
+		RecordName:    forms["record_name"],
+		RecordKeyName: forms["record_key_name"],
 		UserName:      username,
 		MetaData:      intf,
 	}
