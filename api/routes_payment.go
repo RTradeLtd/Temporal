@@ -23,17 +23,8 @@ import (
 // was made, and validated by the appropriate blockchain.
 func (api *API) ConfirmPayment(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	paymentNumber, exists := c.GetPostForm("payment_number")
-	if !exists {
-		FailWithMissingField(c, "payment_number")
-		return
-	}
-	txHash, exists := c.GetPostForm("tx_hash")
-	if !exists {
-		FailWithMissingField(c, "tx_hash")
-		return
-	}
-	paymentNumberInt, err := strconv.ParseInt(paymentNumber, 10, 64)
+	forms := api.extractPostForms([]string{"payment_number", "tx_hash"}, c)
+	paymentNumberInt, err := strconv.ParseInt(forms["payment_number"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
@@ -42,7 +33,7 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
-	payment, err := api.pm.UpdatePaymentTxHash(username, txHash, paymentNumberInt)
+	payment, err := api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
@@ -71,13 +62,12 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 // RequestSignedPaymentMessage is used to get a signed message from the GRPC API Payments Server
 func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	paymentType, exists := c.GetPostForm("payment_type")
-	if !exists {
-		FailWithMissingField(c, "payment_type")
-		return
-	}
-	var method uint64
-	switch paymentType {
+	forms := api.extractPostForms([]string{"payment_type", "sender_address", "credit_value"}, c)
+	var (
+		paymentType string
+		method      uint64
+	)
+	switch forms["payment_type"] {
 	case "0":
 		paymentType = "rtc"
 		method = 0
@@ -86,16 +76,6 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		method = 1
 	default:
 		Fail(c, errors.New("payment_type must be '0 (rtc)' or '1 (eth)'"))
-		return
-	}
-	senderAddress, exists := c.GetPostForm("sender_address")
-	if !exists {
-		FailWithMissingField(c, "sender_address")
-		return
-	}
-	creditValue, exists := c.GetPostForm("credit_value")
-	if !exists {
-		FailWithMissingField(c, "credit_value")
 		return
 	}
 	// get the current value of a single (ie, 1.0 eth) unit of currency of the given payment type
@@ -111,7 +91,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		return
 	}
 	// convert the credits the user wnats to buy from string to float
-	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
+	creditValueFloat, err := strconv.ParseFloat(forms["credit_value"], 64)
 	if err != nil {
 		Fail(c, err)
 		return
@@ -131,7 +111,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	// on-chain, in a trustless manner ensuring transfer of payment and validation of payment within a single smart contract call.
 	signRequest := greq.SignRequest{
 		// the address that will be sending the transactoin
-		Address: senderAddress,
+		Address: forms["sender_address"],
 		// the method of the payment
 		Method: methodString,
 		// the number of the current payment
@@ -217,9 +197,8 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 // CreateDashPayment is used to create a dash payment via chainrider
 func (api *API) CreateDashPayment(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	creditValue, exists := c.GetPostForm("credit_value")
-	if !exists {
-		FailWithMissingField(c, "credit_value")
+	forms := api.extractPostForms([]string{"credit_value"}, c)
+	if len(forms) == 0 {
 		return
 	}
 	usdValueFloat, err := api.getUSDValue("dash")
@@ -227,7 +206,7 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
+	creditValueFloat, err := strconv.ParseFloat(forms["credit_value"], 64)
 	if err != nil {
 		Fail(c, err)
 		return
