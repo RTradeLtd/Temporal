@@ -131,7 +131,7 @@ func (api *API) validateAdminRequest(username string) error {
 	return nil
 }
 
-func (api *API) extractPostForms(formNames []string, c *gin.Context) map[string]string {
+func (api *API) extractPostForms(c *gin.Context, formNames ...string) map[string]string {
 	var (
 		forms = make(map[string]string)
 	)
