@@ -613,6 +613,10 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		FailWithBadRequest(c, "network_name")
 		return
 	}
+	logger := api.LogWithUser(username).WithField("network_name", networkName)
+	logger.Info("network creation request received")
+
+	// retrieve parameters
 	swarmKey, _ := c.GetPostForm("swarm_key")
 	bPeers, _ := c.GetPostFormArray("bootstrap_peers")
 	users := c.PostFormArray("users")
@@ -621,27 +625,29 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	} else {
 		users = append(users, username)
 	}
-	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 
 	// create entry for network
+	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	network, err := manager.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, users)
 	if err != nil {
 		api.LogError(err, eh.NetworkCreationError)(c)
 		return
 	}
+	logger.WithField("db_id", network.ID).Info("database entry created")
 
 	// add network to users
+	if err := api.um.AddIPFSNetworkForUser(username, networkName); err != nil {
+		api.LogError(err, eh.NetworkCreationError)(c)
+		return
+	}
+	logger.WithField("user", username).Info("network added to user")
 	if len(users) > 0 {
 		for _, v := range users {
 			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil {
 				api.LogError(err, eh.NetworkCreationError)(c)
 				return
 			}
-		}
-	} else {
-		if err := api.um.AddIPFSNetworkForUser(username, networkName); err != nil {
-			api.LogError(err, eh.NetworkCreationError)(c)
-			return
+			logger.WithField("user", v).Info("network added to user")
 		}
 	}
 
@@ -650,11 +656,13 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		Network: networkName,
 	})
 	if err != nil {
-		api.LogError(err, "failed to start private network", "network_name", networkName)
+		api.LogError(err, "failed to start private network",
+			"network_name", networkName,
+		)(c)
 	}
+	logger.WithField("response", resp).Info("network node started")
 
 	// respond with network details
-	api.LogWithUser(username).Info("private ipfs network created")
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
 			"id":           network.ID,
@@ -673,7 +681,8 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 		FailWithBadRequest(c, "network_name")
 		return
 	}
-	api.LogWithUser(username).Info("private ipfs network shutdown requested", networkName)
+	logger := api.LogWithUser(username).WithField("network_name", networkName)
+	logger.Info("private ipfs network shutdown requested")
 
 	// retrieve authorized networks to check if person has access
 	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
@@ -689,6 +698,7 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 		}
 	}
 	if !found {
+		logger.Info("user not authorized to access network")
 		Respond(c, http.StatusUnauthorized, gin.H{
 			"response": "user does not have access to requested network",
 		})
@@ -700,6 +710,7 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 		api.LogError(err, "failed to stop network")(c)
 		return
 	}
+	logger.Info("network stopped")
 
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
@@ -715,9 +726,11 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	api.LogWithUser(username).Info("private ipfs network by name requested")
-
 	netName := c.Param("name")
+	logger := api.LogWithUser(username).WithField("netowrk_name", netName)
+	logger.Info("private ipfs network by name requested")
+
+	// retrieve details from database
 	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	net, err := manager.GetNetworkByName(netName)
 	if err != nil {
@@ -725,7 +738,9 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 		return
 	}
 
+	// retrieve additional stats if requested
 	if c.Param("stats") == "true" {
+		logger.Info("retrieving additional stats from orchestrator")
 		stats, err := api.orch.NetworkStats(c, &ipfs_orchestrator.NetworkRequest{Network: netName})
 		if err != nil {
 			api.LogError(err, eh.NetworkSearchError)(c)
