@@ -16,12 +16,10 @@ func (api *API) makeBucket(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	bucketName, exists := c.GetPostForm("bucket_name")
-	if !exists {
-		FailWithBadRequest(c, "bucket_name")
+	forms := api.extractPostForms(c, "bucket_name")
+	if len(forms) == 0 {
 		return
 	}
-
 	var (
 		accessKey = api.cfg.MINIO.AccessKey
 		secretKey = api.cfg.MINIO.SecretKey
@@ -34,7 +32,7 @@ func (api *API) makeBucket(c *gin.Context) {
 	}
 
 	args := make(map[string]string)
-	args["name"] = bucketName
+	args["name"] = forms["bucket_name"]
 	if err = manager.MakeBucket(args); err != nil {
 		api.LogError(err, eh.MinioBucketCreationError)(c)
 		return

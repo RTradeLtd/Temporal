@@ -21,13 +21,11 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	holdTime, exists := c.GetPostForm("hold_time")
-	if !exists {
-		FailWithMissingField(c, "hold_time")
+	forms := api.extractPostForms(c, "hold_time")
+	if len(forms) == 0 {
 		return
 	}
-
-	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
