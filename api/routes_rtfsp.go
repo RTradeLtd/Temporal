@@ -23,19 +23,22 @@ import (
 // PinToHostedIPFSNetwork is used to pin content to a private ipfs network
 func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
+	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		Fail(c, err)
 		return
 	}
-
-	err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB)
+	forms := api.extractPostForms([]string{"network_name", "hold_time"}, c)
+	if len(forms) == 0 {
+		return
+	}
+	err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB)
 	if err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	url, err := im.GetAPIURLByName(networkName)
+	url, err := im.GetAPIURLByName(forms["network_name"])
 	if err != nil {
 		api.LogError(err, eh.APIURLCheckError)(c, http.StatusBadRequest)
 		return
@@ -46,17 +49,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	hash := c.Param("hash")
-	if _, err := gocid.Decode(hash); err != nil {
-		Fail(c, err)
-		return
-	}
-	holdTimeInMonths, exists := c.GetPostForm("hold_time")
-	if !exists {
-		FailWithBadRequest(c, "hold_time")
-		return
-	}
-	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
@@ -72,7 +65,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	}
 	ip := queue.IPFSPin{
 		CID:              hash,
-		NetworkName:      networkName,
+		NetworkName:      forms["network_name"],
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       cost,
@@ -104,30 +97,19 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 // AddFileToHostedIPFSNetworkAdvanced is used to add a file to a private ipfs network in a more advanced and resilient manner
 func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-
-	// check network
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
+	forms := api.extractPostForms([]string{"network_name", "hold_time"}, c)
+	if len(forms) == 0 {
 		return
 	}
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
 		return
 	}
-
-	// get hold time
-	holdTimeInMonths, exists := c.GetPostForm("hold_time")
-	if !exists {
-		FailWithBadRequest(c, "hold_time")
-		return
-	}
-	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
-
 	accessKey := api.cfg.MINIO.AccessKey
 	secretKey := api.cfg.MINIO.SecretKey
 	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
@@ -183,8 +165,8 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		BucketName:       FilesUploadBucket,
 		ObjectName:       objectName,
 		UserName:         username,
-		NetworkName:      networkName,
-		HoldTimeInMonths: holdTimeInMonths,
+		NetworkName:      forms["network_name"],
+		HoldTimeInMonths: forms["hold_time"],
 		CreditCost:       cost,
 	}
 	api.l.Debugf("%s stored in minio", objectName)
@@ -214,34 +196,24 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 // AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network via the simple method
 func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
+	forms := api.extractPostForms([]string{"network_name", "hold_time"}, c)
+	if len(forms) == 0 {
 		return
 	}
-
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)
 		Fail(c, err)
 		return
 	}
-
 	mqURL := api.cfg.RabbitMQ.URL
-
-	holdTimeinMonths, exists := c.GetPostForm("hold_time")
-	if !exists {
-		FailWithBadRequest(c, "hold_time")
-		return
-	}
-	holdTimeInt, err := strconv.ParseInt(holdTimeinMonths, 10, 64)
+	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
 	}
 
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(networkName)
+	apiURL, err := im.GetAPIURLByName(forms["network_name"])
 	if err != nil {
 		api.LogError(err, eh.APIURLCheckError)(c)
 		return
@@ -292,7 +264,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		Hash:             resp,
 		HoldTimeInMonths: holdTimeInt,
 		UserName:         username,
-		NetworkName:      networkName,
+		NetworkName:      forms["network_name"],
 		CreditCost:       0,
 	}
 	if err = qm.PublishMessage(dfa); err != nil {
@@ -302,7 +274,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 
 	pin := queue.IPFSPin{
 		CID:              resp,
-		NetworkName:      networkName,
+		NetworkName:      forms["network_name"],
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       0,
@@ -325,13 +297,13 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 
 // IpfsPubSubPublishToHostedIPFSNetwork is used to publish a pubsub message to a private ipfs network
 func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
+	topic := c.Param("topic")
 	username := GetAuthenticatedUserFromContext(c)
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
+	forms := api.extractPostForms([]string{"network_name", "message"}, c)
+	if len(forms) == 0 {
 		return
 	}
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
@@ -345,15 +317,9 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(networkName)
+	apiURL, err := im.GetAPIURLByName(forms["network_name"])
 	if err != nil {
 		api.LogError(err, eh.APIURLCheckError)(c)
-		return
-	}
-	topic := c.Param("topic")
-	message, present := c.GetPostForm("message")
-	if !present {
-		FailWithBadRequest(c, "message")
 		return
 	}
 	manager, err := rtfs.Initialize("", apiURL)
@@ -361,14 +327,14 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
-	if err = manager.PublishPubSubMessage(topic, message); err != nil {
+	if err = manager.PublishPubSubMessage(topic, forms["message"]); err != nil {
 		api.LogError(err, eh.IPFSPubSubPublishError)(c)
 		return
 	}
 
 	api.LogWithUser(username).Info("private ipfs pub sub message published")
 
-	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": message}})
+	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": forms["message"]}})
 }
 
 // GetLocalPinsForHostedIPFSNetwork is used to get local pins from the serving private ipfs node
@@ -378,17 +344,16 @@ func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
+	forms := api.extractPostForms([]string{"network_name"}, c)
+	if len(forms) == 0 {
 		return
 	}
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(networkName)
+	apiURL, err := im.GetAPIURLByName(forms["network_name"])
 	if err != nil {
 		api.LogError(err, eh.APIURLCheckError)(c)
 		return
@@ -406,35 +371,34 @@ func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
 	}
-
 	api.LogWithUser(username).Info("private ipfs pin list requested")
 	Respond(c, http.StatusOK, gin.H{"response": pinInfo})
 }
 
 // GetObjectStatForIpfsForHostedIPFSNetwork is  used to get object stats from a private ipfs network
 func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
-		return
-	}
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(err, eh.PrivateNetworkAccessError)(c)
-		return
-	}
-
-	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(networkName)
-	if err != nil {
-		api.LogError(err, eh.APIURLCheckError)(c)
-		return
-	}
 	key := c.Param("key")
 	if _, err := gocid.Decode(key); err != nil {
 		Fail(c, err)
 		return
 	}
+	username := GetAuthenticatedUserFromContext(c)
+	forms := api.extractPostForms([]string{"network_name"}, c)
+	if len(forms) == 0 {
+		return
+	}
+	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
+		return
+	}
+
+	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
+	apiURL, err := im.GetAPIURLByName(forms["network_name"])
+	if err != nil {
+		api.LogError(err, eh.APIURLCheckError)(c)
+		return
+	}
+
 	manager, err := rtfs.Initialize("", apiURL)
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
@@ -445,37 +409,34 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.IPFSObjectStatError)(c)
 		return
 	}
-
 	api.LogWithUser(username).Info("private ipfs object stat requested")
 	Respond(c, http.StatusOK, gin.H{"response": stats})
 }
 
 // CheckLocalNodeForPinForHostedIPFSNetwork is used to check the serving node for a pin
 func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
+	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		Fail(c, err)
+		return
+	}
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
+	forms := api.extractPostForms([]string{"network_name"}, c)
+	if len(forms) == 0 {
 		return
 	}
-
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(networkName)
+	apiURL, err := im.GetAPIURLByName(forms["network_name"])
 	if err != nil {
 		api.LogError(err, eh.APIURLCheckError)(c)
-		return
-	}
-	hash := c.Param("hash")
-	if _, err := gocid.Decode(hash); err != nil {
-		Fail(c, err)
 		return
 	}
 	manager, err := rtfs.Initialize("", apiURL)
@@ -488,20 +449,17 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
 	}
-
 	api.LogWithUser(username).Info("private ipfs pin check requested")
 	Respond(c, http.StatusOK, gin.H{"response": present})
 }
 
 // PublishDetailedIPNSToHostedIPFSNetwork is used to publish an IPNS record to a private network with fine grained control
 func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
-
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
+	username := GetAuthenticatedUserFromContext(c)
+	forms := api.extractPostForms([]string{"network_name", "hash", "life_time", "ttl", "key", "resolve"}, c)
+	if len(forms) == 0 {
 		return
 	}
-	username := GetAuthenticatedUserFromContext(c)
 	cost, err := utils.CalculateAPICallCost("ipns", true)
 	if err != nil {
 		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
@@ -512,84 +470,54 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	mqURL := api.cfg.RabbitMQ.URL
-
-	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
+	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
-
 	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
 	if err != nil {
 		api.LogError(err, eh.QueueInitializationError)(c)
 		return
 	}
-	hash, present := c.GetPostForm("hash")
-	if !present {
-		FailWithBadRequest(c, "hash")
-		return
-	}
-	if _, err := gocid.Decode(hash); err != nil {
+	if _, err := gocid.Decode(forms["hash"]); err != nil {
 		Fail(c, err)
 		return
 	}
-	lifetimeStr, present := c.GetPostForm("life_time")
-	if !present {
-		FailWithBadRequest(c, "lifetime")
-		return
-	}
-	ttlStr, present := c.GetPostForm("ttl")
-	if !present {
-		FailWithBadRequest(c, "ttl")
-		return
-	}
-	key, present := c.GetPostForm("key")
-	if !present {
-		FailWithBadRequest(c, "key")
-		return
-	}
-	resolveString, present := c.GetPostForm("resolve")
-	if !present {
-		FailWithBadRequest(c, "resolve")
-		return
-	}
-
-	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, key)
+	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, forms["key"])
 	if err != nil {
 		api.LogError(err, eh.KeySearchError)(c)
 		return
 	}
-
 	if !ownsKey {
 		err = fmt.Errorf("unauthorized access to key by user %s", username)
 		api.LogError(err, eh.KeyUseError)(c)
 		return
 	}
-
-	resolve, err := strconv.ParseBool(resolveString)
+	resolve, err := strconv.ParseBool(forms["resolve"])
 	if err != nil {
 		// user error, dont log
 		Fail(c, err)
 		return
 	}
-	lifetime, err := time.ParseDuration(lifetimeStr)
+	lifetime, err := time.ParseDuration(forms["life_time"])
 	if err != nil {
 		// user error, dont log
 		Fail(c, err)
 		return
 	}
-	ttl, err := time.ParseDuration(ttlStr)
+	ttl, err := time.ParseDuration(forms["ttl"])
 	if err != nil {
 		// user error, dont log
 		Fail(c, err)
 		return
 	}
 	ipnsUpdate := queue.IPNSEntry{
-		CID:         hash,
+		CID:         forms["hash"],
 		LifeTime:    lifetime,
 		TTL:         ttl,
-		Key:         key,
+		Key:         forms["key"],
 		Resolve:     resolve,
-		NetworkName: networkName,
+		NetworkName: forms["network_name"],
 		UserName:    username,
 		CreditCost:  cost,
 	}
@@ -597,9 +525,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.QueuePublishError)(c)
 		return
 	}
-
 	api.LogWithUser(username).Info("private ipns entry creation request sent to backend")
-
 	Respond(c, http.StatusOK, gin.H{"response": "ipns entry creation request sent to backend"})
 }
 
@@ -612,32 +538,19 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithBadRequest(c, "network_name")
-		return
-	}
-
-	apiURL, exists := c.GetPostForm("api_url")
-	if !exists {
-		FailWithBadRequest(c, "api_url")
-		return
-	}
-
-	swarmKey, exists := c.GetPostForm("swarm_key")
-	if !exists {
-		FailWithBadRequest(c, "swarm_key")
+	forms := api.extractPostForms([]string{"network_name", "api_url", "swarm_key"}, c)
+	if len(forms) == 0 {
 		return
 	}
 
 	bPeers, exists := c.GetPostFormArray("bootstrap_peers")
 	if !exists {
-		FailWithBadRequest(c, "bootstrap_peers")
+		FailWithMissingField(c, "bootstrap_peers")
 		return
 	}
 	nodeAddresses, exists := c.GetPostFormArray("local_node_addresses")
 	if !exists {
-		FailWithBadRequest(c, "local_node_addresses")
+		FailWithMissingField(c, "local_node_addresses")
 		return
 	}
 	users := c.PostFormArray("users")
@@ -693,7 +606,7 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		args["bootstrap_peer_addresses"] = bootstrapPeerAddresses
 	}
 	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	network, err := manager.CreateHostedPrivateNetwork(networkName, apiURL, swarmKey, args, users)
+	network, err := manager.CreateHostedPrivateNetwork(forms["network_name"], forms["api_url"], forms["swarm_key"], args, users)
 	if err != nil {
 		api.LogError(err, eh.NetworkCreationError)(c)
 		return
@@ -701,13 +614,13 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 
 	if len(users) > 0 {
 		for _, v := range users {
-			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil {
+			if err := api.um.AddIPFSNetworkForUser(v, forms["network_name"]); err != nil {
 				api.LogError(err, eh.NetworkCreationError)(c)
 				return
 			}
 		}
 	} else {
-		if err := api.um.AddIPFSNetworkForUser(username, networkName); err != nil {
+		if err := api.um.AddIPFSNetworkForUser(username, forms["network_name"]); err != nil {
 			api.LogError(err, eh.NetworkCreationError)(c)
 			return
 		}
@@ -755,18 +668,11 @@ func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 // getUploadsByNetworkName is used to get uploads for a network by its name
 func (api *API) getUploadsByNetworkName(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-
 	networkName := c.Param("network_name")
-	if networkName == "" {
-		FailWithBadRequest(c, "network_name")
-		return
-	}
-
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
-
 	um := models.NewUploadManager(api.dbm.DB)
 	uploads, err := um.FindUploadsByNetwork(networkName)
 	if err != nil {
