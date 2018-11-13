@@ -322,15 +322,14 @@ func (api *API) setupRoutes() {
 	ipfsPrivate := v1.Group("/ipfs-private", authware...)
 	{
 		ipfsPrivate.GET("/networks", api.getAuthorizedPrivateNetworks)
-		ipfsPrivate.GET("/network/:name", api.getIPFSPrivateNetworkByName) // admin locked
-		ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork)    // admin locked
+		ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork) // admin locked
 		ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
 		network := ipfsPrivate.Group("/network")
 		{
+			network.GET("/:name", api.getIPFSPrivateNetworkByName)
 			network.POST("/new", api.createHostedIPFSNetworkEntryInDatabase)
 			network.POST("/stop", api.stopIPFSPrivateNetwork)
 			network.POST("/start", api.startIPFSPrivateNetwork)
-			network.POST("/stats", api.getIPFSPrivateNetworkStats)
 		}
 		ipfsRoutes := ipfsPrivate.Group("/ipfs")
 		{

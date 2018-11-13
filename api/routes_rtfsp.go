@@ -561,14 +561,9 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	}
 	logger.WithField("db_id", network.ID).Info("database entry created")
 
-	// add network to users
-	if err := api.um.AddIPFSNetworkForUser(username, networkName); err != nil {
-		api.LogError(err, eh.NetworkCreationError)(c)
-		return
-	}
 	logger.WithField("user", username).Info("network added to user")
 	// if there is only 1 user, this next part is covered by the previous logic
-	if len(users) > 1 {
+	if len(users) > 0 {
 		for _, v := range users {
 			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil {
 				api.LogError(err, eh.NetworkCreationError)(c)
@@ -687,49 +682,6 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 		"response": gin.H{
 			"network_name": networkName,
 			"state":        "stopped",
-		},
-	})
-}
-
-func (api *API) getIPFSPrivateNetworkStats(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	networkName, exists := c.GetPostForm("network_name")
-	if !exists {
-		FailWithMissingField(c, "network_name")
-		return
-	}
-	logger := api.LogWithUser(username).WithField("network_name", networkName)
-	logger.Info("private ipfs network stats requested")
-	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
-	if err != nil {
-		api.LogError(err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
-		return
-	}
-	var found bool
-	for _, network := range networks {
-		if network == networkName {
-			found = true
-			break
-		}
-	}
-	if !found {
-		logger.Info("user not authorized to access network")
-		Respond(c, http.StatusUnauthorized, gin.H{
-			"response": "user does not have access to requested network",
-		})
-		return
-	}
-	stats, err := api.orch.NetworkStats(c, &ipfs_orchestrator.NetworkRequest{Network: networkName})
-	if err != nil {
-		api.LogError(err, "failed to get network stats")(c, http.StatusBadRequest)
-		return
-	}
-	Respond(c, http.StatusOK, gin.H{
-		"response": gin.H{
-			"network_name": networkName,
-			"disk_usage":   stats.GetDiskUsage(),
-			"uptime":       stats.GetUptime(),
-			"api":          api.cfg.Orchestrator.Host + stats.GetApi(),
 		},
 	})
 }
