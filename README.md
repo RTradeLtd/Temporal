@@ -86,7 +86,7 @@ Should you wish to contribute not just to TEMPORAL, but to the overall success o
 
 Channels:
 
-* [Medium](https://medium.com/@rtradetechnologies)
+* [Medium](https://medium.com/@rtradetech)
 * [Twitter](https://twitter.com/RTradeTech)
 * [Steemit](https://steemit.com/@rtrade)
 * [LinkedIn](https://www.linkedin.com/company/rtrade-technologies/)

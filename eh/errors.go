@@ -107,4 +107,6 @@ const (
 	IPFSDagGetError = "failed to get dag from ipfs"
 	// ChainRiderAPICallError is an error message used when a call to chainrider api fails
 	ChainRiderAPICallError = "failed to call chainrider api"
+	// KeyExportError is an error messaged used if a key export request fails
+	KeyExportError = "failed to export key"
 )

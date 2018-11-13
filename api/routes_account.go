@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -296,4 +297,25 @@ func (api *API) getCredits(c *gin.Context) {
 	}
 	api.LogWithUser(username).Info("credit check requested")
 	Respond(c, http.StatusOK, gin.H{"response": credits})
+}
+
+func (api *API) exportKey(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	keyName := c.Param("name")
+	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
+	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyNamePrefixed)
+	if err != nil {
+		api.LogError(err, eh.KeySearchError)(c, http.StatusBadRequest)
+		return
+	}
+	if !owns {
+		api.LogError(errors.New(eh.KeyUseError), eh.KeyUseError)(c, http.StatusBadRequest)
+		return
+	}
+	mnemonic, err := api.ipfs.KeystoreManager.ExportKeyToMnemonic(keyNamePrefixed)
+	if err != nil {
+		api.LogError(err, eh.KeyExportError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": hex.EncodeToString([]byte(mnemonic))})
 }

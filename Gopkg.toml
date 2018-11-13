@@ -100,10 +100,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   branch = "master"
-  name = "github.com/lib/pq"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/mitchellh/goamz"
 
 [[constraint]]
@@ -121,10 +117,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   branch = "master"
   name = "github.com/zsais/go-gin-prometheus"
-
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/crypto"
 
 [[constraint]]
   name = "github.com/gin-contrib/cors"
@@ -146,6 +138,10 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/ipfs/go-ipfs-cmdkit"
   branch = "master"
 
+[[constraint]]
+  name = "github.com/NebulousLabs/entropy-mnemonics"
+  branch = "master"
+  
 [[constraint]]
   name = "github.com/appleboy/gin-jwt"
   revision = "f7347d7c16fc8297bf5b7215b9e4847a5ca05d90"
