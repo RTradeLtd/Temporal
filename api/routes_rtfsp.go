@@ -586,6 +586,7 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		api.LogError(err, "failed to start private network",
 			"network_name", networkName,
 		)(c)
+		return
 	}
 	logger.WithField("response", resp).Info("network node started")
 
