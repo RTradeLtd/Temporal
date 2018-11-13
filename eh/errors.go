@@ -109,4 +109,6 @@ const (
 	ChainRiderAPICallError = "failed to call chainrider api"
 	// KeyExportError is an error messaged used if a key export request fails
 	KeyExportError = "failed to export key"
+	// PasswordResetError is an error message used when an error occurins during password reset
+	PasswordResetError = "failed to reset password"
 )

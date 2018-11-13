@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/RTradeLtd/database/utils"
@@ -53,8 +54,8 @@ func (im *IPFSNetworkManager) GetAPIURLByName(name string) (string, error) {
 	return pnet.APIURL, nil
 }
 
-func (im *IPFSNetworkManager) UpdateNetworkByName(name string,
-	attrs map[string]interface{}) error {
+// UpdateNetworkByName updates the given network with given attributes
+func (im *IPFSNetworkManager) UpdateNetworkByName(name string, attrs map[string]interface{}) error {
 	var pnet HostedIPFSPrivateNetwork
 	if check := im.DB.Model(&pnet).Where("name = ?", name).First(&pnet).Update(attrs); check.Error != nil {
 		return check.Error
@@ -62,43 +63,52 @@ func (im *IPFSNetworkManager) UpdateNetworkByName(name string,
 	return nil
 }
 
-func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, apiURL, swarmKey string, arrayParameters map[string][]string, users []string) (*HostedIPFSPrivateNetwork, error) {
+// CreateHostedPrivateNetwork is used to store a new hosted private network in the database
+func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, swarmKey string, peers, users []string) (*HostedIPFSPrivateNetwork, error) {
+	// check if network exists
 	pnet := &HostedIPFSPrivateNetwork{}
 	if check := im.DB.Where("name = ?", name).First(pnet); check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
-	if pnet.Name != "" {
+	if pnet.CreatedAt != nilTime {
 		return nil, errors.New("private network already exists")
 	}
 
-	bPeers := arrayParameters["bootstrap_peer_addresses"]
-	nodeAddresses := arrayParameters["local_node_peer_addresses"]
-	if len(bPeers) != len(nodeAddresses) {
-		return nil, errors.New("bootstrap_peer_address and local_node_address length not equal")
+	// parse peers
+	if peers != nil {
+		for _, v := range peers {
+			// parse peer address
+			addr, err := utils.GenerateMultiAddrFromString(v)
+			if err != nil {
+				return nil, err
+			}
+			valid, err := utils.ParseMultiAddrForIPFSPeer(addr)
+			if err != nil {
+				return nil, err
+			}
+			if !valid {
+				return nil, fmt.Errorf("provided peer '%s' is not a valid bootstrap peer", addr)
+			}
+
+			// parse peer ID
+			peer := addr.String()
+			formattedBAddr, err := utils.GenerateMultiAddrFromString(peer)
+			if err != nil {
+				return nil, err
+			}
+			parsedBPeerID, err := utils.ParsePeerIDFromIPFSMultiAddr(formattedBAddr)
+			if err != nil {
+				return nil, err
+			}
+
+			// register peer
+			pnet.BootstrapPeerAddresses = append(pnet.BootstrapPeerAddresses, peer)
+			pnet.BootstrapPeerIDs = append(pnet.BootstrapPeerIDs, parsedBPeerID)
+		}
 	}
-	for k, v := range bPeers {
-		pnet.BootstrapPeerAddresses = append(pnet.BootstrapPeerAddresses, v)
-		formattedBAddr, err := utils.GenerateMultiAddrFromString(v)
-		if err != nil {
-			return nil, err
-		}
-		parsedBPeerID, err := utils.ParsePeerIDFromIPFSMultiAddr(formattedBAddr)
-		if err != nil {
-			return nil, err
-		}
-		pnet.BootstrapPeerIDs = append(pnet.BootstrapPeerIDs, parsedBPeerID)
-		pnet.LocalNodePeerAddresses = append(pnet.LocalNodePeerAddresses, nodeAddresses[k])
-		formattedNAddr, err := utils.GenerateMultiAddrFromString(nodeAddresses[k])
-		if err != nil {
-			return nil, err
-		}
-		parsedNPeerID, err := utils.ParsePeerIDFromIPFSMultiAddr(formattedNAddr)
-		if err != nil {
-			return nil, err
-		}
-		pnet.LocalNodePeerIDs = append(pnet.LocalNodePeerIDs, parsedNPeerID)
-	}
-	if len(users) > 0 {
+
+	// parse authorized users
+	if users != nil && len(users) > 0 {
 		for _, v := range users {
 			pnet.Users = append(pnet.Users, v)
 		}
@@ -106,8 +116,8 @@ func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, apiURL, swarmKey 
 		pnet.Users = append(pnet.Users, AdminAddress)
 	}
 
+	// assign name, swarm key and create network entry
 	pnet.Name = name
-	pnet.APIURL = apiURL
 	pnet.SwarmKey = swarmKey
 	if check := im.DB.Create(pnet); check.Error != nil {
 		return nil, check.Error

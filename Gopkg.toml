@@ -32,7 +32,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/database"
-  branch = "master"
+  version = "v1.0.7"
 
 # IPFS
 

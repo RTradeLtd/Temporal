@@ -209,6 +209,13 @@ func (api *API) setupRoutes() {
 		systemChecks.GET("/check", api.SystemsCheck)
 	}
 
+	// authless account recovery routes
+	forgot := v1.Group("/forgot")
+	{
+		forgot.POST("/username", api.forgotUserName)
+		forgot.POST("/password", api.resetPassword)
+	}
+
 	// authentication
 	auth := v1.Group("/auth")
 	{
@@ -286,6 +293,7 @@ func (api *API) setupRoutes() {
 		}
 		email := account.Group("/email")
 		{
+			email.POST("/forgot", api.forgotEmail)
 			token := email.Group("/token")
 			{
 				token.GET("/get", api.getEmailVerificationToken)

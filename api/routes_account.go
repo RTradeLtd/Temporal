@@ -299,6 +299,7 @@ func (api *API) getCredits(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": credits})
 }
 
+// ExportKey is used to export an ipfs key as a mnemonic phrase
 func (api *API) exportKey(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	keyName := c.Param("name")
@@ -318,4 +319,90 @@ func (api *API) exportKey(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": hex.EncodeToString([]byte(mnemonic))})
+}
+
+// ForgotEmail is used to retrieve an email if the user forgets it
+func (api *API) forgotEmail(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	user, err := api.um.FindByUserName(username)
+	if err != nil {
+		api.LogError(err, eh.UserSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": user.EmailAddress})
+}
+
+// ForgotUserName is used to send a username reminder to the email associated with the account
+func (api *API) forgotUserName(c *gin.Context) {
+	forms := api.extractPostForms(c, "email_address")
+	if len(forms) == 0 {
+		return
+	}
+	user, err := api.um.FindByEmail(forms["email_address"])
+	if err != nil {
+		Fail(c, errors.New(eh.UserSearchError), http.StatusBadRequest)
+		return
+	}
+	if !user.EmailEnabled {
+		Fail(c, errors.New("account does not have email enabled, unfortunately for security reasons we can't assist in recovery"))
+		return
+	}
+	es := queue.EmailSend{
+		Subject:     "TEMPORAL User Name Reminder",
+		Content:     fmt.Sprintf("your username is %s", user.UserName),
+		ContentType: "text/html",
+		UserNames:   []string{user.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	mqURL := api.cfg.RabbitMQ.URL
+	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
+	if err != nil {
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err = qm.PublishMessage(es); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "username reminder sent account email"})
+}
+
+// ResetPassword is used to reset the password associated with a user account
+func (api *API) resetPassword(c *gin.Context) {
+	forms := api.extractPostForms(c, "email_address")
+	if len(forms) == 0 {
+		return
+	}
+	user, err := api.um.FindByEmail(forms["email_address"])
+	if err != nil {
+		api.LogError(err, eh.UserSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	if !user.EmailEnabled {
+		Fail(c, errors.New("account does not have email enabled, unfortunately for security reasons we can't assist in recovery"))
+		return
+	}
+	newPass, err := api.um.ResetPassword(user.UserName)
+	if err != nil {
+		api.LogError(err, eh.PasswordResetError)(c, http.StatusBadRequest)
+		return
+	}
+	es := queue.EmailSend{
+		Subject:     "TEMPORAL Password Reset",
+		Content:     fmt.Sprintf("your password is %s", newPass),
+		ContentType: "text/html",
+		UserNames:   []string{user.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	mqURL := api.cfg.RabbitMQ.URL
+	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
+	if err != nil {
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err = qm.PublishMessage(es); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "password reset, please check your email for a new password"})
 }

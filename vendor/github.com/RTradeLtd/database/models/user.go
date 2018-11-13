@@ -396,3 +396,21 @@ func (um *UserManager) ValidateEmailVerificationToken(username, token string) (*
 	}
 	return user, nil
 }
+
+// ResetPassword is used to reset a user's password if they forgot it
+func (um *UserManager) ResetPassword(username string) (string, error) {
+	var user User
+	if check := um.DB.Where("user_name = ?", username).First(&user); check.Error != nil {
+		return "", check.Error
+	}
+	randUtils := utils.GenerateRandomUtils()
+	newPassword := randUtils.GenerateString(32, utils.LetterBytes)
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	if check := um.DB.Model(&user).Update("hashed_password", hex.EncodeToString(hashedPass)); check.Error != nil {
+		return "", check.Error
+	}
+	return newPassword, nil
+}
