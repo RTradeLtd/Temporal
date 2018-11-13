@@ -11,6 +11,7 @@ import (
 	"github.com/lib/pq"
 )
 
+// Upload is a file or pin based upload to temporal
 type Upload struct {
 	gorm.Model
 	Hash               string `gorm:"type:varchar(255);not null;"`
@@ -20,10 +21,12 @@ type Upload struct {
 	UserName           string `gorm:"type:varchar(255);not null;"`
 	GarbageCollectDate time.Time
 	UserNames          pq.StringArray `gorm:"type:text[];not null;"`
+	Encrypted          bool           `gorm:"type:bool"`
 }
 
 const dev = true
 
+// UploadManager is used to manipulate upload objects in the database
 type UploadManager struct {
 	DB *gorm.DB
 }
@@ -33,25 +36,34 @@ func NewUploadManager(db *gorm.DB) *UploadManager {
 	return &UploadManager{DB: db}
 }
 
+// UploadOptions is used to configure an upload
+type UploadOptions struct {
+	NetworkName      string
+	Username         string
+	HoldTimeInMonths int64
+	Encrypted        bool
+}
+
 // NewUpload is used to create a new upload in the database
-func (um *UploadManager) NewUpload(contentHash, uploadType, networkName, username string, holdTimeInMonths int64) (*Upload, error) {
-	_, err := um.FindUploadByHashAndNetwork(contentHash, networkName)
+func (um *UploadManager) NewUpload(contentHash, uploadType string, opts UploadOptions) (*Upload, error) {
+	_, err := um.FindUploadByHashAndNetwork(contentHash, opts.NetworkName)
 	if err == nil {
 		// this means that there is already an upload in hte database matching this content hash and network name, so we will skip
 		return nil, errors.New("attempting to create new upload entry when one already exists in database")
 	}
-	holdInt, err := strconv.Atoi(fmt.Sprintf("%+v", holdTimeInMonths))
+	holdInt, err := strconv.Atoi(fmt.Sprintf("%+v", opts.HoldTimeInMonths))
 	if err != nil {
 		return nil, err
 	}
 	upload := Upload{
 		Hash:               contentHash,
 		Type:               uploadType,
-		NetworkName:        networkName,
-		HoldTimeInMonths:   holdTimeInMonths,
-		UserName:           username,
+		NetworkName:        opts.NetworkName,
+		HoldTimeInMonths:   opts.HoldTimeInMonths,
+		UserName:           opts.Username,
 		GarbageCollectDate: utils.CalculateGarbageCollectDate(holdInt),
-		UserNames:          []string{username},
+		UserNames:          []string{opts.Username},
+		Encrypted:          opts.Encrypted,
 	}
 	if check := um.DB.Create(&upload); check.Error != nil {
 		return nil, check.Error
@@ -134,6 +146,7 @@ func (um *UploadManager) RunTestDatabaseGarbageCollection() (*[]Upload, error) {
 	return &deletedUploads, nil
 }
 
+// FindUploadsByNetwork is used to find all uploads corresponding to a given network
 func (um *UploadManager) FindUploadsByNetwork(networkName string) (*[]Upload, error) {
 	uploads := &[]Upload{}
 	if check := um.DB.Where("network_name = ?", networkName).Find(uploads); check.Error != nil {
@@ -141,6 +154,8 @@ func (um *UploadManager) FindUploadsByNetwork(networkName string) (*[]Upload, er
 	}
 	return uploads, nil
 }
+
+// FindUploadByHashAndNetwork is used to search for an upload by its hash, and the network it was stored on
 func (um *UploadManager) FindUploadByHashAndNetwork(hash, networkName string) (*Upload, error) {
 	upload := &Upload{}
 	if check := um.DB.Where("hash = ? AND network_name = ?", hash, networkName).First(upload); check.Error != nil {
@@ -149,8 +164,7 @@ func (um *UploadManager) FindUploadByHashAndNetwork(hash, networkName string) (*
 	return upload, nil
 }
 
-// FindUploadsByHash is used to return all instances of uploads matching the
-// given hash
+// FindUploadsByHash is used to return all instances of uploads matching the given hash
 func (um *UploadManager) FindUploadsByHash(hash string) *[]Upload {
 
 	uploads := []Upload{}

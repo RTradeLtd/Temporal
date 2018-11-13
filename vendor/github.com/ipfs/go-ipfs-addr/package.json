@@ -9,26 +9,20 @@
   "gxDependencies": [
     {
       "author": "multiformats",
-      "hash": "QmYmsdtJ3HsodkePE3eU3TsCaP2YvPZJ4LoXnNkDE5Tpt7",
+      "hash": "QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9",
       "name": "go-multiaddr",
-      "version": "1.3.0"
+      "version": "1.3.5"
     },
     {
-      "hash": "QmRREK2CAZ5Re2Bd9zZFG6FeYDppUWt5cMgsoUEp3ktgSr",
+      "hash": "QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae",
       "name": "go-log",
-      "version": "1.5.5"
+      "version": "1.5.7"
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmQsErDt8Qgw1XrsXf2BpEzDgGWtB1YLsTAARBup5b6B9W",
+      "hash": "QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB",
       "name": "go-libp2p-peer",
-      "version": "2.3.7"
-    },
-    {
-      "author": "vyzo",
-      "hash": "Qmbc6WjgbkaYhPw5dd6X2RLGiJz854dPPKkyZf52vE2PTS",
-      "name": "go-libp2p-circuit",
-      "version": "2.1.9"
+      "version": "2.4.0"
     }
   ],
   "gxVersion": "0.11.0",
@@ -36,6 +30,6 @@
   "license": "",
   "name": "go-ipfs-addr",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "0.1.19"
+  "version": "0.1.25"
 }
 

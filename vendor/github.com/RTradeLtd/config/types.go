@@ -2,19 +2,20 @@ package config
 
 // TemporalConfig defines Temporal configuration fields
 type TemporalConfig struct {
-	API         `json:"api,omitempty"`
-	Database    `json:"database,omitempty"`
-	IPFS        `json:"ipfs,omitempty"`
-	IPFSCluster `json:"ipfs_cluster,omitempty"`
-	MINIO       `json:"minio,omitempty"`
-	RabbitMQ    `json:"rabbitmq,omitempty"`
-	AWS         `json:"aws,omitempty"`
-	Sendgrid    `json:"sendgrid,omitempty"`
-	Ethereum    `json:"ethereum,omitempty"`
-	Wallets     `json:"wallets,omitempty"`
-	TNS         `json:"tns,omitempty"`
-	APIKeys     `json:"api_keys,omitempty"`
-	Endpoints   `json:"endpoints,omitempty"`
+	API          `json:"api,omitempty"`
+	Database     `json:"database,omitempty"`
+	IPFS         `json:"ipfs,omitempty"`
+	IPFSCluster  `json:"ipfs_cluster,omitempty"`
+	MINIO        `json:"minio,omitempty"`
+	RabbitMQ     `json:"rabbitmq,omitempty"`
+	AWS          `json:"aws,omitempty"`
+	Sendgrid     `json:"sendgrid,omitempty"`
+	Ethereum     `json:"ethereum,omitempty"`
+	Wallets      `json:"wallets,omitempty"`
+	TNS          `json:"tns,omitempty"`
+	APIKeys      `json:"api_keys,omitempty"`
+	Endpoints    `json:"endpoints,omitempty"`
+	Orchestrator `json:"orchestrator,omitempty"`
 }
 
 // API configures the Temporal API
@@ -147,10 +148,29 @@ type APIKeys struct {
 // Endpoints are various endpoints we connect to
 type Endpoints struct {
 	MoneroRPC string `json:"monero_rpc"`
-	LensGRPC  string `json:"lens_grpc"`
-	MongoDB   struct {
+	Lens      struct {
+		URL string `json:"url"`
+		TLS struct {
+			CertPath string `json:"cert_path"`
+			KeyFile  string `json:"key_file"`
+		}
+		AuthKey string `json:"auth_key"`
+		LogFile string `json:"log_file"`
+	} `json:"lens"`
+	MongoDB struct {
 		URL              string `json:"url"`
 		DB               string `json:"db"`
 		UploadCollection string `json:"uploads"`
 	} `json:"mongodb"`
+}
+
+// Orchestrator defines options for the IPFS orchestrator
+type Orchestrator struct {
+	Host string `json:"host"`
+	Port string `json:"port"`
+	Key  string `json:"key"`
+	TLS  struct {
+		CertPath string `json:"cert"`
+		KeyPath  string `json:"key"`
+	} `json:"tls"`
 }

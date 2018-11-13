@@ -18,12 +18,12 @@
   version = "v1.0.1-rc1"
 
 [[projects]]
-  digest = "1:7da19ea40f5a32ee70518df3c6cb93de698b2385e4eadf9787e82b137abe2977"
+  digest = "1:837cd48b87e7d34c6cd93090bf52da0d946a43de95353e5b542fec9c4770db01"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "017bc455111827434831703a17ebe64efe14c4e1"
-  version = "v1.0.7"
+  revision = "45e7b662bec56e29ca1ee63d6ace9a6a91e5040e"
+  version = "v1.0.9"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -34,7 +34,8 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:068f975098cb220e02f15389e59c0a379c251b0f221f0eaa65251864d0e5909c"
+  branch = "master"
+  digest = "1:348c81d165c5a774ac72e79c60449254aaada43bbca056687987d2fc30d3ba42"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -42,8 +43,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "ceb499bbbebef63c45ed966316d94a4a5fd9bd50"
-  version = "v1.0.4"
+  revision = "c879a16f648dfb9b35be728d13bb499d59980fda"
 
 [[projects]]
   digest = "1:7304b11d7d7cce4b00d32075b56d2266443f12af31ac7777eb143f3f0ee870dd"
@@ -315,12 +315,12 @@
   revision = "6bd705eadef4f982a8936f53c613ac33f77d0d5a"
 
 [[projects]]
-  digest = "1:41d073c0402e18b079c81829289a10ad7d37f7d4885e078b4cd7a71deae4478b"
+  digest = "1:5e59d6e02abee7ab8ef7f396f5d681054fbfae02ff159fe3d1e1a01e6ed2b034"
   name = "github.com/ipfs/go-ipfs-addr"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d0447b512ce04eccf713103ccfbf7697ce92a182"
-  version = "v0.1.19"
+  revision = "563b741b4726c35ffb6cd18eb053dab346df2684"
+  version = "v0.1.25"
 
 [[projects]]
   digest = "1:57485b77bf99ffca8552ef2f3dba12a9c9eaa32e2f1e4b8dbec9c03ee977741a"
@@ -406,40 +406,6 @@
   revision = "6f72ab2e67b46f245ed0e8144b065a321d6cb9a9"
 
 [[projects]]
-  digest = "1:becc9ab46b2f3aabdd191682d2cc3435a1d16aae002b5dcf0fca26b281cb8e86"
-  name = "github.com/ipsn/go-ipfs"
-  packages = [
-    "gxlibs/github.com/ipfs/go-ipfs-addr",
-    "gxlibs/github.com/ipfs/go-log",
-    "gxlibs/github.com/ipfs/go-log/tracer",
-    "gxlibs/github.com/ipfs/go-log/tracer/wire",
-    "gxlibs/github.com/ipfs/go-log/writer",
-    "gxlibs/github.com/jbenet/goprocess",
-    "gxlibs/github.com/libp2p/go-conn-security",
-    "gxlibs/github.com/libp2p/go-libp2p-circuit",
-    "gxlibs/github.com/libp2p/go-libp2p-circuit/pb",
-    "gxlibs/github.com/libp2p/go-libp2p-crypto",
-    "gxlibs/github.com/libp2p/go-libp2p-crypto/pb",
-    "gxlibs/github.com/libp2p/go-libp2p-host",
-    "gxlibs/github.com/libp2p/go-libp2p-interface-connmgr",
-    "gxlibs/github.com/libp2p/go-libp2p-interface-pnet",
-    "gxlibs/github.com/libp2p/go-libp2p-net",
-    "gxlibs/github.com/libp2p/go-libp2p-peer",
-    "gxlibs/github.com/libp2p/go-libp2p-peerstore",
-    "gxlibs/github.com/libp2p/go-libp2p-protocol",
-    "gxlibs/github.com/libp2p/go-libp2p-transport",
-    "gxlibs/github.com/libp2p/go-libp2p-transport-upgrader",
-    "gxlibs/github.com/libp2p/go-maddr-filter",
-    "gxlibs/github.com/libp2p/go-stream-muxer",
-    "gxlibs/github.com/multiformats/go-multiaddr",
-    "gxlibs/github.com/multiformats/go-multiaddr-net",
-    "gxlibs/github.com/multiformats/go-multihash",
-    "gxlibs/github.com/multiformats/go-multistream",
-  ]
-  pruneopts = "UT"
-  revision = "43db04bb3e5d6da1c46ee64360e2bf81df327f5e"
-
-[[projects]]
   digest = "1:6b8866cc9496eada254debc24199981e21fd70fd0031ff7a581ac91be47187bb"
   name = "github.com/jackpal/gateway"
   packages = ["."]
@@ -512,7 +478,6 @@
   version = "v1.1.5"
 
 [[projects]]
-  branch = "master"
   digest = "1:b18ffc558326ebaed3b4a175617f1e12ed4e3f53d6ebfe5ba372a3de16d22278"
   name = "github.com/lib/pq"
   packages = [
@@ -522,6 +487,7 @@
   ]
   pruneopts = "UT"
   revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:f3f143e9085a1fbff293e8f131f35c6f9d6b2023002fd719a08655b1a9c6e745"

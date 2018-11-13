@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/RTradeLtd/database/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -13,15 +14,16 @@ import (
 // User is our user model for anyone who signs up with Temporal
 type User struct {
 	gorm.Model
-	UserName          string  `gorm:"type:varchar(255);unique"`
-	EmailAddress      string  `gorm:"type:varchar(255);unique"`
-	EnterpriseEnabled bool    `gorm:"type:boolean"`
-	AccountEnabled    bool    `gorm:"type:boolean"`
-	APIAccess         bool    `gorm:"type:boolean"`
-	EmailEnabled      bool    `gorm:"type:boolean"`
-	AdminAccess       bool    `gorm:"type:boolean"`
-	HashedPassword    string  `gorm:"type:varchar(255)"`
-	Credits           float64 `gorm:"type:float;default:0"`
+	UserName               string  `gorm:"type:varchar(255);unique"`
+	EmailAddress           string  `gorm:"type:varchar(255);unique"`
+	EnterpriseEnabled      bool    `gorm:"type:boolean"`
+	AccountEnabled         bool    `gorm:"type:boolean"`
+	APIAccess              bool    `gorm:"type:boolean"`
+	EmailEnabled           bool    `gorm:"type:boolean"`
+	EmailVerificationToken string  `gorm:"type:varchar(255)"`
+	AdminAccess            bool    `gorm:"type:boolean"`
+	HashedPassword         string  `gorm:"type:varchar(255)"`
+	Credits                float64 `gorm:"type:float;default:0"`
 	// IPFSKeyNames is an array of IPFS keys this user has created
 	IPFSKeyNames     pq.StringArray `gorm:"type:text[];column:ipfs_key_names"`
 	IPFSKeyIDs       pq.StringArray `gorm:"type:text[];column:ipfs_key_ids"`
@@ -35,8 +37,7 @@ type UserManager struct {
 
 // NewUserManager is used to generate our user manager helper
 func NewUserManager(db *gorm.DB) *UserManager {
-	um := UserManager{}
-	um.DB = db
+	um := UserManager{DB: db}
 	return &um
 }
 
@@ -149,14 +150,12 @@ func (um *UserManager) GetKeyIDByName(username, keyName string) (string, error) 
 // CheckIfKeyOwnedByUser is used to check if a key is owned by a user
 func (um *UserManager) CheckIfKeyOwnedByUser(username, keyName string) (bool, error) {
 	var user User
-	if errCheck := um.DB.Where("user_name = ?", username).First(&user); errCheck.Error != nil {
-		return false, errCheck.Error
+	if check := um.DB.Where("user_name = ?", username).First(&user); check.Error != nil {
+		return false, check.Error
 	}
-
 	if user.CreatedAt == nilTime {
 		return false, errors.New("user account does not exist")
 	}
-
 	for _, v := range user.IPFSKeyNames {
 		if v == keyName {
 			return true, nil
@@ -169,7 +168,7 @@ func (um *UserManager) CheckIfKeyOwnedByUser(username, keyName string) (bool, er
 func (um *UserManager) CheckIfUserAccountEnabled(username string) (bool, error) {
 	var user User
 	if check := um.DB.Where("user_name = ?", username).First(&user); check.Error != nil {
-		return false, check.Error
+		return false, errors.New("user account does not exist")
 	}
 	return user.AccountEnabled, nil
 }
@@ -199,21 +198,43 @@ func (um *UserManager) ChangePassword(username, currentPassword, newPassword str
 	return true, nil
 }
 
-// NewUserAccount is used to create a new user account
-func (um *UserManager) NewUserAccount(username, password, email string, enterpriseEnabled bool) (*User, error) {
-	user := User{}
-	check := um.DB.Where("user_name = ?", username).First(&user)
-	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
+// ToggleAdmin toggles the admin permissions of given user
+func (um *UserManager) ToggleAdmin(username string) (bool, error) {
+	var user User
+	um.DB.Where("user_name = ?", username).First(&user)
+	if user.CreatedAt == nilTime {
+		return false, errors.New("user account does not exist")
+	}
+	if check := um.DB.Model(&user).Update("admin_access", !user.AdminAccess); check.Error != nil {
+		return false, check.Error
+	}
+	return true, nil
+}
+
+// FindByEmail is used to find a particular user based on their email address
+func (um *UserManager) FindByEmail(email string) (*User, error) {
+	user := &User{}
+	if check := um.DB.Where("email_address = ?", email).First(user); check.Error != nil {
 		return nil, check.Error
 	}
-	if user.CreatedAt != nilTime {
-		return nil, errors.New("user account already created")
+	return user, nil
+}
+
+// NewUserAccount is used to create a new user account
+func (um *UserManager) NewUserAccount(username, password, email string, enterpriseEnabled bool) (*User, error) {
+	user, err := um.FindByEmail(email)
+	if err == nil {
+		return nil, errors.New("email address already taken")
+	}
+	user, err = um.FindByUserName(username)
+	if err == nil {
+		return nil, errors.New("username is already taken")
 	}
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
-	user = User{
+	user = &User{
 		UserName:          username,
 		EnterpriseEnabled: enterpriseEnabled,
 		HashedPassword:    hex.EncodeToString(hashedPass),
@@ -221,11 +242,12 @@ func (um *UserManager) NewUserAccount(username, password, email string, enterpri
 		AccountEnabled:    true,
 		APIAccess:         true,
 		AdminAccess:       false,
+		Credits:           99999999, // this is temporary and will need to be removed before production
 	}
-	if check := um.DB.Create(&user); check.Error != nil {
+	if check := um.DB.Create(user); check.Error != nil {
 		return nil, check.Error
 	}
-	return &user, nil
+	return user, nil
 }
 
 // SignIn is used to authenticate a user, and check if their account is enabled.
@@ -302,8 +324,8 @@ func (um *UserManager) AddCredits(username string, credits float64) (*User, erro
 	return &u, nil
 }
 
-// GetCredits is used to get the user's current credits
-func (um *UserManager) GetCredits(username string) (float64, error) {
+// GetCreditsForUser is used to get the user's current credits
+func (um *UserManager) GetCreditsForUser(username string) (float64, error) {
 	u := User{}
 	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
 		return 0, check.Error
@@ -334,4 +356,43 @@ func (um *UserManager) CheckIfAdmin(username string) (bool, error) {
 		return false, err
 	}
 	return user.AdminAccess, nil
+}
+
+// GenerateEmailVerificationToken is used to generate a token we use to validate that the user
+// actually owns the email they are signing up with
+func (um *UserManager) GenerateEmailVerificationToken(username string) (*User, error) {
+	user, err := um.FindByUserName(username)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: make sure its a genuine email
+	if user.EmailAddress == "" {
+		return nil, errors.New("user has no email address associated with their account")
+	}
+	if user.EmailVerificationToken != "" {
+		return nil, errors.New("user already has pending verification token")
+	}
+	randUtils := utils.GenerateRandomUtils()
+	token := randUtils.GenerateString(32, utils.LetterBytes)
+	user.EmailVerificationToken = token
+	if err := um.DB.Model(user).Update("email_verification_token", user.EmailVerificationToken).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+// ValidateEmailVerificationToken is used to validate an email token to enable email access
+func (um *UserManager) ValidateEmailVerificationToken(username, token string) (*User, error) {
+	user, err := um.FindByUserName(username)
+	if err != nil {
+		return nil, err
+	}
+	if user.EmailVerificationToken != token {
+		return nil, errors.New("invalid token provided")
+	}
+	user.EmailEnabled = true
+	if err := um.DB.Model(user).Update("email_enabled", user.EmailEnabled).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
 }

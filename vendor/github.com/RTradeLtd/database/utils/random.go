@@ -11,6 +11,7 @@ Taken from https://www.calhoun.io/creating-random-strings-in-go/
 */
 
 const (
+	// LetterBytes are the letters of an alphabet used to generate a random number
 	LetterBytes = "abcdefghijklmnopqrstuvwxyz"
 )
 
@@ -26,6 +27,7 @@ func GenerateRandomUtils() *RandomUtils {
 	return &RandomUtils{Seed: seed}
 }
 
+// generateSeed is used to generate a random seed
 func generateSeed() *rand.Rand {
 	return rand.New(rand.NewSource(time.Now().UnixNano()))
 }
