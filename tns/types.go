@@ -3,7 +3,7 @@ package tns
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/database/models"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	host "github.com/libp2p/go-libp2p-host"
 )

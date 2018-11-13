@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database/models"
 	"github.com/jinzhu/gorm"
 
 	// import our postgres dialect used to talk with a postgres databse

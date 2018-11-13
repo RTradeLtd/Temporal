@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/database/models"
 	"github.com/jinzhu/gorm"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	net "github.com/libp2p/go-libp2p-net"

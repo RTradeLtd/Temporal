@@ -3,8 +3,8 @@ package queue
 import (
 	"encoding/json"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database/models"
 
 	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/jinzhu/gorm"

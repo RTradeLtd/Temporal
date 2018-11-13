@@ -34,6 +34,18 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:348c81d165c5a774ac72e79c60449254aaada43bbca056687987d2fc30d3ba42"
+  name = "github.com/RTradeLtd/database"
+  packages = [
+    ".",
+    "models",
+    "utils",
+  ]
+  pruneopts = "UT"
+  revision = "c879a16f648dfb9b35be728d13bb499d59980fda"
+
+[[projects]]
   digest = "1:38b66fd13337b663166915e5c419149129a8ef29c41f0bf7bd7b2e1b53a0f1f5"
   name = "github.com/RTradeLtd/go-ipfs-api"
   packages = ["."]
@@ -211,7 +223,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6874d1fb20d6a8482d26b3b7daca981d4f6264e0481d60276b0ab574fc7587a8"
+  digest = "1:a213019a6b2643cdf88933265116afe38332b5d839dd6cf05c0aa9ccd3ddd3df"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
@@ -220,7 +232,7 @@
     "render",
   ]
   pruneopts = "UT"
-  revision = "37854ee10f7161843c338d9a9fa87f9398aacbbe"
+  revision = "d6b2c13b18cc0986e579e100bc47f3704a0d3bcd"
 
 [[projects]]
   digest = "1:15e27372d379b45b18ac917b9dafc45c45485239490ece18cca97a12f9591146"
@@ -515,8 +527,7 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:eccb7932085ab3d943b3272216bbe1cbbdc5a06a6056d6c2b0ea0cf7f0519e6d"
+  digest = "1:b18ffc558326ebaed3b4a175617f1e12ed4e3f53d6ebfe5ba372a3de16d22278"
   name = "github.com/lib/pq"
   packages = [
     ".",
@@ -524,7 +535,8 @@
     "oid",
   ]
   pruneopts = "UT"
-  revision = "9eb73efc1fcc404148b56765b0d3f61d9a5ef8ee"
+  revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:651240087688933ab0f620305d19c2169a82fe4570525227df57513a7ddd2ffe"
@@ -1074,7 +1086,7 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "0b1957f9d949dfa3084171a6ec5642b38055276a"
+  revision = "a04bd04888af6ea6f64ed14244d9bcf2b739ebd6"
 
 [[projects]]
   branch = "master"
@@ -1312,7 +1324,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "e4dc69e5b2fd71dcaf8bd5d054eb936deb78d1fa"
+  revision = "3d3f9f413869b949e48070b5bc593aa22cc2b8f2"
 
 [[projects]]
   branch = "master"
@@ -1402,7 +1414,7 @@
     "go/types/typeutil",
   ]
   pruneopts = "UT"
-  revision = "6d71ab8aade08605ffc36622332264e2f6991952"
+  revision = "a8570e12b66263a4d2bc406de590d7651e494615"
 
 [[projects]]
   branch = "master"
@@ -1479,6 +1491,8 @@
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",
+    "github.com/RTradeLtd/database",
+    "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/ipfs-orchestrator",
@@ -1501,8 +1515,6 @@
     "github.com/ipfs/ipfs-cluster/api",
     "github.com/ipfs/ipfs-cluster/api/rest/client",
     "github.com/jinzhu/gorm",
-    "github.com/jinzhu/gorm/dialects/postgres",
-    "github.com/lib/pq",
     "github.com/libp2p/go-libp2p",
     "github.com/libp2p/go-libp2p-crypto",
     "github.com/libp2p/go-libp2p-host",
@@ -1520,7 +1532,6 @@
     "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
     "github.com/zsais/go-gin-prometheus",
-    "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
     "google.golang.org/grpc/credentials",
   ]

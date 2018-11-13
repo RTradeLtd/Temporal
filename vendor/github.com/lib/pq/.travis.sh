@@ -80,7 +80,7 @@ megacheck_install() {
 }
 
 golint_install() {
-	go get golang.org/x/lint/golint
+	go get github.com/golang/lint/golint
 }
 
 $1
