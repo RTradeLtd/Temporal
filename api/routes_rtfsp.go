@@ -567,7 +567,8 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		return
 	}
 	logger.WithField("user", username).Info("network added to user")
-	if len(users) > 0 {
+	// if there is only 1 user, this next part is covered by the previous logic
+	if len(users) > 1 {
 		for _, v := range users {
 			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil {
 				api.LogError(err, eh.NetworkCreationError)(c)
