@@ -729,7 +729,7 @@ func (api *API) getIPFSPrivateNetworkStats(c *gin.Context) {
 			"network_name": networkName,
 			"disk_usage":   stats.GetDiskUsage(),
 			"uptime":       stats.GetUptime(),
-			"api":          stats.GetApi(),
+			"api":          api.cfg.Orchestrator.Host + stats.GetApi(),
 		},
 	})
 }
