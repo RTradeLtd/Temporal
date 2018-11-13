@@ -3,8 +3,8 @@ package host
 import (
 	"strings"
 
-	semver "github.com/coreos/go-semver/semver"
-	"github.com/libp2p/go-libp2p-protocol"
+	"gx/ipfs/QmZNkThpqfVXs9GNbexPrfBbXSLNYeKrE7jwFM2oqHbyqN/go-libp2p-protocol"
+	semver "gx/ipfs/QmcrrEpx3VMUbrbgVroH3YiYyUS5c4YAykzyPJWKspUYLa/go-semver/semver"
 )
 
 // MultistreamSemverMatcher returns a matcher function for a given base protocol.

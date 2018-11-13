@@ -8,12 +8,12 @@ import (
 	"strings"
 	"testing"
 
-	mdag "github.com/ipfs/go-merkledag"
-	"github.com/ipfs/go-unixfs"
+	mdag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
+	"gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs"
 
 	context "context"
 
-	testu "github.com/ipfs/go-unixfs/test"
+	testu "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/test"
 )
 
 func TestBasicRead(t *testing.T) {

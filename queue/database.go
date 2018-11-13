@@ -3,7 +3,7 @@ package queue
 import (
 	"encoding/json"
 
-	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/database/models"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )

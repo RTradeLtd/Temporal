@@ -4,7 +4,7 @@
 
 package main
 
-import "golang.org/x/text/message"
+import "gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/message"
 
 func main() {
 	p := message.NewPrinter(message.MatchLanguage("en"))

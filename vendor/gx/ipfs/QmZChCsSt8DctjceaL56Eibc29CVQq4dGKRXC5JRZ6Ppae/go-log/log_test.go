@@ -7,8 +7,8 @@ import (
 	"io"
 	"testing"
 
-	tracer "github.com/ipfs/go-log/tracer"
-	writer "github.com/ipfs/go-log/writer"
+	tracer "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log/tracer"
+	writer "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log/writer"
 )
 
 func assertEqual(t *testing.T, expected interface{}, actual interface{}) {

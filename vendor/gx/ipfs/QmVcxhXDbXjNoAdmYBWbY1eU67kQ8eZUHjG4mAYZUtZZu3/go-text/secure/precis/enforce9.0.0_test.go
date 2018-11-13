@@ -7,7 +7,7 @@
 package precis
 
 import (
-	"golang.org/x/text/secure/bidirule"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/secure/bidirule"
 )
 
 var enforceTestCases = []struct {

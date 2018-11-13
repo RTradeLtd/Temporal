@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	logging "github.com/whyrusleeping/go-logging"
+	logging "gx/ipfs/QmcaSwFc5RBg8yCq54QURwEU4nwjfCpjbpmaAm4VbdGLKv/go-logging"
 )
 
 // PoliteJSONFormatter marshals entries into JSON encoded slices (without

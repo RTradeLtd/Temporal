@@ -3,7 +3,7 @@ package merkledag
 import (
 	"fmt"
 
-	ipld "github.com/ipfs/go-ipld-format"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
 )
 
 // ErrReadOnly is used when a read-only datastructure is written to.

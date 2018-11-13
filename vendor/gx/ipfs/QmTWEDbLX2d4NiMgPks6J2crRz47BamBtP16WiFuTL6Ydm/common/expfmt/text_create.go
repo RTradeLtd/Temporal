@@ -19,8 +19,8 @@ import (
 	"math"
 	"strings"
 
-	dto "github.com/prometheus/client_model/go"
-	"github.com/prometheus/common/model"
+	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/model"
+	dto "gx/ipfs/QmYaVovLzgcdBpCLEAnW41p8ujvCUxe3TFpfJxjK5qbzn7/client_model/go"
 )
 
 // MetricFamilyToText converts a MetricFamily proto message into text format and

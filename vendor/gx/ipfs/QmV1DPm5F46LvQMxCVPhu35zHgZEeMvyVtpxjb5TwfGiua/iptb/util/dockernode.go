@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	cnet "github.com/whyrusleeping/go-ctrlnet"
-	"github.com/whyrusleeping/stump"
+	"gx/ipfs/QmZLUtHGe9HDQrreAYkXCzzK6mHVByV4MRd8heXAtV5wyS/stump"
+	cnet "gx/ipfs/QmfEZa44SyWfyXpkbVfi19H1QpY73DU6E5omK2HbKXwqR6/go-ctrlnet"
 )
 
 // DockerNode is an IPFS node in a docker container controlled

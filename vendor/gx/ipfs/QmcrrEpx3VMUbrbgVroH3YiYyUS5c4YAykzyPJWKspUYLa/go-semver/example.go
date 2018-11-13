@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/coreos/go-semver/semver"
+	"gx/ipfs/QmcrrEpx3VMUbrbgVroH3YiYyUS5c4YAykzyPJWKspUYLa/go-semver/semver"
 	"os"
 )
 

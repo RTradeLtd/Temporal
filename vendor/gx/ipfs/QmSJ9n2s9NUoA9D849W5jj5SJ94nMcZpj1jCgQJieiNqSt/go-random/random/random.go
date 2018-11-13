@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/dustin/go-humanize"
-	random "github.com/jbenet/go-random"
+	"gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
+	random "gx/ipfs/QmSJ9n2s9NUoA9D849W5jj5SJ94nMcZpj1jCgQJieiNqSt/go-random"
 )
 
 func main() {

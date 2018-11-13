@@ -16,10 +16,10 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/huin/goupnp"
-	"github.com/huin/goupnp/scpd"
 	"github.com/huin/goutil/codegen"
 	"github.com/jingweno/gotask/tasking"
+	"gx/ipfs/QmVwfv63beSAAirq3tiLY6fkNqvjThLnCofL7363YkaScy/goupnp"
+	"gx/ipfs/QmVwfv63beSAAirq3tiLY6fkNqvjThLnCofL7363YkaScy/goupnp/scpd"
 )
 
 var (

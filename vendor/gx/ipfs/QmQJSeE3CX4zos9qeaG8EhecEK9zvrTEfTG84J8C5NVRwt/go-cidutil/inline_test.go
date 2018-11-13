@@ -4,8 +4,8 @@ import (
 	"math/rand"
 	"testing"
 
-	cid "github.com/ipfs/go-cid"
-	mhash "github.com/multiformats/go-multihash"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	mhash "gx/ipfs/QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8/go-multihash"
 )
 
 func TestInlineBuilderSmallValue(t *testing.T) {

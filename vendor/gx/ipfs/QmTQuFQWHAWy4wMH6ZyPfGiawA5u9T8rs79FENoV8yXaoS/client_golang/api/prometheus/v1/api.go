@@ -25,8 +25,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/prometheus/client_golang/api"
-	"github.com/prometheus/common/model"
+	"gx/ipfs/QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS/client_golang/api"
+	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/model"
 )
 
 const (

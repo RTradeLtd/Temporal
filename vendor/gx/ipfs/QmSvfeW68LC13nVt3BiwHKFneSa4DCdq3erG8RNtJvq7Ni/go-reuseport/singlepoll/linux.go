@@ -5,11 +5,11 @@ package singlepoll
 import (
 	"context"
 	"errors"
-	"golang.org/x/sys/unix"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/unix"
 	"sync"
 
-	"github.com/gxed/eventfd"
-	logging "github.com/ipfs/go-log"
+	"gx/ipfs/QmSGRM5Udmy1jsFBr1Cawez7Lt7LZ3ZKA23GGVEsiEW6F3/eventfd"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
 )
 
 var (

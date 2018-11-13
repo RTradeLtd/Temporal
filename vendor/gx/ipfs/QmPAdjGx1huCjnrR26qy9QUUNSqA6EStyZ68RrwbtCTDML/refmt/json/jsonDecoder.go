@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/polydawn/refmt/shared"
-	. "github.com/polydawn/refmt/tok"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/shared"
+	. "gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/tok"
 )
 
 type Decoder struct {

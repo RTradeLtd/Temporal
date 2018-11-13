@@ -5,8 +5,8 @@ import (
 	"io"
 	"sync"
 
-	cbor "github.com/polydawn/refmt/cbor"
-	"github.com/polydawn/refmt/obj/atlas"
+	cbor "gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/cbor"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/obj/atlas"
 )
 
 type proxyReader struct {

@@ -5,7 +5,7 @@ import (
 	"path"
 	"testing"
 
-	lock "github.com/ipfs/go-fs-lock"
+	lock "gx/ipfs/Qmc4w3gm2TqoEbTYjpPs5FXP8DEB6cuvZWPy6bUTKiht7a/go-fs-lock"
 )
 
 func assertLock(t *testing.T, confdir, lockFile string, expected bool) {

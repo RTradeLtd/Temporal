@@ -1,7 +1,7 @@
 package fixtures
 
 import (
-	"github.com/polydawn/refmt/tok"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/tok"
 )
 
 // TokenSource and TokenSink implementations often leave a mess behind.

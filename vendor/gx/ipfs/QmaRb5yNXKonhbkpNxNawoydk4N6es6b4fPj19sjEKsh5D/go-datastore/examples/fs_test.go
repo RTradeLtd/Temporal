@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"testing"
 
-	. "github.com/go-check/check"
+	. "gx/ipfs/QmYBJ8BXPDTMnzLFdv4rS5kbR1fUFASDVDpK7ZbeWMx6hq/go-check"
 
-	ds "github.com/ipfs/go-datastore"
-	query "github.com/ipfs/go-datastore/query"
+	ds "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
+	query "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore/query"
 )
 
 // Hook up gocheck into the "go test" runner.

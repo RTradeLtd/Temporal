@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net"
 
-	connsec "github.com/libp2p/go-conn-security"
-	peer "github.com/libp2p/go-libp2p-peer"
-	mss "github.com/multiformats/go-multistream"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	connsec "gx/ipfs/QmZ3XKH272gU9px86XqWYeZHU65ayHxWs6Wbswvdj2VqVK/go-conn-security"
+	mss "gx/ipfs/QmabLh8TrJ3emfAoQk5AbqbLTbMyj7XqumMFmAFxa9epo8/go-multistream"
 )
 
 // SSMuxer is a multistream stream security transport multiplexer.

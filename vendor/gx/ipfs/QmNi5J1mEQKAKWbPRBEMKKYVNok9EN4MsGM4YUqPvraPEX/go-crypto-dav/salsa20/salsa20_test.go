@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"testing"
 
-	"golang.org/x/crypto/salsa20"
+	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/salsa20"
 )
 
 func TestRandom(t *testing.T) {

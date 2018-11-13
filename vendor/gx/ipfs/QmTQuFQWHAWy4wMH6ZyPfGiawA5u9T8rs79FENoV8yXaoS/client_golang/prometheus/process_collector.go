@@ -13,7 +13,7 @@
 
 package prometheus
 
-import "github.com/prometheus/procfs"
+import "gx/ipfs/QmdCgRBcahWLSq3a2xdbcPb4ksrRREAhisYdfAaGfJ8hWb/procfs"
 
 type processCollector struct {
 	collectFn       func(chan<- Metric)

@@ -3,7 +3,7 @@ package cidutil
 import (
 	"context"
 
-	c "github.com/ipfs/go-cid"
+	c "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
 )
 
 type Set = c.Set

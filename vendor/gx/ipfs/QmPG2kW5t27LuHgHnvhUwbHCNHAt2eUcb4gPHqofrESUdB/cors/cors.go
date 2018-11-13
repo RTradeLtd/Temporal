@@ -28,7 +28,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/rs/xhandler"
+	"gx/ipfs/QmXMPT8tVwqKHZKWxnrfbYqUEaDJ5SF3Yh3fnFthaSrU37/xhandler"
 )
 
 // Options is a configuration container to setup the CORS middleware.

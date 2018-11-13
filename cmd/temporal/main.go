@@ -11,11 +11,11 @@ import (
 	"github.com/RTradeLtd/Temporal/tns"
 
 	"github.com/RTradeLtd/Temporal/api"
-	"github.com/RTradeLtd/Temporal/database"
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd"
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/database/models"
 )
 
 var (

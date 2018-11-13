@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/blang/semver"
+	"gx/ipfs/QmYRGECuvQnRX73fcvPnGbYijBcGN2HbKZQ7jh26qmLiHG/semver"
 )
 
 func main() {

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	mdag "github.com/ipfs/go-merkledag"
-	mdagtest "github.com/ipfs/go-merkledag/test"
+	mdag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
+	mdagtest "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag/test"
 
-	ipld "github.com/ipfs/go-ipld-format"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
 )
 
 func TestDFSPreNoSkip(t *testing.T) {

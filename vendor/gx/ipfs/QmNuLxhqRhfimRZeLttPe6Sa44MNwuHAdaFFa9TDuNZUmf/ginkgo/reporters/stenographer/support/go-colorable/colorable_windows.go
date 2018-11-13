@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty"
+	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/reporters/stenographer/support/go-isatty"
 )
 
 const (

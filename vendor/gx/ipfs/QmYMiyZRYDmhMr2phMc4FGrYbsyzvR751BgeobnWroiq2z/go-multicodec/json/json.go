@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"io"
 
-	msgio "github.com/libp2p/go-msgio"
+	msgio "gx/ipfs/QmcxL9MDzSU5Mj1GcWZD8CXkAFuJXjdbjotZ93o371bKSf/go-msgio"
 
-	mc "github.com/multiformats/go-multicodec"
+	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
 )
 
 var HeaderPath string

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	writer "github.com/ipfs/go-log/writer"
-	opentrace "github.com/opentracing/opentracing-go"
+	opentrace "gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
+	writer "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log/writer"
 )
 
 func assertEqual(t *testing.T, expected interface{}, actual interface{}) {
