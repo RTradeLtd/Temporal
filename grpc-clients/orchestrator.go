@@ -34,7 +34,7 @@ func NewOcrhestratorClient(opts config.Orchestrator, devMode bool) (*IPFSOrchest
 		dialOpts = append(
 			dialOpts,
 			grpc.WithInsecure(),
-			grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Key, !devMode)))
+			grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Key, false)))
 	}
 
 	// connect to orchestrator
