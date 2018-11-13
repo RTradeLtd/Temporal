@@ -15,12 +15,12 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   branch = "master"
 
 [[override]] # temporary
-  name = "github.com/RTradeLtd/config"
-  branch = "master"
-
-[[override]] # temporary
   name = "github.com/RTradeLtd/database"
   branch = "models/private-network"
+
+[[constraint]]
+  name = "github.com/RTradeLtd/config"
+  version = "v1.0.9"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"

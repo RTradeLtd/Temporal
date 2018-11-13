@@ -18,12 +18,12 @@
   version = "v1.0.2"
 
 [[projects]]
-  branch = "master"
   digest = "1:837cd48b87e7d34c6cd93090bf52da0d946a43de95353e5b542fec9c4770db01"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
   revision = "45e7b662bec56e29ca1ee63d6ace9a6a91e5040e"
+  version = "v1.0.9"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
