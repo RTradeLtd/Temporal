@@ -125,7 +125,6 @@ vendor:
 	
 	# Remove problematic dependencies
 	find . -name test-vectors -type d -exec rm -r {} +
-	rm -rf vendor/github.com/ipfs/go-ipfs-api
 	@echo "===================          done           ==================="
 
 # Build CLI binary release
