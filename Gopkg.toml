@@ -18,6 +18,10 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/RTradeLtd/config"
   branch = "master"
 
+[[override]] # temporary
+  name = "github.com/RTradeLtd/database"
+  branch = "models/private-network"
+
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"
   version = "v1.0.1-rc1"
@@ -29,10 +33,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
   version = "v2.0.4"
-
-[[constraint]]
-  name = "github.com/RTradeLtd/database"
-  branch = "master"
 
 # IPFS
 

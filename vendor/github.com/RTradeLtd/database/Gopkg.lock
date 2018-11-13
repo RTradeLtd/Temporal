@@ -2,12 +2,28 @@
 
 
 [[projects]]
+  digest = "1:6d18fa8080da32d83d15eea6e35022212b06d19e867f750b34c5fe19639a0d06"
+  name = "github.com/RTradeLtd/Temporal"
+  packages = ["utils"]
+  pruneopts = "UT"
+  revision = "87f2aa40b6ca2dfc917690beeddf5d3150d8e91d"
+  version = "v1.0-beta.4"
+
+[[projects]]
   digest = "1:837cd48b87e7d34c6cd93090bf52da0d946a43de95353e5b542fec9c4770db01"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
   revision = "45e7b662bec56e29ca1ee63d6ace9a6a91e5040e"
   version = "v1.0.9"
+
+[[projects]]
+  digest = "1:38b66fd13337b663166915e5c419149129a8ef29c41f0bf7bd7b2e1b53a0f1f5"
+  name = "github.com/RTradeLtd/go-ipfs-api"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "574f347d572c6979745f68003a9c2c38cdf9483a"
+  version = "v2.0.4"
 
 [[projects]]
   branch = "master"
@@ -28,6 +44,14 @@
   packages = ["btcec"]
   pruneopts = "UT"
   revision = "67e573d211ace594f1366b4ce9d39726c4b19bd0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:e8891cd354f2af940345f895d5698ab1ed439196d4f69eb44817fc91e80354c1"
+  name = "github.com/c2h5oh/datasize"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "4eba002a5eaea69cf8d235a388fc6b65ae68d2dd"
 
 [[projects]]
   digest = "1:bbadccf3d3317ea03c0dac0b45b673b4b397c8f91a1d2eff550a3c51c4ad770e"
@@ -52,6 +76,14 @@
   pruneopts = "UT"
   revision = "563b741b4726c35ffb6cd18eb053dab346df2684"
   version = "v0.1.25"
+
+[[projects]]
+  branch = "master"
+  digest = "1:89819897a46a0fe46c1794ba087803f433a6e1041489103c005cc9bd408c146d"
+  name = "github.com/ipfs/go-ipfs-files"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "90d206a6f3947f904673ebffd376a2dcbbd84942"
 
 [[projects]]
   digest = "1:43248b562ac2508990699768e9e0c3d8073c2d0081a5f2dbdc5efd727d9ed426"
@@ -98,6 +130,14 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:19f2d2506cc0f9a233c9c0753e8c3fd5afa88afb43ff7b795cbba3629d0e96b5"
+  name = "github.com/libp2p/go-flow-metrics"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "cc546389dcf06b4bcbf6b8594069588e5c8a1451"
+  version = "v0.2.0"
+
+[[projects]]
   digest = "1:4ff86c6d6dd8df23a58e6b6060fea5f150d1a502cdfe8a3e9efd5d25339196c6"
   name = "github.com/libp2p/go-libp2p-crypto"
   packages = [
@@ -109,12 +149,36 @@
   version = "v2.0.1"
 
 [[projects]]
+  digest = "1:e01814b1390e3abc93ca170141d457fab1dcc0c532cdfdd269be58fb2cd6a9f4"
+  name = "github.com/libp2p/go-libp2p-metrics"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "20c0e3fed14ddf84ac8192038accfd393610ed82"
+  version = "v2.1.7"
+
+[[projects]]
   digest = "1:d59d3f32a53e3d1ef4f19f92c8f4cbccabfae6c965760577958b2fb937fede98"
   name = "github.com/libp2p/go-libp2p-peer"
   packages = ["."]
   pruneopts = "UT"
   revision = "dd9b45c0649b38aebe65f98cb460676b4214a42c"
   version = "v2.4.0"
+
+[[projects]]
+  digest = "1:99c29233479cb14a63c7cb6b49927a60ae9d6b4b36d74deb12cc45ce503ddeb5"
+  name = "github.com/libp2p/go-libp2p-protocol"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "e34f0d7468b3519bf9bf4e43c1d028ce651eab51"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:0c84c529a410cea768ebeaf3ea70632f2d8df41662003204045ff1a32cd79cda"
+  name = "github.com/libp2p/go-libp2p-pubsub"
+  packages = ["pb"]
+  pruneopts = "UT"
+  revision = "3d408775deaf28da57cc356d37f2b8bf9c57db64"
+  version = "v0.10.2"
 
 [[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
@@ -149,6 +213,14 @@
   revision = "51976451ce1942acbb55707a983ed232fa027110"
 
 [[projects]]
+  digest = "1:78bbb1ba5b7c3f2ed0ea1eab57bdd3859aec7e177811563edc41198a760b06af"
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ae18d6b8b3205b561c79e8e5f69bff09736185f4"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:cf5b7fbff2c87cff6c0e11f87b30edc21abc6592e6a76f41003ca6d5a712cf48"
   name = "github.com/mr-tron/base58"
   packages = ["base58"]
@@ -163,6 +235,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "ec8630b6b7436b5d7f6c1c2366d3d7214d1b29e2"
+
+[[projects]]
+  digest = "1:d395f9e8e637fe576f096f6cc65862dc6617236316828032b5a26b42bc9a62a0"
+  name = "github.com/multiformats/go-multiaddr-net"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "cba4f9fea8613343eb7ecc4ddadd8e7298a00c39"
+  version = "v1.6.3"
 
 [[projects]]
   digest = "1:c0ea71365e7d0e63a2e8f48e6fc2ba92f2f2b739bbeb3cdabdcd719037e175c2"
@@ -202,6 +282,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:e2599924072678810fe41b00dead8e11e95fa55be2dbc01b5309c4bf04f2209c"
+  name = "github.com/whyrusleeping/tar-utils"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "8c6c8ba81d5c71fd69c0f48dbde4b2fb422b6dfc"
+
+[[projects]]
+  branch = "master"
   digest = "1:675124c7ad3a709f0399d7d37948d927ae0e26b8c11640c9f367dd50bbc9f8cb"
   name = "golang.org/x/crypto"
   packages = [
@@ -223,11 +311,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e9609f7e36a3fecb7dc9e3a15f9881011f9d8c42f94c9d5da231eb0c07826dc8"
+  digest = "1:8f32f0ccb71f71d4780147c6e6fac5bcec522f148e7a0d6d4543770081e8884d"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
+    "windows",
   ]
   pruneopts = "UT"
   revision = "66b7b1311ac80bbafcd2daeef9a5e6e2cd1e2399"
@@ -236,6 +325,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/RTradeLtd/Temporal/utils",
     "github.com/RTradeLtd/config",
     "github.com/ipfs/go-ipfs-addr",
     "github.com/jinzhu/gorm",

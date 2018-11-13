@@ -34,8 +34,8 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:348c81d165c5a774ac72e79c60449254aaada43bbca056687987d2fc30d3ba42"
+  branch = "models/private-network"
+  digest = "1:d6a68c432200a0341415463bde4f0f8761934966a3361d56eac91166e5ca81d6"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -43,7 +43,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "c879a16f648dfb9b35be728d13bb499d59980fda"
+  revision = "69b64783500e056037e41d5a9c4c0c46d3e473aa"
 
 [[projects]]
   digest = "1:38b66fd13337b663166915e5c419149129a8ef29c41f0bf7bd7b2e1b53a0f1f5"
