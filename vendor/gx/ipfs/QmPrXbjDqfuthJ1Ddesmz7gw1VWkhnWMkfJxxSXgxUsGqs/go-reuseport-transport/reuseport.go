@@ -5,7 +5,7 @@ import (
 	"net"
 	"syscall"
 
-	reuseport "github.com/libp2p/go-reuseport"
+	reuseport "gx/ipfs/QmSvfeW68LC13nVt3BiwHKFneSa4DCdq3erG8RNtJvq7Ni/go-reuseport"
 )
 
 var fallbackDialer net.Dialer

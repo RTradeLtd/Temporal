@@ -8,7 +8,7 @@ import (
 	"path"
 	"testing"
 
-	"golang.org/x/text/message"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/message"
 )
 
 func TestCatalog(t *testing.T) {

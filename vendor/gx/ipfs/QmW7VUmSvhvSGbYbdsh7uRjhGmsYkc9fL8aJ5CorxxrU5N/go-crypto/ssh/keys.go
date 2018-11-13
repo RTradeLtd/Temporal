@@ -24,7 +24,7 @@ import (
 	"math/big"
 	"strings"
 
-	"golang.org/x/crypto/ed25519"
+	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/ed25519"
 )
 
 // These constants represent the algorithm names for key types supported by this

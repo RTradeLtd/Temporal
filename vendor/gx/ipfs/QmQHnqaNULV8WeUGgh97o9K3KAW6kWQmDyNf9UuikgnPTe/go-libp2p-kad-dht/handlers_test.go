@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	proto "github.com/gogo/protobuf/proto"
-	recpb "github.com/libp2p/go-libp2p-record/pb"
+	recpb "gx/ipfs/Qma9Eqp16mNHDX1EL73pcxhFfzbyXVcAYtaDd1xdmDRDtL/go-libp2p-record/pb"
+	proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 )
 
 func TestCleanRecordSigned(t *testing.T) {

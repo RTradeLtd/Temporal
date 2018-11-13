@@ -23,7 +23,7 @@ package sign
 import (
 	"io"
 
-	"golang.org/x/crypto/ed25519"
+	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/ed25519"
 )
 
 // Overhead is the number of bytes of overhead when signing a message.

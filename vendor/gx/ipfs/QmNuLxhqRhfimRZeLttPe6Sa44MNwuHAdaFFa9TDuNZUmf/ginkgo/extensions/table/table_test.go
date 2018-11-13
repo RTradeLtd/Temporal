@@ -3,10 +3,10 @@ package table_test
 import (
 	"strings"
 
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/extensions/table"
 
-	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo"
 )
 
 var _ = Describe("Table", func() {

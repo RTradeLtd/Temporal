@@ -19,8 +19,8 @@ package cmd
 import (
 	"os"
 
-	"github.com/dgraph-io/badger"
 	"github.com/spf13/cobra"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger"
 )
 
 var backupFile string

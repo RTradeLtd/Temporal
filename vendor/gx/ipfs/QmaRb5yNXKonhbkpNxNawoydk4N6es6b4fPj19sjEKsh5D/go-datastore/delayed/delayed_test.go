@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	datastore "github.com/ipfs/go-datastore"
-	dstest "github.com/ipfs/go-datastore/test"
-	delay "github.com/ipfs/go-ipfs-delay"
+	delay "gx/ipfs/QmRJVNatYJwTAHgdSM1Xef9QVQ1Ch3XHdmcrykjP5Y4soL/go-ipfs-delay"
+	datastore "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
+	dstest "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore/test"
 )
 
 func TestDelayed(t *testing.T) {

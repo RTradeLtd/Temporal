@@ -3,7 +3,7 @@ package mocktracer
 import (
 	"sync"
 
-	"github.com/opentracing/opentracing-go"
+	"gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
 )
 
 // New returns a MockTracer opentracing.Tracer implementation that's intended

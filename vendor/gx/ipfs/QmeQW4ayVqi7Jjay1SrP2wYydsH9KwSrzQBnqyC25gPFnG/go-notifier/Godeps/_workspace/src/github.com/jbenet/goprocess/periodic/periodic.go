@@ -37,7 +37,7 @@ package periodicproc
 import (
 	"time"
 
-	gp "github.com/whyrusleeping/go-notifier/Godeps/_workspace/src/github.com/jbenet/goprocess"
+	gp "gx/ipfs/QmeQW4ayVqi7Jjay1SrP2wYydsH9KwSrzQBnqyC25gPFnG/go-notifier/Godeps/_workspace/src/github.com/jbenet/goprocess"
 )
 
 // Every calls the given ProcessFunc at periodic intervals. Internally, it uses

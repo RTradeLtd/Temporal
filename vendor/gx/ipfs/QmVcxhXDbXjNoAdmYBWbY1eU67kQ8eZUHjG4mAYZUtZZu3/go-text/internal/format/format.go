@@ -12,7 +12,7 @@ package format
 import (
 	"fmt"
 
-	"golang.org/x/text/language"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
 )
 
 // State represents the printer state passed to custom formatters. It provides

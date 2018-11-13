@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/whyrusleeping/chunker"
+	"gx/ipfs/QmZooytqEoUwQjv7KzH4d3xyJnyvD3AWJaCDMYt5pbCtua/chunker"
 )
 
 var polAddTests = []struct {

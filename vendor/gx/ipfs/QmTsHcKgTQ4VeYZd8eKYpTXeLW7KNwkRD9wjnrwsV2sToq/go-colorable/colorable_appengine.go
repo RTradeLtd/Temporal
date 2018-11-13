@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	_ "github.com/mattn/go-isatty"
+	_ "gx/ipfs/QmWVGFCGGTAGrT3adV261k1h6nntcyDhGVszGV2i2pzwPe/go-isatty"
 )
 
 // NewColorable return new instance of Writer which handle escape sequence.

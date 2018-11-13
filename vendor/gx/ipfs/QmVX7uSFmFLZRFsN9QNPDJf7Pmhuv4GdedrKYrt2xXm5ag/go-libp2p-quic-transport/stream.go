@@ -1,8 +1,8 @@
 package libp2pquic
 
 import (
-	smux "github.com/libp2p/go-stream-muxer"
-	quic "github.com/lucas-clemente/quic-go"
+	quic "gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go"
+	smux "gx/ipfs/QmY9JXR3FupnYAYJWK9aMr9bCpqWKcToQ1tz8DVGTrHpHw/go-stream-muxer"
 )
 
 type stream struct {

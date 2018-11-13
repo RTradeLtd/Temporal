@@ -36,8 +36,8 @@ package testdata
 import (
 	"testing"
 
-	mainpb "github.com/golang/protobuf/protoc-gen-go/testdata/import_public"
-	subpb "github.com/golang/protobuf/protoc-gen-go/testdata/import_public/sub"
+	mainpb "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/import_public"
+	subpb "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/import_public/sub"
 )
 
 func TestImportPublicLink(t *testing.T) {

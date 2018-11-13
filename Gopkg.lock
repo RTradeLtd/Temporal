@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:0aca9fb0086c5871f7d2ac7a358ac8a8f3bb3eaa56be8efd73edf34180f99fb5"
+  digest = "1:cf2939df30718bf7e5ba78886eced2a4688e404ea166c7e3374a328752741c9f"
   name = "github.com/RTradeLtd/ChainRider-Go"
   packages = ["dash"]
   pruneopts = "UT"
-  revision = "835c4a8deba854bf8945903f9d17042e591bb0f5"
-  version = "v1.0.5"
+  revision = "03c00f1c5be65db05c0dc67ce3c9891dcba558e7"
+  version = "v1.0.6"
 
 [[projects]]
   digest = "1:4c9f0df01e3c32aa2a34633730208751a8b348666be4c0049fc913fc7576be06"
@@ -32,6 +32,18 @@
   pruneopts = "UT"
   revision = "b12095f9d32129596d8648e13efb3b537fea1b2c"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:068f975098cb220e02f15389e59c0a379c251b0f221f0eaa65251864d0e5909c"
+  name = "github.com/RTradeLtd/database"
+  packages = [
+    ".",
+    "models",
+    "utils",
+  ]
+  pruneopts = "UT"
+  revision = "ceb499bbbebef63c45ed966316d94a4a5fd9bd50"
+  version = "v1.0.4"
 
 [[projects]]
   digest = "1:7304b11d7d7cce4b00d32075b56d2266443f12af31ac7777eb143f3f0ee870dd"
@@ -392,6 +404,40 @@
   ]
   pruneopts = "UT"
   revision = "6f72ab2e67b46f245ed0e8144b065a321d6cb9a9"
+
+[[projects]]
+  digest = "1:becc9ab46b2f3aabdd191682d2cc3435a1d16aae002b5dcf0fca26b281cb8e86"
+  name = "github.com/ipsn/go-ipfs"
+  packages = [
+    "gxlibs/github.com/ipfs/go-ipfs-addr",
+    "gxlibs/github.com/ipfs/go-log",
+    "gxlibs/github.com/ipfs/go-log/tracer",
+    "gxlibs/github.com/ipfs/go-log/tracer/wire",
+    "gxlibs/github.com/ipfs/go-log/writer",
+    "gxlibs/github.com/jbenet/goprocess",
+    "gxlibs/github.com/libp2p/go-conn-security",
+    "gxlibs/github.com/libp2p/go-libp2p-circuit",
+    "gxlibs/github.com/libp2p/go-libp2p-circuit/pb",
+    "gxlibs/github.com/libp2p/go-libp2p-crypto",
+    "gxlibs/github.com/libp2p/go-libp2p-crypto/pb",
+    "gxlibs/github.com/libp2p/go-libp2p-host",
+    "gxlibs/github.com/libp2p/go-libp2p-interface-connmgr",
+    "gxlibs/github.com/libp2p/go-libp2p-interface-pnet",
+    "gxlibs/github.com/libp2p/go-libp2p-net",
+    "gxlibs/github.com/libp2p/go-libp2p-peer",
+    "gxlibs/github.com/libp2p/go-libp2p-peerstore",
+    "gxlibs/github.com/libp2p/go-libp2p-protocol",
+    "gxlibs/github.com/libp2p/go-libp2p-transport",
+    "gxlibs/github.com/libp2p/go-libp2p-transport-upgrader",
+    "gxlibs/github.com/libp2p/go-maddr-filter",
+    "gxlibs/github.com/libp2p/go-stream-muxer",
+    "gxlibs/github.com/multiformats/go-multiaddr",
+    "gxlibs/github.com/multiformats/go-multiaddr-net",
+    "gxlibs/github.com/multiformats/go-multihash",
+    "gxlibs/github.com/multiformats/go-multistream",
+  ]
+  pruneopts = "UT"
+  revision = "43db04bb3e5d6da1c46ee64360e2bf81df327f5e"
 
 [[projects]]
   digest = "1:6b8866cc9496eada254debc24199981e21fd70fd0031ff7a581ac91be47187bb"
@@ -1348,6 +1394,8 @@
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",
+    "github.com/RTradeLtd/database",
+    "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/grpc/temporal/request",
     "github.com/RTradeLtd/grpc/temporal/response",
@@ -1369,8 +1417,6 @@
     "github.com/ipfs/ipfs-cluster/api",
     "github.com/ipfs/ipfs-cluster/api/rest/client",
     "github.com/jinzhu/gorm",
-    "github.com/jinzhu/gorm/dialects/postgres",
-    "github.com/lib/pq",
     "github.com/libp2p/go-libp2p",
     "github.com/libp2p/go-libp2p-crypto",
     "github.com/libp2p/go-libp2p-host",
@@ -1388,7 +1434,6 @@
     "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
     "github.com/zsais/go-gin-prometheus",
-    "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
   ]
   solver-name = "gps-cdcl"

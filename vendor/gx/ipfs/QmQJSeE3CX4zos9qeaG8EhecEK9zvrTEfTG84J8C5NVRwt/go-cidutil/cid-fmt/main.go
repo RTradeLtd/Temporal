@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
-	cidutil "github.com/ipfs/go-cidutil"
+	cidutil "gx/ipfs/QmQJSeE3CX4zos9qeaG8EhecEK9zvrTEfTG84J8C5NVRwt/go-cidutil"
 
-	c "github.com/ipfs/go-cid"
-	mb "github.com/multiformats/go-multibase"
+	c "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	mb "gx/ipfs/QmekxXDhCxCJRNuzmHreuaT3BsuJcsjcXWNrtV9C8DRHtd/go-multibase"
 )
 
 func usage() {

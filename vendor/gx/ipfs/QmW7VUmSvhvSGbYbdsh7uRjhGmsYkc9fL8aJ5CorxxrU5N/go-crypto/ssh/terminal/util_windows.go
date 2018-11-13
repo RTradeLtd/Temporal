@@ -19,7 +19,7 @@ package terminal
 import (
 	"os"
 
-	"golang.org/x/sys/windows"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/windows"
 )
 
 type State struct {

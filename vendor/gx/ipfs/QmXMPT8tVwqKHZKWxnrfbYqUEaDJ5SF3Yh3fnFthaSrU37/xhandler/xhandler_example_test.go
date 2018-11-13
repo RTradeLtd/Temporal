@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/rs/xhandler"
 	"golang.org/x/net/context"
+	"gx/ipfs/QmXMPT8tVwqKHZKWxnrfbYqUEaDJ5SF3Yh3fnFthaSrU37/xhandler"
 )
 
 type key int

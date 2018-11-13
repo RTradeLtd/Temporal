@@ -5,8 +5,8 @@ import (
 	"testing"
 	"testing/quick"
 
-	mc "github.com/multiformats/go-multicodec"
-	mctest "github.com/multiformats/go-multicodec/test"
+	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
+	mctest "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/test"
 )
 
 type TestType map[string]string

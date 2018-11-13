@@ -6,7 +6,7 @@ import (
 	"net"
 	"os"
 
-	reuse "github.com/libp2p/go-reuseport"
+	reuse "gx/ipfs/QmSvfeW68LC13nVt3BiwHKFneSa4DCdq3erG8RNtJvq7Ni/go-reuseport"
 )
 
 func main() {

@@ -3,12 +3,12 @@
 package reuseport
 
 import (
-	"golang.org/x/sys/unix"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/unix"
 	"sync"
 	"syscall"
 	"time"
 
-	sockaddrnet "github.com/libp2p/go-sockaddr/net"
+	sockaddrnet "gx/ipfs/QmNzEyX7vjWiqinyLeavcAF1oegav6dZ1aQpAkYvG9m5Ze/go-sockaddr/net"
 )
 
 var (

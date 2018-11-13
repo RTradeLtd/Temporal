@@ -3,7 +3,7 @@ package multierror
 import (
 	"fmt"
 
-	"github.com/hashicorp/errwrap"
+	"gx/ipfs/Qmbg4PQLEvf2XW8vrai9STFDerV7kttkfKcVdkoRf9Z7Xu/go-errwrap"
 )
 
 // Prefix is a helper function that will prefix some text

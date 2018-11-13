@@ -7,10 +7,10 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/polydawn/refmt/cbor"
-	"github.com/polydawn/refmt/json"
-	"github.com/polydawn/refmt/pretty"
-	"github.com/polydawn/refmt/shared"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/cbor"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/json"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/pretty"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/shared"
 )
 
 func main() {

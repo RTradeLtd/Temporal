@@ -9,7 +9,7 @@ package chacha20poly1305
 import (
 	"encoding/binary"
 
-	"golang.org/x/sys/cpu"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/cpu"
 )
 
 //go:noescape

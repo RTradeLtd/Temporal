@@ -18,10 +18,10 @@ import (
 	"crypto/sha512"
 	"hash"
 
-	pb "github.com/libp2p/go-libp2p-crypto/pb"
+	pb "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto/pb"
 
-	"github.com/gogo/protobuf/proto"
-	sha256 "github.com/minio/sha256-simd"
+	sha256 "gx/ipfs/QmXTpwq2AkzQsPjKqFQDNY2bMdsAT53hUBETeyj8QRHTZU/sha256-simd"
+	"gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 )
 
 var ErrBadKeyType = errors.New("invalid or unsupported key type")

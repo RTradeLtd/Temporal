@@ -22,8 +22,8 @@ import (
 	"io"
 	"math"
 
-	"github.com/dgraph-io/badger/y"
-	"github.com/ipfs/bbloom"
+	"gx/ipfs/QmWaLViWQF8jgyoLLqqcSrnp6dJpHESiJfzor1vrfDyTZf/bbloom"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger/y"
 )
 
 var (
