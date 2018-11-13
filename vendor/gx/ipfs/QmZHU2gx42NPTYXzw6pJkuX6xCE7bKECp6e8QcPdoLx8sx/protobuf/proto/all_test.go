@@ -45,9 +45,9 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/golang/protobuf/proto"
-	pb3 "github.com/golang/protobuf/proto/proto3_proto"
-	. "github.com/golang/protobuf/proto/test_proto"
+	. "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
+	pb3 "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto/proto3_proto"
+	. "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto/test_proto"
 )
 
 var globalO *Buffer

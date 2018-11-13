@@ -8,9 +8,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/ipfs/go-ipfs-util"
-	logging "github.com/ipfs/go-log"
-	lock "go4.org/lock"
+	"gx/ipfs/QmPdKqUcHGFdeSpvjVoaTRPPstGif9GBZb5Q56RVw9o69A/go-ipfs-util"
+	lock "gx/ipfs/QmYDxsntDcWC7CTisDmeorEvDVjkRAjjY9Vr9DJ6HSkXMS/go4-lock"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
 )
 
 // log is the fsrepo logger

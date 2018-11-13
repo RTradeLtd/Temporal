@@ -77,7 +77,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"golang.org/x/net/internal/timeseries"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/timeseries"
 )
 
 // DebugUseAfterFinish controls whether to debug uses of Trace values after finishing.

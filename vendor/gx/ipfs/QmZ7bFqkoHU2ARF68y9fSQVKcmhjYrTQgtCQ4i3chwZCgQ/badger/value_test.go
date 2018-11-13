@@ -25,10 +25,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/dgraph-io/badger/y"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/net/trace"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/trace"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger/y"
 )
 
 func TestValueBasic(t *testing.T) {

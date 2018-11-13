@@ -5,8 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/utils"
+	"github.com/RTradeLtd/database/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -166,10 +165,9 @@ func (um *UserManager) CheckIfKeyOwnedByUser(username, keyName string) (bool, er
 }
 
 // CheckIfUserAccountEnabled is used to check if a user account is enabled
-func (um *UserManager) CheckIfUserAccountEnabled(username string, db *gorm.DB) (bool, error) {
+func (um *UserManager) CheckIfUserAccountEnabled(username string) (bool, error) {
 	var user User
-	db.Where("user_name = ?", username).First(&user)
-	if user.CreatedAt == nilTime {
+	if check := um.DB.Where("user_name = ?", username).First(&user); check.Error != nil {
 		return false, errors.New("user account does not exist")
 	}
 	return user.AccountEnabled, nil
@@ -226,11 +224,11 @@ func (um *UserManager) FindByEmail(email string) (*User, error) {
 func (um *UserManager) NewUserAccount(username, password, email string, enterpriseEnabled bool) (*User, error) {
 	user, err := um.FindByEmail(email)
 	if err == nil {
-		return nil, errors.New(eh.DuplicateEmailError)
+		return nil, errors.New("email address already taken")
 	}
 	user, err = um.FindByUserName(username)
 	if err == nil {
-		return nil, errors.New(eh.DuplicateUserNameError)
+		return nil, errors.New("username is already taken")
 	}
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

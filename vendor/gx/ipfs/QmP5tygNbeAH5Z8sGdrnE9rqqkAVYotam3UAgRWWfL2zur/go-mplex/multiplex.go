@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	logging "github.com/ipfs/go-log"
-	pool "github.com/libp2p/go-buffer-pool"
+	pool "gx/ipfs/QmQDvJoB6aJWN3sjr3xsgXqKCXf4jU5zdMXpDMsBkYVNqa/go-buffer-pool"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
 )
 
 var log = logging.Logger("mplex")

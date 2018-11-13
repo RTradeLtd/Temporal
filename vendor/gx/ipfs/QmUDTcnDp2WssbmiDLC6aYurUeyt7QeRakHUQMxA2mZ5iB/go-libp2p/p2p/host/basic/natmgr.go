@@ -4,11 +4,11 @@ import (
 	"context"
 	"sync"
 
-	goprocess "github.com/jbenet/goprocess"
-	lgbl "github.com/libp2p/go-libp2p-loggables"
-	inat "github.com/libp2p/go-libp2p-nat"
-	inet "github.com/libp2p/go-libp2p-net"
-	ma "github.com/multiformats/go-multiaddr"
+	goprocess "gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	lgbl "gx/ipfs/QmVrDtvvQCUeMZaY9UFkae6c85kdQ1GvVEhPrjPTdjxRLv/go-libp2p-loggables"
+	inet "gx/ipfs/QmXuRkCR7BNQa9uqfpTiFWsTQLzmTWYg91Ja1w95gnqb6u/go-libp2p-net"
+	inat "gx/ipfs/QmbLmhmtzD1rsrWC5Vjq6YHBmUzqh7LCR4m8W1e91BHQyg/go-libp2p-nat"
 )
 
 // A simple interface to manage NAT devices.

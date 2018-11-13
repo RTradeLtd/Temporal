@@ -23,7 +23,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"golang.org/x/sys/unix"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/unix"
 )
 
 // Mmap uses the mmap system call to memory-map a file. If writable is true,

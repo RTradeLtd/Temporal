@@ -3,9 +3,9 @@ package handshake
 import (
 	"bytes"
 
-	"github.com/lucas-clemente/quic-go/qerr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/qerr"
 )
 
 var _ = Describe("Handshake Message", func() {

@@ -14,7 +14,7 @@ import (
 	gocid "github.com/ipfs/go-cid"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/database/models"
 
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"

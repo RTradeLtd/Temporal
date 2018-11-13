@@ -12,7 +12,7 @@ import (
 	"encoding/asn1"
 	"errors"
 
-	"golang.org/x/crypto/pkcs12/internal/rc2"
+	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/pkcs12/internal/rc2"
 )
 
 var (

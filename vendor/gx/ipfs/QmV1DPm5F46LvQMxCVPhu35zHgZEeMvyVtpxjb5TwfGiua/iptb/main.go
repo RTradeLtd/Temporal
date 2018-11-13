@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	util "github.com/ipfs/iptb/util"
+	util "gx/ipfs/QmV1DPm5F46LvQMxCVPhu35zHgZEeMvyVtpxjb5TwfGiua/iptb/util"
 
-	cli "github.com/urfave/cli"
+	cli "gx/ipfs/Qmc1AtgBdoUHP8oYSqU81NRYdzohmF45t5XNwVMvhCxsBA/cli"
 )
 
 func parseRange(s string) ([]int, error) {

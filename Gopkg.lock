@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:0aca9fb0086c5871f7d2ac7a358ac8a8f3bb3eaa56be8efd73edf34180f99fb5"
+  digest = "1:cf2939df30718bf7e5ba78886eced2a4688e404ea166c7e3374a328752741c9f"
   name = "github.com/RTradeLtd/ChainRider-Go"
   packages = ["dash"]
   pruneopts = "UT"
-  revision = "835c4a8deba854bf8945903f9d17042e591bb0f5"
-  version = "v1.0.5"
+  revision = "03c00f1c5be65db05c0dc67ce3c9891dcba558e7"
+  version = "v1.0.6"
 
 [[projects]]
   digest = "1:4c9f0df01e3c32aa2a34633730208751a8b348666be4c0049fc913fc7576be06"
@@ -18,12 +18,12 @@
   version = "v1.0.1-rc1"
 
 [[projects]]
-  digest = "1:7da19ea40f5a32ee70518df3c6cb93de698b2385e4eadf9787e82b137abe2977"
+  digest = "1:837cd48b87e7d34c6cd93090bf52da0d946a43de95353e5b542fec9c4770db01"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "017bc455111827434831703a17ebe64efe14c4e1"
-  version = "v1.0.7"
+  revision = "45e7b662bec56e29ca1ee63d6ace9a6a91e5040e"
+  version = "v1.0.9"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -32,6 +32,18 @@
   pruneopts = "UT"
   revision = "b12095f9d32129596d8648e13efb3b537fea1b2c"
   version = "v1.0.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:348c81d165c5a774ac72e79c60449254aaada43bbca056687987d2fc30d3ba42"
+  name = "github.com/RTradeLtd/database"
+  packages = [
+    ".",
+    "models",
+    "utils",
+  ]
+  pruneopts = "UT"
+  revision = "c879a16f648dfb9b35be728d13bb499d59980fda"
 
 [[projects]]
   digest = "1:7304b11d7d7cce4b00d32075b56d2266443f12af31ac7777eb143f3f0ee870dd"
@@ -303,12 +315,12 @@
   revision = "6bd705eadef4f982a8936f53c613ac33f77d0d5a"
 
 [[projects]]
-  digest = "1:41d073c0402e18b079c81829289a10ad7d37f7d4885e078b4cd7a71deae4478b"
+  digest = "1:5e59d6e02abee7ab8ef7f396f5d681054fbfae02ff159fe3d1e1a01e6ed2b034"
   name = "github.com/ipfs/go-ipfs-addr"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d0447b512ce04eccf713103ccfbf7697ce92a182"
-  version = "v0.1.19"
+  revision = "563b741b4726c35ffb6cd18eb053dab346df2684"
+  version = "v0.1.25"
 
 [[projects]]
   digest = "1:57485b77bf99ffca8552ef2f3dba12a9c9eaa32e2f1e4b8dbec9c03ee977741a"
@@ -466,7 +478,6 @@
   version = "v1.1.5"
 
 [[projects]]
-  branch = "master"
   digest = "1:b18ffc558326ebaed3b4a175617f1e12ed4e3f53d6ebfe5ba372a3de16d22278"
   name = "github.com/lib/pq"
   packages = [
@@ -476,6 +487,7 @@
   ]
   pruneopts = "UT"
   revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:f3f143e9085a1fbff293e8f131f35c6f9d6b2023002fd719a08655b1a9c6e745"
@@ -1348,6 +1360,8 @@
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",
+    "github.com/RTradeLtd/database",
+    "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/grpc/temporal/request",
     "github.com/RTradeLtd/grpc/temporal/response",
@@ -1369,8 +1383,6 @@
     "github.com/ipfs/ipfs-cluster/api",
     "github.com/ipfs/ipfs-cluster/api/rest/client",
     "github.com/jinzhu/gorm",
-    "github.com/jinzhu/gorm/dialects/postgres",
-    "github.com/lib/pq",
     "github.com/libp2p/go-libp2p",
     "github.com/libp2p/go-libp2p-crypto",
     "github.com/libp2p/go-libp2p-host",
@@ -1388,7 +1400,6 @@
     "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
     "github.com/zsais/go-gin-prometheus",
-    "golang.org/x/crypto/bcrypt",
     "google.golang.org/grpc",
   ]
   solver-name = "gps-cdcl"

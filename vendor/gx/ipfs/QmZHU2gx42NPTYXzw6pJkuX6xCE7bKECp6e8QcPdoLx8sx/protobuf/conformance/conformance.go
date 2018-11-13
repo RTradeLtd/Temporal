@@ -39,9 +39,9 @@ import (
 	"io"
 	"os"
 
-	pb "github.com/golang/protobuf/conformance/internal/conformance_proto"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
+	pb "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/conformance/internal/conformance_proto"
+	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/jsonpb"
+	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
 )
 
 func main() {

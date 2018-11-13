@@ -22,7 +22,7 @@ import (
 	_ "net/http/pprof"
 	"runtime"
 
-	"github.com/dgraph-io/badger/badger/cmd"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger/badger/cmd"
 )
 
 func main() {

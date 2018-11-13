@@ -4,10 +4,10 @@ import (
 	"errors"
 	"io"
 
-	proto "github.com/gogo/protobuf/proto"
-	msgio "github.com/libp2p/go-msgio"
+	msgio "gx/ipfs/QmcxL9MDzSU5Mj1GcWZD8CXkAFuJXjdbjotZ93o371bKSf/go-msgio"
+	proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 
-	mc "github.com/multiformats/go-multicodec"
+	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
 )
 
 var Header []byte

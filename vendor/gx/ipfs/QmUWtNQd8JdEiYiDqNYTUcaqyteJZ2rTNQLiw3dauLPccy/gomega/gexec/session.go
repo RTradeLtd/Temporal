@@ -10,8 +10,8 @@ import (
 	"sync"
 	"syscall"
 
-	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
+	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega"
+	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/gbytes"
 )
 
 const INVALID_EXIT_CODE = 254

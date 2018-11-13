@@ -12,9 +12,9 @@ import (
 	"testing"
 	"unicode"
 
-	"golang.org/x/text/collate"
-	"golang.org/x/text/language"
-	"golang.org/x/text/unicode/rangetable"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/collate"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/unicode/rangetable"
 )
 
 // assigned is used to only test runes that are inside the scope of the Unicode

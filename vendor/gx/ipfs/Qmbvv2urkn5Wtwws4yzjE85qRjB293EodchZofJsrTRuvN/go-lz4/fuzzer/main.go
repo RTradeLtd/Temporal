@@ -3,7 +3,7 @@ package main
 import (
 	"math/rand"
 
-	"github.com/bkaradzic/go-lz4"
+	"gx/ipfs/Qmbvv2urkn5Wtwws4yzjE85qRjB293EodchZofJsrTRuvN/go-lz4"
 
 	// lz4's API matches snappy's, so we can easily see how it performs
 	// lz4 "code.google.com/p/snappy-go/snappy"

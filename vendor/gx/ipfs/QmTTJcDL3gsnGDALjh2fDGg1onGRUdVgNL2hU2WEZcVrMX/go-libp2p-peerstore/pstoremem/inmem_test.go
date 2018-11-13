@@ -3,8 +3,8 @@ package pstoremem
 import (
 	"testing"
 
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	pt "github.com/libp2p/go-libp2p-peerstore/test"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	pt "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore/test"
 )
 
 func TestInMemoryPeerstore(t *testing.T) {

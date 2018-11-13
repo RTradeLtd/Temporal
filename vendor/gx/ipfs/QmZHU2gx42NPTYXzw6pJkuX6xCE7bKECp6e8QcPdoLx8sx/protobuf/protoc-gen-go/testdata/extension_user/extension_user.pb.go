@@ -3,11 +3,11 @@
 
 package extension_user // import "github.com/golang/protobuf/protoc-gen-go/testdata/extension_user"
 
-import proto "github.com/golang/protobuf/proto"
+import proto "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import extension_base "github.com/golang/protobuf/protoc-gen-go/testdata/extension_base"
-import extension_extra "github.com/golang/protobuf/protoc-gen-go/testdata/extension_extra"
+import extension_base "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/extension_base"
+import extension_extra "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/extension_extra"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

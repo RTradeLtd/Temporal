@@ -24,10 +24,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/prometheus/common/expfmt"
-	"github.com/prometheus/common/model"
+	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/expfmt"
+	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/model"
 
-	"github.com/prometheus/client_golang/prometheus"
+	"gx/ipfs/QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS/client_golang/prometheus"
 )
 
 // FromGatherer triggers a metric collection by the provided Gatherer (which is

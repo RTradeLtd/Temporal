@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
 )
 
 var errIncorrectNetAddr = fmt.Errorf("incorrect network addr conversion")

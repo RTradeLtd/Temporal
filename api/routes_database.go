@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/database/models"
 	"github.com/gin-gonic/gin"
 )
 

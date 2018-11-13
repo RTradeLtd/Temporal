@@ -3,7 +3,7 @@ package sm_yamux
 import (
 	"testing"
 
-	test "github.com/libp2p/go-stream-muxer/test"
+	test "gx/ipfs/QmY9JXR3FupnYAYJWK9aMr9bCpqWKcToQ1tz8DVGTrHpHw/go-stream-muxer/test"
 )
 
 func TestYamuxTransport(t *testing.T) {

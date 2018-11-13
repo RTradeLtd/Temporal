@@ -6,7 +6,7 @@
 
 package leveldb
 
-import "github.com/syndtr/goleveldb/leveldb/comparer"
+import "gx/ipfs/QmbBhyDKsY4mbY6xsKt3qu9Y7FPvMJ6qbD8AMjYYvPRw1g/goleveldb/leveldb/comparer"
 
 type iComparer struct {
 	ucmp comparer.Comparer

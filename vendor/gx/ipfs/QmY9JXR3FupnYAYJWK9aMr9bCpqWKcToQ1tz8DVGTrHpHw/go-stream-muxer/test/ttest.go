@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	smux "github.com/libp2p/go-stream-muxer"
+	smux "gx/ipfs/QmY9JXR3FupnYAYJWK9aMr9bCpqWKcToQ1tz8DVGTrHpHw/go-stream-muxer"
 )
 
 var randomness []byte

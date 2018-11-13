@@ -3,10 +3,10 @@ package gbytes_test
 import (
 	"time"
 
-	. "github.com/onsi/gomega/gbytes"
+	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/gbytes"
 
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega"
 )
 
 type speaker struct {

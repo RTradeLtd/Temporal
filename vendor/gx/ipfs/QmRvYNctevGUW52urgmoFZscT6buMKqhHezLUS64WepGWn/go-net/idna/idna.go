@@ -20,9 +20,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"golang.org/x/text/secure/bidirule"
-	"golang.org/x/text/unicode/bidi"
-	"golang.org/x/text/unicode/norm"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/secure/bidirule"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/unicode/bidi"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/unicode/norm"
 )
 
 // NOTE: Unlike common practice in Go APIs, the functions will return a

@@ -3,10 +3,10 @@
 
 package plugin_go
 
-import proto "github.com/gogo/protobuf/proto"
+import proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 import fmt "fmt"
 import math "math"
-import descriptor "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
+import descriptor "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/protoc-gen-gogo/descriptor"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

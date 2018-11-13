@@ -14,9 +14,9 @@ import (
 	"io"
 	"strings"
 
-	"github.com/ipfs/go-ipfs-cmdkit"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 
-	logging "github.com/ipfs/go-log"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
 )
 
 const DefaultOutputEncoding = JSON

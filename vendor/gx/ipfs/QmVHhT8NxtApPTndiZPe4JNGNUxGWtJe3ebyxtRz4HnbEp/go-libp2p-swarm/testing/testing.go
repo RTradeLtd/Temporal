@@ -4,19 +4,19 @@ import (
 	"context"
 	"testing"
 
-	csms "github.com/libp2p/go-conn-security-multistream"
-	metrics "github.com/libp2p/go-libp2p-metrics"
-	inet "github.com/libp2p/go-libp2p-net"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	pstoremem "github.com/libp2p/go-libp2p-peerstore/pstoremem"
-	secio "github.com/libp2p/go-libp2p-secio"
-	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
-	tcp "github.com/libp2p/go-tcp-transport"
-	tu "github.com/libp2p/go-testutil"
-	msmux "github.com/whyrusleeping/go-smux-multistream"
-	yamux "github.com/whyrusleeping/go-smux-yamux"
+	msmux "gx/ipfs/QmRYdszNNq7ykPqavVNKMVyyjX59AcTisHqzussDfhwHkK/go-smux-multistream"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	pstoremem "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore/pstoremem"
+	tcp "gx/ipfs/QmTkKN1x5Jvhc5Np55gJzD3PQ6GL74aKm9145t9WbvJyrB/go-tcp-transport"
+	csms "gx/ipfs/QmVCtDMyervzvQTi3yZrfTLXtXSuUYQaowCG9hJdHu6gAM/go-conn-security-multistream"
+	secio "gx/ipfs/QmXVoVfwEXZdG9zNNHE9in55SepeSJM5GSETEyWNSNMygc/go-libp2p-secio"
+	inet "gx/ipfs/QmXuRkCR7BNQa9uqfpTiFWsTQLzmTWYg91Ja1w95gnqb6u/go-libp2p-net"
+	tu "gx/ipfs/Qma6ESRQTf1ZLPgzpCwDTqQJefPnU6uLvMjP18vK8EWp8L/go-testutil"
+	yamux "gx/ipfs/Qmdps3CYh5htGQSrPvzg5PHouVexLmtpbuLCqc4vuej8PC/go-smux-yamux"
+	tptu "gx/ipfs/QmeUjhpfGkrMtE6s7JjU2xLhfzprSDh16QUxGVr3wTrKSx/go-libp2p-transport-upgrader"
+	metrics "gx/ipfs/QmeaTjsfPf6vQ3WU2BUdjakgvKUHpuv3Fjxvb75N5iksMx/go-libp2p-metrics"
 
-	swarm "github.com/libp2p/go-libp2p-swarm"
+	swarm "gx/ipfs/QmVHhT8NxtApPTndiZPe4JNGNUxGWtJe3ebyxtRz4HnbEp/go-libp2p-swarm"
 )
 
 type config struct {

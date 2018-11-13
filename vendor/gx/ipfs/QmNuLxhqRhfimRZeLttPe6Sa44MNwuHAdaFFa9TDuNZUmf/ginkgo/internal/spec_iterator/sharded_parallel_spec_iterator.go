@@ -1,6 +1,6 @@
 package spec_iterator
 
-import "github.com/onsi/ginkgo/internal/spec"
+import "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/internal/spec"
 
 type ShardedParallelIterator struct {
 	specs    []*spec.Spec

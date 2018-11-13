@@ -3,7 +3,7 @@
 
 package beta // import "github.com/golang/protobuf/protoc-gen-go/testdata/imports/test_b_1"
 
-import proto "github.com/golang/protobuf/proto"
+import proto "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

@@ -1,6 +1,6 @@
 package loggabletracer
 
-import "github.com/opentracing/opentracing-go"
+import "gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
 
 // A SpanEvent is emitted when a mutating command is called on a Span.
 type SpanEvent interface{}

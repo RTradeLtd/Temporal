@@ -4,7 +4,7 @@
 
 package cases
 
-import "golang.org/x/text/transform"
+import "gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/transform"
 
 // A context is used for iterating over source bytes, fetching case info and
 // writing to a destination buffer.

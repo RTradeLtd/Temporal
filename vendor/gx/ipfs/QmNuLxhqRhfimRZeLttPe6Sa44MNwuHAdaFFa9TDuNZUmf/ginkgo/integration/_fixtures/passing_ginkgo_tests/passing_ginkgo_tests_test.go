@@ -1,9 +1,9 @@
 package passing_ginkgo_tests_test
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/integration/_fixtures/passing_ginkgo_tests"
 	. "github.com/onsi/gomega"
+	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo"
+	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/integration/_fixtures/passing_ginkgo_tests"
 )
 
 var _ = Describe("PassingGinkgoTests", func() {

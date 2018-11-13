@@ -4,11 +4,11 @@ import (
 	"sync"
 	"time"
 
-	wantlist "github.com/ipfs/go-bitswap/wantlist"
+	wantlist "gx/ipfs/QmNkxFCmPtr2RQxjZNRCNryLud4L9wMEiBJsLgF14MqTHj/go-bitswap/wantlist"
 
-	cid "github.com/ipfs/go-cid"
-	pq "github.com/ipfs/go-ipfs-pq"
-	peer "github.com/libp2p/go-libp2p-peer"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	pq "gx/ipfs/QmZUbTDJ39JpvtFCSubiWeUTQRvMA1tVE5RZCJrY4oeAsC/go-ipfs-pq"
 )
 
 type peerRequestQueue interface {

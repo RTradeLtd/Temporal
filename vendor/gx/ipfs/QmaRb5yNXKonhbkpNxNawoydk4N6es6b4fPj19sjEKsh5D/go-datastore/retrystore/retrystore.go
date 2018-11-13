@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	ds "github.com/ipfs/go-datastore"
+	ds "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
 )
 
 // Datastore wraps a Batching datastore with a
