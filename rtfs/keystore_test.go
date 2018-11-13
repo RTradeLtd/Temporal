@@ -15,10 +15,49 @@ func TestKeystoreManager_noCustomPath(t *testing.T) {
 	rtfs.GenerateKeystoreManager()
 }
 
-/*
-	if we dont disable gocache, the key generate will always be the same
-	env GOCACHE=off go test -v ....
-*/
+func TestKeystoreManager_ExportKey(t *testing.T) {
+	defer func() {
+		if err := os.RemoveAll("temp"); err != nil {
+			t.Fatal(err)
+		}
+	}()
+	km, err := rtfs.GenerateKeystoreManager("temp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pk1, err := km.CreateAndSaveKey("testkeyed", ci.Ed25519, 256)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mnemonic, err := km.ExportKeyToMnemonic("testkeyed")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pk2, err := km.MnemonicToKey(mnemonic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// ensure that we properly recovered the key
+	if valid := pk1.Equals(pk2); !valid {
+		t.Fatal("failed to properly recover ed key")
+	}
+	pk1, err = km.CreateAndSaveKey("testkeyrsa", ci.RSA, 2048)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mnemonic, err = km.ExportKeyToMnemonic("testkeyrsa")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pk2, err = km.MnemonicToKey(mnemonic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if valid := pk1.Equals(pk2); !valid {
+		t.Fatal("failed to properly recover rsa key")
+	}
+}
+
 func TestKeystoreManager(t *testing.T) {
 	defer func() {
 		if err := os.RemoveAll("temp"); err != nil {
