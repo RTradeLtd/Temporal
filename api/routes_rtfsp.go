@@ -11,6 +11,7 @@ import (
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfs"
+	ipfs_orchestrator "github.com/RTradeLtd/grpc/ipfs-orchestrator"
 	gocid "github.com/ipfs/go-cid"
 	log "github.com/sirupsen/logrus"
 
@@ -530,105 +531,118 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 }
 
 // CreateHostedIPFSNetworkEntryInDatabase is used to create an entry in the database for a private ipfs network
-// TODO: make bootstrap peers and related config optional
 func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
-	// lock down as admin route for now
+	// retrieve fields
 	username := GetAuthenticatedUserFromContext(c)
-	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailWithMissingField(c, "network_name")
 		return
 	}
-	forms := api.extractPostForms(c, "network_name", "api_url", "swarm_key")
-	if len(forms) == 0 {
-		return
-	}
+	logger := api.LogWithUser(username).WithField("network_name", networkName)
+	logger.Info("network creation request received")
 
-	bPeers, exists := c.GetPostFormArray("bootstrap_peers")
-	if !exists {
-		FailWithMissingField(c, "bootstrap_peers")
-		return
-	}
-	nodeAddresses, exists := c.GetPostFormArray("local_node_addresses")
-	if !exists {
-		FailWithMissingField(c, "local_node_addresses")
-		return
-	}
+	// retrieve parameters - thse are all optional
+	swarmKey, _ := c.GetPostForm("swarm_key")
+	bPeers, _ := c.GetPostFormArray("bootstrap_peers")
 	users := c.PostFormArray("users")
-	var localNodeAddresses []string
-	var bootstrapPeerAddresses []string
+	if users == nil {
+		users = []string{username}
+	} else {
+		users = append(users, username)
+	}
 
-	if len(nodeAddresses) != len(bPeers) {
-		Fail(c, errors.New("length of local_node_addresses and bootstrap_peers must be equal"))
-		return
-	}
-	for k, v := range bPeers {
-		addr, err := utils.GenerateMultiAddrFromString(v)
-		if err != nil {
-			// this is entirely on the user, so lets not bother logging as it will just make noise
-			Fail(c, err)
-			return
-		}
-		valid, err := utils.ParseMultiAddrForIPFSPeer(addr)
-		if err != nil {
-			// this is entirely on the user, so lets not bother logging as it will just make noise
-			Fail(c, err)
-			return
-		}
-		if !valid {
-			api.l.Errorf("provided peer %s is not a valid bootstrap peer", addr)
-			Fail(c, fmt.Errorf("provided peer %s is not a valid bootstrap peer", addr))
-			return
-		}
-		addr, err = utils.GenerateMultiAddrFromString(nodeAddresses[k])
-		if err != nil {
-			// this is entirely on the user, so lets not bother logging as it will just make noise
-			Fail(c, err)
-			return
-		}
-		valid, err = utils.ParseMultiAddrForIPFSPeer(addr)
-		if err != nil {
-			// this is entirely on the user, so lets not bother logging as it will just make noise
-			Fail(c, err)
-			return
-		}
-		if !valid {
-			// this is entirely on the user, so lets not bother logging as it will just make noise
-			Fail(c, fmt.Errorf("provided peer %s is not a valid ipfs peer", addr))
-			return
-		}
-		bootstrapPeerAddresses = append(bootstrapPeerAddresses, v)
-		localNodeAddresses = append(localNodeAddresses, nodeAddresses[k])
-	}
-	// previously we were initializing like `var args map[string]*[]string` which was causing some issues.
-	args := make(map[string][]string)
-	args["local_node_peer_addresses"] = localNodeAddresses
-	if len(bootstrapPeerAddresses) > 0 {
-		args["bootstrap_peer_addresses"] = bootstrapPeerAddresses
-	}
+	// create entry for network
 	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	network, err := manager.CreateHostedPrivateNetwork(forms["network_name"], forms["api_url"], forms["swarm_key"], args, users)
+	network, err := manager.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, users)
 	if err != nil {
 		api.LogError(err, eh.NetworkCreationError)(c)
 		return
 	}
+	logger.WithField("db_id", network.ID).Info("database entry created")
 
+	// add network to users
+	if err := api.um.AddIPFSNetworkForUser(username, networkName); err != nil {
+		api.LogError(err, eh.NetworkCreationError)(c)
+		return
+	}
+	logger.WithField("user", username).Info("network added to user")
 	if len(users) > 0 {
 		for _, v := range users {
-			if err := api.um.AddIPFSNetworkForUser(v, forms["network_name"]); err != nil {
+			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil {
 				api.LogError(err, eh.NetworkCreationError)(c)
 				return
 			}
-		}
-	} else {
-		if err := api.um.AddIPFSNetworkForUser(username, forms["network_name"]); err != nil {
-			api.LogError(err, eh.NetworkCreationError)(c)
-			return
+			logger.WithField("user", v).Info("network added to user")
 		}
 	}
 
-	api.LogWithUser(username).Info("private ipfs network created")
-	Respond(c, http.StatusOK, gin.H{"response": network})
+	// request orchestrator to start up network
+	resp, err := api.orch.StartNetwork(c, &ipfs_orchestrator.NetworkRequest{
+		Network: networkName,
+	})
+	if err != nil {
+		api.LogError(err, "failed to start private network",
+			"network_name", networkName,
+		)(c)
+	}
+	logger.WithField("response", resp).Info("network node started")
 
+	// respond with network details
+	Respond(c, http.StatusOK, gin.H{
+		"response": gin.H{
+			"id":           network.ID,
+			"network_name": networkName,
+			"api_url":      resp.GetApi(),
+			"swarm_key":    resp.GetSwarmKey(),
+			"users":        network.Users,
+		},
+	})
+}
+
+func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailWithMissingField(c, "network_name")
+		return
+	}
+	logger := api.LogWithUser(username).WithField("network_name", networkName)
+	logger.Info("private ipfs network shutdown requested")
+
+	// retrieve authorized networks to check if person has access
+	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
+	if err != nil {
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
+		return
+	}
+	var found bool
+	for _, n := range networks {
+		if n == networkName {
+			found = true
+			break
+		}
+	}
+	if !found {
+		logger.Info("user not authorized to access network")
+		Respond(c, http.StatusUnauthorized, gin.H{
+			"response": "user does not have access to requested network",
+		})
+		return
+	}
+
+	if _, err := api.orch.StopNetwork(c, &ipfs_orchestrator.NetworkRequest{
+		Network: networkName}); err != nil {
+		api.LogError(err, "failed to stop network")(c)
+		return
+	}
+	logger.Info("network stopped")
+
+	Respond(c, http.StatusOK, gin.H{
+		"response": gin.H{
+			"network_name": networkName,
+		},
+	})
 }
 
 // GetIPFSPrivateNetworkByName is used to get connection information for a priavate ipfs network
@@ -639,6 +653,10 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 		return
 	}
 	netName := c.Param("name")
+	logger := api.LogWithUser(username).WithField("netowrk_name", netName)
+	logger.Info("private ipfs network by name requested")
+
+	// retrieve details from database
 	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
 	net, err := manager.GetNetworkByName(netName)
 	if err != nil {
@@ -646,8 +664,24 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("private ipfs network by name requested")
-	Respond(c, http.StatusOK, gin.H{"response": net})
+	// retrieve additional stats if requested
+	if c.Param("stats") == "true" {
+		logger.Info("retrieving additional stats from orchestrator")
+		stats, err := api.orch.NetworkStats(c, &ipfs_orchestrator.NetworkRequest{Network: netName})
+		if err != nil {
+			api.LogError(err, eh.NetworkSearchError)(c)
+			return
+		}
+
+		Respond(c, http.StatusOK, gin.H{"response": gin.H{
+			"database":      net,
+			"network_stats": stats,
+		}})
+	} else {
+		Respond(c, http.StatusOK, gin.H{"response": gin.H{
+			"database": net,
+		}})
+	}
 }
 
 // GetAuthorizedPrivateNetworks is used to get the private

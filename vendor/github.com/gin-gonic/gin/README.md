@@ -9,6 +9,7 @@
 [![Join the chat at https://gitter.im/gin-gonic/gin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gin-gonic/gin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Sourcegraph](https://sourcegraph.com/github.com/gin-gonic/gin/-/badge.svg)](https://sourcegraph.com/github.com/gin-gonic/gin?badge)
 [![Open Source Helpers](https://www.codetriage.com/gin-gonic/gin/badges/users.svg)](https://www.codetriage.com/gin-gonic/gin)
+[![Release](https://img.shields.io/github/release/gin-gonic/gin.svg?style=flat-square)](https://github.com/gin-gonic/gin/releases)
 
 Gin is a web framework written in Go (Golang). It features a martini-like API with much better performance, up to 40 times faster thanks to [httprouter](https://github.com/julienschmidt/httprouter). If you need performance and good productivity, you will love Gin.
 
@@ -58,6 +59,8 @@ Gin is a web framework written in Go (Golang). It features a martini-like API wi
     - [Bind form-data request with custom struct](#bind-form-data-request-with-custom-struct)
     - [Try to bind body into different structs](#try-to-bind-body-into-different-structs)
     - [http2 server push](#http2-server-push)
+    - [Define format for the log of routes](#define-format-for-the-log-of-routes)
+    - [Set and get a cookie](#set-and-get-a-cookie)
 - [Testing](#testing)
 - [Users](#users)
 
@@ -526,7 +529,7 @@ func main() {
 
 ### Model binding and validation
 
-To bind a request body into a type, use model binding. We currently support binding of JSON, XML and standard form values (foo=bar&boo=baz).
+To bind a request body into a type, use model binding. We currently support binding of JSON, XML, YAML and standard form values (foo=bar&boo=baz).
 
 Gin uses [**go-playground/validator.v8**](https://github.com/go-playground/validator) for validation. Check the full docs on tags usage [here](http://godoc.org/gopkg.in/go-playground/validator.v8#hdr-Baked_In_Validators_and_Tags).
 
@@ -534,10 +537,10 @@ Note that you need to set the corresponding binding tag on all fields you want t
 
 Also, Gin provides two sets of methods for binding:
 - **Type** - Must bind
-  - **Methods** - `Bind`, `BindJSON`, `BindXML`, `BindQuery`
+  - **Methods** - `Bind`, `BindJSON`, `BindXML`, `BindQuery`, `BindYAML`
   - **Behavior** - These methods use `MustBindWith` under the hood. If there is a binding error, the request is aborted with `c.AbortWithError(400, err).SetType(ErrorTypeBind)`. This sets the response status code to 400 and the `Content-Type` header is set to `text/plain; charset=utf-8`. Note that if you try to set the response code after this, it will result in a warning `[GIN-debug] [WARNING] Headers were already written. Wanted to override status code 400 with 422`. If you wish to have greater control over the behavior, consider using the `ShouldBind` equivalent method.
 - **Type** - Should bind
-  - **Methods** - `ShouldBind`, `ShouldBindJSON`, `ShouldBindXML`, `ShouldBindQuery`
+  - **Methods** - `ShouldBind`, `ShouldBindJSON`, `ShouldBindXML`, `ShouldBindQuery`, `ShouldBindYAML`
   - **Behavior** - These methods use `ShouldBindWith` under the hood. If there is a binding error, the error is returned and it is the developer's responsibility to handle the request and error appropriately.
 
 When using the Bind-method, Gin tries to infer the binder depending on the Content-Type header. If you are sure what you are binding, you can use `MustBindWith` or `ShouldBindWith`.
@@ -557,7 +560,7 @@ func main() {
 	// Example for binding JSON ({"user": "manu", "password": "123"})
 	router.POST("/loginJSON", func(c *gin.Context) {
 		var json Login
-		if err := c.ShouldBindXML(&json); err != nil {
+		if err := c.ShouldBindJSON(&json); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -657,6 +660,7 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 )
 
+// Booking contains binded and validated data.
 type Booking struct {
 	CheckIn  time.Time `form:"check_in" binding:"required,bookabledate" time_format:"2006-01-02"`
 	CheckOut time.Time `form:"check_out" binding:"required,gtfield=CheckIn" time_format:"2006-01-02"`
@@ -820,12 +824,12 @@ form.html
 <form action="/" method="POST">
     <p>Check some colors</p>
     <label for="red">Red</label>
-    <input type="checkbox" name="colors[]" value="red" id="red" />
+    <input type="checkbox" name="colors[]" value="red" id="red">
     <label for="green">Green</label>
-    <input type="checkbox" name="colors[]" value="green" id="green" />
+    <input type="checkbox" name="colors[]" value="green" id="green">
     <label for="blue">Blue</label>
-    <input type="checkbox" name="colors[]" value="blue" id="blue" />
-    <input type="submit" />
+    <input type="checkbox" name="colors[]" value="blue" id="blue">
+    <input type="submit">
 </form>
 ```
 
@@ -1018,7 +1022,7 @@ func main() {
 	})
 	
 	// listen and serve on 0.0.0.0:8080
-	r.Run(":8080)
+	r.Run(":8080")
 }
 ```
 
@@ -1156,7 +1160,7 @@ You may use custom delims
 ```go
 	r := gin.Default()
 	r.Delims("{[{", "}]}")
-	r.LoadHTMLGlob("/path/to/templates"))
+	r.LoadHTMLGlob("/path/to/templates")
 ```
 
 #### Custom Template Funcs
@@ -1718,11 +1722,11 @@ type StructX struct {
 }
 
 type StructY struct {
-    Y StructX `form:"name_y"` // HERE hava form
+    Y StructX `form:"name_y"` // HERE have form
 }
 
 type StructZ struct {
-    Z *StructZ `form:"name_z"` // HERE hava form
+    Z *StructZ `form:"name_z"` // HERE have form
 }
 ```
 
@@ -1835,6 +1839,78 @@ func main() {
 }
 ```
 
+### Define format for the log of routes
+
+The default log of routes is:
+```
+[GIN-debug] POST   /foo                      --> main.main.func1 (3 handlers)
+[GIN-debug] GET    /bar                      --> main.main.func2 (3 handlers)
+[GIN-debug] GET    /status                   --> main.main.func3 (3 handlers)
+```
+
+If you want to log this information in given format (e.g. JSON, key values or something else), then you can define this format with `gin.DebugPrintRouteFunc`.
+In the example below, we log all routes with standard log package but you can use another log tools that suits of your needs.
+```go
+import (
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	r := gin.Default()
+	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
+		log.Printf("endpoint %v %v %v %v\n", httpMethod, absolutePath, handlerName, nuHandlers)
+	}
+
+	r.POST("/foo", func(c *gin.Context) {
+		c.JSON(http.StatusOK, "foo")
+	})
+
+	r.GET("/bar", func(c *gin.Context) {
+		c.JSON(http.StatusOK, "bar")
+	})
+
+	r.GET("/status", func(c *gin.Context) {
+		c.JSON(http.StatusOK, "ok")
+	})
+
+	// Listen and Server in http://0.0.0.0:8080
+	r.Run()
+}
+```
+
+### Set and get a cookie
+
+```go
+import (
+    "fmt"
+
+    "github.com/gin-gonic/gin"
+)
+
+func main() {
+
+    router := gin.Default()
+
+    router.GET("/cookie", func(c *gin.Context) {
+
+        cookie, err := c.Cookie("gin_cookie")
+
+        if err != nil {
+            cookie = "NotSet"
+            c.SetCookie("gin_cookie", "test", 3600, "/", "localhost", false, true)
+        }
+
+        fmt.Printf("Cookie value: %s \n", cookie)
+    })
+
+    router.Run()
+}
+```
+
+
 ## Testing
 
 The `net/http/httptest` package is preferable way for HTTP testing.
@@ -1885,5 +1961,7 @@ func TestPingRoute(t *testing.T) {
 
 Awesome project lists using [Gin](https://github.com/gin-gonic/gin) web framework.
 
-* [drone](https://github.com/drone/drone): Drone is a Continuous Delivery platform built on Docker, written in Go
+* [drone](https://github.com/drone/drone): Drone is a Continuous Delivery platform built on Docker, written in Go.
 * [gorush](https://github.com/appleboy/gorush): A push notification server written in Go.
+* [fnproject](https://github.com/fnproject/fn): The container native, cloud agnostic serverless platform.
+* [photoprism](https://github.com/photoprism/photoprism): Personal photo management powered by Go and Google TensorFlow.

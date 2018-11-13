@@ -31,6 +31,7 @@ const (
 	MIMEPlain             = binding.MIMEPlain
 	MIMEPOSTForm          = binding.MIMEPOSTForm
 	MIMEMultipartPOSTForm = binding.MIMEMultipartPOSTForm
+	MIMEYAML              = binding.MIMEYAML
 	BodyBytesKey          = "_gin-gonic/gin/bodybyteskey"
 )
 
@@ -414,7 +415,6 @@ func (c *Context) PostFormArray(key string) []string {
 // a boolean value whether at least one value exists for the given key.
 func (c *Context) GetPostFormArray(key string) ([]string, bool) {
 	req := c.Request
-	req.ParseForm()
 	req.ParseMultipartForm(c.engine.MaxMultipartMemory)
 	if values := req.PostForm[key]; len(values) > 0 {
 		return values, true
@@ -437,7 +437,6 @@ func (c *Context) PostFormMap(key string) map[string]string {
 // whether at least one value exists for the given key.
 func (c *Context) GetPostFormMap(key string) (map[string]string, bool) {
 	req := c.Request
-	req.ParseForm()
 	req.ParseMultipartForm(c.engine.MaxMultipartMemory)
 	dicts, exist := c.get(req.PostForm, key)
 
@@ -465,6 +464,11 @@ func (c *Context) get(m map[string][]string, key string) (map[string]string, boo
 
 // FormFile returns the first file for the provided form key.
 func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
+	if c.Request.MultipartForm == nil {
+		if err := c.Request.ParseMultipartForm(c.engine.MaxMultipartMemory); err != nil {
+			return nil, err
+		}
+	}
 	_, fh, err := c.Request.FormFile(name)
 	return fh, err
 }
@@ -521,8 +525,13 @@ func (c *Context) BindQuery(obj interface{}) error {
 	return c.MustBindWith(obj, binding.Query)
 }
 
+// BindYAML is a shortcut for c.MustBindWith(obj, binding.YAML).
+func (c *Context) BindYAML(obj interface{}) error {
+	return c.MustBindWith(obj, binding.YAML)
+}
+
 // MustBindWith binds the passed struct pointer using the specified binding engine.
-// It will abort the request with HTTP 400 if any error ocurrs.
+// It will abort the request with HTTP 400 if any error occurs.
 // See the binding package.
 func (c *Context) MustBindWith(obj interface{}, b binding.Binding) (err error) {
 	if err = c.ShouldBindWith(obj, b); err != nil {
@@ -558,6 +567,11 @@ func (c *Context) ShouldBindXML(obj interface{}) error {
 // ShouldBindQuery is a shortcut for c.ShouldBindWith(obj, binding.Query).
 func (c *Context) ShouldBindQuery(obj interface{}) error {
 	return c.ShouldBindWith(obj, binding.Query)
+}
+
+// ShouldBindYAML is a shortcut for c.ShouldBindWith(obj, binding.YAML).
+func (c *Context) ShouldBindYAML(obj interface{}) error {
+	return c.ShouldBindWith(obj, binding.YAML)
 }
 
 // ShouldBindWith binds the passed struct pointer using the specified binding engine.
@@ -711,6 +725,7 @@ func (c *Context) Cookie(name string) (string, error) {
 	return val, nil
 }
 
+// Render writes the response headers and calls render.Render to render data.
 func (c *Context) Render(code int, r render.Render) {
 	c.Status(code)
 
@@ -833,6 +848,7 @@ func (c *Context) SSEvent(name string, message interface{}) {
 	})
 }
 
+// Stream sends a streaming response.
 func (c *Context) Stream(step func(w io.Writer) bool) {
 	w := c.Writer
 	clientGone := w.CloseNotify()
@@ -854,6 +870,7 @@ func (c *Context) Stream(step func(w io.Writer) bool) {
 /******** CONTENT NEGOTIATION *******/
 /************************************/
 
+// Negotiate contains all negotiations data.
 type Negotiate struct {
 	Offered  []string
 	HTMLName string
@@ -863,6 +880,7 @@ type Negotiate struct {
 	Data     interface{}
 }
 
+// Negotiate calls different Render according acceptable Accept format.
 func (c *Context) Negotiate(code int, config Negotiate) {
 	switch c.NegotiateFormat(config.Offered...) {
 	case binding.MIMEJSON:
@@ -882,6 +900,7 @@ func (c *Context) Negotiate(code int, config Negotiate) {
 	}
 }
 
+// NegotiateFormat returns an acceptable Accept format.
 func (c *Context) NegotiateFormat(offered ...string) string {
 	assert1(len(offered) > 0, "you must provide at least one offer")
 
@@ -901,6 +920,7 @@ func (c *Context) NegotiateFormat(offered ...string) string {
 	return ""
 }
 
+// SetAccepted sets Accept header data.
 func (c *Context) SetAccepted(formats ...string) {
 	c.Accepted = formats
 }

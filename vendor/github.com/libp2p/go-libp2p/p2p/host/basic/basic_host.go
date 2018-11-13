@@ -5,8 +5,6 @@ import (
 	"io"
 	"time"
 
-	identify "github.com/libp2p/go-libp2p/p2p/protocol/identify"
-
 	logging "github.com/ipfs/go-log"
 	goprocess "github.com/jbenet/goprocess"
 	goprocessctx "github.com/jbenet/goprocess/context"
@@ -15,6 +13,8 @@ import (
 	peer "github.com/libp2p/go-libp2p-peer"
 	pstore "github.com/libp2p/go-libp2p-peerstore"
 	protocol "github.com/libp2p/go-libp2p-protocol"
+	identify "github.com/libp2p/go-libp2p/p2p/protocol/identify"
+	ping "github.com/libp2p/go-libp2p/p2p/protocol/ping"
 	ma "github.com/multiformats/go-multiaddr"
 	madns "github.com/multiformats/go-multiaddr-dns"
 	msmux "github.com/multiformats/go-multistream"
@@ -57,6 +57,7 @@ type BasicHost struct {
 	network    inet.Network
 	mux        *msmux.MultistreamMuxer
 	ids        *identify.IDService
+	pings      *ping.PingService
 	natmgr     NATManager
 	addrs      AddrsFactory
 	maResolver *madns.Resolver
@@ -97,6 +98,9 @@ type HostOpts struct {
 
 	// ConnManager is a libp2p connection manager
 	ConnManager ifconnmgr.ConnManager
+
+	// EnablePing indicates whether to instantiate the ping service
+	EnablePing bool
 }
 
 // NewHost constructs a new *BasicHost and activates it by attaching its stream and connection handlers to the given inet.Network.
@@ -148,6 +152,10 @@ func NewHost(ctx context.Context, net inet.Network, opts *HostOpts) (*BasicHost,
 	} else {
 		h.cmgr = opts.ConnManager
 		net.Notify(h.cmgr.Notifee())
+	}
+
+	if opts.EnablePing {
+		h.pings = ping.NewPingService(h)
 	}
 
 	net.SetConnHandler(h.newConnHandler)
@@ -223,7 +231,7 @@ func (h *BasicHost) newStreamHandler(s inet.Stream) {
 			}
 			logf("protocol EOF: %s (took %s)", s.Conn().RemotePeer(), took)
 		} else {
-			log.Infof("protocol mux failed: %s (took %s)", err, took)
+			log.Debugf("protocol mux failed: %s (took %s)", err, took)
 		}
 		s.Reset()
 		return
@@ -469,26 +477,42 @@ func (h *BasicHost) Addrs() []ma.Multiaddr {
 	return h.addrs(h.AllAddrs())
 }
 
+// mergeAddrs merges input address lists, leave only unique addresses
+func mergeAddrs(addrLists ...[]ma.Multiaddr) (uniqueAddrs []ma.Multiaddr) {
+	exists := make(map[string]bool)
+	for _, addrList := range addrLists {
+		for _, addr := range addrList {
+			k := string(addr.Bytes())
+			if exists[k] {
+				continue
+			}
+			exists[k] = true
+			uniqueAddrs = append(uniqueAddrs, addr)
+		}
+	}
+	return uniqueAddrs
+}
+
 // AllAddrs returns all the addresses of BasicHost at this moment in time.
 // It's ok to not include addresses if they're not available to be used now.
 func (h *BasicHost) AllAddrs() []ma.Multiaddr {
-	addrs, err := h.Network().InterfaceListenAddresses()
+	listenAddrs, err := h.Network().InterfaceListenAddresses()
 	if err != nil {
 		log.Debug("error retrieving network interface addrs")
 	}
-
-	if h.ids != nil { // add external observed addresses
-		addrs = append(addrs, h.ids.OwnObservedAddrs()...)
+	var observedAddrs []ma.Multiaddr
+	if h.ids != nil {
+		// peer observed addresses
+		observedAddrs = h.ids.OwnObservedAddrs()
+	}
+	var natAddrs []ma.Multiaddr
+	// natmgr is nil if we do not use nat option;
+	// h.natmgr.NAT() is nil if not ready, or no nat is available.
+	if h.natmgr != nil && h.natmgr.NAT() != nil {
+		natAddrs = h.natmgr.NAT().ExternalAddrs()
 	}
 
-	if h.natmgr != nil { // natmgr is nil if we do not use nat option.
-		nat := h.natmgr.NAT()
-		if nat != nil { // nat is nil if not ready, or no nat is available.
-			addrs = append(addrs, nat.ExternalAddrs()...)
-		}
-	}
-
-	return addrs
+	return mergeAddrs(listenAddrs, observedAddrs, natAddrs)
 }
 
 // Close shuts down the Host's services (network, etc).

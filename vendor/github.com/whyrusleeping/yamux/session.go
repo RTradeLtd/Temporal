@@ -63,7 +63,7 @@ type Session struct {
 
 	// sendCh is used to mark a stream as ready to send,
 	// or to send a header out directly.
-	sendCh chan sendReady
+	sendCh chan *sendReady
 
 	// recvDoneCh is closed when recv() exits to avoid a race
 	// between stream registration and stream shutdown
@@ -82,10 +82,16 @@ type Session struct {
 // sendReady is used to either mark a stream as ready
 // or to directly send a header
 type sendReady struct {
-	Hdr  []byte
-	Body io.Reader
-	Err  chan error
+	Hdr   []byte
+	Body  io.Reader
+	Err   chan error
+	Stage uint32
 }
+
+const (
+	stageInitial uint32 = iota
+	stageFinal
+)
 
 // newSession is used to construct a new session
 func newSession(config *Config, conn io.ReadWriteCloser, client bool, readBuf int) *Session {
@@ -104,7 +110,7 @@ func newSession(config *Config, conn io.ReadWriteCloser, client bool, readBuf in
 		inflight:   make(map[uint32]struct{}),
 		synCh:      make(chan struct{}, config.AcceptBacklog),
 		acceptCh:   make(chan *Stream, config.AcceptBacklog),
-		sendCh:     make(chan sendReady, 64),
+		sendCh:     make(chan *sendReady, 64),
 		recvDoneCh: make(chan struct{}),
 		shutdownCh: make(chan struct{}),
 	}
@@ -330,40 +336,82 @@ func (s *Session) keepalive() {
 // waitForSendErr waits to send a header, checking for a potential shutdown
 func (s *Session) waitForSend(hdr header, body io.Reader) error {
 	errCh := make(chan error, 1)
-	return s.waitForSendErr(hdr, body, errCh)
+	return s.waitForSendErr(hdr, body, errCh, nil)
 }
 
-// waitForSendErr waits to send a header with optional data, checking for a
-// potential shutdown. Since there's the expectation that sends can happen
-// in a timely manner, we enforce the connection write timeout here.
-func (s *Session) waitForSendErr(hdr header, body io.Reader, errCh chan error) error {
+func pooledTimer(d time.Duration) (*time.Timer, func()) {
 	t := timerPool.Get()
 	timer := t.(*time.Timer)
-	timer.Reset(s.config.ConnectionWriteTimeout)
-	defer func() {
+	timer.Reset(d)
+	cancelFn := func() {
 		timer.Stop()
 		select {
 		case <-timer.C:
 		default:
 		}
 		timerPool.Put(t)
-	}()
+	}
+	return timer, cancelFn
+}
 
-	ready := sendReady{Hdr: hdr, Body: body, Err: errCh}
+// waitForSendErr waits to send a header with optional data, checking for a
+// potential shutdown. Since there's the expectation that sends can happen
+// in a timely manner, we enforce the connection write timeout here.
+//
+// timeout is:
+//  * `nil` if (a) this is a control message (ping, go away, window update, etc.), or (b) if the user
+//    has not set a write deadline on the stream.
+//  * non-`nil` if (a) this is a user-requested write, and (b) the stream has a write deadline.
+func (s *Session) waitForSendErr(hdr header, body io.Reader, errCh chan error, timeout <-chan time.Time) error {
+	var connWriteTimerCh <-chan time.Time
+
+	if timeout == nil {
+		// fall back to the connection write timeout.
+		t, cancelFn := pooledTimer(s.config.ConnectionWriteTimeout)
+		defer cancelFn()
+		connWriteTimerCh = t.C
+	}
+
+	ready := &sendReady{Hdr: hdr, Body: body, Err: errCh, Stage: stageInitial}
+
 	select {
 	case s.sendCh <- ready:
 	case <-s.shutdownCh:
 		return ErrSessionShutdown
-	case <-timer.C:
-		return ErrConnectionWriteTimeout
+	case <-timeout:
+		// we timed out before the write went across the channel. keep connection open.
+		return ErrTimeout
+	case <-connWriteTimerCh:
+		// we timed out before the write went across the channel. keep connection open.
+		return ErrTimeout
 	}
 
+	// >>> The write went across the channel. >>>
+
+WAIT:
 	select {
 	case err := <-errCh:
 		return err
 	case <-s.shutdownCh:
 		return ErrSessionShutdown
-	case <-timer.C:
+	case <-timeout:
+		// A deadline had been set on the stream. Try to abort the write if it hasn't started.
+		if atomic.CompareAndSwapUint32(&ready.Stage, stageInitial, stageFinal) {
+			// If successful, the connection stays alive.
+			return ErrTimeout
+		}
+		// Otherwise, handle the partial write. Await the connection write timeout.
+		t, cancelFn := pooledTimer(s.config.ConnectionWriteTimeout)
+		connWriteTimerCh = t.C
+		defer cancelFn()
+		goto WAIT
+	case <-connWriteTimerCh:
+		// The connection write timeout has fired. Try to cancel the write only if this was a fallback timer.
+		if timeout == nil && atomic.CompareAndSwapUint32(&ready.Stage, stageInitial, stageFinal) {
+			return ErrTimeout
+		}
+		// Terminate the connection.
+		s.exitErr(ErrConnectionWriteTimeout)
 		return ErrConnectionWriteTimeout
 	}
 }
@@ -372,20 +420,11 @@ func (s *Session) waitForSendErr(hdr header, body io.Reader, errCh chan error) e
 // the send happens right here, we enforce the connection write timeout if we
 // can't queue the header to be sent.
 func (s *Session) sendNoWait(hdr header) error {
-	t := timerPool.Get()
-	timer := t.(*time.Timer)
-	timer.Reset(s.config.ConnectionWriteTimeout)
-	defer func() {
-		timer.Stop()
-		select {
-		case <-timer.C:
-		default:
-		}
-		timerPool.Put(t)
-	}()
+	timer, cancelFn := pooledTimer(s.config.ConnectionWriteTimeout)
+	defer cancelFn()
 
 	select {
-	case s.sendCh <- sendReady{Hdr: hdr}:
+	case s.sendCh <- &sendReady{Hdr: hdr, Stage: stageInitial}:
 		return nil
 	case <-s.shutdownCh:
 		return ErrSessionShutdown
@@ -399,6 +438,11 @@ func (s *Session) send() {
 	for {
 		select {
 		case ready := <-s.sendCh:
+			// Commit to perform the write, iff it has not expired prior to being consumed from the ch.
+			if !atomic.CompareAndSwapUint32(&ready.Stage, stageInitial, stageFinal) {
+				continue
+			}
+
 			// Send a header if ready
 			if ready.Hdr != nil {
 				sent := 0

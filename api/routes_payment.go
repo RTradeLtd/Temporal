@@ -127,7 +127,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	}
 	// send a call to the signer service, which will take the data, hash it, and sign it
 	// using the returned values, we have the information needed to send a call to the smart contract
-	resp, err := api.gc.GetSignedMessage(context.Background(), &signRequest)
+	resp, err := api.signer.GetSignedMessage(context.Background(), &signRequest)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return

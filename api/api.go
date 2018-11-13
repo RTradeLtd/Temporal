@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
-	"github.com/RTradeLtd/Temporal/grpc"
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
@@ -47,7 +47,8 @@ type API struct {
 	zm      *models.ZoneManager
 	rm      *models.RecordManager
 	l       *log.Logger
-	gc      *grpc.Client
+	signer  *clients.SignerClient
+	orch    *clients.IPFSOrchestratorClient
 	dc      *dash.Client
 	service string
 }
@@ -130,7 +131,13 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 			return nil, err
 		}
 	}
-	gc, err := grpc.NewGRPCClient(cfg, true)
+
+	signer, err := clients.NewSignerClient(cfg, os.Getenv("MODE") == "development")
+	if err != nil {
+		return nil, err
+	}
+
+	orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator, os.Getenv("MODE") == "development")
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +169,8 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		dm:      models.NewDropManager(dbm.DB),
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
 		ipfs:    ipfsManager,
-		gc:      gc,
+		signer:  signer,
+		orch:    orch,
 		dc:      dc,
 		zm:      models.NewZoneManager(dbm.DB),
 		rm:      models.NewRecordManager(dbm.DB),
@@ -318,6 +326,10 @@ func (api *API) setupRoutes() {
 		ipfsPrivate.GET("/network/:name", api.getIPFSPrivateNetworkByName) // admin locked
 		ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork)    // admin locked
 		ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
+		remove := ipfsPrivate.Group("/remove")
+		{
+			remove.POST("/network", api.stopIPFSPrivateNetwork)
+		}
 		new := ipfsPrivate.Group("/new")
 		{
 			new.POST("/network", api.createHostedIPFSNetworkEntryInDatabase)

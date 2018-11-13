@@ -9,18 +9,22 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   name = "github.com/RTradeLtd/ChainRider-Go"
   version = "v1.0.6"
-  
-[[constraint]]
+
+[[override]]
   name = "github.com/RTradeLtd/grpc"
-  version = "v1.0.3"
-  
-[[constraint]]
-  name = "github.com/RTradeLtd/config"
+  version = "v1.0.5"
+
+[[override]]
+  name = "github.com/RTradeLtd/database"
   version = "v1.0.7"
 
 [[constraint]]
+  name = "github.com/RTradeLtd/config"
+  version = "v1.0.9"
+
+[[constraint]]
   name = "github.com/RTradeLtd/cmd"
-  version = "v1.0.1-rc1"
+  version = "v1.0.4"
 
 [[constraint]]
   name = "github.com/RTradeLtd/crypto"
@@ -28,11 +32,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
-  version = "v2.0.0"
-
-[[constraint]]
-  name = "github.com/RTradeLtd/database"
-  branch = "master"
+  version = "v2.0.4"
 
 # IPFS
 

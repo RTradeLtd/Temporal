@@ -3,6 +3,7 @@ package tns_test
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/rtfs"
@@ -33,6 +34,10 @@ const (
 )
 
 func TestTNS_Echo(t *testing.T) {
+	if os.Getenv("TRAVIS") == "true" {
+		t.Skip()
+	}
+
 	manager, err := tns.GenerateTNSManager(nil, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -73,6 +78,10 @@ func TestTNS_Echo(t *testing.T) {
 }
 
 func TestTNS_ZoneRequest(t *testing.T) {
+	if os.Getenv("TRAVIS") == "true" {
+		t.Skip()
+	}
+
 	im, err := rtfs.Initialize("", nodeOneAPIAddr)
 	if err != nil {
 		t.Fatal(err)

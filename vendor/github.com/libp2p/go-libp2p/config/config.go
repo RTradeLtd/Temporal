@@ -44,8 +44,9 @@ type Config struct {
 	Insecure           bool
 	Protector          pnet.Protector
 
-	Relay     bool
-	RelayOpts []circuit.RelayOpt
+	RelayCustom bool
+	Relay       bool
+	RelayOpts   []circuit.RelayOpt
 
 	ListenAddrs  []ma.Multiaddr
 	AddrsFactory bhost.AddrsFactory
@@ -55,6 +56,8 @@ type Config struct {
 	NATManager  NATManagerC
 	Peerstore   pstore.Peerstore
 	Reporter    metrics.Reporter
+
+	DisablePing bool
 }
 
 // NewNode constructs a new libp2p Host from the Config.
@@ -101,6 +104,7 @@ func (cfg *Config) NewNode(ctx context.Context) (host.Host, error) {
 		ConnManager:  cfg.ConnManager,
 		AddrsFactory: cfg.AddrsFactory,
 		NATManager:   cfg.NATManager,
+		EnablePing:   !cfg.DisablePing,
 	})
 	if err != nil {
 		swrm.Close()

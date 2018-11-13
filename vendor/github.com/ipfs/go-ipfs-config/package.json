@@ -21,15 +21,15 @@
     },
     {
       "author": "why",
-      "hash": "QmWnUZVLLk2HKpZAMEsqW3EFNku1xGzG7bvvAHeEQQoi2V",
+      "hash": "QmZc5PLgxW61uTPG24TroxHDF6xzgbhZZQf5i53ciQC47Y",
       "name": "go-ipfs-addr",
-      "version": "0.1.19"
+      "version": "0.1.25"
     },
     {
       "author": "lgierth",
-      "hash": "QmfXU2MhWoegxHoeMd3A2ytL2P6CY4FfqGWc23LTNWBwZt",
+      "hash": "QmeHJXPqCNzSFbVkYM1uQLuM2L5FyJB9zukQ7EeqRP8ZC9",
       "name": "go-multiaddr-dns",
-      "version": "0.2.4"
+      "version": "0.2.5"
     },
     {
       "author": "mitchellh",
@@ -45,9 +45,9 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmQsErDt8Qgw1XrsXf2BpEzDgGWtB1YLsTAARBup5b6B9W",
+      "hash": "QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB",
       "name": "go-libp2p-peer",
-      "version": "2.3.7"
+      "version": "2.4.0"
     }
   ],
   "gxVersion": "0.12.1",
@@ -55,6 +55,6 @@
   "license": "",
   "name": "go-ipfs-config",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "0.2.4"
+  "version": "0.2.15"
 }
 

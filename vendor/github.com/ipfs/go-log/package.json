@@ -1,17 +1,19 @@
 {
-  "bugs": {},
+  "bugs": {
+    "url": "https://github.com/ipfs/go-log"
+  },
   "gx": {
     "dvcsimport": "github.com/ipfs/go-log"
   },
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "QmQvJiADDe7JR4m968MwXobTCCzUqQkP87aRHe29MEBGHV",
+      "hash": "QmcaSwFc5RBg8yCq54QURwEU4nwjfCpjbpmaAm4VbdGLKv",
       "name": "go-logging",
       "version": "0.0.0"
     },
     {
-      "author": "forrestweston",
+      "author": "frist",
       "hash": "QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo",
       "name": "opentracing-go",
       "version": "0.0.3"
@@ -24,16 +26,16 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmZ4Qi3GaRbjcx28Sme5eMH7RQjGkt8wHxt2a65oLaeFEV",
+      "hash": "QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8",
       "name": "gogo-protobuf",
       "version": "0.0.0"
     }
   ],
-  "gxVersion": "0.7.0",
-  "issues_url": "",
+  "gxVersion": "0.12.1",
   "language": "go",
   "license": "",
   "name": "go-log",
-  "version": "1.5.3"
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "1.5.7"
 }
 

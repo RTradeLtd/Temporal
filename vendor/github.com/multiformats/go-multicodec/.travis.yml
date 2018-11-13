@@ -4,9 +4,14 @@ os:
 language: go
 
 go:
-  - 1.7
+  - 1.9.x
+
+install:
+  - make deps
 
 script:
-  - go test -race -cpu 5 ./...
+  - bash <(curl -s https://raw.githubusercontent.com/ipfs/ci-helpers/master/travis-ci/run-standard-tests.sh)
 
 sudo: false #docker containers for CI
+
+env: GOTFLAGS="-race -cpu 5"
