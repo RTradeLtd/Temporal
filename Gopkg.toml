@@ -10,13 +10,13 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/RTradeLtd/ChainRider-Go"
   version = "v1.0.6"
 
-[[override]] # temporary
+[[override]]
   name = "github.com/RTradeLtd/grpc"
-  branch = "master"
+  version = "v1.0.5"
 
-[[override]] # temporary
+[[override]]
   name = "github.com/RTradeLtd/database"
-  branch = "models/private-network"
+  version = "v1.0.7"
 
 [[constraint]]
   name = "github.com/RTradeLtd/config"
@@ -24,7 +24,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"
-  version = "v1.0.1-rc1"
+  version = "v1.0.4"
 
 [[constraint]]
   name = "github.com/RTradeLtd/crypto"

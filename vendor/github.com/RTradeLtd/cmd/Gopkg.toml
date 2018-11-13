@@ -1,7 +1,3 @@
-[[constraint]]
-  name = "github.com/RTradeLtd/config"
-  version = "v1.0.3"
-
 [prune]
   go-tests = true
   unused-packages = true

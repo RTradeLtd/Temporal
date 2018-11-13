@@ -9,8 +9,8 @@ It is extremely lightweight, with only a single dependency - package [`config`](
 ```go
 
 import (
-  "github.com/RTradeLtd/Temporal/cmd"
-  "github.com/RTradeLtd/Temporal/config"
+  "github.com/RTradeLtd/cmd"
+  "github.com/RTradeLtd/config"
 )
 
 // define commands
