@@ -69,7 +69,8 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 		return
 	}
 	if len(resp.Names) == 0 {
-		api.LogError(err, eh.NoSearchResultsError)(c, http.StatusBadRequest)
+		api.LogInfo(fmt.Sprintf("no search results found for keywords %s", keywordsLower))
+		Respond(c, http.StatusBadRequest, gin.H{"response": "no results found"})
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": resp.Names})
