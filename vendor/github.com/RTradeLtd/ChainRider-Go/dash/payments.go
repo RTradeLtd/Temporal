@@ -21,14 +21,11 @@ func (c *Client) CreatePaymentForward(opts *PaymentForwardOpts) (*CreatePaymentF
 		"{\n  \"destination_address\": \"%s\",\n  \"token\": \"%s\"\n}",
 		opts.DestinationAddress, c.Token,
 	)
-	fmt.Println("url ", url)
-	fmt.Println("payload ", payloadString)
 	req, err := http.NewRequest("POST", url, strings.NewReader(payloadString))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Add("Content-Type", "application/json")
-	fmt.Println("Headers ", req.Header)
 	resp, err := c.HC.Do(req)
 	if err != nil {
 		return nil, err
