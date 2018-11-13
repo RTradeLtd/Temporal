@@ -100,10 +100,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   branch = "master"
-  name = "github.com/lib/pq"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/mitchellh/goamz"
 
 [[constraint]]
@@ -121,10 +117,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   branch = "master"
   name = "github.com/zsais/go-gin-prometheus"
-
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/crypto"
 
 [[constraint]]
   name = "github.com/gin-contrib/cors"
