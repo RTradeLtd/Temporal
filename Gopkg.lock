@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  branch = "master"
+  digest = "1:13077d94af7390c15eb9b9e85155e66236fde32a9ce82cea459606eb8a22545f"
+  name = "github.com/NebulousLabs/entropy-mnemonics"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "7b01a644a63680b90de22bacfb11d832e944eaab"
+
+[[projects]]
   digest = "1:cf2939df30718bf7e5ba78886eced2a4688e404ea166c7e3374a328752741c9f"
   name = "github.com/RTradeLtd/ChainRider-Go"
   packages = ["dash"]
@@ -1356,6 +1364,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/NebulousLabs/entropy-mnemonics",
     "github.com/RTradeLtd/ChainRider-Go/dash",
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",

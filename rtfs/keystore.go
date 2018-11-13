@@ -10,6 +10,7 @@ consider adding a mutex keystore instead
 import (
 	"errors"
 
+	"github.com/NebulousLabs/entropy-mnemonics"
 	keystore "github.com/ipfs/go-ipfs-keystore"
 	ci "github.com/libp2p/go-libp2p-crypto"
 )
@@ -107,4 +108,43 @@ func (km *KeystoreManager) CreateAndSaveKey(keyName string, keyType, bits int) (
 	}
 
 	return pk, nil
+}
+
+// ExportKeyToMnemonic is used to take an IPFS key, and return a human-readable friendly version.
+// The idea is to allow users to easily export the keys they create, allowing them to take control of their records (ipns, tns, etc..)
+func (km *KeystoreManager) ExportKeyToMnemonic(keyName string) (string, error) {
+	pk, err := km.GetPrivateKeyByName(keyName)
+	if err != nil {
+		return "", err
+	}
+	pkBytes, err := pk.Bytes()
+	if err != nil {
+		return "", err
+	}
+	phrase, err := mnemonics.ToPhrase(pkBytes, mnemonics.English)
+	if err != nil {
+		return "", err
+	}
+	pkBytes, err = mnemonics.FromPhrase(phrase, mnemonics.English)
+	if err != nil {
+		return "", err
+	}
+	pk2, err := ci.UnmarshalPrivateKey(pkBytes)
+	if err != nil {
+		return "", err
+	}
+	valid := pk.Equals(pk2)
+	if !valid {
+		return "", errors.New("failed to validate key")
+	}
+	return phrase.String(), nil
+}
+
+// MnemonicToKey takes an exported mnemonic phrase, and converts it to a private key
+func (km *KeystoreManager) MnemonicToKey(stringPhrase string) (ci.PrivKey, error) {
+	mnemonicBytes, err := mnemonics.FromString(stringPhrase, mnemonics.English)
+	if err != nil {
+		return nil, err
+	}
+	return ci.UnmarshalPrivateKey(mnemonicBytes)
 }

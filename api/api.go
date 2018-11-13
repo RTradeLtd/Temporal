@@ -273,6 +273,7 @@ func (api *API) setupRoutes() {
 		}
 		key := account.Group("/key")
 		{
+			key.GET("/export/:name", api.exportKey)
 			ipfs := key.Group("/ipfs")
 			{
 				ipfs.GET("/get", api.getIPFSKeyNamesForAuthUser)
