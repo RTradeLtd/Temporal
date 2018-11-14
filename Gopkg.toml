@@ -34,10 +34,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/RTradeLtd/go-ipfs-api"
   version = "v2.0.4"
 
-[[constraint]]
-  name = "github.com/RTradeLtd/database"
-  version = "v1.0.7"
-
 # IPFS
 
 [[override]]
