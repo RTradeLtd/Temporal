@@ -6,6 +6,7 @@ service Service {
   rpc Ping(Empty) returns (Empty) {};
   rpc StartNetwork(NetworkRequest) returns (StartNetworkResponse) {};
   rpc StopNetwork(NetworkRequest) returns (Empty) {};
+  rpc RemoveNetwork(NetworkRequest) returns (Empty) {};
   rpc NetworkStats(NetworkRequest) returns (NetworkStatusReponse) {};
 }
 
