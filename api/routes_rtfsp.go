@@ -561,8 +561,6 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	}
 	logger.WithField("db_id", network.ID).Info("database entry created")
 
-	logger.WithField("user", username).Info("network added to user")
-	// if there is only 1 user, this next part is covered by the previous logic
 	if len(users) > 0 {
 		for _, v := range users {
 			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil {
@@ -717,7 +715,7 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 	}
 	if _, err = api.orch.RemoveNetwork(c, &ipfs_orchestrator.NetworkRequest{
 		Network: networkName}); err != nil {
-		api.LogError(err, "failed to stop network")(c)
+		api.LogError(err, "failed to remove network assets")(c)
 		return
 	}
 	logger.Info("network removed")
