@@ -628,6 +628,7 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 	if _, err := api.orch.StartNetwork(c, &ipfs_orchestrator.NetworkRequest{
 		Network: networkName}); err != nil {
 		api.LogError(err, "failed to start network")(c, http.StatusBadRequest)
+		return
 	}
 	logger.Info("network started")
 	Respond(c, http.StatusOK, gin.H{
