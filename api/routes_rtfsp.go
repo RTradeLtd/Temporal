@@ -552,9 +552,7 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		users = append(users, username)
 	}
 
-	// create entry for network
-	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	network, err := manager.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, users)
+	network, err := api.nm.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, users)
 	if err != nil {
 		api.LogError(err, eh.NetworkCreationError)(c)
 		return
@@ -758,9 +756,7 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 	logger := api.LogWithUser(username).WithField("netowrk_name", netName)
 	logger.Info("private ipfs network by name requested")
 
-	// retrieve details from database
-	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	net, err := manager.GetNetworkByName(netName)
+	net, err := api.nm.GetNetworkByName(netName)
 	if err != nil {
 		api.LogError(err, eh.NetworkSearchError)(c)
 		return
