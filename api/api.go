@@ -338,6 +338,7 @@ func (api *API) setupRoutes() {
 			network.POST("/new", api.createHostedIPFSNetworkEntryInDatabase)
 			network.POST("/stop", api.stopIPFSPrivateNetwork)
 			network.POST("/start", api.startIPFSPrivateNetwork)
+			network.DELETE("/remove", api.removeIPFSPrivateNetwork)
 		}
 		ipfsRoutes := ipfsPrivate.Group("/ipfs")
 		{
