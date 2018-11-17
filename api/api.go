@@ -127,7 +127,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	}
 
 	// create our keystore manager
-	if err = ipfsManager.CreateKeystoreManager(); err != nil {
+	if err = ipfsManager.CreateKeystoreManager(cfg.IPFS.KeystorePath); err != nil {
 		return nil, err
 	}
 
