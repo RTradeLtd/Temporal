@@ -676,7 +676,6 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 		return
 	}
 	logger.Info("network stopped")
-
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
 			"network_name": networkName,
@@ -719,6 +718,7 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 		api.LogError(err, "failed to remove network assets")(c)
 		return
 	}
+	//TODO: delete network frmo database, delete networks in user model in database
 	logger.Info("network removed")
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{

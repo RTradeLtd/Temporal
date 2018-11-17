@@ -124,3 +124,12 @@ func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, swarmKey string, 
 	}
 	return pnet, nil
 }
+
+// Delete is used to remove a network from the database
+func (im *IPFSNetworkManager) Delete(name string) error {
+	net, err := im.GetNetworkByName(name)
+	if err != nil {
+		return err
+	}
+	return im.DB.Unscoped().Delete(net).Error
+}

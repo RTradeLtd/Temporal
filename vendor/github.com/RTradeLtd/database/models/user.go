@@ -83,6 +83,26 @@ func (um *UserManager) AddIPFSNetworkForUser(username, networkName string) error
 	return nil
 }
 
+// RemoveIPFSNetworkForUser is used to remove a configured ipfs network from the users authorized networks
+func (um *UserManager) RemoveIPFSNetworkForUser(username, networkName string) error {
+	user, err := um.FindByUserName(username)
+	if err != nil {
+		return err
+	}
+	var networks []string
+	for _, v := range user.IPFSNetworkNames {
+		if v == networkName {
+			continue
+		}
+		networks = append(networks, v)
+	}
+	if len(networks) == len(user.IPFSNetworkNames) {
+		return errors.New("user was not registered for this network")
+	}
+	user.IPFSNetworkNames = networks
+	return um.DB.Model(user).Update("ipfs_network_names", networks).Error
+}
+
 // AddIPFSKeyForUser is used to add a key to a user
 func (um *UserManager) AddIPFSKeyForUser(username, keyName, keyID string) error {
 	var user User
