@@ -28,7 +28,8 @@
 		"api_connection": {
 			"host": "192.168.1.101",
 			"port": "5001"
-		}
+		},
+		"keystore_path": "/tmp"
 	},
 	"ipfs_cluster": {
 		"api_connection": {

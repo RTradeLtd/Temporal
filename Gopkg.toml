@@ -12,7 +12,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/grpc"
-  version = "v1.0.5"
+  version = "v1.0.5a"
 
 [[override]]
   name = "github.com/RTradeLtd/database"
@@ -20,7 +20,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/config"
-  version = "v1.0.9"
+  version = "v1.0.10"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"

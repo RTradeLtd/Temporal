@@ -561,12 +561,6 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 	}
 	logger.WithField("db_id", network.ID).Info("database entry created")
 
-	// add network to users
-	if err := api.um.AddIPFSNetworkForUser(username, networkName); err != nil {
-		api.LogError(err, eh.NetworkCreationError)(c)
-		return
-	}
-	logger.WithField("user", username).Info("network added to user")
 	if len(users) > 0 {
 		for _, v := range users {
 			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil {
@@ -585,6 +579,7 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		api.LogError(err, "failed to start private network",
 			"network_name", networkName,
 		)(c)
+		return
 	}
 	logger.WithField("response", resp).Info("network node started")
 
@@ -596,6 +591,49 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 			"api_url":      resp.GetApi(),
 			"swarm_key":    resp.GetSwarmKey(),
 			"users":        network.Users,
+		},
+	})
+}
+
+func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailWithMissingField(c, "network_name")
+		return
+	}
+	logger := api.LogWithUser(username).WithField("network_name", networkName)
+	logger.Info("private ipfs network start requested")
+
+	// verify access to the requested network
+	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
+	if err != nil {
+		api.LogError(err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
+		return
+	}
+	var found bool
+	for _, network := range networks {
+		if network == networkName {
+			found = true
+			break
+		}
+	}
+	if !found {
+		logger.Info("user not authorized to access network")
+		Respond(c, http.StatusUnauthorized, gin.H{
+			"response": "user does not have access to requested network",
+		})
+		return
+	}
+	if _, err := api.orch.StartNetwork(c, &ipfs_orchestrator.NetworkRequest{
+		Network: networkName}); err != nil {
+		api.LogError(err, "failed to start network")(c, http.StatusBadRequest)
+	}
+	logger.Info("network started")
+	Respond(c, http.StatusOK, gin.H{
+		"response": gin.H{
+			"network_name": networkName,
+			"state":        "started",
 		},
 	})
 }
@@ -641,6 +679,50 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
 			"network_name": networkName,
+			"state":        "stopped",
+		},
+	})
+}
+
+func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailWithMissingField(c, "network_name")
+		return
+	}
+	logger := api.LogWithUser(username).WithField("network_name", networkName)
+	logger.Info("private ipfs network shutdown requested")
+	// retrieve authorized networks to check if person has access
+	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
+	if err != nil {
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
+		return
+	}
+	var found bool
+	for _, n := range networks {
+		if n == networkName {
+			found = true
+			break
+		}
+	}
+	if !found {
+		logger.Info("user not authorized to access network")
+		Respond(c, http.StatusUnauthorized, gin.H{
+			"response": "user does not have access to requested network",
+		})
+		return
+	}
+	if _, err = api.orch.RemoveNetwork(c, &ipfs_orchestrator.NetworkRequest{
+		Network: networkName}); err != nil {
+		api.LogError(err, "failed to remove network assets")(c)
+		return
+	}
+	logger.Info("network removed")
+	Respond(c, http.StatusOK, gin.H{
+		"response": gin.H{
+			"network_name": networkName,
+			"state":        "removed",
 		},
 	})
 }

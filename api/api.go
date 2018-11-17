@@ -125,11 +125,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	if err != nil {
 		return nil, err
 	}
-	if !dev {
-		// create our keystore manager
-		if err = ipfsManager.CreateKeystoreManager(); err != nil {
-			return nil, err
-		}
+
+	// create our keystore manager
+	if err = ipfsManager.CreateKeystoreManager(cfg.IPFS.KeystorePath); err != nil {
+		return nil, err
 	}
 
 	signer, err := clients.NewSignerClient(cfg, os.Getenv("MODE") == "development")
@@ -331,16 +330,14 @@ func (api *API) setupRoutes() {
 	ipfsPrivate := v1.Group("/ipfs-private", authware...)
 	{
 		ipfsPrivate.GET("/networks", api.getAuthorizedPrivateNetworks)
-		ipfsPrivate.GET("/network/:name", api.getIPFSPrivateNetworkByName) // admin locked
-		ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork)    // admin locked
+		ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork) // admin locked
 		ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
-		remove := ipfsPrivate.Group("/remove")
+		network := ipfsPrivate.Group("/network")
 		{
-			remove.POST("/network", api.stopIPFSPrivateNetwork)
-		}
-		new := ipfsPrivate.Group("/new")
-		{
-			new.POST("/network", api.createHostedIPFSNetworkEntryInDatabase)
+			network.GET("/:name", api.getIPFSPrivateNetworkByName)
+			network.POST("/new", api.createHostedIPFSNetworkEntryInDatabase)
+			network.POST("/stop", api.stopIPFSPrivateNetwork)
+			network.POST("/start", api.startIPFSPrivateNetwork)
 		}
 		ipfsRoutes := ipfsPrivate.Group("/ipfs")
 		{

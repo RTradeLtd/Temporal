@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -318,7 +317,7 @@ func (api *API) exportKey(c *gin.Context) {
 		api.LogError(err, eh.KeyExportError)(c, http.StatusBadRequest)
 		return
 	}
-	Respond(c, http.StatusOK, gin.H{"response": hex.EncodeToString([]byte(mnemonic))})
+	Respond(c, http.StatusOK, gin.H{"response": mnemonic})
 }
 
 // ForgotEmail is used to retrieve an email if the user forgets it

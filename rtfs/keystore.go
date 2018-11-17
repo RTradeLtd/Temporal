@@ -27,7 +27,7 @@ func GenerateKeystoreManager(keystorePath ...string) (*KeystoreManager, error) {
 		storePath = DefaultFSKeystorePath
 		km        KeystoreManager
 	)
-	if keystorePath != nil && len(keystorePath) > 0 {
+	if keystorePath != nil && len(keystorePath) > 0 && keystorePath[0] != "" {
 		storePath = keystorePath[0]
 	}
 	fsk, err := keystore.NewFSKeystore(storePath)

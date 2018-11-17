@@ -59,6 +59,7 @@ type IPFS struct {
 		Host string `json:"host"`
 		Port string `json:"port"`
 	} `json:"api_connection"`
+	KeystorePath string `json:"keystore_path"`
 }
 
 // IPFSCluster configures Temporal's connection to an IPFS cluster
