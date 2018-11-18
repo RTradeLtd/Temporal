@@ -552,9 +552,7 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 		users = append(users, username)
 	}
 
-	// create entry for network
-	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	network, err := manager.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, users)
+	network, err := api.nm.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, users)
 	if err != nil {
 		api.LogError(err, eh.NetworkCreationError)(c)
 		return
@@ -628,6 +626,7 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 	if _, err := api.orch.StartNetwork(c, &ipfs_orchestrator.NetworkRequest{
 		Network: networkName}); err != nil {
 		api.LogError(err, "failed to start network")(c, http.StatusBadRequest)
+		return
 	}
 	logger.Info("network started")
 	Respond(c, http.StatusOK, gin.H{
@@ -675,7 +674,6 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 		return
 	}
 	logger.Info("network stopped")
-
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
 			"network_name": networkName,
@@ -706,6 +704,7 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 			break
 		}
 	}
+	//TODO: make sure that only the creator of the network can remove it
 	if !found {
 		logger.Info("user not authorized to access network")
 		Respond(c, http.StatusUnauthorized, gin.H{
@@ -713,10 +712,29 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 		})
 		return
 	}
+	// tell orchestrator to remove the network, and all of its data
 	if _, err = api.orch.RemoveNetwork(c, &ipfs_orchestrator.NetworkRequest{
 		Network: networkName}); err != nil {
 		api.LogError(err, "failed to remove network assets")(c)
 		return
+	}
+	// remove network from database
+	if err = api.nm.Delete(networkName); err != nil {
+		api.LogError(err, "failed to remove network from database")(c, http.StatusBadRequest)
+		return
+	}
+	// search for the network
+	network, err := api.nm.GetNetworkByName(networkName)
+	if err != nil {
+		api.LogError(err, eh.NetworkSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	// remove network from users authorized networks
+	for _, v := range network.Users {
+		if err = api.um.RemoveIPFSNetworkForUser(v, networkName); err != nil {
+			api.LogError(err, "failed to remove network from users")(c, http.StatusBadRequest)
+			return
+		}
 	}
 	logger.Info("network removed")
 	Respond(c, http.StatusOK, gin.H{
@@ -738,9 +756,7 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 	logger := api.LogWithUser(username).WithField("netowrk_name", netName)
 	logger.Info("private ipfs network by name requested")
 
-	// retrieve details from database
-	manager := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	net, err := manager.GetNetworkByName(netName)
+	net, err := api.nm.GetNetworkByName(netName)
 	if err != nil {
 		api.LogError(err, eh.NetworkSearchError)(c)
 		return

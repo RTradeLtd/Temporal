@@ -46,6 +46,7 @@ type API struct {
 	ipfs    *rtfs.IpfsManager
 	zm      *models.ZoneManager
 	rm      *models.RecordManager
+	nm      *models.IPFSNetworkManager
 	l       *log.Logger
 	signer  *clients.SignerClient
 	orch    *clients.IPFSOrchestratorClient
@@ -173,6 +174,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		dc:      dc,
 		zm:      models.NewZoneManager(dbm.DB),
 		rm:      models.NewRecordManager(dbm.DB),
+		nm:      models.NewHostedIPFSNetworkManager(dbm.DB),
 	}, nil
 }
 
