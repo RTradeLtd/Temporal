@@ -1,4 +1,4 @@
-package lens
+package clients
 
 import (
 	"fmt"
@@ -14,13 +14,13 @@ const (
 	defaultURL = "127.0.0.1:9998"
 )
 
-// Client is a lens client used to make requests to the Lens gRPC server
-type Client struct {
+// LensClient is a lens client used to make requests to the Lens gRPC server
+type LensClient struct {
 	pb.IndexerAPIClient
 }
 
-// NewClient is used to generate our lens client
-func NewClient(opts config.Endpoints) (*Client, error) {
+// NewLensClient is used to generate our lens client
+func NewLensClient(opts config.Endpoints) (*LensClient, error) {
 	dialOpts := make([]grpc.DialOption, 0)
 	// setup parameters for our conection to
 	if opts.Lens.TLS.CertPath != "" {
@@ -45,7 +45,7 @@ func NewClient(opts config.Endpoints) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	client := &Client{}
-	client.IndexerAPIClient = pb.NewIndexerAPIClient(gConn)
-	return client, nil
+	return &LensClient{
+		IndexerAPIClient: pb.NewIndexerAPIClient(gConn),
+	}, nil
 }

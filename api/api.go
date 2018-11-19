@@ -9,7 +9,6 @@ import (
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
-	"github.com/RTradeLtd/Temporal/lens"
 	"github.com/RTradeLtd/Temporal/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
@@ -51,8 +50,8 @@ type API struct {
 	l       *log.Logger
 	signer  *clients.SignerClient
 	orch    *clients.IPFSOrchestratorClient
+	lc      *clients.LensClient
 	dc      *dash.Client
-	lc      *lens.Client
 	service string
 }
 
@@ -159,7 +158,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	if err != nil {
 		return nil, err
 	}
-	lensClient, err := lens.NewClient(cfg.Endpoints)
+	lensClient, err := clients.NewLensClient(cfg.Endpoints)
 	if err != nil {
 		return nil, err
 	}
