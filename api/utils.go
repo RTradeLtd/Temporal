@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/utils"
+	"github.com/RTradeLtd/database/models"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -129,4 +129,17 @@ func (api *API) validateAdminRequest(username string) error {
 		return errors.New(eh.UnAuthorizedAdminAccess)
 	}
 	return nil
+}
+
+func (api *API) extractPostForms(c *gin.Context, formNames ...string) map[string]string {
+	forms := make(map[string]string)
+	for _, name := range formNames {
+		value, exists := c.GetPostForm(name)
+		if !exists {
+			FailWithMissingField(c, name)
+			return nil
+		}
+		forms[name] = value
+	}
+	return forms
 }

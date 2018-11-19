@@ -115,4 +115,10 @@ const (
 	FailedToSearchError = "an error occured while submitting your search to lens"
 	// NoSearchResultsError is an error message used when no search results were returned
 	NoSearchResultsError = "there were no entries matching your search query"
+	// ChainRiderAPICallError is an error message used when a call to chainrider api fails
+	ChainRiderAPICallError = "failed to call chainrider api"
+	// KeyExportError is an error messaged used if a key export request fails
+	KeyExportError = "failed to export key"
+	// PasswordResetError is an error message used when an error occurins during password reset
+	PasswordResetError = "failed to reset password"
 )

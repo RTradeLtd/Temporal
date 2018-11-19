@@ -11,11 +11,11 @@ import (
 	"github.com/RTradeLtd/Temporal/tns"
 
 	"github.com/RTradeLtd/Temporal/api"
-	"github.com/RTradeLtd/Temporal/database"
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd"
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/database/models"
 )
 
 var (
@@ -407,7 +407,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	// load arguments
 	flags := map[string]string{
 		"configDag":     configDag,
@@ -438,7 +437,7 @@ func main() {
 	if isTns && peerAddr != "" {
 		flags["peerAddr"] = peerAddr
 	}
-
+	fmt.Println(tCfg.APIKeys.ChainRider)
 	// execute
 	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
 }

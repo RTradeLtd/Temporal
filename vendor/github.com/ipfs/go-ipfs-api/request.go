@@ -11,7 +11,7 @@ import (
 	"os"
 	"strings"
 
-	files "github.com/ipfs/go-ipfs-cmdkit/files"
+	files "github.com/whyrusleeping/go-multipart-files"
 )
 
 type Request struct {
@@ -74,6 +74,7 @@ func (e *Error) Error() string {
 
 func (r *Request) Send(c *http.Client) (*Response, error) {
 	url := r.getURL()
+
 	req, err := http.NewRequest("POST", url, r.Body)
 	if err != nil {
 		return nil, err

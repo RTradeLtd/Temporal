@@ -7,16 +7,24 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 # RTrade
 
 [[constraint]]
+  name = "github.com/RTradeLtd/ChainRider-Go"
+  version = "v1.0.6"
+
+[[override]]
   name = "github.com/RTradeLtd/grpc"
   branch = "master"
-  
+
+[[override]]
+  name = "github.com/RTradeLtd/database"
+  branch = "master"
+
 [[constraint]]
   name = "github.com/RTradeLtd/config"
-  version = "v1.0.8-rc2"
+  version = "v1.0.10"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"
-  version = "v1.0.1-rc1"
+  version = "v1.0.4"
 
 [[constraint]]
   name = "github.com/RTradeLtd/crypto"
@@ -24,7 +32,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
-  version = "v2.0.0"
+  version = "v2.0.4"
 
 # IPFS
 
@@ -92,10 +100,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   branch = "master"
-  name = "github.com/lib/pq"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/mitchellh/goamz"
 
 [[constraint]]
@@ -113,10 +117,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   branch = "master"
   name = "github.com/zsais/go-gin-prometheus"
-
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/crypto"
 
 [[constraint]]
   name = "github.com/gin-contrib/cors"
@@ -138,6 +138,10 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/ipfs/go-ipfs-cmdkit"
   branch = "master"
 
+[[constraint]]
+  name = "github.com/NebulousLabs/entropy-mnemonics"
+  branch = "master"
+  
 [[constraint]]
   name = "github.com/appleboy/gin-jwt"
   revision = "f7347d7c16fc8297bf5b7215b9e4847a5ca05d90"

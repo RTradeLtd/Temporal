@@ -51,9 +51,9 @@ dnslink records like these:
 
 ```
 > dig TXT foo.com
-foo.com.  120   IN  TXT  dnslink=/dns/bar.com/f/o/o
+foo.com.  120   IN  TXT  dnslink=/ipns/bar.com/f/o/o
 > dig TXT bar.com
-bar.com.  120   IN  TXT  dnslink=/dns/long.test.baz.it/b/a/r
+bar.com.  120   IN  TXT  dnslink=/ipns/long.test.baz.it/b/a/r
 > dig TXT long.test.baz.it
 long.test.baz.it.  120   IN  TXT  dnslink=/b/a/z
 ```
@@ -61,14 +61,14 @@ long.test.baz.it.  120   IN  TXT  dnslink=/b/a/z
 Expect these resolutions:
 
 ```go
-dnslink.ResolveN("long.test.baz.it", 0) // "/dns/long.test.baz.it"
+dnslink.ResolveN("long.test.baz.it", 0) // "/ipns/long.test.baz.it"
 dnslink.Resolve("long.test.baz.it")     // "/b/a/z"
 
-dnslink.ResolveN("bar.com", 1)          // "/dns/long.test.baz.it/b/a/r"
+dnslink.ResolveN("bar.com", 1)          // "/ipns/long.test.baz.it/b/a/r"
 dnslink.Resolve("bar.com")              // "/b/a/z/b/a/r"
 
-dnslink.ResolveN("foo.com", 1)          // "/dns/bar.com/f/o/o/"
-dnslink.ResolveN("foo.com", 2)          // "/dns/long.test.baz.it/b/a/r/f/o/o/"
+dnslink.ResolveN("foo.com", 1)          // "/ipns/bar.com/f/o/o/"
+dnslink.ResolveN("foo.com", 2)          // "/ipns/long.test.baz.it/b/a/r/f/o/o/"
 dnslink.Resolve("foo.com")              // "/b/a/z/b/a/r/f/o/o"
 ```
 

@@ -7,7 +7,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/RTradeLtd/Temporal/grpc"
+	"github.com/RTradeLtd/ChainRider-Go/dash"
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/lens"
 	"github.com/RTradeLtd/Temporal/rtfs"
 
@@ -21,8 +22,8 @@ import (
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
-	"github.com/RTradeLtd/Temporal/database"
-	"github.com/RTradeLtd/Temporal/models"
+	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/database/models"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -46,8 +47,11 @@ type API struct {
 	ipfs    *rtfs.IpfsManager
 	zm      *models.ZoneManager
 	rm      *models.RecordManager
+	nm      *models.IPFSNetworkManager
 	l       *log.Logger
-	gc      *grpc.Client
+	signer  *clients.SignerClient
+	orch    *clients.IPFSOrchestratorClient
+	dc      *dash.Client
 	lc      *lens.Client
 	service string
 }
@@ -124,13 +128,34 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	if err != nil {
 		return nil, err
 	}
-	if !dev {
-		// create our keystore manager
-		if err = ipfsManager.CreateKeystoreManager(); err != nil {
-			return nil, err
-		}
+
+	// create our keystore manager
+	if err = ipfsManager.CreateKeystoreManager(cfg.IPFS.KeystorePath); err != nil {
+		return nil, err
 	}
-	gc, err := grpc.NewGRPCClient(cfg, true)
+
+	signer, err := clients.NewSignerClient(cfg, os.Getenv("MODE") == "development")
+	if err != nil {
+		return nil, err
+	}
+
+	orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator, os.Getenv("MODE") == "development")
+	if err != nil {
+		return nil, err
+	}
+	var networkVersion string
+	if dev {
+		networkVersion = "testnet"
+	} else {
+		networkVersion = "main"
+	}
+	dc, err := dash.NewClient(&dash.ConfigOpts{
+		APIVersion:      "v1",
+		DigitalCurrency: "dash",
+		//TODO: change to main before production release
+		Blockchain: networkVersion,
+		Token:      cfg.APIKeys.ChainRider,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -150,10 +175,13 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		dm:      models.NewDropManager(dbm.DB),
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
 		ipfs:    ipfsManager,
-		gc:      gc,
 		lc:      lensClient,
+		signer:  signer,
+		orch:    orch,
+		dc:      dc,
 		zm:      models.NewZoneManager(dbm.DB),
 		rm:      models.NewRecordManager(dbm.DB),
+		nm:      models.NewHostedIPFSNetworkManager(dbm.DB),
 	}, nil
 }
 
@@ -195,6 +223,13 @@ func (api *API) setupRoutes() {
 	systemChecks := v1.Group("/systems")
 	{
 		systemChecks.GET("/check", api.SystemsCheck)
+	}
+
+	// authless account recovery routes
+	forgot := v1.Group("/forgot")
+	{
+		forgot.POST("/username", api.forgotUserName)
+		forgot.POST("/password", api.resetPassword)
 	}
 
 	// authentication
@@ -241,7 +276,10 @@ func (api *API) setupRoutes() {
 	// payments
 	payments := v1.Group("/payments", authware...)
 	{
-		payments.POST("/create", api.CreatePayment)
+		dash := payments.Group("/create")
+		{
+			dash.POST("/dash", api.CreateDashPayment)
+		}
 		payments.POST("/request", api.RequestSignedPaymentMessage)
 		payments.POST("/confirm", api.ConfirmPayment)
 		deposit := payments.Group("/deposit")
@@ -268,6 +306,7 @@ func (api *API) setupRoutes() {
 		}
 		key := account.Group("/key")
 		{
+			key.GET("/export/:name", api.exportKey)
 			ipfs := key.Group("/ipfs")
 			{
 				ipfs.GET("/get", api.getIPFSKeyNamesForAuthUser)
@@ -280,6 +319,7 @@ func (api *API) setupRoutes() {
 		}
 		email := account.Group("/email")
 		{
+			email.POST("/forgot", api.forgotEmail)
 			token := email.Group("/token")
 			{
 				token.GET("/get", api.getEmailVerificationToken)
@@ -309,12 +349,15 @@ func (api *API) setupRoutes() {
 	ipfsPrivate := v1.Group("/ipfs-private", authware...)
 	{
 		ipfsPrivate.GET("/networks", api.getAuthorizedPrivateNetworks)
-		ipfsPrivate.GET("/network/:name", api.getIPFSPrivateNetworkByName) // admin locked
-		ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork)    // admin locked
+		ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork) // admin locked
 		ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
-		new := ipfsPrivate.Group("/new")
+		network := ipfsPrivate.Group("/network")
 		{
-			new.POST("/network", api.createHostedIPFSNetworkEntryInDatabase)
+			network.GET("/:name", api.getIPFSPrivateNetworkByName)
+			network.POST("/new", api.createHostedIPFSNetworkEntryInDatabase)
+			network.POST("/stop", api.stopIPFSPrivateNetwork)
+			network.POST("/start", api.startIPFSPrivateNetwork)
+			network.DELETE("/remove", api.removeIPFSPrivateNetwork)
 		}
 		ipfsRoutes := ipfsPrivate.Group("/ipfs")
 		{

@@ -6,7 +6,7 @@ import (
 	"crypto/rand"
 
 	crypto "github.com/libp2p/go-libp2p-crypto"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
+	pstoremem "github.com/libp2p/go-libp2p-peerstore/pstoremem"
 	secio "github.com/libp2p/go-libp2p-secio"
 	tcp "github.com/libp2p/go-tcp-transport"
 	ws "github.com/libp2p/go-ws-transport"
@@ -32,7 +32,7 @@ var DefaultMuxers = ChainOptions(
 
 // DefaultTransports are the default libp2p transports.
 //
-// Use this option when you want to *extend* the set of multiplexers used by
+// Use this option when you want to *extend* the set of transports used by
 // libp2p instead of replacing them.
 var DefaultTransports = ChainOptions(
 	Transport(tcp.NewTCPTransport),
@@ -41,7 +41,7 @@ var DefaultTransports = ChainOptions(
 
 // DefaultPeerstore configures libp2p to use the default peerstore.
 var DefaultPeerstore Option = func(cfg *Config) error {
-	return cfg.Apply(Peerstore(pstore.NewPeerstore()))
+	return cfg.Apply(Peerstore(pstoremem.NewPeerstore()))
 }
 
 // RandomIdentity generates a random identity (default behaviour)
@@ -68,6 +68,11 @@ var DefaultListenAddrs = func(cfg *Config) error {
 		defaultIP4ListenAddr,
 		defaultIP6ListenAddr,
 	))
+}
+
+// DefaultEnableRelay enables relay dialing and listening by default
+var DefaultEnableRelay = func(cfg *Config) error {
+	return cfg.Apply(EnableRelay())
 }
 
 // Complete list of default options and when to fallback on them.
@@ -101,6 +106,10 @@ var defaults = []struct {
 	{
 		fallback: func(cfg *Config) bool { return cfg.Peerstore == nil },
 		opt:      DefaultPeerstore,
+	},
+	{
+		fallback: func(cfg *Config) bool { return !cfg.RelayCustom },
+		opt:      DefaultEnableRelay,
 	},
 }
 

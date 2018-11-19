@@ -95,6 +95,9 @@ type Prometheus struct {
 	MetricsPath string
 
 	ReqCntURLLabelMappingFn RequestCounterURLLabelMappingFn
+
+	// gin.Context string to use as a prometheus URL label
+	URLLabelFromContext string
 }
 
 // PrometheusPushGateway contains the configuration for pushing to a Prometheus pushgateway (optional)
@@ -175,7 +178,8 @@ func (p *Prometheus) SetListenAddressWithRouter(listenAddress string, r *gin.Eng
 	}
 }
 
-func (p *Prometheus) setMetricsPath(e *gin.Engine) {
+// SetMetricsPath set metrics paths
+func (p *Prometheus) SetMetricsPath(e *gin.Engine) {
 
 	if p.listenAddress != "" {
 		p.router.GET(p.MetricsPath, prometheusHandler())
@@ -185,7 +189,8 @@ func (p *Prometheus) setMetricsPath(e *gin.Engine) {
 	}
 }
 
-func (p *Prometheus) setMetricsPathWithAuth(e *gin.Engine, accounts gin.Accounts) {
+// SetMetricsPathWithAuth set metrics paths with authentication
+func (p *Prometheus) SetMetricsPathWithAuth(e *gin.Engine, accounts gin.Accounts) {
 
 	if p.listenAddress != "" {
 		p.router.GET(p.MetricsPath, gin.BasicAuth(accounts), prometheusHandler())
@@ -335,17 +340,18 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 
 // Use adds the middleware to a gin engine.
 func (p *Prometheus) Use(e *gin.Engine) {
-	e.Use(p.handlerFunc())
-	p.setMetricsPath(e)
+	e.Use(p.HandlerFunc())
+	p.SetMetricsPath(e)
 }
 
 // UseWithAuth adds the middleware to a gin engine with BasicAuth.
 func (p *Prometheus) UseWithAuth(e *gin.Engine, accounts gin.Accounts) {
-	e.Use(p.handlerFunc())
-	p.setMetricsPathWithAuth(e, accounts)
+	e.Use(p.HandlerFunc())
+	p.SetMetricsPathWithAuth(e, accounts)
 }
 
-func (p *Prometheus) handlerFunc() gin.HandlerFunc {
+// HandlerFunc defines handler function for middleware
+func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.URL.String() == p.MetricsPath {
 			c.Next()
@@ -363,6 +369,14 @@ func (p *Prometheus) handlerFunc() gin.HandlerFunc {
 
 		p.reqDur.Observe(elapsed)
 		url := p.ReqCntURLLabelMappingFn(c)
+		// jlambert Oct 2018 - sidecar specific mod
+		if len(p.URLLabelFromContext) > 0 {
+			u, found := c.Get(p.URLLabelFromContext)
+			if !found {
+				u = "unknown"
+			}
+			url = u.(string)
+		}
 		p.reqCnt.WithLabelValues(status, c.Request.Method, c.HandlerName(), c.Request.Host, url).Inc()
 		p.reqSz.Observe(float64(reqSz))
 		p.resSz.Observe(resSz)

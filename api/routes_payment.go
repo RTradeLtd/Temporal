@@ -11,6 +11,7 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/jinzhu/gorm"
 
+	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	greq "github.com/RTradeLtd/grpc/temporal/request"
@@ -22,17 +23,11 @@ import (
 // was made, and validated by the appropriate blockchain.
 func (api *API) ConfirmPayment(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	paymentNumber, exists := c.GetPostForm("payment_number")
-	if !exists {
-		FailWithMissingField(c, "payment_number")
+	forms := api.extractPostForms(c, "payment_number", "tx_hash")
+	if len(forms) == 0 {
 		return
 	}
-	txHash, exists := c.GetPostForm("tx_hash")
-	if !exists {
-		FailWithMissingField(c, "tx_hash")
-		return
-	}
-	paymentNumberInt, err := strconv.ParseInt(paymentNumber, 10, 64)
+	paymentNumberInt, err := strconv.ParseInt(forms["payment_number"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
@@ -41,7 +36,7 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
-	payment, err := api.pm.UpdatePaymentTxHash(username, txHash, paymentNumberInt)
+	payment, err := api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
@@ -70,13 +65,15 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 // RequestSignedPaymentMessage is used to get a signed message from the GRPC API Payments Server
 func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	paymentType, exists := c.GetPostForm("payment_type")
-	if !exists {
-		FailWithMissingField(c, "payment_type")
+	forms := api.extractPostForms(c, "payment_type", "sender_address", "credit_value")
+	if len(forms) == 0 {
 		return
 	}
-	var method uint64
-	switch paymentType {
+	var (
+		paymentType string
+		method      uint64
+	)
+	switch forms["payment_type"] {
 	case "0":
 		paymentType = "rtc"
 		method = 0
@@ -85,16 +82,6 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		method = 1
 	default:
 		Fail(c, errors.New("payment_type must be '0 (rtc)' or '1 (eth)'"))
-		return
-	}
-	senderAddress, exists := c.GetPostForm("sender_address")
-	if !exists {
-		FailWithMissingField(c, "sender_address")
-		return
-	}
-	creditValue, exists := c.GetPostForm("credit_value")
-	if !exists {
-		FailWithMissingField(c, "credit_value")
 		return
 	}
 	// get the current value of a single (ie, 1.0 eth) unit of currency of the given payment type
@@ -110,7 +97,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		return
 	}
 	// convert the credits the user wnats to buy from string to float
-	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
+	creditValueFloat, err := strconv.ParseFloat(forms["credit_value"], 64)
 	if err != nil {
 		Fail(c, err)
 		return
@@ -130,7 +117,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	// on-chain, in a trustless manner ensuring transfer of payment and validation of payment within a single smart contract call.
 	signRequest := greq.SignRequest{
 		// the address that will be sending the transactoin
-		Address: senderAddress,
+		Address: forms["sender_address"],
 		// the method of the payment
 		Method: methodString,
 		// the number of the current payment
@@ -140,7 +127,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	}
 	// send a call to the signer service, which will take the data, hash it, and sign it
 	// using the returned values, we have the information needed to send a call to the smart contract
-	resp, err := api.gc.GetSignedMessage(context.Background(), &signRequest)
+	resp, err := api.signer.GetSignedMessage(context.Background(), &signRequest)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
@@ -150,6 +137,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		paymentNumber,
 		paymentNumberString,
 		paymentNumberString,
+		chargeAmountFloat,
 		creditValueFloat,
 		"ethereum",
 		paymentType,
@@ -212,101 +200,96 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
 
-// CreatePayment is used to create a payment for non ethereum payment types
-func (api *API) CreatePayment(c *gin.Context) {
+// CreateDashPayment is used to create a dash payment via chainrider
+func (api *API) CreateDashPayment(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	paymentType, exists := c.GetPostForm("payment_type")
-	if !exists {
-		FailWithMissingField(c, "payment_type")
+	forms := api.extractPostForms(c, "credit_value")
+	if len(forms) == 0 {
 		return
 	}
-	switch paymentType {
-	case "eth", "rtc":
-		err := errors.New("for 'rtc' and 'eth' payments please use the request route")
-		Fail(c, err, http.StatusBadRequest)
-		return
-	}
-	blockchain, exists := c.GetPostForm("blockchain")
-	if !exists {
-		FailWithMissingField(c, "blockchain")
-		return
-	}
-	if paymentType == "xmr" && blockchain != "monero" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	} else if paymentType == "dash" && blockchain != "dash" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	} else if paymentType == "btc" && blockchain != "bitcoin" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	} else if paymentType == "ltc" && blockchain != "litecoin" {
-		Fail(c, errors.New("mismatching blockchain and payment type"))
-		return
-	}
-
-	usdValue, err := api.getUSDValue(paymentType)
+	usdValueFloat, err := api.getUSDValue("dash")
 	if err != nil {
 		Fail(c, err)
 		return
 	}
-	creditValue, exists := c.GetPostForm("credit_value")
-	if !exists {
-		FailWithMissingField(c, "credit_value")
+	creditValueFloat, err := strconv.ParseFloat(forms["credit_value"], 64)
+	if err != nil {
+		Fail(c, err)
 		return
 	}
+	chargeAmountFloat := creditValueFloat / usdValueFloat
 	paymentNumber, err := api.pm.GetLatestPaymentNumber(username)
 	if err != nil {
 		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
-	creditValueFloat, err := strconv.ParseFloat(creditValue, 64)
+	// as we require tx hashes be unique in the database
+	// we need to create a fake, but also unique value as a temporary place holder
+	fakeTxHash := fmt.Sprintf("%s-%v", username, paymentNumber)
+	// dash is only up to 8 decimals, so we must parse accordingly
+	chargeAmountParsed := fmt.Sprintf("%.8f", chargeAmountFloat)
+	chargeAmountFloat, err = strconv.ParseFloat(chargeAmountParsed, 64)
 	if err != nil {
 		Fail(c, err)
-		return
 	}
-	chargeAmountFloat := creditValueFloat / usdValue
-	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
-	switch paymentType {
-	case "dash":
-		chargeAmountParsed := fmt.Sprintf("%.8f", chargeAmountFloat)
-		chargeAmountFloat, err = strconv.ParseFloat(chargeAmountParsed, 64)
-		if err != nil {
-			Fail(c, err)
-			return
-		}
-	}
-	payment, err := api.pm.NewPayment(
-		paymentNumber,
-		paymentNumberString,
-		paymentNumberString,
-		creditValueFloat,
-		blockchain,
-		paymentType,
-		username,
+	response, err := api.dc.CreatePaymentForward(
+		&dash.PaymentForwardOpts{
+			DestinationAddress: api.cfg.Wallets.DASH,
+		},
 	)
-	if err != nil {
+	if err != nil || response.Error != "" {
+		api.LogError(err, eh.ChainRiderAPICallError)(c, http.StatusBadRequest)
+		return
+	}
+	if _, err = api.pm.NewPayment(
+		paymentNumber,
+		response.PaymentAddress,
+		fakeTxHash,
+		creditValueFloat,
+		chargeAmountFloat,
+		"dash",
+		"dash",
+		username,
+	); err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	depositAddress, err := api.getDepositAddress(paymentType)
+	qm, err := queue.Initialize(queue.DashPaymentConfirmationQueue, api.cfg.RabbitMQ.URL, true, false)
 	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	confirmation := &queue.DashPaymenConfirmation{
+		UserName:         username,
+		PaymentForwardID: response.PaymentForwardID,
+		PaymentNumber:    paymentNumber,
+	}
+	if err = qm.PublishMessage(confirmation); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
 	type pay struct {
-		PaymentNumber  int64
-		ChargeAmount   float64
-		Blockchain     string
-		Status         string
-		DepositAddress string
+		PaymentNumber    int64
+		ChargeAmount     float64
+		Blockchain       string
+		Status           string
+		Network          string
+		DepositAddress   string
+		PaymentForwardID string
 	}
+	// calculate the mining fee required by chainrider to forward the payment
+	miningFeeDash := dash.DuffsToDash(float64(int64(response.MiningFeeDuffs)))
+	// update the charge amount with the mining fee
+	chargeAmountFloat = chargeAmountFloat + miningFeeDash
 	p := pay{
-		PaymentNumber:  payment.Number,
-		ChargeAmount:   chargeAmountFloat,
-		Blockchain:     blockchain,
-		Status:         "please send exactly the charge amount",
-		DepositAddress: depositAddress,
+		PaymentNumber: paymentNumber,
+		ChargeAmount:  chargeAmountFloat,
+		Blockchain:    "dash",
+		Status:        "please send exactly the charge amount. The mining fee required by the chainrider payment forward api call is incldued in the charge amount",
+		//TODO: change to main before production release
+		Network:          "testnet",
+		DepositAddress:   response.PaymentAddress,
+		PaymentForwardID: response.PaymentForwardID,
 	}
 	Respond(c, http.StatusOK, gin.H{"response": p})
 }

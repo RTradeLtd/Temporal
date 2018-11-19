@@ -6,9 +6,9 @@ import (
 
 	"github.com/RTradeLtd/Temporal/rtfs"
 
-	"github.com/RTradeLtd/Temporal/models"
 	"github.com/RTradeLtd/Temporal/tns"
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database/models"
 	"github.com/jinzhu/gorm"
 	peer "github.com/libp2p/go-libp2p-peer"
 	"github.com/streadway/amqp"

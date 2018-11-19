@@ -25,12 +25,11 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 	username := GetAuthenticatedUserFromContext(c)
-	holdTimeInMonths, exists := c.GetPostForm("hold_time")
-	if !exists {
-		FailWithBadRequest(c, "hold_time")
+	forms := api.extractPostForms(c, "hold_time")
+	if len(forms) == 0 {
 		return
 	}
-	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
@@ -78,13 +77,10 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	logger := api.LogWithUser(username)
 	logger.Debug("file upload request received from user")
-
-	holdTimeInMonths, exists := c.GetPostForm("hold_time")
-	if !exists {
-		FailWithBadRequest(c, "hold_time")
+	forms := api.extractPostForms(c, "hold_time")
+	if len(forms) == 0 {
 		return
 	}
-
 	accessKey := api.cfg.MINIO.AccessKey
 	secretKey := api.cfg.MINIO.SecretKey
 	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
@@ -105,7 +101,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	holdTimeInt, err := strconv.ParseInt(holdTimeInMonths, 10, 64)
+	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
@@ -150,7 +146,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		ObjectName:       objectName,
 		UserName:         username,
 		NetworkName:      "public",
-		HoldTimeInMonths: holdTimeInMonths,
+		HoldTimeInMonths: forms["hold_time1"],
 		CreditCost:       cost,
 		// if passphrase was provided, this file is encrypted
 		Encrypted: c.PostForm("passphrase") != "",
@@ -180,6 +176,10 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 // AddFileLocally is used to add a file to our local ipfs node in a simple manner
 // this route gives the user back a content hash for their file immedaitely
 func (api *API) addFileLocally(c *gin.Context) {
+	forms := api.extractPostForms(c, "hold_time")
+	if len(forms) == 0 {
+		return
+	}
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
@@ -190,13 +190,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-
-	holdTimeinMonths, present := c.GetPostForm("hold_time")
-	if !present {
-		FailWithBadRequest(c, "post_form")
-		return
-	}
-	holdTimeinMonthsInt, err := strconv.ParseInt(holdTimeinMonths, 10, 64)
+	holdTimeinMonthsInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
@@ -281,9 +275,8 @@ func (api *API) addFileLocally(c *gin.Context) {
 func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	topic := c.Param("topic")
-	message, present := c.GetPostForm("message")
-	if !present {
-		FailWithMissingField(c, "message")
+	forms := api.extractPostForms(c, "message")
+	if len(forms) == 0 {
 		return
 	}
 	cost, err := utils.CalculateAPICallCost("pubsub", false)
@@ -300,14 +293,14 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
-	if err = api.ipfs.PublishPubSubMessage(topic, message); err != nil {
+	if err = api.ipfs.PublishPubSubMessage(topic, forms["message"]); err != nil {
 		api.LogError(err, eh.IPFSPubSubPublishError)(c)
 		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
 
 	api.LogWithUser(username).Info("ipfs pub sub message published")
-	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": message}})
+	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": forms["message"]}})
 }
 
 // GetLocalPins is used to get the pins tracked by the serving ipfs node

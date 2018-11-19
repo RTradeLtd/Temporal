@@ -28,7 +28,8 @@
 		"api_connection": {
 			"host": "192.168.1.101",
 			"port": "5001"
-		}
+		},
+		"keystore_path": "/tmp"
 	},
 	"ipfs_cluster": {
 		"api_connection": {
@@ -83,5 +84,11 @@
 		"zone_manager_key_name": "testuser-key10",
 		"zone_key_name": "testuser-key11",
 		"log_file": "./templogs.log"
+	},
+	"api_keys": {
+		"chain_rider": ""
+	},
+	"wallets": {
+		"dash": "yfLFuyfSNHNtwKbfaGXh17maGKAAgd2A4z"
 	}
 }

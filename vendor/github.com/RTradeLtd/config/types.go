@@ -2,19 +2,20 @@ package config
 
 // TemporalConfig defines Temporal configuration fields
 type TemporalConfig struct {
-	API         `json:"api,omitempty"`
-	Database    `json:"database,omitempty"`
-	IPFS        `json:"ipfs,omitempty"`
-	IPFSCluster `json:"ipfs_cluster,omitempty"`
-	MINIO       `json:"minio,omitempty"`
-	RabbitMQ    `json:"rabbitmq,omitempty"`
-	AWS         `json:"aws,omitempty"`
-	Sendgrid    `json:"sendgrid,omitempty"`
-	Ethereum    `json:"ethereum,omitempty"`
-	Wallets     `json:"wallets,omitempty"`
-	TNS         `json:"tns,omitempty"`
-	APIKeys     `json:"api_keys,omitempty"`
-	Endpoints   `json:"endpoints,omitempty"`
+	API          `json:"api,omitempty"`
+	Database     `json:"database,omitempty"`
+	IPFS         `json:"ipfs,omitempty"`
+	IPFSCluster  `json:"ipfs_cluster,omitempty"`
+	MINIO        `json:"minio,omitempty"`
+	RabbitMQ     `json:"rabbitmq,omitempty"`
+	AWS          `json:"aws,omitempty"`
+	Sendgrid     `json:"sendgrid,omitempty"`
+	Ethereum     `json:"ethereum,omitempty"`
+	Wallets      `json:"wallets,omitempty"`
+	TNS          `json:"tns,omitempty"`
+	APIKeys      `json:"api_keys,omitempty"`
+	Endpoints    `json:"endpoints,omitempty"`
+	Orchestrator `json:"orchestrator,omitempty"`
 }
 
 // API configures the Temporal API
@@ -58,6 +59,7 @@ type IPFS struct {
 		Host string `json:"host"`
 		Port string `json:"port"`
 	} `json:"api_connection"`
+	KeystorePath string `json:"keystore_path"`
 }
 
 // IPFSCluster configures Temporal's connection to an IPFS cluster
@@ -161,4 +163,20 @@ type Endpoints struct {
 		DB               string `json:"db"`
 		UploadCollection string `json:"uploads"`
 	} `json:"mongodb"`
+	Raven struct {
+		URL  string `json:"url"`
+		User string `json:"user"`
+		Pass string `json:"pass"`
+	} `json:"raven"`
+}
+
+// Orchestrator defines options for the IPFS orchestrator
+type Orchestrator struct {
+	Host string `json:"host"`
+	Port string `json:"port"`
+	Key  string `json:"key"`
+	TLS  struct {
+		CertPath string `json:"cert"`
+		KeyPath  string `json:"key"`
+	} `json:"tls"`
 }

@@ -43,12 +43,11 @@ func (api *API) selfRekt(c *gin.Context) {
 // verifyEmailAddress is used to verify a users email address
 func (api *API) verifyEmailAddress(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	token, exists := c.GetPostForm("token")
-	if !exists {
-		FailWithMissingField(c, "token")
+	forms := api.extractPostForms(c, "token")
+	if len(forms) == 0 {
 		return
 	}
-	if _, err := api.um.ValidateEmailVerificationToken(username, token); err != nil {
+	if _, err := api.um.ValidateEmailVerificationToken(username, forms["token"]); err != nil {
 		api.LogError(err, eh.EmailVerificationError)(c, http.StatusBadRequest)
 		return
 	}
@@ -86,21 +85,15 @@ func (api *API) getEmailVerificationToken(c *gin.Context) {
 // registerAirDrop is used to register an airdrop
 func (api *API) registerAirDrop(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	aidropID, exists := c.GetPostForm("airdrop_id")
-	if !exists {
-		FailWithMissingField(c, "airdrop_id")
+	forms := api.extractPostForms(c, "airdrop_id", "eth_address")
+	if len(forms) == 0 {
 		return
 	}
-	ethAddress, exists := c.GetPostForm("eth_address")
-	if !exists {
-		FailWithMissingField(c, "eth_address")
-		return
-	}
-	if len(ethAddress) > 42 || len(ethAddress) < 42 {
+	if len(forms["eth_address"]) != 42 {
 		Fail(c, errors.New("eth_address is invalid"))
 		return
 	}
-	if _, err := api.dm.RegisterAirDrop(aidropID, ethAddress, username); err != nil {
+	if _, err := api.dm.RegisterAirDrop(forms["airdrop_id"], forms["eth_address"], username); err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
@@ -112,7 +105,7 @@ func (api *API) registerAirDrop(c *gin.Context) {
 	}
 	es := queue.EmailSend{
 		Subject:     "airdrop registered",
-		Content:     fmt.Sprintf("user %s with airdrop code %s to eth address %s is registered", username, aidropID, ethAddress),
+		Content:     fmt.Sprintf("user %s with airdrop code %s to eth address %s is registered", username, forms["eth_address"], forms["aidrop_id"]),
 		ContentType: "text/html",
 		UserNames:   []string{"admin"},
 		Emails:      []string{os.Getenv("TEMPORAL_ADMIN_EMAIL")},
@@ -127,25 +120,15 @@ func (api *API) registerAirDrop(c *gin.Context) {
 // ChangeAccountPassword is used to change a users password
 func (api *API) changeAccountPassword(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-
-	oldPassword, exists := c.GetPostForm("old_password")
-	if !exists {
-		FailWithMissingField(c, "old_password")
+	forms := api.extractPostForms(c, "old_assword", "new_password")
+	if len(forms) == 0 {
 		return
 	}
-
-	newPassword, exists := c.GetPostForm("new_password")
-	if !exists {
-		FailWithMissingField(c, "new_password")
-		return
-	}
-
 	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("password change requested")
-
-	suceeded, err := api.um.ChangePassword(username, oldPassword, newPassword)
+	suceeded, err := api.um.ChangePassword(username, forms["old_password"], forms["new_password"])
 	if err != nil {
 		api.LogError(err, eh.PasswordChangeError)(c)
 		return
@@ -155,37 +138,23 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		api.LogError(err, eh.PasswordChangeError)(c)
 		return
 	}
-
 	api.l.WithFields(log.Fields{
 		"service": api,
 		"user":    username,
 	}).Info("password changed")
-
 	Respond(c, http.StatusOK, gin.H{"response": "password changed"})
 }
 
 // RegisterUserAccount is used to sign up with temporal
 func (api *API) registerUserAccount(c *gin.Context) {
-	username, exists := c.GetPostForm("username")
-	if !exists {
-		FailWithMissingField(c, "username")
-		return
-	}
-	password, exists := c.GetPostForm("password")
-	if !exists {
-		FailWithMissingField(c, "password")
-		return
-	}
-	email, exists := c.GetPostForm("email_address")
-	if !exists {
-		FailWithMissingField(c, "email_address")
+	forms := api.extractPostForms(c, "username", "password", "email_address")
+	if len(forms) == 0 {
 		return
 	}
 	api.l.WithFields(log.Fields{
 		"service": "api",
 	}).Info("user account registration detected")
-
-	userModel, err := api.um.NewUserAccount(username, password, email, false)
+	userModel, err := api.um.NewUserAccount(forms["username"], forms["password"], forms["email_address"], false)
 	if err != nil && err.Error() == eh.DuplicateEmailError || err != nil && err.Error() == eh.DuplicateUserNameError {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
@@ -194,12 +163,10 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		api.LogError(err, eh.UserAccountCreationError)(c, http.StatusBadRequest)
 		return
 	}
-
 	api.l.WithFields(log.Fields{
 		"service": "api",
-		"user":    username,
+		"user":    forms["username"],
 	}).Info("user account registered")
-
 	userModel.HashedPassword = "scrubbed"
 	Respond(c, http.StatusOK, gin.H{"response": userModel})
 }
@@ -207,24 +174,21 @@ func (api *API) registerUserAccount(c *gin.Context) {
 // CreateIPFSKey is used to create an IPFS key
 func (api *API) createIPFSKey(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	keyType, exists := c.GetPostForm("key_type")
-	if !exists {
-		FailWithMissingField(c, "key_type")
+	forms := api.extractPostForms(c, "key_type", "key_bits", "key_name")
+	if len(forms) == 0 {
 		return
 	}
-
-	switch keyType {
+	switch forms["key_type"] {
 	case "rsa":
 		break
 	case "ed25519":
 		break
 	default:
 		// user error, do not log
-		err := fmt.Errorf("%s is invalid key type must be rsa, or ed25519", keyType)
+		err := fmt.Errorf("%s is invalid key type must be rsa, or ed25519", forms["key_type"])
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
-
 	user, err := api.um.FindByUserName(username)
 	if err != nil {
 		api.LogError(err, eh.UserSearchError)(c, http.StatusNotFound)
@@ -236,7 +200,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		cost = 0
 		err = nil
 	} else {
-		if keyType == "rsa" {
+		if forms["key_type"] == "rsa" {
 			cost, err = utils.CalculateAPICallCost("rsa-key", false)
 		} else {
 			cost, err = utils.CalculateAPICallCost("ed-key", false)
@@ -250,27 +214,13 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
-	keyBits, exists := c.GetPostForm("key_bits")
-	if !exists {
-		FailWithMissingField(c, "key_bits")
-		api.refundUserCredits(username, "key", cost)
-		return
-	}
-
-	keyName, exists := c.GetPostForm("key_name")
-	if !exists {
-		FailWithMissingField(c, "key_name")
-		api.refundUserCredits(username, "key", cost)
-		return
-	}
-
 	keys, err := api.um.GetKeysForUser(username)
 	if err != nil {
 		api.LogError(err, eh.KeySearchError)(c, http.StatusNotFound)
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
-	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
+	keyNamePrefixed := fmt.Sprintf("%s-%s", username, forms["key_name"])
 	for _, v := range keys["key_names"] {
 		if v == keyNamePrefixed {
 			err = fmt.Errorf("key with name already exists")
@@ -279,46 +229,41 @@ func (api *API) createIPFSKey(c *gin.Context) {
 			return
 		}
 	}
-	bitsInt, err := strconv.Atoi(keyBits)
+	bitsInt, err := strconv.Atoi(forms["key_bits"])
 	if err != nil {
 		Fail(c, err)
 		return
 	}
 	// if key type is RSA, and size is too small or too large, default to an appropriately size minimum
-	if keyType == "rsa" {
+	if forms["key_type"] == "rsa" {
 		if bitsInt > 4096 || bitsInt < 2048 {
 			bitsInt = 2048
 		}
 	}
 	key := queue.IPFSKeyCreation{
 		UserName:    username,
-		Name:        keyName,
-		Type:        keyType,
+		Name:        forms["key_name"],
+		Type:        forms["key_type"],
 		Size:        bitsInt,
 		NetworkName: "public",
 		CreditCost:  cost,
 	}
-
 	mqConnectionURL := api.cfg.RabbitMQ.URL
-
 	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true, false)
 	if err != nil {
 		api.LogError(err, eh.QueueInitializationError)(c)
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
-
 	if err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
 		api.LogError(err, eh.QueuePublishError)(c)
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
-
 	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("key creation request sent to backend")
-
 	Respond(c, http.StatusOK, gin.H{"response": "key creation sent to backend"})
 }
 
@@ -351,4 +296,112 @@ func (api *API) getCredits(c *gin.Context) {
 	}
 	api.LogWithUser(username).Info("credit check requested")
 	Respond(c, http.StatusOK, gin.H{"response": credits})
+}
+
+// ExportKey is used to export an ipfs key as a mnemonic phrase
+func (api *API) exportKey(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	keyName := c.Param("name")
+	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
+	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyNamePrefixed)
+	if err != nil {
+		api.LogError(err, eh.KeySearchError)(c, http.StatusBadRequest)
+		return
+	}
+	if !owns {
+		api.LogError(errors.New(eh.KeyUseError), eh.KeyUseError)(c, http.StatusBadRequest)
+		return
+	}
+	mnemonic, err := api.ipfs.KeystoreManager.ExportKeyToMnemonic(keyNamePrefixed)
+	if err != nil {
+		api.LogError(err, eh.KeyExportError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": mnemonic})
+}
+
+// ForgotEmail is used to retrieve an email if the user forgets it
+func (api *API) forgotEmail(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	user, err := api.um.FindByUserName(username)
+	if err != nil {
+		api.LogError(err, eh.UserSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": user.EmailAddress})
+}
+
+// ForgotUserName is used to send a username reminder to the email associated with the account
+func (api *API) forgotUserName(c *gin.Context) {
+	forms := api.extractPostForms(c, "email_address")
+	if len(forms) == 0 {
+		return
+	}
+	user, err := api.um.FindByEmail(forms["email_address"])
+	if err != nil {
+		Fail(c, errors.New(eh.UserSearchError), http.StatusBadRequest)
+		return
+	}
+	if !user.EmailEnabled {
+		Fail(c, errors.New("account does not have email enabled, unfortunately for security reasons we can't assist in recovery"))
+		return
+	}
+	es := queue.EmailSend{
+		Subject:     "TEMPORAL User Name Reminder",
+		Content:     fmt.Sprintf("your username is %s", user.UserName),
+		ContentType: "text/html",
+		UserNames:   []string{user.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	mqURL := api.cfg.RabbitMQ.URL
+	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
+	if err != nil {
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err = qm.PublishMessage(es); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "username reminder sent account email"})
+}
+
+// ResetPassword is used to reset the password associated with a user account
+func (api *API) resetPassword(c *gin.Context) {
+	forms := api.extractPostForms(c, "email_address")
+	if len(forms) == 0 {
+		return
+	}
+	user, err := api.um.FindByEmail(forms["email_address"])
+	if err != nil {
+		api.LogError(err, eh.UserSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	if !user.EmailEnabled {
+		Fail(c, errors.New("account does not have email enabled, unfortunately for security reasons we can't assist in recovery"))
+		return
+	}
+	newPass, err := api.um.ResetPassword(user.UserName)
+	if err != nil {
+		api.LogError(err, eh.PasswordResetError)(c, http.StatusBadRequest)
+		return
+	}
+	es := queue.EmailSend{
+		Subject:     "TEMPORAL Password Reset",
+		Content:     fmt.Sprintf("your password is %s", newPass),
+		ContentType: "text/html",
+		UserNames:   []string{user.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	mqURL := api.cfg.RabbitMQ.URL
+	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
+	if err != nil {
+		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
+		return
+	}
+	if err = qm.PublishMessage(es); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "password reset, please check your email for a new password"})
 }

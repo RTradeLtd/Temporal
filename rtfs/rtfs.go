@@ -51,8 +51,8 @@ func (im *IpfsManager) SetTimeout(time time.Duration) {
 
 // CreateKeystoreManager is used to create a key store manager for ipfs keys
 // for now it just uses a file system keystore manager
-func (im *IpfsManager) CreateKeystoreManager() error {
-	km, err := GenerateKeystoreManager()
+func (im *IpfsManager) CreateKeystoreManager(keystorePath ...string) error {
+	km, err := GenerateKeystoreManager(keystorePath...)
 	if err != nil {
 		return err
 	}

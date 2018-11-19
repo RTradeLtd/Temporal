@@ -2,14 +2,6 @@
 
 
 [[projects]]
-  digest = "1:c8d3cbf3359a76784113575805aa25c918e2faa6fe71306366b96a51cd13edc2"
-  name = "github.com/RTradeLtd/Temporal"
-  packages = ["config"]
-  pruneopts = "UT"
-  revision = "16b5d2f7a1349419c128eadcafd128292d519a36"
-  version = "v1.0-beta.2"
-
-[[projects]]
   digest = "1:3e42118b0183e633c89399c1f27ccc3c0f01fa67c9572b6cef5d73a2b231cc6f"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
@@ -20,9 +12,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = [
-    "github.com/RTradeLtd/Temporal/config",
-    "github.com/RTradeLtd/config",
-  ]
+  input-imports = ["github.com/RTradeLtd/config"]
   solver-name = "gps-cdcl"
   solver-version = 1

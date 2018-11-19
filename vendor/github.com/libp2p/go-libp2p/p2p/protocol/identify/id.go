@@ -2,12 +2,10 @@ package identify
 
 import (
 	"context"
-	"strings"
 	"sync"
 
 	pb "github.com/libp2p/go-libp2p/p2p/protocol/identify/pb"
 
-	semver "github.com/coreos/go-semver/semver"
 	ggio "github.com/gogo/protobuf/io"
 	logging "github.com/ipfs/go-log"
 	ic "github.com/libp2p/go-libp2p-crypto"
@@ -83,7 +81,12 @@ func (ids *IDService) IdentifyConn(c inet.Conn) {
 	ids.currid[c] = ch
 	ids.currmu.Unlock()
 
-	defer close(ch)
+	defer func() {
+		close(ch)
+		ids.currmu.Lock()
+		delete(ids.currid, c)
+		ids.currmu.Unlock()
+	}()
 
 	s, err := c.NewStream()
 	if err != nil {
@@ -103,16 +106,6 @@ func (ids *IDService) IdentifyConn(c inet.Conn) {
 	}
 
 	ids.responseHandler(s)
-
-	ids.currmu.Lock()
-	_, found := ids.currid[c]
-	delete(ids.currid, c)
-	ids.currmu.Unlock()
-
-	if !found {
-		log.Errorf("IdentifyConn failed to find channel (programmer error) for %s", c)
-	}
-	inet.FullClose(s)
 }
 
 func (ids *IDService) requestHandler(s inet.Stream) {
@@ -135,12 +128,14 @@ func (ids *IDService) responseHandler(s inet.Stream) {
 	mes := pb.Identify{}
 	if err := r.ReadMsg(&mes); err != nil {
 		log.Warning("error reading identify message: ", err)
+		s.Reset()
 		return
 	}
 	ids.consumeMessage(&mes, c)
-
 	log.Debugf("%s received message from %s %s", ID,
 		c.RemotePeer(), c.RemoteMultiaddr())
+
+	go inet.FullClose(s)
 }
 
 func (ids *IDService) populateMessage(mes *pb.Identify, c inet.Conn) {
@@ -227,15 +222,6 @@ func (ids *IDService) consumeMessage(mes *pb.Identify, c inet.Conn) {
 	// get protocol versions
 	pv := mes.GetProtocolVersion()
 	av := mes.GetAgentVersion()
-
-	// version check. if we shouldn't talk, bail.
-	// TODO: at this point, we've already exchanged information.
-	// move this into a first handshake before the connection can open streams.
-	if !protocolVersionsAreCompatible(pv, LibP2PVersion) {
-		logProtocolMismatchDisconnect(c, pv, av)
-		c.Close()
-		return
-	}
 
 	ids.Host.Peerstore().Put(p, "ProtocolVersion", pv)
 	ids.Host.Peerstore().Put(p, "AgentVersion", av)
@@ -396,7 +382,8 @@ func (ids *IDService) consumeObservedAddress(observed []byte, c inet.Conn) {
 
 	// ok! we have the observed version of one of our ListenAddresses!
 	log.Debugf("added own observed listen addr: %s --> %s", c.LocalMultiaddr(), maddr)
-	ids.observedAddrs.Add(maddr, c.RemoteMultiaddr())
+	ids.observedAddrs.Add(maddr, c.LocalMultiaddr(), c.RemoteMultiaddr(),
+		c.Stat().Direction)
 }
 
 func addrInAddrs(a ma.Multiaddr, as []ma.Multiaddr) bool {
@@ -406,31 +393,6 @@ func addrInAddrs(a ma.Multiaddr, as []ma.Multiaddr) bool {
 		}
 	}
 	return false
-}
-
-// protocolVersionsAreCompatible checks that the two implementations
-// can talk to each other. It will use semver, but for now while
-// we're in tight development, we will return false for minor version
-// changes too.
-func protocolVersionsAreCompatible(v1, v2 string) bool {
-	if strings.HasPrefix(v1, "ipfs/") {
-		v1 = v1[5:]
-	}
-	if strings.HasPrefix(v2, "ipfs/") {
-		v2 = v2[5:]
-	}
-
-	v1s, err := semver.NewVersion(v1)
-	if err != nil {
-		return false
-	}
-
-	v2s, err := semver.NewVersion(v2)
-	if err != nil {
-		return false
-	}
-
-	return v1s.Major == v2s.Major && v1s.Minor == v2s.Minor
 }
 
 // netNotifiee defines methods to be used with the IpfsDHT
