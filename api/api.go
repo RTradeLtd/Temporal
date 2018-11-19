@@ -184,6 +184,13 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	}, nil
 }
 
+// Close releases API resources
+func (api *API) Close() {
+	api.lc.Close()
+	api.signer.Close()
+	api.orch.Close()
+}
+
 // TLSConfig is used to enable TLS on the API service
 type TLSConfig struct {
 	CertFile string

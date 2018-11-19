@@ -125,6 +125,8 @@ var commands = map[string]cmd.Cmd{
 			if err != nil {
 				log.Fatal(err)
 			}
+			defer service.Close()
+
 			port := os.Getenv("API_PORT")
 			if port == "" {
 				port = "6767"
