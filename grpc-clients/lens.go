@@ -17,12 +17,12 @@ const (
 // LensClient is a lens client used to make requests to the Lens gRPC server
 type LensClient struct {
 	pb.IndexerAPIClient
+	conn *grpc.ClientConn
 }
 
 // NewLensClient is used to generate our lens client
 func NewLensClient(opts config.Endpoints) (*LensClient, error) {
 	dialOpts := make([]grpc.DialOption, 0)
-	// setup parameters for our conection to
 	if opts.Lens.TLS.CertPath != "" {
 		creds, err := credentials.NewClientTLSFromFile(opts.Lens.TLS.CertPath, "")
 		if err != nil {
@@ -30,10 +30,11 @@ func NewLensClient(opts config.Endpoints) (*LensClient, error) {
 		}
 		dialOpts = append(dialOpts,
 			grpc.WithTransportCredentials(creds),
-			grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Lens.AuthKey, false)))
+			grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Lens.AuthKey, true)))
 	} else {
-		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Lens.AuthKey, false)))
-		dialOpts = append(dialOpts, grpc.WithInsecure())
+		dialOpts = append(dialOpts,
+			grpc.WithInsecure(),
+			grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Lens.AuthKey, false)))
 	}
 	var url string
 	if opts.Lens.URL == "" {
@@ -41,11 +42,16 @@ func NewLensClient(opts config.Endpoints) (*LensClient, error) {
 	} else {
 		url = opts.Lens.URL
 	}
-	gConn, err := grpc.Dial(url, dialOpts...)
+
+	conn, err := grpc.Dial(url, dialOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return &LensClient{
-		IndexerAPIClient: pb.NewIndexerAPIClient(gConn),
+		conn:             conn,
+		IndexerAPIClient: pb.NewIndexerAPIClient(conn),
 	}, nil
 }
+
+// Close shuts down the client's gRPC connection
+func (l *LensClient) Close() { l.conn.Close() }
