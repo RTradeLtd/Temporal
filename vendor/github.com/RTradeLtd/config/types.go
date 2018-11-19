@@ -163,6 +163,11 @@ type Endpoints struct {
 		DB               string `json:"db"`
 		UploadCollection string `json:"uploads"`
 	} `json:"mongodb"`
+	Raven struct {
+		URL  string `json:"url"`
+		User string `json:"user"`
+		Pass string `json:"pass"`
+	} `json:"raven"`
 }
 
 // Orchestrator defines options for the IPFS orchestrator

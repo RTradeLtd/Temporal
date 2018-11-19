@@ -12,11 +12,11 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/grpc"
-  version = "v1.0.5a"
+  branch = "master"
 
 [[override]]
   name = "github.com/RTradeLtd/database"
-  branch = "network/removal"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/RTradeLtd/config"

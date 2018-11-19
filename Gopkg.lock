@@ -26,12 +26,12 @@
   version = "v1.0.4"
 
 [[projects]]
-  digest = "1:3890f87a79728708193f7c0c30a54c92a2b9ec75837ea0af76ca01787d0fc9de"
+  digest = "1:0db8a741200061366f481773223f97f0a28b8923250f907958fa14011a2c864b"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "f5f79357a3df55899216c0f98be1bc7e82fee8df"
-  version = "v1.0.10"
+  revision = "529e326d56516006be6987670ffa360ff92b6388"
+  version = "v1.0.11"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -42,7 +42,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "network/removal"
+  branch = "master"
   digest = "1:064df50756c75d048fe9e8db0e04eacdb8d13a35bbd5011c635bd7d7b7f6926b"
   name = "github.com/RTradeLtd/database"
   packages = [
@@ -51,7 +51,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "a0aa0aaa2b13301af2a9cdf26cd6b8a4d9a62862"
+  revision = "ccab8185f9178f03c54f19dbcca00ca9d3e616db"
 
 [[projects]]
   digest = "1:38b66fd13337b663166915e5c419149129a8ef29c41f0bf7bd7b2e1b53a0f1f5"
@@ -62,19 +62,22 @@
   version = "v2.0.4"
 
 [[projects]]
-  digest = "1:ddb483cec9f18aef714e659cb8ce844f3acc54eef19f7307e8aa1804cbe41c08"
+  branch = "master"
+  digest = "1:65b270e0a2d4af215cb8d001853173c3a7353cb8e2bf0fa3232f01e84b9312f3"
   name = "github.com/RTradeLtd/grpc"
   packages = [
     "dialer",
     "ipfs-orchestrator",
+    "lens",
+    "lens/request",
+    "lens/response",
     "middleware",
     "temporal",
     "temporal/request",
     "temporal/response",
   ]
   pruneopts = "UT"
-  revision = "a01354496a0c01af0252b5005edb02d05acf093b"
-  version = "v1.0.5a"
+  revision = "320346f207bfe9826e26fc7b05829bd46636f876"
 
 [[projects]]
   branch = "master"
@@ -317,11 +320,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2a9267cb14ef9a86ec2e282dbe3973156f33423c469851a40a90da7c4d934795"
+  digest = "1:3a10c5f97a7efbf1da8eb14b41447ee8cb362ff2ddc74aefc7547f6243ba4af8"
   name = "github.com/hsanjuan/go-libp2p-gostream"
   packages = ["."]
   pruneopts = "UT"
-  revision = "9e734e5b4c602a626fcbab4c3e071a05f88fe7c0"
+  revision = "c9e874350011f590c4c32a4b46d8873495adf1e8"
 
 [[projects]]
   branch = "master"
@@ -447,12 +450,12 @@
   revision = "77148e59a881a72254db41086ae442635c9f86d6"
 
 [[projects]]
-  digest = "1:6b8866cc9496eada254debc24199981e21fd70fd0031ff7a581ac91be47187bb"
+  digest = "1:b352ae8b1a77cc6b48fc8e314e34a522cfc76d6ca3a06c93b29c9cde5de6771e"
   name = "github.com/jackpal/gateway"
   packages = ["."]
   pruneopts = "UT"
-  revision = "3e333950771011fed13be63e62b9f473c5e0d9bf"
-  version = "v1.0.4"
+  revision = "cbcf4e3f3baee7952fc386c8b2534af4d267c875"
+  version = "v1.0.5"
 
 [[projects]]
   digest = "1:32b82e71cf24f8b78323e0d7903c4b90278486283965aa2a19b1ea13763b8f34"
@@ -1094,7 +1097,7 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "a04bd04888af6ea6f64ed14244d9bcf2b739ebd6"
+  revision = "1f2c4f3cd6db5fd6f68f36af6b6d5d936fd93c4e"
 
 [[projects]]
   branch = "master"
@@ -1362,11 +1365,11 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "03003ca0c849e57b6ea29a4bab8d3cb6e4d568fe"
+  revision = "adae6a3d119ae4890b46832a2e88a95adc62b8e7"
 
 [[projects]]
   branch = "master"
-  digest = "1:8f32f0ccb71f71d4780147c6e6fac5bcec522f148e7a0d6d4543770081e8884d"
+  digest = "1:58ddfe5d263625d997ae49a44f5329e456e7078dd4b451ce9c5d1816db148438"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1374,7 +1377,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "66b7b1311ac80bbafcd2daeef9a5e6e2cd1e2399"
+  revision = "93218def8b18e66adbdab3eca8ec334700329f1f"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1422,7 +1425,7 @@
     "go/types/typeutil",
   ]
   pruneopts = "UT"
-  revision = "a8570e12b66263a4d2bc406de590d7651e494615"
+  revision = "2ddaf7f79a0937ffa9072ede7b696fd084abfe86"
 
 [[projects]]
   branch = "master"
@@ -1505,6 +1508,8 @@
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/ipfs-orchestrator",
+    "github.com/RTradeLtd/grpc/lens",
+    "github.com/RTradeLtd/grpc/lens/request",
     "github.com/RTradeLtd/grpc/temporal",
     "github.com/RTradeLtd/grpc/temporal/request",
     "github.com/appleboy/gin-jwt",

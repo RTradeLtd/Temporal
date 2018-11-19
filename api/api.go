@@ -50,6 +50,7 @@ type API struct {
 	l       *log.Logger
 	signer  *clients.SignerClient
 	orch    *clients.IPFSOrchestratorClient
+	lc      *clients.LensClient
 	dc      *dash.Client
 	service string
 }
@@ -157,6 +158,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	if err != nil {
 		return nil, err
 	}
+	lensClient, err := clients.NewLensClient(cfg.Endpoints)
+	if err != nil {
+		return nil, err
+	}
 	return &API{
 		cfg:     cfg,
 		service: "api",
@@ -169,6 +174,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		dm:      models.NewDropManager(dbm.DB),
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
 		ipfs:    ipfsManager,
+		lc:      lensClient,
 		signer:  signer,
 		orch:    orch,
 		dc:      dc,
@@ -176,6 +182,13 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		rm:      models.NewRecordManager(dbm.DB),
 		nm:      models.NewHostedIPFSNetworkManager(dbm.DB),
 	}, nil
+}
+
+// Close releases API resources
+func (api *API) Close() {
+	api.lc.Close()
+	api.signer.Close()
+	api.orch.Close()
 }
 
 // TLSConfig is used to enable TLS on the API service
@@ -236,6 +249,16 @@ func (api *API) setupRoutes() {
 	statistics := v1.Group("/statistics").Use(authware...)
 	{
 		statistics.GET("/stats", api.getStats)
+	}
+
+	// lens search engine
+	lens := v1.Group("/lens", authware...)
+	{
+		requests := lens.Group("/requests")
+		{
+			requests.POST("/index", api.submitIndexRequest)
+			requests.POST("/search", api.submitSearchRequest)
+		}
 	}
 
 	// tns

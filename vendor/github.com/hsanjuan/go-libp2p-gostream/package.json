@@ -9,9 +9,9 @@
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "QmXnpYYg2onGLXVxM4Q5PEFcx29k8zeJQkPeLAk9h9naxg",
+      "hash": "QmVvV8JQmmqPCwXAaesWJPheUiEFQJ9HWRhWhuFuxVQxpR",
       "name": "go-libp2p",
-      "version": "6.0.26"
+      "version": "6.0.27"
     }
   ],
   "gxVersion": "0.10.0",
@@ -19,6 +19,6 @@
   "license": "MIT",
   "name": "go-libp2p-gostream",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "0.0.18"
+  "version": "0.0.19"
 }
 
