@@ -19,9 +19,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
+	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "gx/ipfs/QmYaVovLzgcdBpCLEAnW41p8ujvCUxe3TFpfJxjK5qbzn7/client_model/go"
 )
 
 func testCreate(t testing.TB) {

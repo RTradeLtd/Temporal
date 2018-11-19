@@ -7,8 +7,8 @@ import (
 	"net"
 	"time"
 
-	inet "github.com/libp2p/go-libp2p-net"
-	protocol "github.com/libp2p/go-libp2p-protocol"
+	inet "gx/ipfs/QmXuRkCR7BNQa9uqfpTiFWsTQLzmTWYg91Ja1w95gnqb6u/go-libp2p-net"
+	protocol "gx/ipfs/QmZNkThpqfVXs9GNbexPrfBbXSLNYeKrE7jwFM2oqHbyqN/go-libp2p-protocol"
 )
 
 // stream implements inet.Stream

@@ -12,8 +12,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable"
-	"github.com/onsi/ginkgo/types"
+	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/reporters/stenographer/support/go-colorable"
+	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/types"
 )
 
 const defaultStyle = "\x1b[0m"

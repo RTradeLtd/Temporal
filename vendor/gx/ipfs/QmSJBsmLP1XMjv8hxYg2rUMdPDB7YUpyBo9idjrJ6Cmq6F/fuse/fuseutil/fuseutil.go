@@ -1,7 +1,7 @@
 package fuseutil
 
 import (
-	"bazil.org/fuse"
+	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse"
 )
 
 // HandleRead handles a read request assuming that data is the entire file content.

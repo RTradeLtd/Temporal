@@ -6,11 +6,11 @@ import (
 	"os"
 	"sync"
 
-	tracer "github.com/ipfs/go-log/tracer"
+	tracer "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log/tracer"
 
-	colorable "github.com/mattn/go-colorable"
-	opentrace "github.com/opentracing/opentracing-go"
-	logging "github.com/whyrusleeping/go-logging"
+	colorable "gx/ipfs/QmTsHcKgTQ4VeYZd8eKYpTXeLW7KNwkRD9wjnrwsV2sToq/go-colorable"
+	opentrace "gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
+	logging "gx/ipfs/QmcaSwFc5RBg8yCq54QURwEU4nwjfCpjbpmaAm4VbdGLKv/go-logging"
 )
 
 func init() {

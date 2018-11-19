@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	peert "github.com/libp2p/go-libp2p-peer/test"
-	routing "github.com/libp2p/go-libp2p-routing"
+	peert "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer/test"
+	routing "gx/ipfs/QmcQ81jSyWCp1jpkQ8CMbtpXT3jK7Wg6ZtYmoyWFgBoF9c/go-libp2p-routing"
 )
 
 func TestGetPublicKey(t *testing.T) {

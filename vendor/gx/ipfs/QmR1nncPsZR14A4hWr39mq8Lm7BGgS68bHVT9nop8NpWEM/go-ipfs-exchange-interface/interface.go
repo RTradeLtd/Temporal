@@ -5,8 +5,8 @@ import (
 	"context"
 	"io"
 
-	blocks "github.com/ipfs/go-block-format"
-	cid "github.com/ipfs/go-cid"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	blocks "gx/ipfs/QmRcHuYzAyswytBuMF78rj3LTChYszomRFXNg4685ZN1WM/go-block-format"
 )
 
 // Interface defines the functionality of the IPFS block exchange protocol.

@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"net"
 
-	ic "github.com/libp2p/go-libp2p-crypto"
-	tpt "github.com/libp2p/go-libp2p-transport"
-	ma "github.com/multiformats/go-multiaddr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	ic "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	tpt "gx/ipfs/QmbCkisBsdejwSzusQcdbYjpSX3yvUw1ek2YSsJ89QbZYX/go-libp2p-transport"
 )
 
 var _ = Describe("Listener", func() {

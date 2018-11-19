@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	pool "github.com/libp2p/go-buffer-pool"
+	pool "gx/ipfs/QmQDvJoB6aJWN3sjr3xsgXqKCXf4jU5zdMXpDMsBkYVNqa/go-buffer-pool"
 )
 
 // streamID is a convenience type for operating on stream IDs

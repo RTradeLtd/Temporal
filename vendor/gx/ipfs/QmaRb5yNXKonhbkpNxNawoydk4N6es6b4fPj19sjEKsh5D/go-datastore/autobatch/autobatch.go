@@ -4,8 +4,8 @@
 package autobatch
 
 import (
-	ds "github.com/ipfs/go-datastore"
-	dsq "github.com/ipfs/go-datastore/query"
+	ds "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
+	dsq "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore/query"
 )
 
 // Datastore implements a go-datatsore.

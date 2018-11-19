@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/ipfs/go-ipfs-cmdkit"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 // UnexpectedError wraps a *cmdkit.Error that is being emitted. That type (and its non-pointer version) used to be emitted to indicate an error. That was deprecated in favour of CloseWithError.

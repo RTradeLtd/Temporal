@@ -7,8 +7,8 @@
 package bidirule
 
 import (
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/bidi"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/transform"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/unicode/bidi"
 )
 
 var testCases = [][]ruleTest{

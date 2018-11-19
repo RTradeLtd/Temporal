@@ -6,7 +6,7 @@ import (
 	"io"
 	"strconv"
 
-	. "github.com/polydawn/refmt/tok"
+	. "gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/tok"
 )
 
 func NewEncoder(wr io.Writer) *Encoder {

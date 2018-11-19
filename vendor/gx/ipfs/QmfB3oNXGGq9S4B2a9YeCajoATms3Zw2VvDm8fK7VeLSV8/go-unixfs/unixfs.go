@@ -6,10 +6,10 @@ package unixfs
 import (
 	"errors"
 
-	proto "github.com/gogo/protobuf/proto"
+	proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 
-	dag "github.com/ipfs/go-merkledag"
-	pb "github.com/ipfs/go-unixfs/pb"
+	dag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
+	pb "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/pb"
 )
 
 // Shorthands for protobuffer types

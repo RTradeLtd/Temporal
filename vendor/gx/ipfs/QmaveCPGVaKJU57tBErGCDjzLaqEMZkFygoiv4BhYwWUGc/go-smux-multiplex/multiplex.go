@@ -3,8 +3,8 @@ package peerstream_multiplex
 import (
 	"net"
 
-	mp "github.com/libp2p/go-mplex"          // Conn is a connection to a remote peer.
-	smux "github.com/libp2p/go-stream-muxer" // Conn is a connection to a remote peer.
+	mp "gx/ipfs/QmP5tygNbeAH5Z8sGdrnE9rqqkAVYotam3UAgRWWfL2zur/go-mplex"          // Conn is a connection to a remote peer.
+	smux "gx/ipfs/QmY9JXR3FupnYAYJWK9aMr9bCpqWKcToQ1tz8DVGTrHpHw/go-stream-muxer" // Conn is a connection to a remote peer.
 )
 
 type conn struct {

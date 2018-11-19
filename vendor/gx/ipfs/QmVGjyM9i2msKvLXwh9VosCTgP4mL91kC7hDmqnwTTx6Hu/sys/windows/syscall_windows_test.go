@@ -12,7 +12,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"golang.org/x/sys/windows"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/windows"
 )
 
 func TestWin32finddata(t *testing.T) {

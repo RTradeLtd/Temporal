@@ -1,7 +1,7 @@
 package pb
 
 import (
-	"github.com/mattn/go-runewidth"
+	"gx/ipfs/QmNu2sEu7LuoBQbnSoy8u6wk6oWwFX8L5nVVUZoK7J67oQ/go-runewidth"
 	"regexp"
 )
 

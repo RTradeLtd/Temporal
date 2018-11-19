@@ -9,14 +9,14 @@ import (
 	"net"
 	"time"
 
-	proto "github.com/gogo/protobuf/proto"
-	logging "github.com/ipfs/go-log"
-	cs "github.com/libp2p/go-conn-security"
-	ci "github.com/libp2p/go-libp2p-crypto"
-	peer "github.com/libp2p/go-libp2p-peer"
-	pb "github.com/libp2p/go-libp2p-secio/pb"
-	msgio "github.com/libp2p/go-msgio"
-	mh "github.com/multiformats/go-multihash"
+	mh "gx/ipfs/QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8/go-multihash"
+	ci "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	pb "gx/ipfs/QmXVoVfwEXZdG9zNNHE9in55SepeSJM5GSETEyWNSNMygc/go-libp2p-secio/pb"
+	cs "gx/ipfs/QmZ3XKH272gU9px86XqWYeZHU65ayHxWs6Wbswvdj2VqVK/go-conn-security"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	msgio "gx/ipfs/QmcxL9MDzSU5Mj1GcWZD8CXkAFuJXjdbjotZ93o371bKSf/go-msgio"
+	proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 )
 
 var log = logging.Logger("secio")

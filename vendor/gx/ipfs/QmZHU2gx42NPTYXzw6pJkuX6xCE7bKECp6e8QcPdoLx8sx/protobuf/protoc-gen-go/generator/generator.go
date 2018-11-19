@@ -56,11 +56,11 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/protoc-gen-go/generator/internal/remap"
+	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
+	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/generator/internal/remap"
 
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
+	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/descriptor"
+	plugin "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/plugin"
 )
 
 // generatedCodeVersion indicates a version of the generated code.

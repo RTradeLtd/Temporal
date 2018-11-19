@@ -156,10 +156,10 @@ import (
 	"errors"
 	"fmt"
 
-	"golang.org/x/text/internal"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal"
 
-	"golang.org/x/text/internal/catmsg"
-	"golang.org/x/text/language"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/catmsg"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
 )
 
 // A Catalog allows lookup of translated messages.

@@ -6,19 +6,19 @@ import (
 	"sort"
 	"sync"
 
-	host "github.com/libp2p/go-libp2p-host"
-	bhost "github.com/libp2p/go-libp2p/p2p/host/basic"
+	bhost "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/host/basic"
+	host "gx/ipfs/QmdJfsSbKSZnMkfZ1kpopiyB9i3Hd6cp8VKWZmtWPa7Moc/go-libp2p-host"
 
-	"github.com/jbenet/goprocess"
-	goprocessctx "github.com/jbenet/goprocess/context"
-	ic "github.com/libp2p/go-libp2p-crypto"
-	inet "github.com/libp2p/go-libp2p-net"
-	p2putil "github.com/libp2p/go-libp2p-netutil"
-	peer "github.com/libp2p/go-libp2p-peer"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	pstoremem "github.com/libp2p/go-libp2p-peerstore/pstoremem"
-	testutil "github.com/libp2p/go-testutil"
-	ma "github.com/multiformats/go-multiaddr"
+	ic "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	"gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess"
+	goprocessctx "gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess/context"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	pstoremem "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore/pstoremem"
+	inet "gx/ipfs/QmXuRkCR7BNQa9uqfpTiFWsTQLzmTWYg91Ja1w95gnqb6u/go-libp2p-net"
+	testutil "gx/ipfs/Qma6ESRQTf1ZLPgzpCwDTqQJefPnU6uLvMjP18vK8EWp8L/go-testutil"
+	p2putil "gx/ipfs/QmdjF7Ubi5KNwUYMtKWyUsB6UY3B1wB5CDus9L3JKPWM2j/go-libp2p-netutil"
 )
 
 // mocknet implements mocknet.Mocknet

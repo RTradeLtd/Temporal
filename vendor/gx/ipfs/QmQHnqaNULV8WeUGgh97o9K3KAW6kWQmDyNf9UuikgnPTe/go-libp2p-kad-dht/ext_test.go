@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
-	ggio "github.com/gogo/protobuf/io"
-	u "github.com/ipfs/go-ipfs-util"
-	pb "github.com/libp2p/go-libp2p-kad-dht/pb"
-	inet "github.com/libp2p/go-libp2p-net"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	record "github.com/libp2p/go-libp2p-record"
-	routing "github.com/libp2p/go-libp2p-routing"
-	mocknet "github.com/libp2p/go-libp2p/p2p/net/mock"
+	u "gx/ipfs/QmPdKqUcHGFdeSpvjVoaTRPPstGif9GBZb5Q56RVw9o69A/go-ipfs-util"
+	pb "gx/ipfs/QmQHnqaNULV8WeUGgh97o9K3KAW6kWQmDyNf9UuikgnPTe/go-libp2p-kad-dht/pb"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	mocknet "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/net/mock"
+	inet "gx/ipfs/QmXuRkCR7BNQa9uqfpTiFWsTQLzmTWYg91Ja1w95gnqb6u/go-libp2p-net"
+	record "gx/ipfs/Qma9Eqp16mNHDX1EL73pcxhFfzbyXVcAYtaDd1xdmDRDtL/go-libp2p-record"
+	routing "gx/ipfs/QmcQ81jSyWCp1jpkQ8CMbtpXT3jK7Wg6ZtYmoyWFgBoF9c/go-libp2p-routing"
+	ggio "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/io"
 )
 
 func TestGetFailures(t *testing.T) {

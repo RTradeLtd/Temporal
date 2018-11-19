@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/ginkgo/testsuite"
 	. "github.com/onsi/gomega"
+	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo"
+	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/ginkgo/testsuite"
 )
 
 var _ = Describe("TestSuite", func() {

@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	host "github.com/libp2p/go-libp2p-host"
-	peer "github.com/libp2p/go-libp2p-peer"
-	swarmt "github.com/libp2p/go-libp2p-swarm/testing"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	swarmt "gx/ipfs/QmVHhT8NxtApPTndiZPe4JNGNUxGWtJe3ebyxtRz4HnbEp/go-libp2p-swarm/testing"
+	host "gx/ipfs/QmdJfsSbKSZnMkfZ1kpopiyB9i3Hd6cp8VKWZmtWPa7Moc/go-libp2p-host"
 	//bhost "github.com/libp2p/go-libp2p/p2p/host/basic"
-	bhost "github.com/libp2p/go-libp2p-blankhost"
-	"github.com/libp2p/go-libp2p-protocol"
+	"gx/ipfs/QmZNkThpqfVXs9GNbexPrfBbXSLNYeKrE7jwFM2oqHbyqN/go-libp2p-protocol"
+	bhost "gx/ipfs/Qmcwep23T9AwwbuQRRhVyjk9PBRbMFCyGKCKGZfTPteiFU/go-libp2p-blankhost"
 )
 
 func checkMessageRouting(t *testing.T, topic string, pubs []*PubSub, subs []*Subscription) {

@@ -11,7 +11,7 @@ import (
 )
 
 import (
-	"bazil.org/fuse"
+	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse"
 )
 
 // A Tree implements a basic read-only directory tree for FUSE.

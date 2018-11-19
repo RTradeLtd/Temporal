@@ -5,14 +5,14 @@ package libp2p
 import (
 	"crypto/rand"
 
-	crypto "github.com/libp2p/go-libp2p-crypto"
-	pstoremem "github.com/libp2p/go-libp2p-peerstore/pstoremem"
-	secio "github.com/libp2p/go-libp2p-secio"
-	tcp "github.com/libp2p/go-tcp-transport"
-	ws "github.com/libp2p/go-ws-transport"
-	multiaddr "github.com/multiformats/go-multiaddr"
-	mplex "github.com/whyrusleeping/go-smux-multiplex"
-	yamux "github.com/whyrusleeping/go-smux-yamux"
+	crypto "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	multiaddr "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	pstoremem "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore/pstoremem"
+	tcp "gx/ipfs/QmTkKN1x5Jvhc5Np55gJzD3PQ6GL74aKm9145t9WbvJyrB/go-tcp-transport"
+	secio "gx/ipfs/QmXVoVfwEXZdG9zNNHE9in55SepeSJM5GSETEyWNSNMygc/go-libp2p-secio"
+	ws "gx/ipfs/QmY957dCFYVPKpj21xRs6KA3XAGA9tBt73UE5kfUGdNgD9/go-ws-transport"
+	mplex "gx/ipfs/QmaveCPGVaKJU57tBErGCDjzLaqEMZkFygoiv4BhYwWUGc/go-smux-multiplex"
+	yamux "gx/ipfs/Qmdps3CYh5htGQSrPvzg5PHouVexLmtpbuLCqc4vuej8PC/go-smux-yamux"
 )
 
 // DefaultSecurity is the default security option.

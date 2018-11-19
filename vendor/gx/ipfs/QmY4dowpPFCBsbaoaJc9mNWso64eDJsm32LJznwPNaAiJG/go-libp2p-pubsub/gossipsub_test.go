@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	host "github.com/libp2p/go-libp2p-host"
+	host "gx/ipfs/QmdJfsSbKSZnMkfZ1kpopiyB9i3Hd6cp8VKWZmtWPa7Moc/go-libp2p-host"
 )
 
 func getGossipsubs(ctx context.Context, hs []host.Host, opts ...Option) []*PubSub {

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	ws "github.com/gorilla/websocket"
+	ws "gx/ipfs/QmZH5VXfAJouGMyCCHTRPGCT3e5MG9Lu78Ln3YAYW1XTts/websocket"
 )
 
 // GracefulCloseTimeout is the time to wait trying to gracefully close a

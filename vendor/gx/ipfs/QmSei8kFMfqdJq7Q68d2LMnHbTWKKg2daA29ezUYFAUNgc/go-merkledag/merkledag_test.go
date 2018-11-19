@@ -13,17 +13,17 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/ipfs/go-merkledag"
-	mdpb "github.com/ipfs/go-merkledag/pb"
-	dstest "github.com/ipfs/go-merkledag/test"
+	. "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
+	mdpb "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag/pb"
+	dstest "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag/test"
 
-	blocks "github.com/ipfs/go-block-format"
-	bserv "github.com/ipfs/go-blockservice"
-	bstest "github.com/ipfs/go-blockservice/test"
-	cid "github.com/ipfs/go-cid"
-	offline "github.com/ipfs/go-ipfs-exchange-offline"
-	u "github.com/ipfs/go-ipfs-util"
-	ipld "github.com/ipfs/go-ipld-format"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	u "gx/ipfs/QmPdKqUcHGFdeSpvjVoaTRPPstGif9GBZb5Q56RVw9o69A/go-ipfs-util"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
+	blocks "gx/ipfs/QmRcHuYzAyswytBuMF78rj3LTChYszomRFXNg4685ZN1WM/go-block-format"
+	offline "gx/ipfs/QmT6dHGp3UYd3vUMpy7rzX2CXQv7HLcj42Vtq8qwwjgASb/go-ipfs-exchange-offline"
+	bserv "gx/ipfs/QmWfhv1D18DRSiSm73r4QGcByspzPtxxRTcmHW3axFXZo8/go-blockservice"
+	bstest "gx/ipfs/QmWfhv1D18DRSiSm73r4QGcByspzPtxxRTcmHW3axFXZo8/go-blockservice/test"
 )
 
 // makeDepthTestingGraph makes a small DAG with two levels. The level-two

@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/mattn/go-isatty"
+	"gx/ipfs/QmWVGFCGGTAGrT3adV261k1h6nntcyDhGVszGV2i2pzwPe/go-isatty"
 )
 
 const (

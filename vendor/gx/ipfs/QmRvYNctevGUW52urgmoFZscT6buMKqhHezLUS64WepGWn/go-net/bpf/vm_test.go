@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"golang.org/x/net/bpf"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/bpf"
 )
 
 var _ bpf.Instruction = unknown{}

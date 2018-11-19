@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
-	ppb "github.com/golang/protobuf/proto/proto3_proto"
+	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
+	ppb "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto/proto3_proto"
 )
 
 func TestMap(t *testing.T) {

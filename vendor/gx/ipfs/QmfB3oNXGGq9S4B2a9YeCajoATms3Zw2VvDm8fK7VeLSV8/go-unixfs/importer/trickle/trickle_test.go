@@ -9,15 +9,15 @@ import (
 	mrand "math/rand"
 	"testing"
 
-	ft "github.com/ipfs/go-unixfs"
-	h "github.com/ipfs/go-unixfs/importer/helpers"
-	uio "github.com/ipfs/go-unixfs/io"
+	ft "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs"
+	h "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/importer/helpers"
+	uio "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/io"
 
-	chunker "github.com/ipfs/go-ipfs-chunker"
-	u "github.com/ipfs/go-ipfs-util"
-	ipld "github.com/ipfs/go-ipld-format"
-	merkledag "github.com/ipfs/go-merkledag"
-	mdtest "github.com/ipfs/go-merkledag/test"
+	u "gx/ipfs/QmPdKqUcHGFdeSpvjVoaTRPPstGif9GBZb5Q56RVw9o69A/go-ipfs-util"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
+	merkledag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
+	mdtest "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag/test"
+	chunker "gx/ipfs/QmTUTG9Jg9ZRA1EzTPGTDvnwfcfKhDMnqANnP9fe4rSjMR/go-ipfs-chunker"
 )
 
 type UseRawLeaves bool

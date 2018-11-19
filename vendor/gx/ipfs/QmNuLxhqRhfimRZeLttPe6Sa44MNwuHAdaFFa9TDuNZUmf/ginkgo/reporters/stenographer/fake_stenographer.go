@@ -3,7 +3,7 @@ package stenographer
 import (
 	"sync"
 
-	"github.com/onsi/ginkgo/types"
+	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/types"
 )
 
 func NewFakeStenographerCall(method string, args ...interface{}) FakeStenographerCall {

@@ -39,7 +39,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/gogo/protobuf/proto"
+	"gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 )
 
 const googleApis = "type.googleapis.com/"

@@ -3,9 +3,9 @@ package refmt
 import (
 	"io"
 
-	"github.com/polydawn/refmt/cbor"
-	"github.com/polydawn/refmt/json"
-	"github.com/polydawn/refmt/obj/atlas"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/cbor"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/json"
+	"gx/ipfs/QmPAdjGx1huCjnrR26qy9QUUNSqA6EStyZ68RrwbtCTDML/refmt/obj/atlas"
 )
 
 type DecodeOptions interface {

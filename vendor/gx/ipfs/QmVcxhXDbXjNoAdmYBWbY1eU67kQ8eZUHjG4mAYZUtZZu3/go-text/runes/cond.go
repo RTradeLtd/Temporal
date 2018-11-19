@@ -7,7 +7,7 @@ package runes
 import (
 	"unicode/utf8"
 
-	"golang.org/x/text/transform"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/transform"
 )
 
 // Note: below we pass invalid UTF-8 to the tIn and tNotIn transformers as is.

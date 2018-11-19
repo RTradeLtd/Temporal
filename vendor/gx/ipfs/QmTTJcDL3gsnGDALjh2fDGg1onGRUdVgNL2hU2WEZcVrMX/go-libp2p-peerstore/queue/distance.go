@@ -5,8 +5,8 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/libp2p/go-libp2p-peer"
-	ks "github.com/whyrusleeping/go-keyspace"
+	"gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	ks "gx/ipfs/QmUusaX99BZoELh7dmPgirqRQ1FAmMnmnBn3oiqDFGBUSc/go-keyspace"
 )
 
 // peerMetric tracks a peer and its distance to something else.

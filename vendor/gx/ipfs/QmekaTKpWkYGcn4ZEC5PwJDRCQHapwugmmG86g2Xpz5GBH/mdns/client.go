@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/miekg/dns"
-	"golang.org/x/net/ipv4"
-	"golang.org/x/net/ipv6"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/ipv4"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/ipv6"
+	"gx/ipfs/QmV3bVtkAhSZqWncYGonUmsVcJcV6cpzWztsFwc3A9so5m/dns"
 )
 
 // ServiceEntry is returned after we query for a service

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"golang.org/x/text/language"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
 )
 
 // matcher is a language.Matcher configured for all supported languages.

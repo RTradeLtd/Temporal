@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"sync"
 
-	blocks "github.com/ipfs/go-block-format"
-	bserv "github.com/ipfs/go-blockservice"
-	cid "github.com/ipfs/go-cid"
-	ipldcbor "github.com/ipfs/go-ipld-cbor"
-	ipld "github.com/ipfs/go-ipld-format"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
+	blocks "gx/ipfs/QmRcHuYzAyswytBuMF78rj3LTChYszomRFXNg4685ZN1WM/go-block-format"
+	ipldcbor "gx/ipfs/QmSbrWdBtHgfYjeRcLotTrPXFkxY4GHMJZVxS6MQvzsYmf/go-ipld-cbor"
+	bserv "gx/ipfs/QmWfhv1D18DRSiSm73r4QGcByspzPtxxRTcmHW3axFXZo8/go-blockservice"
 )
 
 // TODO: We should move these registrations elsewhere. Really, most of the IPLD

@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	peer "github.com/libp2p/go-libp2p-peer"
-	tpt "github.com/libp2p/go-libp2p-transport"
-	smux "github.com/libp2p/go-stream-muxer"
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	smux "gx/ipfs/QmY9JXR3FupnYAYJWK9aMr9bCpqWKcToQ1tz8DVGTrHpHw/go-stream-muxer"
+	tpt "gx/ipfs/QmbCkisBsdejwSzusQcdbYjpSX3yvUw1ek2YSsJ89QbZYX/go-libp2p-transport"
 )
 
 // VerboseDebugging can be set to true to enable verbose debug logging in the

@@ -3,10 +3,10 @@ package dhtopts
 import (
 	"fmt"
 
-	ds "github.com/ipfs/go-datastore"
-	dssync "github.com/ipfs/go-datastore/sync"
-	"github.com/libp2p/go-libp2p-protocol"
-	record "github.com/libp2p/go-libp2p-record"
+	"gx/ipfs/QmZNkThpqfVXs9GNbexPrfBbXSLNYeKrE7jwFM2oqHbyqN/go-libp2p-protocol"
+	record "gx/ipfs/Qma9Eqp16mNHDX1EL73pcxhFfzbyXVcAYtaDd1xdmDRDtL/go-libp2p-record"
+	ds "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
+	dssync "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore/sync"
 )
 
 var ProtocolDHT protocol.ID = "/ipfs/kad/1.0.0"

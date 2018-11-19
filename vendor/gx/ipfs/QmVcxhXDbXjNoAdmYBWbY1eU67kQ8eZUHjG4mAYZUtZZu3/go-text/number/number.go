@@ -13,7 +13,7 @@ package number
 //
 
 import (
-	"golang.org/x/text/internal/number"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/number"
 )
 
 const (

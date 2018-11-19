@@ -3,14 +3,21 @@ syntax = "proto3";
 package request;
 option go_package = "github.com/RTradeLtd/grpc/lens/request";
 
-message IndexRequest {
+message Index {
     // dataType is the "type" of data, such as IPLD
     string dataType = 1;
     // objectIdentifier is the identifier of the object, such as an IPFS content hash
     string objectIdentifier = 2;
 }
 
-message SearchRequest {
-    // repeated means there can be 0 or more "keywords"
+message Search {
+    // keywords to search by
     repeated string keywords = 1;
+
+    // options are used to configure the query
+    Options options = 2;
+}
+
+message Options {
+    repeated string categories = 2;
 }

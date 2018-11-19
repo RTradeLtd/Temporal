@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/agl/ed25519"
-	extra "github.com/agl/ed25519/extra25519"
-	pb "github.com/libp2p/go-libp2p-crypto/pb"
+	pb "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto/pb"
+	"gx/ipfs/QmQ51pHe6u7CWodkUGDLqaCEMchkbMt7VEZnECF5mp6tVb/ed25519"
+	extra "gx/ipfs/QmQ51pHe6u7CWodkUGDLqaCEMchkbMt7VEZnECF5mp6tVb/ed25519/extra25519"
 )
 
 type Ed25519PrivateKey struct {

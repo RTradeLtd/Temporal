@@ -31,4 +31,4 @@
 
 package main
 
-import _ "github.com/golang/protobuf/protoc-gen-go/grpc"
+import _ "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/grpc"

@@ -7,17 +7,17 @@ import (
 	"fmt"
 	"net"
 
-	config "github.com/libp2p/go-libp2p/config"
-	bhost "github.com/libp2p/go-libp2p/p2p/host/basic"
+	config "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/config"
+	bhost "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/host/basic"
 
-	circuit "github.com/libp2p/go-libp2p-circuit"
-	crypto "github.com/libp2p/go-libp2p-crypto"
-	ifconnmgr "github.com/libp2p/go-libp2p-interface-connmgr"
-	pnet "github.com/libp2p/go-libp2p-interface-pnet"
-	metrics "github.com/libp2p/go-libp2p-metrics"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	filter "github.com/libp2p/go-maddr-filter"
-	ma "github.com/multiformats/go-multiaddr"
+	crypto "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	circuit "gx/ipfs/QmVYDvJjiKb9iFEyHxx4i1TJSRBLkQhGb5Fc8XpmDuNCEA/go-libp2p-circuit"
+	pnet "gx/ipfs/QmW7Ump7YyBMr712Ta3iEVh3ZYcfVvJaPryfbCnyE826b4/go-libp2p-interface-pnet"
+	ifconnmgr "gx/ipfs/QmWRvjn5BHMLCGkf48Hk1LDc4W72RPA9H59AAVCXmn9esJ/go-libp2p-interface-connmgr"
+	filter "gx/ipfs/QmbuCmYjYK5GQo4zKrK2h3NVsyBYf81ZQXgiE69CLLGHgB/go-maddr-filter"
+	metrics "gx/ipfs/QmeaTjsfPf6vQ3WU2BUdjakgvKUHpuv3Fjxvb75N5iksMx/go-libp2p-metrics"
 )
 
 // ListenAddrStrings configures libp2p to listen on the given (unparsed)

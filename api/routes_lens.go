@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	pb "github.com/RTradeLtd/grpc/lens/request"
+	"github.com/RTradeLtd/grpc/lens/request"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -36,16 +36,20 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 		Fail(c, errors.New(eh.InvalidObjectTypeError))
 		return
 	}
-	req := &pb.IndexRequest{
+	resp, err := api.lc.Index(context.Background(), &request.Index{
 		DataType:         objectType,
 		ObjectIdentifier: objectIdentifier,
-	}
-	resp, err := api.lc.SubmitIndexRequest(context.Background(), req)
+	})
 	if err != nil {
 		api.LogError(err, eh.FailedToIndexError)(c, http.StatusBadRequest)
 		return
 	}
-	Respond(c, http.StatusOK, gin.H{"response": gin.H{"lens_id": resp.LensIdentifier, "keywords": resp.Keywords}})
+	Respond(c, http.StatusOK, gin.H{
+		"response": gin.H{
+			"lens_id":  resp.GetId(),
+			"keywords": resp.GetKeywords(),
+		},
+	})
 }
 
 // submitSearchRequest is used to send a search request to lens
@@ -59,19 +63,20 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 	for _, word := range keywords {
 		keywordsLower = append(keywordsLower, strings.ToLower(word))
 	}
-	req := &pb.SearchRequest{
+	resp, err := api.lc.Search(context.Background(), &request.Search{
 		Keywords: keywordsLower,
-	}
-	resp, err := api.lc.SubmitSimpleSearchRequest(context.Background(), req)
+	})
 	if err != nil {
 		fmt.Println(err)
 		api.LogError(err, eh.FailedToSearchError)(c, http.StatusBadRequest)
 		return
 	}
-	if len(resp.Names) == 0 {
+	if len(resp.GetObjects()) == 0 {
 		api.LogInfo(fmt.Sprintf("no search results found for keywords %s", keywordsLower))
 		Respond(c, http.StatusBadRequest, gin.H{"response": "no results found"})
 		return
 	}
-	Respond(c, http.StatusOK, gin.H{"response": resp.Names})
+	Respond(c, http.StatusOK, gin.H{
+		"response": resp.GetObjects(),
+	})
 }

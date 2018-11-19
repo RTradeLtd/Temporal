@@ -35,11 +35,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/dgraph-io/badger/options"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger/options"
 
-	"github.com/dgraph-io/badger/y"
-	"github.com/pkg/errors"
-	"golang.org/x/net/trace"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/trace"
+	"gx/ipfs/QmVmDhyTTUcQXFD1rRQ64fGLMSAoaQvNH3hwuaCFAPq2hy/errors"
+	"gx/ipfs/QmZ7bFqkoHU2ARF68y9fSQVKcmhjYrTQgtCQ4i3chwZCgQ/badger/y"
 )
 
 // Values have their first byte being byteData or byteDelete. This helps us distinguish between

@@ -10,7 +10,7 @@ import (
 	"io"
 	"strings"
 
-	a "golang.org/x/net/html/atom"
+	a "gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/html/atom"
 )
 
 // A parser implements the HTML5 parsing algorithm:

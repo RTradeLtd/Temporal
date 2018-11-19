@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	transport "github.com/libp2p/go-libp2p-transport"
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	transport "gx/ipfs/QmbCkisBsdejwSzusQcdbYjpSX3yvUw1ek2YSsJ89QbZYX/go-libp2p-transport"
 )
 
 // TransportForDialing retrieves the appropriate transport for dialing the given

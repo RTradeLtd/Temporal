@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"syscall"
 
-	"golang.org/x/net/internal/socket"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/socket"
 )
 
 const (

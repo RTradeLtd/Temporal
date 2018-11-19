@@ -3,10 +3,10 @@
 
 package vanity
 
-import proto "github.com/gogo/protobuf/proto"
+import proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "github.com/gogo/protobuf/gogoproto"
+import _ "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/gogoproto"
 
 import strings "strings"
 import reflect "reflect"
