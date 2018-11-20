@@ -56,7 +56,7 @@ testenv:
 .PHONY: stop-testenv
 stop-testenv:
 	@echo "===================  shutting down test env ==================="
-	@$(DOCKERCOMPOSE_TEST) down
+	( cd testenv ; make stop-testenv )
 	@echo "===================          done           ==================="
 
 # Execute short tests
@@ -79,11 +79,7 @@ clean: stop-testenv
 	@echo "=================== cleaning up temp assets ==================="
 	@echo "Removing binary..."
 	@rm -f temporal
-	@echo "Removing Docker assets..."
-	@$(DOCKERCOMPOSE_TEST) rm -f -v
-	@echo "Cleaning network interfaces..."
-	@sudo ip addr del $(ADDR_NODE1) dev $(INTERFACE)
-	@sudo ip addr del $(ADDR_NODE2) dev $(INTERFACE)
+	( cd testenv ; make clean )
 	@echo "===================          done           ==================="
 
 # Rebuild vendored dependencies
