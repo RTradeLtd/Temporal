@@ -1,16 +1,3 @@
-GOFILES=`go list ./... | grep -v /vendor/`
-TEMPORALVERSION=`git describe --tags`
-IPFSVERSION=v0.4.18
-UNAME=$(shell uname)
-INTERFACE=eth0
-ADDR_NODE1=192.168.1.101
-ADDR_NODE2=192.168.2.101
-DOCKERCOMPOSE_TEST=env ADDR_NODE1=$(ADDR_NODE1) ADDR_NODE2=$(ADDR_NODE2) docker-compose -f test/docker-compose.yml
-
-ifeq ($(UNAME), Darwin)
-INTERFACE=en0
-endif
-
 all: check cli
 
 # Build temporal if binary is not already present
@@ -33,6 +20,7 @@ install: cli
 .PHONY: check
 check:
 	@echo "===================      running checks     ==================="
+	git submodule update --init
 	go vet ./...
 	@echo "Executing dry run of tests..."
 	@go test -run xxxx ./...
@@ -59,18 +47,9 @@ lint:
 WAIT=3
 testenv:
 	@echo "===================   preparing test env    ==================="
-	@echo "Setting up network..."
-	@sudo ip link set $(INTERFACE) up
-	@sudo ip addr add $(ADDR_NODE1) dev $(INTERFACE)
-	@sudo ip addr add $(ADDR_NODE2) dev $(INTERFACE)
-	@echo "Spinning up test env components..."
-	@echo "Run 'make clean' to update the images used in the test environment"
-	@$(DOCKERCOMPOSE_TEST) up -d
-	@sleep $(WAIT)
-	@echo "Containers online:"
-	@docker ps
+	( cd testenv ; make testenv )
 	@echo "Running migrations..."
-	@env CONFIG_DAG=./test/config.json go run cmd/temporal/main.go migrate-insecure
+	@env CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go migrate-insecure
 	@echo "===================          done           ==================="
 
 # Shut down testenv
@@ -145,7 +124,7 @@ docker:
 # Run development API
 .PHONY: api
 api:
-	CONFIG_DAG=./test/config.json go run cmd/temporal/main.go api
+	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go api
 
 USER=testuser
 PASSWORD=admin
@@ -153,8 +132,8 @@ EMAIL=test@email.com
 
 .PHONY: api-user
 api-user:
-	CONFIG_DAG=./test/config.json go run cmd/temporal/main.go user $(USER) $(PASSWORD) $(EMAIL)
+	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go user $(USER) $(PASSWORD) $(EMAIL)
 
 .PHONY: api-admin
 api-admin:
-	CONFIG_DAG=./test/config.json go run cmd/temporal/main.go admin $(USER)
+	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go admin $(USER)

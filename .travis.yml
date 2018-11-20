@@ -8,6 +8,7 @@ sudo: required
 install:
   - docker pull koalaman/shellcheck
   - go get -u golang.org/x/lint/golint
+  - git submodule update --init
 
 before_script:
   - go vet ./...

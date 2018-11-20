@@ -26,7 +26,7 @@ RUN mkdir /temporal \
 
 # Set default configuration
 ENV CONFIG_DAG /temporal/config.json
-COPY ./test/config.json /temporal/config.json
+COPY ./testenv/config.json /temporal/config.json
 
 # Set default command
 ENTRYPOINT [ "temporal", "api" ]
