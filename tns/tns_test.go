@@ -21,7 +21,7 @@ const (
 	testPort                  = "9999"
 	testIPVersion             = "ip4"
 	testProtocol              = "tcp"
-	testCfgPath               = "../test/config.json"
+	testCfgPath               = "../testenv/config.json"
 	defaultZoneName           = "myzone"
 	defaultZoneManagerKeyName = "postables-3072"
 	defaultZoneKeyName        = "postables-testkeydemo"

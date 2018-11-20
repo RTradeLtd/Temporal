@@ -9,7 +9,7 @@ import (
 )
 
 func Test_new(t *testing.T) {
-	cfg, err := config.LoadConfig("../test/config.json")
+	cfg, err := config.LoadConfig("../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
