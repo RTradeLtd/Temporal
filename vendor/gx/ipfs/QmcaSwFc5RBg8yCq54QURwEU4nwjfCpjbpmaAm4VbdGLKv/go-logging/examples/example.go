@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"gx/ipfs/QmcaSwFc5RBg8yCq54QURwEU4nwjfCpjbpmaAm4VbdGLKv/go-logging"
+	"github.com/whyrusleeping/go-logging"
 )
 
 var log = logging.MustGetLogger("example")

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"gx/ipfs/QmV3bVtkAhSZqWncYGonUmsVcJcV6cpzWztsFwc3A9so5m/dns"
+	"github.com/miekg/dns"
 )
 
 const TypeISBN uint16 = 0xFF00

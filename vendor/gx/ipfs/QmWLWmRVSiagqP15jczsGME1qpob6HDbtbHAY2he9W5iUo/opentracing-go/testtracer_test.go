@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go/log"
+	"github.com/opentracing/opentracing-go/log"
 )
 
 const testHTTPHeaderPrefix = "testprefix-"

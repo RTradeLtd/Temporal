@@ -13,8 +13,8 @@ import (
 	"net/url"
 	"time"
 
-	"gx/ipfs/QmVwfv63beSAAirq3tiLY6fkNqvjThLnCofL7363YkaScy/goupnp"
-	"gx/ipfs/QmVwfv63beSAAirq3tiLY6fkNqvjThLnCofL7363YkaScy/goupnp/soap"
+	"github.com/huin/goupnp"
+	"github.com/huin/goupnp/soap"
 )
 
 // Hack to avoid Go complaining if time isn't used.

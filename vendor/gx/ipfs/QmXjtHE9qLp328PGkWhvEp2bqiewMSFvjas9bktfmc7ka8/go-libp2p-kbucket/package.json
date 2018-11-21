@@ -1,0 +1,46 @@
+{
+  "bugs": {
+    "url": "https://github.com/libp2p/go-libp2p-kbucket"
+  },
+  "gx": {
+    "dvcsimport": "github.com/libp2p/go-libp2p-kbucket",
+    "goversion": "1.5.2"
+  },
+  "gxDependencies": [
+    {
+      "hash": "QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C",
+      "name": "go-log",
+      "version": "1.5.8"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS",
+      "name": "go-libp2p-peer",
+      "version": "2.4.3"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmQAGG1zxfePqj2t7bLxyN8AFccZ889DDR9Gn8kVLDrGZo",
+      "name": "go-libp2p-peerstore",
+      "version": "2.0.11"
+    },
+    {
+      "hash": "QmZXjR5X1p4KrQ967cTsy4MymMzUM8mZECF3PV8UcN4o3g",
+      "name": "go-testutil",
+      "version": "1.2.13"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmNohiVssaPw3KVLZik59DBVGTSm2dGvYT9eoXt5DQ36Yz",
+      "name": "go-ipfs-util",
+      "version": "1.2.9"
+    }
+  ],
+  "gxVersion": "0.4.0",
+  "language": "go",
+  "license": "MIT",
+  "name": "go-libp2p-kbucket",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "2.2.16"
+}
+

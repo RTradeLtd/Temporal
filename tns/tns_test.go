@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/tns"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/rtfs"
 )
 
 // Issue with libp2p and being unable to run multiple tests one after another
@@ -82,7 +83,7 @@ func TestTNS_ZoneRequest(t *testing.T) {
 		t.Skip()
 	}
 
-	im, err := rtfs.Initialize("", nodeOneAPIAddr)
+	im, err := rtfs.NewManager(nodeOneAPIAddr, nil, time.Minute*10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,7 +97,7 @@ func TestTNS_ZoneRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	hash, err := im.Shell.DagPut(marshaled, "json", "cbor")
+	hash, err := im.DagPut(marshaled, "json", "cbor")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/http/httpproxy"
+	"golang.org/x/net/http/httpproxy"
 )
 
 // setHelper calls t.Helper() for Go 1.9+ (see go19_test.go) and does nothing otherwise.

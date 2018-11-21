@@ -3,8 +3,8 @@ package mc_msgpack
 import (
 	"io"
 
-	gocodec "gx/ipfs/QmVTAmbCaPqdfbmpWDCJMQNFxbyJoG2USFsumXmTWY5LFp/go-codec/codec"
-	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
+	mc "github.com/multiformats/go-multicodec"
+	gocodec "github.com/ugorji/go/codec"
 )
 
 const HeaderPath = "/msgpack"

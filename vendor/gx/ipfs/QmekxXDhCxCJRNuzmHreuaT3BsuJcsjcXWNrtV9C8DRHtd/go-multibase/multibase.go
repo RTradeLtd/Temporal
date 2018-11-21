@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	b58 "gx/ipfs/QmWFAMPqsEyUX7gDUsRVmMWz59FxSpJ1b2v6bJ1yYzo7jY/go-base58-fast/base58"
-	b32 "gx/ipfs/QmfVj3x4D6Jkq9SEoi5n2NmoUomLwoeiwnYz2KQa15wRw6/base32"
+	b58 "github.com/mr-tron/base58/base58"
+	b32 "github.com/whyrusleeping/base32"
 )
 
 // Encoding identifies the type of base-encoding that a multibase is carrying.

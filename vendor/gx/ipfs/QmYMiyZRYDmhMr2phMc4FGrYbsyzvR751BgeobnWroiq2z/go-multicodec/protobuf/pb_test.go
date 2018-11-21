@@ -5,8 +5,8 @@ import (
 	"testing"
 	"testing/quick"
 
-	pb "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/protobuf/testpb"
-	mctest "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/test"
+	pb "github.com/multiformats/go-multicodec/protobuf/testpb"
+	mctest "github.com/multiformats/go-multicodec/test"
 )
 
 var testCases []interface{}

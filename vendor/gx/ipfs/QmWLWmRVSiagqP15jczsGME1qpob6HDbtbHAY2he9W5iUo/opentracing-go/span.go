@@ -3,7 +3,7 @@ package opentracing
 import (
 	"time"
 
-	"gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go/log"
+	"github.com/opentracing/opentracing-go/log"
 )
 
 // SpanContext represents Span state that must propagate to descendant Spans and across process

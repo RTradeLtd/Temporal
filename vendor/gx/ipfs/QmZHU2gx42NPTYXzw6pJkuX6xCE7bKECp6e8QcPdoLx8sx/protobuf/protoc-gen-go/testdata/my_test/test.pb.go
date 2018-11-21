@@ -7,10 +7,10 @@ package test // import "github.com/golang/protobuf/protoc-gen-go/testdata/my_tes
 This package holds interesting messages.
 */
 
-import proto "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
+import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/multi"
+import _ "github.com/golang/protobuf/protoc-gen-go/testdata/multi"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

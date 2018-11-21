@@ -25,13 +25,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	dto "gx/ipfs/QmYaVovLzgcdBpCLEAnW41p8ujvCUxe3TFpfJxjK5qbzn7/client_model/go"
+	dto "github.com/prometheus/client_model/go"
 
-	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/expfmt"
-	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
+	"github.com/golang/protobuf/proto"
+	"github.com/prometheus/common/expfmt"
 
-	"gx/ipfs/QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS/client_golang/prometheus"
-	"gx/ipfs/QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // uncheckedCollector wraps a Collector but its Describe method yields no Desc.

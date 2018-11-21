@@ -9,7 +9,7 @@ package colltab
 import (
 	"sort"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"golang.org/x/text/language"
 )
 
 // MatchLang finds the index of t in tags, using a matching algorithm used for

@@ -1,6 +1,6 @@
 package oraclematcher
 
-import "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/types"
+import "github.com/onsi/gomega/types"
 
 /*
 GomegaMatchers that also match the OracleMatcher interface can convey information about

@@ -7,7 +7,7 @@ package runenames_test
 import (
 	"fmt"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/unicode/runenames"
+	"golang.org/x/text/unicode/runenames"
 )
 
 func Example() {

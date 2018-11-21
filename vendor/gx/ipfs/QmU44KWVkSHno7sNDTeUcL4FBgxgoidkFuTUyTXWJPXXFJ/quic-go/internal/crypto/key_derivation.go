@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 
 	"github.com/bifurcation/mint"
-	"gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/internal/protocol"
+	"github.com/lucas-clemente/quic-go/internal/protocol"
 )
 
 const (

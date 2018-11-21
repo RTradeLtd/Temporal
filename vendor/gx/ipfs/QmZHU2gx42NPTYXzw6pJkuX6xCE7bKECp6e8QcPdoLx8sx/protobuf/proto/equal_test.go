@@ -34,9 +34,9 @@ package proto_test
 import (
 	"testing"
 
-	. "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
-	proto3pb "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto/proto3_proto"
-	pb "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto/test_proto"
+	. "github.com/golang/protobuf/proto"
+	proto3pb "github.com/golang/protobuf/proto/proto3_proto"
+	pb "github.com/golang/protobuf/proto/test_proto"
 )
 
 // Four identical base messages.

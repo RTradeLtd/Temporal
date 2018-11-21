@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"net/url"
 
-	"gx/ipfs/QmVwfv63beSAAirq3tiLY6fkNqvjThLnCofL7363YkaScy/goupnp/scpd"
-	"gx/ipfs/QmVwfv63beSAAirq3tiLY6fkNqvjThLnCofL7363YkaScy/goupnp/soap"
+	"github.com/huin/goupnp/scpd"
+	"github.com/huin/goupnp/soap"
 )
 
 const (

@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
-	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
 	helmet "github.com/danielkov/gin-helmet"
@@ -35,6 +36,8 @@ var (
 
 // API is our API service
 type API struct {
+	rtfs.IpfsManager
+	rtfs.KeystoreManager
 	r       *gin.Engine
 	cfg     *config.TemporalConfig
 	dbm     *database.Manager
@@ -43,7 +46,7 @@ type API struct {
 	pm      *models.PaymentManager
 	dm      *models.DropManager
 	ue      *models.EncryptedUploadManager
-	ipfs    *rtfs.IpfsManager
+	keys    *rtfs.KeystoreManager
 	zm      *models.ZoneManager
 	rm      *models.RecordManager
 	nm      *models.IPFSNetworkManager
@@ -73,9 +76,20 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open log file: %s", err)
 	}
-
+	keystore, err := rtfs.NewKeystoreManager()
+	if err != nil {
+		return nil, err
+	}
+	im, err := rtfs.NewManager(
+		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
+		keystore,
+		time.Minute*10,
+	)
+	if err != nil {
+		return nil, err
+	}
 	// set up API struct
-	api, err := new(cfg, router, debug, logfile)
+	api, err := new(cfg, router, *im, *keystore, debug, logfile)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +102,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writer) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.IpfsManager, keystore rtfs.KeystoreManager, debug bool, out io.Writer) (*API, error) {
 	var (
 		logger = log.New()
 		dbm    *database.Manager
@@ -121,18 +135,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		logger.Info("secure database connection established")
 	}
 
-	// set up default ipfs shell
-	ipfsManager, err := rtfs.Initialize("",
-		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port)
-	if err != nil {
-		return nil, err
-	}
-
-	// create our keystore manager
-	if err = ipfsManager.CreateKeystoreManager(cfg.IPFS.KeystorePath); err != nil {
-		return nil, err
-	}
-
 	signer, err := clients.NewSignerClient(cfg, os.Getenv("MODE") == "development")
 	if err != nil {
 		return nil, err
@@ -162,7 +164,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 	if err != nil {
 		return nil, err
 	}
-	return &API{
+	api := &API{
 		cfg:     cfg,
 		service: "api",
 		r:       router,
@@ -173,7 +175,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		pm:      models.NewPaymentManager(dbm.DB),
 		dm:      models.NewDropManager(dbm.DB),
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
-		ipfs:    ipfsManager,
 		lc:      lensClient,
 		signer:  signer,
 		orch:    orch,
@@ -181,7 +182,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, debug bool, out io.Writ
 		zm:      models.NewZoneManager(dbm.DB),
 		rm:      models.NewRecordManager(dbm.DB),
 		nm:      models.NewHostedIPFSNetworkManager(dbm.DB),
-	}, nil
+	}
+	api.IpfsManager = ipfs
+	api.KeystoreManager = keystore
+	return api, nil
 }
 
 // Close releases API resources
@@ -337,7 +341,6 @@ func (api *API) setupRoutes() {
 	// ipfs
 	ipfs := v1.Group("/ipfs", authware...)
 	{
-		ipfs.GET("/pins", api.getLocalPins)                        // admin locked
 		ipfs.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
 		ipfs.GET("/object-stat/:key", api.getObjectStatForIpfs)
 		ipfs.GET("/dag/:hash", api.getDagObject)
@@ -355,7 +358,6 @@ func (api *API) setupRoutes() {
 	ipfsPrivate := v1.Group("/ipfs-private", authware...)
 	{
 		ipfsPrivate.GET("/networks", api.getAuthorizedPrivateNetworks)
-		ipfsPrivate.POST("/pins", api.getLocalPinsForHostedIPFSNetwork) // admin locked
 		ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
 		network := ipfsPrivate.Group("/network")
 		{

@@ -2,7 +2,7 @@ package format_test
 
 import (
 	. "github.com/onsi/ginkgo"
-	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega"
+	. "github.com/onsi/gomega"
 
 	"testing"
 )

@@ -3,8 +3,8 @@ package route
 import (
 	"net/http"
 
-	"gx/ipfs/QmNeSwALyTCrgtCTsPiF7tcDN6uLtdi8qCMtFm7nct1nm1/httprouter"
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/context"
+	"github.com/julienschmidt/httprouter"
+	"golang.org/x/net/context"
 )
 
 type param string

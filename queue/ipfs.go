@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/mini"
+	"github.com/RTradeLtd/rtfs"
 
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/config"
 
 	"github.com/RTradeLtd/database/models"
@@ -24,12 +25,7 @@ import (
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
 func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	manager, err := rtfs.Initialize("", cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port)
-	if err != nil {
-		return err
-	}
-	// load the keystore manager
-	err = manager.CreateKeystoreManager()
+	keystore, err := rtfs.NewKeystoreManager()
 	if err != nil {
 		return err
 	}
@@ -72,7 +68,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB
 			continue
 		}
 		keyName := fmt.Sprintf("%s-%s", key.UserName, key.Name)
-		pk, err := manager.KeystoreManager.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
+		pk, err := keystore.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
 		if err != nil {
 			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
 			qm.LogError(err, "failed to create and save key")
@@ -145,7 +141,7 @@ func (qm *Manager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg 
 			apiURL = url
 		}
 		qm.LogInfo("initializing connection to ipfs")
-		ipfsManager, err := rtfs.Initialize("", apiURL)
+		ipfsManager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
 		if err != nil {
 			qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
 			qm.LogError(err, "failed to initialize connection to ipfs")
@@ -211,7 +207,7 @@ func (qm *Manager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.Temp
 	service := qm.Logger.WithFields(log.Fields{
 		"service": qm.QueueName,
 	})
-	ipfsManager, err := rtfs.Initialize("", cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port)
+	ipfsManager, err := rtfs.NewManager(cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port, nil, time.Minute*10)
 	if err != nil {
 		service.
 			WithField("error", err.Error()).
@@ -295,7 +291,7 @@ func (qm *Manager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.Temp
 			}
 			apiURL := apiURLName
 			fileContext.Info("initializing connection to private ipfs network")
-			ipfsManager, err = rtfs.Initialize("", apiURL)
+			ipfsManager, err = rtfs.NewManager(apiURL, nil, time.Minute*10)
 			if err != nil {
 				qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
 				fileContext.

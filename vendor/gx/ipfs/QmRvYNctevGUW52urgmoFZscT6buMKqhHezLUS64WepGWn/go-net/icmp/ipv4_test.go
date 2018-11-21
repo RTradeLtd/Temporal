@@ -11,8 +11,8 @@ import (
 	"runtime"
 	"testing"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/socket"
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/ipv4"
+	"golang.org/x/net/internal/socket"
+	"golang.org/x/net/ipv4"
 )
 
 func TestParseIPv4Header(t *testing.T) {

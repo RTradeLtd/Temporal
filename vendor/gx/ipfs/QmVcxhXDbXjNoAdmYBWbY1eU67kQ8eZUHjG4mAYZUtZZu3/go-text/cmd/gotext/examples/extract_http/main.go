@@ -9,7 +9,7 @@ package main
 import (
 	"net/http"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/cmd/gotext/examples/extract_http/pkg"
+	"golang.org/x/text/cmd/gotext/examples/extract_http/pkg"
 )
 
 func main() {

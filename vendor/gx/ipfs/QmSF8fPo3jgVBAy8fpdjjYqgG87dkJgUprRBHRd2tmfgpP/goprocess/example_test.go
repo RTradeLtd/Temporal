@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess"
+	"github.com/jbenet/goprocess"
 )
 
 func ExampleGo() {

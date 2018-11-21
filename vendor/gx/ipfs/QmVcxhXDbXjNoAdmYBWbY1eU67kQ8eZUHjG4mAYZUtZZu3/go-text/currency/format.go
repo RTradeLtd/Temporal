@@ -9,8 +9,8 @@ import (
 	"io"
 	"sort"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/format"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/language/compact"
+	"golang.org/x/text/internal/format"
+	"golang.org/x/text/internal/language/compact"
 )
 
 // Amount is an amount-currency unit pair.

@@ -40,7 +40,7 @@ import (
 	"encoding/binary"
 	"sync"
 
-	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/blake2b"
+	"golang.org/x/crypto/blake2b"
 )
 
 // The Argon2 version implemented by this package.

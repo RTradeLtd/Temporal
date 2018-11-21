@@ -6,7 +6,7 @@ package lru
 import (
 	"sync"
 
-	"gx/ipfs/QmQjMHF8ptRgx4E57UFMiT4YM6kqaJeYxZ1MCDX23aw4rK/golang-lru/simplelru"
+	"github.com/hashicorp/golang-lru/simplelru"
 )
 
 // Cache is a thread-safe fixed size LRU cache.

@@ -20,10 +20,10 @@ import (
 	"sync"
 	"time"
 
-	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
-	"gx/ipfs/QmbNinL4ErzM73BxQSNf8q2vPmAM4v3MNQM2DmDqDjt47D/perks/quantile"
+	"github.com/beorn7/perks/quantile"
+	"github.com/golang/protobuf/proto"
 
-	dto "gx/ipfs/QmYaVovLzgcdBpCLEAnW41p8ujvCUxe3TFpfJxjK5qbzn7/client_model/go"
+	dto "github.com/prometheus/client_model/go"
 )
 
 // quantileLabel is used for the label that defines the quantile in a

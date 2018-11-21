@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/format"
-	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/matchers/support/goraph/bipartitegraph"
+	"github.com/onsi/gomega/format"
+	"github.com/onsi/gomega/matchers/support/goraph/bipartitegraph"
 )
 
 type ConsistOfMatcher struct {

@@ -2,14 +2,6 @@
 
 
 [[projects]]
-  branch = "master"
-  digest = "1:13077d94af7390c15eb9b9e85155e66236fde32a9ce82cea459606eb8a22545f"
-  name = "github.com/NebulousLabs/entropy-mnemonics"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "7b01a644a63680b90de22bacfb11d832e944eaab"
-
-[[projects]]
   digest = "1:cf2939df30718bf7e5ba78886eced2a4688e404ea166c7e3374a328752741c9f"
   name = "github.com/RTradeLtd/ChainRider-Go"
   packages = ["dash"]
@@ -54,12 +46,20 @@
   revision = "ccab8185f9178f03c54f19dbcca00ca9d3e616db"
 
 [[projects]]
-  digest = "1:38b66fd13337b663166915e5c419149129a8ef29c41f0bf7bd7b2e1b53a0f1f5"
+  branch = "master"
+  digest = "1:13077d94af7390c15eb9b9e85155e66236fde32a9ce82cea459606eb8a22545f"
+  name = "github.com/RTradeLtd/entropy-mnemonics"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "7b01a644a63680b90de22bacfb11d832e944eaab"
+
+[[projects]]
+  branch = "master"
+  digest = "1:e99fcde135f6969c0c75d864f6b5eba692ec0f0630ea2a1bd82cfd887409120b"
   name = "github.com/RTradeLtd/go-ipfs-api"
   packages = ["."]
   pruneopts = "UT"
-  revision = "574f347d572c6979745f68003a9c2c38cdf9483a"
-  version = "v2.0.4"
+  revision = "62a112314f074fb704ebafbe6a95144396237bd2"
 
 [[projects]]
   branch = "master"
@@ -78,6 +78,14 @@
   ]
   pruneopts = "UT"
   revision = "320346f207bfe9826e26fc7b05829bd46636f876"
+
+[[projects]]
+  digest = "1:dde4bd07439fd961b0227570eb0aaae798bd29d4a18962a1956e58a0fd666935"
+  name = "github.com/RTradeLtd/rtfs"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "82d4ca4e038506887acb3afb4ff7394579b628bf"
+  version = "v0.3.2"
 
 [[projects]]
   branch = "master"
@@ -627,15 +635,15 @@
   version = "v2.3.2"
 
 [[projects]]
-  digest = "1:398fcba7a9942805bb7aea628845625f8202f8bfac850f9600e52d39afb11061"
+  digest = "1:4ff86c6d6dd8df23a58e6b6060fea5f150d1a502cdfe8a3e9efd5d25339196c6"
   name = "github.com/libp2p/go-libp2p-crypto"
   packages = [
     ".",
     "pb",
   ]
   pruneopts = "UT"
-  revision = "50487e0f0b4842e9e657317e689fbb8209fab2dc"
-  version = "v1.6.2"
+  revision = "274de1bb6c27780863df6b230c91324ab481dab2"
+  version = "v2.0.1"
 
 [[projects]]
   digest = "1:de92515b23a5c4cd04893e67cd9af1dfff7a2a5337f95c36de273ecf757628e7"
@@ -1498,20 +1506,19 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/NebulousLabs/entropy-mnemonics",
     "github.com/RTradeLtd/ChainRider-Go/dash",
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/database",
     "github.com/RTradeLtd/database/models",
-    "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/ipfs-orchestrator",
     "github.com/RTradeLtd/grpc/lens",
     "github.com/RTradeLtd/grpc/lens/request",
     "github.com/RTradeLtd/grpc/temporal",
     "github.com/RTradeLtd/grpc/temporal/request",
+    "github.com/RTradeLtd/rtfs",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",
@@ -1523,7 +1530,6 @@
     "github.com/ipfs/go-dnslink",
     "github.com/ipfs/go-ipfs-addr",
     "github.com/ipfs/go-ipfs-config",
-    "github.com/ipfs/go-ipfs-keystore",
     "github.com/ipfs/go-ipns",
     "github.com/ipfs/go-ipns/pb",
     "github.com/ipfs/ipfs-cluster/api",

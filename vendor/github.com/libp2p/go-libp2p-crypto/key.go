@@ -59,10 +59,20 @@ var PrivKeyUnmarshallers = map[pb.KeyType]PrivKeyUnmarshaller{
 // Key represents a crypto key that can be compared to another key
 type Key interface {
 	// Bytes returns a serialized, storeable representation of this key
+	// DEPRECATED in favor of Marshal / Unmarshal
 	Bytes() ([]byte, error)
 
 	// Equals checks whether two PubKeys are the same
 	Equals(Key) bool
+
+	// Raw returns the raw bytes of the key (not wrapped in the
+	// libp2p-crypto protobuf).
+	//
+	// This function is the inverse of {Priv,Pub}KeyUnmarshaler.
+	Raw() ([]byte, error)
+
+	// Type returns the protobof key type.
+	Type() pb.KeyType
 }
 
 // PrivKey represents a private key that can be used to generate a public key,
@@ -261,7 +271,15 @@ func UnmarshalPublicKey(data []byte) (PubKey, error) {
 // MarshalPublicKey converts a public key object into a protobuf serialized
 // public key
 func MarshalPublicKey(k PubKey) ([]byte, error) {
-	return k.Bytes()
+	pbmes := new(pb.PublicKey)
+	pbmes.Type = k.Type()
+	data, err := k.Raw()
+	if err != nil {
+		return nil, err
+	}
+	pbmes.Data = data
+
+	return proto.Marshal(pbmes)
 }
 
 // UnmarshalPrivateKey converts a protobuf serialized private key into its
@@ -283,17 +301,15 @@ func UnmarshalPrivateKey(data []byte) (PrivKey, error) {
 
 // MarshalPrivateKey converts a key object into its protobuf serialized form.
 func MarshalPrivateKey(k PrivKey) ([]byte, error) {
-
-	switch k.(type) {
-	case *Ed25519PrivateKey:
-		return k.Bytes()
-	case *RsaPrivateKey:
-		return k.Bytes()
-	case *Secp256k1PrivateKey:
-		return k.Bytes()
-	default:
-		return nil, ErrBadKeyType
+	pbmes := new(pb.PrivateKey)
+	pbmes.Type = k.Type()
+	data, err := k.Raw()
+	if err != nil {
+		return nil, err
 	}
+
+	pbmes.Data = data
+	return proto.Marshal(pbmes)
 }
 
 // ConfigDecodeKey decodes from b64 (for config file), and unmarshals.

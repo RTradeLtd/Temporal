@@ -7,7 +7,6 @@ import (
 
 	"github.com/agl/ed25519"
 	extra "github.com/agl/ed25519/extra25519"
-	proto "github.com/gogo/protobuf/proto"
 	pb "github.com/libp2p/go-libp2p-crypto/pb"
 )
 
@@ -36,16 +35,20 @@ func GenerateEd25519Key(src io.Reader) (PrivKey, PubKey, error) {
 		nil
 }
 
-func (k *Ed25519PrivateKey) Bytes() ([]byte, error) {
-	pbmes := new(pb.PrivateKey)
-	typ := pb.KeyType_Ed25519
-	pbmes.Type = &typ
+func (k *Ed25519PrivateKey) Type() pb.KeyType {
+	return pb.KeyType_Ed25519
+}
 
+func (k *Ed25519PrivateKey) Bytes() ([]byte, error) {
+	return MarshalPrivateKey(k)
+}
+
+func (k *Ed25519PrivateKey) Raw() ([]byte, error) {
 	buf := make([]byte, 96)
 	copy(buf, k.sk[:])
 	copy(buf[64:], k.pk[:])
-	pbmes.Data = buf
-	return proto.Marshal(pbmes)
+
+	return buf, nil
 }
 
 func (k *Ed25519PrivateKey) Equals(o Key) bool {
@@ -72,12 +75,16 @@ func (k *Ed25519PrivateKey) ToCurve25519() *[32]byte {
 	return &sk
 }
 
+func (k *Ed25519PublicKey) Type() pb.KeyType {
+	return pb.KeyType_Ed25519
+}
+
 func (k *Ed25519PublicKey) Bytes() ([]byte, error) {
-	pbmes := new(pb.PublicKey)
-	typ := pb.KeyType_Ed25519
-	pbmes.Type = &typ
-	pbmes.Data = (*k.k)[:]
-	return proto.Marshal(pbmes)
+	return MarshalPublicKey(k)
+}
+
+func (k *Ed25519PublicKey) Raw() ([]byte, error) {
+	return (*k.k)[:], nil
 }
 
 func (k *Ed25519PublicKey) Equals(o Key) bool {

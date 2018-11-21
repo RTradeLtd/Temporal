@@ -38,9 +38,9 @@ import (
 	"regexp"
 	"testing"
 
-	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
-	base "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/extension_base"
-	user "gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/testdata/extension_user"
+	"github.com/golang/protobuf/proto"
+	base "github.com/golang/protobuf/protoc-gen-go/testdata/extension_base"
+	user "github.com/golang/protobuf/protoc-gen-go/testdata/extension_user"
 )
 
 func TestSingleFieldExtension(t *testing.T) {

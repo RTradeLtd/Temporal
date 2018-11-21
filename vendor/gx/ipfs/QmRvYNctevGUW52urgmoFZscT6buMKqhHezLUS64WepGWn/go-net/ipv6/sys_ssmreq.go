@@ -10,7 +10,7 @@ import (
 	"net"
 	"unsafe"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/socket"
+	"golang.org/x/net/internal/socket"
 )
 
 var freebsd32o64 bool

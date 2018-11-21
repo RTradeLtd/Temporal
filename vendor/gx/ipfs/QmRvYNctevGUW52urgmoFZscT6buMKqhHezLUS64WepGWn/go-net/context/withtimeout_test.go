@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/context"
+	"golang.org/x/net/context"
 )
 
 // This example passes a context with a timeout to tell a blocking function that

@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"gx/ipfs/QmVwfv63beSAAirq3tiLY6fkNqvjThLnCofL7363YkaScy/goupnp/httpu"
+	"github.com/huin/goupnp/httpu"
 )
 
 const (

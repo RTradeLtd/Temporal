@@ -23,9 +23,9 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 
-	dto "gx/ipfs/QmYaVovLzgcdBpCLEAnW41p8ujvCUxe3TFpfJxjK5qbzn7/client_model/go"
+	dto "github.com/prometheus/client_model/go"
 )
 
 const (

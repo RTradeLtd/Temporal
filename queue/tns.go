@@ -2,9 +2,9 @@ package queue
 
 import (
 	"encoding/json"
-	"fmt"
+	"time"
 
-	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/rtfs"
 
 	"github.com/RTradeLtd/Temporal/tns"
 	"github.com/RTradeLtd/config"
@@ -37,20 +37,20 @@ func (qm *Manager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *gorm.
 			continue
 		}
 		// connect to ipfs
-		rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
+		keystore, err := rtfs.NewKeystoreManager()
+		if err != nil {
+			qm.LogError(err, "failed to initialize keystore manager")
+			d.Ack(false)
+			continue
+		}
+		rtfsManager, err := rtfs.NewManager(cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port, keystore, time.Minute*10)
 		if err != nil {
 			qm.LogError(err, "failed to initialize connection to ipfs")
 			d.Ack(false)
 			continue
 		}
-		// create our keystore manager
-		if err = rtfsManager.CreateKeystoreManager(); err != nil {
-			qm.LogError(err, "failed to initialize keystore meanage")
-			d.Ack(false)
-			continue
-		}
 		// get private key for record
-		recordPK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(req.RecordKeyName)
+		recordPK, err := keystore.GetPrivateKeyByName(req.RecordKeyName)
 		if err != nil {
 			qm.LogError(err, "failed to get record private key")
 			d.Ack(false)
@@ -77,7 +77,7 @@ func (qm *Manager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *gorm.
 			continue
 		}
 		// put to ipfs
-		resp, err := rtfsManager.Shell.DagPut(marshaled, "json", "cbor")
+		resp, err := rtfsManager.DagPut(marshaled, "json", "cbor")
 		if err != nil {
 			qm.LogError(err, "failed to put record in ipfs")
 			d.Ack(false)
@@ -107,7 +107,7 @@ func (qm *Manager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *gorm.
 			d.Ack(false)
 			continue
 		}
-		zonePK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(zone.ZonePublicKeyName)
+		zonePK, err := keystore.GetPrivateKeyByName(zone.ZonePublicKeyName)
 		if err != nil {
 			qm.LogError(err, "failed to get zone private key")
 			d.Ack(false)
@@ -121,7 +121,7 @@ func (qm *Manager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *gorm.
 			continue
 		}
 		// get zone manager private key
-		zoneManagerPK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(zone.ManagerPublicKeyName)
+		zoneManagerPK, err := keystore.GetPrivateKeyByName(zone.ManagerPublicKeyName)
 		if err != nil {
 			qm.LogError(err, "failed to get zone manager private key")
 			d.Ack(false)
@@ -167,7 +167,7 @@ func (qm *Manager) ProcessTNSRecordCreation(msgs <-chan amqp.Delivery, db *gorm.
 			continue
 		}
 		// put to ipfs
-		resp, err = rtfsManager.Shell.DagPut(marshaled, "json", "cbor")
+		resp, err = rtfsManager.DagPut(marshaled, "json", "cbor")
 		if err != nil {
 			qm.LogError(err, "failed to put zone file in ipfs")
 			d.Ack(false)
@@ -209,27 +209,27 @@ func (qm *Manager) ProcessTNSZoneCreation(msgs <-chan amqp.Delivery, db *gorm.DB
 			continue
 		}
 		// connect to ipfs
-		rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
+		keystore, err := rtfs.NewKeystoreManager()
+		if err != nil {
+			qm.LogError(err, "failed to initialize keystore manager")
+			d.Ack(false)
+			continue
+		}
+		rtfsManager, err := rtfs.NewManager(cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port, keystore, time.Minute*10)
 		if err != nil {
 			qm.LogError(err, "failed to initialize connection to ipfs")
 			d.Ack(false)
 			continue
 		}
-		// create keystore manager
-		if err = rtfsManager.CreateKeystoreManager(); err != nil {
-			qm.LogError(err, "failed to initialize keystore meanage")
-			d.Ack(false)
-			continue
-		}
 		// get zone manager private key
-		zoneManagerPK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(req.ManagerKeyName)
+		zoneManagerPK, err := keystore.GetPrivateKeyByName(req.ManagerKeyName)
 		if err != nil {
 			qm.LogError(err, "failed to get zone manager private key")
 			d.Ack(false)
 			continue
 		}
 		// get zone private key
-		zonePK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(req.ZoneKeyName)
+		zonePK, err := keystore.GetPrivateKeyByName(req.ZoneKeyName)
 		if err != nil {
 			qm.LogError(err, "failed to get zone private key")
 			d.Ack(false)
@@ -264,7 +264,7 @@ func (qm *Manager) ProcessTNSZoneCreation(msgs <-chan amqp.Delivery, db *gorm.DB
 			continue
 		}
 		// put to ipfs
-		resp, err := rtfsManager.Shell.DagPut(marshaled, "json", "cbor")
+		resp, err := rtfsManager.DagPut(marshaled, "json", "cbor")
 		if err != nil {
 			qm.LogError(err, "failed to put zone in ipfs")
 			d.Ack(false)

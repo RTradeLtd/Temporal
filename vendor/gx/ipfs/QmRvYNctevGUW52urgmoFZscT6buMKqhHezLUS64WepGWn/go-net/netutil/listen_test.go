@@ -16,7 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/nettest"
+	"golang.org/x/net/internal/nettest"
 )
 
 func TestLimitListener(t *testing.T) {

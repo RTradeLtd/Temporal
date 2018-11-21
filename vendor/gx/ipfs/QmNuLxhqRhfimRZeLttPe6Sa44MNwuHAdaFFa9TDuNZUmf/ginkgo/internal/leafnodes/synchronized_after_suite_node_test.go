@@ -3,10 +3,10 @@ package leafnodes_test
 import (
 	"sync"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/internal/leafnodes"
+	"github.com/onsi/ginkgo/types"
 	. "github.com/onsi/gomega"
-	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo"
-	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/internal/leafnodes"
-	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/types"
 
 	"net/http"
 
@@ -14,8 +14,8 @@ import (
 
 	"time"
 
-	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/internal/codelocation"
-	Failer "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/internal/failer"
+	"github.com/onsi/ginkgo/internal/codelocation"
+	Failer "github.com/onsi/ginkgo/internal/failer"
 )
 
 var _ = Describe("SynchronizedAfterSuiteNode", func() {

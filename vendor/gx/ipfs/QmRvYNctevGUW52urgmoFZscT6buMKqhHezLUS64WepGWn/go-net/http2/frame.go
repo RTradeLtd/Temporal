@@ -14,8 +14,8 @@ import (
 	"strings"
 	"sync"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/http/httpguts"
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/http2/hpack"
+	"golang.org/x/net/http/httpguts"
+	"golang.org/x/net/http2/hpack"
 )
 
 const frameHeaderLen = 9

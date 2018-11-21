@@ -5,7 +5,7 @@ import (
 	"testing"
 	"testing/quick"
 
-	mctest "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/test"
+	mctest "github.com/multiformats/go-multicodec/test"
 )
 
 func pow(a, b int) int {

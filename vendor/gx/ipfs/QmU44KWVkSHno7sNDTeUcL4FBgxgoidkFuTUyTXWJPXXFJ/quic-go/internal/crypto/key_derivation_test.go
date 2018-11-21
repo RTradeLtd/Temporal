@@ -5,9 +5,9 @@ import (
 	"errors"
 
 	"github.com/bifurcation/mint"
+	"github.com/lucas-clemente/quic-go/internal/protocol"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/internal/protocol"
 )
 
 type mockTLSExporter struct {

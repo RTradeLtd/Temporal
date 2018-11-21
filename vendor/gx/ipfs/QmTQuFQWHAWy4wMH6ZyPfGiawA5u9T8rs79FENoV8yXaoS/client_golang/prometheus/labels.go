@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/model"
+	"github.com/prometheus/common/model"
 )
 
 // Labels represents a collection of label name -> value mappings. This type is

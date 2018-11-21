@@ -32,7 +32,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 )
 
 const uint32BinaryLen = 4

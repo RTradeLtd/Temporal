@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"testing"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/testtext"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/transform"
+	"golang.org/x/text/internal/testtext"
+	"golang.org/x/text/transform"
 )
 
 type testCase struct {

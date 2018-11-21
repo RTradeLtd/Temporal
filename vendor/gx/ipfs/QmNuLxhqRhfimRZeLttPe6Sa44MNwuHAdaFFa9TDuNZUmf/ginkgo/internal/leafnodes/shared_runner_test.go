@@ -1,16 +1,16 @@
 package leafnodes_test
 
 import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/internal/leafnodes"
 	. "github.com/onsi/gomega"
-	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo"
-	. "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/internal/leafnodes"
 
 	"reflect"
 	"time"
 
-	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/internal/codelocation"
-	Failer "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/internal/failer"
-	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/types"
+	"github.com/onsi/ginkgo/internal/codelocation"
+	Failer "github.com/onsi/ginkgo/internal/failer"
+	"github.com/onsi/ginkgo/types"
 )
 
 type runnable interface {

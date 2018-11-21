@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"io"
 
-	msgio "gx/ipfs/QmcxL9MDzSU5Mj1GcWZD8CXkAFuJXjdbjotZ93o371bKSf/go-msgio"
+	msgio "github.com/libp2p/go-msgio"
 
-	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
+	mc "github.com/multiformats/go-multicodec"
 )
 
 var Header []byte

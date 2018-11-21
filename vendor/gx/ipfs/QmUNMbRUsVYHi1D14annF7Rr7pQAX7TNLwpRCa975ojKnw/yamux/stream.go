@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"gx/ipfs/QmQDvJoB6aJWN3sjr3xsgXqKCXf4jU5zdMXpDMsBkYVNqa/go-buffer-pool"
+	"github.com/libp2p/go-buffer-pool"
 )
 
 type streamState int

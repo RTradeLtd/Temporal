@@ -40,8 +40,8 @@ import (
 	"strconv"
 	"strings"
 
-	pb "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/protoc-gen-gogo/descriptor"
-	"gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/protoc-gen-gogo/generator"
+	pb "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
+	"github.com/gogo/protobuf/protoc-gen-gogo/generator"
 )
 
 // generatedCodeVersion indicates a version of the generated code.

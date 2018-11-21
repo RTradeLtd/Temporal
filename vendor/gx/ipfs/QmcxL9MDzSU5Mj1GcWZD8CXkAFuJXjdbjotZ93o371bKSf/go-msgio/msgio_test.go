@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	randbuf "gx/ipfs/QmYNGtJHgaGZkpzq8yG6Wxqm6EQTKqgpBfnyyGBKbZeDUi/go-randbuf"
+	randbuf "github.com/jbenet/go-randbuf"
 )
 
 func TestReadWrite(t *testing.T) {

@@ -17,7 +17,7 @@ import (
 	"math/rand"
 	"time"
 
-	"gx/ipfs/QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var (

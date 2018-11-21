@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 
@@ -34,7 +33,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs.Shell, false)
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, &api.IpfsManager, false)
 	if err != nil {
 		api.LogError(err, eh.PinCostCalculationError)(c, http.StatusBadRequest)
 		return
@@ -219,7 +218,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	}
 	// pin the file
 	api.LogDebug("adding file...")
-	resp, err := api.ipfs.Add(openFile)
+	resp, err := api.Add(openFile)
 	if err != nil {
 		api.LogError(err, eh.IPFSAddError)(c)
 		api.refundUserCredits(username, "file", cost)
@@ -293,7 +292,7 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
-	if err = api.ipfs.PublishPubSubMessage(topic, forms["message"]); err != nil {
+	if err = api.PubSubPublish(topic, forms["message"]); err != nil {
 		api.LogError(err, eh.IPFSPubSubPublishError)(c)
 		api.refundUserCredits(username, "pubsub", cost)
 		return
@@ -301,26 +300,6 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 
 	api.LogWithUser(username).Info("ipfs pub sub message published")
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": forms["message"]}})
-}
-
-// GetLocalPins is used to get the pins tracked by the serving ipfs node
-// This is admin locked to avoid peformance penalties from looking up the pinset
-func (api *API) getLocalPins(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
-		return
-	}
-	// get all the known local pins
-	// WARNING: THIS COULD BE A VERY LARGE LIST
-	pinInfo, err := api.ipfs.Shell.Pins()
-	if err != nil {
-		api.LogError(err, eh.IPFSPinParseError)(c)
-		return
-	}
-
-	api.LogWithUser(username).Info("ipfs pin list requested")
-	Respond(c, http.StatusOK, gin.H{"response": pinInfo})
 }
 
 // GetObjectStatForIpfs is used to get the object stats for the particular cid
@@ -331,7 +310,7 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	stats, err := api.ipfs.ObjectStat(key)
+	stats, err := api.Stat(key)
 	if err != nil {
 		api.LogError(err, eh.IPFSObjectStatError)
 		Fail(c, err)
@@ -354,7 +333,7 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	present, err := api.ipfs.ParseLocalPinsForHash(hash)
+	present, err := api.CheckPin(hash)
 	if err != nil {
 		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
@@ -369,7 +348,7 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 func (api *API) getDagObject(c *gin.Context) {
 	hash := c.Param("hash")
 	var out interface{}
-	if err := api.ipfs.Shell.DagGet(hash, &out); err != nil {
+	if err := api.DagGet(hash, &out); err != nil {
 		api.LogError(err, eh.IPFSDagGetError)(c, http.StatusBadRequest)
 		return
 	}
@@ -397,17 +376,17 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	}
 
 	var (
-		err    error
-		reader io.Reader
-		size   int
+		err      error
+		response []byte
+		size     int
 	)
 
 	// read the contents of the file
-	if reader, err = api.ipfs.Shell.Cat(contentHash); err != nil {
+	if response, err = api.Cat(contentHash); err != nil {
 		api.LogError(err, eh.IPFSCatError)(c)
 		return
 	}
-
+	reader := bytes.NewReader(response)
 	// decrypt Temporal-encrypted content if key is provided
 	decryptKey := c.PostForm("decrypt_key")
 	if decryptKey != "" {
@@ -419,11 +398,12 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		size = len(decrypted)
 		reader = bytes.NewReader(decrypted)
 	} else {
-		// get the size of the file in bytes
-		if size, err = api.ipfs.GetObjectFileSizeInBytes(contentHash); err != nil {
-			api.LogError(err, eh.IPFSObjectStatError)(c)
+		stats, err := api.Stat(contentHash)
+		if err != nil {
+			api.LogError(err, eh.IPFSObjectStatError)(c, http.StatusBadRequest)
 			return
 		}
+		size = stats.CumulativeSize
 	}
 
 	// parse extra headers if there are any

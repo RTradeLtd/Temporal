@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"golang.org/x/text/language"
 )
 
 // A Renderer renders a Message.

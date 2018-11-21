@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"time"
 
+	"github.com/lucas-clemente/quic-go/internal/crypto"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/internal/crypto"
 )
 
 // This tagMap can be passed to parseValues and is garantueed to not cause any errors

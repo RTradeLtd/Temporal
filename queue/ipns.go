@@ -2,24 +2,25 @@ package queue
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/rtfs"
 
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	ipfsManager, err := rtfs.Initialize("", cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port)
+	keystore, err := rtfs.NewKeystoreManager()
 	if err != nil {
-		qm.LogError(err, "failed to initialize connection to ipfs")
 		return err
 	}
-	if err = ipfsManager.CreateKeystoreManager(); err != nil {
-		qm.LogError(err, "failed to create keystore manager")
+	ipfsManager, err := rtfs.NewManager(cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port, keystore, time.Minute*10)
+	if err != nil {
+		qm.LogError(err, "failed to initialize connection to ipfs")
 		return err
 	}
 	ipnsManager := models.NewIPNSManager(db)
@@ -59,7 +60,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 			}
 			apiURL = apiURLName
 			qm.LogInfo("initializing connection to private ipfs network")
-			ipfsManager, err = rtfs.Initialize("", apiURL)
+			ipfsManager, err = rtfs.NewManager(apiURL, keystore, time.Minute*10)
 			if err != nil {
 				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 				qm.LogError(err, "failed to initialized connection to private ifps network")
@@ -68,7 +69,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 			}
 		}
 		qm.LogInfo("publishing ipns entry")
-		response, err := ipfsManager.PublishToIPNSDetails(ie.CID, ie.Key, ie.LifeTime, ie.TTL, ie.Resolve)
+		response, err := ipfsManager.Publish(ie.CID, ie.Key, ie.LifeTime, ie.TTL, ie.Resolve)
 		if err != nil {
 			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 			qm.LogError(err, "failed to publish ipns entry")

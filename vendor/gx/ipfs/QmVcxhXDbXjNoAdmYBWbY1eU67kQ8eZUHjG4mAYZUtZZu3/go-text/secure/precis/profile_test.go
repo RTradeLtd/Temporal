@@ -10,8 +10,8 @@ import (
 	"testing"
 	"unicode"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/testtext"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/transform"
+	"golang.org/x/text/internal/testtext"
+	"golang.org/x/text/transform"
 )
 
 // copyOrbit is a Transformer for the sole purpose of testing the apply method,

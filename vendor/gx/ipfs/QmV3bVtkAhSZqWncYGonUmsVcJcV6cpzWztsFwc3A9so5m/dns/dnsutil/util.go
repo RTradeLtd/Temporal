@@ -8,7 +8,7 @@ package dnsutil
 import (
 	"strings"
 
-	"gx/ipfs/QmV3bVtkAhSZqWncYGonUmsVcJcV6cpzWztsFwc3A9so5m/dns"
+	"github.com/miekg/dns"
 )
 
 // AddOrigin adds origin to s if s is not already a FQDN.

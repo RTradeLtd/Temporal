@@ -14,8 +14,8 @@ import (
 	"runtime"
 	"testing"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/nettest"
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/socket"
+	"golang.org/x/net/internal/nettest"
+	"golang.org/x/net/internal/socket"
 )
 
 type mockControl struct {

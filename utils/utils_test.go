@@ -3,9 +3,10 @@ package utils_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
-	"github.com/RTradeLtd/Temporal/rtfs"
 	"github.com/RTradeLtd/Temporal/utils"
+	"github.com/RTradeLtd/rtfs"
 )
 
 const (
@@ -18,7 +19,7 @@ func TestUtils_CalculatePinCost(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration tests")
 	}
-	manager, err := rtfs.Initialize("", nodeOneAPIAddr)
+	manager, err := rtfs.NewManager(nodeOneAPIAddr, nil, time.Minute*10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,7 +41,7 @@ func TestUtils_CalculatePinCost(t *testing.T) {
 			cost, err := utils.CalculatePinCost(
 				tt.args.hash,
 				tt.args.months,
-				manager.Shell,
+				manager,
 				tt.args.private,
 			)
 			if err != nil {

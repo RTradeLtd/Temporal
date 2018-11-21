@@ -3,7 +3,7 @@ package sockaddr
 import (
 	"unsafe"
 
-	sockaddrnet "gx/ipfs/QmNzEyX7vjWiqinyLeavcAF1oegav6dZ1aQpAkYvG9m5Ze/go-sockaddr/net"
+	sockaddrnet "github.com/libp2p/go-sockaddr/net"
 )
 
 import "C"

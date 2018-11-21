@@ -24,13 +24,13 @@ import (
 	"sort"
 	"time"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/context"
-	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/expfmt"
-	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/model"
+	"github.com/prometheus/common/expfmt"
+	"github.com/prometheus/common/model"
+	"golang.org/x/net/context"
 
-	dto "gx/ipfs/QmYaVovLzgcdBpCLEAnW41p8ujvCUxe3TFpfJxjK5qbzn7/client_model/go"
+	dto "github.com/prometheus/client_model/go"
 
-	"gx/ipfs/QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const (

@@ -7,8 +7,8 @@ package cases_test
 import (
 	"fmt"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/cases"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func Example() {

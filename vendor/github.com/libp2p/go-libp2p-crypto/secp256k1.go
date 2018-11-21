@@ -5,7 +5,6 @@ import (
 	"io"
 
 	btcec "github.com/btcsuite/btcd/btcec"
-	proto "github.com/gogo/protobuf/proto"
 	pb "github.com/libp2p/go-libp2p-crypto/pb"
 	sha256 "github.com/minio/sha256-simd"
 )
@@ -41,12 +40,16 @@ func UnmarshalSecp256k1PublicKey(data []byte) (PubKey, error) {
 	return (*Secp256k1PublicKey)(k), nil
 }
 
-func (k *Secp256k1PrivateKey) Bytes() ([]byte, error) {
-	pbmes := new(pb.PrivateKey)
-	typ := pb.KeyType_Secp256k1
-	pbmes.Type = &typ
-	pbmes.Data = (*btcec.PrivateKey)(k).Serialize()
-	return proto.Marshal(pbmes)
+func (sk *Secp256k1PrivateKey) Type() pb.KeyType {
+	return pb.KeyType_Secp256k1
+}
+
+func (sk *Secp256k1PrivateKey) Bytes() ([]byte, error) {
+	return MarshalPrivateKey(sk)
+}
+
+func (k *Secp256k1PrivateKey) Raw() ([]byte, error) {
+	return (*btcec.PrivateKey)(k).Serialize(), nil
 }
 
 func (k *Secp256k1PrivateKey) Equals(o Key) bool {
@@ -72,12 +75,16 @@ func (k *Secp256k1PrivateKey) GetPublic() PubKey {
 	return (*Secp256k1PublicKey)((*btcec.PrivateKey)(k).PubKey())
 }
 
-func (k *Secp256k1PublicKey) Bytes() ([]byte, error) {
-	pbmes := new(pb.PublicKey)
-	typ := pb.KeyType_Secp256k1
-	pbmes.Type = &typ
-	pbmes.Data = (*btcec.PublicKey)(k).SerializeCompressed()
-	return proto.Marshal(pbmes)
+func (sk *Secp256k1PublicKey) Type() pb.KeyType {
+	return pb.KeyType_Secp256k1
+}
+
+func (sk *Secp256k1PublicKey) Bytes() ([]byte, error) {
+	return MarshalPublicKey(sk)
+}
+
+func (k *Secp256k1PublicKey) Raw() ([]byte, error) {
+	return (*btcec.PublicKey)(k).SerializeCompressed(), nil
 }
 
 func (k *Secp256k1PublicKey) Equals(o Key) bool {
