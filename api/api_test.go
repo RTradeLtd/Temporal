@@ -20,6 +20,9 @@ func Test_new(t *testing.T) {
 		t.Fatal(err)
 	}
 	ipfs, err := rtfs.NewManager(cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port, keystore, time.Minute*5)
+	if err != nil {
+		t.Fatal(err)
+	}
 	api, err := new(cfg, gin.New(), *ipfs, *keystore, true, os.Stdout)
 	if err != nil {
 		t.Fatal(err)
