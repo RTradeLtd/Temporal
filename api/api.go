@@ -101,7 +101,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.IpfsManager, keystore rtfs.KeystoreManager, debug bool, out io.Writer) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, keystore rtfs.KeystoreManager, debug bool, out io.Writer) (*API, error) {
 	var (
 		logger = log.New()
 		dbm    *database.Manager
