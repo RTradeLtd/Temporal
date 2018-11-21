@@ -33,7 +33,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	cost, err := utils.CalculatePinCost(hash, holdTimeInt, &api.IpfsManager, false)
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.Manager, false)
 	if err != nil {
 		api.LogError(err, eh.PinCostCalculationError)(c, http.StatusBadRequest)
 		return

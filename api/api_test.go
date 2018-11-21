@@ -23,7 +23,7 @@ func Test_new(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	api, err := new(cfg, gin.New(), *ipfs, *keystore, true, os.Stdout)
+	api, err := new(cfg, gin.New(), ipfs, *keystore, true, os.Stdout)
 	if err != nil {
 		t.Fatal(err)
 	}

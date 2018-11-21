@@ -36,7 +36,7 @@ var (
 
 // API is our API service
 type API struct {
-	rtfs.IpfsManager
+	rtfs.Manager
 	rtfs.KeystoreManager
 	r       *gin.Engine
 	cfg     *config.TemporalConfig
@@ -88,7 +88,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 		return nil, err
 	}
 	// set up API struct
-	api, err := new(cfg, router, *im, *keystore, debug, logfile)
+	api, err := new(cfg, router, im, *keystore, debug, logfile)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, keys
 		return nil, err
 	}
 	return &API{
-		IpfsManager:     ipfs,
+		Manager:         ipfs,
 		KeystoreManager: keystore,
 		cfg:             cfg,
 		service:         "api",
