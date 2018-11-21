@@ -13,14 +13,14 @@ func TestUtils_RetrieveEthUsdPrice(t *testing.T) {
 		t.Fatal(err)
 	}
 	if priceFloat == 0 {
-		t.Fatal("priceFloat is 0, unexpected error occured")
+		t.Fatal("priceFloat is 0, unexpected error occurred")
 	}
 	priceInt, err := utils.RetrieveEthUsdPriceNoDecimals()
 	if err != nil {
 		t.Fatal(err)
 	}
 	if priceInt == 0 {
-		t.Fatal("priceInt is 0, unexpected error occured")
+		t.Fatal("priceInt is 0, unexpected error occurred")
 	}
 }
 

@@ -53,6 +53,9 @@ func TestQueues(t *testing.T) {
 		t.Fatal(err)
 	}
 	qm, err = queue.Initialize(queue.EmailSendQueue, testRabbitAddress, true, false)
+	if err != nil {
+		t.Fatal(err)
+	}
 	es := queue.EmailSend{
 		Subject:     "test email",
 		Content:     "this is a test email",

@@ -204,7 +204,7 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 
 	// check the queue name
 	switch qm.Service {
-	// only parse datbase file requests
+	// only parse database file requests
 	case DatabaseFileAddQueue:
 		if err = qm.ProcessDatabaseFileAdds(msgs, db); err != nil {
 			return err

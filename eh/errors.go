@@ -4,7 +4,7 @@ const (
 	// IPFSConnectionError is an error used for ipfs connection failures
 	IPFSConnectionError = "failed to connect to ipfs"
 	// PrivateNetworkAccessError is used for invalid access to private networks
-	PrivateNetworkAccessError = "invalid access to private netowrk"
+	PrivateNetworkAccessError = "invalid access to private network"
 	// APIURLCheckError is an error ussed when failing to retrieve an api url
 	APIURLCheckError = "failed to get api url"
 	// IPFSCatError is an error used when failing to can an ipfs file
@@ -77,7 +77,7 @@ const (
 	InvalidBalanceError = "user does not have enough credits to pay for api call"
 	// CmcCheckError is an error message given to a user when checking cmc fails
 	CmcCheckError = "failed to retrieve value from coinmarketcap"
-	// DepositAddressCheckError is an error message given to a user when searchign for a deposit address fails
+	// DepositAddressCheckError is an error message given to a user when searching for a deposit address fails
 	DepositAddressCheckError = "failed to get deposit address"
 	// UserSearchError is an error message given to a user when a username cant be found
 	UserSearchError = "unable to find username"
@@ -110,9 +110,9 @@ const (
 	// InvalidObjectTypeError is an error message when a user submits an incorrect type to be indexed
 	InvalidObjectTypeError = "object type is invalid, must be ipld"
 	// FailedToIndexError is an error message when a lens index request fails
-	FailedToIndexError = "an error occured while trying to index this object"
+	FailedToIndexError = "an error occurred while trying to index this object"
 	// FailedToSearchError is an error message when a lens search request fails
-	FailedToSearchError = "an error occured while submitting your search to lens"
+	FailedToSearchError = "an error occurred while submitting your search to lens"
 	// NoSearchResultsError is an error message used when no search results were returned
 	NoSearchResultsError = "there were no entries matching your search query"
 	// ChainRiderAPICallError is an error message used when a call to chainrider api fails

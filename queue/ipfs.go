@@ -245,7 +245,7 @@ func (qm *Manager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.Temp
 			d.Ack(false)
 			continue
 		}
-		// now that we have the minio host which is storing htis object, we can connect
+		// now that we have the minio host which is storing this object, we can connect
 		// construct the endpoint url to access our minio server
 		endpoint := fmt.Sprintf("%s:%s", ipfsFile.MinioHostIP, cfg.MINIO.Connection.Port)
 
@@ -428,7 +428,7 @@ func (qm *Manager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.Temp
 			continue
 		}
 
-		fileContext.Info("object removed from minio, succesfully added to ipfs")
+		fileContext.Info("object removed from minio, successfully added to ipfs")
 		d.Ack(false)
 	}
 	return nil

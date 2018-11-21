@@ -45,7 +45,7 @@ func (api *API) addRecordToZone(c *gin.Context) {
 	if len(forms) == 0 {
 		return
 	}
-	// slightly more complex form unmarshaling so this will be seperated
+	// slightly more complex form unmarshaling so this will be separated
 	metadata, exists := c.GetPostForm("meta_data")
 	var intf map[string]interface{}
 	if exists {

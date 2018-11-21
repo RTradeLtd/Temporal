@@ -96,7 +96,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
 		return
 	}
-	// convert the credits the user wnats to buy from string to float
+	// convert the credits the user wants to buy from string to float
 	creditValueFloat, err := strconv.ParseFloat(forms["credit_value"], 64)
 	if err != nil {
 		Fail(c, err)

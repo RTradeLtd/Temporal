@@ -128,12 +128,12 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		"service": "api",
 		"user":    username,
 	}).Info("password change requested")
-	suceeded, err := api.um.ChangePassword(username, forms["old_password"], forms["new_password"])
+	succeeded, err := api.um.ChangePassword(username, forms["old_password"], forms["new_password"])
 	if err != nil {
 		api.LogError(err, eh.PasswordChangeError)(c)
 		return
 	}
-	if !suceeded {
+	if !succeeded {
 		err = fmt.Errorf("password changed failed for user %s to due an unspecified error", username)
 		api.LogError(err, eh.PasswordChangeError)(c)
 		return
