@@ -46,7 +46,6 @@ type API struct {
 	pm      *models.PaymentManager
 	dm      *models.DropManager
 	ue      *models.EncryptedUploadManager
-	keys    *rtfs.KeystoreManager
 	zm      *models.ZoneManager
 	rm      *models.RecordManager
 	nm      *models.IPFSNetworkManager
