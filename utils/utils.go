@@ -85,7 +85,7 @@ func CalculateAPICallCost(callType string, privateNetwork bool) (float64, error)
 }
 
 // CalculatePinCost is used to calculate the cost of pining a particular content hash
-func CalculatePinCost(contentHash string, holdTimeInMonths int64, im *rtfs.IpfsManager, privateNetwork bool) (float64, error) {
+func CalculatePinCost(contentHash string, holdTimeInMonths int64, im *rtfs.Manager, privateNetwork bool) (float64, error) {
 	objectStat, err := im.Stat(contentHash)
 	if err != nil {
 		return float64(0), err
