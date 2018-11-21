@@ -34,7 +34,7 @@ package generator
 import (
 	"testing"
 
-	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/protoc-gen-go/descriptor"
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 )
 
 func TestCamelCase(t *testing.T) {

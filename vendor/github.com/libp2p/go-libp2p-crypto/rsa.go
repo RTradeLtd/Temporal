@@ -9,7 +9,6 @@ import (
 
 	pb "github.com/libp2p/go-libp2p-crypto/pb"
 
-	proto "github.com/gogo/protobuf/proto"
 	sha256 "github.com/minio/sha256-simd"
 )
 
@@ -31,17 +30,16 @@ func (pk *RsaPublicKey) Verify(data, sig []byte) (bool, error) {
 	return true, nil
 }
 
-func (pk *RsaPublicKey) Bytes() ([]byte, error) {
-	b, err := x509.MarshalPKIXPublicKey(pk.k)
-	if err != nil {
-		return nil, err
-	}
+func (pk *RsaPublicKey) Type() pb.KeyType {
+	return pb.KeyType_RSA
+}
 
-	pbmes := new(pb.PublicKey)
-	typ := pb.KeyType_RSA
-	pbmes.Type = &typ
-	pbmes.Data = b
-	return proto.Marshal(pbmes)
+func (pk *RsaPublicKey) Bytes() ([]byte, error) {
+	return MarshalPublicKey(pk)
+}
+
+func (pk *RsaPublicKey) Raw() ([]byte, error) {
+	return x509.MarshalPKIXPublicKey(pk.k)
 }
 
 func (pk *RsaPublicKey) Encrypt(b []byte) ([]byte, error) {
@@ -69,13 +67,17 @@ func (sk *RsaPrivateKey) Decrypt(b []byte) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, sk.sk, b)
 }
 
+func (sk *RsaPrivateKey) Type() pb.KeyType {
+	return pb.KeyType_RSA
+}
+
 func (sk *RsaPrivateKey) Bytes() ([]byte, error) {
+	return MarshalPrivateKey(sk)
+}
+
+func (sk *RsaPrivateKey) Raw() ([]byte, error) {
 	b := x509.MarshalPKCS1PrivateKey(sk.sk)
-	pbmes := new(pb.PrivateKey)
-	typ := pb.KeyType_RSA
-	pbmes.Type = &typ
-	pbmes.Data = b
-	return proto.Marshal(pbmes)
+	return b, nil
 }
 
 // Equals checks whether this key is equal to another

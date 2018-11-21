@@ -6,9 +6,9 @@ import (
 	"io"
 	"net"
 
-	salsa20 "gx/ipfs/QmNi5J1mEQKAKWbPRBEMKKYVNok9EN4MsGM4YUqPvraPEX/go-crypto-dav/salsa20"
-	pool "gx/ipfs/QmQDvJoB6aJWN3sjr3xsgXqKCXf4jU5zdMXpDMsBkYVNqa/go-buffer-pool"
-	ipnet "gx/ipfs/QmW7Ump7YyBMr712Ta3iEVh3ZYcfVvJaPryfbCnyE826b4/go-libp2p-interface-pnet"
+	salsa20 "github.com/davidlazar/go-crypto/salsa20"
+	pool "github.com/libp2p/go-buffer-pool"
+	ipnet "github.com/libp2p/go-libp2p-interface-pnet"
 )
 
 // we are using buffer pool as user needs their slice back

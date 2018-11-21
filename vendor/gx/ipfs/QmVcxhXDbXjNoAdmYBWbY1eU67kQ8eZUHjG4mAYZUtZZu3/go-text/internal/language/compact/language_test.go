@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/language"
+	"golang.org/x/text/internal/language"
 )
 
 func mustParse(s string) Tag {

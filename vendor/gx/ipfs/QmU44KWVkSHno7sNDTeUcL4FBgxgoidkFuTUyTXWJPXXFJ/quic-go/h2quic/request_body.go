@@ -3,7 +3,7 @@ package h2quic
 import (
 	"io"
 
-	quic "gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go"
+	quic "github.com/lucas-clemente/quic-go"
 )
 
 type requestBody struct {

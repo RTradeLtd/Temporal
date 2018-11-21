@@ -45,7 +45,7 @@ TEMPORAL is a work in progress, and current code does not represent quality of t
 
 Temporal now has a working web interface! This provides a slick and easy way to interact with Temporal without the need for using our API. We currently have two versions of the web interface, running over regular HTTP, and one over I2P!
 
-* [Clearnet, Recommended](https://nuts.rtradetechnologies.com:6768/)
+* [Clearnet, Recommended](https://nuts.rtradetechnologies.com:6771)
 * [I2P](http://riqdsr6ijsujw4tagdufhbv7drlghe2cljy2xow3irvy7grq34fq.b32.i2p/)
 
 Please note that support for the I2P Interface is very experimental at the moment and does not offer HTTPS.

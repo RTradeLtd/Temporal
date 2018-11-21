@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"io"
 
-	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
-	base "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/base"
+	mc "github.com/multiformats/go-multicodec"
+	base "github.com/multiformats/go-multicodec/base"
 )
 
 var (

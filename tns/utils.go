@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"time"
 
-	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/rtfs"
 	libp2p "github.com/libp2p/go-libp2p"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	host "github.com/libp2p/go-libp2p-host"
@@ -82,11 +83,11 @@ func (c *Client) GenerateStreamAndWrite(ctx context.Context, peerID peer.ID, cmd
 	if cmd == "echo" {
 		return string(resp), nil
 	}
-	rtfsManager, err := rtfs.Initialize("", ipfsAPI)
+	rtfsManager, err := rtfs.NewManager(ipfsAPI, nil, time.Minute*10)
 	if err != nil {
 		return nil, err
 	}
-	if err = rtfsManager.Shell.DagGet(string(resp), &intf); err != nil {
+	if err = rtfsManager.DagGet(string(resp), &intf); err != nil {
 		return nil, err
 	}
 	return intf, nil

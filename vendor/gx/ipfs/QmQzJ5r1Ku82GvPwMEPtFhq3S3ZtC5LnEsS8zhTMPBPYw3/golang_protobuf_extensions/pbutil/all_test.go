@@ -18,9 +18,9 @@ import (
 	"bytes"
 	"testing"
 
-	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 
-	. "gx/ipfs/QmQzJ5r1Ku82GvPwMEPtFhq3S3ZtC5LnEsS8zhTMPBPYw3/golang_protobuf_extensions/testdata"
+	. "github.com/matttproud/golang_protobuf_extensions/testdata"
 )
 
 func TestWriteDelimited(t *testing.T) {

@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"testing"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/nettest"
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/ipv4"
+	"golang.org/x/net/internal/nettest"
+	"golang.org/x/net/ipv4"
 )
 
 var packetConnMulticastSocketOptionTests = []struct {

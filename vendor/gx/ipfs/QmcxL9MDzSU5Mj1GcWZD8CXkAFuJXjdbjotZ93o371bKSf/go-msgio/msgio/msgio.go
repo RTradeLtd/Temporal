@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	msgio "gx/ipfs/QmcxL9MDzSU5Mj1GcWZD8CXkAFuJXjdbjotZ93o371bKSf/go-msgio"
+	msgio "github.com/libp2p/go-msgio"
 )
 
 var Args ArgType

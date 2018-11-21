@@ -7,7 +7,7 @@ package precis
 import (
 	"testing"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/runes"
+	"golang.org/x/text/runes"
 )
 
 // Compile-time regression test to ensure that Class is a Set

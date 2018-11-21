@@ -22,7 +22,7 @@ import (
 	"testing/quick"
 	"time"
 
-	dto "gx/ipfs/QmYaVovLzgcdBpCLEAnW41p8ujvCUxe3TFpfJxjK5qbzn7/client_model/go"
+	dto "github.com/prometheus/client_model/go"
 )
 
 func TestSummaryWithDefaultObjectives(t *testing.T) {

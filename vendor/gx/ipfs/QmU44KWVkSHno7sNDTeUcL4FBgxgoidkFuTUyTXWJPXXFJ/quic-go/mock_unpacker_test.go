@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	wire "gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/internal/wire"
+	wire "github.com/lucas-clemente/quic-go/internal/wire"
 )
 
 // MockUnpacker is a mock of Unpacker interface

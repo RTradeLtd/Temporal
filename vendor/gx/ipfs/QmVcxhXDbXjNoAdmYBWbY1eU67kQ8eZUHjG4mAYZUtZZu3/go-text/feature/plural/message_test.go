@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/catmsg"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/message/catalog"
+	"golang.org/x/text/internal/catmsg"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message/catalog"
 )
 
 func TestSelect(t *testing.T) {

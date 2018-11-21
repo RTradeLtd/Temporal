@@ -5,10 +5,10 @@ import (
 	"io"
 	"time"
 
-	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/gbytes"
+	. "github.com/onsi/gomega/gbytes"
 
 	. "github.com/onsi/ginkgo"
-	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega"
+	. "github.com/onsi/gomega"
 )
 
 type FakeCloser struct {

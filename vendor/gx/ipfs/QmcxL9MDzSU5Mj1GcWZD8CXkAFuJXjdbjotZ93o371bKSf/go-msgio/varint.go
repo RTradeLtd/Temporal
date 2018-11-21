@@ -5,7 +5,7 @@ import (
 	"io"
 	"sync"
 
-	pool "gx/ipfs/QmQDvJoB6aJWN3sjr3xsgXqKCXf4jU5zdMXpDMsBkYVNqa/go-buffer-pool"
+	pool "github.com/libp2p/go-buffer-pool"
 )
 
 // varintWriter is the underlying type that implements the Writer interface.

@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	chunker "gx/ipfs/QmZooytqEoUwQjv7KzH4d3xyJnyvD3AWJaCDMYt5pbCtua/chunker"
+	chunker "github.com/whyrusleeping/chunker"
 )
 
 func parseDigest(s string) []byte {

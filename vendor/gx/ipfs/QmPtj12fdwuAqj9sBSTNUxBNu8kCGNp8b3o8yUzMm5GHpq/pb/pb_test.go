@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"gx/ipfs/QmTsHcKgTQ4VeYZd8eKYpTXeLW7KNwkRD9wjnrwsV2sToq/go-colorable"
-	"gx/ipfs/QmWsJXti4Nft4vXR8brjG2fJCUDWeJpwNVngyU42pByJxN/color"
+	"github.com/fatih/color"
+	"github.com/mattn/go-colorable"
 )
 
 func Test_IncrementAddsOne(t *testing.T) {

@@ -2,19 +2,15 @@ package commands
 
 import (
 	"errors"
-	"io"
-	"strings"
 
-	oldcmds "github.com/ipfs/go-ipfs/commands"
 	lgc "github.com/ipfs/go-ipfs/commands/legacy"
 	dag "github.com/ipfs/go-ipfs/core/commands/dag"
-	e "github.com/ipfs/go-ipfs/core/commands/e"
 	name "github.com/ipfs/go-ipfs/core/commands/name"
 	ocmd "github.com/ipfs/go-ipfs/core/commands/object"
 	unixfs "github.com/ipfs/go-ipfs/core/commands/unixfs"
 
-	cmds "gx/ipfs/QmSXUokcP4TJpFfqozT69AVAYRtzXVMUjzQVkYX41R9Svs/go-ipfs-cmds"
-	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	cmds "gx/ipfs/Qma6uuSyjkecGhMFFLfzyJDPyoDtNJSHJNweDccZhaWkgU/go-ipfs-cmds"
+	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
@@ -122,28 +118,28 @@ var rootSubcommands = map[string]*cmds.Command{
 	"pubsub":    PubsubCmd,
 	"repo":      RepoCmd,
 	"stats":     StatsCmd,
-	"bootstrap": lgc.NewCommand(BootstrapCmd),
-	"config":    lgc.NewCommand(ConfigCmd),
+	"bootstrap": BootstrapCmd,
+	"config":    ConfigCmd,
 	"dag":       dag.DagCmd,
-	"dht":       lgc.NewCommand(DhtCmd),
-	"diag":      lgc.NewCommand(DiagCmd),
+	"dht":       DhtCmd,
+	"diag":      DiagCmd,
 	"dns":       DNSCmd,
 	"id":        IDCmd,
 	"key":       KeyCmd,
-	"log":       lgc.NewCommand(LogCmd),
+	"log":       LogCmd,
 	"ls":        lgc.NewCommand(LsCmd),
-	"mount":     lgc.NewCommand(MountCmd),
+	"mount":     MountCmd,
 	"name":      name.NameCmd,
 	"object":    ocmd.ObjectCmd,
-	"pin":       lgc.NewCommand(PinCmd),
+	"pin":       PinCmd,
 	"ping":      PingCmd,
-	"p2p":       lgc.NewCommand(P2PCmd),
-	"refs":      lgc.NewCommand(RefsCmd),
+	"p2p":       P2PCmd,
+	"refs":      RefsCmd,
 	"resolve":   ResolveCmd,
 	"swarm":     SwarmCmd,
 	"tar":       TarCmd,
-	"file":      lgc.NewCommand(unixfs.UnixFSCmd),
-	"update":    lgc.NewCommand(ExternalBinary()),
+	"file":      unixfs.UnixFSCmd,
+	"update":    ExternalBinary(),
 	"urlstore":  urlStoreCmd,
 	"version":   VersionCmd,
 	"shutdown":  daemonShutdownCmd,
@@ -155,7 +151,8 @@ var RootRO = &cmds.Command{}
 
 var CommandsDaemonROCmd = CommandsCmd(RootRO)
 
-var RefsROCmd = &oldcmds.Command{}
+// RefsROCmd is `ipfs refs` command
+var RefsROCmd = &cmds.Command{}
 
 var rootROSubcommands = map[string]*cmds.Command{
 	"commands": CommandsDaemonROCmd,
@@ -174,14 +171,14 @@ var rootROSubcommands = map[string]*cmds.Command{
 			"resolve": name.IpnsCmd,
 		},
 	},
-	"object": lgc.NewCommand(&oldcmds.Command{
-		Subcommands: map[string]*oldcmds.Command{
+	"object": {
+		Subcommands: map[string]*cmds.Command{
 			"data":  ocmd.ObjectDataCmd,
 			"links": ocmd.ObjectLinksCmd,
 			"get":   ocmd.ObjectGetCmd,
 			"stat":  ocmd.ObjectStatCmd,
 		},
-	}),
+	},
 	"dag": {
 		Subcommands: map[string]*cmds.Command{
 			"get":     dag.DagGetCmd,
@@ -198,12 +195,12 @@ func init() {
 
 	// sanitize readonly refs command
 	*RefsROCmd = *RefsCmd
-	RefsROCmd.Subcommands = map[string]*oldcmds.Command{}
+	RefsROCmd.Subcommands = map[string]*cmds.Command{}
 
 	// this was in the big map definition above before,
 	// but if we leave it there lgc.NewCommand will be executed
 	// before the value is updated (:/sanitize readonly refs command/)
-	rootROSubcommands["refs"] = lgc.NewCommand(RefsROCmd)
+	rootROSubcommands["refs"] = RefsROCmd
 
 	Root.Subcommands = rootSubcommands
 
@@ -212,18 +209,4 @@ func init() {
 
 type MessageOutput struct {
 	Message string
-}
-
-func MessageTextMarshaler(res oldcmds.Response) (io.Reader, error) {
-	v, err := unwrapOutput(res.Output())
-	if err != nil {
-		return nil, err
-	}
-
-	out, ok := v.(*MessageOutput)
-	if !ok {
-		return nil, e.TypeErr(out, v)
-	}
-
-	return strings.NewReader(out.Message), nil
 }

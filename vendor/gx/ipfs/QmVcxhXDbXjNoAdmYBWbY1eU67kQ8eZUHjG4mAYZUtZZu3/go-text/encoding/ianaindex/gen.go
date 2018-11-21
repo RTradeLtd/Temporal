@@ -15,8 +15,8 @@ import (
 	"strconv"
 	"strings"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/encoding/internal/identifier"
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/gen"
+	"golang.org/x/text/encoding/internal/identifier"
+	"golang.org/x/text/internal/gen"
 )
 
 type registry struct {

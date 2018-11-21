@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/RTradeLtd/Temporal/rtfs"
+	"github.com/RTradeLtd/rtfs"
 
 	"github.com/RTradeLtd/Temporal/tns"
 
@@ -37,22 +37,15 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "run tns daemon",
 				Description: "runs a tns daemon and zone manager",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
+					keystore, err := rtfs.NewKeystoreManager(cfg.IPFS.KeystorePath)
 					if err != nil {
 						log.Fatal(err)
 					}
-					if err = rtfsManager.CreateKeystoreManager(); err != nil {
-						log.Fatal(err)
-					}
-					zoneManagerPK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(
-						cfg.TNS.ZoneManagerKeyName,
-					)
+					zoneManagerPK, err := keystore.GetPrivateKeyByName(cfg.TNS.ZoneManagerKeyName)
 					if err != nil {
 						log.Fatal(err)
 					}
-					zonePK, err := rtfsManager.KeystoreManager.GetPrivateKeyByName(
-						cfg.TNS.ZoneManagerKeyName,
-					)
+					zonePK, err := keystore.GetPrivateKeyByName(cfg.TNS.ZoneManagerKeyName)
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -90,13 +83,6 @@ var commands = map[string]cmd.Cmd{
 					peerAddr := args["peerAddr"]
 					if peerAddr == "" {
 						log.Fatal("peerAddr argument is empty")
-					}
-					rtfsManager, err := rtfs.Initialize("", fmt.Sprintf("%s:%s", cfg.IPFS.APIConnection.Host, cfg.IPFS.APIConnection.Port))
-					if err != nil {
-						log.Fatal(err)
-					}
-					if err = rtfsManager.CreateKeystoreManager(); err != nil {
-						log.Fatal(err)
 					}
 					client, err := tns.GenerateTNSClient(true, nil)
 					if err != nil {

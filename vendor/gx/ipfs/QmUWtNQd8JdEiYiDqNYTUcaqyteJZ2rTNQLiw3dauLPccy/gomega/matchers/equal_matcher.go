@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/format"
+	"github.com/onsi/gomega/format"
 )
 
 type EqualMatcher struct {

@@ -18,7 +18,7 @@ import (
 	"strings"
 	"testing"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/html/atom"
+	"golang.org/x/net/html/atom"
 )
 
 // readParseTest reads a single test case from r.

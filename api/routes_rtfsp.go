@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,8 +11,8 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/Temporal/rtfs"
 	ipfs_orchestrator "github.com/RTradeLtd/grpc/ipfs-orchestrator"
+	"github.com/RTradeLtd/rtfs"
 	gocid "github.com/ipfs/go-cid"
 	log "github.com/sirupsen/logrus"
 
@@ -44,7 +45,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.APIURLCheckError)(c, http.StatusBadRequest)
 		return
 	}
-	manager, err := rtfs.Initialize("", url)
+	manager, err := rtfs.NewManager(url, nil, time.Minute*10)
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c, http.StatusBadRequest)
 		return
@@ -55,7 +56,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	cost, err := utils.CalculatePinCost(hash, holdTimeInt, manager.Shell, true)
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, manager, true)
 	if err != nil {
 		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return
@@ -220,7 +221,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	ipfsManager, err := rtfs.Initialize("", apiURL)
+	ipfsManager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
@@ -323,12 +324,12 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.APIURLCheckError)(c)
 		return
 	}
-	manager, err := rtfs.Initialize("", apiURL)
+	manager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
-	if err = manager.PublishPubSubMessage(topic, forms["message"]); err != nil {
+	if err = manager.PubSubPublish(topic, forms["message"]); err != nil {
 		api.LogError(err, eh.IPFSPubSubPublishError)(c)
 		return
 	}
@@ -336,44 +337,6 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	api.LogWithUser(username).Info("private ipfs pub sub message published")
 
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": forms["message"]}})
-}
-
-// GetLocalPinsForHostedIPFSNetwork is used to get local pins from the serving private ipfs node
-func (api *API) getLocalPinsForHostedIPFSNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
-		return
-	}
-	forms := api.extractPostForms(c, "network_name")
-	if len(forms) == 0 {
-		return
-	}
-	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
-		api.LogError(err, eh.PrivateNetworkAccessError)(c)
-		return
-	}
-	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(forms["network_name"])
-	if err != nil {
-		api.LogError(err, eh.APIURLCheckError)(c)
-		return
-	}
-	// initialize a connection toe the local ipfs node
-	manager, err := rtfs.Initialize("", apiURL)
-	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c)
-		return
-	}
-	// get all the known local pins
-	// WARNING: THIS COULD BE A VERY LARGE LIST
-	pinInfo, err := manager.Shell.Pins()
-	if err != nil {
-		api.LogError(err, eh.IPFSPinParseError)(c)
-		return
-	}
-	api.LogWithUser(username).Info("private ipfs pin list requested")
-	Respond(c, http.StatusOK, gin.H{"response": pinInfo})
 }
 
 // GetObjectStatForIpfsForHostedIPFSNetwork is  used to get object stats from a private ipfs network
@@ -400,12 +363,12 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	manager, err := rtfs.Initialize("", apiURL)
+	manager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
-	stats, err := manager.ObjectStat(key)
+	stats, err := manager.Stat(key)
 	if err != nil {
 		api.LogError(err, eh.IPFSObjectStatError)(c)
 		return
@@ -440,12 +403,12 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.APIURLCheckError)(c)
 		return
 	}
-	manager, err := rtfs.Initialize("", apiURL)
+	manager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
-	present, err := manager.ParseLocalPinsForHash(hash)
+	present, err := manager.CheckPin(hash)
 	if err != nil {
 		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
@@ -855,19 +818,20 @@ func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
 		return
 	}
 	// initialize our connection to IPFS
-	manager, err := rtfs.Initialize("", apiURL)
+	manager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
 		return
 	}
 	// read the contents of the file
-	reader, err := manager.Shell.Cat(contentHash)
+	contents, err := manager.Cat(contentHash)
 	if err != nil {
 		api.LogError(err, eh.IPFSCatError)(c)
 		return
 	}
+	reader := bytes.NewReader(contents)
 	// get the size of hte file in bytes
-	sizeInBytes, err := manager.GetObjectFileSizeInBytes(contentHash)
+	stats, err := manager.Stat(contentHash)
 	if err != nil {
 		api.LogError(err, eh.IPFSObjectStatError)(c)
 		return
@@ -900,5 +864,5 @@ func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
 	}
 
 	api.LogWithUser(username).Info("private ipfs content download served")
-	c.DataFromReader(200, int64(sizeInBytes), contentType, reader, extraHeaders)
+	c.DataFromReader(200, int64(stats.CumulativeSize), contentType, reader, extraHeaders)
 }

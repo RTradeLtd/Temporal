@@ -1,7 +1,7 @@
 package testingtsupport_test
 
 import (
-	. "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega"
+	. "github.com/onsi/gomega"
 
 	"fmt"
 	"testing"

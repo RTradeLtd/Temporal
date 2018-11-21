@@ -1,6 +1,6 @@
 package ackhandler
 
-import "gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/internal/wire"
+import "github.com/lucas-clemente/quic-go/internal/wire"
 
 // Returns a new slice with all non-retransmittable frames deleted.
 func stripNonRetransmittableFrames(fs []wire.Frame) []wire.Frame {

@@ -20,9 +20,9 @@ import (
 	"strings"
 	"time"
 
-	dto "gx/ipfs/QmYaVovLzgcdBpCLEAnW41p8ujvCUxe3TFpfJxjK5qbzn7/client_model/go"
+	dto "github.com/prometheus/client_model/go"
 
-	"gx/ipfs/QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // magicString is used for the hacky label test in checkLabels. Remove once fixed.

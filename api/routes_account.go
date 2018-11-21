@@ -312,7 +312,7 @@ func (api *API) exportKey(c *gin.Context) {
 		api.LogError(errors.New(eh.KeyUseError), eh.KeyUseError)(c, http.StatusBadRequest)
 		return
 	}
-	mnemonic, err := api.ipfs.KeystoreManager.ExportKeyToMnemonic(keyNamePrefixed)
+	mnemonic, err := api.keys.ExportKeyAsMnemonic(keyNamePrefixed)
 	if err != nil {
 		api.LogError(err, eh.KeyExportError)(c, http.StatusBadRequest)
 		return

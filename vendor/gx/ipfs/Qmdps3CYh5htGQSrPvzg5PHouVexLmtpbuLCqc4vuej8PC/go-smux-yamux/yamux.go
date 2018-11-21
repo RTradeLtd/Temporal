@@ -5,8 +5,8 @@ import (
 	"net"
 	"time"
 
-	yamux "gx/ipfs/QmUNMbRUsVYHi1D14annF7Rr7pQAX7TNLwpRCa975ojKnw/yamux"
-	smux "gx/ipfs/QmY9JXR3FupnYAYJWK9aMr9bCpqWKcToQ1tz8DVGTrHpHw/go-stream-muxer"
+	smux "github.com/libp2p/go-stream-muxer"
+	yamux "github.com/whyrusleeping/yamux"
 )
 
 // Conn is a connection to a remote peer.

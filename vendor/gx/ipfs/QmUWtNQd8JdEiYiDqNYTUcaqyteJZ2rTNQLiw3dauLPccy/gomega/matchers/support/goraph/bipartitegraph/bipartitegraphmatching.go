@@ -1,8 +1,8 @@
 package bipartitegraph
 
-import . "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/matchers/support/goraph/node"
-import . "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/matchers/support/goraph/edge"
-import "gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/matchers/support/goraph/util"
+import . "github.com/onsi/gomega/matchers/support/goraph/node"
+import . "github.com/onsi/gomega/matchers/support/goraph/edge"
+import "github.com/onsi/gomega/matchers/support/goraph/util"
 
 func (bg *BipartiteGraph) LargestMatching() (matching EdgeSet) {
 	paths := bg.maximalDisjointSLAPCollection(matching)

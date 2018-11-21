@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"sync"
 
-	"gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/integrationtests/tools/testserver"
-	"gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/internal/protocol"
+	"github.com/lucas-clemente/quic-go/integrationtests/tools/testserver"
+	"github.com/lucas-clemente/quic-go/internal/protocol"
 
 	_ "github.com/lucas-clemente/quic-clients" // download clients
 

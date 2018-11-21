@@ -3,7 +3,7 @@ package handshake
 import (
 	"bytes"
 
-	"gx/ipfs/QmU44KWVkSHno7sNDTeUcL4FBgxgoidkFuTUyTXWJPXXFJ/quic-go/internal/crypto"
+	"github.com/lucas-clemente/quic-go/internal/crypto"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

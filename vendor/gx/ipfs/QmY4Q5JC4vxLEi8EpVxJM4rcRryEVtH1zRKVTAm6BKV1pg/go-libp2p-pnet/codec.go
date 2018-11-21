@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
-	bmux "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/base/mux"
+	mc "github.com/multiformats/go-multicodec"
+	bmux "github.com/multiformats/go-multicodec/base/mux"
 )
 
 var (

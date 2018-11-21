@@ -4,7 +4,7 @@
 
 package language
 
-import "gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/language/compact"
+import "golang.org/x/text/internal/language/compact"
 
 // TODO: Various sets of commonly use tags and regions.
 

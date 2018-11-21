@@ -10,8 +10,8 @@ import (
 	"io"
 	"net"
 
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/nettest"
-	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/internal/socks"
+	"golang.org/x/net/internal/nettest"
+	"golang.org/x/net/internal/socks"
 )
 
 // An AuthRequest represents an authentication request.

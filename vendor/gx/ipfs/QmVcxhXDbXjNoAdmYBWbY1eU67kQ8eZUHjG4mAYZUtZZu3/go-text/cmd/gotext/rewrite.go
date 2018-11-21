@@ -7,7 +7,7 @@ package main
 import (
 	"os"
 
-	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/message/pipeline"
+	"golang.org/x/text/message/pipeline"
 )
 
 const printerType = "golang.org/x/text/message.Printer"

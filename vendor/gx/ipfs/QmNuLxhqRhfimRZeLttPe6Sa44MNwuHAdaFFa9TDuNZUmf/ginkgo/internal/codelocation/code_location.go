@@ -6,7 +6,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/types"
+	"github.com/onsi/ginkgo/types"
 )
 
 func New(skip int) types.CodeLocation {

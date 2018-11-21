@@ -1,9 +1,9 @@
 package muxcodec
 
 import (
-	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
-	cbor "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/cbor"
-	json "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/json"
+	mc "github.com/multiformats/go-multicodec"
+	cbor "github.com/multiformats/go-multicodec/cbor"
+	json "github.com/multiformats/go-multicodec/json"
 )
 
 func StandardMux() *Multicodec {
