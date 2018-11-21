@@ -164,28 +164,27 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.IpfsManager, 
 	if err != nil {
 		return nil, err
 	}
-	api := &API{
-		cfg:     cfg,
-		service: "api",
-		r:       router,
-		l:       logger,
-		dbm:     dbm,
-		um:      models.NewUserManager(dbm.DB),
-		im:      models.NewIPNSManager(dbm.DB),
-		pm:      models.NewPaymentManager(dbm.DB),
-		dm:      models.NewDropManager(dbm.DB),
-		ue:      models.NewEncryptedUploadManager(dbm.DB),
-		lc:      lensClient,
-		signer:  signer,
-		orch:    orch,
-		dc:      dc,
-		zm:      models.NewZoneManager(dbm.DB),
-		rm:      models.NewRecordManager(dbm.DB),
-		nm:      models.NewHostedIPFSNetworkManager(dbm.DB),
-	}
-	api.IpfsManager = ipfs
-	api.KeystoreManager = keystore
-	return api, nil
+	return &API{
+		IpfsManager:     ipfs,
+		KeystoreManager: keystore,
+		cfg:             cfg,
+		service:         "api",
+		r:               router,
+		l:               logger,
+		dbm:             dbm,
+		um:              models.NewUserManager(dbm.DB),
+		im:              models.NewIPNSManager(dbm.DB),
+		pm:              models.NewPaymentManager(dbm.DB),
+		dm:              models.NewDropManager(dbm.DB),
+		ue:              models.NewEncryptedUploadManager(dbm.DB),
+		lc:              lensClient,
+		signer:          signer,
+		orch:            orch,
+		dc:              dc,
+		zm:              models.NewZoneManager(dbm.DB),
+		rm:              models.NewRecordManager(dbm.DB),
+		nm:              models.NewHostedIPFSNetworkManager(dbm.DB),
+	}, nil
 }
 
 // Close releases API resources
