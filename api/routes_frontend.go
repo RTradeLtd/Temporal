@@ -38,7 +38,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 	default:
 		isPrivate = false
 	}
-	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, api.Manager, isPrivate)
+	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, isPrivate)
 	if err != nil {
 		api.LogError(err, eh.PinCostCalculationError)
 		Fail(c, err)

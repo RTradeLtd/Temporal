@@ -33,7 +33,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.Manager, false)
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, false)
 	if err != nil {
 		api.LogError(err, eh.PinCostCalculationError)(c, http.StatusBadRequest)
 		return
@@ -218,7 +218,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	}
 	// pin the file
 	api.LogDebug("adding file...")
-	resp, err := api.Add(openFile)
+	resp, err := api.ipfs.Add(openFile)
 	if err != nil {
 		api.LogError(err, eh.IPFSAddError)(c)
 		api.refundUserCredits(username, "file", cost)
@@ -292,7 +292,7 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
-	if err = api.PubSubPublish(topic, forms["message"]); err != nil {
+	if err = api.ipfs.PubSubPublish(topic, forms["message"]); err != nil {
 		api.LogError(err, eh.IPFSPubSubPublishError)(c)
 		api.refundUserCredits(username, "pubsub", cost)
 		return
@@ -310,7 +310,7 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	stats, err := api.Stat(key)
+	stats, err := api.ipfs.Stat(key)
 	if err != nil {
 		api.LogError(err, eh.IPFSObjectStatError)
 		Fail(c, err)
@@ -333,7 +333,7 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	present, err := api.CheckPin(hash)
+	present, err := api.ipfs.CheckPin(hash)
 	if err != nil {
 		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
@@ -348,7 +348,7 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 func (api *API) getDagObject(c *gin.Context) {
 	hash := c.Param("hash")
 	var out interface{}
-	if err := api.DagGet(hash, &out); err != nil {
+	if err := api.ipfs.DagGet(hash, &out); err != nil {
 		api.LogError(err, eh.IPFSDagGetError)(c, http.StatusBadRequest)
 		return
 	}
@@ -382,7 +382,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	)
 
 	// read the contents of the file
-	if response, err = api.Cat(contentHash); err != nil {
+	if response, err = api.ipfs.Cat(contentHash); err != nil {
 		api.LogError(err, eh.IPFSCatError)(c)
 		return
 	}
@@ -398,7 +398,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		size = len(decrypted)
 		reader = bytes.NewReader(decrypted)
 	} else {
-		stats, err := api.Stat(contentHash)
+		stats, err := api.ipfs.Stat(contentHash)
 		if err != nil {
 			api.LogError(err, eh.IPFSObjectStatError)(c, http.StatusBadRequest)
 			return

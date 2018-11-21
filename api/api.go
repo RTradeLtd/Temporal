@@ -36,8 +36,8 @@ var (
 
 // API is our API service
 type API struct {
-	rtfs.Manager
-	rtfs.KeystoreManager
+	ipfs    rtfs.Manager
+	keys    rtfs.KeystoreManager
 	r       *gin.Engine
 	cfg     *config.TemporalConfig
 	dbm     *database.Manager
@@ -164,25 +164,25 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, keys
 		return nil, err
 	}
 	return &API{
-		Manager:         ipfs,
-		KeystoreManager: keystore,
-		cfg:             cfg,
-		service:         "api",
-		r:               router,
-		l:               logger,
-		dbm:             dbm,
-		um:              models.NewUserManager(dbm.DB),
-		im:              models.NewIPNSManager(dbm.DB),
-		pm:              models.NewPaymentManager(dbm.DB),
-		dm:              models.NewDropManager(dbm.DB),
-		ue:              models.NewEncryptedUploadManager(dbm.DB),
-		lc:              lensClient,
-		signer:          signer,
-		orch:            orch,
-		dc:              dc,
-		zm:              models.NewZoneManager(dbm.DB),
-		rm:              models.NewRecordManager(dbm.DB),
-		nm:              models.NewHostedIPFSNetworkManager(dbm.DB),
+		ipfs:    ipfs,
+		keys:    keystore,
+		cfg:     cfg,
+		service: "api",
+		r:       router,
+		l:       logger,
+		dbm:     dbm,
+		um:      models.NewUserManager(dbm.DB),
+		im:      models.NewIPNSManager(dbm.DB),
+		pm:      models.NewPaymentManager(dbm.DB),
+		dm:      models.NewDropManager(dbm.DB),
+		ue:      models.NewEncryptedUploadManager(dbm.DB),
+		lc:      lensClient,
+		signer:  signer,
+		orch:    orch,
+		dc:      dc,
+		zm:      models.NewZoneManager(dbm.DB),
+		rm:      models.NewRecordManager(dbm.DB),
+		nm:      models.NewHostedIPFSNetworkManager(dbm.DB),
 	}, nil
 }
 

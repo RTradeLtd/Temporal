@@ -30,7 +30,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.Manager, false)
+	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, false)
 	if err != nil {
 		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return
