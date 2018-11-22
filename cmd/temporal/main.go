@@ -6,10 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/RTradeLtd/rtfs"
-
-	"github.com/RTradeLtd/Temporal/tns"
-
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd"
@@ -28,81 +24,6 @@ var (
 )
 
 var commands = map[string]cmd.Cmd{
-	"tns": {
-		Blurb:         "run a tns daemon or client",
-		Description:   "allows running a tns daemon to manage a zone, or a client to query a dameon",
-		ChildRequired: true,
-		Children: map[string]cmd.Cmd{
-			"daemon": {
-				Blurb:       "run tns daemon",
-				Description: "runs a tns daemon and zone manager",
-				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					keystore, err := rtfs.NewKeystoreManager(cfg.IPFS.KeystorePath)
-					if err != nil {
-						log.Fatal(err)
-					}
-					zoneManagerPK, err := keystore.GetPrivateKeyByName(cfg.TNS.ZoneManagerKeyName)
-					if err != nil {
-						log.Fatal(err)
-					}
-					zonePK, err := keystore.GetPrivateKeyByName(cfg.TNS.ZoneManagerKeyName)
-					if err != nil {
-						log.Fatal(err)
-					}
-					managerOpts := tns.ManagerOpts{
-						ManagerPK: zoneManagerPK,
-						ZonePK:    zonePK,
-						ZoneName:  cfg.TNS.ZoneName,
-					}
-					dbm, err := database.Initialize(&cfg, database.Options{})
-					if err != nil {
-						log.Fatal(err)
-					}
-					manager, err := tns.GenerateTNSManager(&managerOpts, dbm.DB)
-					if err != nil {
-						log.Fatal(err)
-					}
-					if err = manager.MakeHost(manager.PrivateKey, nil); err != nil {
-						log.Fatal(err)
-					}
-					defer manager.Host.Close()
-					manager.RunTNSDaemon()
-					lim := len(manager.Host.Addrs())
-					count := 0
-					for count < lim {
-						fmt.Println(manager.ReachableAddress(count))
-						count++
-					}
-					select {}
-				},
-			},
-			"client": {
-				Blurb:       "run tns client",
-				Description: "runs a tns client to make libp2p connections to a tns daemon",
-				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					peerAddr := args["peerAddr"]
-					if peerAddr == "" {
-						log.Fatal("peerAddr argument is empty")
-					}
-					client, err := tns.GenerateTNSClient(true, nil)
-					if err != nil {
-						log.Fatal(err)
-					}
-					if err = client.MakeHost(client.PrivateKey, nil); err != nil {
-						log.Fatal(err)
-					}
-					defer client.Host.Close()
-					pid, err := client.AddPeerToPeerStore(peerAddr)
-					if err != nil {
-						log.Fatal(err)
-					}
-					if _, err = client.QueryTNS(pid, "echo", nil); err != nil {
-						log.Fatal(err)
-					}
-				},
-			},
-		},
-	},
 	"api": {
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",

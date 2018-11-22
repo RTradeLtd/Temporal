@@ -51,11 +51,8 @@ func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB
 		switch key.Type {
 		case "rsa":
 			keyTypeInt = ci.RSA
-			if key.Size > 4096 {
-				qm.refundCredits(key.UserName, "key", key.CreditCost, db)
-				qm.LogError(err, "rsa key generation larger than 4096 bits not supported")
-				d.Ack(false)
-				continue
+			if key.Size > 4096 || key.Size < 2048 {
+				bitsInt = 2048
 			}
 			bitsInt = key.Size
 		case "ed25519":

@@ -263,24 +263,6 @@ func (api *API) setupRoutes() {
 		}
 	}
 
-	// tns
-	tnsProtected := v1.Group("/tns", authware...)
-	{
-		create := tnsProtected.Group("create")
-		{
-			create.POST("/zone", api.CreateZone)
-			create.POST("/record", api.addRecordToZone)
-		}
-		query := tnsProtected.Group("/query")
-		{
-			request := query.Group("/request")
-			{
-				request.POST("/zone", api.performZoneRequest)
-				request.POST("/record", api.performRecordRequest)
-			}
-		}
-	}
-
 	// payments
 	payments := v1.Group("/payments", authware...)
 	{

@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -146,50 +145,19 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	// we need to do some formatting on this data in order to submit it to the smart contract
-	hEncoded := resp.GetH()
-	rEncoded := resp.GetR()
-	sEncoded := resp.GetS()
-	// we need to decode the data into a byte array for h, r, and s
-	hDecoded, err := hex.DecodeString(hEncoded)
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	rDecoded, err := hex.DecodeString(rEncoded)
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	sDecoded, err := hex.DecodeString(sEncoded)
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	// we need to make sure that they are all exactly 32 bytes
-	if len(rDecoded) != len(sDecoded) && len(rDecoded) != len(hDecoded) {
-		err = errors.New("h,r,s must be all be 32 bytes")
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	fmt.Println("charge amount float ", chargeAmountFloat)
-	fmt.Println("charge amount string ", chargeAmountString)
 	vUint, err := strconv.ParseUint(resp.GetV(), 10, 64)
 	if err != nil {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	formattedH := fmt.Sprintf("0x%s", hEncoded)
-	formattedR := fmt.Sprintf("0x%s", rEncoded)
-	formattedS := fmt.Sprintf("0x%s", sEncoded)
+	formattedH := fmt.Sprintf("0x%s", resp.GetH())
+	formattedR := fmt.Sprintf("0x%s", resp.GetR())
+	formattedS := fmt.Sprintf("0x%s", resp.GetS())
 	response := gin.H{
 		"charge_amount_big": chargeAmountString,
 		"method":            uint8(method),
 		"payment_number":    paymentNumber,
 		"prefixed":          true,
-		"h":                 hDecoded,
-		"r":                 rDecoded,
-		"s":                 sDecoded,
 		"v":                 uint8(vUint),
 		"formatted": gin.H{
 			"h": formattedH,
