@@ -369,7 +369,6 @@ func (api *API) setupRoutes() {
 	ipns := v1.Group("/ipns", authware...)
 	{
 		ipns.POST("/publish/details", api.publishToIPNSDetails)
-		ipns.POST("/dnslink/aws/add", api.generateDNSLinkEntry) // admin locked
 		ipns.GET("/records", api.getIPNSRecordsPublishedByUser)
 	}
 

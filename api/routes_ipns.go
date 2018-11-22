@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,9 +12,7 @@ import (
 	gocid "github.com/ipfs/go-cid"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/RTradeLtd/Temporal/rtns/dlink"
 	"github.com/gin-gonic/gin"
-	"github.com/mitchellh/goamz/aws"
 )
 
 // PublishToIPNSDetails is used to publish a record on IPNS with more fine grained control over typical publishing methods
@@ -113,53 +110,4 @@ func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": records})
-}
-
-// GenerateDNSLinkEntry is used to generate a DNS link entry
-func (api *API) generateDNSLinkEntry(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
-		return
-	}
-	forms := api.extractPostForms(c, "record_name", "record_value", "aws_zone", "region_name")
-	if len(forms) == 0 {
-		return
-	}
-	aKey := api.cfg.AWS.KeyID
-	aSecret := api.cfg.AWS.Secret
-	var region aws.Region
-	switch forms["region_name"] {
-	case "us-west-1":
-		region = aws.USWest
-	default:
-		// user error, do not log
-		Fail(c, errors.New("invalid region_name"))
-		return
-	}
-	awsManager, err := dlink.GenerateAwsLinkManager("get", aKey, aSecret, forms["aws_zone"], region)
-	if err != nil {
-		api.LogError(err, eh.DNSLinkManagerError)
-		Fail(c, err)
-		return
-	}
-	resp, err := awsManager.AddDNSLinkEntry(forms["record_name"], forms["record_value"])
-	if err != nil {
-		api.LogError(err, eh.DNSLinkEntryError)
-		Fail(c, err)
-		return
-	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    username,
-	}).Info("dnslink entry created")
-	Respond(c, http.StatusOK, gin.H{"response": gin.H{
-		"record_name":  forms["record_name"],
-		"record_value": forms["record_value"],
-		"zone_name":    forms["aws_zone"],
-		"manager":      fmt.Sprintf("%+v", awsManager),
-		"region":       aws.USWest.Name,
-		"resp":         resp,
-	},
-	})
 }
