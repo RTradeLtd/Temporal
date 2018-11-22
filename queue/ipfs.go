@@ -46,15 +46,18 @@ func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB
 			d.Ack(false)
 			continue
 		}
-		var keyTypeInt int
-		var bitsInt int
+		var (
+			keyTypeInt int
+			bitsInt    int
+		)
 		switch key.Type {
 		case "rsa":
 			keyTypeInt = ci.RSA
 			if key.Size > 4096 || key.Size < 2048 {
 				bitsInt = 2048
+			} else {
+				bitsInt = key.Size
 			}
-			bitsInt = key.Size
 		case "ed25519":
 			keyTypeInt = ci.Ed25519
 			bitsInt = 256
