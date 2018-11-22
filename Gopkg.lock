@@ -367,14 +367,6 @@
   version = "v0.9.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:a01b790785636a6ac032a1312eb8fed2997fabdec7d0feb673e97ef9b99e1e96"
-  name = "github.com/ipfs/go-dnslink"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "6ad8ed12327d563fd04675e7cec1491fb67f4edf"
-
-[[projects]]
   digest = "1:5e59d6e02abee7ab8ef7f396f5d681054fbfae02ff159fe3d1e1a01e6ed2b034"
   name = "github.com/ipfs/go-ipfs-addr"
   packages = ["."]
@@ -389,14 +381,6 @@
   pruneopts = "UT"
   revision = "e65afde0acb4947981ef7c1447b98895e5dfb164"
   version = "v1.1.1"
-
-[[projects]]
-  digest = "1:47ea392ee45c45f95dc44dfba58a223706458ea63193543dbda28c4edbded254"
-  name = "github.com/ipfs/go-ipfs-config"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "eb01b81e9031bd2f5456f7836833a9ff73296c4a"
-  version = "v0.2.15"
 
 [[projects]]
   branch = "master"
@@ -472,14 +456,6 @@
   pruneopts = "UT"
   revision = "c9cfead9f2a36ddf3daa40ba269aa7f4bbba6b62"
   version = "v1.0.1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:26c963b26ddba1d3891e1ef126ec547d8ab62b849fc5cce0c8157852c8d870d5"
-  name = "github.com/jbenet/go-is-domain"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "ba9815c809e0dc052e170d8a8920c4636a819977"
 
 [[projects]]
   branch = "master"
@@ -947,17 +923,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:47e8c80422f6d2fd60b74d8aac9ef6b9b776165d297c5380dbd12e8146b1a106"
-  name = "github.com/mitchellh/goamz"
-  packages = [
-    "aws",
-    "route53",
-  ]
-  pruneopts = "UT"
-  revision = "caaaea8b30ee15616494ee68abd5d8ebbbef05cf"
-
-[[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
   name = "github.com/modern-go/concurrent"
   packages = ["."]
@@ -1129,14 +1094,6 @@
   revision = "3113b8401b8a98917cde58f8bbd42a1b1c03b1fd"
 
 [[projects]]
-  digest = "1:377d58652efea34290de4fb2a93da54848d40b89605633f440c63227fc0a0e6d"
-  name = "github.com/segmentio/go-route53"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "c58e5d2cc6732704423ea200f7355ab76aa6a8ba"
-  version = "v0.2.0"
-
-[[projects]]
   branch = "master"
   digest = "1:43075df85a856dd5b1b736d743430eadbad8d8a4fc6a232b759669b5fa51f8df"
   name = "github.com/semihalev/gin-stats"
@@ -1202,14 +1159,6 @@
   pruneopts = "UT"
   revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
   version = "v1.1.1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:8f70510b21fd07eba5bd4e0f84d49d932ea74c8b0ea20a5807e9492cc819928c"
-  name = "github.com/vaughan0/go-ini"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1"
 
 [[projects]]
   branch = "master"
@@ -1527,25 +1476,16 @@
     "github.com/gin-contrib/cors",
     "github.com/gin-gonic/gin",
     "github.com/ipfs/go-cid",
-    "github.com/ipfs/go-dnslink",
     "github.com/ipfs/go-ipfs-addr",
-    "github.com/ipfs/go-ipfs-config",
     "github.com/ipfs/go-ipns",
     "github.com/ipfs/go-ipns/pb",
     "github.com/ipfs/ipfs-cluster/api",
     "github.com/ipfs/ipfs-cluster/api/rest/client",
     "github.com/jinzhu/gorm",
-    "github.com/libp2p/go-libp2p",
     "github.com/libp2p/go-libp2p-crypto",
-    "github.com/libp2p/go-libp2p-host",
-    "github.com/libp2p/go-libp2p-net",
     "github.com/libp2p/go-libp2p-peer",
-    "github.com/libp2p/go-libp2p-peerstore",
     "github.com/minio/minio-go",
-    "github.com/mitchellh/goamz/aws",
-    "github.com/mitchellh/goamz/route53",
     "github.com/multiformats/go-multiaddr",
-    "github.com/segmentio/go-route53",
     "github.com/semihalev/gin-stats",
     "github.com/sendgrid/sendgrid-go",
     "github.com/sendgrid/sendgrid-go/helpers/mail",

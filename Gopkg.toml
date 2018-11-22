@@ -104,14 +104,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   branch = "master"
-  name = "github.com/mitchellh/goamz"
-
-[[constraint]]
-  name = "github.com/segmentio/go-route53"
-  version = "0.2.0"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/semihalev/gin-stats"
 
 [[constraint]]
