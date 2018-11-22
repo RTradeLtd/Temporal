@@ -146,42 +146,23 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 	if err != nil {
 		return err
 	}
-	var queueBound = false
+
 	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
 	switch qm.ExchangeName {
-	case PinRemovalExchange:
-		err = qm.Channel.QueueBind(
-			qm.QueueName,       // name of the queue
-			"",                 // routing key
-			PinRemovalExchange, // exchange
-			false,              // noWait
-			nil,                // arguments
-		)
-		queueBound = true
-	case PinExchange:
-		err = qm.Channel.QueueBind(
-			qm.QueueName, // name of the queue
-			"",           // routing key
-			PinExchange,  // exchange
-			false,        // noWait
-			nil,          // arguments
-		)
-		queueBound = true
-	case IpfsKeyExchange:
-		err = qm.Channel.QueueBind(
+	case PinRemovalExchange, PinExchange, IpfsKeyExchange:
+		if err = qm.Channel.QueueBind(
 			qm.QueueName,    // name of the queue
 			"",              // routing key
-			IpfsKeyExchange, // exchange
-			false,           // no wait
+			qm.ExchangeName, // exchange
+			false,           // noWait
 			nil,             // arguments
-		)
-		queueBound = true
+		); err != nil {
+			return err
+		}
 	default:
 		break
 	}
-	if err != nil && queueBound {
-		return err
-	}
+
 	// consider moving to true for auto-ack
 	msgs, err := qm.Channel.Consume(
 		qm.QueueName, // queue

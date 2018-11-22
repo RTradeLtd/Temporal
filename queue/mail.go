@@ -38,7 +38,7 @@ func (qm *Manager) ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.Temp
 		if !emailSent {
 			continue
 		}
-		qm.LogInfo("successfuly sent email(s)")
+		qm.LogInfo("successfully sent email(s)")
 		d.Ack(false)
 	}
 	return nil
