@@ -172,41 +172,6 @@ var commands = map[string]cmd.Cmd{
 					}
 				},
 			},
-			"tns": {
-				Blurb:         "run tns queues",
-				Description:   "Allows running the various tns queue services",
-				ChildRequired: true,
-				Children: map[string]cmd.Cmd{
-					"zone-creation": {
-						Blurb:       "Zone creation queue",
-						Description: "Listens to requests to create TNS zones",
-						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.ZoneCreationQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
-							}
-							if err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-								log.Fatal(err)
-							}
-						},
-					},
-					"record-creation": {
-						Blurb:       "record creation queue",
-						Description: "Listens to requests to create TNS records",
-						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.RecordCreationQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
-							}
-							if err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-								log.Fatal(err)
-							}
-						},
-					},
-				},
-			},
 		},
 	},
 	"migrate": {
