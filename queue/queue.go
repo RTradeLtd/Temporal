@@ -146,6 +146,7 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 	if err != nil {
 		return err
 	}
+	var queueBound = false
 	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
 	switch qm.ExchangeName {
 	case PinRemovalExchange:
@@ -156,10 +157,7 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 			false,              // noWait
 			nil,                // arguments
 		)
-		if err != nil {
-			return err
-		}
-		qm.LogInfo("queue bound")
+		queueBound = true
 	case PinExchange:
 		err = qm.Channel.QueueBind(
 			qm.QueueName, // name of the queue
@@ -168,10 +166,7 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 			false,        // noWait
 			nil,          // arguments
 		)
-		if err != nil {
-			return err
-		}
-		qm.LogInfo("queue bound")
+		queueBound = true
 	case IpfsKeyExchange:
 		err = qm.Channel.QueueBind(
 			qm.QueueName,    // name of the queue
@@ -180,14 +175,13 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 			false,           // no wait
 			nil,             // arguments
 		)
-		if err != nil {
-			return err
-		}
-		qm.LogInfo("queue bound")
+		queueBound = true
 	default:
 		break
 	}
-
+	if err != nil && queueBound {
+		return err
+	}
 	// consider moving to true for auto-ack
 	msgs, err := qm.Channel.Consume(
 		qm.QueueName, // queue
@@ -204,47 +198,24 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 
 	// check the queue name
 	switch qm.Service {
-	// only parse datbase file requests
+	// only parse database file requests
 	case DatabaseFileAddQueue:
-		if err = qm.ProcessDatabaseFileAdds(msgs, db); err != nil {
-			return err
-		}
+		return qm.ProcessDatabaseFileAdds(msgs, db)
 	case IpfsPinQueue:
-		if err = qm.ProccessIPFSPins(msgs, db, cfg); err != nil {
-			return err
-		}
+		return qm.ProccessIPFSPins(msgs, db, cfg)
 	case IpfsFileQueue:
-		if err = qm.ProccessIPFSFiles(msgs, cfg, db); err != nil {
-			return err
-		}
+		return qm.ProccessIPFSFiles(msgs, cfg, db)
 	case EmailSendQueue:
-		if err = qm.ProcessMailSends(msgs, cfg); err != nil {
-			return err
-		}
+		return qm.ProcessMailSends(msgs, cfg)
 	case IpnsEntryQueue:
-		if err = qm.ProcessIPNSEntryCreationRequests(msgs, db, cfg); err != nil {
-			return err
-		}
+		return qm.ProcessIPNSEntryCreationRequests(msgs, db, cfg)
 	case IpfsKeyCreationQueue:
-		if err = qm.ProcessIPFSKeyCreation(msgs, db, cfg); err != nil {
-			return err
-		}
+		return qm.ProcessIPFSKeyCreation(msgs, db, cfg)
 	case IpfsClusterPinQueue:
-		if err = qm.ProcessIPFSClusterPins(msgs, cfg, db); err != nil {
-			return err
-		}
-	case ZoneCreationQueue:
-		if err = qm.ProcessTNSZoneCreation(msgs, db, cfg); err != nil {
-			return err
-		}
-	case RecordCreationQueue:
-		if err = qm.ProcessTNSRecordCreation(msgs, db, cfg); err != nil {
-			return err
-		}
+		return qm.ProcessIPFSClusterPins(msgs, cfg, db)
 	default:
 		return errors.New("invalid queue name")
 	}
-	return nil
 }
 
 //PublishMessageWithExchange is used to publish a message to a given exchange

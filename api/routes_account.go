@@ -128,12 +128,10 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		"service": "api",
 		"user":    username,
 	}).Info("password change requested")
-	suceeded, err := api.um.ChangePassword(username, forms["old_password"], forms["new_password"])
-	if err != nil {
-		api.LogError(err, eh.PasswordChangeError)(c)
+	if ok, err := api.um.ChangePassword(username, forms["old_password"], forms["new_password"]); err != nil {
+		api.LogError(err, eh.PasswordChangeError)(c, http.StatusBadRequest)
 		return
-	}
-	if !suceeded {
+	} else if !ok {
 		err = fmt.Errorf("password changed failed for user %s to due an unspecified error", username)
 		api.LogError(err, eh.PasswordChangeError)(c)
 		return
@@ -179,9 +177,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		return
 	}
 	switch forms["key_type"] {
-	case "rsa":
-		break
-	case "ed25519":
+	case "rsa", "ed25519":
 		break
 	default:
 		// user error, do not log
@@ -200,11 +196,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		cost = 0
 		err = nil
 	} else {
-		if forms["key_type"] == "rsa" {
-			cost, err = utils.CalculateAPICallCost("rsa-key", false)
-		} else {
-			cost, err = utils.CalculateAPICallCost("ed-key", false)
-		}
+		cost, err = utils.CalculateAPICallCost(forms["key_type"], false)
 	}
 	if err != nil {
 		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
@@ -233,12 +225,6 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	if err != nil {
 		Fail(c, err)
 		return
-	}
-	// if key type is RSA, and size is too small or too large, default to an appropriately size minimum
-	if forms["key_type"] == "rsa" {
-		if bitsInt > 4096 || bitsInt < 2048 {
-			bitsInt = 2048
-		}
 	}
 	key := queue.IPFSKeyCreation{
 		UserName:    username,

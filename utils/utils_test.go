@@ -101,8 +101,8 @@ func TestUtils_CalculateAPICallCost(t *testing.T) {
 	}{
 		{"ipns", args{"ipns", false}},
 		{"pubsub", args{"pubsub", false}},
-		{"ed-key", args{"ed-key", false}},
-		{"rsa-key", args{"rsa-key", false}},
+		{"ed25519", args{"ed25519", false}},
+		{"rsa", args{"rsa", false}},
 		{"dlink", args{"dlink", false}},
 		{"invalid", args{"invalid", false}},
 	}

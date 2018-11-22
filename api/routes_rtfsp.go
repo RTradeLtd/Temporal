@@ -716,7 +716,7 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 		return
 	}
 	netName := c.Param("name")
-	logger := api.LogWithUser(username).WithField("netowrk_name", netName)
+	logger := api.LogWithUser(username).WithField("network_name", netName)
 	logger.Info("private ipfs network by name requested")
 
 	net, err := api.nm.GetNetworkByName(netName)

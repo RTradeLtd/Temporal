@@ -60,13 +60,13 @@ func CalculateAPICallCost(callType string, privateNetwork bool) (float64, error)
 		} else {
 			cost = PubSubPublishPublic
 		}
-	case "ed-key":
+	case "ed25519":
 		if privateNetwork {
 			cost = EDKeyCreationPrivate
 		} else {
 			cost = EDKeyCreationPublic
 		}
-	case "rsa-key":
+	case "rsa":
 		if privateNetwork {
 			cost = RSAKeyCreationPrivate
 		} else {

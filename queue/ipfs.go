@@ -51,11 +51,8 @@ func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB
 		switch key.Type {
 		case "rsa":
 			keyTypeInt = ci.RSA
-			if key.Size > 4096 {
-				qm.refundCredits(key.UserName, "key", key.CreditCost, db)
-				qm.LogError(err, "rsa key generation larger than 4096 bits not supported")
-				d.Ack(false)
-				continue
+			if key.Size > 4096 || key.Size < 2048 {
+				bitsInt = 2048
 			}
 			bitsInt = key.Size
 		case "ed25519":
@@ -245,7 +242,7 @@ func (qm *Manager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.Temp
 			d.Ack(false)
 			continue
 		}
-		// now that we have the minio host which is storing htis object, we can connect
+		// now that we have the minio host which is storing this object, we can connect
 		// construct the endpoint url to access our minio server
 		endpoint := fmt.Sprintf("%s:%s", ipfsFile.MinioHostIP, cfg.MINIO.Connection.Port)
 
@@ -428,7 +425,7 @@ func (qm *Manager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.Temp
 			continue
 		}
 
-		fileContext.Info("object removed from minio, succesfully added to ipfs")
+		fileContext.Info("object removed from minio, successfully added to ipfs")
 		d.Ack(false)
 	}
 	return nil

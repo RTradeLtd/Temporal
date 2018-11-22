@@ -73,7 +73,7 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	// initialize a conection to the cluster
+	// initialize a connection to the cluster
 	manager, err := rtfscluster.Initialize("", "")
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
@@ -90,7 +90,7 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": syncedCids})
 }
 
-// GetLocalStatusForClusterPin is used to get teh localnode's cluster status for a particular pin
+// GetLocalStatusForClusterPin is used to get the localnode's cluster status for a particular pin
 func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
@@ -138,7 +138,7 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 		api.LogError(err, eh.IPFSClusterConnectionError)(c)
 		return
 	}
-	// get teh cluster wide status for this particular pin
+	// get the cluster wide status for this particular pin
 	status, err := manager.GetStatusForCidGlobally(hash)
 	if err != nil {
 		api.LogError(err, eh.IPFSClusterStatusError)(c)

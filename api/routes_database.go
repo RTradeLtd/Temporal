@@ -16,7 +16,7 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 		return
 	}
 	um := models.NewUploadManager(api.dbm.DB)
-	// fetch the uplaods
+	// fetch the uploads
 	uploads, err := um.GetUploads()
 	if err != nil {
 		api.LogError(err, eh.UploadSearchError)(c, http.StatusInternalServerError)
