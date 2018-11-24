@@ -324,51 +324,83 @@ func (api *API) setupRoutes() {
 		}
 	}
 
-	// ipfs
+	// ipfs routes
 	ipfs := v1.Group("/ipfs", authware...)
 	{
-		ipfs.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
-		ipfs.GET("/object-stat/:key", api.getObjectStatForIpfs)
-		ipfs.GET("/dag/:hash", api.getDagObject)
-		ipfs.POST("/download/:hash", api.downloadContentHash)
-		ipfs.POST("/pin/:hash", api.pinHashLocally)
-		ipfs.POST("/add-file", api.addFileLocally)
-		ipfs.POST("/add-file/advanced", api.addFileLocallyAdvanced)
-		pubsub := ipfs.Group("/pubsub")
+		// public ipfs routes
+		public := ipfs.Group("/public")
 		{
-			pubsub.POST("/publish/:topic", api.ipfsPubSubPublish)
+			// pinning routes
+			pin := public.Group("/pin")
+			{
+				pin.POST("/:hash", api.pinHashLocally)
+				pin.GET("/check/:hash", api.checkLocalNodeForPin)
+			}
+			// file upload routes
+			file := public.Group("/file")
+			{
+				file.POST("/add", api.addFileLocally)
+				file.POST("/add/advanced", api.addFileLocallyAdvanced)
+			}
+			// pubsub routes
+			pubsub := public.Group("/pubsub")
+			{
+				pubsub.POST("/publish/:topic", api.ipfsPubSubPublish)
+			}
+			// general routes
+			public.GET("/stat/:key", api.getObjectStatForIpfs)
+			public.GET("/dag/:hash", api.getDagObject)
+			public.POST("/download/:hash", api.downloadContentHash)
 		}
-	}
 
-	// ipfs-private
-	ipfsPrivate := v1.Group("/ipfs-private", authware...)
-	{
-		ipfsPrivate.GET("/networks", api.getAuthorizedPrivateNetworks)
-		ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
-		network := ipfsPrivate.Group("/network")
+		// private ipfs routes
+		private := ipfs.Group("/private")
 		{
-			network.GET("/:name", api.getIPFSPrivateNetworkByName)
-			network.POST("/new", api.createHostedIPFSNetworkEntryInDatabase)
-			network.POST("/stop", api.stopIPFSPrivateNetwork)
-			network.POST("/start", api.startIPFSPrivateNetwork)
-			network.DELETE("/remove", api.removeIPFSPrivateNetwork)
+			// network management routes
+			network := private.Group("/network")
+			{
+				network.GET("/:name", api.getIPFSPrivateNetworkByName)
+				network.POST("/new", api.createHostedIPFSNetworkEntryInDatabase)
+				network.POST("/stop", api.stopIPFSPrivateNetwork)
+				network.POST("/start", api.startIPFSPrivateNetwork)
+				network.DELETE("/remove", api.removeIPFSPrivateNetwork)
+			}
+			// pinning routes
+			pin := private.Group("/pin")
+			{
+				pin.POST("/:hash", api.pinHashLocally)
+				pin.GET("/check/:hash", api.checkLocalNodeForPin)
+			}
+			// file upload routes
+			file := private.Group("/file")
+			{
+				file.POST("/add", api.addFileLocally)
+				file.POST("/add/advanced", api.addFileLocallyAdvanced)
+			}
+			// pubsub routes
+			pubsub := private.Group("/pubsub")
+			{
+				pubsub.POST("/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
+			}
+			// object stat route
+			ipfs.POST("/stat/:key", api.getObjectStatForIpfsForHostedIPFSNetwork)
+			// ipns routes
+			ipns := private.Group("/ipns")
+			{
+				ipns.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
+			}
+			// general routes
+			private.GET("/networks", api.getAuthorizedPrivateNetworks)
+			private.GET("/uploads/:network_name", api.getUploadsByNetworkName)
+			private.POST("/download/:hash", api.downloadContentHashForPrivateNetwork)
 		}
-		ipfsRoutes := ipfsPrivate.Group("/ipfs")
+
+		// utility routes
+		utils := ipfs.Group("/utils")
 		{
-			ipfsRoutes.POST("/check-for-pin/:hash", api.checkLocalNodeForPinForHostedIPFSNetwork) // admin locked
-			ipfsRoutes.POST("/object-stat/:key", api.getObjectStatForIpfsForHostedIPFSNetwork)
-			ipfsRoutes.POST("/pin/:hash", api.pinToHostedIPFSNetwork)
-			ipfsRoutes.POST("/add-file", api.addFileToHostedIPFSNetwork)
-			ipfsRoutes.POST("/add-file/advanced", api.addFileToHostedIPFSNetworkAdvanced)
+			utils.POST("laser", api.BeamContent)
 		}
-		ipnsRoutes := ipfsPrivate.Group("/ipns")
-		{
-			ipnsRoutes.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
-		}
-		pubsub := ipfsPrivate.Group("/pubsub")
-		{
-			pubsub.POST("/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
-		}
+
 	}
 
 	// ipns

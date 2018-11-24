@@ -784,7 +784,7 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 // BeamContent is used to beam content from one network to another
 func (api *API) BeamContent(c *gin.Context) {
 	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms(c, "source_network", "destination_network")
+	forms := api.extractPostForms(c, "source_network", "destination_network", "content_hash")
 	if len(forms) == 0 {
 		return
 	}
@@ -823,6 +823,15 @@ func (api *API) BeamContent(c *gin.Context) {
 		net2URL = url
 	}
 	laserBeam, err := beam.NewLaser(net1URL, net2URL)
+	if err != nil {
+		api.LogError(err, "failed to initialize laser beam")(c, http.StatusBadRequest)
+		return
+	}
+	if err := laserBeam.Beam(1, forms["content_hash"]); err != nil {
+		api.LogError(err, "failed to tranfer content")(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "content transfer"})
 }
 
 // DownloadContentHashForPrivateNetwork is used to download content from  a private ipfs network
