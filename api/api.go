@@ -390,14 +390,14 @@ func (api *API) setupRoutes() {
 			// pinning routes
 			pin := private.Group("/pin")
 			{
-				pin.POST("/:hash", api.pinHashLocally)
-				pin.GET("/check/:hash", api.checkLocalNodeForPin)
+				pin.POST("/:hash", api.pinToHostedIPFSNetwork)
+				pin.GET("/check/:hash/:networkName", api.checkLocalNodeForPinForHostedIPFSNetwork)
 			}
 			// file upload routes
 			file := private.Group("/file")
 			{
-				file.POST("/add", api.addFileLocally)
-				file.POST("/add/advanced", api.addFileLocallyAdvanced)
+				file.POST("/add", api.addFileToHostedIPFSNetwork)
+				file.POST("/add/advanced", api.addFileToHostedIPFSNetworkAdvanced)
 			}
 			// pubsub routes
 			pubsub := private.Group("/pubsub")

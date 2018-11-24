@@ -414,16 +414,13 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	forms := api.extractPostForms(c, "network_name")
-	if len(forms) == 0 {
-		return
-	}
-	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
+	networkName := c.Param("networkName")
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(forms["network_name"])
+	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
 		api.LogError(err, eh.APIURLCheckError)(c)
 		return
