@@ -3,11 +3,11 @@ package cbornode
 import (
 	"math/big"
 
-	cid "github.com/ipfs/go-cid"
+	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
 
-	encoding "github.com/ipfs/go-ipld-cbor/encoding"
+	encoding "gx/ipfs/QmRoARq3nkUb13HSKZGepCZSWe5GrVPwx7xURJGZ7KWv9V/go-ipld-cbor/encoding"
 
-	"github.com/polydawn/refmt/obj/atlas"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/obj/atlas"
 )
 
 // This atlas describes the CBOR Tag (42) for IPLD links, such that refmt can marshal and unmarshal them

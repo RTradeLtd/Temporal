@@ -6,8 +6,8 @@ import (
 	"sync"
 	"testing"
 
-	insecure "github.com/libp2p/go-conn-security/insecure"
-	sst "github.com/libp2p/go-conn-security/test"
+	insecure "gx/ipfs/QmbyjEKtxXmZdiByBiNhfayzEuEPPBvuD2dLpHky8cHUvy/go-conn-security/insecure"
+	sst "gx/ipfs/QmbyjEKtxXmZdiByBiNhfayzEuEPPBvuD2dLpHky8cHUvy/go-conn-security/test"
 )
 
 func TestCommonProto(t *testing.T) {

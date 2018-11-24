@@ -21,8 +21,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/dgraph-io/badger"
 	"github.com/spf13/cobra"
+	"gx/ipfs/QmdG6rxQFetuV853nsNQn9EbrUEjQcbPB2htDniuLTQBsg/badger"
 )
 
 var restoreFile string

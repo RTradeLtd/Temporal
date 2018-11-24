@@ -21,10 +21,10 @@ import (
 	"net/url"
 	"time"
 
-	"golang.org/x/net/html/charset"
+	"gx/ipfs/QmRvYNctevGUW52urgmoFZscT6buMKqhHezLUS64WepGWn/go-net/html/charset"
 
-	"github.com/huin/goupnp/httpu"
-	"github.com/huin/goupnp/ssdp"
+	"gx/ipfs/QmVwfv63beSAAirq3tiLY6fkNqvjThLnCofL7363YkaScy/goupnp/httpu"
+	"gx/ipfs/QmVwfv63beSAAirq3tiLY6fkNqvjThLnCofL7363YkaScy/goupnp/ssdp"
 )
 
 // ContextError is an error that wraps an error with some context information.

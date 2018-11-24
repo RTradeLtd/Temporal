@@ -1,8 +1,8 @@
 package main
 
 import (
-	plugin "github.com/ipfs/iptb-plugins/docker"
-	testbedi "github.com/ipfs/iptb/testbed/interfaces"
+	testbedi "gx/ipfs/QmckeQ2zrYLAXoSHYTGn5BDdb22BqbUoHEHm8KZ9YWRxd1/iptb/testbed/interfaces"
+	plugin "gx/ipfs/QmfAX8Pb621RhPM24wnmA1w9xewkXFBBAzJnzyi5AHtEyD/iptb-plugins/docker"
 )
 
 var PluginName string

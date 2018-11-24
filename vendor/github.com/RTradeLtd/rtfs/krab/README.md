@@ -1,0 +1,3 @@
+# krab
+
+`krab` is used to implement a valid semi-secure ipfs keystore (ie, adhere's to the `Keystore` interface) that is a vast improvement over the current IPFS key management options, which rely on storing the private keys in plaintext on disk, or in memory. While suitable for casual usage, this is incredibly sub-optimal for anyone wishin to run an IPFS service. `krab` isn't intended to be a "total security solution", but is intended to make it much more difficult for an attacker to compromise your keys.

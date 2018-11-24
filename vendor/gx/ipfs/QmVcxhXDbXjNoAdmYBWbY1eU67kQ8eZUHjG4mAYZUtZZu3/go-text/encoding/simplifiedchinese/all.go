@@ -5,7 +5,7 @@
 package simplifiedchinese
 
 import (
-	"golang.org/x/text/encoding"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/encoding"
 )
 
 // All is a list of all defined encodings in this package.

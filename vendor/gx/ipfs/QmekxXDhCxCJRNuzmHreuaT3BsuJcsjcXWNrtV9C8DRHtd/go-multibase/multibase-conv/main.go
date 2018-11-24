@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	multibase "github.com/multiformats/go-multibase"
+	multibase "gx/ipfs/QmekxXDhCxCJRNuzmHreuaT3BsuJcsjcXWNrtV9C8DRHtd/go-multibase"
 )
 
 func main() {

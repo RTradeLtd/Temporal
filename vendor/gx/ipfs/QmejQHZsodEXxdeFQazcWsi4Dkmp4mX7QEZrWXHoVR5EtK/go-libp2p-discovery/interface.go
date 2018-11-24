@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	pstore "github.com/libp2p/go-libp2p-peerstore"
+	pstore "gx/ipfs/QmQAGG1zxfePqj2t7bLxyN8AFccZ889DDR9Gn8kVLDrGZo/go-libp2p-peerstore"
 )
 
 // Advertiser is an interface for advertising services

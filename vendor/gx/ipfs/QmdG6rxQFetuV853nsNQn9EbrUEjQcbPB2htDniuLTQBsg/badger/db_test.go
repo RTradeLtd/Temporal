@@ -33,10 +33,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgraph-io/badger/options"
+	"gx/ipfs/QmdG6rxQFetuV853nsNQn9EbrUEjQcbPB2htDniuLTQBsg/badger/options"
 
-	"github.com/dgraph-io/badger/y"
 	"github.com/stretchr/testify/require"
+	"gx/ipfs/QmdG6rxQFetuV853nsNQn9EbrUEjQcbPB2htDniuLTQBsg/badger/y"
 )
 
 var mmap = flag.Bool("vlog_mmap", true, "Specify if value log must be memory-mapped")

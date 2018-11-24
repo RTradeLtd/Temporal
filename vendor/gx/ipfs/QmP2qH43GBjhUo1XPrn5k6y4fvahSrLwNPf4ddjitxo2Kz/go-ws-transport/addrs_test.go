@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"testing"
 
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmRKLtwMw131aK7ugC3G7ybpumMz78YrJe5dzneyindvG1/go-multiaddr"
 )
 
 func TestMultiaddrParsing(t *testing.T) {

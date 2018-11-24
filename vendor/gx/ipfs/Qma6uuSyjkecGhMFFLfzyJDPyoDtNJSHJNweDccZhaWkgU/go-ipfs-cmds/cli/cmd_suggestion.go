@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	cmds "github.com/ipfs/go-ipfs-cmds"
-	levenshtein "github.com/texttheater/golang-levenshtein/levenshtein"
+	levenshtein "gx/ipfs/QmTVvctiHWZzSDZdyU5wdnXh7VF3kprHSyQFwVChos5qKu/golang-levenshtein/levenshtein"
+	cmds "gx/ipfs/Qma6uuSyjkecGhMFFLfzyJDPyoDtNJSHJNweDccZhaWkgU/go-ipfs-cmds"
 )
 
 // Make a custom slice that can be sorted by its levenshtein value

@@ -18,7 +18,7 @@ import (
 	"text/template"
 	"time"
 
-	"golang.org/x/text/unicode/norm"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/unicode/norm"
 )
 
 var (

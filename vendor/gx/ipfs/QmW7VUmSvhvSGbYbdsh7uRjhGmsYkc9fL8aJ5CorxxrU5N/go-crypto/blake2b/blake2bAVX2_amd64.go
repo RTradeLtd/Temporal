@@ -6,7 +6,7 @@
 
 package blake2b
 
-import "golang.org/x/sys/cpu"
+import "gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/cpu"
 
 func init() {
 	useAVX2 = cpu.X86.HasAVX2

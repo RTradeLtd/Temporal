@@ -3,7 +3,7 @@ package log
 import (
 	"io"
 
-	logging "github.com/whyrusleeping/go-logging"
+	logging "gx/ipfs/QmcaSwFc5RBg8yCq54QURwEU4nwjfCpjbpmaAm4VbdGLKv/go-logging"
 )
 
 // WriterGroup is the global writer group for logs to output to

@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgraph-io/badger/y"
 	"github.com/stretchr/testify/require"
+	"gx/ipfs/QmdG6rxQFetuV853nsNQn9EbrUEjQcbPB2htDniuLTQBsg/badger/y"
 )
 
 func val(large bool) []byte {

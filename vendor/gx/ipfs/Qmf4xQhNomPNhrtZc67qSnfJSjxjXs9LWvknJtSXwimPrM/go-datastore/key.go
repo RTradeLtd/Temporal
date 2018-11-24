@@ -5,9 +5,9 @@ import (
 	"path"
 	"strings"
 
-	dsq "github.com/ipfs/go-datastore/query"
+	dsq "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore/query"
 
-	"github.com/google/uuid"
+	"gx/ipfs/QmSSeQqc5QeuefkaM6JFV5tSF9knLUkXKVhW1eYRiqe72W/uuid"
 )
 
 /*

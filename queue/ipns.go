@@ -7,6 +7,7 @@ import (
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
 	"github.com/RTradeLtd/rtfs"
+	"github.com/RTradeLtd/rtfs/krab"
 
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
@@ -14,13 +15,20 @@ import (
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	keystore, err := rtfs.NewKeystoreManager()
+	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath})
 	if err != nil {
 		return err
 	}
-	ipfsManager, err := rtfs.NewManager(cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port, keystore, time.Minute*10)
+	keystore, err := rtfs.NewKeystoreManager(kb)
 	if err != nil {
-		qm.LogError(err, "failed to initialize connection to ipfs")
+		return err
+	}
+	ipfsManager, err := rtfs.NewManager(
+		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
+		keystore,
+		time.Minute*10,
+	)
+	if err != nil {
 		return err
 	}
 	ipnsManager := models.NewIPNSManager(db)

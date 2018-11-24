@@ -4,8 +4,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/jackpal/gateway"
-	"github.com/jackpal/go-nat-pmp"
+	"gx/ipfs/QmYsYNh6saxUYHajdj49uiRzdxQgiFTtymrjf3d1f2Cer4/go-nat-pmp"
+	"gx/ipfs/Qmf2fBLzCvFxs3vvZaoQyKSTv2rjApek4F1kzRxAfK6P4P/gateway"
 )
 
 var (

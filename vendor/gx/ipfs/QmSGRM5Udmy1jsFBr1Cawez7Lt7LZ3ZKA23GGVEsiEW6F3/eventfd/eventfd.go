@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"syscall"
 
-	"github.com/gxed/GoEndian"
+	"gx/ipfs/QmeFPvhFJGXGiXAc9zunNxZjCaWgYQpcsdwip2NWLcccyw/GoEndian"
 )
 
 type EventFD struct {

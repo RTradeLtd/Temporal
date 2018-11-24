@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ipfs/go-datastore"
-	"github.com/ipfs/go-ds-flatfs"
+	"gx/ipfs/QmXdvAAZtD13sDU7BAtdR629rsqY7PUG7BbwrhfXdEpTgX/go-ds-flatfs"
+	"gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
 )
 
 func TestMove(t *testing.T) {

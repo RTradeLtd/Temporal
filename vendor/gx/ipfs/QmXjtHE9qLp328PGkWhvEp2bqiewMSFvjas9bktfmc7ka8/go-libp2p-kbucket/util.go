@@ -5,9 +5,9 @@ import (
 	"crypto/sha256"
 	"errors"
 
-	u "github.com/ipfs/go-ipfs-util"
-	ks "github.com/libp2p/go-libp2p-kbucket/keyspace"
-	peer "github.com/libp2p/go-libp2p-peer"
+	u "gx/ipfs/QmNohiVssaPw3KVLZik59DBVGTSm2dGvYT9eoXt5DQ36Yz/go-ipfs-util"
+	ks "gx/ipfs/QmXjtHE9qLp328PGkWhvEp2bqiewMSFvjas9bktfmc7ka8/go-libp2p-kbucket/keyspace"
+	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
 )
 
 // Returned if a routing table query returns no results. This is NOT expected

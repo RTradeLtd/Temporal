@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 
-	ipld "github.com/ipfs/go-ipld-format"
+	ipld "gx/ipfs/QmcKKBwfz6FyQdHR2jsXrrF6XeSBXYL86anmWNewpFpoF5/go-ipld-format"
 )
 
 // Order is an identifier for traversal algorithm orders

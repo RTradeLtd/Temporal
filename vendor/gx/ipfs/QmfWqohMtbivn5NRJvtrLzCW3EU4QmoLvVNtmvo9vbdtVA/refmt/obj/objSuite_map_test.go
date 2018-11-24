@@ -3,8 +3,8 @@ package obj
 import (
 	"testing"
 
-	"github.com/polydawn/refmt/obj/atlas"
-	"github.com/polydawn/refmt/tok/fixtures"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/obj/atlas"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/tok/fixtures"
 )
 
 func TestMapHandling(t *testing.T) {

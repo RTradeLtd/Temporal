@@ -1,7 +1,7 @@
 package cidutil
 
 import (
-	"github.com/ipfs/go-cid"
+	"gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
 	"sort"
 )
 

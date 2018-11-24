@@ -123,6 +123,18 @@ func (s *Shell) ID(peer ...string) (*IdOutput, error) {
 }
 
 // Cat the content at the given path. Callers need to drain and close the returned reader after usage.
+func (s *Shell) CatGet(path string) (io.ReadCloser, error) {
+	resp, err := NewRequest(context.Background(), s.url, "cat", path).SendGET(s.httpcli)
+	if err != nil {
+		return nil, err
+	}
+	if resp.Error != nil {
+		return nil, resp.Error
+	}
+	return resp.Output, nil
+}
+
+// Cat the content at the given path. Callers need to drain and close the returned reader after usage.
 func (s *Shell) Cat(path string) (io.ReadCloser, error) {
 	resp, err := s.Request("cat", path).Send(context.Background())
 	if err != nil {

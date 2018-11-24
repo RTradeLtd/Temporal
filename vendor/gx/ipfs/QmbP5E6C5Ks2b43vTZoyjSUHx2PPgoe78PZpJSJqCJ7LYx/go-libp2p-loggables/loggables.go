@@ -9,10 +9,10 @@ package loggables
 import (
 	"net"
 
-	uuid "github.com/google/uuid"
-	logging "github.com/ipfs/go-log"
-	peer "github.com/libp2p/go-libp2p-peer"
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmRKLtwMw131aK7ugC3G7ybpumMz78YrJe5dzneyindvG1/go-multiaddr"
+	uuid "gx/ipfs/QmSSeQqc5QeuefkaM6JFV5tSF9knLUkXKVhW1eYRiqe72W/uuid"
+	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
+	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
 )
 
 // NetConn returns an eventlog.Metadata with the conn addresses

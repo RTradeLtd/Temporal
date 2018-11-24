@@ -3,7 +3,7 @@ package manet
 import (
 	"net"
 
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmRKLtwMw131aK7ugC3G7ybpumMz78YrJe5dzneyindvG1/go-multiaddr"
 )
 
 // Private4 and Private6 are well-known private networks

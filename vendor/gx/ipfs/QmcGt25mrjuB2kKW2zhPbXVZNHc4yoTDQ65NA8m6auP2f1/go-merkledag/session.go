@@ -3,7 +3,7 @@ package merkledag
 import (
 	"context"
 
-	ipld "github.com/ipfs/go-ipld-format"
+	ipld "gx/ipfs/QmcKKBwfz6FyQdHR2jsXrrF6XeSBXYL86anmWNewpFpoF5/go-ipld-format"
 )
 
 // SessionMaker is an object that can generate a new fetching session.

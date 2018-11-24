@@ -1,6 +1,6 @@
 package keytransform
 
-import ds "github.com/ipfs/go-datastore"
+import ds "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
 
 // KeyMapping is a function that maps one key to annother
 type KeyMapping func(ds.Key) ds.Key

@@ -60,6 +60,7 @@ type IPFS struct {
 		Port string `json:"port"`
 	} `json:"api_connection"`
 	KeystorePath string `json:"keystore_path"`
+	KrabPassword string `json:"krab_password"`
 }
 
 // IPFSCluster configures Temporal's connection to an IPFS cluster

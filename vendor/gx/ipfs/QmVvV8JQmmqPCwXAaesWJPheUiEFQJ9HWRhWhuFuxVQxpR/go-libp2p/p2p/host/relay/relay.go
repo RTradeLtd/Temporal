@@ -3,11 +3,11 @@ package relay
 import (
 	"context"
 
-	basic "github.com/libp2p/go-libp2p/p2p/host/basic"
+	basic "gx/ipfs/QmVvV8JQmmqPCwXAaesWJPheUiEFQJ9HWRhWhuFuxVQxpR/go-libp2p/p2p/host/basic"
 
-	discovery "github.com/libp2p/go-libp2p-discovery"
-	host "github.com/libp2p/go-libp2p-host"
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmRKLtwMw131aK7ugC3G7ybpumMz78YrJe5dzneyindvG1/go-multiaddr"
+	host "gx/ipfs/QmahxMNoNuSsgQefo9rkpcfRFmQrMN6Q99aztKXf63K7YJ/go-libp2p-host"
+	discovery "gx/ipfs/QmejQHZsodEXxdeFQazcWsi4Dkmp4mX7QEZrWXHoVR5EtK/go-libp2p-discovery"
 )
 
 // RelayHost is a Host that provides Relay services.

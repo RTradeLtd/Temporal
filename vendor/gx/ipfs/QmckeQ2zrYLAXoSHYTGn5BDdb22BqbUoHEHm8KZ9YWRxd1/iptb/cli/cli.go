@@ -7,10 +7,10 @@ import (
 	"path"
 	"path/filepath"
 
-	cli "github.com/urfave/cli"
+	cli "gx/ipfs/Qmc1AtgBdoUHP8oYSqU81NRYdzohmF45t5XNwVMvhCxsBA/cli"
 
-	"github.com/ipfs/iptb/commands"
-	"github.com/ipfs/iptb/testbed"
+	"gx/ipfs/QmckeQ2zrYLAXoSHYTGn5BDdb22BqbUoHEHm8KZ9YWRxd1/iptb/commands"
+	"gx/ipfs/QmckeQ2zrYLAXoSHYTGn5BDdb22BqbUoHEHm8KZ9YWRxd1/iptb/testbed"
 )
 
 func loadPlugins(dir string) error {

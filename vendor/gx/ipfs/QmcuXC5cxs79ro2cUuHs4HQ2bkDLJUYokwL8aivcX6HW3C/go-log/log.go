@@ -11,10 +11,10 @@ import (
 	"runtime"
 	"time"
 
-	writer "github.com/ipfs/go-log/writer"
+	writer "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log/writer"
 
-	opentrace "github.com/opentracing/opentracing-go"
-	otExt "github.com/opentracing/opentracing-go/ext"
+	opentrace "gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
+	otExt "gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go/ext"
 )
 
 var log = Logger("eventlog")

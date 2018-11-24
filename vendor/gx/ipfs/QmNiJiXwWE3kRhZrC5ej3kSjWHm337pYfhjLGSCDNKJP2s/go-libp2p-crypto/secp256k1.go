@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"io"
 
-	pb "github.com/libp2p/go-libp2p-crypto/pb"
+	pb "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto/pb"
 
-	btcec "github.com/btcsuite/btcd/btcec"
-	sha256 "github.com/minio/sha256-simd"
+	btcec "gx/ipfs/QmWq5PJgAQKDWQerAijYUVKW8mN5MDatK5j7VMp8rizKQd/btcec"
+	sha256 "gx/ipfs/QmcTzQXRcU2vf8yX5EEboz1BSvWC7wWmeYAKVQmhp8WZYU/sha256-simd"
 )
 
 // Secp256k1PrivateKey is an Secp256k1 private key

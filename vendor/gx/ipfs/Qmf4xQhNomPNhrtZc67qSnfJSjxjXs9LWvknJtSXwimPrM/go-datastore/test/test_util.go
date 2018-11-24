@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"testing"
 
-	dstore "github.com/ipfs/go-datastore"
+	dstore "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
 )
 
 var (

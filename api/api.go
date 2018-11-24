@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/RTradeLtd/rtfs/krab"
+
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/rtfs"
@@ -75,7 +77,11 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open log file: %s", err)
 	}
-	keystore, err := rtfs.NewKeystoreManager()
+	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath})
+	if err != nil {
+		return nil, err
+	}
+	keystore, err := rtfs.NewKeystoreManager(kb)
 	if err != nil {
 		return nil, err
 	}

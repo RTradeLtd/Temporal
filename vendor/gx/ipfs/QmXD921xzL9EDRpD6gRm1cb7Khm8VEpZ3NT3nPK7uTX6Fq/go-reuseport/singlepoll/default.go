@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/libp2p/go-reuseport/poll"
+	"gx/ipfs/QmXD921xzL9EDRpD6gRm1cb7Khm8VEpZ3NT3nPK7uTX6Fq/go-reuseport/poll"
 )
 
 var (

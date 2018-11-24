@@ -3,8 +3,8 @@ package loggabletracer
 import (
 	"time"
 
-	writer "github.com/ipfs/go-log/writer"
-	opentracing "github.com/opentracing/opentracing-go"
+	opentracing "gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
+	writer "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log/writer"
 )
 
 // Tracer extends the opentracing.Tracer interface with methods to

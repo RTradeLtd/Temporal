@@ -3,8 +3,8 @@ package cbor
 import (
 	"testing"
 
-	. "github.com/polydawn/refmt/tok"
-	"github.com/polydawn/refmt/tok/fixtures"
+	. "gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/tok"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/tok/fixtures"
 )
 
 func testNumber(t *testing.T) {

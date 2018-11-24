@@ -24,7 +24,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/pkg/errors"
+	"gx/ipfs/QmVmDhyTTUcQXFD1rRQ64fGLMSAoaQvNH3hwuaCFAPq2hy/errors"
 )
 
 // ErrEOF indicates an end of file when trying to read from a memory mapped file

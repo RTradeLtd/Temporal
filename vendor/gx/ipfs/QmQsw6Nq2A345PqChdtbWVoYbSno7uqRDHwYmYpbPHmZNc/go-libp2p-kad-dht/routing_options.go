@@ -1,7 +1,7 @@
 package dht
 
 import (
-	ropts "github.com/libp2p/go-libp2p-routing/options"
+	ropts "gx/ipfs/QmZBH87CAPFHcc7cYmBqeSQ98zQ3SX9KUxiYgzPmLWNVKz/go-libp2p-routing/options"
 )
 
 type quorumOptionKey struct{}

@@ -23,9 +23,9 @@ import (
 	"log"
 	"sync"
 
-	"github.com/dgraph-io/badger/y"
+	"gx/ipfs/QmdG6rxQFetuV853nsNQn9EbrUEjQcbPB2htDniuLTQBsg/badger/y"
 
-	"github.com/dgraph-io/badger/protos"
+	"gx/ipfs/QmdG6rxQFetuV853nsNQn9EbrUEjQcbPB2htDniuLTQBsg/badger/protos"
 )
 
 func writeTo(entry *protos.KVPair, w io.Writer) error {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	goprocess "github.com/whyrusleeping/go-notifier/Godeps/_workspace/src/github.com/jbenet/goprocess"
-	periodicproc "github.com/whyrusleeping/go-notifier/Godeps/_workspace/src/github.com/jbenet/goprocess/periodic"
+	goprocess "gx/ipfs/QmeQW4ayVqi7Jjay1SrP2wYydsH9KwSrzQBnqyC25gPFnG/go-notifier/Godeps/_workspace/src/github.com/jbenet/goprocess"
+	periodicproc "gx/ipfs/QmeQW4ayVqi7Jjay1SrP2wYydsH9KwSrzQBnqyC25gPFnG/go-notifier/Godeps/_workspace/src/github.com/jbenet/goprocess/periodic"
 )
 
 func ExampleEvery() {

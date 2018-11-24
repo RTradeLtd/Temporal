@@ -15,7 +15,7 @@ import (
 	"time"
 	"unsafe"
 
-	"golang.org/x/sys/windows/registry"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/windows/registry"
 )
 
 func randKeyName(prefix string) string {

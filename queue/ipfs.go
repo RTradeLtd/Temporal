@@ -12,6 +12,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/rtfs"
+	"github.com/RTradeLtd/rtfs/krab"
 
 	"github.com/RTradeLtd/config"
 
@@ -25,7 +26,11 @@ import (
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
 func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	keystore, err := rtfs.NewKeystoreManager()
+	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath})
+	if err != nil {
+		return err
+	}
+	keystore, err := rtfs.NewKeystoreManager(kb)
 	if err != nil {
 		return err
 	}

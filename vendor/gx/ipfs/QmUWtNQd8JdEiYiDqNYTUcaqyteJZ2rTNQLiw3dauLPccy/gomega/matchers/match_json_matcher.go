@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/onsi/gomega/format"
+	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/format"
 )
 
 type MatchJSONMatcher struct {

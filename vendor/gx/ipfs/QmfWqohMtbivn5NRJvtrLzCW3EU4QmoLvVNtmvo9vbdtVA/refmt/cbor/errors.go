@@ -3,7 +3,7 @@ package cbor
 import (
 	"fmt"
 
-	. "github.com/polydawn/refmt/tok"
+	. "gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/tok"
 )
 
 // Error raised by Encoder when invalid tokens or invalid ordering, e.g. a MapClose with no matching open.

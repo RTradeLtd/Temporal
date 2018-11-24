@@ -3,8 +3,8 @@ package datastore_test
 import (
 	"testing"
 
-	dstore "github.com/ipfs/go-datastore"
-	dstest "github.com/ipfs/go-datastore/test"
+	dstore "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
+	dstest "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore/test"
 )
 
 func TestMapDatastore(t *testing.T) {

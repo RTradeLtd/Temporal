@@ -9,7 +9,7 @@ package fsnotify
 import (
 	"errors"
 
-	"golang.org/x/sys/unix"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/unix"
 )
 
 type fdPoller struct {

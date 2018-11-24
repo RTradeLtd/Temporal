@@ -4,10 +4,10 @@ package poll
 
 import (
 	"context"
-	"golang.org/x/sys/unix"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/unix"
 	"sync"
 
-	"github.com/gxed/eventfd"
+	"gx/ipfs/QmSGRM5Udmy1jsFBr1Cawez7Lt7LZ3ZKA23GGVEsiEW6F3/eventfd"
 )
 
 type Poller struct {
