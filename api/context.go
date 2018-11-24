@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -45,18 +46,21 @@ func FailNotAuthorized(c *gin.Context, message string) {
 }
 
 // GetAuthenticatedUserFromContext is used to pull the eth address of hte user
-func GetAuthenticatedUserFromContext(c *gin.Context) string {
+func GetAuthenticatedUserFromContext(c *gin.Context) (string, error) {
 	claims := jwt.ExtractClaims(c)
 	id, ok := claims["id"]
 	if !ok {
-		return ""
+		return "", errors.New("failed to extract claim id")
 	}
 	strID, ok := id.(string)
 	if !ok {
-		return ""
+		return "", errors.New("failed to parse claim id")
+	}
+	if strID == "" {
+		return "", errors.New("no username recovered")
 	}
 	// this is their eth address
-	return strID
+	return strID, nil
 }
 
 // Respond is a wrapper used to handle API responses

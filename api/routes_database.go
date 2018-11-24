@@ -10,7 +10,11 @@ import (
 
 // GetUploadsFromDatabase is used to read a list of uploads from our database
 func (api *API) getUploadsFromDatabase(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	if err := api.validateAdminRequest(username); err != nil {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
@@ -29,11 +33,15 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 // GetUploadsForUser is used to read a list of uploads from a particular user name
 // If not called by admin  admin, will retrieve all uploads for the current authenticated user
 func (api *API) getUploadsForUser(c *gin.Context) {
-	var queryUser string
 	um := models.NewUploadManager(api.dbm.DB)
-	username := GetAuthenticatedUserFromContext(c)
-	err := api.validateAdminRequest(username)
-	if err == nil {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
+
+	var queryUser string
+	if err = api.validateAdminRequest(username); err == nil {
 		queryUser = c.Param("user")
 	} else {
 		queryUser = username

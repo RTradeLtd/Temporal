@@ -21,7 +21,11 @@ import (
 // By giving Temporal the TxHash, we can then validate that hte payment
 // was made, and validated by the appropriate blockchain.
 func (api *API) ConfirmPayment(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "payment_number", "tx_hash")
 	if len(forms) == 0 {
 		return
@@ -63,7 +67,11 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 
 // RequestSignedPaymentMessage is used to get a signed message from the GRPC API Payments Server
 func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "payment_type", "sender_address", "credit_value")
 	if len(forms) == 0 {
 		return
@@ -170,7 +178,11 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 
 // CreateDashPayment is used to create a dash payment via chainrider
 func (api *API) CreateDashPayment(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "credit_value")
 	if len(forms) == 0 {
 		return

@@ -121,4 +121,6 @@ const (
 	KeyExportError = "failed to export key"
 	// PasswordResetError is an error message used when an error occurins during password reset
 	PasswordResetError = "failed to reset password"
+	// NoAPITokenError is an error when we can't properly validate the jwt token
+	NoAPITokenError = "invalid token provided"
 )

@@ -15,7 +15,11 @@ import (
 
 // CalculatePinCost is used to calculate the cost of pinning something to temporal
 func (api *API) calculatePinCost(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	hash := c.Param("hash")
 	if _, err := gocid.Decode(hash); err != nil {
 		Fail(c, err)
@@ -53,7 +57,11 @@ func (api *API) calculatePinCost(c *gin.Context) {
 
 // CalculateFileCost is used to calculate the cost of uploading a file to our system
 func (api *API) calculateFileCost(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	file, err := c.FormFile("file")
 	if err != nil {
 		Fail(c, err)
@@ -91,7 +99,11 @@ func (api *API) calculateFileCost(c *gin.Context) {
 
 // GetEncryptedUploadsForUser is used to get all the encrypted uploads a user has
 func (api *API) getEncryptedUploadsForUser(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	uploads, err := api.ue.FindUploadsByUser(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		api.LogError(err, eh.UploadSearchError)(c, http.StatusBadRequest)

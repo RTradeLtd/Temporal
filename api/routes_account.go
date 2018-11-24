@@ -16,13 +16,21 @@ import (
 
 // getUserFromToken is used to get the username of the associated token
 func (api *API) getUserFromToken(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	Respond(c, http.StatusOK, gin.H{"response": username})
 }
 
 // selfRekt is an undocumented API call used to auto-ban users who may engaging in malicious activity
 func (api *API) selfRekt(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	user, err := api.um.FindByUserName(username)
 	if err != nil {
 		api.LogError(err, eh.UserSearchError)(c, http.StatusBadRequest)
@@ -42,7 +50,11 @@ func (api *API) selfRekt(c *gin.Context) {
 
 // verifyEmailAddress is used to verify a users email address
 func (api *API) verifyEmailAddress(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "token")
 	if len(forms) == 0 {
 		return
@@ -56,7 +68,11 @@ func (api *API) verifyEmailAddress(c *gin.Context) {
 
 // getEmailVerificationToken is used to generate a token which can be used to validate an email address
 func (api *API) getEmailVerificationToken(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	user, err := api.um.GenerateEmailVerificationToken(username)
 	if err != nil {
 		api.LogError(err, eh.EmailTokenGenerationError)(c, http.StatusBadRequest)
@@ -84,7 +100,11 @@ func (api *API) getEmailVerificationToken(c *gin.Context) {
 
 // registerAirDrop is used to register an airdrop
 func (api *API) registerAirDrop(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "airdrop_id", "eth_address")
 	if len(forms) == 0 {
 		return
@@ -119,7 +139,11 @@ func (api *API) registerAirDrop(c *gin.Context) {
 
 // ChangeAccountPassword is used to change a users password
 func (api *API) changeAccountPassword(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "old_assword", "new_password")
 	if len(forms) == 0 {
 		return
@@ -171,7 +195,11 @@ func (api *API) registerUserAccount(c *gin.Context) {
 
 // CreateIPFSKey is used to create an IPFS key
 func (api *API) createIPFSKey(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "key_type", "key_bits", "key_name")
 	if len(forms) == 0 {
 		return
@@ -255,8 +283,11 @@ func (api *API) createIPFSKey(c *gin.Context) {
 
 // GetIPFSKeyNamesForAuthUser is used to get the keys a user has setup
 func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	keys, err := api.um.GetKeysForUser(username)
 	if err != nil {
 		api.LogError(err, eh.KeySearchError)(c)
@@ -274,7 +305,11 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 
 // GetCredits is used to get a users available credits
 func (api *API) getCredits(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	credits, err := api.um.GetCreditsForUser(username)
 	if err != nil {
 		api.LogError(err, eh.CreditCheckError)(c, http.StatusBadRequest)
@@ -286,7 +321,11 @@ func (api *API) getCredits(c *gin.Context) {
 
 // ExportKey is used to export an ipfs key as a mnemonic phrase
 func (api *API) exportKey(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	keyName := c.Param("name")
 	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
 	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyNamePrefixed)
@@ -308,7 +347,11 @@ func (api *API) exportKey(c *gin.Context) {
 
 // ForgotEmail is used to retrieve an email if the user forgets it
 func (api *API) forgotEmail(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	user, err := api.um.FindByUserName(username)
 	if err != nil {
 		api.LogError(err, eh.UserSearchError)(c, http.StatusBadRequest)
