@@ -399,9 +399,10 @@ func (api *API) setupRoutes() {
 		{
 			utils.POST("laser", api.BeamContent)
 		}
-		// ipfs cluster toues
+		// ipfs cluster routes
 		cluster := ipfs.Group("/cluster")
 		{
+			// sync control routes
 			sync := cluster.Group("/sync")
 			{
 				errors := sync.Group("/errors")
@@ -409,15 +410,19 @@ func (api *API) setupRoutes() {
 					errors.POST("/local", api.syncClusterErrorsLocally) // admin locked
 				}
 			}
+			// status routes
 			status := cluster.Group("/status")
 			{
+				// pin status route
 				pin := status.Group("/pin")
 				{
 					pin.GET("/local/:hash", api.getLocalStatusForClusterPin)   // admin locked
 					pin.GET("/global/:hash", api.getGlobalStatusForClusterPin) // admin locked
 				}
+				// local cluster status route
 				status.GET("/local", api.fetchLocalClusterStatus)
 			}
+			// general routes
 			cluster.POST("/pin/:hash", api.pinHashToCluster) // admin locked
 		}
 	}
