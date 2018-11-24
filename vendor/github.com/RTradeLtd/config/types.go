@@ -26,6 +26,8 @@ type API struct {
 			KeyPath  string `json:"key_path"`
 		}
 		ListenAddress string `json:"listen_address"`
+		// define the maximum number of people allowed to connect to the API
+		Limit string `json:"limit"`
 	} `json:"connection"`
 	Sessions struct {
 		AuthKey       string `json:"auth_key"`

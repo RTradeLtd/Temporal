@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/RTradeLtd/rtfs/krab"
@@ -214,11 +215,16 @@ func (api *API) ListenAndServe(addr string, tls *TLSConfig) error {
 }
 
 // setupRoutes is used to setup all of our api routes
-func (api *API) setupRoutes() {
+func (api *API) setupRoutes() error {
+	// setup the connection limit
+	connLimit, err := strconv.Atoi(api.cfg.API.Connection.Limit)
+	if err != nil {
+		return err
+	}
 	// set up defaults
 	api.r.Use(
 		xssMdlwr.RemoveXss(),
-		limit.MaxAllowed(20),
+		limit.MaxAllowed(connLimit),
 		helmet.NoSniff(),
 		middleware.CORSMiddleware(),
 		stats.RequestStats())
@@ -260,13 +266,12 @@ func (api *API) setupRoutes() {
 	}
 
 	// lens search engine
-	lens := v1.Group("/lens", authware...)
+	lens := v1.Group("/lens")
 	{
-		requests := lens.Group("/requests")
-		{
-			requests.POST("/index", api.submitIndexRequest)
-			requests.POST("/search", api.submitSearchRequest)
-		}
+		// allow anyone to index
+		lens.POST("/index")
+		// only allow registered users to search
+		lens.POST("/search", api.submitSearchRequest).Use(authware...)
 	}
 
 	// payments
@@ -469,4 +474,5 @@ func (api *API) setupRoutes() {
 	}
 
 	api.LogInfo("Routes initialized")
+	return nil
 }
