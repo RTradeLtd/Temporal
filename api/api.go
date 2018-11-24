@@ -231,10 +231,19 @@ func (api *API) setupRoutes() {
 	}
 	// set up defaults
 	api.r.Use(
+		// slightly more complex xss removal
 		xssMdlwr.RemoveXss(),
+		// rate limiting
 		limit.MaxAllowed(connLimit),
+		// security restrictions
 		helmet.NoSniff(),
+		helmet.IENoOpen(),
+		helmet.NoCache(),
+		// basic xss removal
+		helmet.XSSFilter(),
+		// cors middleware
 		middleware.CORSMiddleware(),
+		// stats middleware
 		stats.RequestStats())
 
 	// set up middleware
