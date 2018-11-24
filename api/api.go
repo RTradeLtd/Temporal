@@ -402,7 +402,7 @@ func (api *API) setupRoutes() {
 		}
 
 		// ipfs cluster toues
-		cluster := v1.Group("/cluster")
+		cluster := ipfs.Group("/cluster")
 		{
 			cluster.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
 			cluster.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
