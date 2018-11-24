@@ -406,11 +406,6 @@ func (api *API) setupRoutes() {
 			}
 			// object stat route
 			ipfs.POST("/stat/:key", api.getObjectStatForIpfsForHostedIPFSNetwork)
-			// ipns routes
-			ipns := private.Group("/ipns")
-			{
-				ipns.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
-			}
 			// general routes
 			private.GET("/networks", api.getAuthorizedPrivateNetworks)
 			private.GET("/uploads/:network_name", api.getUploadsByNetworkName)
@@ -452,7 +447,14 @@ func (api *API) setupRoutes() {
 	// ipns
 	ipns := v1.Group("/ipns", authware...)
 	{
-		ipns.POST("/publish/details", api.publishToIPNSDetails)
+		public := ipns.Group("/public")
+		{
+			public.POST("/publish/details", api.publishToIPNSDetails)
+		}
+		private := ipns.Group("/private")
+		{
+			private.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
+		}
 		ipns.GET("/records", api.getIPNSRecordsPublishedByUser)
 	}
 
