@@ -401,6 +401,15 @@ func (api *API) setupRoutes() {
 			utils.POST("laser", api.BeamContent)
 		}
 
+		// ipfs cluster toues
+		cluster := v1.Group("/cluster")
+		{
+			cluster.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
+			cluster.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
+			cluster.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
+			cluster.GET("/status-local", api.fetchLocalClusterStatus)                 // admin locked
+			cluster.POST("/pin/:hash", api.pinHashToCluster)
+		}
 	}
 
 	// ipns
@@ -408,16 +417,6 @@ func (api *API) setupRoutes() {
 	{
 		ipns.POST("/publish/details", api.publishToIPNSDetails)
 		ipns.GET("/records", api.getIPNSRecordsPublishedByUser)
-	}
-
-	// ipfs-cluster
-	cluster := v1.Group("/ipfs-cluster", authware...)
-	{
-		cluster.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
-		cluster.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
-		cluster.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
-		cluster.GET("/status-local", api.fetchLocalClusterStatus)                 // admin locked
-		cluster.POST("/pin/:hash", api.pinHashToCluster)
 	}
 
 	// database
