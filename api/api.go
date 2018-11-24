@@ -215,11 +215,19 @@ func (api *API) ListenAndServe(addr string, tls *TLSConfig) error {
 }
 
 // setupRoutes is used to setup all of our api routes
-func (api *API) setupRoutes() error {
-	// setup the connection limit
-	connLimit, err := strconv.Atoi(api.cfg.API.Connection.Limit)
-	if err != nil {
-		return err
+func (api *API) setupRoutes() {
+	var (
+		connLimit int
+		err       error
+	)
+	if api.cfg.API.Connection.Limit == "" {
+		connLimit = 50
+	} else {
+		// setup the connection limit
+		connLimit, err = strconv.Atoi(api.cfg.API.Connection.Limit)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	// set up defaults
 	api.r.Use(
@@ -474,5 +482,4 @@ func (api *API) setupRoutes() error {
 	}
 
 	api.LogInfo("Routes initialized")
-	return nil
 }
