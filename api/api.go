@@ -394,21 +394,31 @@ func (api *API) setupRoutes() {
 			private.GET("/uploads/:network_name", api.getUploadsByNetworkName)
 			private.POST("/download/:hash", api.downloadContentHashForPrivateNetwork)
 		}
-
 		// utility routes
 		utils := ipfs.Group("/utils")
 		{
 			utils.POST("laser", api.BeamContent)
 		}
-
 		// ipfs cluster toues
 		cluster := ipfs.Group("/cluster")
 		{
-			cluster.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
-			cluster.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
-			cluster.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
-			cluster.GET("/status-local", api.fetchLocalClusterStatus)                 // admin locked
-			cluster.POST("/pin/:hash", api.pinHashToCluster)
+			sync := cluster.Group("/sync")
+			{
+				errors := sync.Group("/errors")
+				{
+					errors.POST("/local", api.syncClusterErrorsLocally) // admin locked
+				}
+			}
+			status := cluster.Group("/status")
+			{
+				pin := status.Group("/pin")
+				{
+					pin.GET("/local/:hash", api.getLocalStatusForClusterPin)   // admin locked
+					pin.GET("/global/:hash", api.getGlobalStatusForClusterPin) // admin locked
+				}
+				status.GET("/local", api.fetchLocalClusterStatus)
+			}
+			cluster.POST("/pin/:hash", api.pinHashToCluster) // admin locked
 		}
 	}
 
