@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/rtfs/beam"
+
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -777,6 +779,50 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 
 	api.LogWithUser(username).Info("uploads forprivate ifps network requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
+}
+
+// BeamContent is used to beam content from one network to another
+func (api *API) BeamContent(c *gin.Context) {
+	username := GetAuthenticatedUserFromContext(c)
+	forms := api.extractPostForms(c, "source_network", "destination_network")
+	if len(forms) == 0 {
+		return
+	}
+	var (
+		net1URL string
+		net2URL string
+	)
+
+	if forms["source_network"] == "public" {
+		net1URL = api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
+	} else {
+		if err := CheckAccessForPrivateNetwork(username, forms["source_network"], api.dbm.DB); err != nil {
+			api.LogError(err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
+			return
+		}
+		url, err := api.nm.GetAPIURLByName(forms["source_network"])
+		if err != nil {
+			api.LogError(err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
+			return
+		}
+		net1URL = url
+	}
+
+	if forms["destination_network"] == "public" {
+		net2URL = api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
+	} else {
+		if err := CheckAccessForPrivateNetwork(username, forms["destination_network"], api.dbm.DB); err != nil {
+			api.LogError(err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
+			return
+		}
+		url, err := api.nm.GetAPIURLByName(forms["destination_network"])
+		if err != nil {
+			api.LogError(err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
+			return
+		}
+		net2URL = url
+	}
+	laserBeam, err := beam.NewLaser(net1URL, net2URL)
 }
 
 // DownloadContentHashForPrivateNetwork is used to download content from  a private ipfs network
