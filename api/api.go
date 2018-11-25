@@ -288,7 +288,7 @@ func (api *API) setupRoutes() {
 		// allow anyone to index
 		lens.POST("/index")
 		// only allow registered users to search
-		lens.POST("/search", api.submitSearchRequest).Use(authware...)
+		lens.POST("/search", api.submitSearchRequest)
 	}
 
 	// payments
