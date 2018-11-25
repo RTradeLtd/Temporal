@@ -447,14 +447,17 @@ func (api *API) setupRoutes() {
 	// ipns
 	ipns := v1.Group("/ipns", authware...)
 	{
+		// public ipns routes
 		public := ipns.Group("/public")
 		{
 			public.POST("/publish/details", api.publishToIPNSDetails)
 		}
+		// private ipns routes
 		private := ipns.Group("/private")
 		{
 			private.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
 		}
+		// general routes
 		ipns.GET("/records", api.getIPNSRecordsPublishedByUser)
 	}
 
