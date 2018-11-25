@@ -2,12 +2,10 @@ package api
 
 import (
 	"errors"
-	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/database/models"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
@@ -23,17 +21,6 @@ const (
 	// RtcCostUsd is the price of a single RTC in USD
 	RtcCostUsd = 0.125
 )
-
-// CalculateFileSize helper route used to calculate the size of a file
-func CalculateFileSize(c *gin.Context) {
-	fileHandler, err := c.FormFile("file")
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	size := utils.BytesToGigaBytes(fileHandler.Size)
-	Respond(c, http.StatusOK, gin.H{"response": gin.H{"file_size_gb": size, "file_size_bytes": fileHandler.Size}})
-}
 
 // CheckAccessForPrivateNetwork checks if a user has access to a private network
 func CheckAccessForPrivateNetwork(username, networkName string, db *gorm.DB) error {

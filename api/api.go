@@ -405,16 +405,19 @@ func (api *API) setupRoutes() {
 				pubsub.POST("/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
 			}
 			// object stat route
-			ipfs.POST("/stat/:key", api.getObjectStatForIpfsForHostedIPFSNetwork)
+			private.GET("/stat/:hash/:networkName", api.getObjectStatForIpfsForHostedIPFSNetwork)
 			// general routes
 			private.GET("/networks", api.getAuthorizedPrivateNetworks)
-			private.GET("/uploads/:network_name", api.getUploadsByNetworkName)
+			private.GET("/uploads/:networkName", api.getUploadsByNetworkName)
 			private.POST("/download/:hash", api.downloadContentHashForPrivateNetwork)
 		}
 		// utility routes
 		utils := ipfs.Group("/utils")
 		{
-			utils.POST("laser", api.BeamContent)
+			laser := utils.Group("/laser")
+			{
+				laser.POST("/beam", api.BeamContent)
+			}
 		}
 		// ipfs cluster routes
 		cluster := ipfs.Group("/cluster")
@@ -488,7 +491,6 @@ func (api *API) setupRoutes() {
 	// admin
 	admin := v1.Group("/admin", authware...)
 	{
-		admin.POST("/utils/file-size-check", CalculateFileSize)
 		mini := admin.Group("/mini")
 		{
 			mini.POST("/create/bucket", api.makeBucket)
