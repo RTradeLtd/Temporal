@@ -18,6 +18,14 @@
   revision = "3d3fc2fb493d8d889dddd5a4524283ac2faa4732"
 
 [[projects]]
+  digest = "1:b373b5a143d06f50623a61792ea59aec57abdf0c04fc5490f5903975004ead39"
+  name = "github.com/RTradeLtd/config"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ff2c973f3c3d0eeac5b8b91975fad5987776b184"
+  version = "v1.0.12"
+
+[[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
   name = "github.com/RTradeLtd/crypto"
   packages = ["."]
@@ -336,6 +344,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/entropy-mnemonics",
     "github.com/RTradeLtd/go-ipfs-api",

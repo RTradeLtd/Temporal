@@ -2,7 +2,6 @@ package beam
 
 import (
 	"bytes"
-	"errors"
 	"time"
 
 	"github.com/RTradeLtd/rtfs"
@@ -10,48 +9,46 @@ import (
 
 // Laser is used to transfer content between two different private networks
 type Laser struct {
-	net1 *rtfs.IpfsManager
-	net2 *rtfs.IpfsManager
+	src *rtfs.IpfsManager
+	dst *rtfs.IpfsManager
 }
 
 // NewLaser creates a laser client to beam content between different ipfs networks
-func NewLaser(net1URL, net2URL string) (*Laser, error) {
-	net1, err := rtfs.NewManager(net1URL, nil, time.Minute*10)
+func NewLaser(srcURL, dstURL string) (*Laser, error) {
+	src, err := rtfs.NewManager(srcURL, nil, time.Minute*10)
 	if err != nil {
 		return nil, err
 	}
-	net2, err := rtfs.NewManager(net2URL, nil, time.Minute*10)
+	dst, err := rtfs.NewManager(dstURL, nil, time.Minute*10)
 	if err != nil {
 		return nil, err
 	}
 	return &Laser{
-		net1: net1,
-		net2: net2,
+		src: src,
+		dst: dst,
 	}, nil
 }
 
-// Beam is used to transfer content bewween two different networks
-func (l *Laser) Beam(sourceNet int, contentHash string) error {
-	switch sourceNet {
-	case 1:
-		data, err := l.net1.Cat(contentHash)
-		if err != nil {
-			return err
-		}
-		if _, err = l.net2.Add(bytes.NewReader(data)); err != nil {
-			return err
-		}
-		return nil
-	case 2:
-		data, err := l.net2.Cat(contentHash)
-		if err != nil {
-			return err
-		}
-		if _, err = l.net1.Add(bytes.NewReader(data)); err != nil {
-			return err
-		}
-		return nil
-	default:
-		return errors.New("invalid network, must be 1, or 2")
+// BeamFromSource is used to transfer content from the source network to the destination network
+func (l *Laser) BeamFromSource(contentHash string) error {
+	data, err := l.src.Cat(contentHash)
+	if err != nil {
+		return err
 	}
+	if _, err = l.dst.Add(bytes.NewReader(data)); err != nil {
+		return err
+	}
+	return nil
+}
+
+// BeamFromDestination is used to transfer content from the destination network to the source network
+func (l *Laser) BeamFromDestination(contentHash string) error {
+	data, err := l.dst.Cat(contentHash)
+	if err != nil {
+		return err
+	}
+	if _, err = l.src.Add(bytes.NewReader(data)); err != nil {
+		return err
+	}
+	return nil
 }

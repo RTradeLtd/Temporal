@@ -96,8 +96,8 @@
   revision = "320346f207bfe9826e26fc7b05829bd46636f876"
 
 [[projects]]
-  branch = "krab"
-  digest = "1:1ead03eaa30fc82bf146feaa2a2c89a346d3a7d7134ed55a3bbe319aba339b07"
+  branch = "master"
+  digest = "1:4ca737aa7b3eff2d55e87fec937de170b6ed20dbec6ce34fcf38a191604ac038"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -105,7 +105,7 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "d49feac98b4bb96e004c21ac660a572c28dd690a"
+  revision = "b7fee8d61183231eccd1f849d8a6c39c7c54065a"
 
 [[projects]]
   branch = "master"
