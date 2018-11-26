@@ -319,32 +319,6 @@ func (api *API) getCredits(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": credits})
 }
 
-// ExportKey is used to export an ipfs key as a mnemonic phrase
-func (api *API) exportKey(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
-		return
-	}
-	keyName := c.Param("name")
-	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
-	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyNamePrefixed)
-	if err != nil {
-		api.LogError(err, eh.KeySearchError)(c, http.StatusBadRequest)
-		return
-	}
-	if !owns {
-		api.LogError(errors.New(eh.KeyUseError), eh.KeyUseError)(c, http.StatusBadRequest)
-		return
-	}
-	mnemonic, err := api.keys.ExportKeyAsMnemonic(keyNamePrefixed)
-	if err != nil {
-		api.LogError(err, eh.KeyExportError)(c, http.StatusBadRequest)
-		return
-	}
-	Respond(c, http.StatusOK, gin.H{"response": mnemonic})
-}
-
 // ForgotEmail is used to retrieve an email if the user forgets it
 func (api *API) forgotEmail(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)

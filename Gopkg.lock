@@ -79,11 +79,13 @@
 
 [[projects]]
   branch = "krab"
-  digest = "1:65b270e0a2d4af215cb8d001853173c3a7353cb8e2bf0fa3232f01e84b9312f3"
+  digest = "1:7d0775fb830e3df5bd6edf07e7fb942cb7c4acbafab9be8d9db37a28ef902cfb"
   name = "github.com/RTradeLtd/grpc"
   packages = [
+    "backends/krab",
     "dialer",
     "ipfs-orchestrator",
+    "krab",
     "lens",
     "lens/request",
     "lens/response",
@@ -344,6 +346,17 @@
   pruneopts = "UT"
   revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
   version = "v1.4.0"
+
+[[projects]]
+  digest = "1:c805a0558c867a671fc2dd1c6134b92a4d15c3fee5803abc70fdabdcb683ea0b"
+  name = "github.com/grpc-ecosystem/go-grpc-middleware"
+  packages = [
+    ".",
+    "tags",
+  ]
+  pruneopts = "UT"
+  revision = "c250d6563d4d4c20252cd865923440e829844f4e"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -1515,8 +1528,11 @@
     "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/database",
     "github.com/RTradeLtd/database/models",
+    "github.com/RTradeLtd/entropy-mnemonics",
+    "github.com/RTradeLtd/grpc/backends/krab",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/ipfs-orchestrator",
+    "github.com/RTradeLtd/grpc/krab",
     "github.com/RTradeLtd/grpc/lens",
     "github.com/RTradeLtd/grpc/lens/request",
     "github.com/RTradeLtd/grpc/temporal",

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package krab;
+
+service Service {
+    rpc GetPrivateKey(KeyGet) returns (Response) {}
+    rpc PutPrivateKey(KeyPut) returns (Response) {}
+}
+
+message Empty{}
+
+message KeyGet {
+    string name = 1;
+}
+
+message KeyPut {
+    string name = 1;
+    bytes privateKey = 2;
+}
+
+message Response {
+    string status = 1;
+    bytes privateKey = 2;
+}

@@ -2,10 +2,15 @@ package api
 
 import (
 	"bytes"
+	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
+	mnemonics "github.com/RTradeLtd/entropy-mnemonics"
+	pb "github.com/RTradeLtd/grpc/krab"
 	"github.com/RTradeLtd/rtfs"
 	"github.com/RTradeLtd/rtfs/beam"
 	"github.com/gin-gonic/gin"
@@ -92,4 +97,35 @@ func (api *API) beamContent(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"status": "content transferred", "content_hash": forms["content_hash"]}})
+}
+
+// ExportKey is used to export an ipfs key as a mnemonic phrase
+func (api *API) exportKey(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
+	keyName := c.Param("name")
+	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
+	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyNamePrefixed)
+	if err != nil {
+		api.LogError(err, eh.KeySearchError)(c, http.StatusBadRequest)
+		return
+	}
+	if !owns {
+		api.LogError(errors.New(eh.KeyUseError), eh.KeyUseError)(c, http.StatusBadRequest)
+		return
+	}
+
+	resp, err := api.keys.GetPrivateKey(context.Background(), &pb.KeyGet{Name: keyNamePrefixed})
+	if err != nil {
+		api.LogError(err, eh.KeyExportError)(c, http.StatusBadRequest)
+		return
+	}
+	phrase, err := mnemonics.ToPhrase(resp.PrivateKey, mnemonics.English)
+	if err != nil {
+		return "", err
+	}
+	Respond(c, http.StatusOK, gin.H{"response": mnemonic})
 }

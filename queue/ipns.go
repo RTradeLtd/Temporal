@@ -6,8 +6,8 @@ import (
 
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/grpc/backends/krab"
 	"github.com/RTradeLtd/rtfs"
-	"github.com/RTradeLtd/rtfs/krab"
 
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
@@ -15,11 +15,7 @@ import (
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath, ReadOnly: true})
-	if err != nil {
-		return err
-	}
-	keystore, err := rtfs.NewKeystoreManager(kb)
+	kb, err := krab.NewClient(cfg.Endpoints)
 	if err != nil {
 		return err
 	}

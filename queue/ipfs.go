@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,8 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/mini"
+	"github.com/RTradeLtd/grpc/backends/krab"
 	"github.com/RTradeLtd/rtfs"
-	"github.com/RTradeLtd/rtfs/krab"
 
 	"github.com/RTradeLtd/config"
 
@@ -20,17 +21,14 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 
+	pb "github.com/RTradeLtd/grpc/krab"
 	ci "github.com/libp2p/go-libp2p-crypto"
 	peer "github.com/libp2p/go-libp2p-peer"
 )
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
 func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath, ReadOnly: false})
-	if err != nil {
-		return err
-	}
-	keystore, err := rtfs.NewKeystoreManager(kb)
+	kb, err := krab.NewClient(cfg.Endpoints)
 	if err != nil {
 		return err
 	}
@@ -73,12 +71,23 @@ func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB
 			continue
 		}
 		keyName := fmt.Sprintf("%s-%s", key.UserName, key.Name)
-		pk, err := keystore.CreateAndSaveKey(keyName, keyTypeInt, bitsInt)
+		pk, _, err := ci.GenerateKeyPair(keyTypeInt, bitsInt)
 		if err != nil {
 			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
-			qm.LogError(err, "failed to create and save key")
+			qm.LogError(err, "failed to create key")
 			d.Ack(false)
-			continue
+		}
+		pkBytes, err := pk.Bytes()
+		if err != nil {
+			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+			qm.LogError(err, "failed to create key")
+			d.Ack(false)
+		}
+		resp, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: keyName, PrivateKey: pkBytes})
+		if err != nil {
+			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+			qm.LogError(err, "failed to create key")
+			d.Ack(false)
 		}
 		// will need a refund, as this would mean that the key was improperly generated
 		id, err := peer.IDFromPrivateKey(pk)
