@@ -22,14 +22,18 @@ type Krab struct {
 type Opts struct {
 	Passphrase string
 	DSPath     string
+	ReadOnly   bool
 }
 
 // NewKrab is used to create a new krab ipfs keystore manager
 func NewKrab(opts Opts) (*Krab, error) {
-	ds, err := badger.NewDatastore(opts.DSPath, &badger.DefaultOptions)
+	badgerOpts := &badger.DefaultOptions
+	badgerOpts.ReadOnly = opts.ReadOnly
+	ds, err := badger.NewDatastore(opts.DSPath, badgerOpts)
 	if err != nil {
 		return nil, err
 	}
+	defer ds.Close()
 	return &Krab{
 		em: crypto.NewEncryptManager(opts.Passphrase),
 		ds: ds,

@@ -78,7 +78,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open log file: %s", err)
 	}
-	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath})
+	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath, ReadOnly: true})
 	if err != nil {
 		return nil, err
 	}
