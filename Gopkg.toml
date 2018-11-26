@@ -20,7 +20,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/rtfs"
-  branch = "krab"
+  version = "v0.3.5"
   
 [[constraint]]
   name = "github.com/RTradeLtd/config"

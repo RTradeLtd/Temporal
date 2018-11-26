@@ -33,7 +33,6 @@ func NewKrab(opts Opts) (*Krab, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer ds.Close()
 	return &Krab{
 		em: crypto.NewEncryptManager(opts.Passphrase),
 		ds: ds,
@@ -121,4 +120,9 @@ func (km *Krab) List() ([]string, error) {
 		ids = append(ids, strings.Split(v.Key, "/")[1])
 	}
 	return ids, nil
+}
+
+// Close is used to close our badger connection
+func (km *Krab) Close() error {
+	return km.ds.Close()
 }
