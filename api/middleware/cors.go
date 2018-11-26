@@ -12,6 +12,7 @@ func CORSMiddleware() gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	corsConfig.AllowCredentials = false
+	corsConfig.AddAllowMethods("DELETE")
 	corsConfig.AddAllowHeaders("cache-control", "Access-Control-Allow-Headers", "Authorization", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Request-Headers")
 	return cors.New(corsConfig)
 }
