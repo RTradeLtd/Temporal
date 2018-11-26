@@ -418,7 +418,7 @@ func (api *API) setupRoutes() error {
 		{
 			laser := utils.Group("/laser")
 			{
-				laser.POST("/beam", api.BeamContent)
+				laser.POST("/beam", api.beamContent)
 			}
 		}
 		// ipfs cluster routes

@@ -17,7 +17,7 @@ func (api *API) SystemsCheck(c *gin.Context) {
 }
 
 // BeamContent is used to beam content from one network to another
-func (api *API) BeamContent(c *gin.Context) {
+func (api *API) beamContent(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
