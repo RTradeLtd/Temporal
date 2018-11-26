@@ -6,10 +6,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	bloom "github.com/ipfs/bbloom"
-	blocks "github.com/ipfs/go-block-format"
-	cid "github.com/ipfs/go-cid"
-	metrics "github.com/ipfs/go-metrics-interface"
+	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
+	bloom "gx/ipfs/QmWaLViWQF8jgyoLLqqcSrnp6dJpHESiJfzor1vrfDyTZf/bbloom"
+	blocks "gx/ipfs/QmWoXtvgC8inqFkAATB7cp2Dax7XBi9VDvSg9RCCZufmRk/go-block-format"
+	metrics "gx/ipfs/QmekzFM3hPZjTjUFGTABdQkEnQ3PTiMstY198PwSFr5w1Q/go-metrics-interface"
 )
 
 // bloomCached returns a Blockstore that caches Has requests using a Bloom

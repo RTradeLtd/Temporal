@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	cli "github.com/ipfs/iptb/cli"
-	testbed "github.com/ipfs/iptb/testbed"
+	cli "gx/ipfs/QmckeQ2zrYLAXoSHYTGn5BDdb22BqbUoHEHm8KZ9YWRxd1/iptb/cli"
+	testbed "gx/ipfs/QmckeQ2zrYLAXoSHYTGn5BDdb22BqbUoHEHm8KZ9YWRxd1/iptb/testbed"
 
-	browser "github.com/ipfs/iptb-plugins/browser"
-	docker "github.com/ipfs/iptb-plugins/docker"
-	local "github.com/ipfs/iptb-plugins/local"
+	browser "gx/ipfs/QmfAX8Pb621RhPM24wnmA1w9xewkXFBBAzJnzyi5AHtEyD/iptb-plugins/browser"
+	docker "gx/ipfs/QmfAX8Pb621RhPM24wnmA1w9xewkXFBBAzJnzyi5AHtEyD/iptb-plugins/docker"
+	local "gx/ipfs/QmfAX8Pb621RhPM24wnmA1w9xewkXFBBAzJnzyi5AHtEyD/iptb-plugins/local"
 )
 
 func init() {

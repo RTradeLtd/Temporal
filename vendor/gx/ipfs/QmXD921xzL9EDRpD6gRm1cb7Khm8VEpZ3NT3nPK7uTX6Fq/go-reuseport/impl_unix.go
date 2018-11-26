@@ -4,15 +4,15 @@ package reuseport
 
 import (
 	"context"
-	"golang.org/x/sys/unix"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/unix"
 	"net"
 	"os"
 	"strconv"
 	"syscall"
 	"time"
 
-	"github.com/libp2p/go-reuseport/singlepoll"
-	sockaddrnet "github.com/libp2p/go-sockaddr/net"
+	sockaddrnet "gx/ipfs/QmNzEyX7vjWiqinyLeavcAF1oegav6dZ1aQpAkYvG9m5Ze/go-sockaddr/net"
+	"gx/ipfs/QmXD921xzL9EDRpD6gRm1cb7Khm8VEpZ3NT3nPK7uTX6Fq/go-reuseport/singlepoll"
 )
 
 const (

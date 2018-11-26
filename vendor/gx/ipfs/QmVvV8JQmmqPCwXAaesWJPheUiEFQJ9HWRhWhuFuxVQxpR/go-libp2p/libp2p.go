@@ -3,9 +3,9 @@ package libp2p
 import (
 	"context"
 
-	config "github.com/libp2p/go-libp2p/config"
+	config "gx/ipfs/QmVvV8JQmmqPCwXAaesWJPheUiEFQJ9HWRhWhuFuxVQxpR/go-libp2p/config"
 
-	host "github.com/libp2p/go-libp2p-host"
+	host "gx/ipfs/QmahxMNoNuSsgQefo9rkpcfRFmQrMN6Q99aztKXf63K7YJ/go-libp2p-host"
 )
 
 // Config describes a set of settings for a libp2p node

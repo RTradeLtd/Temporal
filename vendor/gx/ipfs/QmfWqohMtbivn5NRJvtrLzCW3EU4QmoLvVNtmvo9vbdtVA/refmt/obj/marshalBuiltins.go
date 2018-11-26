@@ -3,7 +3,7 @@ package obj
 import (
 	"reflect"
 
-	. "github.com/polydawn/refmt/tok"
+	. "gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/tok"
 )
 
 type ptrDerefDelegateMarshalMachine struct {

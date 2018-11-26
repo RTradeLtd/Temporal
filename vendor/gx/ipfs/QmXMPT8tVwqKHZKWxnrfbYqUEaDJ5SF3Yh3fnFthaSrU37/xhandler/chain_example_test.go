@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/rs/cors"
-	"github.com/rs/xhandler"
 	"golang.org/x/net/context"
+	"gx/ipfs/QmXMPT8tVwqKHZKWxnrfbYqUEaDJ5SF3Yh3fnFthaSrU37/xhandler"
 )
 
 func ExampleChain() {

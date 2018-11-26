@@ -1,12 +1,12 @@
 package basemux
 
 import (
-	mc "github.com/multiformats/go-multicodec"
-	mux "github.com/multiformats/go-multicodec/mux"
+	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
+	mux "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/mux"
 
-	b64 "github.com/multiformats/go-multicodec/base/b64"
-	bin "github.com/multiformats/go-multicodec/base/bin"
-	hex "github.com/multiformats/go-multicodec/base/hex"
+	b64 "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/base/b64"
+	bin "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/base/bin"
+	hex "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec/base/hex"
 )
 
 func AllBasesMux() *mux.Multicodec {

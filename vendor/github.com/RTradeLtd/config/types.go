@@ -26,6 +26,8 @@ type API struct {
 			KeyPath  string `json:"key_path"`
 		}
 		ListenAddress string `json:"listen_address"`
+		// define the maximum number of people allowed to connect to the API
+		Limit string `json:"limit"`
 	} `json:"connection"`
 	Sessions struct {
 		AuthKey       string `json:"auth_key"`
@@ -60,6 +62,7 @@ type IPFS struct {
 		Port string `json:"port"`
 	} `json:"api_connection"`
 	KeystorePath string `json:"keystore_path"`
+	KrabPassword string `json:"krab_password"`
 }
 
 // IPFSCluster configures Temporal's connection to an IPFS cluster

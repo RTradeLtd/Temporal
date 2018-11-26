@@ -4,7 +4,7 @@ import (
 	"container/list"
 	"sort"
 
-	peer "github.com/libp2p/go-libp2p-peer"
+	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
 )
 
 // A helper struct to sort peers by their distance to the local node

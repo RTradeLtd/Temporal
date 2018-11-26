@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	peer "github.com/libp2p/go-libp2p-peer"
-	pt "github.com/libp2p/go-libp2p-peer/test"
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmRKLtwMw131aK7ugC3G7ybpumMz78YrJe5dzneyindvG1/go-multiaddr"
+	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
+	pt "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer/test"
 )
 
 func multiaddr(m string) ma.Multiaddr {

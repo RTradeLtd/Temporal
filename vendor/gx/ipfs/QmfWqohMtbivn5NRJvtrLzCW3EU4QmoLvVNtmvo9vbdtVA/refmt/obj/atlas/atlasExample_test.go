@@ -1,7 +1,7 @@
 package atlas_test
 
 import (
-	"github.com/polydawn/refmt/obj/atlas"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/obj/atlas"
 )
 
 // Design notes:

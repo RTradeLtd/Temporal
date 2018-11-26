@@ -12,7 +12,7 @@ package norm
 import (
 	"unicode/utf8"
 
-	"golang.org/x/text/transform"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/transform"
 )
 
 // A Form denotes a canonical representation of Unicode code points.

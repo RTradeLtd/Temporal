@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"time"
+
+	"github.com/RTradeLtd/rtfs/krab"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
@@ -75,7 +78,11 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open log file: %s", err)
 	}
-	keystore, err := rtfs.NewKeystoreManager()
+	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath})
+	if err != nil {
+		return nil, err
+	}
+	keystore, err := rtfs.NewKeystoreManager(kb)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +101,9 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	}
 
 	// init routes
-	api.setupRoutes()
+	if err = api.setupRoutes(); err != nil {
+		return nil, err
+	}
 	api.LogInfo("api initialization successful")
 
 	// return our configured API service
@@ -208,13 +217,35 @@ func (api *API) ListenAndServe(addr string, tls *TLSConfig) error {
 }
 
 // setupRoutes is used to setup all of our api routes
-func (api *API) setupRoutes() {
+func (api *API) setupRoutes() error {
+	var (
+		connLimit int
+		err       error
+	)
+	if api.cfg.API.Connection.Limit == "" {
+		connLimit = 50
+	} else {
+		// setup the connection limit
+		connLimit, err = strconv.Atoi(api.cfg.API.Connection.Limit)
+		if err != nil {
+			return err
+		}
+	}
 	// set up defaults
 	api.r.Use(
+		// slightly more complex xss removal
 		xssMdlwr.RemoveXss(),
-		limit.MaxAllowed(20),
+		// rate limiting
+		limit.MaxAllowed(connLimit),
+		// security restrictions
 		helmet.NoSniff(),
+		helmet.IENoOpen(),
+		helmet.NoCache(),
+		// basic xss removal
+		helmet.XSSFilter(),
+		// cors middleware
 		middleware.CORSMiddleware(),
+		// stats middleware
 		stats.RequestStats())
 
 	// set up middleware
@@ -254,13 +285,12 @@ func (api *API) setupRoutes() {
 	}
 
 	// lens search engine
-	lens := v1.Group("/lens", authware...)
+	lens := v1.Group("/lens")
 	{
-		requests := lens.Group("/requests")
-		{
-			requests.POST("/index", api.submitIndexRequest)
-			requests.POST("/search", api.submitSearchRequest)
-		}
+		// allow anyone to index
+		lens.POST("/index")
+		// only allow registered users to search
+		lens.POST("/search", api.submitSearchRequest)
 	}
 
 	// payments
@@ -318,68 +348,122 @@ func (api *API) setupRoutes() {
 		}
 	}
 
-	// ipfs
+	// ipfs routes
 	ipfs := v1.Group("/ipfs", authware...)
 	{
-		ipfs.GET("/check-for-pin/:hash", api.checkLocalNodeForPin) // admin locked
-		ipfs.GET("/object-stat/:key", api.getObjectStatForIpfs)
-		ipfs.GET("/dag/:hash", api.getDagObject)
-		ipfs.POST("/download/:hash", api.downloadContentHash)
-		ipfs.POST("/pin/:hash", api.pinHashLocally)
-		ipfs.POST("/add-file", api.addFileLocally)
-		ipfs.POST("/add-file/advanced", api.addFileLocallyAdvanced)
-		pubsub := ipfs.Group("/pubsub")
+		// public ipfs routes
+		public := ipfs.Group("/public")
 		{
-			pubsub.POST("/publish/:topic", api.ipfsPubSubPublish)
+			// pinning routes
+			pin := public.Group("/pin")
+			{
+				pin.POST("/:hash", api.pinHashLocally)
+				pin.GET("/check/:hash", api.checkLocalNodeForPin)
+			}
+			// file upload routes
+			file := public.Group("/file")
+			{
+				file.POST("/add", api.addFileLocally)
+				file.POST("/add/advanced", api.addFileLocallyAdvanced)
+			}
+			// pubsub routes
+			pubsub := public.Group("/pubsub")
+			{
+				pubsub.POST("/publish/:topic", api.ipfsPubSubPublish)
+			}
+			// general routes
+			public.GET("/stat/:key", api.getObjectStatForIpfs)
+			public.GET("/dag/:hash", api.getDagObject)
+			public.POST("/download/:hash", api.downloadContentHash)
 		}
-	}
 
-	// ipfs-private
-	ipfsPrivate := v1.Group("/ipfs-private", authware...)
-	{
-		ipfsPrivate.GET("/networks", api.getAuthorizedPrivateNetworks)
-		ipfsPrivate.GET("/uploads/:network_name", api.getUploadsByNetworkName)
-		network := ipfsPrivate.Group("/network")
+		// private ipfs routes
+		private := ipfs.Group("/private")
 		{
-			network.GET("/:name", api.getIPFSPrivateNetworkByName)
-			network.POST("/new", api.createHostedIPFSNetworkEntryInDatabase)
-			network.POST("/stop", api.stopIPFSPrivateNetwork)
-			network.POST("/start", api.startIPFSPrivateNetwork)
-			network.DELETE("/remove", api.removeIPFSPrivateNetwork)
+			// network management routes
+			network := private.Group("/network")
+			{
+				network.GET("/:name", api.getIPFSPrivateNetworkByName)
+				network.POST("/new", api.createHostedIPFSNetworkEntryInDatabase)
+				network.POST("/stop", api.stopIPFSPrivateNetwork)
+				network.POST("/start", api.startIPFSPrivateNetwork)
+				network.DELETE("/remove", api.removeIPFSPrivateNetwork)
+			}
+			// pinning routes
+			pin := private.Group("/pin")
+			{
+				pin.POST("/:hash", api.pinToHostedIPFSNetwork)
+				pin.GET("/check/:hash/:networkName", api.checkLocalNodeForPinForHostedIPFSNetwork)
+			}
+			// file upload routes
+			file := private.Group("/file")
+			{
+				file.POST("/add", api.addFileToHostedIPFSNetwork)
+				file.POST("/add/advanced", api.addFileToHostedIPFSNetworkAdvanced)
+			}
+			// pubsub routes
+			pubsub := private.Group("/pubsub")
+			{
+				pubsub.POST("/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
+			}
+			// object stat route
+			private.GET("/stat/:hash/:networkName", api.getObjectStatForIpfsForHostedIPFSNetwork)
+			// general routes
+			private.GET("/networks", api.getAuthorizedPrivateNetworks)
+			private.GET("/uploads/:networkName", api.getUploadsByNetworkName)
+			private.POST("/download/:hash", api.downloadContentHashForPrivateNetwork)
 		}
-		ipfsRoutes := ipfsPrivate.Group("/ipfs")
+		// utility routes
+		utils := ipfs.Group("/utils")
 		{
-			ipfsRoutes.POST("/check-for-pin/:hash", api.checkLocalNodeForPinForHostedIPFSNetwork) // admin locked
-			ipfsRoutes.POST("/object-stat/:key", api.getObjectStatForIpfsForHostedIPFSNetwork)
-			ipfsRoutes.POST("/pin/:hash", api.pinToHostedIPFSNetwork)
-			ipfsRoutes.POST("/add-file", api.addFileToHostedIPFSNetwork)
-			ipfsRoutes.POST("/add-file/advanced", api.addFileToHostedIPFSNetworkAdvanced)
+			laser := utils.Group("/laser")
+			{
+				laser.POST("/beam", api.beamContent)
+			}
 		}
-		ipnsRoutes := ipfsPrivate.Group("/ipns")
+		// ipfs cluster routes
+		cluster := ipfs.Group("/cluster")
 		{
-			ipnsRoutes.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
-		}
-		pubsub := ipfsPrivate.Group("/pubsub")
-		{
-			pubsub.POST("/publish/:topic", api.ipfsPubSubPublishToHostedIPFSNetwork)
+			// sync control routes
+			sync := cluster.Group("/sync")
+			{
+				errors := sync.Group("/errors")
+				{
+					errors.POST("/local", api.syncClusterErrorsLocally) // admin locked
+				}
+			}
+			// status routes
+			status := cluster.Group("/status")
+			{
+				// pin status route
+				pin := status.Group("/pin")
+				{
+					pin.GET("/local/:hash", api.getLocalStatusForClusterPin)   // admin locked
+					pin.GET("/global/:hash", api.getGlobalStatusForClusterPin) // admin locked
+				}
+				// local cluster status route
+				status.GET("/local", api.fetchLocalClusterStatus)
+			}
+			// general routes
+			cluster.POST("/pin/:hash", api.pinHashToCluster) // admin locked
 		}
 	}
 
 	// ipns
 	ipns := v1.Group("/ipns", authware...)
 	{
-		ipns.POST("/publish/details", api.publishToIPNSDetails)
+		// public ipns routes
+		public := ipns.Group("/public")
+		{
+			public.POST("/publish/details", api.publishToIPNSDetails)
+		}
+		// private ipns routes
+		private := ipns.Group("/private")
+		{
+			private.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
+		}
+		// general routes
 		ipns.GET("/records", api.getIPNSRecordsPublishedByUser)
-	}
-
-	// ipfs-cluster
-	cluster := v1.Group("/ipfs-cluster", authware...)
-	{
-		cluster.POST("/sync-errors-local", api.syncClusterErrorsLocally)          // admin locked
-		cluster.GET("/status-local-pin/:hash", api.getLocalStatusForClusterPin)   // admin locked
-		cluster.GET("/status-global-pin/:hash", api.getGlobalStatusForClusterPin) // admin locked
-		cluster.GET("/status-local", api.fetchLocalClusterStatus)                 // admin locked
-		cluster.POST("/pin/:hash", api.pinHashToCluster)
 	}
 
 	// database
@@ -409,7 +493,6 @@ func (api *API) setupRoutes() {
 	// admin
 	admin := v1.Group("/admin", authware...)
 	{
-		admin.POST("/utils/file-size-check", CalculateFileSize)
 		mini := admin.Group("/mini")
 		{
 			mini.POST("/create/bucket", api.makeBucket)
@@ -417,4 +500,5 @@ func (api *API) setupRoutes() {
 	}
 
 	api.LogInfo("Routes initialized")
+	return nil
 }

@@ -3,9 +3,9 @@ package mc_cbor
 import (
 	"io"
 
-	cbor "github.com/whyrusleeping/cbor/go"
+	cbor "gx/ipfs/QmcRKRQjNc2JZPHApR32fbkZVd6WXG2Ch9Kcy7sPxuAJgd/cbor/go"
 
-	mc "github.com/multiformats/go-multicodec"
+	mc "gx/ipfs/QmYMiyZRYDmhMr2phMc4FGrYbsyzvR751BgeobnWroiq2z/go-multicodec"
 )
 
 var HeaderPath string

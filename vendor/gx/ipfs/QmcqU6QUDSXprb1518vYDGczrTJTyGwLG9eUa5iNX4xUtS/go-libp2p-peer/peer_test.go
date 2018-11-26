@@ -7,12 +7,12 @@ import (
 	"strings"
 	"testing"
 
-	ic "github.com/libp2p/go-libp2p-crypto"
-	. "github.com/libp2p/go-libp2p-peer"
-	tu "github.com/libp2p/go-libp2p-peer/test"
-	mh "github.com/multiformats/go-multihash"
+	ic "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
+	. "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
+	tu "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer/test"
+	mh "gx/ipfs/QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW/go-multihash"
 
-	b58 "github.com/mr-tron/base58/base58"
+	b58 "gx/ipfs/QmWFAMPqsEyUX7gDUsRVmMWz59FxSpJ1b2v6bJ1yYzo7jY/go-base58-fast/base58"
 )
 
 var gen1 keyset // generated

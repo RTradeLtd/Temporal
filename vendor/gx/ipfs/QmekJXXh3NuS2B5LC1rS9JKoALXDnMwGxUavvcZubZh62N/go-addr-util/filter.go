@@ -1,8 +1,8 @@
 package addrutil
 
 import (
-	ma "github.com/multiformats/go-multiaddr"
-	mafmt "github.com/whyrusleeping/mafmt"
+	ma "gx/ipfs/QmRKLtwMw131aK7ugC3G7ybpumMz78YrJe5dzneyindvG1/go-multiaddr"
+	mafmt "gx/ipfs/QmXZVrmSiWPyuET6BMbGK3PjzVnQBrcnYc4GkHKhK2KXLp/mafmt"
 )
 
 // SubtractFilter returns a filter func that filters all of the given addresses

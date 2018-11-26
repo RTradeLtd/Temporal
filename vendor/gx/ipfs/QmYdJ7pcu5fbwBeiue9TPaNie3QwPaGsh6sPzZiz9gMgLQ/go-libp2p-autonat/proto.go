@@ -1,10 +1,10 @@
 package autonat
 
 import (
-	pb "github.com/libp2p/go-libp2p-autonat/pb"
+	pb "gx/ipfs/QmYdJ7pcu5fbwBeiue9TPaNie3QwPaGsh6sPzZiz9gMgLQ/go-libp2p-autonat/pb"
 
-	logging "github.com/ipfs/go-log"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
+	pstore "gx/ipfs/QmQAGG1zxfePqj2t7bLxyN8AFccZ889DDR9Gn8kVLDrGZo/go-libp2p-peerstore"
+	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
 )
 
 const AutoNATProto = "/libp2p/autonat/1.0.0"

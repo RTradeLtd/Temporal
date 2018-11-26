@@ -23,7 +23,11 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
 		return
@@ -73,7 +77,11 @@ func (api *API) pinHashLocally(c *gin.Context) {
 // and efficient manner than our traditional simple upload. Note that
 // it does not give the user a content hash back immediately
 func (api *API) addFileLocallyAdvanced(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	logger := api.LogWithUser(username)
 	logger.Debug("file upload request received from user")
 	forms := api.extractPostForms(c, "hold_time")
@@ -175,6 +183,11 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 // AddFileLocally is used to add a file to our local ipfs node in a simple manner
 // this route gives the user back a content hash for their file immedaitely
 func (api *API) addFileLocally(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
 		return
@@ -194,7 +207,6 @@ func (api *API) addFileLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	username := GetAuthenticatedUserFromContext(c)
 	cost := utils.CalculateFileCost(holdTimeinMonthsInt, fileHandler.Size, false)
 	if err = api.validateUserCredits(username, cost); err != nil {
 		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
@@ -272,7 +284,11 @@ func (api *API) addFileLocally(c *gin.Context) {
 
 // IpfsPubSubPublish is used to publish a pubsub msg
 func (api *API) ipfsPubSubPublish(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	topic := c.Param("topic")
 	forms := api.extractPostForms(c, "message")
 	if len(forms) == 0 {
@@ -304,7 +320,11 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 
 // GetObjectStatForIpfs is used to get the object stats for the particular cid
 func (api *API) getObjectStatForIpfs(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	key := c.Param("key")
 	if _, err := gocid.Decode(key); err != nil {
 		Fail(c, err)
@@ -323,7 +343,11 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 
 // CheckLocalNodeForPin is used to check whether or not the serving node is tacking the particular pin
 func (api *API) checkLocalNodeForPin(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	if err := api.validateAdminRequest(username); err != nil {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
@@ -357,8 +381,11 @@ func (api *API) getDagObject(c *gin.Context) {
 
 // DownloadContentHash is used to download a particular content hash from the network
 func (api *API) downloadContentHash(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	// fetch the specified content type from the user
 	contentType, exists := c.GetPostForm("content_type")
 	if !exists {
@@ -376,7 +403,6 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	}
 
 	var (
-		err      error
 		response []byte
 		size     int
 	)

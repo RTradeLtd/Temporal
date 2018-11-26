@@ -3,7 +3,7 @@ package commonatlases
 import (
 	"time"
 
-	"github.com/polydawn/refmt/obj/atlas"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/obj/atlas"
 )
 
 var Time_AsUnixInt = atlas.BuildEntry(time.Time{}).Transform().

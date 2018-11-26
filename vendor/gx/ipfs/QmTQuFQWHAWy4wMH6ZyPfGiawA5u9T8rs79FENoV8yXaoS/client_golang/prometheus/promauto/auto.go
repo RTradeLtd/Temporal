@@ -126,7 +126,7 @@
 // state in net/http has been criticized widely, and some avoid it altogether.
 package promauto
 
-import "github.com/prometheus/client_golang/prometheus"
+import "gx/ipfs/QmTQuFQWHAWy4wMH6ZyPfGiawA5u9T8rs79FENoV8yXaoS/client_golang/prometheus"
 
 // NewCounter works like the function of the same name in the prometheus package
 // but it automatically registers the Counter with the

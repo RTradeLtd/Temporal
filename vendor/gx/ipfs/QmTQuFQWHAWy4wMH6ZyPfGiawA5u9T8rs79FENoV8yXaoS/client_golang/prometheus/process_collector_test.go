@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/prometheus/common/expfmt"
-	"github.com/prometheus/procfs"
+	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/expfmt"
+	"gx/ipfs/QmdCgRBcahWLSq3a2xdbcPb4ksrRREAhisYdfAaGfJ8hWb/procfs"
 )
 
 func TestProcessCollector(t *testing.T) {

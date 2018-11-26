@@ -1,7 +1,7 @@
 package nat
 
 import (
-	notifier "github.com/whyrusleeping/go-notifier"
+	notifier "gx/ipfs/QmeQW4ayVqi7Jjay1SrP2wYydsH9KwSrzQBnqyC25gPFnG/go-notifier"
 )
 
 // Notifier is an object that assists NAT in notifying listeners.

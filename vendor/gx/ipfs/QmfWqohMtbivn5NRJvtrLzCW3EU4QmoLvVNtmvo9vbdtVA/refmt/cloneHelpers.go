@@ -1,9 +1,9 @@
 package refmt
 
 import (
-	"github.com/polydawn/refmt/obj"
-	"github.com/polydawn/refmt/obj/atlas"
-	"github.com/polydawn/refmt/shared"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/obj"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/obj/atlas"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/shared"
 )
 
 func Clone(src, dst interface{}) error {

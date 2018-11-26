@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/onsi/gomega/format"
-	"gopkg.in/yaml.v2"
+	"gx/ipfs/QmNNARAR2ncSEDKGVAjsE77VYAtNE6qMMPEC7hfWMwMdF9/yaml.v2"
+	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/format"
 )
 
 type MatchYAMLMatcher struct {

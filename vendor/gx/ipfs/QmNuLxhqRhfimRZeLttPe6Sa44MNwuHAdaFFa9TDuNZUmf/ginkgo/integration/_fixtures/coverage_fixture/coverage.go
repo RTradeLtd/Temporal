@@ -1,7 +1,7 @@
 package coverage_fixture
 
 import (
-	_ "github.com/onsi/ginkgo/integration/_fixtures/coverage_fixture/external_coverage_fixture"
+	_ "gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/integration/_fixtures/coverage_fixture/external_coverage_fixture"
 )
 
 func A() string {

@@ -1,6 +1,6 @@
 package loggabletracer
 
-import opentracing "github.com/opentracing/opentracing-go"
+import opentracing "gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
 
 type accessorPropagator struct {
 	tracer *LoggableTracer

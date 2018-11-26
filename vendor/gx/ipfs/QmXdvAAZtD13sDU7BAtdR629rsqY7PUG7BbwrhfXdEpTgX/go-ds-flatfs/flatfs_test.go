@@ -15,11 +15,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ipfs/go-datastore"
-	"github.com/ipfs/go-datastore/query"
-	dstest "github.com/ipfs/go-datastore/test"
+	"gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
+	"gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore/query"
+	dstest "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore/test"
 
-	"github.com/ipfs/go-ds-flatfs"
+	"gx/ipfs/QmXdvAAZtD13sDU7BAtdR629rsqY7PUG7BbwrhfXdEpTgX/go-ds-flatfs"
 )
 
 func tempdir(t testing.TB) (path string, cleanup func()) {

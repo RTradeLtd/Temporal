@@ -7,6 +7,7 @@ import (
 
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/rtfs"
+	"github.com/RTradeLtd/rtfs/krab"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +16,11 @@ func Test_new(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	keystore, err := rtfs.NewKeystoreManager(cfg.IPFS.KeystorePath)
+	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath})
+	if err != nil {
+		t.Fatal(err)
+	}
+	keystore, err := rtfs.NewKeystoreManager(kb)
 	if err != nil {
 		t.Fatal(err)
 	}

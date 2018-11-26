@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"unicode"
 
-	"golang.org/x/text/internal/triegen"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/internal/triegen"
 )
 
 const seed = 0x12345

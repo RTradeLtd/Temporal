@@ -17,9 +17,9 @@ import (
 	"fmt"
 	"sort"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "gx/ipfs/QmYaVovLzgcdBpCLEAnW41p8ujvCUxe3TFpfJxjK5qbzn7/client_model/go"
 
-	"github.com/golang/protobuf/proto"
+	"gx/ipfs/QmZHU2gx42NPTYXzw6pJkuX6xCE7bKECp6e8QcPdoLx8sx/protobuf/proto"
 )
 
 // ValueType is an enumeration of metric types that represent a simple value.

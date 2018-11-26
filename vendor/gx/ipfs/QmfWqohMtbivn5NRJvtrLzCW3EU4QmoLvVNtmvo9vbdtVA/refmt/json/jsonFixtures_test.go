@@ -6,7 +6,7 @@ import (
 
 	. "github.com/warpfork/go-wish"
 
-	"github.com/polydawn/refmt/tok/fixtures"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/tok/fixtures"
 )
 
 // note: we still put all tests in one func so we control order.

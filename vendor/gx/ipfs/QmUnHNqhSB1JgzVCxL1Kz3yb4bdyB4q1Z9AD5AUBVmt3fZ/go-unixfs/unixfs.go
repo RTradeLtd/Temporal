@@ -6,12 +6,12 @@ package unixfs
 import (
 	"errors"
 
-	proto "github.com/gogo/protobuf/proto"
+	proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 
-	dag "github.com/ipfs/go-merkledag"
+	dag "gx/ipfs/QmcGt25mrjuB2kKW2zhPbXVZNHc4yoTDQ65NA8m6auP2f1/go-merkledag"
 
-	ipld "github.com/ipfs/go-ipld-format"
-	pb "github.com/ipfs/go-unixfs/pb"
+	pb "gx/ipfs/QmUnHNqhSB1JgzVCxL1Kz3yb4bdyB4q1Z9AD5AUBVmt3fZ/go-unixfs/pb"
+	ipld "gx/ipfs/QmcKKBwfz6FyQdHR2jsXrrF6XeSBXYL86anmWNewpFpoF5/go-ipld-format"
 )
 
 // A LinkResult for any parallel enumeration of links

@@ -4,7 +4,7 @@ package posinfo
 import (
 	"os"
 
-	ipld "github.com/ipfs/go-ipld-format"
+	ipld "gx/ipfs/QmcKKBwfz6FyQdHR2jsXrrF6XeSBXYL86anmWNewpFpoF5/go-ipld-format"
 )
 
 // PosInfo stores information about the file offset, its path and

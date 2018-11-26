@@ -68,7 +68,7 @@ import (
 	"strings"
 	"sync"
 
-	"golang.org/x/text/language"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
 )
 
 // A Handle refers to a registered message type.

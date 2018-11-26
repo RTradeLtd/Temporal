@@ -4,7 +4,7 @@ import (
 	"sync"
 	"testing"
 
-	mh "github.com/multiformats/go-multihash"
+	mh "gx/ipfs/QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW/go-multihash"
 )
 
 type MyStruct struct {

@@ -5,8 +5,8 @@ import (
 
 	. "github.com/warpfork/go-wish"
 
-	"github.com/polydawn/refmt/obj/atlas"
-	"github.com/polydawn/refmt/tok"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/obj/atlas"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/tok"
 )
 
 func checkUnmarshalling(t *testing.T, atl atlas.Atlas, slot interface{}, sequence []tok.Token, expect interface{}, expectErr error) {

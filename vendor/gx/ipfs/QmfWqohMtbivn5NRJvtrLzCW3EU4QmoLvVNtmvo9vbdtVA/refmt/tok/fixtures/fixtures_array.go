@@ -1,7 +1,7 @@
 package fixtures
 
 import (
-	. "github.com/polydawn/refmt/tok"
+	. "gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/tok"
 )
 
 var sequences_Array = []Sequence{

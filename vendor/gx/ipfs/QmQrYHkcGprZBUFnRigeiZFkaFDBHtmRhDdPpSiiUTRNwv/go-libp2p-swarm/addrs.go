@@ -1,8 +1,8 @@
 package swarm
 
 import (
-	mafilter "github.com/libp2p/go-maddr-filter"
-	mamask "github.com/whyrusleeping/multiaddr-filter"
+	mafilter "gx/ipfs/QmQJRvWaYAvU3Mdtk33ADXr9JAZwKMBYBGPkRQBDvyj2nn/go-maddr-filter"
+	mamask "gx/ipfs/QmSMZwvs3n4GBikZ7hKzT17c3bk65FmyZo2JqtJ16swqCv/multiaddr-filter"
 )
 
 // http://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml

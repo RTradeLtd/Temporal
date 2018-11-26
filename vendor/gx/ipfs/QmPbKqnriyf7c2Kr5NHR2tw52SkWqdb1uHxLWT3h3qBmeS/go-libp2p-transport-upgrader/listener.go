@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"sync"
 
-	logging "github.com/ipfs/go-log"
-	tec "github.com/jbenet/go-temp-err-catcher"
-	transport "github.com/libp2p/go-libp2p-transport"
-	manet "github.com/multiformats/go-multiaddr-net"
+	manet "gx/ipfs/QmQVUtnrNGtCRkCMpXgpApfzQjc8FDaDVxHqWH8cnZQeh5/go-multiaddr-net"
+	tec "gx/ipfs/QmWHgLqrghM9zw77nF6gdvT9ExQ2RB9pLxkd8sDHZf1rWb/go-temp-err-catcher"
+	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
+	transport "gx/ipfs/QmdQx4ZhKGdv9TvpCFpMxFzjTQFHRmFqjBxkRVwzT1JNes/go-libp2p-transport"
 )
 
 var log = logging.Logger("stream-upgrader")

@@ -4,9 +4,9 @@ import (
 	"crypto/rand"
 	"testing"
 
-	pb "github.com/libp2p/go-libp2p-crypto/pb"
+	pb "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto/pb"
 
-	"golang.org/x/crypto/ed25519"
+	"gx/ipfs/QmW7VUmSvhvSGbYbdsh7uRjhGmsYkc9fL8aJ5CorxxrU5N/go-crypto/ed25519"
 )
 
 func TestBasicSignAndVerify(t *testing.T) {

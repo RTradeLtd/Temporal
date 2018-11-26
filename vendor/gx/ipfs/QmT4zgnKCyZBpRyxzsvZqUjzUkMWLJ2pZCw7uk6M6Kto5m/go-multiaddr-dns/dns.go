@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmRKLtwMw131aK7ugC3G7ybpumMz78YrJe5dzneyindvG1/go-multiaddr"
 )
 
 var Dns4Protocol = ma.Protocol{

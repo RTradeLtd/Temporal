@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	crypto "github.com/libp2p/go-libp2p-crypto"
-	host "github.com/libp2p/go-libp2p-host"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
-	"github.com/libp2p/go-tcp-transport"
+	crypto "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
+	pstore "gx/ipfs/QmQAGG1zxfePqj2t7bLxyN8AFccZ889DDR9Gn8kVLDrGZo/go-libp2p-peerstore"
+	"gx/ipfs/QmUmXYaTmtvefgKoVA7hY3uUN8D1CiqxufigSyWuWwQjXy/go-tcp-transport"
+	host "gx/ipfs/QmahxMNoNuSsgQefo9rkpcfRFmQrMN6Q99aztKXf63K7YJ/go-libp2p-host"
 )
 
 func TestNewHost(t *testing.T) {

@@ -1,7 +1,7 @@
 package net
 
 import (
-	ma "github.com/multiformats/go-multiaddr"
+	ma "gx/ipfs/QmRKLtwMw131aK7ugC3G7ybpumMz78YrJe5dzneyindvG1/go-multiaddr"
 )
 
 // NotifyBundle implements Notifiee by calling any of the functions set on it,

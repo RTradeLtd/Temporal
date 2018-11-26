@@ -3,7 +3,7 @@ package spec_iterator
 import (
 	"errors"
 
-	"github.com/onsi/ginkgo/internal/spec"
+	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/internal/spec"
 )
 
 var ErrClosed = errors.New("no more specs to run")

@@ -5,10 +5,10 @@ import (
 	"path"
 	"strconv"
 
-	cli "github.com/urfave/cli"
+	cli "gx/ipfs/Qmc1AtgBdoUHP8oYSqU81NRYdzohmF45t5XNwVMvhCxsBA/cli"
 
-	"github.com/ipfs/iptb/testbed"
-	"github.com/ipfs/iptb/testbed/interfaces"
+	"gx/ipfs/QmckeQ2zrYLAXoSHYTGn5BDdb22BqbUoHEHm8KZ9YWRxd1/iptb/testbed"
+	"gx/ipfs/QmckeQ2zrYLAXoSHYTGn5BDdb22BqbUoHEHm8KZ9YWRxd1/iptb/testbed/interfaces"
 )
 
 var AttrCmd = cli.Command{

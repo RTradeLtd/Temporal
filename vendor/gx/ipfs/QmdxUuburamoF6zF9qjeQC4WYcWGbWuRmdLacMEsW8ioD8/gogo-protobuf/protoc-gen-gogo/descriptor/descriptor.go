@@ -42,7 +42,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/gogo/protobuf/proto"
+	"gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 )
 
 // extractFile extracts a FileDescriptorProto from a gzip'd buffer.

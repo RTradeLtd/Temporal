@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/onsi/ginkgo/config"
+	"gx/ipfs/QmNuLxhqRhfimRZeLttPe6Sa44MNwuHAdaFFa9TDuNZUmf/ginkgo/config"
 )
 
 func BuildVersionCommand() *Command {

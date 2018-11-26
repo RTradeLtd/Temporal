@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mr-tron/base58/base58"
+	"gx/ipfs/QmWFAMPqsEyUX7gDUsRVmMWz59FxSpJ1b2v6bJ1yYzo7jY/go-base58-fast/base58"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 package gstruct
 
 import (
-	"github.com/onsi/gomega/types"
+	"gx/ipfs/QmUWtNQd8JdEiYiDqNYTUcaqyteJZ2rTNQLiw3dauLPccy/gomega/types"
 )
 
 //Ignore ignores the actual value and always succeeds.

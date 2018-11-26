@@ -24,7 +24,11 @@ import (
 
 // PinToHostedIPFSNetwork is used to pin content to a private ipfs network
 func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	hash := c.Param("hash")
 	if _, err := gocid.Decode(hash); err != nil {
 		Fail(c, err)
@@ -34,8 +38,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	if len(forms) == 0 {
 		return
 	}
-	err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB)
-	if err != nil {
+	if err = CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
@@ -98,7 +101,11 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 
 // AddFileToHostedIPFSNetworkAdvanced is used to add a file to a private ipfs network in a more advanced and resilient manner
 func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "network_name", "hold_time")
 	if len(forms) == 0 {
 		return
@@ -197,7 +204,11 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 
 // AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network via the simple method
 func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "network_name", "hold_time")
 	if len(forms) == 0 {
 		return
@@ -299,8 +310,12 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 
 // IpfsPubSubPublishToHostedIPFSNetwork is used to publish a pubsub message to a private ipfs network
 func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	topic := c.Param("topic")
-	username := GetAuthenticatedUserFromContext(c)
 	forms := api.extractPostForms(c, "network_name", "message")
 	if len(forms) == 0 {
 		return
@@ -341,23 +356,24 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 
 // GetObjectStatForIpfsForHostedIPFSNetwork is  used to get object stats from a private ipfs network
 func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	key := c.Param("key")
 	if _, err := gocid.Decode(key); err != nil {
 		Fail(c, err)
 		return
 	}
-	username := GetAuthenticatedUserFromContext(c)
-	forms := api.extractPostForms(c, "network_name")
-	if len(forms) == 0 {
-		return
-	}
-	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
+	networkName := c.Param("networkName")
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(forms["network_name"])
+	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
 		api.LogError(err, eh.APIURLCheckError)(c)
 		return
@@ -379,26 +395,27 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 
 // CheckLocalNodeForPinForHostedIPFSNetwork is used to check the serving node for a pin
 func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	hash := c.Param("hash")
 	if _, err := gocid.Decode(hash); err != nil {
 		Fail(c, err)
 		return
 	}
-	username := GetAuthenticatedUserFromContext(c)
 	if err := api.validateAdminRequest(username); err != nil {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	forms := api.extractPostForms(c, "network_name")
-	if len(forms) == 0 {
-		return
-	}
-	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
+	networkName := c.Param("networkName")
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
 	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(forms["network_name"])
+	apiURL, err := im.GetAPIURLByName(networkName)
 	if err != nil {
 		api.LogError(err, eh.APIURLCheckError)(c)
 		return
@@ -419,7 +436,11 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 
 // PublishDetailedIPNSToHostedIPFSNetwork is used to publish an IPNS record to a private network with fine grained control
 func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "network_name", "hash", "life_time", "ttl", "key", "resolve")
 	if len(forms) == 0 {
 		return
@@ -495,8 +516,11 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 
 // CreateHostedIPFSNetworkEntryInDatabase is used to create an entry in the database for a private ipfs network
 func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
-	// retrieve fields
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithMissingField(c, "network_name")
@@ -557,7 +581,11 @@ func (api *API) createHostedIPFSNetworkEntryInDatabase(c *gin.Context) {
 }
 
 func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithMissingField(c, "network_name")
@@ -601,7 +629,11 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 }
 
 func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithMissingField(c, "network_name")
@@ -646,7 +678,11 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 }
 
 func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithMissingField(c, "network_name")
@@ -710,7 +746,11 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 
 // GetIPFSPrivateNetworkByName is used to get connection information for a priavate ipfs network
 func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	if err := api.validateAdminRequest(username); err != nil {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
@@ -748,8 +788,11 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 // GetAuthorizedPrivateNetworks is used to get the private
 // networks a user is authorized for
 func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
 	if err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
@@ -762,8 +805,12 @@ func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 
 // getUploadsByNetworkName is used to get uploads for a network by its name
 func (api *API) getUploadsByNetworkName(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
-	networkName := c.Param("network_name")
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
+	networkName := c.Param("networkName")
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
@@ -781,14 +828,16 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 
 // DownloadContentHashForPrivateNetwork is used to download content from  a private ipfs network
 func (api *API) downloadContentHashForPrivateNetwork(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithBadRequest(c, "network_name")
 		return
 	}
-
-	username := GetAuthenticatedUserFromContext(c)
-
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return

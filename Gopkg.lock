@@ -2,6 +2,22 @@
 
 
 [[projects]]
+  branch = "master"
+  digest = "1:b02e5e3f836f077a3249d1dfe3c57d305e007f71a98f2e69c170a2dd8d2b266c"
+  name = "github.com/AndreasBriese/bbloom"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "343706a395b76e5ca5c7dca46a5d937b48febc74"
+
+[[projects]]
+  branch = "master"
+  digest = "1:4a7be34ac4d3c56c039ece7d674236bde2d95f6adc93262cbb21d5b758566b15"
+  name = "github.com/Kubuxu/go-os-helper"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3d3fc2fb493d8d889dddd5a4524283ac2faa4732"
+
+[[projects]]
   digest = "1:cf2939df30718bf7e5ba78886eced2a4688e404ea166c7e3374a328752741c9f"
   name = "github.com/RTradeLtd/ChainRider-Go"
   packages = ["dash"]
@@ -18,12 +34,12 @@
   version = "v1.0.4"
 
 [[projects]]
-  digest = "1:0db8a741200061366f481773223f97f0a28b8923250f907958fa14011a2c864b"
+  digest = "1:cd6d6248944356cef0f0d2139a30270a7f671d19febad5681b89b3eb81b8144d"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "529e326d56516006be6987670ffa360ff92b6388"
-  version = "v1.0.11"
+  revision = "7a673df694d661b4436f47e56e9cb1071f1cc613"
+  version = "v1.0.13"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -35,7 +51,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:064df50756c75d048fe9e8db0e04eacdb8d13a35bbd5011c635bd7d7b7f6926b"
+  digest = "1:d2dad009ca69cc07697dfdce562f651bf669cb9c58bfcffb4de09053331b648f"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -43,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "ccab8185f9178f03c54f19dbcca00ca9d3e616db"
+  revision = "a2afa845642bb8fc27a3b772523e324e91e280f3"
 
 [[projects]]
   branch = "master"
@@ -54,12 +70,12 @@
   revision = "7b01a644a63680b90de22bacfb11d832e944eaab"
 
 [[projects]]
-  branch = "master"
-  digest = "1:e99fcde135f6969c0c75d864f6b5eba692ec0f0630ea2a1bd82cfd887409120b"
+  digest = "1:38b66fd13337b663166915e5c419149129a8ef29c41f0bf7bd7b2e1b53a0f1f5"
   name = "github.com/RTradeLtd/go-ipfs-api"
   packages = ["."]
   pruneopts = "UT"
-  revision = "62a112314f074fb704ebafbe6a95144396237bd2"
+  revision = "574f347d572c6979745f68003a9c2c38cdf9483a"
+  version = "v2.0.4"
 
 [[projects]]
   branch = "master"
@@ -80,12 +96,16 @@
   revision = "320346f207bfe9826e26fc7b05829bd46636f876"
 
 [[projects]]
-  digest = "1:dde4bd07439fd961b0227570eb0aaae798bd29d4a18962a1956e58a0fd666935"
+  branch = "master"
+  digest = "1:4ca737aa7b3eff2d55e87fec937de170b6ed20dbec6ce34fcf38a191604ac038"
   name = "github.com/RTradeLtd/rtfs"
-  packages = ["."]
+  packages = [
+    ".",
+    "beam",
+    "krab",
+  ]
   pruneopts = "UT"
-  revision = "82d4ca4e038506887acb3afb4ff7394579b628bf"
-  version = "v0.3.2"
+  revision = "b7fee8d61183231eccd1f849d8a6c39c7c54065a"
 
 [[projects]]
   branch = "master"
@@ -124,11 +144,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c0decf632843204d2b8781de7b26e7038584e2dcccc7e2f401e88ae85b1df2b7"
+  digest = "1:093bf93a65962e8191e3e8cd8fc6c363f83d43caca9739c906531ba7210a9904"
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
   pruneopts = "UT"
-  revision = "67e573d211ace594f1366b4ce9d39726c4b19bd0"
+  revision = "3dcf298fed2d5fd65918dc560b3942b2aa0629e8"
 
 [[projects]]
   branch = "master"
@@ -183,6 +203,29 @@
   packages = ["salsa20"]
   pruneopts = "UT"
   revision = "dcfb0a7ac018a248366f96bcd8a2f8c805d7b268"
+
+[[projects]]
+  digest = "1:5f5090f05382959db941fa45acbeb7f4c5241aa8ac0f8f4393dec696e5953f53"
+  name = "github.com/dgraph-io/badger"
+  packages = [
+    ".",
+    "options",
+    "protos",
+    "skl",
+    "table",
+    "y",
+  ]
+  pruneopts = "UT"
+  revision = "99233d725dbdd26d156c61b2f42ae1671b794656"
+  version = "v1.5.4"
+
+[[projects]]
+  branch = "master"
+  digest = "1:8583eab935e3d99d3a7ac489cd2ee7c8e95eecd7c64ab1fc8382746dacaf8563"
+  name = "github.com/dgryski/go-farm"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "2de33835d10275975374b37b2dcfd22c9020a1f5"
 
 [[projects]]
   branch = "master"
@@ -242,7 +285,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a213019a6b2643cdf88933265116afe38332b5d839dd6cf05c0aa9ccd3ddd3df"
+  digest = "1:10a2d902b415b5f00e9dba2af73fc43571b0e4d239a1e9a568a39db2455be5f8"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
@@ -251,7 +294,7 @@
     "render",
   ]
   pruneopts = "UT"
-  revision = "d6b2c13b18cc0986e579e100bc47f3704a0d3bcd"
+  revision = "1f576fb27c3f3ec00baa0d2868e41830e37d0b54"
 
 [[projects]]
   digest = "1:15e27372d379b45b18ac917b9dafc45c45485239490ece18cca97a12f9591146"
@@ -287,12 +330,12 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:3a26588bc48b96825977c1b3df964f8fd842cd6860cc26370588d3563433cf11"
+  digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
   name = "github.com/google/uuid"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
-  version = "v1.0.0"
+  revision = "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
@@ -367,6 +410,25 @@
   version = "v0.9.0"
 
 [[projects]]
+  digest = "1:35755bdc0c3264b46b2d4451a40ba0ce60c03608d390c9a1a4d3b54b82ac9bd4"
+  name = "github.com/ipfs/go-datastore"
+  packages = [
+    ".",
+    "query",
+  ]
+  pruneopts = "UT"
+  revision = "5accf38b689df4e06a973bb70cc678f798d691c0"
+  version = "v3.2.0"
+
+[[projects]]
+  digest = "1:58ecb6a43abe64b279860e389fecedafe3a2483d562066b6cd0021c2cf66d7c0"
+  name = "github.com/ipfs/go-ds-badger"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "a7965b08c06faf12cae93f20913c1237dce1b5cc"
+  version = "v1.7.0"
+
+[[projects]]
   digest = "1:5e59d6e02abee7ab8ef7f396f5d681054fbfae02ff159fe3d1e1a01e6ed2b034"
   name = "github.com/ipfs/go-ipfs-addr"
   packages = ["."]
@@ -389,14 +451,6 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "90d206a6f3947f904673ebffd376a2dcbbd84942"
-
-[[projects]]
-  branch = "master"
-  digest = "1:02df66d8098a1087e74f74326883e1e104844f528227431c7290510fd165ced7"
-  name = "github.com/ipfs/go-ipfs-keystore"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "508c1e10090009fde253d4d9eb9e2c581e3781ad"
 
 [[projects]]
   digest = "1:aae82c244bd91107575a0244a29e82e34ba23e06b6892557e33728de48deba96"
@@ -1070,7 +1124,7 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "1f2c4f3cd6db5fd6f68f36af6b6d5d936fd93c4e"
+  revision = "aeab699e26f4d4089dba5e522e5d9babd2adbaf7"
 
 [[projects]]
   branch = "master"
@@ -1326,7 +1380,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:58ddfe5d263625d997ae49a44f5329e456e7078dd4b451ce9c5d1816db148438"
+  digest = "1:5a613be9198dc04fd2032ff2fe57b649b3e4121d0e4c3d1e5289a62f2204de64"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1334,7 +1388,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "93218def8b18e66adbdab3eca8ec334700329f1f"
+  revision = "62eef0e2fa9b2c385f7b2778e763486da6880d37"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1382,7 +1436,7 @@
     "go/types/typeutil",
   ]
   pruneopts = "UT"
-  revision = "2ddaf7f79a0937ffa9072ede7b696fd084abfe86"
+  revision = "04b5d21e00f1f47bd824a6ade581e7189bacde87"
 
 [[projects]]
   branch = "master"
@@ -1468,6 +1522,8 @@
     "github.com/RTradeLtd/grpc/temporal",
     "github.com/RTradeLtd/grpc/temporal/request",
     "github.com/RTradeLtd/rtfs",
+    "github.com/RTradeLtd/rtfs/beam",
+    "github.com/RTradeLtd/rtfs/krab",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",

@@ -6,10 +6,10 @@ import (
 	"path"
 	"time"
 
-	"github.com/pkg/errors"
-	cli "github.com/urfave/cli"
+	"gx/ipfs/QmVmDhyTTUcQXFD1rRQ64fGLMSAoaQvNH3hwuaCFAPq2hy/errors"
+	cli "gx/ipfs/Qmc1AtgBdoUHP8oYSqU81NRYdzohmF45t5XNwVMvhCxsBA/cli"
 
-	"github.com/ipfs/iptb/testbed"
+	"gx/ipfs/QmckeQ2zrYLAXoSHYTGn5BDdb22BqbUoHEHm8KZ9YWRxd1/iptb/testbed"
 )
 
 var ConnectCmd = cli.Command{

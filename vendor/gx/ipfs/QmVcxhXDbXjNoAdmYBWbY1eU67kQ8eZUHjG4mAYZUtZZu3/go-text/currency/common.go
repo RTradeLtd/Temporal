@@ -5,7 +5,7 @@ package currency
 import (
 	"time"
 
-	"golang.org/x/text/language"
+	"gx/ipfs/QmVcxhXDbXjNoAdmYBWbY1eU67kQ8eZUHjG4mAYZUtZZu3/go-text/language"
 )
 
 // This file contains code common to gen.go and the package code.

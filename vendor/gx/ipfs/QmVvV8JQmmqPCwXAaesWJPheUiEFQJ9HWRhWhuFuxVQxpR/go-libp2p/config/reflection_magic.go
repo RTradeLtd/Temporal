@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"runtime"
 
-	host "github.com/libp2p/go-libp2p-host"
-	tptu "github.com/libp2p/go-libp2p-transport-upgrader"
+	tptu "gx/ipfs/QmPbKqnriyf7c2Kr5NHR2tw52SkWqdb1uHxLWT3h3qBmeS/go-libp2p-transport-upgrader"
+	host "gx/ipfs/QmahxMNoNuSsgQefo9rkpcfRFmQrMN6Q99aztKXf63K7YJ/go-libp2p-host"
 )
 
 var errorType = reflect.TypeOf((*error)(nil)).Elem()

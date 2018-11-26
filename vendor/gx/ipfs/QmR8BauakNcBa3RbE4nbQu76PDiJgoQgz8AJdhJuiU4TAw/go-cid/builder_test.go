@@ -3,7 +3,7 @@ package cid
 import (
 	"testing"
 
-	mh "github.com/multiformats/go-multihash"
+	mh "gx/ipfs/QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW/go-multihash"
 )
 
 func TestV0Builder(t *testing.T) {

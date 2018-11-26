@@ -3,11 +3,11 @@ package config
 import (
 	"fmt"
 
-	security "github.com/libp2p/go-conn-security"
-	csms "github.com/libp2p/go-conn-security-multistream"
-	insecure "github.com/libp2p/go-conn-security/insecure"
-	host "github.com/libp2p/go-libp2p-host"
-	peer "github.com/libp2p/go-libp2p-peer"
+	csms "gx/ipfs/QmPcoYfH3kjZmasoVuVWrjPvdX5zwG4U8iXgEgZJD14dBf/go-conn-security-multistream"
+	host "gx/ipfs/QmahxMNoNuSsgQefo9rkpcfRFmQrMN6Q99aztKXf63K7YJ/go-libp2p-host"
+	security "gx/ipfs/QmbyjEKtxXmZdiByBiNhfayzEuEPPBvuD2dLpHky8cHUvy/go-conn-security"
+	insecure "gx/ipfs/QmbyjEKtxXmZdiByBiNhfayzEuEPPBvuD2dLpHky8cHUvy/go-conn-security/insecure"
+	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
 )
 
 // SecC is a security transport constructor

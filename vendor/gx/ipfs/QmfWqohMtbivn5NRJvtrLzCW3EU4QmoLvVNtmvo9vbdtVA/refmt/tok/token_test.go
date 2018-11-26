@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	. "github.com/polydawn/refmt/testutil"
+	. "gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/testutil"
 )
 
 func TestTokenEqualityDefn(t *testing.T) {

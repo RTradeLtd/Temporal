@@ -32,7 +32,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/pkg/errors"
+	"gx/ipfs/QmVmDhyTTUcQXFD1rRQ64fGLMSAoaQvNH3hwuaCFAPq2hy/errors"
 )
 
 var debugMode = true

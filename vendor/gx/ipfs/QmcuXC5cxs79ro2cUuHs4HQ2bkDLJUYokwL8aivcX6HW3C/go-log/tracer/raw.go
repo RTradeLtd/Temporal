@@ -3,7 +3,7 @@ package loggabletracer
 import (
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
+	opentracing "gx/ipfs/QmWLWmRVSiagqP15jczsGME1qpob6HDbtbHAY2he9W5iUo/opentracing-go"
 )
 
 // RawSpan encapsulates all state associated with a (finished) Span.

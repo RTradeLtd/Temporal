@@ -17,7 +17,11 @@ import (
 
 // PublishToIPNSDetails is used to publish a record on IPNS with more fine grained control over typical publishing methods
 func (api *API) publishToIPNSDetails(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	forms := api.extractPostForms(c, "network_name", "hash", "life_time", "ttl", "key", "resolve")
 	if len(forms) == 0 {
 		return
@@ -98,7 +102,11 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 
 // getIPNSRecordsPublishedByUser is used to fetch IPNS records published by a user
 func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
-	username := GetAuthenticatedUserFromContext(c)
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
 	records, err := api.im.FindByUserName(username)
 	if err != nil {
 		api.LogError(err, eh.IpnsRecordSearchError)(c, http.StatusBadRequest)

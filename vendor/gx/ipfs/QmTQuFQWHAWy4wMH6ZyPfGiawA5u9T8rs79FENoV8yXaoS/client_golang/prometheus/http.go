@@ -26,7 +26,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/prometheus/common/expfmt"
+	"gx/ipfs/QmTWEDbLX2d4NiMgPks6J2crRz47BamBtP16WiFuTL6Ydm/common/expfmt"
 )
 
 // TODO(beorn7): Remove this whole file. It is a partial mirror of

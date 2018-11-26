@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	tec "github.com/jbenet/go-temp-err-catcher"
+	tec "gx/ipfs/QmWHgLqrghM9zw77nF6gdvT9ExQ2RB9pLxkd8sDHZf1rWb/go-temp-err-catcher"
 )
 
 var (

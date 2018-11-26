@@ -3,8 +3,8 @@ package fs_test
 import (
 	"testing"
 
-	"bazil.org/fuse/fs/fstestutil"
-	"golang.org/x/sys/unix"
+	"gx/ipfs/QmSJBsmLP1XMjv8hxYg2rUMdPDB7YUpyBo9idjrJ6Cmq6F/fuse/fs/fstestutil"
+	"gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/unix"
 )
 
 type exchangeData struct {

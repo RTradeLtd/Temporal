@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/ipfs/go-ipfs-cmds"
+	"gx/ipfs/Qma6uuSyjkecGhMFFLfzyJDPyoDtNJSHJNweDccZhaWkgU/go-ipfs-cmds"
 	"net/http"
 )
 

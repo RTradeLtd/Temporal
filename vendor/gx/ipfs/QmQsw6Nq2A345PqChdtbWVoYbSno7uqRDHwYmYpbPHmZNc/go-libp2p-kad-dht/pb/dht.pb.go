@@ -3,10 +3,10 @@
 
 package dht_pb
 
-import proto "github.com/gogo/protobuf/proto"
+import proto "gx/ipfs/QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8/gogo-protobuf/proto"
 import fmt "fmt"
 import math "math"
-import pb "github.com/libp2p/go-libp2p-record/pb"
+import pb "gx/ipfs/QmSoeYGNm8v8jAF49hX7UwHwkXjoeobSrn9sya5NPPsxXP/go-libp2p-record/pb"
 
 import io "io"
 

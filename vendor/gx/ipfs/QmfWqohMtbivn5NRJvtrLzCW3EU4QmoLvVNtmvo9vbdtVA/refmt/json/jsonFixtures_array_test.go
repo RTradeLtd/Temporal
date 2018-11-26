@@ -4,7 +4,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/polydawn/refmt/tok/fixtures"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/tok/fixtures"
 )
 
 func testArray(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/facebookgo/atomicfile"
+	"gx/ipfs/QmdYwCmx8pZRkzdcd8MhmLJqYVoVTC1aGsy5Q4reMGLNLg/atomicfile"
 )
 
 func test(t *testing.T, dir, prefix string) {

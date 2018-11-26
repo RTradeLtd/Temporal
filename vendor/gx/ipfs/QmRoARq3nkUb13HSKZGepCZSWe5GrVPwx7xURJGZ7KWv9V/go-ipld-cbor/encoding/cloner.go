@@ -3,8 +3,8 @@ package encoding
 import (
 	"sync"
 
-	refmt "github.com/polydawn/refmt"
-	"github.com/polydawn/refmt/obj/atlas"
+	refmt "gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt"
+	"gx/ipfs/QmfWqohMtbivn5NRJvtrLzCW3EU4QmoLvVNtmvo9vbdtVA/refmt/obj/atlas"
 )
 
 // PooledCloner is a thread-safe pooled object cloner.

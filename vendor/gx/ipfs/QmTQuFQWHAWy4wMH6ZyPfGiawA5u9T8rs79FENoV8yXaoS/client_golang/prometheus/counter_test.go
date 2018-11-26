@@ -18,7 +18,7 @@ import (
 	"math"
 	"testing"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "gx/ipfs/QmYaVovLzgcdBpCLEAnW41p8ujvCUxe3TFpfJxjK5qbzn7/client_model/go"
 )
 
 func TestCounterAdd(t *testing.T) {
