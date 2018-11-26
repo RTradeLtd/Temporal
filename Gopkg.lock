@@ -34,12 +34,12 @@
   version = "v1.0.4"
 
 [[projects]]
-  digest = "1:cd6d6248944356cef0f0d2139a30270a7f671d19febad5681b89b3eb81b8144d"
+  digest = "1:8e3fb2f520f9dc842a894c28b893c8bf5250e1bf8c7c88589d69026687b6c44c"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7a673df694d661b4436f47e56e9cb1071f1cc613"
-  version = "v1.0.13"
+  revision = "ed6bea444ae3a52e0f95c5d4f6d4f227cb091698"
+  version = "v1.0.15"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -50,8 +50,8 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:d2dad009ca69cc07697dfdce562f651bf669cb9c58bfcffb4de09053331b648f"
+  branch = "update/config"
+  digest = "1:53b48a7333b146ee214fee2dec90b5ab21e374310e1ab7995b309734ba8fa824"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "a2afa845642bb8fc27a3b772523e324e91e280f3"
+  revision = "09756941d92925b8d263d11e6abdc3202a84c267"
 
 [[projects]]
   branch = "master"
@@ -78,7 +78,7 @@
   version = "v2.0.4"
 
 [[projects]]
-  branch = "master"
+  branch = "krab"
   digest = "1:65b270e0a2d4af215cb8d001853173c3a7353cb8e2bf0fa3232f01e84b9312f3"
   name = "github.com/RTradeLtd/grpc"
   packages = [
@@ -93,7 +93,7 @@
     "temporal/response",
   ]
   pruneopts = "UT"
-  revision = "320346f207bfe9826e26fc7b05829bd46636f876"
+  revision = "f016bdcc0beb1848333a3474e15c2b991780d476"
 
 [[projects]]
   digest = "1:6ea26da496cd976afd625e4f9cfd39ffdfa4bfca20074e8202d070569b873f8b"

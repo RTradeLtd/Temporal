@@ -42,6 +42,9 @@ case "$1" in
     ipfs-cluster-queue)
         temporal queue ipfs cluster
         ;;
+    krab)
+        temporal krab
+        ;;
     migrate)
         temporal migrate
         ;;
