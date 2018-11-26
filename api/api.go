@@ -101,7 +101,9 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	}
 
 	// init routes
-	api.setupRoutes()
+	if err = api.setupRoutes(); err != nil {
+		return nil, err
+	}
 	api.LogInfo("api initialization successful")
 
 	// return our configured API service
@@ -215,7 +217,7 @@ func (api *API) ListenAndServe(addr string, tls *TLSConfig) error {
 }
 
 // setupRoutes is used to setup all of our api routes
-func (api *API) setupRoutes() {
+func (api *API) setupRoutes() error {
 	var (
 		connLimit int
 		err       error
@@ -226,7 +228,7 @@ func (api *API) setupRoutes() {
 		// setup the connection limit
 		connLimit, err = strconv.Atoi(api.cfg.API.Connection.Limit)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 	// set up defaults
@@ -498,4 +500,5 @@ func (api *API) setupRoutes() {
 	}
 
 	api.LogInfo("Routes initialized")
+	return nil
 }
