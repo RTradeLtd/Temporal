@@ -21,11 +21,24 @@ type Publisher struct {
 	host *core.IpfsNode
 }
 
+// Opts is used to configure our connection
+type Opts struct {
+	PK ci.PrivKey
+}
+
 // NewPublisher is used to generate our IPNS publisher
-func NewPublisher(swarmAddrs ...string) (*Publisher, error) {
-	pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
-	if err != nil {
-		return nil, err
+func NewPublisher(opts *Opts, swarmAddrs ...string) (*Publisher, error) {
+	var (
+		pk  ci.PrivKey
+		err error
+	)
+	if opts != nil && opts.PK != nil {
+		pk = opts.PK
+	} else {
+		pk, _, err = ci.GenerateKeyPair(ci.Ed25519, 256)
+		if err != nil {
+			return nil, err
+		}
 	}
 	pid, err := peer.IDFromPrivateKey(pk)
 	if err != nil {
@@ -71,4 +84,9 @@ func (p *Publisher) Publish(ctx context.Context, pk ci.PrivKey, content string) 
 // PublishWithEOL is used to publish an IPNS record with non default lifetime values
 func (p *Publisher) PublishWithEOL(ctx context.Context, pk ci.PrivKey, content string, eol time.Time) error {
 	return p.host.Namesys.PublishWithEOL(ctx, pk, path.FromString(content), eol)
+}
+
+// Close is used to handle tearing down of our node
+func (p *Publisher) Close() error {
+	return p.host.Close()
 }
