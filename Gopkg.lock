@@ -99,12 +99,13 @@
 
 [[projects]]
   branch = "krab"
-  digest = "1:c970ae873bf3d9fc0a78e8a5482562adc39cb42a4b531be2bcebb9c4e46ac632"
+  digest = "1:caf2f51acc35c205aaa8cb2e9d7372ec6a244e2bcf42536c0a51624da3dccbb3"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
     "beam",
     "krab",
+    "krab/backend",
   ]
   pruneopts = "UT"
   revision = "771469b4dfb84f54f158839a67221ed53d930787"
@@ -1568,6 +1569,7 @@
     "github.com/RTradeLtd/rtfs",
     "github.com/RTradeLtd/rtfs/beam",
     "github.com/RTradeLtd/rtfs/krab",
+    "github.com/RTradeLtd/rtfs/krab/backend",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",

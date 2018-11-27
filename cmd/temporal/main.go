@@ -176,13 +176,13 @@ var commands = map[string]cmd.Cmd{
 		},
 	},
 	"krab": {
-		Blurb: "runs the krab service",
+		Blurb:       "runs the krab service",
 		Description: "Runs the krab grpc server, allowing for secure private key management",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			if err := krab.NewServer(cfg.Endpoints.Krab.URL, "tcp", &cfg); err != nil {
 				log.Fatal(err)
 			}
-		}
+		},
 	},
 	"migrate": {
 		Blurb:       "run database migrations",

@@ -125,7 +125,8 @@ func (api *API) exportKey(c *gin.Context) {
 	}
 	phrase, err := mnemonics.ToPhrase(resp.PrivateKey, mnemonics.English)
 	if err != nil {
-		return "", err
+		api.LogError(err, eh.KeyExportError)(c, http.StatusBadRequest)
+		return
 	}
-	Respond(c, http.StatusOK, gin.H{"response": mnemonic})
+	Respond(c, http.StatusOK, gin.H{"response": phrase})
 }
