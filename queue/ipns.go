@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"time"
 
 	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
 
@@ -73,7 +74,8 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
-		if err := publisher.Publish(context.Background(), pk2, ie.CID); err != nil {
+		eol := time.Now().Add(ie.LifeTime)
+		if err := publisher.PublishWithEOL(context.Background(), pk2, ie.CID, eol); err != nil {
 			publisher.Close()
 			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 			qm.LogError(err, "failed to publish ipns entry")
