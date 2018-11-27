@@ -186,13 +186,9 @@ func (api *API) registerUserAccount(c *gin.Context) {
 			api.LogError(err, eh.DuplicateUserNameError)(c, http.StatusBadRequest)
 			return
 		default:
-			api.LogError(err, "unknown error occured")(c, http.StatusBadRequest)
+			api.LogError(err, eh.UserAccountCreationError)(c, http.StatusBadRequest)
 			return
 		}
-	}
-	if err != nil {
-		api.LogError(err, eh.UserAccountCreationError)(c, http.StatusBadRequest)
-		return
 	}
 	api.l.WithFields(log.Fields{
 		"service": "api",
