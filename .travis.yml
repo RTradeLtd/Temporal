@@ -19,7 +19,8 @@ before_script:
 script:
   # - docker run -v $(pwd):/mnt koalaman/shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
   - diff -u <(echo -n) <(gofmt -d -s `find . -type f -name '*.go' -not -path "./vendor/*"`)
-  # - diff -u <(echo -n) <(golint `go list ./... | grep -v /vendor/`)
+  # rtns uses some logic that breaks golint due to a reliance on ipfs, so it is ignored
+  - diff -u <(echo -n) <(golint `go list ./... | grep -v /vendor/ | grep -v /rtns/`)
   - go test -race -short -coverprofile=coverage.txt ./...
 
 after_success:
