@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	ci "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
 	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
@@ -31,7 +32,8 @@ func TestPublisher_Gen(t *testing.T) {
 	} else {
 		fmt.Println("id to check ", pid.Pretty())
 	}
-	if err := publisher.Publish(context.Background(), pk, testPath); err != nil {
+	ctx := context.WithValue(context.Background(), "ipns-publish-ttl", time.Minute*10)
+	if err := publisher.Publish(ctx, pk, testPath); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -57,6 +59,10 @@ func TestPublisher_NoGen(t *testing.T) {
 		fmt.Println("id to check ", pid.Pretty())
 	}
 	if err := publisher.Publish(context.Background(), pk, testPath); err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.WithValue(context.Background(), "ipns-publish-ttl", time.Minute*10)
+	if err := publisher.Publish(ctx, pk, testPath); err != nil {
 		t.Fatal(err)
 	}
 }
