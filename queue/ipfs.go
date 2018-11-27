@@ -83,8 +83,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB
 			qm.LogError(err, "failed to create key")
 			d.Ack(false)
 		}
-		resp, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: keyName, PrivateKey: pkBytes})
-		if err != nil {
+		if _, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: keyName, PrivateKey: pkBytes}); err != nil {
 			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
 			qm.LogError(err, "failed to create key")
 			d.Ack(false)

@@ -3,6 +3,7 @@ package rtns
 import (
 	"context"
 	"encoding/base64"
+	"time"
 
 	path "gx/ipfs/QmVi2uUygezqaMTqs3Yzt5FcZFHJoYD4B7jQ2BELjj7ZuY/go-path"
 
@@ -65,4 +66,9 @@ func NewPublisher(swarmAddrs ...string) (*Publisher, error) {
 // Publish is used to publish an IPNS record
 func (p *Publisher) Publish(ctx context.Context, pk ci.PrivKey, content string) error {
 	return p.host.Namesys.Publish(ctx, pk, path.FromString(content))
+}
+
+// PublishWithEOL is used to publish an IPNS record with non default lifetime values
+func (p *Publisher) PublishWithEOL(ctx context.Context, pk ci.PrivKey, content string, eol time.Time) error {
+	return p.host.Namesys.PublishWithEOL(ctx, pk, path.FromString(content), eol)
 }

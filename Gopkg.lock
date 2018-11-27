@@ -98,7 +98,8 @@
   revision = "f016bdcc0beb1848333a3474e15c2b991780d476"
 
 [[projects]]
-  digest = "1:6ea26da496cd976afd625e4f9cfd39ffdfa4bfca20074e8202d070569b873f8b"
+  branch = "krab"
+  digest = "1:c970ae873bf3d9fc0a78e8a5482562adc39cb42a4b531be2bcebb9c4e46ac632"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -106,8 +107,7 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "94f0159b7478db1207109fe8e0ca9cd4322b62a7"
-  version = "v0.3.5"
+  revision = "771469b4dfb84f54f158839a67221ed53d930787"
 
 [[projects]]
   branch = "master"
@@ -440,6 +440,34 @@
   pruneopts = "UT"
   revision = "a7965b08c06faf12cae93f20913c1237dce1b5cc"
   version = "v1.7.0"
+
+[[projects]]
+  digest = "1:5c3343b590fca59c7b5acfcbe95d5f4588ec803ce178c2a038d1db99f4fbc644"
+  name = "github.com/ipfs/go-ipfs"
+  packages = [
+    "core",
+    "core/coreapi/interface",
+    "core/coreapi/interface/options",
+    "dagutils",
+    "exchange/reprovide",
+    "filestore",
+    "filestore/pb",
+    "fuse/mount",
+    "keystore",
+    "namesys",
+    "namesys/opts",
+    "namesys/republisher",
+    "p2p",
+    "pin",
+    "pin/internal/pb",
+    "repo",
+    "thirdparty/cidv0v1",
+    "thirdparty/math2",
+    "thirdparty/verifbs",
+  ]
+  pruneopts = "UT"
+  revision = "aefc746f34e5ffdee5fba1915c6603b65a0ebf81"
+  version = "v0.4.18"
 
 [[projects]]
   digest = "1:5e59d6e02abee7ab8ef7f396f5d681054fbfae02ff159fe3d1e1a01e6ed2b034"
@@ -1549,6 +1577,8 @@
     "github.com/gin-gonic/gin",
     "github.com/ipfs/go-cid",
     "github.com/ipfs/go-ipfs-addr",
+    "github.com/ipfs/go-ipfs/core",
+    "github.com/ipfs/go-ipfs/repo",
     "github.com/ipfs/go-ipns",
     "github.com/ipfs/go-ipns/pb",
     "github.com/ipfs/ipfs-cluster/api",
