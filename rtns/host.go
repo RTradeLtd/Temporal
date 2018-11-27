@@ -85,8 +85,3 @@ func (p *Publisher) Publish(ctx context.Context, pk ci.PrivKey, content string) 
 func (p *Publisher) PublishWithEOL(ctx context.Context, pk ci.PrivKey, content string, eol time.Time) error {
 	return p.host.Namesys.PublishWithEOL(ctx, pk, path.FromString(content), eol)
 }
-
-// Close is used to handle tearing down of our node
-func (p *Publisher) Close() error {
-	return p.host.Close()
-}

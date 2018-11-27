@@ -21,11 +21,6 @@ func TestPublisher_Gen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := publisher.Close(); err != nil {
-			t.Fatal(err)
-		}
-	}()
 	// create our private key
 	pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
 	if err != nil {
@@ -51,11 +46,6 @@ func TestPublisher_NoGen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := publisher.Close(); err != nil {
-			t.Fatal(err)
-		}
-	}()
 	// create our private key
 	pk, _, err = ci.GenerateKeyPair(ci.Ed25519, 256)
 	if err != nil {

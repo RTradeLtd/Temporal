@@ -44,13 +44,11 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 		ie := IPNSEntry{}
 		err = json.Unmarshal(d.Body, &ie)
 		if err != nil {
-			publisher.Close()
 			qm.LogError(err, "failed to unmarshal message")
 			d.Ack(false)
 			continue
 		}
 		if ie.NetworkName != "public" {
-			publisher.Close()
 			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 			qm.LogError(errors.New("private networks not supported"), "private networks not supported")
 			d.Ack(false)
@@ -60,7 +58,6 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 		// get the private key
 		resp, err := kb.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
 		if err != nil {
-			publisher.Close()
 			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 			qm.LogError(err, "failed to retrieve private key")
 			d.Ack(false)
@@ -68,7 +65,6 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 		}
 		pk2, err := ci.UnmarshalPrivateKey(resp.PrivateKey)
 		if err != nil {
-			publisher.Close()
 			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 			qm.LogError(err, "failed to unmarshal private key")
 			d.Ack(false)
@@ -76,7 +72,6 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 		}
 		eol := time.Now().Add(ie.LifeTime)
 		if err := publisher.PublishWithEOL(context.Background(), pk2, ie.CID, eol); err != nil {
-			publisher.Close()
 			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 			qm.LogError(err, "failed to publish ipns entry")
 			d.Ack(false)
@@ -84,7 +79,6 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 		}
 		id, err := peer.IDFromPrivateKey(pk2)
 		if err != nil {
-			publisher.Close()
 			// do not refund here since the record is published
 			qm.LogError(err, "failed to unmarshal peer identity")
 			d.Ack(false)
@@ -100,7 +94,6 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 				ie.LifeTime,
 				ie.TTL,
 			); err != nil {
-				publisher.Close()
 				qm.LogError(err, "failed to update ipns entry in database")
 				d.Ack(false)
 				continue
@@ -116,14 +109,10 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 				ie.LifeTime,
 				ie.TTL,
 			); err != nil {
-				publisher.Close()
 				qm.LogError(err, "failed to create ipns entry in database")
 				d.Ack(false)
 				continue
 			}
-		}
-		if err = publisher.Close(); err != nil {
-			qm.LogError(err, "failed to properly close publisher")
 		}
 		qm.LogInfo("successfully published and saved ipns entry")
 		d.Ack(false)
