@@ -177,9 +177,18 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		"service": "api",
 	}).Info("user account registration detected")
 	userModel, err := api.um.NewUserAccount(forms["username"], forms["password"], forms["email_address"], false)
-	if err != nil && err.Error() == eh.DuplicateEmailError || err != nil && err.Error() == eh.DuplicateUserNameError {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
+	if err != nil {
+		switch err.Error() {
+		case eh.DuplicateEmailError:
+			api.LogError(err, eh.DuplicateEmailError)(c, http.StatusBadRequest)
+			return
+		case eh.DuplicateUserNameError:
+			api.LogError(err, eh.DuplicateUserNameError)(c, http.StatusBadRequest)
+			return
+		default:
+			api.LogError(err, "unknown error occured")(c, http.StatusBadRequest)
+			return
+		}
 	}
 	if err != nil {
 		api.LogError(err, eh.UserAccountCreationError)(c, http.StatusBadRequest)
