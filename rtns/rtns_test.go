@@ -8,7 +8,7 @@ import (
 	lci "github.com/libp2p/go-libp2p-crypto"
 )
 
-var testPath = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
+var testHash = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
 
 func TestRTNS(t *testing.T) {
 	im, err := rtns.InitializeWithNewKey()
@@ -27,7 +27,7 @@ func TestRTNS(t *testing.T) {
 	}
 
 	timeT := time.Now().Add(time.Hour * 24)
-	_, err = im.CreateEntryWithEmbed(testPath, timeT)
+	_, err = im.CreateEntryWithEmbed(testHash, timeT)
 	if err != nil {
 		t.Fatal(err)
 	}
