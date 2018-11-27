@@ -71,7 +71,10 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 			continue
 		}
 		eol := time.Now().Add(ie.LifeTime)
-		if err := publisher.PublishWithEOL(context.Background(), pk2, ie.CID, eol); err != nil {
+		// ignore the golint warning, as we must do this to pass in a ttl value
+		// see https://discuss.ipfs.io/t/clarification-over-ttl-and-lifetime-for-ipns-records/4346 for more information
+		ctx := context.WithValue(context.Background(), "ipns-publish-ttl", ie.TTL)
+		if err := publisher.PublishWithEOL(ctx, pk2, ie.CID, eol); err != nil {
 			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 			qm.LogError(err, "failed to publish ipns entry")
 			d.Ack(false)
