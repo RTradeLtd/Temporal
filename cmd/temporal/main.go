@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"sync"
+	"syscall"
 
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -75,10 +79,26 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
+
+							ctx, cancel := context.WithCancel(context.Background())
+
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+							shutdownChannel := make(chan struct{})
+							waitGroup := &sync.WaitGroup{}
+							for i := 1; i <= 2; i++ {
+								waitGroup.Add(1)
+								go func() {
+									if err = qm.ConsumeMessage(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+										log.Fatal(err)
+									}
+								}()
 							}
+							<-quitChannel
+							close(shutdownChannel)
+							cancel()
+							waitGroup.Wait()
 						},
 					},
 					"pin": {
@@ -90,7 +110,7 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -105,7 +125,7 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -120,7 +140,7 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -135,7 +155,7 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -152,7 +172,7 @@ var commands = map[string]cmd.Cmd{
 					if err != nil {
 						log.Fatal(err)
 					}
-					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -167,7 +187,7 @@ var commands = map[string]cmd.Cmd{
 					if err != nil {
 						log.Fatal(err)
 					}
-					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -302,26 +322,6 @@ func main() {
 		"dbURL":  tCfg.Database.URL,
 		"dbUser": tCfg.Database.Username,
 	}
-	var (
-		peerAddr string
-		isTns    bool
-	)
-	// check for tns client operation and load peer addr
-	for _, v := range os.Args {
-		if v == "tns" {
-			isTns = true
-		}
-		if isTns && v == "client" {
-			peerAddr = os.Getenv("PEER_ADDR")
-			if peerAddr == "" {
-				log.Fatal("PEER_ADDR env var is empty")
-			}
-		}
-	}
-	if isTns && peerAddr != "" {
-		flags["peerAddr"] = peerAddr
-	}
-	fmt.Println(tCfg.APIKeys.ChainRider)
 	// execute
 	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
 }

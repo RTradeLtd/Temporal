@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -27,7 +28,7 @@ import (
 )
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
-func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	kb, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return err
@@ -109,7 +110,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB
 }
 
 // ProccessIPFSPins is used to process IPFS pin requests
-func (qm *Manager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	userManager := models.NewUserManager(db)
 	//uploadManager := models.NewUploadManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
@@ -216,7 +217,7 @@ func (qm *Manager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg 
 // ProccessIPFSFiles is used to process messages sent to rabbitmq to upload files to IPFS.
 // This function is invoked with the advanced method of file uploads, and is significantly more resilient than
 // the simple file upload method.
-func (qm *Manager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
+func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
 	service := qm.Logger.WithFields(log.Fields{
 		"service": qm.QueueName,
 	})

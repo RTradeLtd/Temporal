@@ -6,7 +6,8 @@ import log "github.com/sirupsen/logrus"
 func (qm *Manager) LogError(err error, message string, fields ...interface{}) {
 	// base entry
 	entry := qm.Logger.WithFields(log.Fields{
-		"service": qm.Service,
+		"service":  qm.Service,
+		"consumer": qm.Consumer,
 	})
 
 	// parse additional fields if there are any
@@ -29,6 +30,7 @@ func (qm *Manager) LogError(err error, message string, fields ...interface{}) {
 // LogInfo is a wrapper used to log an info message
 func (qm *Manager) LogInfo(message string) {
 	qm.Logger.WithFields(log.Fields{
-		"service": qm.Service,
+		"service":  qm.Service,
+		"consumer": qm.Consumer,
 	}).Info(message)
 }

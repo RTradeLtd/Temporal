@@ -66,6 +66,7 @@ type Manager struct {
 	QueueName    string
 	Service      string
 	ExchangeName string
+	Consumer     string
 }
 
 // Queue Messages - These are used to format messages to send through rabbitmq

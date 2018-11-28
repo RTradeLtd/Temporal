@@ -1,7 +1,9 @@
 package queue
 
 import (
+	"context"
 	"encoding/json"
+	"sync"
 
 	"github.com/RTradeLtd/Temporal/mail"
 	"github.com/RTradeLtd/config"
@@ -9,7 +11,7 @@ import (
 )
 
 // ProcessMailSends is a function used to process mail send queue messages
-func (qm *Manager) ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.TemporalConfig) error {
+func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, tCfg *config.TemporalConfig) error {
 	mm, err := mail.NewManager(tCfg)
 	if err != nil {
 		qm.LogError(err, "failed to generate mail manager")

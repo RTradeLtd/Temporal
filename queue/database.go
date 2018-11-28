@@ -1,7 +1,9 @@
 package queue
 
 import (
+	"context"
 	"encoding/json"
+	"sync"
 
 	"github.com/RTradeLtd/database/models"
 	"github.com/jinzhu/gorm"
@@ -9,7 +11,7 @@ import (
 )
 
 // ProcessDatabaseFileAdds is used to process database file add messages
-func (qm *Manager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) error {
+func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	uploadManager := models.NewUploadManager(db)
 	qm.LogInfo("processing database file adds")
 	for d := range msgs {
