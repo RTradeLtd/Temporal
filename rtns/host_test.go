@@ -12,9 +12,12 @@ import (
 	"github.com/RTradeLtd/Temporal/rtns"
 )
 
+type key string
+
 const (
-	testPath      = "/ipfs/QmNdm1ZyLX7hBVTDYhfiZ6oVjQHdEkN1VxV5rfJDHBVZyH"
-	testSwarmADDR = "/ip4/0.0.0.0/tcp/4002"
+	ipnsPublishTTL key = "ipns-publish-ttl"
+	testPath           = "/ipfs/QmNdm1ZyLX7hBVTDYhfiZ6oVjQHdEkN1VxV5rfJDHBVZyH"
+	testSwarmADDR      = "/ip4/0.0.0.0/tcp/4002"
 )
 
 func TestPublisher_Gen(t *testing.T) {
@@ -32,7 +35,7 @@ func TestPublisher_Gen(t *testing.T) {
 	} else {
 		fmt.Println("id to check ", pid.Pretty())
 	}
-	ctx := context.WithValue(context.Background(), "ipns-publish-ttl", time.Minute*10)
+	ctx := context.WithValue(context.Background(), ipnsPublishTTL, time.Minute*10)
 	if err := publisher.Publish(ctx, pk, testPath); err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +64,7 @@ func TestPublisher_NoGen(t *testing.T) {
 	if err := publisher.Publish(context.Background(), pk, testPath); err != nil {
 		t.Fatal(err)
 	}
-	ctx := context.WithValue(context.Background(), "ipns-publish-ttl", time.Minute*10)
+	ctx := context.WithValue(context.Background(), ipnsPublishTTL, time.Minute*10)
 	if err := publisher.Publish(ctx, pk, testPath); err != nil {
 		t.Fatal(err)
 	}
