@@ -12,7 +12,7 @@ import (
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
-	"github.com/RTradeLtd/grpc/backends/krab"
+	"github.com/RTradeLtd/kaas"
 )
 
 var (
@@ -179,7 +179,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "runs the krab service",
 		Description: "Runs the krab grpc server, allowing for secure private key management",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if err := krab.NewServer(cfg.Endpoints.Krab.URL, "tcp", &cfg); err != nil {
+			if err := kaas.NewServer(cfg.Endpoints.Krab.URL, "tcp", &cfg); err != nil {
 				log.Fatal(err)
 			}
 		},

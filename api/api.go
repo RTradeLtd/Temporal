@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RTradeLtd/rtfs/krab/backend"
+	"github.com/RTradeLtd/kaas"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
@@ -40,7 +40,7 @@ var (
 // API is our API service
 type API struct {
 	ipfs    rtfs.Manager
-	keys    *backend.Client
+	keys    *kaas.Client
 	r       *gin.Engine
 	cfg     *config.TemporalConfig
 	dbm     *database.Manager
@@ -164,7 +164,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 	if err != nil {
 		return nil, err
 	}
-	keys, err := backend.NewClient(cfg.Endpoints)
+	keys, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return nil, err
 	}

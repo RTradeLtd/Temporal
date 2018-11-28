@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/Temporal/mini"
-	"github.com/RTradeLtd/grpc/backends/krab"
+	"github.com/RTradeLtd/kaas"
 	"github.com/RTradeLtd/rtfs"
 
 	"github.com/RTradeLtd/config"
@@ -28,7 +28,7 @@ import (
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
 func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	kb, err := krab.NewClient(cfg.Endpoints)
+	kb, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return err
 	}

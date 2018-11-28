@@ -13,7 +13,7 @@ import (
 
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
-	"github.com/RTradeLtd/grpc/backends/krab"
+	"github.com/RTradeLtd/kaas"
 
 	ci "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
 
@@ -29,7 +29,7 @@ const (
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	kb, err := krab.NewClient(cfg.Endpoints)
+	kb, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return err
 	}

@@ -12,15 +12,15 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/grpc"
-  branch = "krab"
+  branch = "master"
 
 [[override]]
   name = "github.com/RTradeLtd/database"
-  branch = "update/config"
+  branch = "master"
 
 [[override]]
   name = "github.com/RTradeLtd/rtfs"
-  branch = "krab"
+  branch = "master"
   
 [[constraint]]
   name = "github.com/RTradeLtd/config"
@@ -38,6 +38,10 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/RTradeLtd/go-ipfs-api"
   version = "v2.0.4"
 
+[[constraint]]
+  name = "github.com/RTradeLtd/kaas"
+  version = "v1.0.0"
+  
 # IPFS
 
 [[override]]

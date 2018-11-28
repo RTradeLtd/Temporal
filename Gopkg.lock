@@ -50,7 +50,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "update/config"
+  branch = "master"
   digest = "1:53b48a7333b146ee214fee2dec90b5ab21e374310e1ab7995b309734ba8fa824"
   name = "github.com/RTradeLtd/database"
   packages = [
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "09756941d92925b8d263d11e6abdc3202a84c267"
+  revision = "53d94a551b2e55e4ceb6bfe7d5ec5ea031338489"
 
 [[projects]]
   branch = "master"
@@ -78,11 +78,10 @@
   version = "v2.0.4"
 
 [[projects]]
-  branch = "krab"
-  digest = "1:7d0775fb830e3df5bd6edf07e7fb942cb7c4acbafab9be8d9db37a28ef902cfb"
+  branch = "master"
+  digest = "1:b709d87e4836b734eb8852efac9bd657c6cc361736c83e636557530281467693"
   name = "github.com/RTradeLtd/grpc"
   packages = [
-    "backends/krab",
     "dialer",
     "ipfs-orchestrator",
     "krab",
@@ -95,20 +94,27 @@
     "temporal/response",
   ]
   pruneopts = "UT"
-  revision = "f016bdcc0beb1848333a3474e15c2b991780d476"
+  revision = "f3d3b84b0af8d646d68b11043f77599b0fbf785b"
 
 [[projects]]
-  branch = "krab"
-  digest = "1:caf2f51acc35c205aaa8cb2e9d7372ec6a244e2bcf42536c0a51624da3dccbb3"
+  digest = "1:676b1a8afb86deb003bfa3a3a333de67f26f48b4b4f2a56eead36840c8793e4e"
+  name = "github.com/RTradeLtd/kaas"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "dced12d78344d25512d222d143384049dd82d9f2"
+  version = "v1.0.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:6ea26da496cd976afd625e4f9cfd39ffdfa4bfca20074e8202d070569b873f8b"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
     "beam",
     "krab",
-    "krab/backend",
   ]
   pruneopts = "UT"
-  revision = "771469b4dfb84f54f158839a67221ed53d930787"
+  revision = "94f0159b7478db1207109fe8e0ca9cd4322b62a7"
 
 [[projects]]
   branch = "master"
@@ -1558,7 +1564,6 @@
     "github.com/RTradeLtd/database",
     "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/entropy-mnemonics",
-    "github.com/RTradeLtd/grpc/backends/krab",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/ipfs-orchestrator",
     "github.com/RTradeLtd/grpc/krab",
@@ -1566,10 +1571,9 @@
     "github.com/RTradeLtd/grpc/lens/request",
     "github.com/RTradeLtd/grpc/temporal",
     "github.com/RTradeLtd/grpc/temporal/request",
+    "github.com/RTradeLtd/kaas",
     "github.com/RTradeLtd/rtfs",
     "github.com/RTradeLtd/rtfs/beam",
-    "github.com/RTradeLtd/rtfs/krab",
-    "github.com/RTradeLtd/rtfs/krab/backend",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",
