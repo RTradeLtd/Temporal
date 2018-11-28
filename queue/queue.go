@@ -147,7 +147,12 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 		return err
 	}
 
-	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
+	// if we are using an exchange, we form a relationship between a queue and an exchange
+	// this process is known as binding, and allows consumers to receive messages sent to an exchange
+	// We are primarily doing this to allow for multiple consumers, to receive the same message
+	// For example using the IpfsKeyExchange, this will setup message distribution such that
+	// a single key creation request, will be sent to all of our consumers ensuring that all of our nodes
+	// will have the same key in their keystore
 	switch qm.ExchangeName {
 	case PinRemovalExchange, PinExchange, IpfsKeyExchange:
 		if err = qm.Channel.QueueBind(
@@ -163,7 +168,7 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 		break
 	}
 
-	// consider moving to true for auto-ack
+	// we do not auto-ack, as if a consumer dies we don't want the message to be lost
 	msgs, err := qm.Channel.Consume(
 		qm.QueueName, // queue
 		consumer,     // consumer
@@ -202,11 +207,7 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 //PublishMessageWithExchange is used to publish a message to a given exchange
 func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
 	switch exchangeName {
-	case PinExchange:
-		break
-	case PinRemovalExchange:
-		break
-	case IpfsKeyExchange:
+	case PinExchange, PinRemovalExchange, IpfsKeyExchange:
 		break
 	default:
 		return errors.New("invalid exchange name provided")
@@ -216,12 +217,12 @@ func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName str
 		return err
 	}
 	if err = qm.Channel.Publish(
-		exchangeName, // exchange
+		exchangeName, // exchange - this determines which exchange will receive the message
 		"",           // routing key
 		false,        // mandatory
 		false,        // immediate
 		amqp.Publishing{
-			DeliveryMode: amqp.Persistent,
+			DeliveryMode: amqp.Persistent, // messages will persist through crashes, etc..
 			ContentType:  "text/plain",
 			Body:         bodyMarshaled,
 		},
@@ -233,18 +234,17 @@ func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName str
 
 // PublishMessage is used to produce messages that are sent to the queue, with a worker queue (one consumer)
 func (qm *Manager) PublishMessage(body interface{}) error {
-	// we use a persistent delivery mode to combine with the durable queue
 	bodyMarshaled, err := json.Marshal(body)
 	if err != nil {
 		return err
 	}
 	if err = qm.Channel.Publish(
-		"",            // exchange
+		"",            // exchange - this is left empty, and becomes the default exchange
 		qm.Queue.Name, // routing key
 		false,         // mandatory
-		false,         //immediate
+		false,         // immediate
 		amqp.Publishing{
-			DeliveryMode: amqp.Persistent,
+			DeliveryMode: amqp.Persistent, // messages will persist through crashes, etc..
 			ContentType:  "text/plain",
 			Body:         bodyMarshaled,
 		},
