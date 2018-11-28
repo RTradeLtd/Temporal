@@ -97,12 +97,12 @@
   revision = "f3d3b84b0af8d646d68b11043f77599b0fbf785b"
 
 [[projects]]
-  digest = "1:676b1a8afb86deb003bfa3a3a333de67f26f48b4b4f2a56eead36840c8793e4e"
+  digest = "1:c40131fabf02417f203fbe60854768f747771b65adc787cd0ca8f5e9324a50cb"
   name = "github.com/RTradeLtd/kaas"
   packages = ["."]
   pruneopts = "UT"
-  revision = "dced12d78344d25512d222d143384049dd82d9f2"
-  version = "v1.0.0"
+  revision = "e20a104ada3f7a0532542af3d9250d478e66fcb8"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "master"
