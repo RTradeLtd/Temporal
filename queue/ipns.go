@@ -21,10 +21,10 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type key string
+type contextKey string
 
 const (
-	ipnsPublishTTL key = "ipns-publish-ttl"
+	ipnsPublishTTL contextKey = "ipns-publish-ttl"
 )
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests

@@ -12,12 +12,12 @@ import (
 	"github.com/RTradeLtd/Temporal/rtns"
 )
 
-type key string
+type contextKey string
 
 const (
-	ipnsPublishTTL key = "ipns-publish-ttl"
-	testPath           = "/ipfs/QmNdm1ZyLX7hBVTDYhfiZ6oVjQHdEkN1VxV5rfJDHBVZyH"
-	testSwarmADDR      = "/ip4/0.0.0.0/tcp/4002"
+	ipnsPublishTTL contextKey = "ipns-publish-ttl"
+	testPath                  = "/ipfs/QmNdm1ZyLX7hBVTDYhfiZ6oVjQHdEkN1VxV5rfJDHBVZyH"
+	testSwarmADDR             = "/ip4/0.0.0.0/tcp/4002"
 )
 
 func TestPublisher_Gen(t *testing.T) {
