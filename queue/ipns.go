@@ -21,6 +21,12 @@ import (
 	"github.com/streadway/amqp"
 )
 
+type key string
+
+const (
+	ipnsPublishTTL key = "ipns-publish-ttl"
+)
+
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	kb, err := krab.NewClient(cfg.Endpoints)
@@ -38,7 +44,9 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 		// create our temporary publisher
 		publisher, err := rtns.NewPublisher(&rtns.Opts{PK: pk}, "/ip4/0.0.0.0/tcp/3999")
 		if err != nil {
-			return err
+			qm.LogError(err, "failed to build ipns publisher")
+			d.Ack(false)
+			continue
 		}
 		qm.LogInfo("neww message detected")
 		ie := IPNSEntry{}
@@ -73,7 +81,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 		eol := time.Now().Add(ie.LifeTime)
 		// ignore the golint warning, as we must do this to pass in a ttl value
 		// see https://discuss.ipfs.io/t/clarification-over-ttl-and-lifetime-for-ipns-records/4346 for more information
-		ctx := context.WithValue(context.Background(), "ipns-publish-ttl", ie.TTL)
+		ctx := context.WithValue(context.Background(), ipnsPublishTTL, ie.TTL)
 		if err := publisher.PublishWithEOL(ctx, pk2, ie.CID, eol); err != nil {
 			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 			qm.LogError(err, "failed to publish ipns entry")
