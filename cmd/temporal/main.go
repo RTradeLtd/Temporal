@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"syscall"
 
@@ -23,9 +24,10 @@ var (
 	// Version denotes the tag of this build
 	Version string
 
-	certFile = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
-	keyFile  = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
-	tCfg     config.TemporalConfig
+	workerCount int
+	certFile    = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
+	keyFile     = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
+	tCfg        config.TemporalConfig
 )
 
 var commands = map[string]cmd.Cmd{
@@ -87,7 +89,7 @@ var commands = map[string]cmd.Cmd{
 
 							shutdownChannel := make(chan struct{})
 							waitGroup := &sync.WaitGroup{}
-							for i := 1; i <= 2; i++ {
+							for i := 1; i <= workerCount; i++ {
 								waitGroup.Add(1)
 								go func() {
 									if err = qm.ConsumeMessage(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
@@ -308,6 +310,11 @@ func main() {
 		log.Fatal("CONFIG_DAG is not set")
 	}
 	tCfg, err := config.LoadConfig(configDag)
+	if err != nil {
+		log.Fatal(err)
+	}
+	workers := os.Getenv("WORKER_COUNT")
+	workerCount, err = strconv.Atoi(workers)
 	if err != nil {
 		log.Fatal(err)
 	}
