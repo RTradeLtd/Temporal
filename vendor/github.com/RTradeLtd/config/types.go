@@ -62,7 +62,6 @@ type IPFS struct {
 		Port string `json:"port"`
 	} `json:"api_connection"`
 	KeystorePath string `json:"keystore_path"`
-	KrabPassword string `json:"krab_password"`
 }
 
 // IPFSCluster configures Temporal's connection to an IPFS cluster
@@ -171,6 +170,16 @@ type Endpoints struct {
 		User string `json:"user"`
 		Pass string `json:"pass"`
 	} `json:"raven"`
+	Krab struct {
+		URL string `json:"url"`
+		TLS struct {
+			CertPath string `json:"cert_path"`
+			KeyFile  string `json:"key_file"`
+		}
+		AuthKey          string `json:"auth_key"`
+		LogFile          string `json:"log_file"`
+		KeystorePassword string `json:"keystore_password"`
+	} `json:"krab"`
 }
 
 // Orchestrator defines options for the IPFS orchestrator

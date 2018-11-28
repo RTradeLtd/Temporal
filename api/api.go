@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RTradeLtd/rtfs/krab"
+	"github.com/RTradeLtd/kaas"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
@@ -40,7 +40,7 @@ var (
 // API is our API service
 type API struct {
 	ipfs    rtfs.Manager
-	keys    *rtfs.KeystoreManager
+	keys    *kaas.Client
 	r       *gin.Engine
 	cfg     *config.TemporalConfig
 	dbm     *database.Manager
@@ -78,24 +78,16 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open log file: %s", err)
 	}
-	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath})
-	if err != nil {
-		return nil, err
-	}
-	keystore, err := rtfs.NewKeystoreManager(kb)
-	if err != nil {
-		return nil, err
-	}
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		keystore,
+		nil,
 		time.Minute*10,
 	)
 	if err != nil {
 		return nil, err
 	}
 	// set up API struct
-	api, err := new(cfg, router, im, keystore, debug, logfile)
+	api, err := new(cfg, router, im, debug, logfile)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +102,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, keystore *rtfs.KeystoreManager, debug bool, out io.Writer) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debug bool, out io.Writer) (*API, error) {
 	var (
 		logger = log.New()
 		dbm    *database.Manager
@@ -172,9 +164,13 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, keys
 	if err != nil {
 		return nil, err
 	}
+	keys, err := kaas.NewClient(cfg.Endpoints)
+	if err != nil {
+		return nil, err
+	}
 	return &API{
 		ipfs:    ipfs,
-		keys:    keystore,
+		keys:    keys,
 		cfg:     cfg,
 		service: "api",
 		r:       router,

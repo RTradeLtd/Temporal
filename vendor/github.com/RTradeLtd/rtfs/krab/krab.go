@@ -22,11 +22,14 @@ type Krab struct {
 type Opts struct {
 	Passphrase string
 	DSPath     string
+	ReadOnly   bool
 }
 
 // NewKrab is used to create a new krab ipfs keystore manager
 func NewKrab(opts Opts) (*Krab, error) {
-	ds, err := badger.NewDatastore(opts.DSPath, &badger.DefaultOptions)
+	badgerOpts := &badger.DefaultOptions
+	badgerOpts.ReadOnly = opts.ReadOnly
+	ds, err := badger.NewDatastore(opts.DSPath, badgerOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -117,4 +120,9 @@ func (km *Krab) List() ([]string, error) {
 		ids = append(ids, strings.Split(v.Key, "/")[1])
 	}
 	return ids, nil
+}
+
+// Close is used to close our badger connection
+func (km *Krab) Close() error {
+	return km.ds.Close()
 }

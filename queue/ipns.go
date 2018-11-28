@@ -1,41 +1,53 @@
 package queue
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"time"
+
+	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
+
+	"github.com/RTradeLtd/Temporal/rtns"
+	pb "github.com/RTradeLtd/grpc/krab"
 
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
-	"github.com/RTradeLtd/rtfs"
-	"github.com/RTradeLtd/rtfs/krab"
+	"github.com/RTradeLtd/kaas"
+
+	ci "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
 
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
 
+type contextKey string
+
+const (
+	ipnsPublishTTL contextKey = "ipns-publish-ttl"
+)
+
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.IPFS.KrabPassword, DSPath: cfg.IPFS.KeystorePath})
+	kb, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return err
 	}
-	keystore, err := rtfs.NewKeystoreManager(kb)
-	if err != nil {
-		return err
-	}
-	ipfsManager, err := rtfs.NewManager(
-		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		keystore,
-		time.Minute*10,
-	)
+	// generate a temporary private key to reuse across our publisher
+	pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
 	if err != nil {
 		return err
 	}
 	ipnsManager := models.NewIPNSManager(db)
-	userManager := models.NewUserManager(db)
-	networkManager := models.NewHostedIPFSNetworkManager(db)
 	qm.LogInfo("processing ipns entry creation requests")
 	for d := range msgs {
+		// create our temporary publisher
+		publisher, err := rtns.NewPublisher(&rtns.Opts{PK: pk}, "/ip4/0.0.0.0/tcp/3999")
+		if err != nil {
+			qm.LogError(err, "failed to build ipns publisher")
+			d.Ack(false)
+			continue
+		}
 		qm.LogInfo("neww message detected")
 		ie := IPNSEntry{}
 		err = json.Unmarshal(d.Body, &ie)
@@ -44,50 +56,49 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
-		apiURL := ""
 		if ie.NetworkName != "public" {
-			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(ie.UserName, ie.NetworkName)
-			if err != nil {
-				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
-				qm.LogError(err, "failed to check for private network access")
-				d.Ack(false)
-				continue
-			}
-			if !canAccess {
-				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
-				qm.LogError(err, "invalid private network access")
-				d.Ack(false)
-				continue
-			}
-			apiURLName, err := networkManager.GetAPIURLByName(ie.NetworkName)
-			if err != nil {
-				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
-				qm.LogError(err, "failed to find ipfs api url")
-				d.Ack(false)
-				continue
-			}
-			apiURL = apiURLName
-			qm.LogInfo("initializing connection to private ipfs network")
-			ipfsManager, err = rtfs.NewManager(apiURL, keystore, time.Minute*10)
-			if err != nil {
-				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
-				qm.LogError(err, "failed to initialized connection to private ifps network")
-				d.Ack(false)
-				continue
-			}
+			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
+			qm.LogError(errors.New("private networks not supported"), "private networks not supported")
+			d.Ack(false)
+			continue
 		}
 		qm.LogInfo("publishing ipns entry")
-		response, err := ipfsManager.Publish(ie.CID, ie.Key, ie.LifeTime, ie.TTL, ie.Resolve)
+		// get the private key
+		resp, err := kb.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
 		if err != nil {
+			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
+			qm.LogError(err, "failed to retrieve private key")
+			d.Ack(false)
+			continue
+		}
+		pk2, err := ci.UnmarshalPrivateKey(resp.PrivateKey)
+		if err != nil {
+			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
+			qm.LogError(err, "failed to unmarshal private key")
+			d.Ack(false)
+			continue
+		}
+		eol := time.Now().Add(ie.LifeTime)
+		// ignore the golint warning, as we must do this to pass in a ttl value
+		// see https://discuss.ipfs.io/t/clarification-over-ttl-and-lifetime-for-ipns-records/4346 for more information
+		ctx := context.WithValue(context.Background(), ipnsPublishTTL, ie.TTL)
+		if err := publisher.PublishWithEOL(ctx, pk2, ie.CID, eol); err != nil {
 			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
 			qm.LogError(err, "failed to publish ipns entry")
 			d.Ack(false)
 			continue
 		}
-		if _, err := ipnsManager.FindByIPNSHash(response.Name); err == nil {
+		id, err := peer.IDFromPrivateKey(pk2)
+		if err != nil {
+			// do not refund here since the record is published
+			qm.LogError(err, "failed to unmarshal peer identity")
+			d.Ack(false)
+			continue
+		}
+		if _, err := ipnsManager.FindByIPNSHash(id.Pretty()); err == nil {
 			// if the previous equality check is true (err is nil) it means this entry already exists in the database
 			if _, err = ipnsManager.UpdateIPNSEntry(
-				response.Name,
+				id.Pretty(),
 				ie.CID,
 				ie.NetworkName,
 				ie.UserName,
@@ -101,7 +112,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 		} else {
 			// record does not yet exist, so we must create a new one
 			if _, err = ipnsManager.CreateEntry(
-				response.Name,
+				id.Pretty(),
 				ie.CID,
 				ie.Key,
 				ie.NetworkName,

@@ -177,13 +177,18 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		"service": "api",
 	}).Info("user account registration detected")
 	userModel, err := api.um.NewUserAccount(forms["username"], forms["password"], forms["email_address"], false)
-	if err != nil && err.Error() == eh.DuplicateEmailError || err != nil && err.Error() == eh.DuplicateUserNameError {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
 	if err != nil {
-		api.LogError(err, eh.UserAccountCreationError)(c, http.StatusBadRequest)
-		return
+		switch err.Error() {
+		case eh.DuplicateEmailError:
+			api.LogError(err, eh.DuplicateEmailError)(c, http.StatusBadRequest)
+			return
+		case eh.DuplicateUserNameError:
+			api.LogError(err, eh.DuplicateUserNameError)(c, http.StatusBadRequest)
+			return
+		default:
+			api.LogError(err, eh.UserAccountCreationError)(c, http.StatusBadRequest)
+			return
+		}
 	}
 	api.l.WithFields(log.Fields{
 		"service": "api",
@@ -317,32 +322,6 @@ func (api *API) getCredits(c *gin.Context) {
 	}
 	api.LogWithUser(username).Info("credit check requested")
 	Respond(c, http.StatusOK, gin.H{"response": credits})
-}
-
-// ExportKey is used to export an ipfs key as a mnemonic phrase
-func (api *API) exportKey(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
-		return
-	}
-	keyName := c.Param("name")
-	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
-	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyNamePrefixed)
-	if err != nil {
-		api.LogError(err, eh.KeySearchError)(c, http.StatusBadRequest)
-		return
-	}
-	if !owns {
-		api.LogError(errors.New(eh.KeyUseError), eh.KeyUseError)(c, http.StatusBadRequest)
-		return
-	}
-	mnemonic, err := api.keys.ExportKeyAsMnemonic(keyNamePrefixed)
-	if err != nil {
-		api.LogError(err, eh.KeyExportError)(c, http.StatusBadRequest)
-		return
-	}
-	Respond(c, http.StatusOK, gin.H{"response": mnemonic})
 }
 
 // ForgotEmail is used to retrieve an email if the user forgets it

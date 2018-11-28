@@ -34,12 +34,12 @@
   version = "v1.0.4"
 
 [[projects]]
-  digest = "1:cd6d6248944356cef0f0d2139a30270a7f671d19febad5681b89b3eb81b8144d"
+  digest = "1:8e3fb2f520f9dc842a894c28b893c8bf5250e1bf8c7c88589d69026687b6c44c"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7a673df694d661b4436f47e56e9cb1071f1cc613"
-  version = "v1.0.13"
+  revision = "ed6bea444ae3a52e0f95c5d4f6d4f227cb091698"
+  version = "v1.0.15"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -51,7 +51,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d2dad009ca69cc07697dfdce562f651bf669cb9c58bfcffb4de09053331b648f"
+  digest = "1:53b48a7333b146ee214fee2dec90b5ab21e374310e1ab7995b309734ba8fa824"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "a2afa845642bb8fc27a3b772523e324e91e280f3"
+  revision = "53d94a551b2e55e4ceb6bfe7d5ec5ea031338489"
 
 [[projects]]
   branch = "master"
@@ -79,11 +79,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:65b270e0a2d4af215cb8d001853173c3a7353cb8e2bf0fa3232f01e84b9312f3"
+  digest = "1:b709d87e4836b734eb8852efac9bd657c6cc361736c83e636557530281467693"
   name = "github.com/RTradeLtd/grpc"
   packages = [
     "dialer",
     "ipfs-orchestrator",
+    "krab",
     "lens",
     "lens/request",
     "lens/response",
@@ -93,11 +94,19 @@
     "temporal/response",
   ]
   pruneopts = "UT"
-  revision = "320346f207bfe9826e26fc7b05829bd46636f876"
+  revision = "f3d3b84b0af8d646d68b11043f77599b0fbf785b"
+
+[[projects]]
+  digest = "1:676b1a8afb86deb003bfa3a3a333de67f26f48b4b4f2a56eead36840c8793e4e"
+  name = "github.com/RTradeLtd/kaas"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "dced12d78344d25512d222d143384049dd82d9f2"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:4ca737aa7b3eff2d55e87fec937de170b6ed20dbec6ce34fcf38a191604ac038"
+  digest = "1:6ea26da496cd976afd625e4f9cfd39ffdfa4bfca20074e8202d070569b873f8b"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -105,7 +114,7 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "b7fee8d61183231eccd1f849d8a6c39c7c54065a"
+  revision = "94f0159b7478db1207109fe8e0ca9cd4322b62a7"
 
 [[projects]]
   branch = "master"
@@ -346,6 +355,17 @@
   version = "v1.4.0"
 
 [[projects]]
+  digest = "1:c805a0558c867a671fc2dd1c6134b92a4d15c3fee5803abc70fdabdcb683ea0b"
+  name = "github.com/grpc-ecosystem/go-grpc-middleware"
+  packages = [
+    ".",
+    "tags",
+  ]
+  pruneopts = "UT"
+  revision = "c250d6563d4d4c20252cd865923440e829844f4e"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:31e6ca5d3801cd74e569cb9597d5a0b06d862307ffb045e581b44fe4a316ea09"
   name = "github.com/gxed/GoEndian"
@@ -427,6 +447,34 @@
   pruneopts = "UT"
   revision = "a7965b08c06faf12cae93f20913c1237dce1b5cc"
   version = "v1.7.0"
+
+[[projects]]
+  digest = "1:5c3343b590fca59c7b5acfcbe95d5f4588ec803ce178c2a038d1db99f4fbc644"
+  name = "github.com/ipfs/go-ipfs"
+  packages = [
+    "core",
+    "core/coreapi/interface",
+    "core/coreapi/interface/options",
+    "dagutils",
+    "exchange/reprovide",
+    "filestore",
+    "filestore/pb",
+    "fuse/mount",
+    "keystore",
+    "namesys",
+    "namesys/opts",
+    "namesys/republisher",
+    "p2p",
+    "pin",
+    "pin/internal/pb",
+    "repo",
+    "thirdparty/cidv0v1",
+    "thirdparty/math2",
+    "thirdparty/verifbs",
+  ]
+  pruneopts = "UT"
+  revision = "aefc746f34e5ffdee5fba1915c6603b65a0ebf81"
+  version = "v0.4.18"
 
 [[projects]]
   digest = "1:5e59d6e02abee7ab8ef7f396f5d681054fbfae02ff159fe3d1e1a01e6ed2b034"
@@ -1515,15 +1563,17 @@
     "github.com/RTradeLtd/crypto",
     "github.com/RTradeLtd/database",
     "github.com/RTradeLtd/database/models",
+    "github.com/RTradeLtd/entropy-mnemonics",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/ipfs-orchestrator",
+    "github.com/RTradeLtd/grpc/krab",
     "github.com/RTradeLtd/grpc/lens",
     "github.com/RTradeLtd/grpc/lens/request",
     "github.com/RTradeLtd/grpc/temporal",
     "github.com/RTradeLtd/grpc/temporal/request",
+    "github.com/RTradeLtd/kaas",
     "github.com/RTradeLtd/rtfs",
     "github.com/RTradeLtd/rtfs/beam",
-    "github.com/RTradeLtd/rtfs/krab",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",
@@ -1533,6 +1583,8 @@
     "github.com/gin-gonic/gin",
     "github.com/ipfs/go-cid",
     "github.com/ipfs/go-ipfs-addr",
+    "github.com/ipfs/go-ipfs/core",
+    "github.com/ipfs/go-ipfs/repo",
     "github.com/ipfs/go-ipns",
     "github.com/ipfs/go-ipns/pb",
     "github.com/ipfs/ipfs-cluster/api",
