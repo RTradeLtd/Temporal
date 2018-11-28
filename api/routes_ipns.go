@@ -22,7 +22,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
-	forms := api.extractPostForms(c, "network_name", "hash", "life_time", "ttl", "key", "resolve")
+	forms := api.extractPostForms(c, "hash", "life_time", "ttl", "key", "resolve")
 	if len(forms) == 0 {
 		return
 	}
