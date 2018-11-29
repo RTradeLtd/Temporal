@@ -44,22 +44,28 @@ func TestPublish(t *testing.T) {
 			switch tt.name {
 			case "IPQ", "IKQ":
 				if tt.name == "IPQ" {
-					if err := qm.PublishMessageWithExchange(queue.IPFSPin{
-						CID:              testCID,
-						NetworkName:      "public",
-						HoldTimeInMonths: 10,
-					}); err != nil {
+					if err := qm.PublishMessageWithExchange(
+						queue.IPFSPin{
+							CID:              testCID,
+							NetworkName:      "public",
+							HoldTimeInMonths: 10,
+						},
+						queue.PinExchange,
+					); err != nil {
 						t.Fatal(err)
 					}
 				} else {
-					if err := qm.PublishMessageWithExchange(queue.IPFSKeyCreation{
-						UserName:    "testuser",
-						Name:        "mykey",
-						Type:        "rsa",
-						Size:        2048,
-						NetworkName: "public",
-						CreditCost:  0,
-					}); err != nil {
+					if err := qm.PublishMessageWithExchange(
+						queue.IPFSKeyCreation{
+							UserName:    "testuser",
+							Name:        "mykey",
+							Type:        "rsa",
+							Size:        2048,
+							NetworkName: "public",
+							CreditCost:  0,
+						},
+						queue.IpfsKeyExchange,
+					); err != nil {
 						t.Fatal(err)
 					}
 				}
@@ -130,7 +136,7 @@ func TestPublish(t *testing.T) {
 					}
 				} else if tt.name == "PConfirmQ" {
 					if err := qm.PublishMessage(queue.PaymentConfirmation{
-						TxHash:        "0xf567fc31bc7bfa9cfd37ec98dd4e2bfb79f20f71fe6862dd9b941f65e4ee28ad",
+						UserName:      "testuser",
 						PaymentNumber: 22,
 					}); err != nil {
 						t.Fatal(err)
