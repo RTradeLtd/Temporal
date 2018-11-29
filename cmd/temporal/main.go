@@ -25,6 +25,7 @@ var (
 	Version string
 
 	workerCount int
+	count       int64
 	certFile    = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
 	keyFile     = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
 	tCfg        config.TemporalConfig
@@ -77,10 +78,6 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
-							}
 
 							ctx, cancel := context.WithCancel(context.Background())
 
@@ -91,11 +88,17 @@ var commands = map[string]cmd.Cmd{
 							waitGroup := &sync.WaitGroup{}
 							for i := 1; i <= workerCount; i++ {
 								waitGroup.Add(1)
-								go func() {
-									if err = qm.ConsumeMessage(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-										log.Fatal(err)
+								go func(number int64) {
+									qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL, false, true)
+									if err != nil {
+										fmt.Println("error opening queue, skipping ", err)
+										return
 									}
-								}()
+									if err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+										fmt.Println("error ", err)
+									}
+								}(count)
+								count++
 							}
 							<-quitChannel
 							close(shutdownChannel)
@@ -314,6 +317,9 @@ func main() {
 		log.Fatal(err)
 	}
 	workers := os.Getenv("WORKER_COUNT")
+	if workers == "" {
+		workers = "2"
+	}
 	workerCount, err = strconv.Atoi(workers)
 	if err != nil {
 		log.Fatal(err)
