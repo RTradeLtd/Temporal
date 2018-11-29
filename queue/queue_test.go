@@ -12,7 +12,7 @@ const (
 	testRabbitAddress = "amqp://127.0.0.1:5672"
 )
 
-func TestInitialize(t *testing.T) {
+func TestPublish(t *testing.T) {
 	type args struct {
 		queueName string
 		publish   bool
