@@ -208,38 +208,9 @@ This requires the GX dependency management tool to be installed.
 
 ### Repository Contents
 
-* `api/`
-    * This contains the API related code to temporal, as is the primary interface for interaction with temporal
-    * all web frontends, applications, etc... use this api
-* `api/middleware`
-    * This is middleware used by the API and handles common functionality such as database connection parameters, rabbitmq parameters, etc...
-* `cli`
-    * basic terminal-based cli application
-* `configs`
-    * parent directory contains systemd service files
-* `configs/grafana`
-    * JSON files for our grafana graphs
-* `contracts`
-    * solidity source code files for temporal smart contracts
-* `database`
-    * this is the package used by temporal for interacting with our database backend
-* `docs`
-    * contains all non-readme documentation
-* `models`
-    * models used by temporal
-* `queue`
-    * all queue related code for rabbitmq and ipfs pubsub queue
-* `rtfs`
-    * contains temporal code for interacting with ipfs nodes
-* `rtfs_cluster`
-    * contains temporal code for interacting with the ipfs cluster
-* `server`
-    * contains server related code for interacting with the ethereum blockchain
-    * this will eventually be broken up into three seperate folders corresponding to each of the smart contracts
-* `utils`
-    * contains utility code used by temporal
-* `cmd/temporal`
-    * contains the temporal command line application
+Refer to the [documentation](https://godoc.org/github.com/RTradeLtd/Temporal) for an overview of Temporal's package structure.
+
+The project also depends on a [range of sub-repositories](https://github.com/search?q=topic%3Atemporal+org%3ARTradeLtd&type=Repositories).
 
 ## Thanks
 

@@ -40,8 +40,8 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/kaas"
-  version = "v1.0.0"
-  
+  version = "v1.0.1"
+
 # IPFS
 
 [[override]]
