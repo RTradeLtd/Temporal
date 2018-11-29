@@ -24,8 +24,14 @@ func TestInitialize(t *testing.T) {
 		{"DFAQ", args{queue.DatabaseFileAddQueue, false, false}},
 		{"IPQ", args{queue.IpfsPinQueue, false, false}},
 		{"IFQ", args{queue.IpfsFileQueue, false, false}},
+		{"IPCQ", args{queue.IpfsClusterPinQueue, false, false}},
 		{"ESQ", args{queue.EmailSendQueue, false, false}},
 		{"IEQ", args{queue.IpnsEntryQueue, false, false}},
+		{"IFQ", args{queue.IpfsKeyCreationQueue, false, false}},
+		{"PCreateQ", args{queue.PaymentCreationQueue, false, false}},
+		{"PConfirmQ", args{queue.PaymentConfirmationQueue, false, false}},
+		{"DPCQ", args{queue.DashPaymentConfirmationQueue, false, false}},
+		{"MUQ", args{queue.MongoUpdateQueue, false, false}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
