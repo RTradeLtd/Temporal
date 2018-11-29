@@ -94,7 +94,8 @@ var commands = map[string]cmd.Cmd{
 										return
 									}
 									if err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-										fmt.Println("error ", err)
+										fmt.Println("error consuming messages", err)
+										return
 									}
 								}(count)
 								count++
@@ -124,7 +125,8 @@ var commands = map[string]cmd.Cmd{
 										return
 									}
 									if err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-										log.Fatal(err)
+										fmt.Println("error consuming messages ", err)
+										return
 									}
 								}(count)
 								count++
@@ -154,7 +156,8 @@ var commands = map[string]cmd.Cmd{
 										return
 									}
 									if err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-										log.Fatal(err)
+										fmt.Println("error consuming messages ", err)
+										return
 									}
 								}(count)
 								count++
@@ -180,11 +183,13 @@ var commands = map[string]cmd.Cmd{
 								go func(number int64) {
 									qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, false, true)
 									if err != nil {
-										log.Fatal(err)
+										fmt.Println("error opening queue, skipping ", err)
+										return
 									}
 									err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 									if err != nil {
-										log.Fatal(err)
+										fmt.Println("error consuming messages ", err)
+										return
 									}
 								}(count)
 								count++
@@ -210,11 +215,13 @@ var commands = map[string]cmd.Cmd{
 								go func(number int64) {
 									qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqConnectionURL, false, true)
 									if err != nil {
-										log.Fatal(err)
+										fmt.Println("error opening queue, skipping ", err)
+										return
 									}
 									err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 									if err != nil {
-										log.Fatal(err)
+										fmt.Println("error consuming messages ", err)
+										return
 									}
 								}(count)
 								count++
@@ -242,11 +249,13 @@ var commands = map[string]cmd.Cmd{
 						go func(number int64) {
 							qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
 							if err != nil {
-								log.Fatal(err)
+								fmt.Println("error opening queue, skipping ", err)
+								return
 							}
 							err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
-								log.Fatal(err)
+								fmt.Println("error consuming messages ", err)
+								return
 							}
 						}(count)
 						count++
@@ -271,11 +280,13 @@ var commands = map[string]cmd.Cmd{
 						go func(number int64) {
 							qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL, false, true)
 							if err != nil {
-								log.Fatal(err)
+								fmt.Println("error opening queue, skipping ", err)
+								return
 							}
 							err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
-								log.Fatal(err)
+								fmt.Println("error consuming messages ", err)
+								return
 							}
 						}(count)
 						count++
