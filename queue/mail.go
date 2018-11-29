@@ -17,6 +17,16 @@ func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, msg
 		qm.LogError(err, "failed to generate mail manager")
 		return err
 	}
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				qm.Close()
+				wg.Done()
+				return
+			}
+		}
+	}()
 	qm.LogInfo("processing email sends")
 	for d := range msgs {
 		qm.LogInfo("detected new message")

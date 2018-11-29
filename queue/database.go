@@ -13,6 +13,16 @@ import (
 // ProcessDatabaseFileAdds is used to process database file add messages
 func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	uploadManager := models.NewUploadManager(db)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				qm.Close()
+				wg.Done()
+				return
+			}
+		}
+	}()
 	qm.LogInfo("processing database file adds")
 	for d := range msgs {
 		qm.LogInfo("detected new message")

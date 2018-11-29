@@ -19,6 +19,16 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 		return err
 	}
 	uploadManager := models.NewUploadManager(db)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				qm.Close()
+				wg.Done()
+				return
+			}
+		}
+	}()
 	qm.LogInfo("processing ipfs cluster pins")
 	for d := range msgs {
 		qm.LogInfo("new message detected")

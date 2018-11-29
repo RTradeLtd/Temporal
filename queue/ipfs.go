@@ -34,6 +34,16 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 		return err
 	}
 	userManager := models.NewUserManager(db)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				qm.Close()
+				wg.Done()
+				return
+			}
+		}
+	}()
 	qm.LogInfo("processing ipfs key creation requests")
 	for d := range msgs {
 		qm.LogInfo("new message detected")
@@ -120,6 +130,16 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 		qm.LogError(err, "failed to initialize cluster pin queue connection")
 		return err
 	}
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				qm.Close()
+				wg.Done()
+				return
+			}
+		}
+	}()
 	qm.LogInfo("processing ipfs pins")
 	for d := range msgs {
 		qm.LogInfo("new message detected")
@@ -245,6 +265,16 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 	userManager := models.NewUserManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
 	uploadManager := models.NewUploadManager(db)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				qm.Close()
+				wg.Done()
+				return
+			}
+		}
+	}()
 	service.Info("processing ipfs files")
 	for d := range msgs {
 		service.Info("new message detected")

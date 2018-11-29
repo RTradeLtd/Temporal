@@ -25,9 +25,9 @@ var (
 	Version string
 
 	workerCount int
-	count       int64
-	certFile    = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
-	keyFile     = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
+	count       int64 = 1
+	certFile          = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
+	keyFile           = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
 	tCfg        config.TemporalConfig
 )
 
@@ -84,7 +84,6 @@ var commands = map[string]cmd.Cmd{
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
-							shutdownChannel := make(chan struct{})
 							waitGroup := &sync.WaitGroup{}
 							for i := 1; i <= workerCount; i++ {
 								waitGroup.Add(1)
@@ -101,7 +100,6 @@ var commands = map[string]cmd.Cmd{
 								count++
 							}
 							<-quitChannel
-							close(shutdownChannel)
 							cancel()
 							waitGroup.Wait()
 						},
@@ -111,14 +109,29 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
+
+							ctx, cancel := context.WithCancel(context.Background())
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+							waitGroup := &sync.WaitGroup{}
+							for i := 1; i <= workerCount; i++ {
+								waitGroup.Add(1)
+								go func(number int64) {
+									qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, false, true)
+									if err != nil {
+										fmt.Println("error opening queue, skipping ", err)
+										return
+									}
+									if err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+										log.Fatal(err)
+									}
+								}(count)
+								count++
 							}
-							err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
+							<-quitChannel
+							cancel()
+							waitGroup.Wait()
 						},
 					},
 					"file": {
@@ -126,14 +139,29 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
+
+							ctx, cancel := context.WithCancel(context.Background())
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+							waitGroup := &sync.WaitGroup{}
+							for i := 1; i <= workerCount; i++ {
+								waitGroup.Add(1)
+								go func(number int64) {
+									qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL, false, true)
+									if err != nil {
+										fmt.Println("error opening queue, skipping ", err)
+										return
+									}
+									if err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+										log.Fatal(err)
+									}
+								}(count)
+								count++
 							}
-							err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
+							<-quitChannel
+							cancel()
+							waitGroup.Wait()
 						},
 					},
 					"key-creation": {
@@ -141,14 +169,30 @@ var commands = map[string]cmd.Cmd{
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
+
+							ctx, cancel := context.WithCancel(context.Background())
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+							waitGroup := &sync.WaitGroup{}
+							for i := 1; i <= workerCount; i++ {
+								waitGroup.Add(1)
+								go func(number int64) {
+									qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, false, true)
+									if err != nil {
+										log.Fatal(err)
+									}
+									err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+									if err != nil {
+										log.Fatal(err)
+									}
+								}(count)
+								count++
 							}
-							err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
+							<-quitChannel
+							cancel()
+							waitGroup.Wait()
+
 						},
 					},
 					"cluster": {
@@ -156,14 +200,28 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqConnectionURL, false, true)
-							if err != nil {
-								log.Fatal(err)
+							ctx, cancel := context.WithCancel(context.Background())
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+							waitGroup := &sync.WaitGroup{}
+							for i := 1; i <= workerCount; i++ {
+								waitGroup.Add(1)
+								go func(number int64) {
+									qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqConnectionURL, false, true)
+									if err != nil {
+										log.Fatal(err)
+									}
+									err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+									if err != nil {
+										log.Fatal(err)
+									}
+								}(count)
+								count++
 							}
-							err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
+							<-quitChannel
+							cancel()
+							waitGroup.Wait()
 						},
 					},
 				},
@@ -173,14 +231,29 @@ var commands = map[string]cmd.Cmd{
 				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
-					if err != nil {
-						log.Fatal(err)
+
+					ctx, cancel := context.WithCancel(context.Background())
+					quitChannel := make(chan os.Signal)
+					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+					waitGroup := &sync.WaitGroup{}
+					for i := 1; i <= workerCount; i++ {
+						waitGroup.Add(1)
+						go func(number int64) {
+							qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
+							if err != nil {
+								log.Fatal(err)
+							}
+							err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							if err != nil {
+								log.Fatal(err)
+							}
+						}(count)
+						count++
 					}
-					err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-					if err != nil {
-						log.Fatal(err)
-					}
+					<-quitChannel
+					cancel()
+					waitGroup.Wait()
 				},
 			},
 			"email-send": {
@@ -188,14 +261,28 @@ var commands = map[string]cmd.Cmd{
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL, false, true)
-					if err != nil {
-						log.Fatal(err)
+					ctx, cancel := context.WithCancel(context.Background())
+					quitChannel := make(chan os.Signal)
+					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+					waitGroup := &sync.WaitGroup{}
+					for i := 1; i <= workerCount; i++ {
+						waitGroup.Add(1)
+						go func(number int64) {
+							qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL, false, true)
+							if err != nil {
+								log.Fatal(err)
+							}
+							err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							if err != nil {
+								log.Fatal(err)
+							}
+						}(count)
+						count++
 					}
-					err = qm.ConsumeMessage(context.Background(), nil, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-					if err != nil {
-						log.Fatal(err)
-					}
+					<-quitChannel
+					cancel()
+					waitGroup.Wait()
 				},
 			},
 		},
