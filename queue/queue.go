@@ -142,7 +142,7 @@ func (qm *Manager) DeclareQueue() error {
 // ConsumeMessage is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *Manager) ConsumeMessage(ctx context.Context, wg *sync.WaitGroup, consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
+func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
 	db, err := database.OpenDBConnection(database.DBOptions{
 		User:           cfg.Database.Username,
 		Password:       cfg.Database.Password,
