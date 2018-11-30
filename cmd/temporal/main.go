@@ -93,7 +93,7 @@ var commands = map[string]cmd.Cmd{
 										fmt.Println("error opening queue, skipping ", err)
 										return
 									}
-									if err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+									if err = qm.ConsumeMessages(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
 										fmt.Println("error consuming messages", err)
 										return
 									}
@@ -124,7 +124,7 @@ var commands = map[string]cmd.Cmd{
 										fmt.Println("error opening queue, skipping ", err)
 										return
 									}
-									if err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+									if err = qm.ConsumeMessages(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
 										fmt.Println("error consuming messages ", err)
 										return
 									}
@@ -155,7 +155,7 @@ var commands = map[string]cmd.Cmd{
 										fmt.Println("error opening queue, skipping ", err)
 										return
 									}
-									if err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+									if err = qm.ConsumeMessages(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
 										fmt.Println("error consuming messages ", err)
 										return
 									}
@@ -186,7 +186,7 @@ var commands = map[string]cmd.Cmd{
 										fmt.Println("error opening queue, skipping ", err)
 										return
 									}
-									err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+									err = qm.ConsumeMessages(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 									if err != nil {
 										fmt.Println("error consuming messages ", err)
 										return
@@ -218,7 +218,7 @@ var commands = map[string]cmd.Cmd{
 										fmt.Println("error opening queue, skipping ", err)
 										return
 									}
-									err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+									err = qm.ConsumeMessages(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 									if err != nil {
 										fmt.Println("error consuming messages ", err)
 										return
@@ -252,7 +252,7 @@ var commands = map[string]cmd.Cmd{
 								fmt.Println("error opening queue, skipping ", err)
 								return
 							}
-							err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							err = qm.ConsumeMessages(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								fmt.Println("error consuming messages ", err)
 								return
@@ -283,7 +283,7 @@ var commands = map[string]cmd.Cmd{
 								fmt.Println("error opening queue, skipping ", err)
 								return
 							}
-							err = qm.ConsumeMessage(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							err = qm.ConsumeMessages(ctx, waitGroup, qm.Service+":"+strconv.FormatInt(number, 10), args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								fmt.Println("error consuming messages ", err)
 								return
