@@ -284,7 +284,7 @@ func (api *API) setupRoutes() error {
 	lens := v1.Group("/lens")
 	{
 		// allow anyone to index
-		lens.POST("/index")
+		lens.POST("/index", api.submitIndexRequest)
 		// only allow registered users to search
 		lens.POST("/search", api.submitSearchRequest)
 	}
