@@ -142,11 +142,10 @@ func (qm *Manager) DeclareQueue() error {
 // ConsumeMessages is used to consume messages that are sent to the queue
 func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
 	db, err := database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
-		SSLModeDisable: true,
+		User:     cfg.Database.Username,
+		Password: cfg.Database.Password,
+		Address:  cfg.Database.URL,
+		Port:     cfg.Database.Port,
 	})
 	if err != nil {
 		return err
