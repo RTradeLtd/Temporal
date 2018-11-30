@@ -34,78 +34,85 @@ func (qm *Manager) ProcessIPFSKeyCreation(msgs <-chan amqp.Delivery, db *gorm.DB
 	}
 	userManager := models.NewUserManager(db)
 	qm.LogInfo("processing ipfs key creation requests")
-	for d := range msgs {
-		qm.LogInfo("new message detected")
-		key := IPFSKeyCreation{}
-		err = json.Unmarshal(d.Body, &key)
-		if err != nil {
-			qm.LogError(err, "failed to unmarshal message")
-			d.Ack(false)
-			continue
+	for {
+		select {
+		case d := <-msgs:
+			go func(d amqp.Delivery) {
+				qm.LogInfo("new message detected")
+				key := IPFSKeyCreation{}
+				err = json.Unmarshal(d.Body, &key)
+				if err != nil {
+					qm.LogError(err, "failed to unmarshal message")
+					d.Ack(false)
+					return
+				}
+				if key.NetworkName != "public" {
+					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.LogError(err, "private network key creation not yet supported")
+					d.Ack(false)
+					return
+				}
+				var (
+					keyTypeInt int
+					bitsInt    int
+				)
+				switch key.Type {
+				case "rsa":
+					keyTypeInt = ci.RSA
+					if key.Size > 4096 || key.Size < 2048 {
+						bitsInt = 2048
+					} else {
+						bitsInt = key.Size
+					}
+				case "ed25519":
+					keyTypeInt = ci.Ed25519
+					bitsInt = 256
+				default:
+					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.LogError(err, "invalid key type must be ed25519 or rsa")
+					d.Ack(false)
+					return
+				}
+				keyName := fmt.Sprintf("%s-%s", key.UserName, key.Name)
+				pk, _, err := ci.GenerateKeyPair(keyTypeInt, bitsInt)
+				if err != nil {
+					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.LogError(err, "failed to create key")
+					d.Ack(false)
+					return
+				}
+				pkBytes, err := pk.Bytes()
+				if err != nil {
+					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.LogError(err, "failed to create key")
+					d.Ack(false)
+					return
+				}
+				if _, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: keyName, PrivateKey: pkBytes}); err != nil {
+					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.LogError(err, "failed to create key")
+					d.Ack(false)
+					return
+				}
+				// will need a refund, as this would mean that the key was improperly generated
+				id, err := peer.IDFromPrivateKey(pk)
+				if err != nil {
+					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.LogError(err, "failed to get id from private key")
+					d.Ack(false)
+					return
+				}
+				// doesn't need a refund, key wasgenerated, but information not saved to db
+				if err := userManager.AddIPFSKeyForUser(key.UserName, keyName, id.Pretty()); err != nil {
+					qm.LogError(err, "failed to add ipfs key to database")
+					d.Ack(false)
+					return
+				}
+				qm.LogInfo("successfully processed ipfs key creation request")
+				d.Ack(false)
+			}(d)
 		}
-		if key.NetworkName != "public" {
-			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
-			qm.LogError(err, "private network key creation not yet supported")
-			d.Ack(false)
-			continue
-		}
-		var (
-			keyTypeInt int
-			bitsInt    int
-		)
-		switch key.Type {
-		case "rsa":
-			keyTypeInt = ci.RSA
-			if key.Size > 4096 || key.Size < 2048 {
-				bitsInt = 2048
-			} else {
-				bitsInt = key.Size
-			}
-		case "ed25519":
-			keyTypeInt = ci.Ed25519
-			bitsInt = 256
-		default:
-			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
-			qm.LogError(err, "invalid key type must be ed25519 or rsa")
-			d.Ack(false)
-			continue
-		}
-		keyName := fmt.Sprintf("%s-%s", key.UserName, key.Name)
-		pk, _, err := ci.GenerateKeyPair(keyTypeInt, bitsInt)
-		if err != nil {
-			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
-			qm.LogError(err, "failed to create key")
-			d.Ack(false)
-		}
-		pkBytes, err := pk.Bytes()
-		if err != nil {
-			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
-			qm.LogError(err, "failed to create key")
-			d.Ack(false)
-		}
-		if _, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: keyName, PrivateKey: pkBytes}); err != nil {
-			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
-			qm.LogError(err, "failed to create key")
-			d.Ack(false)
-		}
-		// will need a refund, as this would mean that the key was improperly generated
-		id, err := peer.IDFromPrivateKey(pk)
-		if err != nil {
-			qm.refundCredits(key.UserName, "key", key.CreditCost, db)
-			qm.LogError(err, "failed to get id from private key")
-			d.Ack(false)
-			continue
-		}
-		// doesn't need a refund, key wasgenerated, but information not saved to db
-		if err := userManager.AddIPFSKeyForUser(key.UserName, keyName, id.Pretty()); err != nil {
-			qm.LogError(err, "failed to add ipfs key to database")
-			d.Ack(false)
-			continue
-		}
-		qm.LogInfo("successfully processed ipfs key creation request")
-		d.Ack(false)
 	}
-	return nil
 }
 
 // ProccessIPFSPins is used to process IPFS pin requests
