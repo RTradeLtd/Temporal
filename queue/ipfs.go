@@ -127,97 +127,101 @@ func (qm *Manager) ProccessIPFSPins(msgs <-chan amqp.Delivery, db *gorm.DB, cfg 
 		return err
 	}
 	qm.LogInfo("processing ipfs pins")
-	for d := range msgs {
-		qm.LogInfo("new message detected")
-		pin := &IPFSPin{}
-		err := json.Unmarshal(d.Body, pin)
-		if err != nil {
-			qm.LogError(err, "failed to unmarshal message")
-			d.Ack(false)
-			continue
-		}
-		apiURL := ""
-		if pin.NetworkName != "public" {
-			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(pin.UserName, pin.NetworkName)
-			if err != nil {
-				qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
-				qm.LogError(err, "failed to lookup private network in database")
+	for {
+		select {
+		case d := <-msgs:
+			go func(d amqp.Delivery) {
+				qm.LogInfo("new message detected")
+				pin := &IPFSPin{}
+				err := json.Unmarshal(d.Body, pin)
+				if err != nil {
+					qm.LogError(err, "failed to unmarshal message")
+					d.Ack(false)
+					return
+				}
+				apiURL := ""
+				if pin.NetworkName != "public" {
+					canAccess, err := userManager.CheckIfUserHasAccessToNetwork(pin.UserName, pin.NetworkName)
+					if err != nil {
+						qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
+						qm.LogError(err, "failed to lookup private network in database")
+						d.Ack(false)
+						return
+					}
+					if !canAccess {
+						qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
+						qm.LogError(errors.New("user does not have access to private network"), "invalid private network access")
+						d.Ack(false)
+						return
+					}
+					url, err := networkManager.GetAPIURLByName(pin.NetworkName)
+					if err != nil {
+						qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
+						qm.LogError(err, "failed to search for api url")
+						d.Ack(false)
+						return
+					}
+					apiURL = url
+				}
+				qm.LogInfo("initializing connection to ipfs")
+				ipfsManager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
+				if err != nil {
+					qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
+					qm.LogError(err, "failed to initialize connection to ipfs")
+					d.Ack(false)
+					return
+				}
+				qm.LogInfo("pinning hash to ipfs")
+				if err = ipfsManager.Pin(pin.CID); err != nil {
+					qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
+					qm.LogError(err, "failed to pin hash to ipfs")
+					d.Ack(false)
+					return
+				}
+				qm.LogInfo("successfully pinned hash to ipfs")
+				clusterAddMsg := IPFSClusterPin{
+					CID:              pin.CID,
+					NetworkName:      pin.NetworkName,
+					HoldTimeInMonths: pin.HoldTimeInMonths,
+					UserName:         pin.UserName,
+				}
+				// no need to do any payment processing on cluster as it has been handled already
+				clusterAddMsg.CreditCost = 0
+				if err = qmCluster.PublishMessage(clusterAddMsg); err != nil {
+					qm.LogError(err, "failed to publish cluster pin message to rabbitmq")
+					d.Ack(false)
+					return
+				}
+				_, err = uploadManager.FindUploadByHashAndNetwork(pin.CID, pin.NetworkName)
+				if err != nil && err != gorm.ErrRecordNotFound {
+					qm.LogError(err, "failed to find upload in database")
+					d.Ack(false)
+					return
+				}
+				if err == gorm.ErrRecordNotFound {
+					_, err = uploadManager.NewUpload(pin.CID, "pin", models.UploadOptions{
+						NetworkName:      pin.NetworkName,
+						Username:         pin.UserName,
+						HoldTimeInMonths: pin.HoldTimeInMonths})
+					if err != nil {
+						qm.LogError(err, "failed to create upload in database")
+						d.Ack(false)
+						return
+					}
+				} else {
+					// the record already exists so we will update
+					_, err = uploadManager.UpdateUpload(pin.HoldTimeInMonths, pin.UserName, pin.CID, pin.NetworkName)
+					if err != nil {
+						qm.LogError(err, "failed to update upload in database")
+						d.Ack(false)
+						return
+					}
+				}
+				qm.LogInfo("successfully processed pin request")
 				d.Ack(false)
-				continue
-			}
-			if !canAccess {
-				qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
-				qm.LogError(errors.New("user does not have access to private network"), "invalid private network access")
-				d.Ack(false)
-				continue
-			}
-			url, err := networkManager.GetAPIURLByName(pin.NetworkName)
-			if err != nil {
-				qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
-				qm.LogError(err, "failed to search for api url")
-				d.Ack(false)
-				continue
-			}
-			apiURL = url
+			}(d)
 		}
-		qm.LogInfo("initializing connection to ipfs")
-		ipfsManager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
-		if err != nil {
-			qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
-			qm.LogError(err, "failed to initialize connection to ipfs")
-			d.Ack(false)
-			continue
-		}
-		qm.LogInfo("pinning hash to ipfs")
-		if err = ipfsManager.Pin(pin.CID); err != nil {
-			qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
-			qm.LogError(err, "failed to pin hash to ipfs")
-			d.Ack(false)
-			continue
-		}
-		qm.LogInfo("successfully pinned hash to ipfs")
-		clusterAddMsg := IPFSClusterPin{
-			CID:              pin.CID,
-			NetworkName:      pin.NetworkName,
-			HoldTimeInMonths: pin.HoldTimeInMonths,
-			UserName:         pin.UserName,
-		}
-		// no need to do any payment processing on cluster as it has been handled already
-		clusterAddMsg.CreditCost = 0
-		if err = qmCluster.PublishMessage(clusterAddMsg); err != nil {
-			qm.LogError(err, "failed to publish cluster pin message to rabbitmq")
-			d.Ack(false)
-			continue
-		}
-		_, err = uploadManager.FindUploadByHashAndNetwork(pin.CID, pin.NetworkName)
-		if err != nil && err != gorm.ErrRecordNotFound {
-			qm.LogError(err, "failed to find upload in database")
-			d.Ack(false)
-			continue
-		}
-		if err == gorm.ErrRecordNotFound {
-			_, err = uploadManager.NewUpload(pin.CID, "pin", models.UploadOptions{
-				NetworkName:      pin.NetworkName,
-				Username:         pin.UserName,
-				HoldTimeInMonths: pin.HoldTimeInMonths})
-			if err != nil {
-				qm.LogError(err, "failed to create upload in database")
-				d.Ack(false)
-				continue
-			}
-		} else {
-			// the record already exists so we will update
-			_, err = uploadManager.UpdateUpload(pin.HoldTimeInMonths, pin.UserName, pin.CID, pin.NetworkName)
-			if err != nil {
-				qm.LogError(err, "failed to update upload in database")
-				d.Ack(false)
-				continue
-			}
-		}
-		qm.LogInfo("successfully processed pin request")
-		d.Ack(false)
 	}
-	return nil
 }
 
 // ProccessIPFSFiles is used to process messages sent to rabbitmq to upload files to IPFS.
@@ -252,204 +256,206 @@ func (qm *Manager) ProccessIPFSFiles(msgs <-chan amqp.Delivery, cfg *config.Temp
 	networkManager := models.NewHostedIPFSNetworkManager(db)
 	uploadManager := models.NewUploadManager(db)
 	service.Info("processing ipfs files")
-	for d := range msgs {
-		service.Info("new message detected")
+	for {
+		select {
+		case d := <-msgs:
+			go func(d amqp.Delivery) {
+				service.Info("new message detected")
 
-		ipfsFile := IPFSFile{}
-		// unmarshal the messagee
-		err = json.Unmarshal(d.Body, &ipfsFile)
-		if err != nil {
-			service.
-				WithField("error", err.Error()).
-				Error("failed to unmarshal message")
-			d.Ack(false)
-			continue
-		}
-		// now that we have the minio host which is storing this object, we can connect
-		// construct the endpoint url to access our minio server
-		endpoint := fmt.Sprintf("%s:%s", ipfsFile.MinioHostIP, cfg.MINIO.Connection.Port)
+				ipfsFile := IPFSFile{}
+				// unmarshal the messagee
+				err = json.Unmarshal(d.Body, &ipfsFile)
+				if err != nil {
+					service.
+						WithField("error", err.Error()).
+						Error("failed to unmarshal message")
+					d.Ack(false)
+					return
+				}
+				// now that we have the minio host which is storing this object, we can connect
+				// construct the endpoint url to access our minio server
+				endpoint := fmt.Sprintf("%s:%s", ipfsFile.MinioHostIP, cfg.MINIO.Connection.Port)
 
-		// grab our credentials for minio
-		accessKey := cfg.MINIO.AccessKey
-		secretKey := cfg.MINIO.SecretKey
-		// setup our connection to minio
-		minioManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
-		if err != nil {
-			service.
-				WithField("error", err.Error()).
-				Error("failed to initialize connection to minio")
-			d.Ack(false)
-			continue
-		}
-		fileContext := service.WithFields(log.Fields{
-			"user":    ipfsFile.UserName,
-			"network": ipfsFile.NetworkName,
-		})
+				// grab our credentials for minio
+				accessKey := cfg.MINIO.AccessKey
+				secretKey := cfg.MINIO.SecretKey
+				// setup our connection to minio
+				minioManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
+				if err != nil {
+					service.
+						WithField("error", err.Error()).
+						Error("failed to initialize connection to minio")
+					d.Ack(false)
+					return
+				}
+				fileContext := service.WithFields(log.Fields{
+					"user":    ipfsFile.UserName,
+					"network": ipfsFile.NetworkName,
+				})
 
-		if ipfsFile.NetworkName != "public" {
-			canAccess, err := userManager.CheckIfUserHasAccessToNetwork(ipfsFile.UserName, ipfsFile.NetworkName)
-			if err != nil {
-				fileContext.
-					WithField("error", err.Error()).
-					Error("failed to check database for user network access")
+				if ipfsFile.NetworkName != "public" {
+					canAccess, err := userManager.CheckIfUserHasAccessToNetwork(ipfsFile.UserName, ipfsFile.NetworkName)
+					if err != nil {
+						fileContext.
+							WithField("error", err.Error()).
+							Error("failed to check database for user network access")
+						d.Ack(false)
+						return
+					}
+					if !canAccess {
+						qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
+						fileContext.Error("unauthorized access to private network")
+						d.Ack(false)
+						return
+					}
+					apiURLName, err := networkManager.GetAPIURLByName(ipfsFile.NetworkName)
+					if err != nil {
+						fileContext.
+							WithField("error", err.Error()).
+							Error("failed to look for api url by name")
+						d.Ack(false)
+						return
+					}
+					apiURL := apiURLName
+					fileContext.Info("initializing connection to private ipfs network")
+					ipfsManager, err = rtfs.NewManager(apiURL, nil, time.Minute*10)
+					if err != nil {
+						qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
+						fileContext.
+							WithField("error", err.Error()).
+							Error("failed to initialize connection to private ipfs network")
+						d.Ack(false)
+						return
+					}
+				}
+
+				fileContext.Info("retrieving object from minio")
+
+				obj, err := minioManager.GetObject(ipfsFile.ObjectName, mini.GetObjectOptions{
+					Bucket: ipfsFile.BucketName,
+				})
+				if err != nil {
+					fileContext.
+						WithField("error", err.Error()).
+						Info("failed to retrieve object from minio")
+					d.Ack(false)
+					return
+				}
+
+				fileContext.Info("successfully retrieved object from minio, adding file to ipfs")
+				resp, err := ipfsManager.Add(obj)
+				if err != nil {
+					qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
+					fileContext.
+						WithField("error", err.Error()).
+						Info("failed to add file to ipfs")
+					d.Ack(false)
+					return
+				}
+
+				fileContext.Info("file successfully added to IPFS, forwarding pin request")
+
+				holdTimeInt, err := strconv.ParseInt(ipfsFile.HoldTimeInMonths, 10, 64)
+				if err != nil {
+					fileContext.
+						WithField("error", err.Error()).
+						Warn("failed to parse string to int, using default of 1 month")
+					holdTimeInt = 1
+				}
+
+				// we don't need to do any credit handling, as it has been done already
+				pin := IPFSPin{
+					CID:              resp,
+					NetworkName:      ipfsFile.NetworkName,
+					UserName:         ipfsFile.UserName,
+					HoldTimeInMonths: holdTimeInt,
+					CreditCost:       0,
+				}
+
+				err = qmPin.PublishMessageWithExchange(pin, PinExchange)
+				if err != nil {
+					fileContext.
+						WithField("error", err.Error()).
+						Warn("failed to publish message to pin queue")
+
+				}
+
+				_, err = uploadManager.FindUploadByHashAndNetwork(resp, ipfsFile.NetworkName)
+				if err != nil && err != gorm.ErrRecordNotFound {
+					fileContext.
+						WithField("error", err.Error()).
+						Error("failed to look for upload in database")
+					d.Ack(false)
+					return
+				}
+				if err == gorm.ErrRecordNotFound {
+					if _, err = uploadManager.NewUpload(resp, "file", models.UploadOptions{
+						NetworkName:      ipfsFile.NetworkName,
+						Username:         ipfsFile.UserName,
+						HoldTimeInMonths: holdTimeInt,
+						Encrypted:        ipfsFile.Encrypted,
+					}); err != nil {
+						fileContext.
+							WithField("error", err.Error()).
+							Error("failed to create new upload in database")
+						d.Ack(false)
+						return
+					}
+				} else {
+					_, err = uploadManager.UpdateUpload(holdTimeInt, ipfsFile.UserName, resp, ipfsFile.NetworkName)
+					if err != nil {
+						fileContext.
+							WithField("error", err.Error()).
+							Error("failed to update upload in database")
+						d.Ack(false)
+						return
+					}
+				}
+				// if encrypted upload, do some special processing
+				if ipfsFile.Encrypted {
+					if _, err = ue.NewUpload(
+						ipfsFile.UserName,
+						ipfsFile.FileName,
+						ipfsFile.NetworkName,
+						resp,
+					); err != nil {
+						// we won't ack this, since we have already processed the upload and this is "extra processing"
+						fileContext.
+							WithField("error", err.Error()).
+							Error("failed to upload database with encrypted upload")
+					}
+					sizeString := strconv.FormatInt(ipfsFile.FileSize, 10)
+					mongoUpdate := MongoUpdate{
+						DatabaseName:   cfg.Endpoints.MongoDB.DB,
+						CollectionName: cfg.Endpoints.MongoDB.UploadCollection,
+						Fields: map[string]string{
+							"size":          sizeString,
+							"user":          ipfsFile.UserName,
+							"fileName":      ipfsFile.FileName,
+							"fileNameLower": strings.ToLower(ipfsFile.FileName),
+							"hash":          resp,
+							"encrypted":     "true",
+						},
+					}
+					if err = qmMongo.PublishMessage(mongoUpdate); err != nil {
+						fileContext.
+							WithField("error", err.Error()).
+							Error("failed to publish message to mongo update queue")
+					}
+				}
+				fileContext.Info("removing object from minio")
+				err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName)
+				if err != nil {
+					fileContext.
+						WithField("error", err.Error()).
+						Error("failed to remove object from minio")
+					d.Ack(false)
+					return
+				}
+
+				fileContext.Info("object removed from minio, successfully added to ipfs")
 				d.Ack(false)
-				continue
-			}
-			if !canAccess {
-				qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
-				fileContext.Error("unauthorized access to private network")
-				d.Ack(false)
-				continue
-			}
-			apiURLName, err := networkManager.GetAPIURLByName(ipfsFile.NetworkName)
-			if err != nil {
-				fileContext.
-					WithField("error", err.Error()).
-					Error("failed to look for api url by name")
-				d.Ack(false)
-				continue
-			}
-			apiURL := apiURLName
-			fileContext.Info("initializing connection to private ipfs network")
-			ipfsManager, err = rtfs.NewManager(apiURL, nil, time.Minute*10)
-			if err != nil {
-				qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
-				fileContext.
-					WithField("error", err.Error()).
-					Error("failed to initialize connection to private ipfs network")
-				d.Ack(false)
-				continue
-			}
+			}(d)
 		}
-
-		fileContext.Info("retrieving object from minio")
-
-		obj, err := minioManager.GetObject(ipfsFile.ObjectName, mini.GetObjectOptions{
-			Bucket: ipfsFile.BucketName,
-		})
-		if err != nil {
-			fileContext.
-				WithField("error", err.Error()).
-				Info("failed to retrieve object from minio")
-			d.Ack(false)
-			continue
-		}
-
-		fileContext.Info("successfully retrieved object from minio, adding file to ipfs")
-		resp, err := ipfsManager.Add(obj)
-		if err != nil {
-			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
-			fileContext.
-				WithField("error", err.Error()).
-				Info("failed to add file to ipfs")
-			d.Ack(false)
-			continue
-		}
-
-		fileContext.Info("file successfully added to IPFS, forwarding pin request")
-
-		holdTimeInt, err := strconv.ParseInt(ipfsFile.HoldTimeInMonths, 10, 64)
-		if err != nil {
-			fileContext.
-				WithField("error", err.Error()).
-				Warn("failed to parse string to int, using default of 1 month")
-			holdTimeInt = 1
-		}
-
-		// we don't need to do any credit handling, as it has been done already
-		pin := IPFSPin{
-			CID:              resp,
-			NetworkName:      ipfsFile.NetworkName,
-			UserName:         ipfsFile.UserName,
-			HoldTimeInMonths: holdTimeInt,
-			CreditCost:       0,
-		}
-
-		err = qmPin.PublishMessageWithExchange(pin, PinExchange)
-		if err != nil {
-			fileContext.
-				WithField("error", err.Error()).
-				Warn("failed to publish message to pin queue")
-		}
-
-		_, err = uploadManager.FindUploadByHashAndNetwork(resp, ipfsFile.NetworkName)
-		if err != nil && err != gorm.ErrRecordNotFound {
-			fileContext.
-				WithField("error", err.Error()).
-				Error("failed to look for upload in database")
-			d.Ack(false)
-			continue
-		}
-		if err == gorm.ErrRecordNotFound {
-			if _, err = uploadManager.NewUpload(resp, "file", models.UploadOptions{
-				NetworkName:      ipfsFile.NetworkName,
-				Username:         ipfsFile.UserName,
-				HoldTimeInMonths: holdTimeInt,
-				Encrypted:        ipfsFile.Encrypted,
-			}); err != nil {
-				fileContext.
-					WithField("error", err.Error()).
-					Error("failed to create new upload in database")
-				d.Ack(false)
-				continue
-			}
-		} else {
-			_, err = uploadManager.UpdateUpload(holdTimeInt, ipfsFile.UserName, resp, ipfsFile.NetworkName)
-			if err != nil {
-				fileContext.
-					WithField("error", err.Error()).
-					Error("failed to update upload in database")
-				d.Ack(false)
-				continue
-			}
-		}
-		// if encrypted upload, do some special processing
-		if ipfsFile.Encrypted {
-			if _, err = ue.NewUpload(
-				ipfsFile.UserName,
-				ipfsFile.FileName,
-				ipfsFile.NetworkName,
-				resp,
-			); err != nil {
-				// we won't ack this, since we have already processed the upload and this is "extra processing"
-				// the object should still be removed from minio and ack+continue would prevent this from happening
-				// that being said, we will need to make sure we monitor errors properly
-				fileContext.
-					WithField("error", err.Error()).
-					Error("failed to upload database with encrypted upload")
-			}
-			sizeString := strconv.FormatInt(ipfsFile.FileSize, 10)
-			mongoUpdate := MongoUpdate{
-				DatabaseName:   cfg.Endpoints.MongoDB.DB,
-				CollectionName: cfg.Endpoints.MongoDB.UploadCollection,
-				Fields: map[string]string{
-					"size":          sizeString,
-					"user":          ipfsFile.UserName,
-					"fileName":      ipfsFile.FileName,
-					"fileNameLower": strings.ToLower(ipfsFile.FileName),
-					"hash":          resp,
-					"encrypted":     "true",
-				},
-			}
-			if err = qmMongo.PublishMessage(mongoUpdate); err != nil {
-				//TODO: better handling
-				fileContext.
-					WithField("error", err.Error()).
-					Error("failed to publish message to mongo update queue")
-			}
-		}
-		fileContext.Info("removing object from minio")
-		err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName)
-		if err != nil {
-			fileContext.
-				WithField("error", err.Error()).
-				Info("failed to remove object from minio")
-			d.Ack(false)
-			continue
-		}
-
-		fileContext.Info("object removed from minio, successfully added to ipfs")
-		d.Ack(false)
 	}
-	return nil
 }

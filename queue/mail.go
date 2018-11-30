@@ -16,30 +16,34 @@ func (qm *Manager) ProcessMailSends(msgs <-chan amqp.Delivery, tCfg *config.Temp
 		return err
 	}
 	qm.LogInfo("processing email sends")
-	for d := range msgs {
-		qm.LogInfo("detected new message")
-		es := EmailSend{}
-		if err = json.Unmarshal(d.Body, &es); err != nil {
-			qm.LogError(err, "failed to unmarshal message")
-			d.Ack(false)
-			continue
-		}
-		var emailSent bool
-		for k, v := range es.Emails {
-			_, err = mm.SendEmail(es.Subject, es.Content, es.ContentType, es.UserNames[k], v)
-			if err != nil {
-				qm.LogError(err, "failed to send email")
+	for {
+		select {
+		case d := <-msgs:
+			go func(d amqp.Delivery) {
+				qm.LogInfo("detected new message")
+				es := EmailSend{}
+				if err = json.Unmarshal(d.Body, &es); err != nil {
+					qm.LogError(err, "failed to unmarshal message")
+					d.Ack(false)
+					return
+				}
+				var emailSent bool
+				for k, v := range es.Emails {
+					_, err = mm.SendEmail(es.Subject, es.Content, es.ContentType, es.UserNames[k], v)
+					if err != nil {
+						qm.LogError(err, "failed to send email")
+						d.Ack(false)
+						emailSent = false
+						continue
+					}
+					emailSent = true
+				}
+				if !emailSent {
+					return
+				}
+				qm.LogInfo("successfully sent email(s)")
 				d.Ack(false)
-				emailSent = false
-				continue
-			}
-			emailSent = true
+			}(d)
 		}
-		if !emailSent {
-			continue
-		}
-		qm.LogInfo("successfully sent email(s)")
-		d.Ack(false)
 	}
-	return nil
 }
