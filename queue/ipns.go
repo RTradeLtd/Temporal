@@ -28,7 +28,7 @@ const (
 )
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
-func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	kb, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return err
@@ -132,6 +132,8 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(msgs <-chan amqp.Delivery, d
 				qm.LogInfo("successfully published and saved ipns entry")
 				d.Ack(false)
 			}(d)
+		case <-ctx.Done():
+			qm.Close()
 		}
 	}
 }

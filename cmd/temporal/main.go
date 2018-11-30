@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -17,11 +20,11 @@ import (
 
 var (
 	// Version denotes the tag of this build
-	Version string
-
-	certFile = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
-	keyFile  = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
-	tCfg     config.TemporalConfig
+	Version      string
+	closeMessage = "press CTRL+C to stop processing and close queue resources"
+	certFile     = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
+	keyFile      = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
+	tCfg         config.TemporalConfig
 )
 
 var commands = map[string]cmd.Cmd{
@@ -75,10 +78,18 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+							ctx, cancel := context.WithCancel(context.Background())
+							go func() {
+								if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+									log.Fatal(err)
+								}
+							}()
+							fmt.Println(closeMessage)
+							<-quitChannel
+							cancel()
 						},
 					},
 					"pin": {
@@ -90,7 +101,8 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							ctx, cancel := context.WithCancel(context.Background())
+							err = qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -105,7 +117,7 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							err = qm.ConsumeMessages("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -120,7 +132,7 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							err = qm.ConsumeMessages("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -135,7 +147,7 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							err = qm.ConsumeMessages("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -152,7 +164,7 @@ var commands = map[string]cmd.Cmd{
 					if err != nil {
 						log.Fatal(err)
 					}
-					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					err = qm.ConsumeMessages("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -167,7 +179,7 @@ var commands = map[string]cmd.Cmd{
 					if err != nil {
 						log.Fatal(err)
 					}
-					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+					err = qm.ConsumeMessages("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 					if err != nil {
 						log.Fatal(err)
 					}

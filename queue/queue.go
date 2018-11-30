@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -136,7 +137,7 @@ func (qm *Manager) DeclareQueue() error {
 // ConsumeMessage is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
+func (qm *Manager) ConsumeMessages(ctx context.Context, consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
 	db, err := database.OpenDBConnection(database.DBOptions{
 		User:           cfg.Database.Username,
 		Password:       cfg.Database.Password,
@@ -187,19 +188,19 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 	switch qm.Service {
 	// only parse database file requests
 	case DatabaseFileAddQueue:
-		return qm.ProcessDatabaseFileAdds(msgs, db)
+		return qm.ProcessDatabaseFileAdds(ctx, msgs, db)
 	case IpfsPinQueue:
-		return qm.ProccessIPFSPins(msgs, db, cfg)
+		return qm.ProccessIPFSPins(ctx, msgs, db, cfg)
 	case IpfsFileQueue:
-		return qm.ProccessIPFSFiles(msgs, cfg, db)
+		return qm.ProccessIPFSFiles(ctx, msgs, cfg, db)
 	case EmailSendQueue:
-		return qm.ProcessMailSends(msgs, cfg)
+		return qm.ProcessMailSends(ctx, msgs, cfg)
 	case IpnsEntryQueue:
-		return qm.ProcessIPNSEntryCreationRequests(msgs, db, cfg)
+		return qm.ProcessIPNSEntryCreationRequests(ctx, msgs, db, cfg)
 	case IpfsKeyCreationQueue:
-		return qm.ProcessIPFSKeyCreation(msgs, db, cfg)
+		return qm.ProcessIPFSKeyCreation(ctx, msgs, db, cfg)
 	case IpfsClusterPinQueue:
-		return qm.ProcessIPFSClusterPins(msgs, cfg, db)
+		return qm.ProcessIPFSClusterPins(ctx, msgs, cfg, db)
 	default:
 		return errors.New("invalid queue name")
 	}
@@ -255,7 +256,16 @@ func (qm *Manager) PublishMessage(body interface{}) error {
 	return nil
 }
 
-// Close is used to close our queue connection
-func (qm *Manager) Close() error {
-	return qm.Connection.Close()
+// Close is used to close our queue resources
+func (qm *Manager) Close() {
+	if err := qm.Channel.Close(); err != nil {
+		qm.LogError(err, "failed to properly close channel")
+	} else {
+		qm.LogInfo("properly shutdown channel")
+	}
+	if err := qm.Connection.Close(); err != nil {
+		qm.LogError(err, "failed to properly close connection")
+	} else {
+		qm.LogInfo("properly shutdown connnetion")
+	}
 }

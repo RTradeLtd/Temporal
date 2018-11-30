@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/RTradeLtd/database/models"
@@ -10,7 +11,7 @@ import (
 
 // ProcessDatabaseFileAdds is used to process database file add messages
 // No credit handling is done, as this route is only called to update the database
-func (qm *Manager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.DB) error {
+func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	uploadManager := models.NewUploadManager(db)
 	qm.LogInfo("processing database file adds")
 	for {
@@ -59,7 +60,8 @@ func (qm *Manager) ProcessDatabaseFileAdds(msgs <-chan amqp.Delivery, db *gorm.D
 				qm.LogInfo("database file add processed")
 				d.Ack(false)
 			}(d)
+		case <-ctx.Done():
+			qm.Close()
 		}
 	}
-	return nil
 }
