@@ -15,8 +15,14 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func (qm *Manager) setupLogging() error {
-	logFileName := fmt.Sprintf("/var/log/temporal/%s_serice.log", qm.QueueName)
+func (qm *Manager) setupLogging(service bool) error {
+	var logFileName string
+	if service {
+		logFileName = fmt.Sprintf("/var/log/temporal/%s_service.log", qm.QueueName)
+	} else {
+		logFileName = fmt.Sprintf("/var/log/temporal/%s_publisher.log", qm.QueueName)
+
+	}
 	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {
 		return err
@@ -51,12 +57,10 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*Manage
 	qm.QueueName = queueName
 	qm.Service = queueName
 
-	if service {
-		err = qm.setupLogging()
-		if err != nil {
-			return nil, err
-		}
+	if err = qm.setupLogging(service); err != nil {
+		return nil, err
 	}
+
 	// Declare Non Default exchanges for the particular queue
 	switch queueName {
 	case IpfsPinQueue:

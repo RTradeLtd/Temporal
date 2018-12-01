@@ -233,9 +233,18 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 
 // Close releases API resources
 func (api *API) Close() {
+	// close grpc connections
 	api.lc.Close()
 	api.signer.Close()
 	api.orch.Close()
+	// close queue resources
+	api.queues.cluster.Close()
+	api.queues.database.Close()
+	api.queues.email.Close()
+	api.queues.file.Close()
+	api.queues.ipns.Close()
+	api.queues.key.Close()
+	api.queues.pin.Close()
 }
 
 // TLSConfig is used to enable TLS on the API service
