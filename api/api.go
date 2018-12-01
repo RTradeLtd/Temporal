@@ -13,6 +13,7 @@ import (
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
@@ -33,8 +34,9 @@ import (
 )
 
 var (
-	xssMdlwr xss.XssMw
-	dev      = true
+	xssMdlwr   xss.XssMw
+	dev        = true
+	queueNames = []string{"rtfs", "database", "mini"}
 )
 
 // API is our API service
@@ -57,6 +59,7 @@ type API struct {
 	orch    *clients.IPFSOrchestratorClient
 	lc      *clients.LensClient
 	dc      *dash.Client
+	queues  queues
 	service string
 }
 
@@ -168,6 +171,35 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 	if err != nil {
 		return nil, err
 	}
+	// setup our queues
+	qmIpns, err := queue.Initialize(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, false)
+	if err != nil {
+		return nil, err
+	}
+	qmPin, err := queue.Initialize(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, false)
+	if err != nil {
+		return nil, err
+	}
+	qmDatabase, err := queue.Initialize(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, true, false)
+	if err != nil {
+		return nil, err
+	}
+	qmFile, err := queue.Initialize(queue.IpfsFileQueue, cfg.RabbitMQ.URL, true, false)
+	if err != nil {
+		return nil, err
+	}
+	qmCluster, err := queue.Initialize(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, false)
+	if err != nil {
+		return nil, err
+	}
+	qmEmail, err := queue.Initialize(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, false)
+	if err != nil {
+		return nil, err
+	}
+	qmKey, err := queue.Initialize(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, false)
+	if err != nil {
+		return nil, err
+	}
 	return &API{
 		ipfs:    ipfs,
 		keys:    keys,
@@ -185,9 +217,18 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 		signer:  signer,
 		orch:    orch,
 		dc:      dc,
-		zm:      models.NewZoneManager(dbm.DB),
-		rm:      models.NewRecordManager(dbm.DB),
-		nm:      models.NewHostedIPFSNetworkManager(dbm.DB),
+		queues: queues{
+			pin:      qmPin,
+			file:     qmFile,
+			cluster:  qmCluster,
+			email:    qmEmail,
+			ipns:     qmIpns,
+			key:      qmKey,
+			database: qmDatabase,
+		},
+		zm: models.NewZoneManager(dbm.DB),
+		rm: models.NewRecordManager(dbm.DB),
+		nm: models.NewHostedIPFSNetworkManager(dbm.DB),
 	}, nil
 }
 
