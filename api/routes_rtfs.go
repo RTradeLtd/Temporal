@@ -53,22 +53,11 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       cost,
 	}
-
-	mqConnectionURL := api.cfg.RabbitMQ.URL
-
-	qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c)
-		api.refundUserCredits(username, "pin", cost)
-		return
-	}
-
-	if err = qm.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
+	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
 		api.LogError(err, eh.QueuePublishError)(c)
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}
-
 	api.LogWithUser(username).Info("ipfs pin request sent to backend")
 	Respond(c, http.StatusOK, gin.H{"response": "pin request sent to backend"})
 }
@@ -91,9 +80,6 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	accessKey := api.cfg.MINIO.AccessKey
 	secretKey := api.cfg.MINIO.SecretKey
 	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
-
-	mqURL := api.cfg.RabbitMQ.URL
-
 	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
 		api.LogError(err, eh.MinioConnectionError)(c)
@@ -127,11 +113,9 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 	logger.Debug("file opened")
-
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
-
 	logger.Debugf("storing file in minio as %s", objectName)
 	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size,
 		mini.PutObjectOptions{
@@ -144,7 +128,6 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 	logger.Debugf("file %s stored in minio", objectName)
-
 	ifp := queue.IPFSFile{
 		MinioHostIP:      api.cfg.MINIO.Connection.IP,
 		FileSize:         fileHandler.Size,
@@ -158,25 +141,15 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		// if passphrase was provided, this file is encrypted
 		Encrypted: c.PostForm("passphrase") != "",
 	}
-	qm, err := queue.Initialize(queue.IpfsFileQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError,
-			"user", username)(c)
-		api.refundUserCredits(username, "file", cost)
-		return
-	}
-
-	if err = qm.PublishMessage(ifp); err != nil {
+	if err = api.queues.file.PublishMessage(ifp); err != nil {
 		api.LogError(err, eh.QueuePublishError,
 			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
-
 	logger.
 		WithField("request", ifp).
 		Info("advanced ipfs file upload requested")
-
 	Respond(c, http.StatusOK, gin.H{"response": "file upload request sent to backend"})
 }
 
@@ -237,37 +210,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	api.LogDebug("file added")
-
-	// construct a message to rabbitmq to upad the database
-	dfa := queue.DatabaseFileAdd{
-		Hash:             resp,
-		HoldTimeInMonths: holdTimeinMonthsInt,
-		UserName:         username,
-		NetworkName:      "public",
-		CreditCost:       0,
-	}
-	mqConnectionURL := api.cfg.RabbitMQ.URL
-
-	// initialize a connectino to rabbitmq
-	qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c)
-		return
-	}
-
-	// publish the database file add message
-	if err = qm.PublishMessage(dfa); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c)
-		return
-	}
-
-	qm, err = queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c)
-		return
-	}
-
-	if err = qm.PublishMessageWithExchange(queue.IPFSPin{
+	if err = api.queues.pin.PublishMessageWithExchange(queue.IPFSPin{
 		CID:              resp,
 		NetworkName:      "public",
 		UserName:         username,
@@ -277,7 +220,18 @@ func (api *API) addFileLocally(c *gin.Context) {
 		api.LogError(err, eh.QueuePublishError)(c)
 		return
 	}
-
+	// construct a message to rabbitmq to upad the database
+	dfa := queue.DatabaseFileAdd{
+		Hash:             resp,
+		HoldTimeInMonths: holdTimeinMonthsInt,
+		UserName:         username,
+		NetworkName:      "public",
+		CreditCost:       0,
+	}
+	if err = api.queues.database.PublishMessage(dfa); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		return
+	}
 	api.LogWithUser(username).Info("simple ipfs file upload processed")
 	Respond(c, http.StatusOK, gin.H{"response": resp})
 }

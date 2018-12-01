@@ -30,7 +30,6 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	mqURL := api.cfg.RabbitMQ.URL
 	cost, err := utils.CalculateAPICallCost("ipns", false)
 	if err != nil {
 		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
@@ -80,16 +79,8 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		NetworkName: "public",
 		CreditCost:  cost,
 	}
-	qm, err := queue.Initialize(queue.IpnsEntryQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c)
-		api.refundUserCredits(username, "ipns", cost)
-		return
-	}
-	// in order to avoid generating too much IPFS dht traffic, we publish round-robin style
-	// as we announce the records to the swarm, we will eventually achieve consistency across nodes automatically
-	if err = qm.PublishMessage(ie); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c)
+	if err = api.queues.ipns.PublishMessage(ie); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
