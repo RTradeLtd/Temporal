@@ -110,7 +110,7 @@ func (qm *Manager) OpenChannel() error {
 		qm.LogInfo("channel opened")
 	}
 	qm.Channel = ch
-	return nil
+	return qm.Channel.Qos(10, 0, false)
 }
 
 // DeclareQueue is used to declare a queue for which messages will be sent to
