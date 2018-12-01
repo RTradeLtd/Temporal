@@ -47,6 +47,7 @@ func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, msg
 				}
 				qm.LogInfo("successfully sent email(s)")
 				d.Ack(false)
+				return // we must return here in order to trigger the wg.Done() defer
 			}(d)
 		case <-ctx.Done():
 			qm.Close()

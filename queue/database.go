@@ -62,6 +62,7 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGro
 				}
 				qm.LogInfo("database file add processed")
 				d.Ack(false)
+				return // we must return here in order to trigger the wg.Done() defer
 			}(d)
 		case <-ctx.Done():
 			qm.Close()

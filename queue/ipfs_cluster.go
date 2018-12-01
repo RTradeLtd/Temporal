@@ -83,6 +83,7 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 				}
 				qm.LogInfo("successfully pinned hash to cluster")
 				d.Ack(false)
+				return // we must return here in order to trigger the wg.Done() defer
 			}(d)
 		case <-ctx.Done():
 			qm.Close()

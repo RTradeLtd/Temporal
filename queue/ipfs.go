@@ -113,6 +113,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 				}
 				qm.LogInfo("successfully processed ipfs key creation request")
 				d.Ack(false)
+				return // we must return here in order to trigger the wg.Done() defer
 			}(d)
 		case <-ctx.Done():
 			qm.Close()
@@ -227,6 +228,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 				}
 				qm.LogInfo("successfully processed pin request")
 				d.Ack(false)
+				return // we must return here in order to trigger the wg.Done() defer
 			}(d)
 		case <-ctx.Done():
 			qm.Close()
@@ -467,6 +469,7 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 
 				fileContext.Info("object removed from minio, successfully added to ipfs")
 				d.Ack(false)
+				return // we must return here in order to trigger the wg.Done() defer
 			}(d)
 		case <-ctx.Done():
 			qm.Close()

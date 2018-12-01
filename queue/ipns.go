@@ -134,6 +134,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 				}
 				qm.LogInfo("successfully published and saved ipns entry")
 				d.Ack(false)
+				return // we must return here in order to trigger the wg.Done() defer
 			}(d)
 		case <-ctx.Done():
 			qm.Close()
