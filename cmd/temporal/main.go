@@ -101,11 +101,18 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
 							ctx, cancel := context.WithCancel(context.Background())
-							err = qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
+							go func() {
+								if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+									log.Fatal(err)
+								}
+							}()
+							fmt.Println(closeMessage)
+							<-quitChannel
+							cancel()
 						},
 					},
 					"file": {
@@ -117,10 +124,18 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessages("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+							ctx, cancel := context.WithCancel(context.Background())
+							go func() {
+								if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+									log.Fatal(err)
+								}
+							}()
+							fmt.Println(closeMessage)
+							<-quitChannel
+							cancel()
 						},
 					},
 					"key-creation": {
@@ -132,10 +147,18 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessages("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+							ctx, cancel := context.WithCancel(context.Background())
+							go func() {
+								if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+									log.Fatal(err)
+								}
+							}()
+							fmt.Println(closeMessage)
+							<-quitChannel
+							cancel()
 						},
 					},
 					"cluster": {
@@ -147,10 +170,18 @@ var commands = map[string]cmd.Cmd{
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessages("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
-								log.Fatal(err)
-							}
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+							ctx, cancel := context.WithCancel(context.Background())
+							go func() {
+								if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+									log.Fatal(err)
+								}
+							}()
+							fmt.Println(closeMessage)
+							<-quitChannel
+							cancel()
 						},
 					},
 				},
@@ -164,10 +195,18 @@ var commands = map[string]cmd.Cmd{
 					if err != nil {
 						log.Fatal(err)
 					}
-					err = qm.ConsumeMessages("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-					if err != nil {
-						log.Fatal(err)
-					}
+					quitChannel := make(chan os.Signal)
+					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+					ctx, cancel := context.WithCancel(context.Background())
+					go func() {
+						if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+							log.Fatal(err)
+						}
+					}()
+					fmt.Println(closeMessage)
+					<-quitChannel
+					cancel()
 				},
 			},
 			"email-send": {
@@ -179,10 +218,18 @@ var commands = map[string]cmd.Cmd{
 					if err != nil {
 						log.Fatal(err)
 					}
-					err = qm.ConsumeMessages("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-					if err != nil {
-						log.Fatal(err)
-					}
+					quitChannel := make(chan os.Signal)
+					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+					ctx, cancel := context.WithCancel(context.Background())
+					go func() {
+						if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+							log.Fatal(err)
+						}
+					}()
+					fmt.Println(closeMessage)
+					<-quitChannel
+					cancel()
 				},
 			},
 		},
