@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -27,7 +28,7 @@ import (
 )
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
-func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	kb, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return err
@@ -37,7 +38,9 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, msgs <-chan amqp.
 	for {
 		select {
 		case d := <-msgs:
+			wg.Add(1)
 			go func(d amqp.Delivery) {
+				defer wg.Done()
 				qm.LogInfo("new message detected")
 				key := IPFSKeyCreation{}
 				err = json.Unmarshal(d.Body, &key)
@@ -113,12 +116,13 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, msgs <-chan amqp.
 			}(d)
 		case <-ctx.Done():
 			qm.Close()
+			wg.Done()
 		}
 	}
 }
 
 // ProccessIPFSPins is used to process IPFS pin requests
-func (qm *Manager) ProccessIPFSPins(ctx context.Context, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	userManager := models.NewUserManager(db)
 	//uploadManager := models.NewUploadManager(db)
 	networkManager := models.NewHostedIPFSNetworkManager(db)
@@ -132,7 +136,9 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, msgs <-chan amqp.Delive
 	for {
 		select {
 		case d := <-msgs:
+			wg.Add(1)
 			go func(d amqp.Delivery) {
+				defer wg.Done()
 				qm.LogInfo("new message detected")
 				pin := &IPFSPin{}
 				err := json.Unmarshal(d.Body, pin)
@@ -224,6 +230,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, msgs <-chan amqp.Delive
 			}(d)
 		case <-ctx.Done():
 			qm.Close()
+			wg.Done()
 		}
 	}
 }
@@ -231,7 +238,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, msgs <-chan amqp.Delive
 // ProccessIPFSFiles is used to process messages sent to rabbitmq to upload files to IPFS.
 // This function is invoked with the advanced method of file uploads, and is significantly more resilient than
 // the simple file upload method.
-func (qm *Manager) ProccessIPFSFiles(ctx context.Context, msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
+func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
 	service := qm.Logger.WithFields(log.Fields{
 		"service": qm.QueueName,
 	})
@@ -263,9 +270,10 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, msgs <-chan amqp.Deliv
 	for {
 		select {
 		case d := <-msgs:
+			wg.Add(1)
 			go func(d amqp.Delivery) {
+				defer wg.Done()
 				service.Info("new message detected")
-
 				ipfsFile := IPFSFile{}
 				// unmarshal the messagee
 				err = json.Unmarshal(d.Body, &ipfsFile)
@@ -462,6 +470,7 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, msgs <-chan amqp.Deliv
 			}(d)
 		case <-ctx.Done():
 			qm.Close()
+			wg.Done()
 		}
 	}
 }

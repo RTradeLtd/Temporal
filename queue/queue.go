@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 
@@ -134,10 +135,10 @@ func (qm *Manager) DeclareQueue() error {
 	return nil
 }
 
-// ConsumeMessage is used to consume messages that are sent to the queue
+// ConsumeMessages is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *Manager) ConsumeMessages(ctx context.Context, consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
+func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
 	db, err := database.OpenDBConnection(database.DBOptions{
 		User:           cfg.Database.Username,
 		Password:       cfg.Database.Password,
@@ -188,19 +189,19 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, consumer, dbPass, dbURL,
 	switch qm.Service {
 	// only parse database file requests
 	case DatabaseFileAddQueue:
-		return qm.ProcessDatabaseFileAdds(ctx, msgs, db)
+		return qm.ProcessDatabaseFileAdds(ctx, wg, msgs, db)
 	case IpfsPinQueue:
-		return qm.ProccessIPFSPins(ctx, msgs, db, cfg)
+		return qm.ProccessIPFSPins(ctx, wg, msgs, db, cfg)
 	case IpfsFileQueue:
-		return qm.ProccessIPFSFiles(ctx, msgs, cfg, db)
+		return qm.ProccessIPFSFiles(ctx, wg, msgs, cfg, db)
 	case EmailSendQueue:
-		return qm.ProcessMailSends(ctx, msgs, cfg)
+		return qm.ProcessMailSends(ctx, wg, msgs, cfg)
 	case IpnsEntryQueue:
-		return qm.ProcessIPNSEntryCreationRequests(ctx, msgs, db, cfg)
+		return qm.ProcessIPNSEntryCreationRequests(ctx, wg, msgs, db, cfg)
 	case IpfsKeyCreationQueue:
-		return qm.ProcessIPFSKeyCreation(ctx, msgs, db, cfg)
+		return qm.ProcessIPFSKeyCreation(ctx, wg, msgs, db, cfg)
 	case IpfsClusterPinQueue:
-		return qm.ProcessIPFSClusterPins(ctx, msgs, cfg, db)
+		return qm.ProcessIPFSClusterPins(ctx, wg, msgs, cfg, db)
 	default:
 		return errors.New("invalid queue name")
 	}

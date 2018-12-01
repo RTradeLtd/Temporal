@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"sync"
 
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/config"
@@ -12,7 +13,7 @@ import (
 )
 
 // ProcessIPFSClusterPins is used to process messages sent to rabbitmq requesting be pinned to our cluster
-func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
+func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
 	clusterManager, err := rtfscluster.Initialize(cfg.IPFSCluster.APIConnection.Host, cfg.IPFSCluster.APIConnection.Port)
 	if err != nil {
 		return err
@@ -22,7 +23,9 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, msgs <-chan amqp.
 	for {
 		select {
 		case d := <-msgs:
+			wg.Add(1)
 			go func(d amqp.Delivery) {
+				defer wg.Done()
 				qm.LogInfo("new message detected")
 				clusterAdd := IPFSClusterPin{}
 				err = json.Unmarshal(d.Body, &clusterAdd)
@@ -83,6 +86,7 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, msgs <-chan amqp.
 			}(d)
 		case <-ctx.Done():
 			qm.Close()
+			wg.Done()
 		}
 	}
 }

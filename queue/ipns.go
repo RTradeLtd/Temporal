@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"sync"
 	"time"
 
 	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
@@ -28,7 +29,7 @@ const (
 )
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
-func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	kb, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return err
@@ -43,7 +44,9 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, msgs <-
 	for {
 		select {
 		case d := <-msgs:
+			wg.Add(1)
 			go func(d amqp.Delivery) {
+				defer wg.Done()
 				qm.LogInfo("neww message detected")
 				ie := IPNSEntry{}
 				err = json.Unmarshal(d.Body, &ie)
@@ -134,6 +137,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, msgs <-
 			}(d)
 		case <-ctx.Done():
 			qm.Close()
+			wg.Done()
 		}
 	}
 }

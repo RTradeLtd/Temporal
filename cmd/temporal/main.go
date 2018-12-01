@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sync"
 	"syscall"
 
 	"github.com/RTradeLtd/Temporal/api"
@@ -80,16 +81,18 @@ var commands = map[string]cmd.Cmd{
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-
 							ctx, cancel := context.WithCancel(context.Background())
+							waitGroup := &sync.WaitGroup{}
+							waitGroup.Add(1)
 							go func() {
-								if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+								if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
 									log.Fatal(err)
 								}
 							}()
 							fmt.Println(closeMessage)
 							<-quitChannel
 							cancel()
+							waitGroup.Wait()
 						},
 					},
 					"pin": {
@@ -103,16 +106,18 @@ var commands = map[string]cmd.Cmd{
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-
 							ctx, cancel := context.WithCancel(context.Background())
+							waitGroup := &sync.WaitGroup{}
+							waitGroup.Add(1)
 							go func() {
-								if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+								if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
 									log.Fatal(err)
 								}
 							}()
 							fmt.Println(closeMessage)
 							<-quitChannel
 							cancel()
+							waitGroup.Wait()
 						},
 					},
 					"file": {
@@ -126,16 +131,18 @@ var commands = map[string]cmd.Cmd{
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-
 							ctx, cancel := context.WithCancel(context.Background())
+							waitGroup := &sync.WaitGroup{}
+							waitGroup.Add(1)
 							go func() {
-								if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+								if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
 									log.Fatal(err)
 								}
 							}()
 							fmt.Println(closeMessage)
 							<-quitChannel
 							cancel()
+							waitGroup.Wait()
 						},
 					},
 					"key-creation": {
@@ -149,16 +156,18 @@ var commands = map[string]cmd.Cmd{
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-
 							ctx, cancel := context.WithCancel(context.Background())
+							waitGroup := &sync.WaitGroup{}
+							waitGroup.Add(1)
 							go func() {
-								if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+								if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
 									log.Fatal(err)
 								}
 							}()
 							fmt.Println(closeMessage)
 							<-quitChannel
 							cancel()
+							waitGroup.Wait()
 						},
 					},
 					"cluster": {
@@ -172,16 +181,18 @@ var commands = map[string]cmd.Cmd{
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-
 							ctx, cancel := context.WithCancel(context.Background())
+							waitGroup := &sync.WaitGroup{}
+							waitGroup.Add(1)
 							go func() {
-								if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+								if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
 									log.Fatal(err)
 								}
 							}()
 							fmt.Println(closeMessage)
 							<-quitChannel
 							cancel()
+							waitGroup.Wait()
 						},
 					},
 				},
@@ -197,16 +208,18 @@ var commands = map[string]cmd.Cmd{
 					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-
 					ctx, cancel := context.WithCancel(context.Background())
+					waitGroup := &sync.WaitGroup{}
+					waitGroup.Add(1)
 					go func() {
-						if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+						if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
 							log.Fatal(err)
 						}
 					}()
 					fmt.Println(closeMessage)
 					<-quitChannel
 					cancel()
+					waitGroup.Wait()
 				},
 			},
 			"email-send": {
@@ -220,16 +233,18 @@ var commands = map[string]cmd.Cmd{
 					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-
 					ctx, cancel := context.WithCancel(context.Background())
+					waitGroup := &sync.WaitGroup{}
+					waitGroup.Add(1)
 					go func() {
-						if err := qm.ConsumeMessages(ctx, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
+						if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
 							log.Fatal(err)
 						}
 					}()
 					fmt.Println(closeMessage)
 					<-quitChannel
 					cancel()
+					waitGroup.Wait()
 				},
 			},
 		},

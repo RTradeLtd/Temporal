@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"sync"
 
 	"github.com/RTradeLtd/database/models"
 	"github.com/jinzhu/gorm"
@@ -11,13 +12,15 @@ import (
 
 // ProcessDatabaseFileAdds is used to process database file add messages
 // No credit handling is done, as this route is only called to update the database
-func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, msgs <-chan amqp.Delivery, db *gorm.DB) error {
+func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB) error {
 	uploadManager := models.NewUploadManager(db)
 	qm.LogInfo("processing database file adds")
 	for {
 		select {
 		case d := <-msgs:
+			wg.Add(1)
 			go func(d amqp.Delivery) {
+				defer wg.Done()
 				qm.LogInfo("detected new message")
 				dfa := DatabaseFileAdd{}
 				// unmarshal the message body into the dfa struct
@@ -62,6 +65,7 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, msgs <-chan amqp
 			}(d)
 		case <-ctx.Done():
 			qm.Close()
+			wg.Done()
 		}
 	}
 }
