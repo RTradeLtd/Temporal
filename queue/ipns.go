@@ -39,6 +39,11 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	if err != nil {
 		return err
 	}
+	// user a long running publisher
+	publisher, err := rtns.NewPublisher(&rtns.Opts{PK: pk}, "/ip4/0.0.0.0/tcp/3999")
+	if err != nil {
+		return err
+	}
 	ipnsManager := models.NewIPNSManager(db)
 	qm.LogInfo("processing ipns entry creation requests")
 	for {
@@ -52,14 +57,6 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 				err = json.Unmarshal(d.Body, &ie)
 				if err != nil {
 					qm.LogError(err, "failed to unmarshal message")
-					d.Ack(false)
-					return
-				}
-				// create our temporary publisher
-				publisher, err := rtns.NewPublisher(&rtns.Opts{PK: pk}, "/ip4/0.0.0.0/tcp/3999")
-				if err != nil {
-					qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
-					qm.LogError(err, "failed to build ipns publisher")
 					d.Ack(false)
 					return
 				}
