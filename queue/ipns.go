@@ -139,6 +139,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
+			return nil
 		}
 	}
 }

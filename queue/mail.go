@@ -52,6 +52,7 @@ func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, msg
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
+			return nil
 		}
 	}
 }

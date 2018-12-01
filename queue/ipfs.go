@@ -118,6 +118,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
+			return nil
 		}
 	}
 }
@@ -233,6 +234,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
+			return nil
 		}
 	}
 }
@@ -474,6 +476,7 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
+			return nil
 		}
 	}
 }

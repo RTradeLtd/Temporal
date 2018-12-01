@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
 
 	"github.com/RTradeLtd/database/models"
@@ -18,6 +19,7 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGro
 	for {
 		select {
 		case d := <-msgs:
+			fmt.Println("adding")
 			wg.Add(1)
 			go func(d amqp.Delivery) {
 				defer wg.Done()
@@ -67,6 +69,7 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGro
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
+			return nil
 		}
 	}
 }

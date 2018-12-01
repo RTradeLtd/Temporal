@@ -88,6 +88,7 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
+			return nil
 		}
 	}
 }
