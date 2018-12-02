@@ -1,16 +1,19 @@
-package queue_test
+package queue
 
 import (
+	"context"
+	"sync"
 	"testing"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/RTradeLtd/config"
 )
 
 const (
 	testCID           = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
 	testRabbitAddress = "amqp://127.0.0.1:5672"
 	logFilePath       = "/tmp/%s_%v.log"
+	testCfgPath       = "../testenv/config.json"
 )
 
 func TestQueue_Publish(t *testing.T) {
@@ -23,20 +26,20 @@ func TestQueue_Publish(t *testing.T) {
 		name string
 		args args
 	}{
-		{"DFAQ", args{queue.DatabaseFileAddQueue, true, false}},
-		{"IPQ", args{queue.IpfsPinQueue, true, false}},
-		{"IFQ", args{queue.IpfsFileQueue, true, false}},
-		{"IPCQ", args{queue.IpfsClusterPinQueue, true, false}},
-		{"ESQ", args{queue.EmailSendQueue, true, false}},
-		{"IEQ", args{queue.IpnsEntryQueue, true, false}},
-		{"IKQ", args{queue.IpfsKeyCreationQueue, true, false}},
-		{"PCreateQ", args{queue.PaymentCreationQueue, true, false}},
-		{"PConfirmQ", args{queue.PaymentConfirmationQueue, true, false}},
-		{"DPCQ", args{queue.DashPaymentConfirmationQueue, true, false}},
+		{"DFAQ", args{DatabaseFileAddQueue, true, false}},
+		{"IPQ", args{IpfsPinQueue, true, false}},
+		{"IFQ", args{IpfsFileQueue, true, false}},
+		{"IPCQ", args{IpfsClusterPinQueue, true, false}},
+		{"ESQ", args{EmailSendQueue, true, false}},
+		{"IEQ", args{IpnsEntryQueue, true, false}},
+		{"IKQ", args{IpfsKeyCreationQueue, true, false}},
+		{"PCreateQ", args{PaymentCreationQueue, true, false}},
+		{"PConfirmQ", args{PaymentConfirmationQueue, true, false}},
+		{"DPCQ", args{DashPaymentConfirmationQueue, true, false}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			qm, err := queue.Initialize(tt.args.queueName,
+			qm, err := Initialize(tt.args.queueName,
 				testRabbitAddress, tt.args.publish, tt.args.service)
 			if err != nil {
 				t.Fatal(err)
@@ -45,18 +48,18 @@ func TestQueue_Publish(t *testing.T) {
 			case "IPQ", "IKQ":
 				if tt.name == "IPQ" {
 					if err := qm.PublishMessageWithExchange(
-						queue.IPFSPin{
+						IPFSPin{
 							CID:              testCID,
 							NetworkName:      "public",
 							HoldTimeInMonths: 10,
 						},
-						queue.PinExchange,
+						PinExchange,
 					); err != nil {
 						t.Fatal(err)
 					}
 				} else {
 					if err := qm.PublishMessageWithExchange(
-						queue.IPFSKeyCreation{
+						IPFSKeyCreation{
 							UserName:    "testuser",
 							Name:        "mykey",
 							Type:        "rsa",
@@ -64,14 +67,14 @@ func TestQueue_Publish(t *testing.T) {
 							NetworkName: "public",
 							CreditCost:  0,
 						},
-						queue.IpfsKeyExchange,
+						IpfsKeyExchange,
 					); err != nil {
 						t.Fatal(err)
 					}
 				}
 			default:
 				if tt.name == "DFAQ" {
-					if err := qm.PublishMessage(queue.DatabaseFileAdd{
+					if err := qm.PublishMessage(DatabaseFileAdd{
 						Hash:             testCID,
 						HoldTimeInMonths: 10,
 						UserName:         "testuser",
@@ -79,7 +82,7 @@ func TestQueue_Publish(t *testing.T) {
 						t.Fatal(err)
 					}
 				} else if tt.name == "IFQ" {
-					if err := qm.PublishMessage(queue.IPFSFile{
+					if err := qm.PublishMessage(IPFSFile{
 						MinioHostIP:      "127.0.0.1:9090",
 						FileName:         "testfile",
 						FileSize:         100,
@@ -94,7 +97,7 @@ func TestQueue_Publish(t *testing.T) {
 						t.Fatal(err)
 					}
 				} else if tt.name == "IPCQ" {
-					if err := qm.PublishMessage(queue.IPFSClusterPin{
+					if err := qm.PublishMessage(IPFSClusterPin{
 						CID:              testCID,
 						NetworkName:      "public",
 						UserName:         "testuser",
@@ -104,7 +107,7 @@ func TestQueue_Publish(t *testing.T) {
 						t.Fatal(err)
 					}
 				} else if tt.name == "ESQ" {
-					if err := qm.PublishMessage(queue.EmailSend{
+					if err := qm.PublishMessage(EmailSend{
 						Subject:     "test email",
 						Content:     "this is a test email",
 						ContentType: "text/html",
@@ -114,7 +117,7 @@ func TestQueue_Publish(t *testing.T) {
 						t.Fatal(err)
 					}
 				} else if tt.name == "IEQ" {
-					if err := qm.PublishMessage(queue.IPNSEntry{
+					if err := qm.PublishMessage(IPNSEntry{
 						CID:         testCID,
 						LifeTime:    time.Minute,
 						TTL:         time.Second,
@@ -127,7 +130,7 @@ func TestQueue_Publish(t *testing.T) {
 						t.Fatal(err)
 					}
 				} else if tt.name == "PCreateQ" {
-					if err := qm.PublishMessage(queue.PaymentCreation{
+					if err := qm.PublishMessage(PaymentCreation{
 						TxHash:     "testuser-22",
 						Blockchain: "eth",
 						UserName:   "testuser",
@@ -135,14 +138,14 @@ func TestQueue_Publish(t *testing.T) {
 						t.Fatal(err)
 					}
 				} else if tt.name == "PConfirmQ" {
-					if err := qm.PublishMessage(queue.PaymentConfirmation{
+					if err := qm.PublishMessage(PaymentConfirmation{
 						UserName:      "testuser",
 						PaymentNumber: 22,
 					}); err != nil {
 						t.Fatal(err)
 					}
 				} else if tt.name == "DPCQ" {
-					if err := qm.PublishMessage(queue.DashPaymenConfirmation{
+					if err := qm.PublishMessage(DashPaymenConfirmation{
 						UserName:         "testuser",
 						PaymentForwardID: "paymentforwardi",
 						PaymentNumber:    23,
@@ -153,4 +156,35 @@ func TestQueue_Publish(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestQueue_DatabaseFileAdd(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := Initialize(DatabaseFileAddQueue, testRabbitAddress, false, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qmPublisher, err := Initialize(DatabaseFileAddQueue, testRabbitAddress, true, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*1)
+	waitGroup := &sync.WaitGroup{}
+	waitGroup.Add(1)
+	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
+		Hash:             testCID,
+		HoldTimeInMonths: 10,
+		UserName:         "testuser",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", "", "", "", cfg); err != nil {
+		t.Fatal(err)
+	}
+	cancel()
+	waitGroup.Wait()
 }
