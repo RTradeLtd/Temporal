@@ -143,7 +143,7 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -193,7 +193,7 @@ func TestQueue_IPFSFile(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -239,7 +239,7 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -285,7 +285,7 @@ func TestQueue_EmailSend(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -334,7 +334,7 @@ func TestQueue_IPNSEntry(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -385,7 +385,7 @@ func TestQueue_IPFSPin(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -438,7 +438,7 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()

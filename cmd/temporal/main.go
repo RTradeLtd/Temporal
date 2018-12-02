@@ -92,7 +92,7 @@ var commands = map[string]cmd.Cmd{
 								<-quitChannel
 								cancel()
 							}()
-							if err := qm.ConsumeMessages(ctx, waitGroup, "", db, &cfg); err != nil {
+							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 								log.Fatal(err)
 							}
 							waitGroup.Wait()
@@ -117,7 +117,7 @@ var commands = map[string]cmd.Cmd{
 								<-quitChannel
 								cancel()
 							}()
-							if err := qm.ConsumeMessages(ctx, waitGroup, "", db, &cfg); err != nil {
+							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 								log.Fatal(err)
 							}
 							waitGroup.Wait()
@@ -142,7 +142,7 @@ var commands = map[string]cmd.Cmd{
 								<-quitChannel
 								cancel()
 							}()
-							if err := qm.ConsumeMessages(ctx, waitGroup, "", db, &cfg); err != nil {
+							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 								log.Fatal(err)
 							}
 							waitGroup.Wait()
@@ -167,7 +167,7 @@ var commands = map[string]cmd.Cmd{
 								<-quitChannel
 								cancel()
 							}()
-							if err := qm.ConsumeMessages(ctx, waitGroup, "", db, &cfg); err != nil {
+							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 								log.Fatal(err)
 							}
 							waitGroup.Wait()
@@ -192,7 +192,7 @@ var commands = map[string]cmd.Cmd{
 								<-quitChannel
 								cancel()
 							}()
-							if err := qm.ConsumeMessages(ctx, waitGroup, "", db, &cfg); err != nil {
+							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 								log.Fatal(err)
 							}
 							waitGroup.Wait()
@@ -219,7 +219,7 @@ var commands = map[string]cmd.Cmd{
 						<-quitChannel
 						cancel()
 					}()
-					if err := qm.ConsumeMessages(ctx, waitGroup, "", db, &cfg); err != nil {
+					if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 						log.Fatal(err)
 					}
 					waitGroup.Wait()
@@ -244,7 +244,7 @@ var commands = map[string]cmd.Cmd{
 						<-quitChannel
 						cancel()
 					}()
-					if err := qm.ConsumeMessages(ctx, waitGroup, "", db, &cfg); err != nil {
+					if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 						log.Fatal(err)
 					}
 					waitGroup.Wait()

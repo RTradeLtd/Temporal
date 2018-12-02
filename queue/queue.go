@@ -109,7 +109,7 @@ func (qm *Manager) declareQueue() error {
 // ConsumeMessages is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, consumer string, db *gorm.DB, cfg *config.TemporalConfig) error {
+func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *gorm.DB, cfg *config.TemporalConfig) error {
 	// embed database into queue manager
 	qm.db = db
 	// embed config into queue manager
@@ -136,9 +136,10 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, cons
 	}
 
 	// we do not auto-ack, as if a consumer dies we don't want the message to be lost
+	// not specifying the consumer name uses an automatically generated id
 	msgs, err := qm.channel.Consume(
 		qm.QueueName, // queue
-		consumer,     // consumer
+		"",           // consumer
 		false,        // auto-ack
 		false,        // exclusive
 		false,        // no-local
