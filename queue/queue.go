@@ -59,31 +59,25 @@ func Initialize(queueName, connectionURL string, publish, service bool, logFileP
 	// Declare Non Default exchanges for the particular queue
 	switch queueName {
 	case IpfsPinQueue:
-		err = qm.parseQueueName(queueName)
-		if err != nil {
+		if err = qm.parseQueueName(queueName); err != nil {
 			return nil, err
 		}
-		err = qm.DeclareIPFSPinExchange()
-		if err != nil {
+		if err = qm.DeclareIPFSPinExchange(); err != nil {
 			return nil, err
 		}
 		qm.ExchangeName = PinExchange
-		if publish {
-			return &qm, nil
-		}
 	case IpfsKeyCreationQueue:
-		err = qm.parseQueueName(queueName)
-		if err != nil {
+		if err = qm.parseQueueName(queueName); err != nil {
 			return nil, err
 		}
-		err = qm.DeclareIPFSKeyExchange()
-		if err != nil {
+		if err = qm.DeclareIPFSKeyExchange(); err != nil {
 			return nil, err
 		}
 		qm.ExchangeName = IpfsKeyExchange
-		if publish {
-			return &qm, nil
-		}
+	}
+	// we only need to declare a queue if we're consuming (aka, service)
+	if publish {
+		return &qm, nil
 	}
 	if err := qm.DeclareQueue(); err != nil {
 		return nil, err
