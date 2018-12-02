@@ -1,35 +1,20 @@
 package queue
 
+import "errors"
+
 const (
 	// PinExchange is the name of the fanout exchange for regular ipfs pins
 	PinExchange = "ipfs-pin"
 	// PinExchangeKey is the key used for ipfs pin exchanges
 	PinExchangeKey = "ipfs-pin-key"
-	// PinRemovalExchange is the fanout exchange we use for pin removals
-	PinRemovalExchange = "ipfs-pin-removal"
-	// PinRemovalExchangeKey is the key used for pin removal exchanges
-	PinRemovalExchangeKey = "ipfs-pin-removal-key"
 	// IpfsKeyExchange is the exchange topic used for key creation requests
 	IpfsKeyExchange = "ipfs-key-exchange"
 	// IpfsKeyExchangeKey is the exchange key used for key creation requests
 	IpfsKeyExchangeKey = "ipfs-key-exchange-key"
 )
 
-// DeclareIPFSPinRemovalExchange is used to declare the exchange used to handle ipfs pins
-func (qm *Manager) DeclareIPFSPinRemovalExchange() error {
-	return qm.channel.ExchangeDeclare(
-		PinRemovalExchange, // name
-		"fanout",           // type
-		true,               // durable
-		false,              // auto-delete
-		false,              // internal
-		false,              // no wait
-		nil,                // args
-	)
-}
-
 // DeclareIPFSPinExchange is used to declare the exchange used to handle ipfs pins
-func (qm *Manager) DeclareIPFSPinExchange() error {
+func (qm *Manager) declareIPFSPinExchange() error {
 	return qm.channel.ExchangeDeclare(
 		PinExchange, // name
 		"fanout",    // type
@@ -42,7 +27,7 @@ func (qm *Manager) DeclareIPFSPinExchange() error {
 }
 
 // DeclareIPFSKeyExchange is used to declare the exchange used to handle ipfs key creation requests
-func (qm *Manager) DeclareIPFSKeyExchange() error {
+func (qm *Manager) declareIPFSKeyExchange() error {
 	return qm.channel.ExchangeDeclare(
 		IpfsKeyExchange, // name
 		"fanout",        // type
@@ -52,4 +37,18 @@ func (qm *Manager) DeclareIPFSKeyExchange() error {
 		false,           // no wait
 		nil,             // args
 	)
+}
+
+// SetupExchange is used to setup our various exchanges
+func (qm *Manager) setupExchange(queueName string) error {
+	switch queueName {
+	case IpfsPinQueue:
+		qm.ExchangeName = PinExchange
+		return qm.declareIPFSPinExchange()
+	case IpfsKeyCreationQueue:
+		qm.ExchangeName = IpfsKeyExchange
+		return qm.declareIPFSKeyExchange()
+	default:
+		return errors.New("invalid queue name for non default exchange")
+	}
 }

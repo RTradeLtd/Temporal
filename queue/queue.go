@@ -44,45 +44,33 @@ func Initialize(queueName, connectionURL string, publish, service bool, logFileP
 		return nil, err
 	}
 	qm := Manager{connection: conn}
+	// open a channel
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
 	}
-
-	qm.QueueName = queueName
-	qm.Service = queueName
+	// setup queue names
+	if err = qm.parseQueueName(queueName); err != nil {
+		return nil, err
+	}
+	// setup service/consumer specific logging
 	if service {
+		qm.Service = queueName
 		if err = qm.setupLogging(); err != nil {
 			return nil, err
 		}
 	}
-
-	// Declare Non Default exchanges for the particular queue
+	// Declare Non Default exchanges for matching queues
 	switch queueName {
-	case IpfsPinQueue:
-		if err = qm.parseQueueName(queueName); err != nil {
+	case IpfsPinQueue, IpfsKeyCreationQueue:
+		if err = qm.setupExchange(queueName); err != nil {
 			return nil, err
 		}
-		if err = qm.DeclareIPFSPinExchange(); err != nil {
-			return nil, err
-		}
-		qm.ExchangeName = PinExchange
-	case IpfsKeyCreationQueue:
-		if err = qm.parseQueueName(queueName); err != nil {
-			return nil, err
-		}
-		if err = qm.DeclareIPFSKeyExchange(); err != nil {
-			return nil, err
-		}
-		qm.ExchangeName = IpfsKeyExchange
 	}
-	// we only need to declare a queue if we're consuming (aka, service)
+	// we only need to declare a queue if we're a consumer/service
 	if publish {
 		return &qm, nil
 	}
-	if err := qm.DeclareQueue(); err != nil {
-		return nil, err
-	}
-	return &qm, nil
+	return &qm, qm.DeclareQueue()
 }
 
 func setupConnection(connectionURL string) (*amqp.Connection, error) {
@@ -153,7 +141,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, cons
 	// a single key creation request, will be sent to all of our consumers ensuring that all of our nodes
 	// will have the same key in their keystore
 	switch qm.ExchangeName {
-	case PinRemovalExchange, PinExchange, IpfsKeyExchange:
+	case PinExchange, IpfsKeyExchange:
 		if err = qm.channel.QueueBind(
 			qm.QueueName,    // name of the queue
 			"",              // routing key
@@ -206,7 +194,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, cons
 //PublishMessageWithExchange is used to publish a message to a given exchange
 func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
 	switch exchangeName {
-	case PinExchange, PinRemovalExchange, IpfsKeyExchange:
+	case PinExchange, IpfsKeyExchange:
 		break
 	default:
 		return errors.New("invalid exchange name provided")
@@ -238,10 +226,10 @@ func (qm *Manager) PublishMessage(body interface{}) error {
 		return err
 	}
 	if err = qm.channel.Publish(
-		"",            // exchange - this is left empty, and becomes the default exchange
-		qm.queue.Name, // routing key
-		false,         // mandatory
-		false,         // immediate
+		"",           // exchange - this is left empty, and becomes the default exchange
+		qm.QueueName, // routing key
+		false,        // mandatory
+		false,        // immediate
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent, // messages will persist through crashes, etc..
 			ContentType:  "text/plain",
