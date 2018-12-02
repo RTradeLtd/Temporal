@@ -7,9 +7,9 @@ import (
 
 // refundCredits is used to refund a users credits. We do not check for errors,
 // as these are logged and manually corrected if they occur
-func (qm *Manager) refundCredits(username, callType string, cost float64) {
+func (qm *Manager) refundCredits(username, callType string, cost float64) error {
 	if cost == 0 {
-		return
+		return nil
 	}
 	um := models.NewUserManager(qm.db)
 	if _, err := um.AddCredits(username, cost); err != nil {
@@ -19,5 +19,7 @@ func (qm *Manager) refundCredits(username, callType string, cost float64) {
 			"call_type": callType,
 			"error":     err.Error(),
 		}).Error("unable to refund user credits")
+		return err
 	}
+	return nil
 }

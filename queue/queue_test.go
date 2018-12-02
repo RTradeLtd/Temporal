@@ -29,8 +29,6 @@ func TestQueue_Publish(t *testing.T) {
 		name string
 		args args
 	}{
-		{"IEQ", args{IpnsEntryQueue, true}},
-		{"IKQ", args{IpfsKeyCreationQueue, true}},
 		{"PCreateQ", args{PaymentCreationQueue, true}},
 		{"PConfirmQ", args{PaymentConfirmationQueue, true}},
 		{"DPCQ", args{DashPaymentConfirmationQueue, true}},
@@ -65,6 +63,47 @@ func TestQueue_Publish(t *testing.T) {
 				}); err != nil {
 					t.Fatal(err)
 				}
+			}
+		})
+	}
+}
+
+// Covers the default case in `setupExchange`
+func TestQueue_ExchangeFail(t *testing.T) {
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, testLogFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = qmPublisher.setupExchange("bad-queue"); err == nil {
+		t.Fatal("error expected")
+	}
+}
+
+func TestQueue_RefundCredits(t *testing.T) {
+	defer func() {
+		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, DatabaseFileAddQueue))
+	}()
+	// setup our queue backend
+	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, testLogFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type args struct {
+		username string
+		callType string
+		cost     float64
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"HasCost", args{"testuser", "ipfs-pin", 1}},
+		{"NoCost", args{"testuser", "ipfs-pin", 0}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := qmConsumer.refundCredits(tt.args.username, tt.args.callType, tt.args.cost); err != nil {
+				t.Fatal(err)
 			}
 		})
 	}

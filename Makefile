@@ -50,6 +50,8 @@ testenv:
 	( cd testenv ; make testenv )
 	@echo "Running migrations..."
 	@env CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go migrate-insecure
+	make api-user
+	make api-admin
 	@echo "===================          done           ==================="
 
 # Shut down testenv
