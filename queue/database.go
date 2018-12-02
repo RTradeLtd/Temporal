@@ -19,47 +19,49 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGro
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go func(d amqp.Delivery) {
-				defer wg.Done()
-				qm.LogInfo("detected new message")
-				dfa := DatabaseFileAdd{}
-				// unmarshal the message body into the dfa struct
-				if err := json.Unmarshal(d.Body, &dfa); err != nil {
-					qm.LogError(err, "failed to unmarshal message")
-					d.Ack(false)
-					return
-				}
-				qm.LogInfo("message successfully unmarshaled")
-				upload, err := uploadManager.FindUploadByHashAndNetwork(dfa.Hash, dfa.NetworkName)
-				if err != nil && err != gorm.ErrRecordNotFound {
-					qm.LogError(err, "database check for upload failed")
-					d.Ack(false)
-					return
-				}
-				opts := models.UploadOptions{
-					NetworkName:      dfa.NetworkName,
-					Username:         dfa.UserName,
-					HoldTimeInMonths: dfa.HoldTimeInMonths,
-					Encrypted:        false,
-				}
-				if upload == nil {
-					_, err = uploadManager.NewUpload(dfa.Hash, "file", opts)
-				} else {
-					// we have seen this upload before, so lets update teh database record
-					_, err = uploadManager.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName)
-				}
-				if err != nil {
-					qm.LogError(err, "failed to process database file upload")
-				} else {
-					qm.LogInfo("database file add processed")
-				}
-				d.Ack(false)
-				return // we must return here in order to trigger the wg.Done() defer
-			}(d)
+			go qm.processDatabaseFileAdd(d, wg, uploadManager)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
 			return nil
 		}
 	}
+}
+
+func (qm *Manager) processDatabaseFileAdd(d amqp.Delivery, wg *sync.WaitGroup, um *models.UploadManager) {
+	defer wg.Done()
+	qm.LogInfo("detected new message")
+	dfa := DatabaseFileAdd{}
+	// unmarshal the message body into the dfa struct
+	if err := json.Unmarshal(d.Body, &dfa); err != nil {
+		qm.LogError(err, "failed to unmarshal message")
+		d.Ack(false)
+		return
+	}
+	qm.LogInfo("message successfully unmarshaled")
+	upload, err := um.FindUploadByHashAndNetwork(dfa.Hash, dfa.NetworkName)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		qm.LogError(err, "database check for upload failed")
+		d.Ack(false)
+		return
+	}
+	opts := models.UploadOptions{
+		NetworkName:      dfa.NetworkName,
+		Username:         dfa.UserName,
+		HoldTimeInMonths: dfa.HoldTimeInMonths,
+		Encrypted:        false,
+	}
+	if upload == nil {
+		_, err = um.NewUpload(dfa.Hash, "file", opts)
+	} else {
+		// we have seen this upload before, so lets update teh database record
+		_, err = um.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName)
+	}
+	if err != nil {
+		qm.LogError(err, "failed to process database file upload")
+	} else {
+		qm.LogInfo("database file add processed")
+	}
+	d.Ack(false)
+	return // we must return here in order to trigger the wg.Done() defer
 }
