@@ -12,7 +12,7 @@ import (
 const (
 	testCID           = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
 	testRabbitAddress = "amqp://127.0.0.1:5672"
-	logFilePath       = "/tmp/%s_%v.log"
+	testLogFilePath   = "../templogs.log"
 	testCfgPath       = "../testenv/config.json"
 )
 
@@ -155,7 +155,7 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := Initialize(DatabaseFileAddQueue, testRabbitAddress, false, true)
+	qmConsumer, err := Initialize(DatabaseFileAddQueue, testRabbitAddress, false, true, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}

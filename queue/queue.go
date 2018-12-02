@@ -15,8 +15,13 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func (qm *Manager) setupLogging() error {
-	logFileName := fmt.Sprintf("/var/log/temporal/%s_service.log", qm.QueueName)
+func (qm *Manager) setupLogging(logFilePath ...string) error {
+	var logFileName string
+	if len(logFilePath) != 0 {
+		logFileName = logFilePath[0]
+	} else {
+		logFileName = fmt.Sprintf("/var/log/temporal/%s_service.log", qm.QueueName)
+	}
 	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {
 		return err
@@ -44,7 +49,7 @@ func Initialize(queueName, connectionURL string, publish, service bool, logFileP
 	// setup service/consumer specific logging
 	if service {
 		qm.Service = queueName
-		if err = qm.setupLogging(); err != nil {
+		if err = qm.setupLogging(logFilePath...); err != nil {
 			return nil, err
 		}
 	}
