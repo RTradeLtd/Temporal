@@ -199,6 +199,14 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 	if err != nil {
 		return nil, err
 	}
+	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
+	qmPayConfirm, err := queue.New(queue.PaymentConfirmationQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
 	return &API{
 		ipfs:    ipfs,
 		keys:    keys,
@@ -217,13 +225,15 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 		orch:    orch,
 		dc:      dc,
 		queues: queues{
-			pin:      qmPin,
-			file:     qmFile,
-			cluster:  qmCluster,
-			email:    qmEmail,
-			ipns:     qmIpns,
-			key:      qmKey,
-			database: qmDatabase,
+			pin:        qmPin,
+			file:       qmFile,
+			cluster:    qmCluster,
+			email:      qmEmail,
+			ipns:       qmIpns,
+			key:        qmKey,
+			database:   qmDatabase,
+			dash:       qmDash,
+			payConfirm: qmPayConfirm,
 		},
 		zm: models.NewZoneManager(dbm.DB),
 		rm: models.NewRecordManager(dbm.DB),

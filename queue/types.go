@@ -28,8 +28,6 @@ var (
 	IpnsEntryQueue = "ipns-entry-queue"
 	// IpfsKeyCreationQueue is a queue used to handle ipfs key creation
 	IpfsKeyCreationQueue = "ipfs-key-creation-queue"
-	// PaymentCreationQueue is a queue used to handle payment processing
-	PaymentCreationQueue = "payment-creation-queue"
 	// PaymentConfirmationQueue is a queue used to handle payment confirmations
 	PaymentConfirmationQueue = "payment-confirmation-queue"
 	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
@@ -158,13 +156,6 @@ type IPNSEntry struct {
 	UserName    string        `json:"user_name"`
 	NetworkName string        `json:"network_name"`
 	CreditCost  float64       `json:"credit_cost"`
-}
-
-// PaymentCreation is for the payment creation queue
-type PaymentCreation struct {
-	TxHash     string `json:"tx_hash"`
-	Blockchain string `json:"blockchain"`
-	UserName   string `json:"user_name"`
 }
 
 // DashPaymenConfirmation is a message used to signal processing of a dash payment

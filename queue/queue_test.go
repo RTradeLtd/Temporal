@@ -29,7 +29,6 @@ func TestQueue_Publish(t *testing.T) {
 		name string
 		args args
 	}{
-		{"PCreateQ", args{PaymentCreationQueue, true}},
 		{"PConfirmQ", args{PaymentConfirmationQueue, true}},
 		{"DPCQ", args{DashPaymentConfirmationQueue, true}},
 	}
@@ -40,15 +39,7 @@ func TestQueue_Publish(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if tt.name == "PCreateQ" {
-				if err := qm.PublishMessage(PaymentCreation{
-					TxHash:     "testuser-22",
-					Blockchain: "eth",
-					UserName:   "testuser",
-				}); err != nil {
-					t.Fatal(err)
-				}
-			} else if tt.name == "PConfirmQ" {
+			if tt.name == "PConfirmQ" {
 				if err := qm.PublishMessage(PaymentConfirmation{
 					UserName:      "testuser",
 					PaymentNumber: 22,
