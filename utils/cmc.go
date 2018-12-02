@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/big"
 	"net/http"
 	"strconv"
 )
@@ -49,37 +48,4 @@ func RetrieveUsdPrice(coin string) (float64, error) {
 		return 0, err
 	}
 	return strconv.ParseFloat(decode[0].PriceUsd, 64)
-}
-
-// RetrieveEthUsdPriceNoDecimals is used to retrieve the eth usd price without decimals
-func RetrieveEthUsdPriceNoDecimals() (int64, error) {
-	response, err := http.Get("https://api.coinmarketcap.com/v1/ticker/ethereum/")
-	if err != nil {
-		return 0, err
-	}
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return 0, err
-	}
-	var decode []Response
-	err = json.Unmarshal(body, &decode)
-	if err != nil {
-		return 0, err
-	}
-
-	f, err := strconv.ParseFloat(decode[0].PriceUsd, 64)
-	if err != nil {
-		return 0, err
-	}
-	bigF := big.NewFloat(f)
-	bigFloatString := bigF.String()
-	var s string
-	for _, v := range bigFloatString {
-		if string(v) == "." {
-			break
-		}
-		s += string(v)
-	}
-	return strconv.ParseInt(s, 10, 64)
 }

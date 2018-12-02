@@ -6,16 +6,6 @@ import (
 	"github.com/RTradeLtd/Temporal/utils"
 )
 
-func TestUtils_RetrieveEthUsdPrice(t *testing.T) {
-	priceInt, err := utils.RetrieveEthUsdPriceNoDecimals()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if priceInt == 0 {
-		t.Fatal("priceInt is 0, unexpected error occurred")
-	}
-}
-
 func TestRetrieveUsdPrice(t *testing.T) {
 	type args struct {
 		coin string
