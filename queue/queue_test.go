@@ -10,7 +10,7 @@ import (
 const (
 	testCID           = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
 	testRabbitAddress = "amqp://127.0.0.1:5672"
-	logFilePath       = "/tmp/%s_%s.log"
+	logFilePath       = "/tmp/%s_%v.log"
 )
 
 func TestInitialize(t *testing.T) {
