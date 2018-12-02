@@ -80,9 +80,6 @@ func TestQueue_ExchangeFail(t *testing.T) {
 }
 
 func TestQueue_RefundCredits(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, DatabaseFileAddQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
