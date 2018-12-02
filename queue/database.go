@@ -3,7 +3,6 @@ package queue
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"sync"
 
 	"github.com/RTradeLtd/database/models"
@@ -19,21 +18,19 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGro
 	for {
 		select {
 		case d := <-msgs:
-			fmt.Println("adding")
 			wg.Add(1)
 			go func(d amqp.Delivery) {
 				defer wg.Done()
 				qm.LogInfo("detected new message")
 				dfa := DatabaseFileAdd{}
 				// unmarshal the message body into the dfa struct
-				err := json.Unmarshal(d.Body, &dfa)
-				if err != nil {
+				if err := json.Unmarshal(d.Body, &dfa); err != nil {
 					qm.LogError(err, "failed to unmarshal message")
 					d.Ack(false)
 					return
 				}
 				qm.LogInfo("message successfully unmarshaled")
-				_, err = uploadManager.FindUploadByHashAndNetwork(dfa.Hash, dfa.NetworkName)
+				upload, err := uploadManager.FindUploadByHashAndNetwork(dfa.Hash, dfa.NetworkName)
 				if err != nil && err != gorm.ErrRecordNotFound {
 					qm.LogError(err, "database check for upload failed")
 					d.Ack(false)
@@ -45,24 +42,17 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGro
 					HoldTimeInMonths: dfa.HoldTimeInMonths,
 					Encrypted:        false,
 				}
-				if err != nil && err == gorm.ErrRecordNotFound {
-					if _, err = uploadManager.NewUpload(
-						dfa.Hash, "file",
-						opts,
-					); err != nil {
-						qm.LogError(err, "failed to create new upload in database")
-						d.Ack(false)
-						return
-					}
+				if upload == nil {
+					_, err = uploadManager.NewUpload(dfa.Hash, "file", opts)
 				} else {
-					// this isn't a new upload so we shall upload the database;
-					if _, err = uploadManager.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName); err != nil {
-						qm.LogError(err, "failed to update upload")
-						d.Ack(false)
-						return
-					}
+					// we have seen this upload before, so lets update teh database record
+					_, err = uploadManager.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName)
 				}
-				qm.LogInfo("database file add processed")
+				if err != nil {
+					qm.LogError(err, "failed to process database file upload")
+				} else {
+					qm.LogInfo("database file add processed")
+				}
 				d.Ack(false)
 				return // we must return here in order to trigger the wg.Done() defer
 			}(d)
