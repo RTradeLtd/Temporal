@@ -34,7 +34,7 @@ func (qm *Manager) setupLogging(logFilePath ...string) error {
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
-func Initialize(queueName, connectionURL string, publish, service bool, logFilePath ...string) (*Manager, error) {
+func New(queue, URL string, publish, service bool, logFilePath ...string) (*Manager, error) {
 	conn, err := setupConnection(connectionURL)
 	if err != nil {
 		return nil, err
