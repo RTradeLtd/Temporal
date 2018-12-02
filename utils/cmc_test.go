@@ -1,7 +1,6 @@
 package utils_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/utils"
@@ -29,25 +28,26 @@ func TestRetrieveUsdPrice(t *testing.T) {
 		coin string
 	}
 	tests := []struct {
-		name string
-		args args
+		name    string
+		args    args
+		wantErr bool
 	}{
-		{"Ethereum", args{"ethereum"}},
-		{"Monero", args{"monero"}},
-		{"Bitcoin", args{"bitcoin"}},
-		{"Litecoin", args{"litecoin"}},
+		{"Ethereum", args{"ethereum"}, false},
+		{"Monero", args{"monero"}, false},
+		{"Bitcoin", args{"bitcoin"}, false},
+		{"Litecoin", args{"litecoin"}, false},
+		{"NotARealCoin", args{"NotARealCoin"}, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			price, err := utils.RetrieveUsdPrice(tt.args.coin)
-			if err != nil {
+			if (err != nil) != tt.wantErr {
 				t.Error(err)
 			}
-			if price == 0 {
+			if price == 0 && tt.args.coin != "NotARealCoin" {
 				t.Error("price is 0, unexpected result")
 			}
-			fmt.Println(price)
 		})
 	}
 }

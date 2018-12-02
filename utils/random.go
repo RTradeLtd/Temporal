@@ -17,8 +17,7 @@ const (
 
 // RandomUtils is our helper struct for random related utilities
 type RandomUtils struct {
-	Seed       *rand.Rand
-	SecureSeed *rand.Rand
+	Seed *rand.Rand
 }
 
 // GenerateRandomUtils is used to generate our random utils struct
