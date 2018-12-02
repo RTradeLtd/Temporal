@@ -171,31 +171,31 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 		return nil, err
 	}
 	// setup our queues
-	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, false)
+	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true)
 	if err != nil {
 		return nil, err
 	}
-	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, false)
+	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true)
 	if err != nil {
 		return nil, err
 	}
-	qmDatabase, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, true, false)
+	qmDatabase, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, true)
 	if err != nil {
 		return nil, err
 	}
-	qmFile, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, true, false)
+	qmFile, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, true)
 	if err != nil {
 		return nil, err
 	}
-	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, false)
+	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true)
 	if err != nil {
 		return nil, err
 	}
-	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, false)
+	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true)
 	if err != nil {
 		return nil, err
 	}
-	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, false)
+	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true)
 	if err != nil {
 		return nil, err
 	}

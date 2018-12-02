@@ -34,20 +34,18 @@ func (qm *Manager) setupLogging(logFilePath ...string) error {
 }
 
 // New is used to instantiate a new connection to rabbitmq as a publisher or consumer
-func New(queue, url string, publish, service bool, logFilePath ...string) (*Manager, error) {
+func New(queue, url string, publish bool, logFilePath ...string) (*Manager, error) {
 	conn, err := setupConnection(url)
 	if err != nil {
 		return nil, err
 	}
-	qm := Manager{connection: conn}
+	qm := Manager{connection: conn, QueueName: queue}
 	// open a channel
 	if err := qm.openChannel(); err != nil {
 		return nil, err
 	}
-	// setup queue nname
-	qm.QueueName = queue
 	// setup service/consumer specific logging
-	if service {
+	if !publish {
 		qm.Service = queue
 		if err = qm.setupLogging(logFilePath...); err != nil {
 			return nil, err
