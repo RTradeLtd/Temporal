@@ -73,15 +73,7 @@ func TestQueue_Publish(t *testing.T) {
 					}
 				}
 			default:
-				if tt.name == "DFAQ" {
-					if err := qm.PublishMessage(DatabaseFileAdd{
-						Hash:             testCID,
-						HoldTimeInMonths: 10,
-						UserName:         "testuser",
-					}); err != nil {
-						t.Fatal(err)
-					}
-				} else if tt.name == "IFQ" {
+				if tt.name == "IFQ" {
 					if err := qm.PublishMessage(IPFSFile{
 						MinioHostIP:      "127.0.0.1:9090",
 						FileName:         "testfile",
