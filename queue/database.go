@@ -12,8 +12,8 @@ import (
 
 // ProcessDatabaseFileAdds is used to process database file add messages
 // No credit handling is done, as this route is only called to update the database
-func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB) error {
-	uploadManager := models.NewUploadManager(db)
+func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
+	uploadManager := models.NewUploadManager(qm.db)
 	qm.LogInfo("processing database file adds")
 	for {
 		select {

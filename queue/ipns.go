@@ -12,13 +12,11 @@ import (
 	"github.com/RTradeLtd/Temporal/rtns"
 	pb "github.com/RTradeLtd/grpc/krab"
 
-	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
 	"github.com/RTradeLtd/kaas"
 
 	ci "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
 
-	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
 
@@ -29,8 +27,8 @@ const (
 )
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
-func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	kb, err := kaas.NewClient(cfg.Endpoints)
+func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
+	kb, err := kaas.NewClient(qm.cfg.Endpoints)
 	if err != nil {
 		return err
 	}
@@ -44,7 +42,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	if err != nil {
 		return err
 	}
-	ipnsManager := models.NewIPNSManager(db)
+	ipnsManager := models.NewIPNSManager(qm.db)
 	qm.LogInfo("processing ipns entry creation requests")
 	for {
 		select {
@@ -62,7 +60,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 				}
 				// temporarily do not process ipns creation requests for non public networks
 				if ie.NetworkName != "public" {
-					qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
+					qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
 					qm.LogError(errors.New("private networks not supported"), "private networks not supported")
 					d.Ack(false)
 					return
@@ -71,7 +69,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 				// get the private key from krab to use with publishing
 				resp, err := kb.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
 				if err != nil {
-					qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
+					qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
 					qm.LogError(err, "failed to retrieve private key")
 					d.Ack(false)
 					return
@@ -79,7 +77,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 				// unmarshal the key that was returned by krab
 				pk2, err := ci.UnmarshalPrivateKey(resp.PrivateKey)
 				if err != nil {
-					qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
+					qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
 					qm.LogError(err, "failed to unmarshal private key")
 					d.Ack(false)
 					return
@@ -89,7 +87,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 				ctx := context.WithValue(context.Background(), ipnsPublishTTL, ie.TTL)
 				eol := time.Now().Add(ie.LifeTime)
 				if err := publisher.PublishWithEOL(ctx, pk2, ie.CID, eol); err != nil {
-					qm.refundCredits(ie.UserName, "ipns", ie.CreditCost, db)
+					qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
 					qm.LogError(err, "failed to publish ipns entry")
 					d.Ack(false)
 					return

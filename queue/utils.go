@@ -2,19 +2,18 @@ package queue
 
 import (
 	"github.com/RTradeLtd/database/models"
-	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
 )
 
 // refundCredits is used to refund a users credits. We do not check for errors,
 // as these are logged and manually corrected if they occur
-func (qm *Manager) refundCredits(username, callType string, cost float64, db *gorm.DB) {
+func (qm *Manager) refundCredits(username, callType string, cost float64) {
 	if cost == 0 {
 		return
 	}
-	um := models.NewUserManager(db)
+	um := models.NewUserManager(qm.db)
 	if _, err := um.AddCredits(username, cost); err != nil {
-		qm.Logger.WithFields(log.Fields{
+		qm.logger.WithFields(log.Fields{
 			"service":   qm.Service,
 			"user":      username,
 			"call_type": callType,

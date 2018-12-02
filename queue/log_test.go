@@ -1,4 +1,4 @@
-package queue_test
+package queue
 
 import (
 	"bytes"
@@ -7,13 +7,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/RTradeLtd/Temporal/queue"
 	log "github.com/sirupsen/logrus"
 )
 
 func TestQueue_LogError(t *testing.T) {
-	qm := queue.Manager{
-		Logger: log.New(),
+	qm := Manager{
+		logger: log.New(),
 	}
 	type args struct {
 		err     error
@@ -36,7 +35,7 @@ func TestQueue_LogError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
-			qm.Logger.Out = &buf
+			qm.logger.Out = &buf
 			// log error and execute callback
 			if tt.args.fields != nil {
 				qm.LogError(tt.args.err, tt.args.message, tt.args.fields...)

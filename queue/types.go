@@ -3,6 +3,9 @@ package queue
 import (
 	"time"
 
+	"github.com/RTradeLtd/config"
+	"github.com/jinzhu/gorm"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
@@ -59,10 +62,12 @@ var (
 
 // Manager is a helper struct to interact with rabbitmq
 type Manager struct {
-	Connection   *amqp.Connection
-	Channel      *amqp.Channel
-	Queue        *amqp.Queue
-	Logger       *log.Logger
+	connection   *amqp.Connection
+	channel      *amqp.Channel
+	queue        *amqp.Queue
+	logger       *log.Logger
+	db           *gorm.DB
+	cfg          *config.TemporalConfig
 	QueueName    string
 	Service      string
 	ExchangeName string

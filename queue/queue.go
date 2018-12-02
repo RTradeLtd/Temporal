@@ -23,8 +23,8 @@ func (qm *Manager) setupLogging() error {
 	}
 	logger := log.New()
 	logger.Out = logFile
-	qm.Logger = logger
-	qm.Logger.Info("Logging initialized")
+	qm.logger = logger
+	qm.logger.Info("Logging initialized")
 	return nil
 }
 
@@ -43,7 +43,7 @@ func Initialize(queueName, connectionURL string, publish, service bool, logFileP
 	if err != nil {
 		return nil, err
 	}
-	qm := Manager{Connection: conn}
+	qm := Manager{connection: conn}
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
 	}
@@ -101,22 +101,22 @@ func setupConnection(connectionURL string) (*amqp.Connection, error) {
 
 // OpenChannel is used to open a channel to the rabbitmq server
 func (qm *Manager) OpenChannel() error {
-	ch, err := qm.Connection.Channel()
+	ch, err := qm.connection.Channel()
 	if err != nil {
 		return err
 	}
-	if qm.Logger != nil {
+	if qm.logger != nil {
 		qm.LogInfo("channel opened")
 	}
-	qm.Channel = ch
-	return qm.Channel.Qos(10, 0, false)
+	qm.channel = ch
+	return qm.channel.Qos(10, 0, false)
 }
 
 // DeclareQueue is used to declare a queue for which messages will be sent to
 func (qm *Manager) DeclareQueue() error {
 	// we declare the queue as durable so that even if rabbitmq server stops
 	// our messages won't be lost
-	q, err := qm.Channel.QueueDeclare(
+	q, err := qm.channel.QueueDeclare(
 		qm.QueueName, // name
 		true,         // durable
 		false,        // delete when unused
@@ -127,10 +127,10 @@ func (qm *Manager) DeclareQueue() error {
 	if err != nil {
 		return err
 	}
-	if qm.Logger != nil {
+	if qm.logger != nil {
 		qm.LogInfo("queue declared")
 	}
-	qm.Queue = &q
+	qm.queue = &q
 	return nil
 }
 
@@ -148,7 +148,10 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, cons
 	if err != nil {
 		return err
 	}
-
+	// embed database into queue manager
+	qm.db = db
+	// embed config into queue manager
+	qm.cfg = cfg
 	// if we are using an exchange, we form a relationship between a queue and an exchange
 	// this process is known as binding, and allows consumers to receive messages sent to an exchange
 	// We are primarily doing this to allow for multiple consumers, to receive the same message
@@ -157,7 +160,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, cons
 	// will have the same key in their keystore
 	switch qm.ExchangeName {
 	case PinRemovalExchange, PinExchange, IpfsKeyExchange:
-		if err = qm.Channel.QueueBind(
+		if err = qm.channel.QueueBind(
 			qm.QueueName,    // name of the queue
 			"",              // routing key
 			qm.ExchangeName, // exchange
@@ -171,7 +174,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, cons
 	}
 
 	// we do not auto-ack, as if a consumer dies we don't want the message to be lost
-	msgs, err := qm.Channel.Consume(
+	msgs, err := qm.channel.Consume(
 		qm.QueueName, // queue
 		consumer,     // consumer
 		false,        // auto-ack
@@ -188,19 +191,19 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, cons
 	switch qm.Service {
 	// only parse database file requests
 	case DatabaseFileAddQueue:
-		return qm.ProcessDatabaseFileAdds(ctx, wg, msgs, db)
+		return qm.ProcessDatabaseFileAdds(ctx, wg, msgs)
 	case IpfsPinQueue:
-		return qm.ProccessIPFSPins(ctx, wg, msgs, db, cfg)
+		return qm.ProccessIPFSPins(ctx, wg, msgs)
 	case IpfsFileQueue:
-		return qm.ProccessIPFSFiles(ctx, wg, msgs, cfg, db)
+		return qm.ProccessIPFSFiles(ctx, wg, msgs)
 	case EmailSendQueue:
-		return qm.ProcessMailSends(ctx, wg, msgs, cfg)
+		return qm.ProcessMailSends(ctx, wg, msgs)
 	case IpnsEntryQueue:
-		return qm.ProcessIPNSEntryCreationRequests(ctx, wg, msgs, db, cfg)
+		return qm.ProcessIPNSEntryCreationRequests(ctx, wg, msgs)
 	case IpfsKeyCreationQueue:
-		return qm.ProcessIPFSKeyCreation(ctx, wg, msgs, db, cfg)
+		return qm.ProcessIPFSKeyCreation(ctx, wg, msgs)
 	case IpfsClusterPinQueue:
-		return qm.ProcessIPFSClusterPins(ctx, wg, msgs, cfg, db)
+		return qm.ProcessIPFSClusterPins(ctx, wg, msgs)
 	default:
 		return errors.New("invalid queue name")
 	}
@@ -218,7 +221,7 @@ func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName str
 	if err != nil {
 		return err
 	}
-	if err = qm.Channel.Publish(
+	if err = qm.channel.Publish(
 		exchangeName, // exchange - this determines which exchange will receive the message
 		"",           // routing key
 		false,        // mandatory
@@ -240,9 +243,9 @@ func (qm *Manager) PublishMessage(body interface{}) error {
 	if err != nil {
 		return err
 	}
-	if err = qm.Channel.Publish(
+	if err = qm.channel.Publish(
 		"",            // exchange - this is left empty, and becomes the default exchange
-		qm.Queue.Name, // routing key
+		qm.queue.Name, // routing key
 		false,         // mandatory
 		false,         // immediate
 		amqp.Publishing{
@@ -258,12 +261,12 @@ func (qm *Manager) PublishMessage(body interface{}) error {
 
 // Close is used to close our queue resources
 func (qm *Manager) Close() {
-	if err := qm.Channel.Close(); err != nil {
+	if err := qm.channel.Close(); err != nil {
 		qm.LogError(err, "failed to properly close channel")
 	} else {
 		qm.LogInfo("properly shutdown channel")
 	}
-	if err := qm.Connection.Close(); err != nil {
+	if err := qm.connection.Close(); err != nil {
 		qm.LogError(err, "failed to properly close connection")
 	} else {
 		qm.LogInfo("properly shutdown connnetion")

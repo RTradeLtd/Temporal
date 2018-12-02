@@ -14,8 +14,6 @@ import (
 	"github.com/RTradeLtd/rtfs"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/RTradeLtd/config"
-
 	"github.com/RTradeLtd/database/models"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
@@ -26,12 +24,12 @@ import (
 )
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
-func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	kb, err := kaas.NewClient(cfg.Endpoints)
+func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
+	kb, err := kaas.NewClient(qm.cfg.Endpoints)
 	if err != nil {
 		return err
 	}
-	userManager := models.NewUserManager(db)
+	userManager := models.NewUserManager(qm.db)
 	qm.LogInfo("processing ipfs key creation requests")
 	for {
 		select {
@@ -65,7 +63,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 					// ed25519 keys use 256 bits, so regardless of what the user provides for bit size, hard set 256
 					bitsInt = 256
 				default:
-					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.refundCredits(key.UserName, "key", key.CreditCost)
 					qm.LogError(err, "invalid key type must be ed25519 or rsa")
 					d.Ack(false)
 					return
@@ -73,7 +71,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 				// generate the appropriate keypair
 				pk, _, err := ci.GenerateKeyPair(keyTypeInt, bitsInt)
 				if err != nil {
-					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.refundCredits(key.UserName, "key", key.CreditCost)
 					qm.LogError(err, "failed to create key")
 					d.Ack(false)
 					return
@@ -81,7 +79,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 				// retrieve a human friendly format, also verifying the key is a valid ipfs key
 				id, err := peer.IDFromPrivateKey(pk)
 				if err != nil {
-					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.refundCredits(key.UserName, "key", key.CreditCost)
 					qm.LogError(err, "failed to get id from private key")
 					d.Ack(false)
 					return
@@ -89,7 +87,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 				// convert the key to bytes to send to krab for processing
 				pkBytes, err := pk.Bytes()
 				if err != nil {
-					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.refundCredits(key.UserName, "key", key.CreditCost)
 					qm.LogError(err, "failed to create key")
 					d.Ack(false)
 					return
@@ -100,7 +98,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 				keyName := fmt.Sprintf("%s-%s", key.UserName, key.Name)
 				// store the key in krab
 				if _, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: keyName, PrivateKey: pkBytes}); err != nil {
-					qm.refundCredits(key.UserName, "key", key.CreditCost, db)
+					qm.refundCredits(key.UserName, "key", key.CreditCost)
 					qm.LogError(err, "failed to create key")
 					d.Ack(false)
 					return
@@ -124,12 +122,12 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 }
 
 // ProccessIPFSPins is used to process IPFS pin requests
-func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	userManager := models.NewUserManager(db)
-	networkManager := models.NewHostedIPFSNetworkManager(db)
-	uploadManager := models.NewUploadManager(db)
+func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
+	userManager := models.NewUserManager(qm.db)
+	networkManager := models.NewHostedIPFSNetworkManager(qm.db)
+	uploadManager := models.NewUploadManager(qm.db)
 	// initialize a connection to the cluster pin queue so we can trigger pinning of this content to our cluster
-	qmCluster, err := Initialize(IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, false)
+	qmCluster, err := Initialize(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		qm.LogError(err, "failed to initialize cluster pin queue connection")
 		return err
@@ -149,26 +147,26 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 					return
 				}
 				// setup the default api connection
-				apiURL := cfg.IPFS.APIConnection.Host + ":" + cfg.IPFS.APIConnection.Port
+				apiURL := qm.cfg.IPFS.APIConnection.Host + ":" + qm.cfg.IPFS.APIConnection.Port
 				// check whether or not this pin is for a private network
 				// if it is, verify whether the user has acess to the network, and retrieve the api url
 				if pin.NetworkName != "public" {
 					canAccess, err := userManager.CheckIfUserHasAccessToNetwork(pin.UserName, pin.NetworkName)
 					if err != nil {
-						qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
+						qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 						qm.LogError(err, "failed to lookup private network in database")
 						d.Ack(false)
 						return
 					}
 					if !canAccess {
-						qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
+						qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 						qm.LogError(errors.New("user does not have access to private network"), "invalid private network access")
 						d.Ack(false)
 						return
 					}
 					apiURL, err = networkManager.GetAPIURLByName(pin.NetworkName)
 					if err != nil {
-						qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
+						qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 						qm.LogError(err, "failed to search for api url")
 						d.Ack(false)
 						return
@@ -178,7 +176,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 				// connect to ipfs
 				ipfsManager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
 				if err != nil {
-					qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
+					qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 					qm.LogError(err, "failed to initialize connection to ipfs")
 					d.Ack(false)
 					return
@@ -186,7 +184,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 				qm.LogInfo("pinning hash to ipfs")
 				// pin the content
 				if err = ipfsManager.Pin(pin.CID); err != nil {
-					qm.refundCredits(pin.UserName, "pin", pin.CreditCost, db)
+					qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 					qm.LogError(err, "failed to pin hash to ipfs")
 					d.Ack(false)
 					return
@@ -247,21 +245,21 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 
 // ProccessIPFSFiles is used to process messages sent to rabbitmq to upload files to IPFS.
 // This queue is invoked by advanced file upload requests
-func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery, cfg *config.TemporalConfig, db *gorm.DB) error {
-	ipfsManager, err := rtfs.NewManager(cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port, nil, time.Minute*10)
+func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
+	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, nil, time.Minute*10)
 	if err != nil {
 		qm.LogError(err, "failed to initialize connection to ipfs")
 		return err
 	}
 	// initialize connection to pin queues
-	qmPin, err := Initialize(IpfsPinQueue, cfg.RabbitMQ.URL, true, false)
+	qmPin, err := Initialize(IpfsPinQueue, qm.cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		qm.LogError(err, "failed to initialize pin queue connection")
 		return err
 	}
-	ue := models.NewEncryptedUploadManager(db)
-	userManager := models.NewUserManager(db)
-	networkManager := models.NewHostedIPFSNetworkManager(db)
+	ue := models.NewEncryptedUploadManager(qm.db)
+	userManager := models.NewUserManager(qm.db)
+	networkManager := models.NewHostedIPFSNetworkManager(qm.db)
 	qm.LogInfo("processing ipfs files")
 	for {
 		select {
@@ -279,15 +277,15 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 					return
 				}
 				// get the connection url for the minio host temporarily storing this file
-				endpoint := fmt.Sprintf("%s:%s", ipfsFile.MinioHostIP, cfg.MINIO.Connection.Port)
+				endpoint := fmt.Sprintf("%s:%s", ipfsFile.MinioHostIP, qm.cfg.MINIO.Connection.Port)
 				// grab our credentials for minio
-				accessKey := cfg.MINIO.AccessKey
-				secretKey := cfg.MINIO.SecretKey
+				accessKey := qm.cfg.MINIO.AccessKey
+				secretKey := qm.cfg.MINIO.SecretKey
 				// setup our connection to minio
 				minioManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 				if err != nil {
 					qm.LogError(err, "failed to initialize connection to minio")
-					qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
+					qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 					d.Ack(false)
 					return
 				}
@@ -296,27 +294,27 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 					canAccess, err := userManager.CheckIfUserHasAccessToNetwork(ipfsFile.UserName, ipfsFile.NetworkName)
 					if err != nil {
 						qm.LogError(err, "failed to check database for user network access", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
-						qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
+						qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 						d.Ack(false)
 						return
 					}
 					if !canAccess {
 						qm.LogError(err, "unauthorized access to private network", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
-						qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
+						qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 						d.Ack(false)
 						return
 					}
 					apiURLName, err := networkManager.GetAPIURLByName(ipfsFile.NetworkName)
 					if err != nil {
 						qm.LogError(err, "failed to look for api url by name", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
-						qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
+						qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 						d.Ack(false)
 						return
 					}
 					ipfsManager, err = rtfs.NewManager(apiURLName, nil, time.Minute*10)
 					if err != nil {
 						qm.LogError(err, "failed to initialize connection to private ifps network", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
-						qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
+						qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 						d.Ack(false)
 						return
 					}
@@ -333,7 +331,7 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 				})
 				if err != nil {
 					qm.LogError(err, "failed to get object from minio", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
-					qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
+					qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 					d.Ack(false)
 					return
 				}
@@ -341,11 +339,11 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 				resp, err := ipfsManager.Add(obj)
 				if err != nil {
 					qm.LogError(err, "failed to add file to ipfs", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
-					qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost, db)
+					qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 					d.Ack(false)
 					return
 				}
-				qm.Logger.WithFields(log.Fields{
+				qm.logger.WithFields(log.Fields{
 					"service": qm.Service,
 					"user":    ipfsFile.UserName,
 					"network": ipfsFile.NetworkName,
