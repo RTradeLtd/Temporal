@@ -321,6 +321,12 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 						return
 					}
 				}
+				// start upload processing
+				// 1. retrieve object from minio
+				// 2. add file to ipfs
+				// 3. send a pin request
+				// 4. *optional* perform as needed special processing
+				// NOTE: we do not trigger a database update here, as that is handled by the pin queue
 				qm.LogInfo("retrieving object from minio")
 				obj, err := minioManager.GetObject(ipfsFile.ObjectName, mini.GetObjectOptions{
 					Bucket: ipfsFile.BucketName,
@@ -349,7 +355,6 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 					qm.LogError(err, "failed to parse string to int, using default of 1 month")
 					holdTimeInt = 1
 				}
-				// we don't need to do any credit handling, as it has been done already
 				pin := IPFSPin{
 					CID:              resp,
 					NetworkName:      ipfsFile.NetworkName,
@@ -376,8 +381,7 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 					}
 				}
 				qm.LogInfo("removing object from minio")
-				err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName)
-				if err != nil {
+				if err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName); err != nil {
 					qm.LogError(err, "failed to remove object from minio", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
 					d.Ack(false)
 					return
