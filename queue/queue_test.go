@@ -96,9 +96,6 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 		if err := qmPublisher.Close(); err != nil {
 			t.Error(err)
 		}
-		if err := qmConsumer.Close(); err != nil {
-			t.Error(err)
-		}
 	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
@@ -141,9 +138,6 @@ func TestQueue_IPFSFile(t *testing.T) {
 	}
 	defer func() {
 		if err := qmPublisher.Close(); err != nil {
-			t.Error(err)
-		}
-		if err := qmConsumer.Close(); err != nil {
 			t.Error(err)
 		}
 	}()
@@ -196,9 +190,6 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 		if err := qmPublisher.Close(); err != nil {
 			t.Error(err)
 		}
-		if err := qmConsumer.Close(); err != nil {
-			t.Error(err)
-		}
 	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessage(IPFSClusterPin{
@@ -245,9 +236,6 @@ func TestQueue_EmailSend(t *testing.T) {
 		if err := qmPublisher.Close(); err != nil {
 			t.Error(err)
 		}
-		if err := qmConsumer.Close(); err != nil {
-			t.Error(err)
-		}
 	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessage(EmailSend{
@@ -292,9 +280,6 @@ func TestQueue_IPNSEntry(t *testing.T) {
 	}
 	defer func() {
 		if err := qmPublisher.Close(); err != nil {
-			t.Error(err)
-		}
-		if err := qmConsumer.Close(); err != nil {
 			t.Error(err)
 		}
 	}()
@@ -352,9 +337,6 @@ func TestQueue_IPFSPin(t *testing.T) {
 		if err := qmPublisher.Close(); err != nil {
 			t.Error(err)
 		}
-		if err := qmConsumer.Close(); err != nil {
-			t.Error(err)
-		}
 	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessageWithExchange(IPFSPin{
@@ -404,9 +386,6 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	}
 	defer func() {
 		if err := qmPublisher.Close(); err != nil {
-			t.Error(err)
-		}
-		if err := qmConsumer.Close(); err != nil {
 			t.Error(err)
 		}
 	}()
