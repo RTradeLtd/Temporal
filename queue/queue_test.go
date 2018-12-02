@@ -1,6 +1,7 @@
 package queue_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/queue"
@@ -9,6 +10,7 @@ import (
 const (
 	testCID           = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
 	testRabbitAddress = "amqp://127.0.0.1:5672"
+	logFilePath       = "/tmp/%s_%s.log"
 )
 
 func TestInitialize(t *testing.T) {
@@ -30,7 +32,7 @@ func TestInitialize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, err := queue.Initialize(tt.args.queueName,
-				testRabbitAddress, tt.args.publish, tt.args.service); err != nil {
+				testRabbitAddress, tt.args.publish, tt.args.service, fmt.Sprintf(logFilePath, tt.name, tt.args.publish)); err != nil {
 				t.Fatal(err)
 			}
 		})

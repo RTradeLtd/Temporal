@@ -15,13 +15,14 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func (qm *Manager) setupLogging(service bool) error {
+func (qm *Manager) setupLogging(service bool, path ...string) error {
 	var logFileName string
-	if service {
+	if service && len(path) == 0 {
 		logFileName = fmt.Sprintf("/var/log/temporal/%s_service.log", qm.QueueName)
-	} else {
+	} else if !service && len(path) == 0 {
 		logFileName = fmt.Sprintf("/var/log/temporal/%s_publisher.log", qm.QueueName)
-
+	} else {
+		logFileName = path[0]
 	}
 	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {
@@ -44,7 +45,7 @@ func (qm *Manager) parseQueueName(queueName string) error {
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
-func Initialize(queueName, connectionURL string, publish, service bool) (*Manager, error) {
+func Initialize(queueName, connectionURL string, publish, service bool, logFilePath ...string) (*Manager, error) {
 	conn, err := setupConnection(connectionURL)
 	if err != nil {
 		return nil, err
@@ -57,7 +58,7 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*Manage
 	qm.QueueName = queueName
 	qm.Service = queueName
 
-	if err = qm.setupLogging(service); err != nil {
+	if err = qm.setupLogging(service, logFilePath...); err != nil {
 		return nil, err
 	}
 
