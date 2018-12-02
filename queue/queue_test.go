@@ -33,7 +33,6 @@ func TestQueue_Publish(t *testing.T) {
 		{"PCreateQ", args{queue.PaymentCreationQueue, true, false}},
 		{"PConfirmQ", args{queue.PaymentConfirmationQueue, true, false}},
 		{"DPCQ", args{queue.DashPaymentConfirmationQueue, true, false}},
-		{"MUQ", args{queue.MongoUpdateQueue, true, false}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -147,16 +146,6 @@ func TestQueue_Publish(t *testing.T) {
 						UserName:         "testuser",
 						PaymentForwardID: "paymentforwardi",
 						PaymentNumber:    23,
-					}); err != nil {
-						t.Fatal(err)
-					}
-				} else if tt.name == "MUQ" {
-					if err := qm.PublishMessage(queue.MongoUpdate{
-						DatabaseName:   "myappdb",
-						CollectionName: "uploads",
-						Fields: map[string]string{
-							"foo": "bar",
-						},
 					}); err != nil {
 						t.Fatal(err)
 					}

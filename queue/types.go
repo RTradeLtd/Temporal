@@ -34,8 +34,6 @@ var (
 	PaymentConfirmationQueue = "payment-confirmation-queue"
 	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
 	DashPaymentConfirmationQueue = "dash-payment-confirmation-queue"
-	// MongoUpdateQueue is a queue used to trigger mongodb updates
-	MongoUpdateQueue = "mongo-update-queue"
 	// AdminEmail is the email used to notify RTrade about any critical errors
 	AdminEmail = "temporal.reports@rtradetechnologies.com"
 	// IpfsPinFailedContent is a to-be formatted message sent on IPFS pin failures
@@ -180,11 +178,4 @@ type DashPaymenConfirmation struct {
 type PaymentConfirmation struct {
 	UserName      string `json:"user_name"`
 	PaymentNumber int64  `json:"payment_number"`
-}
-
-// MongoUpdate is an update used to trigger
-type MongoUpdate struct {
-	DatabaseName   string            `json:"database_name"`
-	CollectionName string            `json:"collection_name"`
-	Fields         map[string]string `json:"fields"`
 }
