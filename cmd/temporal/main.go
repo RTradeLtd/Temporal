@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -369,16 +368,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	initDB := os.Getenv("INIT_DB")
-	if strings.ToLower(initDB) == "yes" {
-		sslModeDisable := os.Getenv("SSL_MODE_DISABLE")
-		sslDisabled := false
-		if sslModeDisable != "" {
-			sslDisabled, err = strconv.ParseBool(sslModeDisable)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
+	if initDB := os.Getenv("INIT_DB"); strings.ToLower(initDB) == "yes" {
+		sslDisabled := os.Getenv("SSL_MODE_DISABLE") == "true"
 		db, err = database.OpenDBConnection(database.DBOptions{
 			User:           tCfg.Database.Username,
 			Password:       tCfg.Database.Password,
