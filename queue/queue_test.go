@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database"
+	"github.com/jinzhu/gorm"
 )
 
 const (
@@ -78,6 +80,10 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup our queue backend
 	qmConsumer, err := Initialize(DatabaseFileAddQueue, testRabbitAddress, false, true, testLogFilePath)
 	if err != nil {
@@ -97,7 +103,7 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", true, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -110,6 +116,10 @@ func TestQueue_IPFSFile(t *testing.T) {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsFileQueue))
 	}()
 	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,7 +149,7 @@ func TestQueue_IPFSFile(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", true, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -152,6 +162,10 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsClusterPinQueue))
 	}()
 	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,7 +191,7 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", true, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -190,6 +204,10 @@ func TestQueue_EmailSend(t *testing.T) {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, EmailSendQueue))
 	}()
 	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -215,7 +233,7 @@ func TestQueue_EmailSend(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", true, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -228,6 +246,10 @@ func TestQueue_IPNSEntry(t *testing.T) {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpnsEntryQueue))
 	}()
 	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -256,7 +278,7 @@ func TestQueue_IPNSEntry(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", true, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -269,6 +291,10 @@ func TestQueue_IPFSPin(t *testing.T) {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsPinQueue))
 	}()
 	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -299,7 +325,7 @@ func TestQueue_IPFSPin(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", true, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
@@ -312,6 +338,10 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsKeyCreationQueue))
 	}()
 	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -344,9 +374,18 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", true, cfg); err != nil {
+	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, "", db, cfg); err != nil {
 		t.Fatal(err)
 	}
 	cancel()
 	waitGroup.Wait()
+}
+
+func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
+	return database.OpenDBConnection(database.DBOptions{
+		User:     cfg.Database.Username,
+		Password: cfg.Database.Password,
+		Address:  cfg.Database.URL,
+		Port:     cfg.Database.Port,
+	})
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mail"
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database"
 )
 
 var (
@@ -19,12 +20,20 @@ func TestMail(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
-
 	cfg, err := config.LoadConfig(cfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	mm, err := mail.NewManager(cfg, true)
+	db, err := database.OpenDBConnection(database.DBOptions{
+		User:     cfg.Database.Username,
+		Password: cfg.Database.Password,
+		Address:  cfg.Database.URL,
+		Port:     cfg.Database.Port,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mm, err := mail.NewManager(cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -6,12 +6,13 @@ import (
 	"sync"
 
 	"github.com/RTradeLtd/Temporal/mail"
+	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
 
 // ProcessMailSends is a function used to process mail send queue messages
-func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, sslModeDisable bool, msgs <-chan amqp.Delivery) error {
-	mm, err := mail.NewManager(qm.cfg, sslModeDisable)
+func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, db *gorm.DB, msgs <-chan amqp.Delivery) error {
+	mm, err := mail.NewManager(qm.cfg, db)
 	if err != nil {
 		qm.LogError(err, "failed to generate mail manager")
 		return err

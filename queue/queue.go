@@ -8,10 +8,10 @@ import (
 	"os"
 	"sync"
 
+	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database"
 	"github.com/streadway/amqp"
 )
 
@@ -113,17 +113,7 @@ func (qm *Manager) DeclareQueue() error {
 // ConsumeMessages is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, consumer string, sslModeDisable bool, cfg *config.TemporalConfig) error {
-	db, err := database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
-		SSLModeDisable: sslModeDisable,
-	})
-	if err != nil {
-		return err
-	}
+func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, consumer string, db *gorm.DB, cfg *config.TemporalConfig) error {
 	// embed database into queue manager
 	qm.db = db
 	// embed config into queue manager
@@ -136,7 +126,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, cons
 	// will have the same key in their keystore
 	switch qm.ExchangeName {
 	case PinExchange, IpfsKeyExchange:
-		if err = qm.channel.QueueBind(
+		if err := qm.channel.QueueBind(
 			qm.QueueName,    // name of the queue
 			"",              // routing key
 			qm.ExchangeName, // exchange
@@ -173,7 +163,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, cons
 	case IpfsFileQueue:
 		return qm.ProccessIPFSFiles(ctx, wg, msgs)
 	case EmailSendQueue:
-		return qm.ProcessMailSends(ctx, wg, sslModeDisable, msgs)
+		return qm.ProcessMailSends(ctx, wg, db, msgs)
 	case IpnsEntryQueue:
 		return qm.ProcessIPNSEntryCreationRequests(ctx, wg, msgs)
 	case IpfsKeyCreationQueue:
