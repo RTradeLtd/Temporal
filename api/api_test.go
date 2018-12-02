@@ -75,6 +75,16 @@ func Test_API(t *testing.T) {
 	if err := api.validateAdminRequest("notareallaccount"); err == nil {
 		t.Fatal("expected error")
 	}
+	user, err := api.um.FindByUserName("testuser")
+	if err != nil {
+		t.Fatal(err)
+	}
+	previousCreditAmount := user.Credits
+	api.refundUserCredits("testuser", "ipfs-pin", 10)
+	user, err = api.um.FindByUserName("testuser")
+	if user.Credits != previousCreditAmount+10 {
+		t.Fatal("failed to refund credits")
+	}
 	recorder := httptest.NewRecorder()
 	testCtx, _ := gin.CreateTestContext(recorder)
 	urlValues := url.Values{}
