@@ -264,7 +264,7 @@ func TestQueue_IPNSEntry(t *testing.T) {
 }
 
 // Does not conduct validation of whether or not a message was successfully processed
-func TestQueue_IPNSPin(t *testing.T) {
+func TestQueue_IPFSPin(t *testing.T) {
 	defer func() {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsPinQueue))
 	}()
@@ -273,13 +273,19 @@ func TestQueue_IPNSPin(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := Initialize(IpnsEntryQueue, testRabbitAddress, false, true, testLogFilePath)
+	qmConsumer, err := Initialize(IpfsPinQueue, testRabbitAddress, false, true, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := Initialize(IpnsEntryQueue, testRabbitAddress, true, false, testLogFilePath)
+	if qmConsumer.ExchangeName != PinExchange {
+		t.Fatal("failed to properly set exchange name on consumer")
+	}
+	qmPublisher, err := Initialize(IpfsPinQueue, testRabbitAddress, true, false, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if qmPublisher.ExchangeName != PinExchange {
+		t.Fatal("failed to properly set exchange name on publisher")
 	}
 	defer qmPublisher.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
@@ -301,7 +307,7 @@ func TestQueue_IPNSPin(t *testing.T) {
 }
 
 // Does not conduct validation of whether or not a message was successfully processed
-func TestQueue_IPNSKeyCreation(t *testing.T) {
+func TestQueue_IPFSKeyCreation(t *testing.T) {
 	defer func() {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsKeyCreationQueue))
 	}()
@@ -314,9 +320,15 @@ func TestQueue_IPNSKeyCreation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if qmConsumer.ExchangeName != IpfsKeyExchange {
+		t.Fatal("failed to properly set exchange name on consumer")
+	}
 	qmPublisher, err := Initialize(IpfsKeyCreationQueue, testRabbitAddress, true, false, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if qmPublisher.ExchangeName != IpfsKeyExchange {
+		t.Fatal("failed to properly set exchange name on publisher")
 	}
 	defer qmPublisher.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
