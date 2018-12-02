@@ -83,11 +83,20 @@ func TestQueue_RefundCredits(t *testing.T) {
 	defer func() {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, DatabaseFileAddQueue))
 	}()
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup our queue backend
 	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
+	qmConsumer.db = db
 	type args struct {
 		username string
 		callType string
