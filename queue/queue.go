@@ -222,15 +222,7 @@ func (qm *Manager) PublishMessage(body interface{}) error {
 }
 
 // Close is used to close our queue resources
-func (qm *Manager) Close() {
-	if err := qm.channel.Close(); err != nil && qm.logger != nil {
-		qm.LogError(err, "failed to properly close channel")
-	} else if qm.logger != nil {
-		qm.LogInfo("properly shutdown channel")
-	}
-	if err := qm.connection.Close(); err != nil && qm.logger != nil {
-		qm.LogError(err, "failed to properly close connection")
-	} else if qm.logger != nil {
-		qm.LogInfo("properly shutdown connnetion")
-	}
+func (qm *Manager) Close() error {
+	// closing the connection also closes the channel
+	return qm.connection.Close()
 }
