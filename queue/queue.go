@@ -44,9 +44,11 @@ func New(queue, url string, publish bool, logFilePath ...string) (*Manager, erro
 	if err := qm.openChannel(); err != nil {
 		return nil, err
 	}
-	// setup service/consumer specific logging
 	if !publish {
 		qm.Service = queue
+		if err = qm.declareQueue(); err != nil {
+			return nil, err
+		}
 		if err = qm.setupLogging(logFilePath...); err != nil {
 			return nil, err
 		}
@@ -58,11 +60,7 @@ func New(queue, url string, publish bool, logFilePath ...string) (*Manager, erro
 			return nil, err
 		}
 	}
-	// we only need to declare a queue if we're a consumer/service
-	if publish {
-		return &qm, nil
-	}
-	return &qm, qm.declareQueue()
+	return &qm, nil
 }
 
 func setupConnection(connectionURL string) (*amqp.Connection, error) {
