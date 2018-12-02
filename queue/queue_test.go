@@ -26,7 +26,6 @@ func TestQueue_Publish(t *testing.T) {
 		name string
 		args args
 	}{
-		{"DFAQ", args{DatabaseFileAddQueue, true, false}},
 		{"IPQ", args{IpfsPinQueue, true, false}},
 		{"IFQ", args{IpfsFileQueue, true, false}},
 		{"IPCQ", args{IpfsClusterPinQueue, true, false}},
