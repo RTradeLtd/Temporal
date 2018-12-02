@@ -3,7 +3,6 @@ package utils
 import (
 	"errors"
 	"math/big"
-	"time"
 
 	"github.com/RTradeLtd/rtfs"
 	"github.com/c2h5oh/datasize"
@@ -31,17 +30,7 @@ const (
 	EDKeyCreationPublic = 1.00
 	// EDKeyCreationPrivate is the cost of creating an ed25519 key on a private ipfs network
 	EDKeyCreationPrivate = 1.50
-	// DNSLinkGenerationPublic is the cost of publishing a dnslink entry for the public ipfs network
-	DNSLinkGenerationPublic = 5.00
-	// DNSLinkGenerationPrivate is the cost of publishign a dnslink entry for a private ipfs network
-	DNSLinkGenerationPrivate = 5.00
 )
-
-// this is a testing parameter for now, exact costs will be detailed at a later time
-var usdPerGigabytePerMonth = 0.134
-
-// NilTime is used to compare empty time
-var NilTime time.Time
 
 // CalculateAPICallCost is used to calculate the cost associated with an API call,
 // that isn't related to uploads/pinning
@@ -72,12 +61,6 @@ func CalculateAPICallCost(callType string, privateNetwork bool) (float64, error)
 		} else {
 			cost = RSAKeyCreationPublic
 		}
-	case "dlink":
-		if privateNetwork {
-			cost = DNSLinkGenerationPrivate
-		} else {
-			cost = DNSLinkGenerationPublic
-		}
 	default:
 		return 0, errors.New("call type unsupported")
 	}
@@ -106,8 +89,7 @@ func CalculatePinCost(contentHash string, holdTimeInMonths int64, im rtfs.Manage
 	} else {
 		costPerMonthFloat = objectSizeInGigabytesFloat * UsdPerGigaBytePerMonthPublic
 	}
-	totalCostFloat := costPerMonthFloat * float64(holdTimeInMonths)
-	return totalCostFloat, nil
+	return costPerMonthFloat * float64(holdTimeInMonths), nil
 }
 
 // CalculateFileCost is used to calculate the cost of storing a file
@@ -121,15 +103,7 @@ func CalculateFileCost(holdTimeInMonths, size int64, privateNetwork bool) float6
 	} else {
 		costPerMonthFloat = sizeGigabytesFloat * UsdPerGigaBytePerMonthPublic
 	}
-	totalCostUSDFloat := costPerMonthFloat * float64(holdTimeInMonths)
-	return totalCostUSDFloat
-}
-
-// BytesToGigaBytes is used to convert the given bytes to its gigabyte size
-func BytesToGigaBytes(size int64) float64 {
-	gigabytes := float64(datasize.GB.Bytes())
-	sizeInGigaBytes := float64(size) / gigabytes
-	return sizeInGigaBytes
+	return costPerMonthFloat * float64(holdTimeInMonths)
 }
 
 // FloatToBigInt used to convert a float to big int

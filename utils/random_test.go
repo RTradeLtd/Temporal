@@ -24,12 +24,19 @@ func TestRandomUtils(t *testing.T) {
 	if len(random1) != 5 {
 		t.Fatal("failed to contruct random string of valid length")
 	}
-	random2 := ru.GenerateString(5, letterBytesLower)
+	random2 := ru.GenerateString(5, letterBytesLowerUpper)
 	if len(random2) != 5 {
+		t.Fatal("failed to construct random string of valid length")
+	}
+	random3 := ru.GenerateString(5, letterBytesMixed)
+	if len(random3) != 5 {
 		t.Fatal("failed to construct random string of valid length")
 	}
 	if random1 == random2 {
 		t.Fatal("generated two random strings that were the same")
 	}
 
+	if random2 == random3 {
+		t.Fatal("generated two random strings that were the same")
+	}
 }
