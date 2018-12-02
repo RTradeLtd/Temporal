@@ -78,7 +78,7 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL, false, true)
+							qm, err := queue.New(queue.IpnsEntryQueue, mqConnectionURL, false, true)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -103,7 +103,7 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, false, true)
+							qm, err := queue.New(queue.IpfsPinQueue, mqConnectionURL, false, true)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -128,7 +128,7 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL, false, true)
+							qm, err := queue.New(queue.IpfsFileQueue, mqConnectionURL, false, true)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -153,7 +153,7 @@ var commands = map[string]cmd.Cmd{
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, false, true)
+							qm, err := queue.New(queue.IpfsKeyCreationQueue, mqConnectionURL, false, true)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -178,7 +178,7 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqConnectionURL, false, true)
+							qm, err := queue.New(queue.IpfsClusterPinQueue, mqConnectionURL, false, true)
 							if err != nil {
 								log.Fatal(err)
 							}
@@ -205,7 +205,7 @@ var commands = map[string]cmd.Cmd{
 				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
+					qm, err := queue.New(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -230,7 +230,7 @@ var commands = map[string]cmd.Cmd{
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL, false, true)
+					qm, err := queue.New(queue.EmailSendQueue, mqConnectionURL, false, true)
 					if err != nil {
 						log.Fatal(err)
 					}

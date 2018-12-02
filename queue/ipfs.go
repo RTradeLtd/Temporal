@@ -50,7 +50,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 	networkManager := models.NewHostedIPFSNetworkManager(qm.db)
 	uploadManager := models.NewUploadManager(qm.db)
 	// initialize a connection to the cluster pin queue so we can trigger pinning of this content to our cluster
-	qmCluster, err := Initialize(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true, false)
+	qmCluster, err := New(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		qm.LogError(err, "failed to initialize cluster pin queue connection")
 		return err
@@ -78,7 +78,7 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 		return err
 	}
 	// initialize connection to pin queues
-	qmPin, err := Initialize(IpfsPinQueue, qm.cfg.RabbitMQ.URL, true, false)
+	qmPin, err := New(IpfsPinQueue, qm.cfg.RabbitMQ.URL, true, false)
 	if err != nil {
 		qm.LogError(err, "failed to initialize pin queue connection")
 		return err

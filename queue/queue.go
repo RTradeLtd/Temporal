@@ -33,30 +33,30 @@ func (qm *Manager) setupLogging(logFilePath ...string) error {
 	return nil
 }
 
-// Initialize is used to connect to the given queue, for publishing or consuming purposes
-func New(queue, URL string, publish, service bool, logFilePath ...string) (*Manager, error) {
-	conn, err := setupConnection(connectionURL)
+// New is used to instantiate a new connection to rabbitmq as a publisher or consumer
+func New(queue, url string, publish, service bool, logFilePath ...string) (*Manager, error) {
+	conn, err := setupConnection(url)
 	if err != nil {
 		return nil, err
 	}
 	qm := Manager{connection: conn}
 	// open a channel
-	if err := qm.OpenChannel(); err != nil {
+	if err := qm.openChannel(); err != nil {
 		return nil, err
 	}
 	// setup queue nname
-	qm.QueueName = queueName
+	qm.QueueName = queue
 	// setup service/consumer specific logging
 	if service {
-		qm.Service = queueName
+		qm.Service = queue
 		if err = qm.setupLogging(logFilePath...); err != nil {
 			return nil, err
 		}
 	}
 	// Declare Non Default exchanges for matching queues
-	switch queueName {
+	switch queue {
 	case IpfsPinQueue, IpfsKeyCreationQueue:
-		if err = qm.setupExchange(queueName); err != nil {
+		if err = qm.setupExchange(queue); err != nil {
 			return nil, err
 		}
 	}
@@ -64,7 +64,7 @@ func New(queue, URL string, publish, service bool, logFilePath ...string) (*Mana
 	if publish {
 		return &qm, nil
 	}
-	return &qm, qm.DeclareQueue()
+	return &qm, qm.declareQueue()
 }
 
 func setupConnection(connectionURL string) (*amqp.Connection, error) {
@@ -76,7 +76,7 @@ func setupConnection(connectionURL string) (*amqp.Connection, error) {
 }
 
 // OpenChannel is used to open a channel to the rabbitmq server
-func (qm *Manager) OpenChannel() error {
+func (qm *Manager) openChannel() error {
 	ch, err := qm.connection.Channel()
 	if err != nil {
 		return err
@@ -89,7 +89,7 @@ func (qm *Manager) OpenChannel() error {
 }
 
 // DeclareQueue is used to declare a queue for which messages will be sent to
-func (qm *Manager) DeclareQueue() error {
+func (qm *Manager) declareQueue() error {
 	// we declare the queue as durable so that even if rabbitmq server stops
 	// our messages won't be lost
 	q, err := qm.channel.QueueDeclare(

@@ -38,7 +38,7 @@ func TestQueue_Publish(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			qm, err := Initialize(tt.args.queueName,
+			qm, err := New(tt.args.queueName,
 				testRabbitAddress, tt.args.publish, tt.args.service)
 			if err != nil {
 				t.Fatal(err)
@@ -85,11 +85,11 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := Initialize(DatabaseFileAddQueue, testRabbitAddress, false, true, testLogFilePath)
+	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, true, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := Initialize(DatabaseFileAddQueue, testRabbitAddress, true, false, testLogFilePath)
+	qmPublisher, err := New(DatabaseFileAddQueue, testRabbitAddress, true, false, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,11 +124,11 @@ func TestQueue_IPFSFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := Initialize(IpfsFileQueue, testRabbitAddress, false, true, testLogFilePath)
+	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, true, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := Initialize(IpfsFileQueue, testRabbitAddress, true, false, testLogFilePath)
+	qmPublisher, err := New(IpfsFileQueue, testRabbitAddress, true, false, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -170,11 +170,11 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := Initialize(IpfsClusterPinQueue, testRabbitAddress, false, true, testLogFilePath)
+	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, true, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := Initialize(IpfsClusterPinQueue, testRabbitAddress, true, false, testLogFilePath)
+	qmPublisher, err := New(IpfsClusterPinQueue, testRabbitAddress, true, false, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -212,11 +212,11 @@ func TestQueue_EmailSend(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := Initialize(EmailSendQueue, testRabbitAddress, false, true, testLogFilePath)
+	qmConsumer, err := New(EmailSendQueue, testRabbitAddress, false, true, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := Initialize(EmailSendQueue, testRabbitAddress, true, false, testLogFilePath)
+	qmPublisher, err := New(EmailSendQueue, testRabbitAddress, true, false, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,11 +254,11 @@ func TestQueue_IPNSEntry(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := Initialize(IpnsEntryQueue, testRabbitAddress, false, true, testLogFilePath)
+	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, true, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := Initialize(IpnsEntryQueue, testRabbitAddress, true, false, testLogFilePath)
+	qmPublisher, err := New(IpnsEntryQueue, testRabbitAddress, true, false, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -299,14 +299,14 @@ func TestQueue_IPFSPin(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := Initialize(IpfsPinQueue, testRabbitAddress, false, true, testLogFilePath)
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, true, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if qmConsumer.ExchangeName != PinExchange {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
-	qmPublisher, err := Initialize(IpfsPinQueue, testRabbitAddress, true, false, testLogFilePath)
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, false, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -346,14 +346,14 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := Initialize(IpfsKeyCreationQueue, testRabbitAddress, false, true, testLogFilePath)
+	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, true, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if qmConsumer.ExchangeName != IpfsKeyExchange {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
-	qmPublisher, err := Initialize(IpfsKeyCreationQueue, testRabbitAddress, true, false, testLogFilePath)
+	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, false, testLogFilePath)
 	if err != nil {
 		t.Fatal(err)
 	}
