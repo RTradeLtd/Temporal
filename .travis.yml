@@ -4,7 +4,9 @@ go:
 services:
   - docker
 sudo: required
-
+env:
+  - SSL_MODE_DISABLE=true
+  
 install:
   - docker pull koalaman/shellcheck
   - go get -u golang.org/x/lint/golint
