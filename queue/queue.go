@@ -28,15 +28,6 @@ func (qm *Manager) setupLogging() error {
 	return nil
 }
 
-func (qm *Manager) parseQueueName(queueName string) error {
-	host, err := os.Hostname()
-	if err != nil {
-		return err
-	}
-	qm.QueueName = fmt.Sprintf("%s+%s", host, queueName)
-	return nil
-}
-
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
 func Initialize(queueName, connectionURL string, publish, service bool, logFilePath ...string) (*Manager, error) {
 	conn, err := setupConnection(connectionURL)
@@ -48,10 +39,8 @@ func Initialize(queueName, connectionURL string, publish, service bool, logFileP
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
 	}
-	// setup queue names
-	if err = qm.parseQueueName(queueName); err != nil {
-		return nil, err
-	}
+	// setup queue nname
+	qm.QueueName = queueName
 	// setup service/consumer specific logging
 	if service {
 		qm.Service = queueName
