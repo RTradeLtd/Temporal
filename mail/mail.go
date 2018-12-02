@@ -20,7 +20,7 @@ type Manager struct {
 }
 
 // NewManager is used to create our mail manager, allowing us to send email
-func NewManager(tCfg *config.TemporalConfig) (*Manager, error) {
+func NewManager(tCfg *config.TemporalConfig, sslModeDisable bool) (*Manager, error) {
 	apiKey := tCfg.Sendgrid.APIKey
 	emailAddress := tCfg.Sendgrid.EmailAddress
 	emailName := tCfg.Sendgrid.EmailName
@@ -36,7 +36,7 @@ func NewManager(tCfg *config.TemporalConfig) (*Manager, error) {
 		port = tCfg.Database.Port
 	}
 	db, err := database.OpenDBConnection(database.DBOptions{
-		User: dbUser, Password: dbPass, Address: dbURL, Port: port})
+		User: dbUser, Password: dbPass, Address: dbURL, Port: port, SSLModeDisable: sslModeDisable})
 	if err != nil {
 		return nil, err
 	}

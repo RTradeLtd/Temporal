@@ -17,8 +17,8 @@ import (
 
 func (qm *Manager) setupLogging(logFilePath ...string) error {
 	var logFileName string
-	if len(logFilePath) != 0 {
-		logFileName = logFilePath[0]
+	if len(logFilePath) > 0 {
+		logFileName = fmt.Sprintf("%s-%s_service.log", logFilePath[0], qm.QueueName)
 	} else {
 		logFileName = fmt.Sprintf("/var/log/temporal/%s_service.log", qm.QueueName)
 	}
@@ -113,13 +113,13 @@ func (qm *Manager) DeclareQueue() error {
 // ConsumeMessages is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
+func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, consumer string, sslModeDisable bool, cfg *config.TemporalConfig) error {
 	db, err := database.OpenDBConnection(database.DBOptions{
 		User:           cfg.Database.Username,
 		Password:       cfg.Database.Password,
 		Address:        cfg.Database.URL,
 		Port:           cfg.Database.Port,
-		SSLModeDisable: true,
+		SSLModeDisable: sslModeDisable,
 	})
 	if err != nil {
 		return err
@@ -173,7 +173,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, cons
 	case IpfsFileQueue:
 		return qm.ProccessIPFSFiles(ctx, wg, msgs)
 	case EmailSendQueue:
-		return qm.ProcessMailSends(ctx, wg, msgs)
+		return qm.ProcessMailSends(ctx, wg, sslModeDisable, msgs)
 	case IpnsEntryQueue:
 		return qm.ProcessIPNSEntryCreationRequests(ctx, wg, msgs)
 	case IpfsKeyCreationQueue:
@@ -237,14 +237,14 @@ func (qm *Manager) PublishMessage(body interface{}) error {
 
 // Close is used to close our queue resources
 func (qm *Manager) Close() {
-	if err := qm.channel.Close(); err != nil {
+	if err := qm.channel.Close(); err != nil && qm.logger != nil {
 		qm.LogError(err, "failed to properly close channel")
-	} else {
+	} else if qm.logger != nil {
 		qm.LogInfo("properly shutdown channel")
 	}
-	if err := qm.connection.Close(); err != nil {
+	if err := qm.connection.Close(); err != nil && qm.logger != nil {
 		qm.LogError(err, "failed to properly close connection")
-	} else {
+	} else if qm.logger != nil {
 		qm.LogInfo("properly shutdown connnetion")
 	}
 }

@@ -10,8 +10,8 @@ import (
 )
 
 // ProcessMailSends is a function used to process mail send queue messages
-func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	mm, err := mail.NewManager(qm.cfg)
+func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, sslModeDisable bool, msgs <-chan amqp.Delivery) error {
+	mm, err := mail.NewManager(qm.cfg, sslModeDisable)
 	if err != nil {
 		qm.LogError(err, "failed to generate mail manager")
 		return err

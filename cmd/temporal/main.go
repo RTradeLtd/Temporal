@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"syscall"
 
@@ -74,6 +75,16 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "IPNS entry creation queue",
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							var (
+								sslModeDisable bool = false
+								err            error
+							)
+							if args["sslModeDisable"] != "" {
+								sslModeDisable, err = strconv.ParseBool(args["sslModeDisable"])
+								if err != nil {
+									log.Fatal(err)
+								}
+							}
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL, false, true)
 							if err != nil {
@@ -85,13 +96,13 @@ var commands = map[string]cmd.Cmd{
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
-								if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-									log.Fatal(err)
-								}
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
 							}()
-							fmt.Println(closeMessage)
-							<-quitChannel
-							cancel()
+							if err := qm.ConsumeMessages(ctx, waitGroup, "", sslModeDisable, &cfg); err != nil {
+								log.Fatal(err)
+							}
 							waitGroup.Wait()
 						},
 					},
@@ -99,6 +110,16 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Pin addition queue",
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							var (
+								sslModeDisable bool = false
+								err            error
+							)
+							if args["sslModeDisable"] != "" {
+								sslModeDisable, err = strconv.ParseBool(args["sslModeDisable"])
+								if err != nil {
+									log.Fatal(err)
+								}
+							}
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, false, true)
 							if err != nil {
@@ -110,13 +131,13 @@ var commands = map[string]cmd.Cmd{
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
-								if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-									log.Fatal(err)
-								}
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
 							}()
-							fmt.Println(closeMessage)
-							<-quitChannel
-							cancel()
+							if err := qm.ConsumeMessages(ctx, waitGroup, "", sslModeDisable, &cfg); err != nil {
+								log.Fatal(err)
+							}
 							waitGroup.Wait()
 						},
 					},
@@ -124,6 +145,16 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "File upload queue",
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							var (
+								sslModeDisable bool = false
+								err            error
+							)
+							if args["sslModeDisable"] != "" {
+								sslModeDisable, err = strconv.ParseBool(args["sslModeDisable"])
+								if err != nil {
+									log.Fatal(err)
+								}
+							}
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL, false, true)
 							if err != nil {
@@ -135,13 +166,13 @@ var commands = map[string]cmd.Cmd{
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
-								if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-									log.Fatal(err)
-								}
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
 							}()
-							fmt.Println(closeMessage)
-							<-quitChannel
-							cancel()
+							if err := qm.ConsumeMessages(ctx, waitGroup, "", sslModeDisable, &cfg); err != nil {
+								log.Fatal(err)
+							}
 							waitGroup.Wait()
 						},
 					},
@@ -149,6 +180,16 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Key creation queue",
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							var (
+								sslModeDisable bool = false
+								err            error
+							)
+							if args["sslModeDisable"] != "" {
+								sslModeDisable, err = strconv.ParseBool(args["sslModeDisable"])
+								if err != nil {
+									log.Fatal(err)
+								}
+							}
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, false, true)
 							if err != nil {
@@ -160,13 +201,13 @@ var commands = map[string]cmd.Cmd{
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
-								if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-									log.Fatal(err)
-								}
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
 							}()
-							fmt.Println(closeMessage)
-							<-quitChannel
-							cancel()
+							if err := qm.ConsumeMessages(ctx, waitGroup, "", sslModeDisable, &cfg); err != nil {
+								log.Fatal(err)
+							}
 							waitGroup.Wait()
 						},
 					},
@@ -174,6 +215,16 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Cluster pin queue",
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							var (
+								sslModeDisable bool = false
+								err            error
+							)
+							if args["sslModeDisable"] != "" {
+								sslModeDisable, err = strconv.ParseBool(args["sslModeDisable"])
+								if err != nil {
+									log.Fatal(err)
+								}
+							}
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqConnectionURL, false, true)
 							if err != nil {
@@ -185,13 +236,13 @@ var commands = map[string]cmd.Cmd{
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
-								if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-									log.Fatal(err)
-								}
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
 							}()
-							fmt.Println(closeMessage)
-							<-quitChannel
-							cancel()
+							if err := qm.ConsumeMessages(ctx, waitGroup, "", sslModeDisable, &cfg); err != nil {
+								log.Fatal(err)
+							}
 							waitGroup.Wait()
 						},
 					},
@@ -201,6 +252,16 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "Database file add queue",
 				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					var (
+						sslModeDisable bool = false
+						err            error
+					)
+					if args["sslModeDisable"] != "" {
+						sslModeDisable, err = strconv.ParseBool(args["sslModeDisable"])
+						if err != nil {
+							log.Fatal(err)
+						}
+					}
 					mqConnectionURL := cfg.RabbitMQ.URL
 					qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
 					if err != nil {
@@ -212,13 +273,13 @@ var commands = map[string]cmd.Cmd{
 					waitGroup := &sync.WaitGroup{}
 					waitGroup.Add(1)
 					go func() {
-						if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-							log.Fatal(err)
-						}
+						fmt.Println(closeMessage)
+						<-quitChannel
+						cancel()
 					}()
-					fmt.Println(closeMessage)
-					<-quitChannel
-					cancel()
+					if err := qm.ConsumeMessages(ctx, waitGroup, "", sslModeDisable, &cfg); err != nil {
+						log.Fatal(err)
+					}
 					waitGroup.Wait()
 				},
 			},
@@ -226,6 +287,16 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "Email send queue",
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					var (
+						sslModeDisable bool = false
+						err            error
+					)
+					if args["sslModeDisable"] != "" {
+						sslModeDisable, err = strconv.ParseBool(args["sslModeDisable"])
+						if err != nil {
+							log.Fatal(err)
+						}
+					}
 					mqConnectionURL := cfg.RabbitMQ.URL
 					qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL, false, true)
 					if err != nil {
@@ -237,13 +308,13 @@ var commands = map[string]cmd.Cmd{
 					waitGroup := &sync.WaitGroup{}
 					waitGroup.Add(1)
 					go func() {
-						if err := qm.ConsumeMessages(ctx, waitGroup, "", args["dbPass"], args["dbURL"], args["dbUser"], &cfg); err != nil {
-							log.Fatal(err)
-						}
+						fmt.Println(closeMessage)
+						<-quitChannel
+						cancel()
 					}()
-					fmt.Println(closeMessage)
-					<-quitChannel
-					cancel()
+					if err := qm.ConsumeMessages(ctx, waitGroup, "", sslModeDisable, &cfg); err != nil {
+						log.Fatal(err)
+					}
 					waitGroup.Wait()
 				},
 			},
@@ -365,6 +436,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	sslModeDisable := os.Getenv("SSL_MODE_DISABLE")
 	// load arguments
 	flags := map[string]string{
 		"configDag":     configDag,
@@ -372,9 +444,10 @@ func main() {
 		"keyFilePath":   tCfg.API.Connection.Certificates.KeyPath,
 		"listenAddress": tCfg.API.Connection.ListenAddress,
 
-		"dbPass": tCfg.Database.Password,
-		"dbURL":  tCfg.Database.URL,
-		"dbUser": tCfg.Database.Username,
+		"dbPass":         tCfg.Database.Password,
+		"dbURL":          tCfg.Database.URL,
+		"dbUser":         tCfg.Database.Username,
+		"sslModeDisable": sslModeDisable,
 	}
 	var (
 		peerAddr string

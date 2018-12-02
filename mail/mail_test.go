@@ -24,7 +24,7 @@ func TestMail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mm, err := mail.NewManager(cfg)
+	mm, err := mail.NewManager(cfg, true)
 	if err != nil {
 		t.Fatal(err)
 	}
