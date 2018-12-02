@@ -238,13 +238,27 @@ func (api *API) Close() {
 	api.signer.Close()
 	api.orch.Close()
 	// close queue resources
-	api.queues.cluster.Close()
-	api.queues.database.Close()
-	api.queues.email.Close()
-	api.queues.file.Close()
-	api.queues.ipns.Close()
-	api.queues.key.Close()
-	api.queues.pin.Close()
+	if err := api.queues.cluster.Close(); err != nil {
+		api.LogError(err, "failed to properly close cluster queue connection")
+	}
+	if err := api.queues.database.Close(); err != nil {
+		api.LogError(err, "failed to properly close database queue connection")
+	}
+	if err := api.queues.email.Close(); err != nil {
+		api.LogError(err, "failed to properly close email queue connection")
+	}
+	if err := api.queues.file.Close(); err != nil {
+		api.LogError(err, "failed to properly close file queue connection")
+	}
+	if err := api.queues.ipns.Close(); err != nil {
+		api.LogError(err, "failed to properly close ipns queue connection")
+	}
+	if err := api.queues.key.Close(); err != nil {
+		api.LogError(err, "failed to properly close key queue connection")
+	}
+	if err := api.queues.pin.Close(); err != nil {
+		api.LogError(err, "failed to properly close pin queue connection")
+	}
 }
 
 // TLSConfig is used to enable TLS on the API service

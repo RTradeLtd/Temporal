@@ -92,6 +92,14 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer func() {
+		if err := qmPublisher.Close(); err != nil {
+			t.Error(err)
+		}
+		if err := qmConsumer.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
 		Hash:             testCID,
@@ -131,7 +139,14 @@ func TestQueue_IPFSFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer qmPublisher.Close()
+	defer func() {
+		if err := qmPublisher.Close(); err != nil {
+			t.Error(err)
+		}
+		if err := qmConsumer.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessage(IPFSFile{
 		MinioHostIP:      "127.0.0.1:9090",
@@ -177,7 +192,14 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer qmPublisher.Close()
+	defer func() {
+		if err := qmPublisher.Close(); err != nil {
+			t.Error(err)
+		}
+		if err := qmConsumer.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessage(IPFSClusterPin{
 		CID:              testCID,
@@ -219,7 +241,14 @@ func TestQueue_EmailSend(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer qmPublisher.Close()
+	defer func() {
+		if err := qmPublisher.Close(); err != nil {
+			t.Error(err)
+		}
+		if err := qmConsumer.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessage(EmailSend{
 		Subject:     "test email",
@@ -261,7 +290,14 @@ func TestQueue_IPNSEntry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer qmPublisher.Close()
+	defer func() {
+		if err := qmPublisher.Close(); err != nil {
+			t.Error(err)
+		}
+		if err := qmConsumer.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessage(IPNSEntry{
 		CID:         testCID,
@@ -312,7 +348,14 @@ func TestQueue_IPFSPin(t *testing.T) {
 	if qmPublisher.ExchangeName != PinExchange {
 		t.Fatal("failed to properly set exchange name on publisher")
 	}
-	defer qmPublisher.Close()
+	defer func() {
+		if err := qmPublisher.Close(); err != nil {
+			t.Error(err)
+		}
+		if err := qmConsumer.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessageWithExchange(IPFSPin{
 		CID:              testCID,
@@ -359,7 +402,14 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	if qmPublisher.ExchangeName != IpfsKeyExchange {
 		t.Fatal("failed to properly set exchange name on publisher")
 	}
-	defer qmPublisher.Close()
+	defer func() {
+		if err := qmPublisher.Close(); err != nil {
+			t.Error(err)
+		}
+		if err := qmConsumer.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessageWithExchange(IPFSKeyCreation{
 		UserName:    "testuser",
