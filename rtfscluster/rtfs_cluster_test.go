@@ -74,9 +74,8 @@ func TestFetchLocalStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(cidStatuses) == 0 {
-		fmt.Println("no cids detected")
+		t.Fatal("no cid statuses found")
 	}
-	fmt.Println(cidStatuses)
 }
 
 func TestGetStatusForCidLocally(t *testing.T) {
@@ -104,7 +103,6 @@ func TestGetStatusForCidGlobally(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	if status == nil {
 		t.Fatal("status is nil when it shouldn't be")
 	}
@@ -115,8 +113,12 @@ func TestListPeers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = cm.ListPeers(); err != nil {
+	peers, err := cm.ListPeers()
+	if err != nil {
 		t.Fatal(err)
+	}
+	if len(peers) == 0 {
+		t.Fatal("no pers found")
 	}
 }
 func TestRemovePinFromCluster(t *testing.T) {

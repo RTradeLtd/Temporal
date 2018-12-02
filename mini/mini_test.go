@@ -35,14 +35,26 @@ func TestNewMinioManagerSecure(t *testing.T) {
 	}
 }
 
+func TestMakeBucket(t *testing.T) {
+	mm, err := newMM(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = mm.MakeBucket(map[string]string{"name": bucket}); err != nil {
+		t.Fatal(err)
+	}
+}
 func TestListBuckets(t *testing.T) {
 	mm, err := newMM(false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = mm.ListBuckets()
+	buckets, err := mm.ListBuckets()
 	if err != nil {
 		t.Fatal(err)
+	}
+	if len(buckets) == 0 {
+		t.Fatal("no buckets found")
 	}
 }
 
@@ -64,9 +76,6 @@ func TestPutAndGetObject(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	// create bucket, ignore errors
-	mm.MakeBucket(map[string]string{"name": bucket})
 
 	// set some test vars
 	var (
@@ -128,24 +137,6 @@ func TestPutAndGetObject(t *testing.T) {
 				return
 			}
 		})
-	}
-}
-
-func TestMakeBucket(t *testing.T) {
-	mm, err := newMM(false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	args := make(map[string]string)
-	args["name"] = bucket
-	err = mm.MakeBucket(args)
-	if err == nil {
-		t.Fatal("no error encountered one one should've been")
-	}
-	args["name"] = randString(23)
-	err = mm.MakeBucket(args)
-	if err != nil {
-		t.Fatal(err)
 	}
 }
 
