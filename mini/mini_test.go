@@ -43,6 +43,9 @@ func TestMakeBucket(t *testing.T) {
 	if err = mm.MakeBucket(map[string]string{"name": bucket}); err != nil {
 		t.Fatal(err)
 	}
+	if err = mm.MakeBucket(map[string]string{"name": bucket}); err == nil {
+		t.Fatal("error expected")
+	}
 }
 func TestListBuckets(t *testing.T) {
 	mm, err := newMM(false)
@@ -56,8 +59,31 @@ func TestListBuckets(t *testing.T) {
 	if len(buckets) == 0 {
 		t.Fatal("no buckets found")
 	}
+	if buckets[0].Name != bucket {
+		t.Fatal("bad bucket name recovered")
+	}
 }
 
+func TestCheckBucket(t *testing.T) {
+	mm, err := newMM(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	exists, err := mm.CheckIfBucketExists(bucket)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists {
+		t.Fatal("bucket does not exist when it is expected to")
+	}
+	exists, err = mm.CheckIfBucketExists("fakebucket")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exists {
+		t.Fatal("bucket exists when it shouldn't")
+	}
+}
 func TestPutAndGetObject(t *testing.T) {
 	// set up
 	mm, err := newMM(false)
@@ -134,6 +160,23 @@ func TestPutAndGetObject(t *testing.T) {
 				Bucket: tt.args.bucket,
 			}); (err != nil) != tt.wantErr {
 				t.Errorf("GetObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+	removeTests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"normal", args{normalObj, bucket, ""}, false},
+		{"encrypted", args{encryptedObj, bucket, passphrase}, false},
+		{"no bucket", args{normalObj, "wut", ""}, true},
+	}
+	for _, tt := range removeTests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := mm.RemoveObject(tt.args.bucket, tt.args.object); (err != nil) != tt.wantErr {
+				t.Errorf("RemoveObject() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
