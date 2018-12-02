@@ -32,24 +32,6 @@ type Response struct {
 	LastUpdate         string `json:"last_updated"`
 }
 
-// RetrieveEthUsdPrice is used to retrieve eths usd pricing
-func RetrieveEthUsdPrice() (float64, error) {
-	response, err := http.Get("https://api.coinmarketcap.com/v1/ticker/ethereum/")
-	if err != nil {
-		return 0, err
-	}
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return 0, err
-	}
-	var decode []Response
-	if err = json.Unmarshal(body, &decode); err != nil {
-		return 0, err
-	}
-	return strconv.ParseFloat(decode[0].PriceUsd, 64)
-}
-
 // RetrieveUsdPrice is used to retrieve the USD price for a coin from CMC
 func RetrieveUsdPrice(coin string) (float64, error) {
 	url := fmt.Sprintf("%s/%s", tickerURL, coin)

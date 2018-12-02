@@ -7,13 +7,6 @@ import (
 )
 
 func TestUtils_RetrieveEthUsdPrice(t *testing.T) {
-	priceFloat, err := utils.RetrieveEthUsdPrice()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if priceFloat == 0 {
-		t.Fatal("priceFloat is 0, unexpected error occurred")
-	}
 	priceInt, err := utils.RetrieveEthUsdPriceNoDecimals()
 	if err != nil {
 		t.Fatal(err)
