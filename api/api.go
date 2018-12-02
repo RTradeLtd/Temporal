@@ -142,7 +142,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 		return nil, err
 	}
 
-	orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator, os.Getenv("MODE") == "development")
+	orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator)
 	if err != nil {
 		return nil, err
 	}

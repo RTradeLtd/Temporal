@@ -18,7 +18,7 @@ type IPFSOrchestratorClient struct {
 }
 
 // NewOcrhestratorClient instantiates a new orchestrator API client
-func NewOcrhestratorClient(opts config.Orchestrator, devMode bool) (*IPFSOrchestratorClient, error) {
+func NewOcrhestratorClient(opts config.Orchestrator) (*IPFSOrchestratorClient, error) {
 	c := &IPFSOrchestratorClient{}
 	// set up parameters for core conn
 	dialOpts := make([]grpc.DialOption, 0)
