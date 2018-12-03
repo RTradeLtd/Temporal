@@ -1,7 +1,6 @@
 package utils_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -47,10 +46,9 @@ func TestUtils_CalculatePinCost(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if cost <= float64(0) {
+			if cost == 0 {
 				t.Fatal("invalid size returned")
 			}
-			fmt.Println("cost: ", cost)
 		})
 	}
 }
@@ -75,18 +73,10 @@ func TestUtils_CalculateFileCost(t *testing.T) {
 				tt.args.size,
 				tt.args.private,
 			)
-			if cost <= float64(0) {
+			if cost == 0 {
 				t.Fatal("invalid size returned")
 			}
-			fmt.Println("cost: ", cost)
 		})
-	}
-}
-
-func TestUtils_CalculateFileSizeInGigaBytes(t *testing.T) {
-	size := utils.BytesToGigaBytes(testSize)
-	if size != 0.12341962847858667 {
-		t.Fatal("failed to calculate correct size")
 	}
 }
 
@@ -96,28 +86,37 @@ func TestUtils_CalculateAPICallCost(t *testing.T) {
 		private  bool
 	}
 	tests := []struct {
-		name string
-		args args
+		name    string
+		args    args
+		wantErr bool
 	}{
-		{"ipns", args{"ipns", false}},
-		{"pubsub", args{"pubsub", false}},
-		{"ed25519", args{"ed25519", false}},
-		{"rsa", args{"rsa", false}},
-		{"dlink", args{"dlink", false}},
-		{"invalid", args{"invalid", false}},
+		{"ipns-public", args{"ipns", false}, false},
+		{"ipns-private", args{"ipns", true}, false},
+		{"pubsub-public", args{"pubsub", false}, false},
+		{"pubsub-private", args{"pubsub", true}, false},
+		{"ed25519-public", args{"ed25519", false}, false},
+		{"ed25519-private", args{"ed25519", true}, false},
+		{"rsa-public", args{"rsa", false}, false},
+		{"rsa-private", args{"rsa", true}, false},
+		{"invalid", args{"invalid", false}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cost, err := utils.CalculateAPICallCost(tt.args.callType, tt.args.private)
-			if err != nil && tt.name != "invalid" {
+			if (err != nil) != tt.wantErr {
 				t.Fatal(err)
 			}
 			if cost == 0 && tt.name != "invalid" {
 				t.Fatal("invalid cost returned")
 			}
-			if err == nil && tt.name == "invalid" {
-				t.Fatal("failed to recognize invalid test name")
-			}
 		})
+	}
+}
+
+func TestUtils_FloatToBigInt(t *testing.T) {
+	want := int64(500000000000000000)
+	bigInt := utils.FloatToBigInt(0.5)
+	if bigInt.Int64() != want {
+		t.Fatal("failed to properly calculate big int")
 	}
 }

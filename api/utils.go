@@ -71,7 +71,7 @@ func (api *API) getDepositAddress(paymentType string) (string, error) {
 
 func (api *API) validateBlockchain(blockchain string) bool {
 	switch blockchain {
-	case "ethereum", "bitcoin", "litecoin", "monero":
+	case "ethereum", "bitcoin", "litecoin", "monero", "dash":
 		return true
 	}
 	return false

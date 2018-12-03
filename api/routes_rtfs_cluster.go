@@ -43,15 +43,6 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
-	mqURL := api.cfg.RabbitMQ.URL
-
-	qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c)
-		api.refundUserCredits(username, "cluster-pin", cost)
-		return
-	}
-
 	ipfsClusterPin := queue.IPFSClusterPin{
 		CID:              hash,
 		NetworkName:      "public",
@@ -59,13 +50,11 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       cost,
 	}
-
-	if err = qm.PublishMessage(ipfsClusterPin); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c)
+	if err = api.queues.cluster.PublishMessage(ipfsClusterPin); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		api.refundUserCredits(username, "cluster-pin", cost)
 		return
 	}
-
 	api.LogWithUser(username).Info("cluster pin request sent to backend")
 	Respond(c, http.StatusOK, gin.H{"response": "cluster pin request sent to backend"})
 }

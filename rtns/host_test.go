@@ -25,6 +25,8 @@ func TestPublisher_Gen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// sleep giving time for our node to discover some peers
+	time.Sleep(time.Second * 15)
 	// create our private key
 	pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
 	if err != nil {
@@ -51,6 +53,8 @@ func TestPublisher_NoGen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// sleep giving time for our node to discover some peers
+	time.Sleep(time.Second * 15)
 	// create our private key
 	pk, _, err = ci.GenerateKeyPair(ci.Ed25519, 256)
 	if err != nil {

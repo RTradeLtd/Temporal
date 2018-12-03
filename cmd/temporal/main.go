@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"strings"
+	"sync"
+	"syscall"
 
 	"github.com/RTradeLtd/Temporal/api"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -13,15 +18,17 @@ import (
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
 	"github.com/RTradeLtd/kaas"
+	"github.com/jinzhu/gorm"
 )
 
 var (
 	// Version denotes the tag of this build
-	Version string
-
-	certFile = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
-	keyFile  = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
-	tCfg     config.TemporalConfig
+	Version      string
+	closeMessage = "press CTRL+C to stop processing and close queue resources"
+	certFile     = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
+	keyFile      = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
+	tCfg         config.TemporalConfig
+	db           *gorm.DB
 )
 
 var commands = map[string]cmd.Cmd{
@@ -71,14 +78,24 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpnsEntryQueue, mqConnectionURL, false, true)
+							qm, err := queue.New(queue.IpnsEntryQueue, mqConnectionURL, false)
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+							ctx, cancel := context.WithCancel(context.Background())
+							waitGroup := &sync.WaitGroup{}
+							waitGroup.Add(1)
+							go func() {
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
+							}()
+							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 								log.Fatal(err)
 							}
+							waitGroup.Wait()
 						},
 					},
 					"pin": {
@@ -86,14 +103,24 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsPinQueue, mqConnectionURL, false, true)
+							qm, err := queue.New(queue.IpfsPinQueue, mqConnectionURL, false)
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+							ctx, cancel := context.WithCancel(context.Background())
+							waitGroup := &sync.WaitGroup{}
+							waitGroup.Add(1)
+							go func() {
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
+							}()
+							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 								log.Fatal(err)
 							}
+							waitGroup.Wait()
 						},
 					},
 					"file": {
@@ -101,14 +128,24 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsFileQueue, mqConnectionURL, false, true)
+							qm, err := queue.New(queue.IpfsFileQueue, mqConnectionURL, false)
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+							ctx, cancel := context.WithCancel(context.Background())
+							waitGroup := &sync.WaitGroup{}
+							waitGroup.Add(1)
+							go func() {
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
+							}()
+							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 								log.Fatal(err)
 							}
+							waitGroup.Wait()
 						},
 					},
 					"key-creation": {
@@ -116,14 +153,24 @@ var commands = map[string]cmd.Cmd{
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, false, true)
+							qm, err := queue.New(queue.IpfsKeyCreationQueue, mqConnectionURL, false)
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+							ctx, cancel := context.WithCancel(context.Background())
+							waitGroup := &sync.WaitGroup{}
+							waitGroup.Add(1)
+							go func() {
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
+							}()
+							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 								log.Fatal(err)
 							}
+							waitGroup.Wait()
 						},
 					},
 					"cluster": {
@@ -131,14 +178,24 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.Initialize(queue.IpfsClusterPinQueue, mqConnectionURL, false, true)
+							qm, err := queue.New(queue.IpfsClusterPinQueue, mqConnectionURL, false)
 							if err != nil {
 								log.Fatal(err)
 							}
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-							if err != nil {
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+							ctx, cancel := context.WithCancel(context.Background())
+							waitGroup := &sync.WaitGroup{}
+							waitGroup.Add(1)
+							go func() {
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
+							}()
+							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 								log.Fatal(err)
 							}
+							waitGroup.Wait()
 						},
 					},
 				},
@@ -148,14 +205,24 @@ var commands = map[string]cmd.Cmd{
 				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.Initialize(queue.DatabaseFileAddQueue, mqConnectionURL, false, true)
+					qm, err := queue.New(queue.DatabaseFileAddQueue, mqConnectionURL, false)
 					if err != nil {
 						log.Fatal(err)
 					}
-					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-					if err != nil {
+					quitChannel := make(chan os.Signal)
+					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+					ctx, cancel := context.WithCancel(context.Background())
+					waitGroup := &sync.WaitGroup{}
+					waitGroup.Add(1)
+					go func() {
+						fmt.Println(closeMessage)
+						<-quitChannel
+						cancel()
+					}()
+					if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 						log.Fatal(err)
 					}
+					waitGroup.Wait()
 				},
 			},
 			"email-send": {
@@ -163,14 +230,24 @@ var commands = map[string]cmd.Cmd{
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.Initialize(queue.EmailSendQueue, mqConnectionURL, false, true)
+					qm, err := queue.New(queue.EmailSendQueue, mqConnectionURL, false)
 					if err != nil {
 						log.Fatal(err)
 					}
-					err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
-					if err != nil {
+					quitChannel := make(chan os.Signal)
+					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+					ctx, cancel := context.WithCancel(context.Background())
+					waitGroup := &sync.WaitGroup{}
+					waitGroup.Add(1)
+					go func() {
+						fmt.Println(closeMessage)
+						<-quitChannel
+						cancel()
+					}()
+					if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
 						log.Fatal(err)
 					}
+					waitGroup.Wait()
 				},
 			},
 		},
@@ -290,6 +367,19 @@ func main() {
 	tCfg, err := config.LoadConfig(configDag)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if initDB := os.Getenv("INIT_DB"); strings.ToLower(initDB) == "true" {
+		sslDisabled := os.Getenv("SSL_MODE_DISABLE") == "true"
+		db, err = database.OpenDBConnection(database.DBOptions{
+			User:           tCfg.Database.Username,
+			Password:       tCfg.Database.Password,
+			Address:        tCfg.Database.URL,
+			Port:           tCfg.Database.Port,
+			SSLModeDisable: sslDisabled,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	// load arguments
 	flags := map[string]string{

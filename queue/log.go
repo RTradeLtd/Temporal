@@ -5,7 +5,7 @@ import log "github.com/sirupsen/logrus"
 // LogError is a wrapper used to log an error message
 func (qm *Manager) LogError(err error, message string, fields ...interface{}) {
 	// base entry
-	entry := qm.Logger.WithFields(log.Fields{
+	entry := qm.logger.WithFields(log.Fields{
 		"service": qm.Service,
 	})
 
@@ -28,7 +28,7 @@ func (qm *Manager) LogError(err error, message string, fields ...interface{}) {
 
 // LogInfo is a wrapper used to log an info message
 func (qm *Manager) LogInfo(message string) {
-	qm.Logger.WithFields(log.Fields{
+	qm.logger.WithFields(log.Fields{
 		"service": qm.Service,
 	}).Info(message)
 }

@@ -1,91 +1,64 @@
 package queue
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 
+	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database"
 	"github.com/streadway/amqp"
 )
 
-func (qm *Manager) setupLogging() error {
-	logFileName := fmt.Sprintf("/var/log/temporal/%s_serice.log", qm.QueueName)
+func (qm *Manager) setupLogging(logFilePath ...string) error {
+	var logFileName string
+	if len(logFilePath) > 0 {
+		logFileName = fmt.Sprintf("%s-%s_service.log", logFilePath[0], qm.QueueName)
+	} else {
+		logFileName = fmt.Sprintf("/var/log/temporal/%s_service.log", qm.QueueName)
+	}
 	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {
 		return err
 	}
 	logger := log.New()
 	logger.Out = logFile
-	qm.Logger = logger
-	qm.Logger.Info("Logging initialized")
+	qm.logger = logger
+	qm.logger.Info("Logging initialized")
 	return nil
 }
 
-func (qm *Manager) parseQueueName(queueName string) error {
-	host, err := os.Hostname()
-	if err != nil {
-		return err
-	}
-	qm.QueueName = fmt.Sprintf("%s+%s", host, queueName)
-	return nil
-}
-
-// Initialize is used to connect to the given queue, for publishing or consuming purposes
-func Initialize(queueName, connectionURL string, publish, service bool) (*Manager, error) {
-	conn, err := setupConnection(connectionURL)
+// New is used to instantiate a new connection to rabbitmq as a publisher or consumer
+func New(queue, url string, publish bool, logFilePath ...string) (*Manager, error) {
+	conn, err := setupConnection(url)
 	if err != nil {
 		return nil, err
 	}
-	qm := Manager{Connection: conn}
-	if err := qm.OpenChannel(); err != nil {
+	qm := Manager{connection: conn, QueueName: queue}
+	// open a channel
+	if err := qm.openChannel(); err != nil {
 		return nil, err
 	}
-
-	qm.QueueName = queueName
-	qm.Service = queueName
-
-	if service {
-		err = qm.setupLogging()
-		if err != nil {
+	if !publish {
+		qm.Service = queue
+		if err = qm.declareQueue(); err != nil {
+			return nil, err
+		}
+		if err = qm.setupLogging(logFilePath...); err != nil {
 			return nil, err
 		}
 	}
-	// Declare Non Default exchanges for the particular queue
-	switch queueName {
-	case IpfsPinQueue:
-		err = qm.parseQueueName(queueName)
-		if err != nil {
+	// Declare Non Default exchanges for matching queues
+	switch queue {
+	case IpfsPinQueue, IpfsKeyCreationQueue:
+		if err = qm.setupExchange(queue); err != nil {
 			return nil, err
 		}
-		err = qm.DeclareIPFSPinExchange()
-		if err != nil {
-			return nil, err
-		}
-		qm.ExchangeName = PinExchange
-		if publish {
-			return &qm, nil
-		}
-	case IpfsKeyCreationQueue:
-		err = qm.parseQueueName(queueName)
-		if err != nil {
-			return nil, err
-		}
-		err = qm.DeclareIPFSKeyExchange()
-		if err != nil {
-			return nil, err
-		}
-		qm.ExchangeName = IpfsKeyExchange
-		if publish {
-			return &qm, nil
-		}
-	}
-	if err := qm.DeclareQueue(); err != nil {
-		return nil, err
 	}
 	return &qm, nil
 }
@@ -99,23 +72,23 @@ func setupConnection(connectionURL string) (*amqp.Connection, error) {
 }
 
 // OpenChannel is used to open a channel to the rabbitmq server
-func (qm *Manager) OpenChannel() error {
-	ch, err := qm.Connection.Channel()
+func (qm *Manager) openChannel() error {
+	ch, err := qm.connection.Channel()
 	if err != nil {
 		return err
 	}
-	if qm.Logger != nil {
+	if qm.logger != nil {
 		qm.LogInfo("channel opened")
 	}
-	qm.Channel = ch
-	return nil
+	qm.channel = ch
+	return qm.channel.Qos(10, 0, false)
 }
 
 // DeclareQueue is used to declare a queue for which messages will be sent to
-func (qm *Manager) DeclareQueue() error {
+func (qm *Manager) declareQueue() error {
 	// we declare the queue as durable so that even if rabbitmq server stops
 	// our messages won't be lost
-	q, err := qm.Channel.QueueDeclare(
+	q, err := qm.channel.QueueDeclare(
 		qm.QueueName, // name
 		true,         // durable
 		false,        // delete when unused
@@ -126,31 +99,30 @@ func (qm *Manager) DeclareQueue() error {
 	if err != nil {
 		return err
 	}
-	if qm.Logger != nil {
+	if qm.logger != nil {
 		qm.LogInfo("queue declared")
 	}
-	qm.Queue = &q
+	qm.queue = &q
 	return nil
 }
 
-// ConsumeMessage is used to consume messages that are sent to the queue
+// ConsumeMessages is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
-	db, err := database.OpenDBConnection(database.DBOptions{
-		User:     cfg.Database.Username,
-		Password: cfg.Database.Password,
-		Address:  cfg.Database.URL,
-		Port:     cfg.Database.Port,
-	})
-	if err != nil {
-		return err
-	}
-
-	// ifs the queue is using an exchange, we will need to bind the queue to the exchange
+func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *gorm.DB, cfg *config.TemporalConfig) error {
+	// embed database into queue manager
+	qm.db = db
+	// embed config into queue manager
+	qm.cfg = cfg
+	// if we are using an exchange, we form a relationship between a queue and an exchange
+	// this process is known as binding, and allows consumers to receive messages sent to an exchange
+	// We are primarily doing this to allow for multiple consumers, to receive the same message
+	// For example using the IpfsKeyExchange, this will setup message distribution such that
+	// a single key creation request, will be sent to all of our consumers ensuring that all of our nodes
+	// will have the same key in their keystore
 	switch qm.ExchangeName {
-	case PinRemovalExchange, PinExchange, IpfsKeyExchange:
-		if err = qm.Channel.QueueBind(
+	case PinExchange, IpfsKeyExchange:
+		if err := qm.channel.QueueBind(
 			qm.QueueName,    // name of the queue
 			"",              // routing key
 			qm.ExchangeName, // exchange
@@ -163,10 +135,11 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 		break
 	}
 
-	// consider moving to true for auto-ack
-	msgs, err := qm.Channel.Consume(
+	// we do not auto-ack, as if a consumer dies we don't want the message to be lost
+	// not specifying the consumer name uses an automatically generated id
+	msgs, err := qm.channel.Consume(
 		qm.QueueName, // queue
-		consumer,     // consumer
+		"",           // consumer
 		false,        // auto-ack
 		false,        // exclusive
 		false,        // no-local
@@ -181,19 +154,19 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 	switch qm.Service {
 	// only parse database file requests
 	case DatabaseFileAddQueue:
-		return qm.ProcessDatabaseFileAdds(msgs, db)
+		return qm.ProcessDatabaseFileAdds(ctx, wg, msgs)
 	case IpfsPinQueue:
-		return qm.ProccessIPFSPins(msgs, db, cfg)
+		return qm.ProccessIPFSPins(ctx, wg, msgs)
 	case IpfsFileQueue:
-		return qm.ProccessIPFSFiles(msgs, cfg, db)
+		return qm.ProccessIPFSFiles(ctx, wg, msgs)
 	case EmailSendQueue:
-		return qm.ProcessMailSends(msgs, cfg)
+		return qm.ProcessMailSends(ctx, wg, db, msgs)
 	case IpnsEntryQueue:
-		return qm.ProcessIPNSEntryCreationRequests(msgs, db, cfg)
+		return qm.ProcessIPNSEntryCreationRequests(ctx, wg, msgs)
 	case IpfsKeyCreationQueue:
-		return qm.ProcessIPFSKeyCreation(msgs, db, cfg)
+		return qm.ProcessIPFSKeyCreation(ctx, wg, msgs)
 	case IpfsClusterPinQueue:
-		return qm.ProcessIPFSClusterPins(msgs, cfg, db)
+		return qm.ProcessIPFSClusterPins(ctx, wg, msgs)
 	default:
 		return errors.New("invalid queue name")
 	}
@@ -202,11 +175,7 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 //PublishMessageWithExchange is used to publish a message to a given exchange
 func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
 	switch exchangeName {
-	case PinExchange:
-		break
-	case PinRemovalExchange:
-		break
-	case IpfsKeyExchange:
+	case PinExchange, IpfsKeyExchange:
 		break
 	default:
 		return errors.New("invalid exchange name provided")
@@ -215,13 +184,13 @@ func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName str
 	if err != nil {
 		return err
 	}
-	if err = qm.Channel.Publish(
-		exchangeName, // exchange
+	if err = qm.channel.Publish(
+		exchangeName, // exchange - this determines which exchange will receive the message
 		"",           // routing key
 		false,        // mandatory
 		false,        // immediate
 		amqp.Publishing{
-			DeliveryMode: amqp.Persistent,
+			DeliveryMode: amqp.Persistent, // messages will persist through crashes, etc..
 			ContentType:  "text/plain",
 			Body:         bodyMarshaled,
 		},
@@ -233,18 +202,17 @@ func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName str
 
 // PublishMessage is used to produce messages that are sent to the queue, with a worker queue (one consumer)
 func (qm *Manager) PublishMessage(body interface{}) error {
-	// we use a persistent delivery mode to combine with the durable queue
 	bodyMarshaled, err := json.Marshal(body)
 	if err != nil {
 		return err
 	}
-	if err = qm.Channel.Publish(
-		"",            // exchange
-		qm.Queue.Name, // routing key
-		false,         // mandatory
-		false,         //immediate
+	if err = qm.channel.Publish(
+		"",           // exchange - this is left empty, and becomes the default exchange
+		qm.QueueName, // routing key
+		false,        // mandatory
+		false,        // immediate
 		amqp.Publishing{
-			DeliveryMode: amqp.Persistent,
+			DeliveryMode: amqp.Persistent, // messages will persist through crashes, etc..
 			ContentType:  "text/plain",
 			Body:         bodyMarshaled,
 		},
@@ -254,7 +222,8 @@ func (qm *Manager) PublishMessage(body interface{}) error {
 	return nil
 }
 
-// Close is used to close our queue connection
+// Close is used to close our queue resources
 func (qm *Manager) Close() error {
-	return qm.Connection.Close()
+	// closing the connection also closes the channel
+	return qm.connection.Close()
 }

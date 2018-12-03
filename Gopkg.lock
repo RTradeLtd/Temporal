@@ -509,17 +509,6 @@
   version = "v1.2.8"
 
 [[projects]]
-  digest = "1:ef02cca49ce580b65ff997ee4210d28ed221a23c619522c007112ff6311b8f3b"
-  name = "github.com/ipfs/go-ipns"
-  packages = [
-    ".",
-    "pb",
-  ]
-  pruneopts = "UT"
-  revision = "0897d614da9bae55c4f8eec105f0133641edfec7"
-  version = "v0.1.13"
-
-[[projects]]
   digest = "1:43248b562ac2508990699768e9e0c3d8073c2d0081a5f2dbdc5efd727d9ed426"
   name = "github.com/ipfs/go-log"
   packages = [
@@ -822,17 +811,6 @@
   pruneopts = "UT"
   revision = "3d408775deaf28da57cc356d37f2b8bf9c57db64"
   version = "v0.10.2"
-
-[[projects]]
-  digest = "1:e9460a69b97787611cb5fd53e3532a61b29f04db69ba9a3701e3ca9be85ac8c5"
-  name = "github.com/libp2p/go-libp2p-record"
-  packages = [
-    ".",
-    "pb",
-  ]
-  pruneopts = "UT"
-  revision = "7a182bb5ae667ca5c930d807be14d0655afd3d57"
-  version = "v4.1.7"
 
 [[projects]]
   digest = "1:c6965e617af296544a1323cccd2d93b8a1072bf837939bbc2a977741e4ed799b"
@@ -1585,8 +1563,6 @@
     "github.com/ipfs/go-ipfs-addr",
     "github.com/ipfs/go-ipfs/core",
     "github.com/ipfs/go-ipfs/repo",
-    "github.com/ipfs/go-ipns",
-    "github.com/ipfs/go-ipns/pb",
     "github.com/ipfs/ipfs-cluster/api",
     "github.com/ipfs/ipfs-cluster/api/rest/client",
     "github.com/jinzhu/gorm",

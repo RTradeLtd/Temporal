@@ -48,17 +48,7 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 		UserName:      username,
 		PaymentNumber: paymentNumberInt,
 	}
-	qm, err := queue.Initialize(
-		queue.PaymentConfirmationQueue,
-		api.cfg.RabbitMQ.URL,
-		true,
-		false,
-	)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
-		return
-	}
-	if err = qm.PublishMessage(paymentConfirmation); err != nil {
+	if err = api.queues.payConfirm.PublishMessage(paymentConfirmation); err != nil {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
@@ -234,17 +224,12 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	qm, err := queue.Initialize(queue.DashPaymentConfirmationQueue, api.cfg.RabbitMQ.URL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
-		return
-	}
 	confirmation := &queue.DashPaymenConfirmation{
 		UserName:         username,
 		PaymentForwardID: response.PaymentForwardID,
 		PaymentNumber:    paymentNumber,
 	}
-	if err = qm.PublishMessage(confirmation); err != nil {
+	if err = api.queues.dash.PublishMessage(confirmation); err != nil {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}

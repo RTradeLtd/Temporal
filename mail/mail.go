@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
+	"github.com/jinzhu/gorm"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
@@ -20,26 +20,11 @@ type Manager struct {
 }
 
 // NewManager is used to create our mail manager, allowing us to send email
-func NewManager(tCfg *config.TemporalConfig) (*Manager, error) {
+func NewManager(tCfg *config.TemporalConfig, db *gorm.DB) (*Manager, error) {
 	apiKey := tCfg.Sendgrid.APIKey
 	emailAddress := tCfg.Sendgrid.EmailAddress
 	emailName := tCfg.Sendgrid.EmailName
 	client := sendgrid.NewSendClient(apiKey)
-
-	dbPass := tCfg.Database.Password
-	dbURL := tCfg.Database.URL
-	dbUser := tCfg.Database.Username
-	var port string
-	if tCfg.Database.Port == "" {
-		port = "5432"
-	} else {
-		port = tCfg.Database.Port
-	}
-	db, err := database.OpenDBConnection(database.DBOptions{
-		User: dbUser, Password: dbPass, Address: dbURL, Port: port})
-	if err != nil {
-		return nil, err
-	}
 	um := models.NewUserManager(db)
 	mm := Manager{
 		APIKey:       apiKey,

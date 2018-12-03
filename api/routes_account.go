@@ -85,13 +85,7 @@ func (api *API) getEmailVerificationToken(c *gin.Context) {
 		UserNames:   []string{user.UserName},
 		Emails:      []string{user.EmailAddress},
 	}
-	mqURL := api.cfg.RabbitMQ.URL
-	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
-		return
-	}
-	if err = qm.PublishMessage(es); err != nil {
+	if err = api.queues.email.PublishMessage(es); err != nil {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
@@ -117,12 +111,6 @@ func (api *API) registerAirDrop(c *gin.Context) {
 		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
-	mqURL := api.cfg.RabbitMQ.URL
-	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
-		return
-	}
 	es := queue.EmailSend{
 		Subject:     "airdrop registered",
 		Content:     fmt.Sprintf("user %s with airdrop code %s to eth address %s is registered", username, forms["eth_address"], forms["aidrop_id"]),
@@ -130,7 +118,7 @@ func (api *API) registerAirDrop(c *gin.Context) {
 		UserNames:   []string{"admin"},
 		Emails:      []string{os.Getenv("TEMPORAL_ADMIN_EMAIL")},
 	}
-	if err = qm.PublishMessage(es); err != nil {
+	if err = api.queues.email.PublishMessage(es); err != nil {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
@@ -267,15 +255,8 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		NetworkName: "public",
 		CreditCost:  cost,
 	}
-	mqConnectionURL := api.cfg.RabbitMQ.URL
-	qm, err := queue.Initialize(queue.IpfsKeyCreationQueue, mqConnectionURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c)
-		api.refundUserCredits(username, "key", cost)
-		return
-	}
-	if err = qm.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c)
+	if err = api.queues.key.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
+		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
@@ -361,13 +342,7 @@ func (api *API) forgotUserName(c *gin.Context) {
 		UserNames:   []string{user.UserName},
 		Emails:      []string{user.EmailAddress},
 	}
-	mqURL := api.cfg.RabbitMQ.URL
-	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
-		return
-	}
-	if err = qm.PublishMessage(es); err != nil {
+	if err = api.queues.email.PublishMessage(es); err != nil {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
@@ -401,13 +376,7 @@ func (api *API) resetPassword(c *gin.Context) {
 		UserNames:   []string{user.UserName},
 		Emails:      []string{user.EmailAddress},
 	}
-	mqURL := api.cfg.RabbitMQ.URL
-	qm, err := queue.Initialize(queue.EmailSendQueue, mqURL, true, false)
-	if err != nil {
-		api.LogError(err, eh.QueueInitializationError)(c, http.StatusBadRequest)
-		return
-	}
-	if err = qm.PublishMessage(es); err != nil {
+	if err = api.queues.email.PublishMessage(es); err != nil {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}

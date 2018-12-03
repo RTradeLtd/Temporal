@@ -3,6 +3,9 @@ package queue
 import (
 	"time"
 
+	"github.com/RTradeLtd/config"
+	"github.com/jinzhu/gorm"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
@@ -25,14 +28,10 @@ var (
 	IpnsEntryQueue = "ipns-entry-queue"
 	// IpfsKeyCreationQueue is a queue used to handle ipfs key creation
 	IpfsKeyCreationQueue = "ipfs-key-creation-queue"
-	// PaymentCreationQueue is a queue used to handle payment processing
-	PaymentCreationQueue = "payment-creation-queue"
 	// PaymentConfirmationQueue is a queue used to handle payment confirmations
 	PaymentConfirmationQueue = "payment-confirmation-queue"
 	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
 	DashPaymentConfirmationQueue = "dash-payment-confirmation-queue"
-	// MongoUpdateQueue is a queue used to trigger mongodb updates
-	MongoUpdateQueue = "mongo-update-queue"
 	// AdminEmail is the email used to notify RTrade about any critical errors
 	AdminEmail = "temporal.reports@rtradetechnologies.com"
 	// IpfsPinFailedContent is a to-be formatted message sent on IPFS pin failures
@@ -59,10 +58,12 @@ var (
 
 // Manager is a helper struct to interact with rabbitmq
 type Manager struct {
-	Connection   *amqp.Connection
-	Channel      *amqp.Channel
-	Queue        *amqp.Queue
-	Logger       *log.Logger
+	connection   *amqp.Connection
+	channel      *amqp.Channel
+	queue        *amqp.Queue
+	logger       *log.Logger
+	db           *gorm.DB
+	cfg          *config.TemporalConfig
 	QueueName    string
 	Service      string
 	ExchangeName string
@@ -157,13 +158,6 @@ type IPNSEntry struct {
 	CreditCost  float64       `json:"credit_cost"`
 }
 
-// PaymentCreation is for the payment creation queue
-type PaymentCreation struct {
-	TxHash     string `json:"tx_hash"`
-	Blockchain string `json:"blockchain"`
-	UserName   string `json:"user_name"`
-}
-
 // DashPaymenConfirmation is a message used to signal processing of a dash payment
 type DashPaymenConfirmation struct {
 	UserName         string `json:"user_name"`
@@ -175,11 +169,4 @@ type DashPaymenConfirmation struct {
 type PaymentConfirmation struct {
 	UserName      string `json:"user_name"`
 	PaymentNumber int64  `json:"payment_number"`
-}
-
-// MongoUpdate is an update used to trigger
-type MongoUpdate struct {
-	DatabaseName   string            `json:"database_name"`
-	CollectionName string            `json:"collection_name"`
-	Fields         map[string]string `json:"fields"`
 }

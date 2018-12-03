@@ -13,6 +13,7 @@ import (
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
@@ -37,6 +38,10 @@ var (
 	dev      = true
 )
 
+const (
+	realName = "temporal-realm"
+)
+
 // API is our API service
 type API struct {
 	ipfs    rtfs.Manager
@@ -57,6 +62,7 @@ type API struct {
 	orch    *clients.IPFSOrchestratorClient
 	lc      *clients.LensClient
 	dc      *dash.Client
+	queues  queues
 	service string
 }
 
@@ -140,7 +146,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 		return nil, err
 	}
 
-	orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator, os.Getenv("MODE") == "development")
+	orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator)
 	if err != nil {
 		return nil, err
 	}
@@ -168,6 +174,43 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 	if err != nil {
 		return nil, err
 	}
+	// setup our queues
+	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
+	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
+	qmDatabase, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
+	qmFile, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
+	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
+	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
+	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
+	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
+	qmPayConfirm, err := queue.New(queue.PaymentConfirmationQueue, cfg.RabbitMQ.URL, true)
+	if err != nil {
+		return nil, err
+	}
 	return &API{
 		ipfs:    ipfs,
 		keys:    keys,
@@ -185,17 +228,51 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 		signer:  signer,
 		orch:    orch,
 		dc:      dc,
-		zm:      models.NewZoneManager(dbm.DB),
-		rm:      models.NewRecordManager(dbm.DB),
-		nm:      models.NewHostedIPFSNetworkManager(dbm.DB),
+		queues: queues{
+			pin:        qmPin,
+			file:       qmFile,
+			cluster:    qmCluster,
+			email:      qmEmail,
+			ipns:       qmIpns,
+			key:        qmKey,
+			database:   qmDatabase,
+			dash:       qmDash,
+			payConfirm: qmPayConfirm,
+		},
+		zm: models.NewZoneManager(dbm.DB),
+		rm: models.NewRecordManager(dbm.DB),
+		nm: models.NewHostedIPFSNetworkManager(dbm.DB),
 	}, nil
 }
 
 // Close releases API resources
 func (api *API) Close() {
+	// close grpc connections
 	api.lc.Close()
 	api.signer.Close()
 	api.orch.Close()
+	// close queue resources
+	if err := api.queues.cluster.Close(); err != nil {
+		api.LogError(err, "failed to properly close cluster queue connection")
+	}
+	if err := api.queues.database.Close(); err != nil {
+		api.LogError(err, "failed to properly close database queue connection")
+	}
+	if err := api.queues.email.Close(); err != nil {
+		api.LogError(err, "failed to properly close email queue connection")
+	}
+	if err := api.queues.file.Close(); err != nil {
+		api.LogError(err, "failed to properly close file queue connection")
+	}
+	if err := api.queues.ipns.Close(); err != nil {
+		api.LogError(err, "failed to properly close ipns queue connection")
+	}
+	if err := api.queues.key.Close(); err != nil {
+		api.LogError(err, "failed to properly close key queue connection")
+	}
+	if err := api.queues.pin.Close(); err != nil {
+		api.LogError(err, "failed to properly close pin queue connection")
+	}
 }
 
 // TLSConfig is used to enable TLS on the API service
@@ -245,7 +322,7 @@ func (api *API) setupRoutes() error {
 		stats.RequestStats())
 
 	// set up middleware
-	ginjwt := middleware.JwtConfigGenerate(api.cfg.API.JwtKey, api.dbm.DB, api.l)
+	ginjwt := middleware.JwtConfigGenerate(api.cfg.API.JwtKey, realName, api.dbm.DB, api.l)
 	authware := []gin.HandlerFunc{
 		ginjwt.MiddlewareFunc(),
 		middleware.APIRestrictionMiddleware(api.dbm.DB),
