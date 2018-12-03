@@ -14,6 +14,7 @@ import (
 
 const (
 	tooManyCredits = 10.9999997e+07
+	testUser       = "testuser"
 )
 
 func Test_API(t *testing.T) {
@@ -50,7 +51,7 @@ func Test_API(t *testing.T) {
 		{"XMRPass", args{"xmr", "monero"}, false},
 		{"DASHFail", args{"DASH", "DASH"}, true},
 		{"DASHPass", args{"dash", "dash"}, false},
-		{"ShitCoinFail", args{"biiiitcoooonnneeeeeeecccct", "biiiitcoooonnneeeeeeecccct"}, true},
+		{"InvalidCoinFail", args{"biiiitcoooonnneeeeeeecccct", "biiiitcoooonnneeeeeeecccct"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -63,25 +64,25 @@ func Test_API(t *testing.T) {
 			}
 		})
 	}
-	if err = api.validateUserCredits("testuser", 1); err != nil {
+	if err = api.validateUserCredits(testUser, 1); err != nil {
 		t.Fatal(err)
 	}
-	if err = api.validateUserCredits("testuser", tooManyCredits); err == nil {
+	if err = api.validateUserCredits(testUser, tooManyCredits); err == nil {
 		t.Fatal("error expected")
 	}
-	if err := api.validateAdminRequest("testuser"); err != nil {
+	if err := api.validateAdminRequest(testUser); err != nil {
 		t.Fatal(err)
 	}
 	if err := api.validateAdminRequest("notareallaccount"); err == nil {
-		t.Fatal("expected error")
+		t.Fatal("error expected")
 	}
-	user, err := api.um.FindByUserName("testuser")
+	user, err := api.um.FindByUserName(testUser)
 	if err != nil {
 		t.Fatal(err)
 	}
 	previousCreditAmount := user.Credits
-	api.refundUserCredits("testuser", "ipfs-pin", 10)
-	user, err = api.um.FindByUserName("testuser")
+	api.refundUserCredits(testUser, "ipfs-pin", 10)
+	user, err = api.um.FindByUserName(testUser)
 	if user.Credits != previousCreditAmount+10 {
 		t.Fatal("failed to refund credits")
 	}
@@ -93,5 +94,8 @@ func Test_API(t *testing.T) {
 	forms := api.extractPostForms(testCtx, "suchkey")
 	if len(forms) == 0 {
 		t.Fatal("failed to extract post forms")
+	}
+	if forms["suchkey"] != "muchvalue" {
+		t.Fatal("failed to extract proper postform")
 	}
 }
