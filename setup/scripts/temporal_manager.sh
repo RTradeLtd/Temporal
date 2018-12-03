@@ -13,42 +13,42 @@ export CONFIG_DAG
 case "$1" in
 
     api)
-        INIT_DB=yes
+        INIT_DB=true
         export INIT_DB
         temporal api
         ;;
     queue-dfa)
-        INIT_DB=yes
+        INIT_DB=true
         export INIT_DB  
         temporal queue dfa
         ;;
     ipfs-pin-queue)
-        INIT_DB=yes
+        INIT_DB=true
         export INIT_DB
         temporal queue ipfs pin
         ;;
     ipfs-file-queue)
-        INIT_DB=yes
+        INIT_DB=true
         export INIT_DB
         temporal queue ipfs file
         ;;
     email-send-queue)
-        INIT_DB=yes
+        INIT_DB=true
         export INIT_DB
         temporal queue email-send
         ;;
     ipns-entry-queue)
-        INIT_DB=yes
+        INIT_DB=true
         export INIT_DB
         temporal queue ipfs ipns-entry
         ;;
     ipfs-key-creation-queue)
-        INIT_DB=yes
+        INIT_DB=true
         export INIT_DB
         temporal queue ipfs key-creation
         ;;
     ipfs-cluster-queue)
-        INIT_DB=yes
+        INIT_DB=true
         export INIT_DB
         temporal queue ipfs cluster
         ;;

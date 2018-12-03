@@ -368,7 +368,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if initDB := os.Getenv("INIT_DB"); strings.ToLower(initDB) == "yes" {
+	if initDB := os.Getenv("INIT_DB"); strings.ToLower(initDB) == "true" {
 		sslDisabled := os.Getenv("SSL_MODE_DISABLE") == "true"
 		db, err = database.OpenDBConnection(database.DBOptions{
 			User:           tCfg.Database.Username,
