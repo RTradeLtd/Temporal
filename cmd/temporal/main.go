@@ -11,7 +11,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/RTradeLtd/Temporal/api"
+	"github.com/RTradeLtd/Temporal/api/v2"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd"
 	"github.com/RTradeLtd/config"
@@ -36,7 +36,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			service, err := api.Initialize(&cfg, os.Getenv("DEBUG") == "true")
+			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -52,7 +52,7 @@ var commands = map[string]cmd.Cmd{
 				err = service.ListenAndServe(addr, nil)
 			} else {
 				fmt.Println("Starting API service with TLS...")
-				err = service.ListenAndServe(addr, &api.TLSConfig{
+				err = service.ListenAndServe(addr, &v2.TLSConfig{
 					CertFile: args["certFilePath"],
 					KeyFile:  args["keyFilePath"],
 				})

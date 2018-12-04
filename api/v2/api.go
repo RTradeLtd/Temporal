@@ -1,6 +1,6 @@
-// Package api is the main package for Temporal's
+// package v2 is the main package for Temporal's
 // http api
-package api
+package v2
 
 import (
 	"fmt"
@@ -328,37 +328,37 @@ func (api *API) setupRoutes() error {
 		middleware.APIRestrictionMiddleware(api.dbm.DB),
 	}
 
-	// V1 API
-	v1 := api.r.Group("/api/v1")
+	// V2 API
+	v2 := api.r.Group("/api/v2")
 
 	// system checks used to verify the integrity of our services
-	systemChecks := v1.Group("/systems")
+	systemChecks := v2.Group("/systems")
 	{
 		systemChecks.GET("/check", api.SystemsCheck)
 	}
 
 	// authless account recovery routes
-	forgot := v1.Group("/forgot")
+	forgot := v2.Group("/forgot")
 	{
 		forgot.POST("/username", api.forgotUserName)
 		forgot.POST("/password", api.resetPassword)
 	}
 
 	// authentication
-	auth := v1.Group("/auth")
+	auth := v2.Group("/auth")
 	{
 		auth.POST("/register", api.registerUserAccount)
 		auth.POST("/login", ginjwt.LoginHandler)
 	}
 
 	// statistics
-	statistics := v1.Group("/statistics").Use(authware...)
+	statistics := v2.Group("/statistics").Use(authware...)
 	{
 		statistics.GET("/stats", api.getStats)
 	}
 
 	// lens search engine
-	lens := v1.Group("/lens")
+	lens := v2.Group("/lens")
 	{
 		// allow anyone to index
 		lens.POST("/index", api.submitIndexRequest)
@@ -367,7 +367,7 @@ func (api *API) setupRoutes() error {
 	}
 
 	// payments
-	payments := v1.Group("/payments", authware...)
+	payments := v2.Group("/payments", authware...)
 	{
 		dash := payments.Group("/create")
 		{
@@ -382,7 +382,7 @@ func (api *API) setupRoutes() error {
 	}
 
 	// accounts
-	account := v1.Group("/account", authware...)
+	account := v2.Group("/account", authware...)
 	{
 		account.POST("/rekt", api.selfRekt)
 		token := account.Group("/token")
@@ -422,7 +422,7 @@ func (api *API) setupRoutes() error {
 	}
 
 	// ipfs routes
-	ipfs := v1.Group("/ipfs", authware...)
+	ipfs := v2.Group("/ipfs", authware...)
 	{
 		// public ipfs routes
 		public := ipfs.Group("/public")
@@ -523,7 +523,7 @@ func (api *API) setupRoutes() error {
 	}
 
 	// ipns
-	ipns := v1.Group("/ipns", authware...)
+	ipns := v2.Group("/ipns", authware...)
 	{
 		// public ipns routes
 		public := ipns.Group("/public")
@@ -540,14 +540,14 @@ func (api *API) setupRoutes() error {
 	}
 
 	// database
-	database := v1.Group("/database", authware...)
+	database := v2.Group("/database", authware...)
 	{
 		database.GET("/uploads", api.getUploadsFromDatabase)  // admin locked
 		database.GET("/uploads/:user", api.getUploadsForUser) // partial admin locked
 	}
 
 	// frontend
-	frontend := v1.Group("/frontend", authware...)
+	frontend := v2.Group("/frontend", authware...)
 	{
 		uploads := frontend.Group("/uploads")
 		{
@@ -564,7 +564,7 @@ func (api *API) setupRoutes() error {
 	}
 
 	// admin
-	admin := v1.Group("/admin", authware...)
+	admin := v2.Group("/admin", authware...)
 	{
 		mini := admin.Group("/mini")
 		{

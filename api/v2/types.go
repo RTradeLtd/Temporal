@@ -1,4 +1,4 @@
-package api
+package v2
 
 import "github.com/RTradeLtd/Temporal/queue"
 
