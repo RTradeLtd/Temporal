@@ -7,12 +7,18 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database"
+	"github.com/jinzhu/gorm"
 )
 
 // TestQueueIPFS is used to test IPFS queues
 func TestQueuesIPFS(t *testing.T) {
 	logFilePath = "../../templogs.log"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err = loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,4 +110,14 @@ func TestUser(t *testing.T) {
 		"email": "myuser+test@example.org",
 	}
 	commands["user"].Action(*cfg, flags)
+}
+
+func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
+	return database.OpenDBConnection(database.DBOptions{
+		User:           cfg.Database.Username,
+		Password:       cfg.Database.Password,
+		Address:        cfg.Database.URL,
+		Port:           cfg.Database.Port,
+		SSLModeDisable: true,
+	})
 }
