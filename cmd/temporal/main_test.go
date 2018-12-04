@@ -76,3 +76,27 @@ func TestInit(t *testing.T) {
 	}
 	commands["init"].Action(config.TemporalConfig{}, nil)
 }
+
+func TestAdmin(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	flags := map[string]string{
+		"dbAdmin": "testuser",
+	}
+	commands["admin"].Action(*cfg, flags)
+}
+
+func TestUser(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	flags := map[string]string{
+		"user":  "myuser",
+		"pass":  "mypass",
+		"email": "myuser+test@example.org",
+	}
+	commands["user"].Action(*cfg, flags)
+}

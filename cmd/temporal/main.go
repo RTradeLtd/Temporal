@@ -300,7 +300,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "create a user",
 		Description: "Create a Temporal user. Provide args as username, password, email. Do not use in production.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if len(os.Args) < 5 {
+			if len(args) < 3 {
 				log.Fatal("insufficient fields provided")
 			}
 			d, err := database.Initialize(&cfg, database.Options{
@@ -310,7 +310,7 @@ var commands = map[string]cmd.Cmd{
 				log.Fatal(err)
 			}
 			if _, err := models.NewUserManager(d.DB).NewUserAccount(
-				os.Args[2], os.Args[3], os.Args[4], false,
+				args["user"], args["pass"], args["email"], false,
 			); err != nil {
 				log.Fatal(err)
 			}
@@ -321,8 +321,8 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "assign user as an admin",
 		Description: "Assign an existing Temporal user as an administrator.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if len(os.Args) < 3 {
-				log.Fatal("no user provided")
+			if args["dbAdmin"] == "" {
+				log.Fatal("no user provided through command line argument")
 			}
 			d, err := database.Initialize(&cfg, database.Options{
 				SSLModeDisable: true,
@@ -330,12 +330,12 @@ var commands = map[string]cmd.Cmd{
 			if err != nil {
 				log.Fatal(err)
 			}
-			found, err := models.NewUserManager(d.DB).ToggleAdmin(os.Args[2])
+			found, err := models.NewUserManager(d.DB).ToggleAdmin(args["dbAdmin"])
 			if err != nil {
 				log.Fatal(err)
 			}
 			if !found {
-				log.Fatalf("user %s not found", os.Args[2])
+				log.Fatalf("user %s not found", args["dbAdmin"])
 			}
 		},
 	},
@@ -413,10 +413,15 @@ func main() {
 		"keyFilePath":   tCfg.API.Connection.Certificates.KeyPath,
 		"listenAddress": tCfg.API.Connection.ListenAddress,
 
-		"dbPass": tCfg.Database.Password,
-		"dbURL":  tCfg.Database.URL,
-		"dbUser": tCfg.Database.Username,
+		"dbPass":  tCfg.Database.Password,
+		"dbURL":   tCfg.Database.URL,
+		"dbUser":  tCfg.Database.Username,
+		"dbAdmin": os.Args[2],
+		"user":    os.Args[2],
+		"pass":    os.Args[3],
+		"email":   os.Args[4],
 	}
+	fmt.Println(tCfg.APIKeys.ChainRider)
 	// execute
 	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
 }
