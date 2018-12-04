@@ -22,7 +22,7 @@ script:
   # - docker run -v $(pwd):/mnt koalaman/shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
   - diff -u <(echo -n) <(gofmt -d -s `find . -type f -name '*.go' -not -path "./vendor/*"`)
   - diff -u <(echo -n) <(golint `go list ./... | grep -v /vendor/`)
-  - go test -race -short -coverprofile=coverage.txt ./...
+  - go test -v -race -short -coverprofile=coverage.txt ./...
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

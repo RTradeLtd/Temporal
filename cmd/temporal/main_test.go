@@ -74,7 +74,6 @@ func TestMigrations(t *testing.T) {
 }
 func TestInit(t *testing.T) {
 	logFilePath = "../../templogs.log"
-	defer os.Remove("../../testenv/new_config.json")
 	if err := os.Setenv("CONFIG_DAG", "../../testenv/new_config.json"); err != nil {
 		t.Fatal(err)
 	}
