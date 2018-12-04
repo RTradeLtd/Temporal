@@ -30,6 +30,8 @@ var (
 	keyFile      = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
 	tCfg         config.TemporalConfig
 	db           *gorm.DB
+	ctx          context.Context
+	cancel       context.CancelFunc
 )
 
 var commands = map[string]cmd.Cmd{
@@ -85,7 +87,6 @@ var commands = map[string]cmd.Cmd{
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							ctx, cancel := context.WithCancel(context.Background())
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
@@ -110,7 +111,6 @@ var commands = map[string]cmd.Cmd{
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							ctx, cancel := context.WithCancel(context.Background())
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
@@ -135,7 +135,6 @@ var commands = map[string]cmd.Cmd{
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							ctx, cancel := context.WithCancel(context.Background())
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
@@ -160,7 +159,6 @@ var commands = map[string]cmd.Cmd{
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							ctx, cancel := context.WithCancel(context.Background())
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
@@ -185,7 +183,6 @@ var commands = map[string]cmd.Cmd{
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							ctx, cancel := context.WithCancel(context.Background())
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
@@ -212,7 +209,6 @@ var commands = map[string]cmd.Cmd{
 					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-					ctx, cancel := context.WithCancel(context.Background())
 					waitGroup := &sync.WaitGroup{}
 					waitGroup.Add(1)
 					go func() {
@@ -237,7 +233,6 @@ var commands = map[string]cmd.Cmd{
 					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-					ctx, cancel := context.WithCancel(context.Background())
 					waitGroup := &sync.WaitGroup{}
 					waitGroup.Add(1)
 					go func() {
@@ -409,6 +404,8 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	// initialize global context
+	ctx, cancel = context.WithCancel(context.Background())
 	// load arguments
 	flags := map[string]string{
 		"configDag":     configDag,

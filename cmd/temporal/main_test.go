@@ -1,0 +1,78 @@
+package main
+
+import (
+	"context"
+	"os"
+	"testing"
+	"time"
+
+	"github.com/RTradeLtd/config"
+)
+
+// TestQueueIPFS is used to test IPFS queues
+func TestQueuesIPFS(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	type args struct {
+		parentCmd string
+		childCmd  string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"IPNSEntry", args{"ipfs", "ipns-entry"}},
+		{"IPFSPin", args{"ipfs", "pin"}},
+		{"IPFSFile", args{"ipfs", "file"}},
+		{"IPFSKey", args{"ipfs", "key-creation"}},
+		{"IPFSCluster", args{"ipfs", "cluster"}},
+	}
+	queueCmds := commands["queue"]
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
+			defer cancel()
+			queueCmds.Children[tt.args.parentCmd].Children[tt.args.childCmd].Action(*cfg, nil)
+		})
+	}
+}
+
+func TestQueuesDFA(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	commands["queue"].Children["dfa"].Action(*cfg, nil)
+}
+
+func TestQueuesEmailSend(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	commands["queue"].Children["email-send"].Action(*cfg, nil)
+}
+
+func TestMigrations(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// this wont work with our test environment as the psql server doesn't have ssl
+	//commands["migrate"].Action(*cfg, nil)
+	commands["migrate-insecure"].Action(*cfg, nil)
+}
+func TestInit(t *testing.T) {
+	defer os.Remove("../../testenv/new_config.json")
+	if err := os.Setenv("CONFIG_DAG", "../../testenv/new_config.json"); err != nil {
+		t.Fatal(err)
+	}
+	commands["init"].Action(config.TemporalConfig{}, nil)
+}
