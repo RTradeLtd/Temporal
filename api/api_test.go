@@ -4,11 +4,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/rtfs"
 	"github.com/c2h5oh/datasize"
 )
 
@@ -17,7 +20,37 @@ const (
 	testUser       = "testuser"
 )
 
+type apiResponse struct {
+	code     int
+	response string
+}
+
 func Test_API(t *testing.T) {
+	cfg, err := config.LoadConfig("../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	im, err := rtfs.NewManager(
+		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
+		nil,
+		time.Minute*10,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testRecorder := httptest.NewRecorder()
+	testCtx, engine := gin.CreateTestContext(testRecorder)
+	api, err := new(cfg, engine, im, false, os.Stdout)
+	if err != nil {
+		t.Fatal(err)
+	}
+	api.SystemsCheck(testCtx)
+	if testRecorder.Code != http.StatusOK {
+		t.Fatalf("expected status %v received %v", http.StatusOK, testRecorder.Code)
+	}
+}
+
+func Test_Utils(t *testing.T) {
 	cfg, err := config.LoadConfig("../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
