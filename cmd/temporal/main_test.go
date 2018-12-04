@@ -11,6 +11,7 @@ import (
 
 // TestQueueIPFS is used to test IPFS queues
 func TestQueuesIPFS(t *testing.T) {
+	logFilePath = "../../templogs.log"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -41,6 +42,7 @@ func TestQueuesIPFS(t *testing.T) {
 }
 
 func TestQueuesDFA(t *testing.T) {
+	logFilePath = "../../templogs.log"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -61,6 +63,7 @@ func TestQueuesEmailSend(t *testing.T) {
 }
 
 func TestMigrations(t *testing.T) {
+	logFilePath = "../../templogs.log"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -70,6 +73,7 @@ func TestMigrations(t *testing.T) {
 	commands["migrate-insecure"].Action(*cfg, nil)
 }
 func TestInit(t *testing.T) {
+	logFilePath = "../../templogs.log"
 	defer os.Remove("../../testenv/new_config.json")
 	if err := os.Setenv("CONFIG_DAG", "../../testenv/new_config.json"); err != nil {
 		t.Fatal(err)
@@ -78,6 +82,7 @@ func TestInit(t *testing.T) {
 }
 
 func TestAdmin(t *testing.T) {
+	logFilePath = "../../templogs.log"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -89,6 +94,7 @@ func TestAdmin(t *testing.T) {
 }
 
 func TestUser(t *testing.T) {
+	logFilePath = "../../templogs.log"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
