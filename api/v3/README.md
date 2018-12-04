@@ -8,6 +8,7 @@ be migrated to [RTradeLtd/grpc](https://github.com/RTradeLtd/grpc).
 Updating generated code:
 
 ```sh
+cd api/v3/proto # from project root
 make deps
 make gen
 make swagger
