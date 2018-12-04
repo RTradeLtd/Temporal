@@ -412,14 +412,17 @@ func main() {
 		"certFilePath":  tCfg.API.Connection.Certificates.CertPath,
 		"keyFilePath":   tCfg.API.Connection.Certificates.KeyPath,
 		"listenAddress": tCfg.API.Connection.ListenAddress,
-
-		"dbPass":  tCfg.Database.Password,
-		"dbURL":   tCfg.Database.URL,
-		"dbUser":  tCfg.Database.Username,
-		"dbAdmin": os.Args[2],
-		"user":    os.Args[2],
-		"pass":    os.Args[3],
-		"email":   os.Args[4],
+		"dbPass":        tCfg.Database.Password,
+		"dbURL":         tCfg.Database.URL,
+		"dbUser":        tCfg.Database.Username,
+	}
+	if os.Args[1] == "user" {
+		flags["user"] = os.Args[2]
+		flags["pass"] = os.Args[3]
+		flags["email"] = os.Args[4]
+	}
+	if os.Args[1] == "admin" {
+		flags["dbAdmin"] = os.Args[2]
 	}
 	fmt.Println(tCfg.APIKeys.ChainRider)
 	// execute
