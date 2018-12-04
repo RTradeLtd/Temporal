@@ -35,8 +35,8 @@ func TestQueuesIPFS(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
-			defer cancel()
 			queueCmds.Children[tt.args.parentCmd].Children[tt.args.childCmd].Action(*cfg, nil)
+			cancel()
 		})
 	}
 }
