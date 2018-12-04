@@ -417,26 +417,6 @@ func main() {
 		"dbURL":  tCfg.Database.URL,
 		"dbUser": tCfg.Database.Username,
 	}
-	var (
-		peerAddr string
-		isTns    bool
-	)
-	// check for tns client operation and load peer addr
-	for _, v := range os.Args {
-		if v == "tns" {
-			isTns = true
-		}
-		if isTns && v == "client" {
-			peerAddr = os.Getenv("PEER_ADDR")
-			if peerAddr == "" {
-				log.Fatal("PEER_ADDR env var is empty")
-			}
-		}
-	}
-	if isTns && peerAddr != "" {
-		flags["peerAddr"] = peerAddr
-	}
-	fmt.Println(tCfg.APIKeys.ChainRider)
 	// execute
 	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
 }
