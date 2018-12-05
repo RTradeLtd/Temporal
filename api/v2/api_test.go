@@ -202,7 +202,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
-		t.Error("bad http status code from /api/v2/account/password/change")
+		t.Fatal("bad http status code from /api/v2/account/password/change")
 	}
 	apiResp = apiResponse{}
 	// unmarshal the response
@@ -219,7 +219,7 @@ func Test_API_Routes_Account(t *testing.T) {
 		t.Fatal("bad api status code from /api/v2/account/password/change")
 	}
 
-	// verify account password change
+	// create ipfs keys
 	// /api/v2/account/key/ipfs/new
 	testRecorder = httptest.NewRecorder()
 	// test ed25519 keys
@@ -232,7 +232,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
-		t.Error("bad http status code from /api/v2/account/key/ipfs/new")
+		t.Fatal("bad http status code from /api/v2/account/key/ipfs/new")
 	}
 	apiResp = apiResponse{}
 	// unmarshal the response
@@ -248,17 +248,15 @@ func Test_API_Routes_Account(t *testing.T) {
 		fmt.Println(apiResp.Response)
 		t.Fatal("bad api status code from /api/v2/account/key/ipfs/new")
 	}
+	testRecorder = httptest.NewRecorder()
 	// test rsa keys
-	req = httptest.NewRequest("POST", "/api/v2/account/key/ipfs/new", nil)
-	req.Header.Add("Authorization", authHeader)
-	urlValues = url.Values{}
-	urlValues.Add("key_type", "ed25519")
+	urlValues.Add("key_type", "rsa")
 	urlValues.Add("key_bits", "2048")
 	urlValues.Add("key_name", "key2")
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
-		t.Error("bad http status code from /api/v2/account/key/ipfs/new")
+		t.Fatal("bad http status code from /api/v2/account/key/ipfs/new")
 	}
 	apiResp = apiResponse{}
 	// unmarshal the response
@@ -274,10 +272,45 @@ func Test_API_Routes_Account(t *testing.T) {
 		fmt.Println(apiResp.Response)
 		t.Fatal("bad api status code from /api/v2/account/key/ipfs/new")
 	}
+	// manually create the keys since we arent using queues
+	if err = um.AddIPFSKeyForUser("testuser", "key1", "muchwow"); err != nil {
+		t.Fatal(err)
+	}
+	if err = um.AddIPFSKeyForUser("testuser", "key2", "suchkey"); err != nil {
+		t.Fatal(err)
+	}
+
+	// get ipfs keys
+	// /api/v2/account/key/ipfs/get
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/account/key/ipfs/get", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Error("bad http status code from /api/v2/account/key/ipfs/get")
+	}
+	type keyCreationResponse struct {
+		Code     int   `json:"code"`
+		Response gin.H `json:"response"`
+	}
+	var keyCreationResp keyCreationResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &keyCreationResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if keyCreationResp.Code != 200 {
+		fmt.Println(apiResp.Response)
+		t.Fatal("bad api status code from /api/v2/account/key/ipfs/get")
+	}
 }
 
 func Test_Utils(t *testing.T) {
-	t.Skip()
+	//	t.Skip()
 	cfg, err := config.LoadConfig("../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
