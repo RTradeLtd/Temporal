@@ -380,14 +380,9 @@ func (api *API) setupRoutes() error {
 	// accounts
 	account := v2.Group("/account", authware...)
 	{
-		account.POST("/rekt", api.selfRekt)
 		token := account.Group("/token")
 		{
 			token.GET("/username", api.getUserFromToken)
-		}
-		airdrop := account.Group("/airdrop")
-		{
-			airdrop.POST("/register", api.registerAirDrop)
 		}
 		password := account.Group("/password")
 		{

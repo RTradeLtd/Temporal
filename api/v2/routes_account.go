@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/eh"
@@ -22,30 +21,6 @@ func (api *API) getUserFromToken(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": username})
-}
-
-// selfRekt is an undocumented API call used to auto-ban users who may engaging in malicious activity
-func (api *API) selfRekt(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
-		return
-	}
-	user, err := api.um.FindByUserName(username)
-	if err != nil {
-		api.LogError(err, eh.UserSearchError)(c, http.StatusBadRequest)
-		return
-	}
-	user.AccountEnabled = false
-	user.APIAccess = false
-	user.AdminAccess = false
-	user.EnterpriseEnabled = false
-	if err = api.dbm.DB.Save(user).Error; err != nil {
-		api.LogError(err, eh.UnableToSaveUserError)(c, http.StatusBadRequest)
-		return
-	}
-	api.LogWithUser(username).Info("malicious activity detected")
-	Respond(c, http.StatusOK, gin.H{"response": "4 hour ban ... you been messin around with our shit, aint you son?"})
 }
 
 // verifyEmailAddress is used to verify a users email address
@@ -90,39 +65,6 @@ func (api *API) getEmailVerificationToken(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "Email verification token sent to email. Please check and follow instructions"})
-}
-
-// registerAirDrop is used to register an airdrop
-func (api *API) registerAirDrop(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
-		return
-	}
-	forms := api.extractPostForms(c, "airdrop_id", "eth_address")
-	if len(forms) == 0 {
-		return
-	}
-	if len(forms["eth_address"]) != 42 {
-		Fail(c, errors.New("eth_address is invalid"))
-		return
-	}
-	if _, err := api.dm.RegisterAirDrop(forms["airdrop_id"], forms["eth_address"], username); err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
-		return
-	}
-	es := queue.EmailSend{
-		Subject:     "airdrop registered",
-		Content:     fmt.Sprintf("user %s with airdrop code %s to eth address %s is registered", username, forms["eth_address"], forms["aidrop_id"]),
-		ContentType: "text/html",
-		UserNames:   []string{"admin"},
-		Emails:      []string{os.Getenv("TEMPORAL_ADMIN_EMAIL")},
-	}
-	if err = api.queues.email.PublishMessage(es); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
-		return
-	}
-	Respond(c, http.StatusOK, gin.H{"response": "airdrop registered, good luck!"})
 }
 
 // ChangeAccountPassword is used to change a users password

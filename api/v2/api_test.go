@@ -304,13 +304,67 @@ func Test_API_Routes_Account(t *testing.T) {
 	}
 	// validate the response code
 	if keyCreationResp.Code != 200 {
-		fmt.Println(apiResp.Response)
 		t.Fatal("bad api status code from /api/v2/account/key/ipfs/get")
+	}
+
+	// get available credits
+	// /api/v2/account/credits/available
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/account/credits/available", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Error("bad http status code from /api/v2/account/credits/available")
+	}
+	type creditAPIResponse struct {
+		Code     int     `json:"code"`
+		Response float64 `json:"response"`
+	}
+	var creditResp creditAPIResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &creditResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/account/credits/available")
+	}
+
+	// get available credits
+	// /api/v2/auth/register
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/auth/register", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("username", "testuser2")
+	urlValues.Add("password", "password123")
+	urlValues.Add("email_address", "testuser2+test@example.org")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Error("bad http status code from /api/v2/auth/register")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/auth/register")
 	}
 }
 
 func Test_Utils(t *testing.T) {
-	//	t.Skip()
+	t.Skip()
 	cfg, err := config.LoadConfig("../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
