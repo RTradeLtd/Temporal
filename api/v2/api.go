@@ -1,4 +1,4 @@
-// package v2 is the main package for Temporal's
+// Package v2 is the main package for Temporal's
 // http api
 package v2
 
