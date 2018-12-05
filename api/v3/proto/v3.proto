@@ -1,0 +1,16 @@
+syntax = "proto3";
+package temporalv3;
+
+import "google/api/annotations.proto";
+
+service Temporal {
+  rpc Status(Message) returns (Message) {
+    option (google.api.http) = {
+      get: "/v3/status"
+    };
+  };
+}
+
+message Message {
+  string message = 1;
+}

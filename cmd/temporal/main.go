@@ -11,7 +11,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/RTradeLtd/Temporal/api"
+	"github.com/RTradeLtd/Temporal/api/v2"
+	"github.com/RTradeLtd/Temporal/api/v3"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd"
 	"github.com/RTradeLtd/config"
@@ -36,7 +37,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			service, err := api.Initialize(&cfg, os.Getenv("DEBUG") == "true")
+			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -52,7 +53,7 @@ var commands = map[string]cmd.Cmd{
 				err = service.ListenAndServe(addr, nil)
 			} else {
 				fmt.Println("Starting API service with TLS...")
-				err = service.ListenAndServe(addr, &api.TLSConfig{
+				err = service.ListenAndServe(addr, &v2.TLSConfig{
 					CertFile: args["certFilePath"],
 					KeyFile:  args["keyFilePath"],
 				})
@@ -341,6 +342,33 @@ var commands = map[string]cmd.Cmd{
 			if !found {
 				log.Fatalf("user %s not found", os.Args[2])
 			}
+		},
+	},
+	"v3": {
+		Blurb:         "experimental Temporal V3 API",
+		Hidden:        true,
+		PreRun:        true,
+		ChildRequired: true,
+		Children: map[string]cmd.Cmd{
+			"proxy": {
+				Blurb: "run a RESTful proxy for the Temporal V3 API",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					if len(os.Args) < 4 {
+						log.Fatal("no address provided")
+					}
+					log.Fatal(v3.REST(os.Args[3]))
+				},
+			},
+			"server": {
+				Blurb: "run the Temporal V3 API server",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					if len(os.Args) < 4 {
+						log.Fatal("no address provided")
+					}
+					s := v3.New()
+					log.Fatal(s.Run(context.Background(), os.Args[3]))
+				},
+			},
 		},
 	},
 }
