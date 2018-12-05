@@ -348,6 +348,33 @@ func Test_API_Routes_Account(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Error("bad http status code from /api/v2/auth/register")
 	}
+	type signupResponse struct {
+		Code     int         `json:"code"`
+		Response models.User `json:"response"`
+	}
+	var signupResp signupResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &signupResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if signupResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/auth/register")
+	}
+
+	// forgot email
+	// /api/v2/account/email/forgot
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/account/email/forgot", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/account/email/forgot")
+	}
 	apiResp = apiResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
@@ -359,13 +386,64 @@ func Test_API_Routes_Account(t *testing.T) {
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/auth/register")
+		t.Fatal("bad api status code from /api/v2/account/email/forgot")
+	}
+
+	// test@email.com
+	// forgot username
+	// /api/v2/forgot/username
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/forgot/username", nil)
+	urlValues = url.Values{}
+	urlValues.Add("email_address", "test@email.com")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/forgot/username")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/forgot/username")
+	}
+
+	// test@email.com
+	// forgot password
+	// /api/v2/forgot/password
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/forgot/password", nil)
+	urlValues = url.Values{}
+	urlValues.Add("email_address", "test@email.com")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/forgot/password")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/forgot/password")
 	}
 }
 
 func Test_Utils(t *testing.T) {
-	t.Skip()
-	cfg, err := config.LoadConfig("../testenv/config.json")
+	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
