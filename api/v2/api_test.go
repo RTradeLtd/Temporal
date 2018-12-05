@@ -18,7 +18,7 @@ const (
 )
 
 func Test_API(t *testing.T) {
-	cfg, err := config.LoadConfig("../testenv/config.json")
+	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
