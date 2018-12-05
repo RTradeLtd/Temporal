@@ -132,7 +132,7 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
-	forms := api.extractPostForms(c, "old_assword", "new_password")
+	forms := api.extractPostForms(c, "old_password", "new_password")
 	if len(forms) == 0 {
 		return
 	}

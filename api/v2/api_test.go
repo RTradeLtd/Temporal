@@ -2,6 +2,7 @@ package v2
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -180,7 +181,98 @@ func Test_API_Routes_Account(t *testing.T) {
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/account/email/token/get")
+		t.Fatal("bad api status code from /api/v2/account/email/token/verify")
+	}
+	user, err = um.FindByUserName("testuser")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !user.EmailEnabled {
+		t.Fatal("failed to enable email address")
+	}
+
+	// verify account password change
+	// /api/v2/account/password/change
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/account/password/change", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("old_password", "admin")
+	urlValues.Add("new_password", "admin1234@")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Error("bad http status code from /api/v2/account/password/change")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		fmt.Println(apiResp.Response)
+		t.Fatal("bad api status code from /api/v2/account/password/change")
+	}
+
+	// verify account password change
+	// /api/v2/account/key/ipfs/new
+	testRecorder = httptest.NewRecorder()
+	// test ed25519 keys
+	req = httptest.NewRequest("POST", "/api/v2/account/key/ipfs/new", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("key_type", "ed25519")
+	urlValues.Add("key_bits", "256")
+	urlValues.Add("key_name", "key1")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Error("bad http status code from /api/v2/account/key/ipfs/new")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		fmt.Println(apiResp.Response)
+		t.Fatal("bad api status code from /api/v2/account/key/ipfs/new")
+	}
+	// test rsa keys
+	req = httptest.NewRequest("POST", "/api/v2/account/key/ipfs/new", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("key_type", "ed25519")
+	urlValues.Add("key_bits", "2048")
+	urlValues.Add("key_name", "key2")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Error("bad http status code from /api/v2/account/key/ipfs/new")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		fmt.Println(apiResp.Response)
+		t.Fatal("bad api status code from /api/v2/account/key/ipfs/new")
 	}
 }
 
