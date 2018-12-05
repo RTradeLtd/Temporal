@@ -36,7 +36,7 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 		Fail(c, errors.New(eh.InvalidObjectTypeError))
 		return
 	}
-	resp, err := api.lc.Index(context.Background(), &request.Index{
+	resp, err := api.lens.Index(context.Background(), &request.Index{
 		DataType:         objectType,
 		ObjectIdentifier: objectIdentifier,
 	})
@@ -63,7 +63,7 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 	for _, word := range keywords {
 		keywordsLower = append(keywordsLower, strings.ToLower(word))
 	}
-	resp, err := api.lc.Search(context.Background(), &request.Search{
+	resp, err := api.lens.Search(context.Background(), &request.Search{
 		Keywords: keywordsLower,
 	})
 	if err != nil {

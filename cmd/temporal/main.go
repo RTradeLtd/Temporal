@@ -11,6 +11,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/RTradeLtd/Temporal/grpc-clients"
+
 	"github.com/RTradeLtd/Temporal/api/v2"
 	"github.com/RTradeLtd/Temporal/api/v3"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -40,7 +42,11 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true")
+			lc, err := clients.NewLensClient(cfg.Endpoints)
+			if err != nil {
+				log.Fatal(err)
+			}
+			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true", lc)
 			if err != nil {
 				log.Fatal(err)
 			}

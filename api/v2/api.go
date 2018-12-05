@@ -29,6 +29,7 @@ import (
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
 
+	pbLens "github.com/RTradeLtd/grpc/lens"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
@@ -60,7 +61,7 @@ type API struct {
 	l       *log.Logger
 	signer  *clients.SignerClient
 	orch    *clients.IPFSOrchestratorClient
-	lc      *clients.LensClient
+	lens    pbLens.IndexerAPIClient
 	dc      *dash.Client
 	queues  queues
 	service string
@@ -68,7 +69,7 @@ type API struct {
 
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
-func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
+func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPIClient) (*API, error) {
 	var (
 		err    error
 		router = gin.Default()
@@ -93,7 +94,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 		return nil, err
 	}
 	// set up API struct
-	api, err := new(cfg, router, im, debug, logfile)
+	api, err := new(cfg, router, lens, im, debug, logfile)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +109,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool) (*API, error) {
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debug bool, out io.Writer) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIClient, ipfs rtfs.Manager, debug bool, out io.Writer) (*API, error) {
 	var (
 		logger = log.New()
 		dbm    *database.Manager
@@ -166,10 +167,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 	if err != nil {
 		return nil, err
 	}
-	lensClient, err := clients.NewLensClient(cfg.Endpoints)
-	if err != nil {
-		return nil, err
-	}
 	keys, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return nil, err
@@ -224,7 +221,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 		pm:      models.NewPaymentManager(dbm.DB),
 		dm:      models.NewDropManager(dbm.DB),
 		ue:      models.NewEncryptedUploadManager(dbm.DB),
-		lc:      lensClient,
+		lens:    lens,
 		signer:  signer,
 		orch:    orch,
 		dc:      dc,
@@ -248,7 +245,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, ipfs rtfs.Manager, debu
 // Close releases API resources
 func (api *API) Close() {
 	// close grpc connections
-	api.lc.Close()
 	api.signer.Close()
 	api.orch.Close()
 	// close queue resources

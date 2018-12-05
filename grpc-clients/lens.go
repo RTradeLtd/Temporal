@@ -1,11 +1,14 @@
 package clients
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/grpc/dialer"
 	pb "github.com/RTradeLtd/grpc/lens"
+	"github.com/RTradeLtd/grpc/lens/request"
+	"github.com/RTradeLtd/grpc/lens/response"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -17,7 +20,14 @@ const (
 // LensClient is a lens client used to make requests to the Lens gRPC server
 type LensClient struct {
 	pb.IndexerAPIClient
-	conn *grpc.ClientConn
+}
+
+// IndexerAPIClient is the interface used by our grpc lens client
+type IndexerAPIClient interface {
+	// Index is used to submit content to be indexed by the lens system
+	Index(ctx context.Context, in *request.Index, opts ...grpc.CallOption) (*response.Index, error)
+	// Search is used to perform a configurable search against the Lens index
+	Search(ctx context.Context, in *request.Search, opts ...grpc.CallOption) (*response.Results, error)
 }
 
 // NewLensClient is used to generate our lens client
@@ -48,10 +58,6 @@ func NewLensClient(opts config.Endpoints) (*LensClient, error) {
 		return nil, err
 	}
 	return &LensClient{
-		conn:             conn,
 		IndexerAPIClient: pb.NewIndexerAPIClient(conn),
 	}, nil
 }
-
-// Close shuts down the client's gRPC connection
-func (l *LensClient) Close() { l.conn.Close() }
