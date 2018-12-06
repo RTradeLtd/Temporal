@@ -521,11 +521,11 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal("bad http status code from /api/v2/ipns/records")
 	}
 
+	// test ipns publishing (public)
+	// api/v2/ipns/public/publish/details
 	// generate a fake key to publish
 	um := models.NewUserManager(db)
 	um.AddIPFSKeyForUser("testuser", "mytestkey", "suchkeymuchwow")
-	// test ipns publishing (public)
-	// api/v2/ipns/public/publish/details
 	testRecorder = httptest.NewRecorder()
 	req = httptest.NewRequest("POST", "/api/v2/ipns/public/publish/details", nil)
 	req.Header.Add("Authorization", authHeader)
@@ -552,6 +552,45 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	// validate the response code
 	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/ipns/public/publish/details")
+	}
+
+	// test ipns publishing (private)
+	// api/v2/ipns/private/publish/details
+	// create a fake private network
+	nm := models.NewHostedIPFSNetworkManager(db)
+	if _, err := nm.CreateHostedPrivateNetwork("testnetwork", "fakeswarmkey", nil, []string{"testuser"}); err != nil {
+		t.Fatal(err)
+	}
+	if err = um.AddIPFSNetworkForUser("testuser", "testnetwork"); err != nil {
+		t.Fatal(err)
+	}
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipns/private/publish/details", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("hash", hash)
+	urlValues.Add("life_time", "24h")
+	urlValues.Add("ttl", "1h")
+	urlValues.Add("key", "mytestkey")
+	urlValues.Add("resolve", "true")
+	urlValues.Add("network_name", "testnetwork")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipns/private/publish/details")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipns/private/publish/details")
 	}
 }
 
