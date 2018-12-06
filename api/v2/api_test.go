@@ -467,85 +467,6 @@ func Test_API_Routes_Database(t *testing.T) {
 	}
 }
 
-func Test_API_Routes_Admin(t *testing.T) {
-	// load configuration
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup connection to ipfs-node-1
-	im, err := rtfs.NewManager(
-		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		nil,
-		time.Minute*10,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// create our test api
-	testRecorder := httptest.NewRecorder()
-	_, engine := gin.CreateTestContext(testRecorder)
-	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, false, os.Stdout)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup api routes
-	if err = api.setupRoutes(); err != nil {
-		t.Fatal(err)
-	}
-
-	// authenticate with the the api to get our token for testing
-	// /api/v2/auth/login
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}"))
-	req.Header.Add("Content-Type", "application/json")
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/auth/login")
-	}
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var loginResp loginResponse
-	if err = json.Unmarshal(bodyBytes, &loginResp); err != nil {
-		t.Fatal(err)
-	}
-	// format authorization header
-	authHeader := "Bearer " + loginResp.Token
-
-	if err := os.Setenv("MINIO_SSL_ENABLE", "false"); err != nil {
-		t.Fatal(err)
-	}
-	// test minio make bucket
-	// /api/v2/admin/mini/create/bucket
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/admin/mini/create/bucket", nil)
-	req.Header.Add("Authorization", authHeader)
-	urlValues := url.Values{}
-	urlValues.Add("bucket_name", "sucharandombucket")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	var apiResp apiResponse
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/admin/mini/create/bucket")
-	}
-	if apiResp.Response != "bucket created" {
-		t.Fatal("failed to create bucket")
-	}
-}
-
 func Test_API_Routes_Account(t *testing.T) {
 	// load configuration
 	cfg, err := config.LoadConfig("../../testenv/config.json")
@@ -943,7 +864,6 @@ func Test_API_Routes_Account(t *testing.T) {
 		t.Fatal("bad api status code from /api/v2/forgot/password")
 	}
 }
-
 func Test_Utils(t *testing.T) {
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {

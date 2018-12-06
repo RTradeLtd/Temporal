@@ -6,7 +6,6 @@ services:
 sudo: required
 env:
   - SSL_MODE_DISABLE=true
-  - MINIO_SSL_ENABLE=false
   
 install:
   - docker pull koalaman/shellcheck
