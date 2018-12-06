@@ -316,7 +316,7 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
-	key := c.Param("key")
+	key := c.Param("hash")
 	if _, err := gocid.Decode(key); err != nil {
 		Fail(c, err)
 		return
@@ -773,6 +773,41 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 
 	api.LogWithUser(username).Info("uploads forprivate ifps network requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
+}
+
+// GetDagObject is used to retrieve an IPLD object from ipfs
+func (api *API) getDagObjectForHostedIPFSNetwork(c *gin.Context) {
+	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		Fail(c, err)
+		return
+	}
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
+	networkName := c.Param("networkName")
+	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
+		return
+	}
+	apiURL, err := api.nm.GetAPIURLByName(networkName)
+	if err != nil {
+		api.LogError(err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
+		return
+	}
+	im, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
+	if err != nil {
+		api.LogError(err, eh.IPFSConnectionError)(c, http.StatusBadRequest)
+		return
+	}
+	var out interface{}
+	if err := im.DagGet(hash, &out); err != nil {
+		api.LogError(err, eh.IPFSDagGetError)(c, http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": out})
 }
 
 // DownloadContentHashForPrivateNetwork is used to download content from  a private ipfs network

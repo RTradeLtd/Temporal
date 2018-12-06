@@ -325,6 +325,10 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 // GetDagObject is used to retrieve an IPLD object from ipfs
 func (api *API) getDagObject(c *gin.Context) {
 	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		Fail(c, err)
+		return
+	}
 	var out interface{}
 	if err := api.ipfs.DagGet(hash, &out); err != nil {
 		api.LogError(err, eh.IPFSDagGetError)(c, http.StatusBadRequest)

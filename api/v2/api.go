@@ -484,6 +484,7 @@ func (api *API) setupRoutes() error {
 			// object stat route
 			private.GET("/stat/:hash/:networkName", api.getObjectStatForIpfsForHostedIPFSNetwork)
 			// general routes
+			private.GET("/dag/:hash/:networkName", api.getDagObjectForHostedIPFSNetwork)
 			private.GET("/networks", api.getAuthorizedPrivateNetworks)
 			private.GET("/uploads/:networkName", api.getUploadsByNetworkName)
 			private.POST("/download/:hash", api.downloadContentHashForPrivateNetwork)

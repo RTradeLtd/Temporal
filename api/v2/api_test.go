@@ -39,6 +39,7 @@ var (
 	engine       *gin.Engine
 	testRecorder *httptest.ResponseRecorder
 	authHeader   string
+	cfg          *config.TemporalConfig
 )
 
 type apiResponse struct {
@@ -58,8 +59,9 @@ type loginResponse struct {
 }
 
 func Test_API_Setup(t *testing.T) {
+	var err error
 	// load configuration
-	cfg, err := config.LoadConfig("../../testenv/config.json")
+	cfg, err = config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +170,7 @@ func Test_API_Routes_Misc(t *testing.T) {
 	}
 }
 
-func Test_API_Routes_IPFS(t *testing.T) {
+func Test_API_Routes_IPFS_Public(t *testing.T) {
 	// add a file normally
 	// /api/v2/ipfs/public/file/add
 	bodyBuf := &bytes.Buffer{}
@@ -401,6 +403,309 @@ func Test_API_Routes_IPFS(t *testing.T) {
 	if testRecorder.Code != 200 {
 		fmt.Println(testRecorder.Code)
 		t.Fatal("bad http status code from/api/v2/ipfs/public/download")
+	}
+}
+
+func Test_API_Routes_IPFS_Private(t *testing.T) {
+	// create a private network for us to test against
+	nm := models.NewHostedIPFSNetworkManager(db)
+	um := models.NewUserManager(db)
+	if _, err := nm.CreateHostedPrivateNetwork("abc123", "abc123", nil, []string{"testuser"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := um.AddIPFSNetworkForUser("testuser", "abc123"); err != nil {
+		t.Fatal(err)
+	}
+	if err := nm.UpdateNetworkByName("abc123", map[string]interface{}{
+		"api_url": cfg.IPFS.APIConnection.Host + ":" + cfg.IPFS.APIConnection.Port,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// add a file normally
+	// /api/v2/ipfs/private/file/add
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+	fileWriter, err := bodyWriter.CreateFormFile("file", "../../testenv/config.json")
+	fh, err := os.Open("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fh.Close()
+	if _, err = io.Copy(fileWriter, fh); err != nil {
+		t.Fatal(err)
+	}
+	bodyWriter.Close()
+	testRecorder = httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/v2/ipfs/private/file/add", bodyBuf)
+	req.Header.Add("Authorization", authHeader)
+	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
+	urlValues := url.Values{}
+	urlValues.Add("hold_time", "5")
+	urlValues.Add("network_name", "abc123")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code recovered from /api/v2/ipfs/private/file/add")
+	}
+	var apiResp apiResponse
+	// unmarshal the response
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipfs/private/file/add")
+	}
+	hash = apiResp.Response
+
+	// add a file advanced
+	// /api/v2/ipfs/private/file/add/advanced
+	bodyBuf = &bytes.Buffer{}
+	bodyWriter = multipart.NewWriter(bodyBuf)
+	fileWriter, err = bodyWriter.CreateFormFile("file", "../../testenv/config.json")
+	fh, err = os.Open("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fh.Close()
+	if _, err = io.Copy(fileWriter, fh); err != nil {
+		t.Fatal(err)
+	}
+	bodyWriter.Close()
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/private/file/add/advanced", bodyBuf)
+	req.Header.Add("Authorization", authHeader)
+	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "5")
+	urlValues.Add("passphrase", "password123")
+	urlValues.Add("network_name", "abc123")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code recovered from /api/v2/ipfs/private/file/add/advanced")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipfs/private/file/add/advanced")
+	}
+
+	// test pinning
+	// /api/v2/ipfs/private/pin
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/private/pin/"+hash, nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "5")
+	urlValues.Add("network_name", "abc123")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	// validate the http status code
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from  /api/v2/ipfs/private/pin")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from  /api/v2/ipfs/private/pin")
+	}
+
+	// test pin check
+	// /api/v2/ipfs/private/check/pin
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/private/pin/check/"+hash+"/abc123", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	// validate the http status code
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/private/check/pin")
+	}
+	type pinCheckResponse struct {
+		Code     int  `json:"code"`
+		Response bool `json:"response"`
+	}
+	var pinCheckResp pinCheckResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &pinCheckResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if pinCheckResp.Code != 200 {
+		t.Fatal("bad api status code from  /api/v2/ipfs/private/check/pin")
+	}
+
+	// test pubsub publish
+	// /api/v2/ipfs/private/publish/topic
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/private/pubsub/publish/foo", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("message", "bar")
+	urlValues.Add("network_name", "abc123")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/private/pubsub/publish/topic")
+	}
+	type pubSubResponse struct {
+		Code     int   `json:"code"`
+		Response gin.H `json:"response"`
+	}
+	var pubSubResp pubSubResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &pubSubResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if pubSubResp.Code != 200 {
+		t.Fatal("bad api status code from  /api/v2/ipfs/private/pubsub/publish/topic")
+	}
+	if pubSubResp.Response["topic"] != "foo" {
+		t.Fatal("bad response")
+	}
+	if pubSubResp.Response["message"] != "bar" {
+		t.Fatal("bad response")
+	}
+
+	// test object stat
+	// /api/v2/ipfs/private/stat
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/private/stat/"+hash+"/abc123", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/private/stat/")
+	}
+	type statResponse struct {
+		Code     int         `json:"code"`
+		Response interface{} `json:"response"`
+	}
+	var statResp statResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &statResp); err != nil {
+		t.Fatal(err)
+	}
+	if statResp.Code != 200 {
+		t.Fatal("bad response status code from /api/v2/ipfs/private/stat")
+	}
+
+	// test get dag
+	// /api/v2/ipfs/private/dag
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/private/dag/"+hash+"/abc123", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/private/dag/")
+	}
+	type dagResponse struct {
+		Code     int         `json:"code"`
+		Response interface{} `json:"response"`
+	}
+	var dagResp dagResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &dagResp); err != nil {
+		t.Fatal(err)
+	}
+	if dagResp.Code != 200 {
+		t.Fatal("bad response status code from /api/v2/ipfs/private/dag/")
+	}
+
+	// test download
+	// /api/v2/ipfs/public/download
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/private/download/"+hash, nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("network_name", "abc123")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		fmt.Println(testRecorder.Code)
+		t.Fatal("bad http status code from/api/v2/ipfs/private/download")
+	}
+
+	// test get authorized networks
+	// /api/v2/ipfs/private/networks
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/private/networks", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/private/networks")
+	}
+	// reuse the dag response
+	dagResp = dagResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &dagResp); err != nil {
+		t.Fatal(err)
+	}
+	if dagResp.Code != 200 {
+		t.Fatal("bad response status code from /api/v2/ipfs/private/networks/")
+	}
+
+	// test get authorized networks
+	// /api/v2/ipfs/private/networks
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/private/uploads/abc123", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/private/uploads")
+	}
+	// reuse the dag response
+	dagResp = dagResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &dagResp); err != nil {
+		t.Fatal(err)
+	}
+	if dagResp.Code != 200 {
+		t.Fatal("bad response status code from /api/v2/ipfs/private/uploads")
 	}
 }
 
@@ -1104,6 +1409,17 @@ func Test_API_Routes_Account(t *testing.T) {
 	}
 }
 func Test_Utils(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	api, err := Initialize(cfg, true, &mocks.FakeIndexerAPIClient{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := api.FileSizeCheck(int64(datasize.GB.Bytes() * 1)); err != nil {
+		t.Fatal(err)
+	}
 	if err := api.FileSizeCheck(int64(datasize.GB.Bytes() * 1)); err != nil {
 		t.Fatal(err)
 	}
