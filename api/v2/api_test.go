@@ -33,7 +33,12 @@ const (
 )
 
 var (
-	hash = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
+	hash         = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
+	api          *API
+	db           *gorm.DB
+	engine       *gin.Engine
+	testRecorder *httptest.ResponseRecorder
+	authHeader   string
 )
 
 type apiResponse struct {
@@ -52,9 +57,13 @@ type loginResponse struct {
 	Token  string `json:"token"`
 }
 
-func Test_API_Routes_Misc(t *testing.T) {
+func Test_API_Setup(t *testing.T) {
 	// load configuration
 	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err = loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,10 +84,9 @@ func Test_API_Routes_Misc(t *testing.T) {
 		t.Fatal(err)
 	}
 	// create our test api
-	testRecorder := httptest.NewRecorder()
-	_, engine := gin.CreateTestContext(testRecorder)
-	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
+	testRecorder = httptest.NewRecorder()
+	_, engine = gin.CreateTestContext(testRecorder)
+	api, err = new(cfg, engine, &mocks.FakeIndexerAPIClient{}, im, imCluster, false, os.Stdout)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +94,6 @@ func Test_API_Routes_Misc(t *testing.T) {
 	if err = api.setupRoutes(); err != nil {
 		t.Fatal(err)
 	}
-
 	// authenticate with the the api to get our token for testing
 	// /api/v2/auth/login
 	testRecorder = httptest.NewRecorder()
@@ -106,19 +113,20 @@ func Test_API_Routes_Misc(t *testing.T) {
 		t.Fatal(err)
 	}
 	// format authorization header
-	authHeader := "Bearer " + loginResp.Token
-
+	authHeader = "Bearer " + loginResp.Token
+}
+func Test_API_Routes_Misc(t *testing.T) {
 	// test systems check route
 	// //api/v2/systems/check
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/systems/check", nil)
+	req := httptest.NewRequest("GET", "/api/v2/systems/check", nil)
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/systems/check")
 	}
 	var apiResp apiResponse
 	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,61 +169,6 @@ func Test_API_Routes_Misc(t *testing.T) {
 }
 
 func Test_API_Routes_IPFS(t *testing.T) {
-	// load configuration
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup connection to ipfs-node-1
-	im, err := rtfs.NewManager(
-		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		nil,
-		time.Minute*10,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	imCluster, err := rtfscluster.Initialize(
-		cfg.IPFSCluster.APIConnection.Host,
-		cfg.IPFSCluster.APIConnection.Port,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// create our test api
-	testRecorder := httptest.NewRecorder()
-	_, engine := gin.CreateTestContext(testRecorder)
-	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup api routes
-	if err = api.setupRoutes(); err != nil {
-		t.Fatal(err)
-	}
-
-	// authenticate with the the api to get our token for testing
-	// /api/v2/auth/login
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}"))
-	req.Header.Add("Content-Type", "application/json")
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/auth/login")
-	}
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var loginResp loginResponse
-	if err = json.Unmarshal(bodyBytes, &loginResp); err != nil {
-		t.Fatal(err)
-	}
-	// format authorization header
-	authHeader := "Bearer " + loginResp.Token
-
 	// add a file normally
 	// /api/v2/ipfs/public/file/add
 	bodyBuf := &bytes.Buffer{}
@@ -231,7 +184,7 @@ func Test_API_Routes_IPFS(t *testing.T) {
 	}
 	bodyWriter.Close()
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/ipfs/public/file/add", bodyBuf)
+	req := httptest.NewRequest("POST", "/api/v2/ipfs/public/file/add", bodyBuf)
 	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 	urlValues := url.Values{}
@@ -243,7 +196,7 @@ func Test_API_Routes_IPFS(t *testing.T) {
 	}
 	var apiResp apiResponse
 	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -452,69 +405,10 @@ func Test_API_Routes_IPFS(t *testing.T) {
 }
 
 func Test_API_Routes_IPNS(t *testing.T) {
-	// load configuration
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup connection to ipfs-node-1
-	im, err := rtfs.NewManager(
-		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		nil,
-		time.Minute*10,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	imCluster, err := rtfscluster.Initialize(
-		cfg.IPFSCluster.APIConnection.Host,
-		cfg.IPFSCluster.APIConnection.Port,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// create our test api
-	testRecorder := httptest.NewRecorder()
-	_, engine := gin.CreateTestContext(testRecorder)
-	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup api routes
-	if err = api.setupRoutes(); err != nil {
-		t.Fatal(err)
-	}
-
-	// authenticate with the the api to get our token for testing
-	// /api/v2/auth/login
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}"))
-	req.Header.Add("Content-Type", "application/json")
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/auth/login")
-	}
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var loginResp loginResponse
-	if err = json.Unmarshal(bodyBytes, &loginResp); err != nil {
-		t.Fatal(err)
-	}
-	// format authorization header
-	authHeader := "Bearer " + loginResp.Token
-
 	// test get ipns records
 	// /api/v2/ipns/records
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/ipns/records", nil)
+	req := httptest.NewRequest("GET", "/api/v2/ipns/records", nil)
 	req.Header.Add("Authorization", authHeader)
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
@@ -542,7 +436,7 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	}
 	var apiResp apiResponse
 	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -595,65 +489,10 @@ func Test_API_Routes_IPNS(t *testing.T) {
 }
 
 func Test_API_Routes_Cluster(t *testing.T) {
-	// load configuration
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup connection to ipfs-node-1
-	im, err := rtfs.NewManager(
-		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		nil,
-		time.Minute*10,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	imCluster, err := rtfscluster.Initialize(
-		cfg.IPFSCluster.APIConnection.Host,
-		cfg.IPFSCluster.APIConnection.Port,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// create our test api
-	testRecorder := httptest.NewRecorder()
-	_, engine := gin.CreateTestContext(testRecorder)
-	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup api routes
-	if err = api.setupRoutes(); err != nil {
-		t.Fatal(err)
-	}
-
-	// authenticate with the the api to get our token for testing
-	// /api/v2/auth/login
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}"))
-	req.Header.Add("Content-Type", "application/json")
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/auth/login")
-	}
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var loginResp loginResponse
-	if err = json.Unmarshal(bodyBytes, &loginResp); err != nil {
-		t.Fatal(err)
-	}
-	// format authorization header
-	authHeader := "Bearer " + loginResp.Token
-
 	// test cluster sync
 	// /api/v2/ipfs/cluster/sync/errors/local
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/ipfs/cluster/sync/errors/local", nil)
+	req := httptest.NewRequest("POST", "/api/v2/ipfs/cluster/sync/errors/local", nil)
 	req.Header.Add("Authorization", authHeader)
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
@@ -665,7 +504,7 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	}
 	var clusterErrorsSyncResp clusterErrorsSyncResponse
 	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -786,65 +625,10 @@ func Test_API_Routes_Cluster(t *testing.T) {
 }
 
 func Test_API_Routes_Frontend(t *testing.T) {
-	// load configuration
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup connection to ipfs-node-1
-	im, err := rtfs.NewManager(
-		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		nil,
-		time.Minute*10,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	imCluster, err := rtfscluster.Initialize(
-		cfg.IPFSCluster.APIConnection.Host,
-		cfg.IPFSCluster.APIConnection.Port,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// create our test api
-	testRecorder := httptest.NewRecorder()
-	_, engine := gin.CreateTestContext(testRecorder)
-	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup api routes
-	if err = api.setupRoutes(); err != nil {
-		t.Fatal(err)
-	}
-
-	// authenticate with the the api to get our token for testing
-	// /api/v2/auth/login
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}"))
-	req.Header.Add("Content-Type", "application/json")
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/auth/login")
-	}
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var loginResp loginResponse
-	if err = json.Unmarshal(bodyBytes, &loginResp); err != nil {
-		t.Fatal(err)
-	}
-	// format authorization header
-	authHeader := "Bearer " + loginResp.Token
-
 	// test get encrypted uploads
 	// /api/v2/frontend/uploads/encrypted
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/frontend/uploads/encrypted", nil)
+	req := httptest.NewRequest("GET", "/api/v2/frontend/uploads/encrypted", nil)
 	req.Header.Add("Authorization", authHeader)
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
@@ -865,7 +649,7 @@ func Test_API_Routes_Frontend(t *testing.T) {
 		Response float64 `json:"response"`
 	}
 	var costCalculateResp costCalculateResponse
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -923,65 +707,10 @@ func Test_API_Routes_Frontend(t *testing.T) {
 }
 
 func Test_API_Routes_Database(t *testing.T) {
-	// load configuration
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup connection to ipfs-node-1
-	im, err := rtfs.NewManager(
-		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		nil,
-		time.Minute*10,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	imCluster, err := rtfscluster.Initialize(
-		cfg.IPFSCluster.APIConnection.Host,
-		cfg.IPFSCluster.APIConnection.Port,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// create our test api
-	testRecorder := httptest.NewRecorder()
-	_, engine := gin.CreateTestContext(testRecorder)
-	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup api routes
-	if err = api.setupRoutes(); err != nil {
-		t.Fatal(err)
-	}
-
-	// authenticate with the the api to get our token for testing
-	// /api/v2/auth/login
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}"))
-	req.Header.Add("Content-Type", "application/json")
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/auth/login")
-	}
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var loginResp loginResponse
-	if err = json.Unmarshal(bodyBytes, &loginResp); err != nil {
-		t.Fatal(err)
-	}
-	// format authorization header
-	authHeader := "Bearer " + loginResp.Token
-
 	// test database global uploads
 	// /api/v2/database/uploads
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/database/uploads", nil)
+	req := httptest.NewRequest("GET", "/api/v2/database/uploads", nil)
 	req.Header.Add("Authorization", authHeader)
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
@@ -993,7 +722,7 @@ func Test_API_Routes_Database(t *testing.T) {
 	}
 	var uploadsResp uploadsResponse
 	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1030,69 +759,10 @@ func Test_API_Routes_Database(t *testing.T) {
 }
 
 func Test_API_Routes_Account(t *testing.T) {
-	// load configuration
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup connection to ipfs-node-1
-	im, err := rtfs.NewManager(
-		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		nil,
-		time.Minute*10,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	imCluster, err := rtfscluster.Initialize(
-		cfg.IPFSCluster.APIConnection.Host,
-		cfg.IPFSCluster.APIConnection.Port,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// create our test api
-	testRecorder := httptest.NewRecorder()
-	_, engine := gin.CreateTestContext(testRecorder)
-	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup api routes
-	if err = api.setupRoutes(); err != nil {
-		t.Fatal(err)
-	}
-
-	// authenticate with the the api to get our token for testing
-	// /api/v2/auth/login
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}"))
-	req.Header.Add("Content-Type", "application/json")
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/auth/login")
-	}
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var loginResp loginResponse
-	if err = json.Unmarshal(bodyBytes, &loginResp); err != nil {
-		t.Fatal(err)
-	}
-	// format authorization header
-	authHeader := "Bearer " + loginResp.Token
-
 	// verify the username from the token
 	// /api/v2/account/token/username
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/account/token/username", nil)
+	req := httptest.NewRequest("GET", "/api/v2/account/token/username", nil)
 	req.Header.Add("Authorization", authHeader)
 	api.r.ServeHTTP(testRecorder, req)
 	// validate http status code
@@ -1101,7 +771,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	}
 	var apiResp apiResponse
 	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1434,19 +1104,10 @@ func Test_API_Routes_Account(t *testing.T) {
 	}
 }
 func Test_Utils(t *testing.T) {
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
+	if err := api.FileSizeCheck(int64(datasize.GB.Bytes() * 1)); err != nil {
 		t.Fatal(err)
 	}
-	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := Initialize(cfg, true, &lensClient)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = api.FileSizeCheck(int64(datasize.GB.Bytes() * 1)); err != nil {
-		t.Fatal(err)
-	}
-	if err = api.FileSizeCheck(int64(datasize.GB.Bytes() * 10)); err == nil {
+	if err := api.FileSizeCheck(int64(datasize.GB.Bytes() * 10)); err == nil {
 		t.Fatal("error expected")
 	}
 	type args struct {
@@ -1481,10 +1142,10 @@ func Test_Utils(t *testing.T) {
 			}
 		})
 	}
-	if err = api.validateUserCredits(testUser, 1); err != nil {
+	if err := api.validateUserCredits(testUser, 1); err != nil {
 		t.Fatal(err)
 	}
-	if err = api.validateUserCredits(testUser, tooManyCredits); err == nil {
+	if err := api.validateUserCredits(testUser, tooManyCredits); err == nil {
 		t.Fatal("error expected")
 	}
 	if err := api.validateAdminRequest(testUser); err != nil {
