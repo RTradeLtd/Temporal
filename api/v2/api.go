@@ -554,6 +554,15 @@ func (api *API) setupRoutes() error {
 		}
 	}
 
+	// admin
+	admin := v2.Group("/admin", authware...)
+	{
+		mini := admin.Group("/mini")
+		{
+			mini.POST("/create/bucket", api.makeBucket)
+		}
+	}
+
 	api.LogInfo("Routes initialized")
 	return nil
 }

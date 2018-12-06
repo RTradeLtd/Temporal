@@ -132,6 +132,21 @@ func Test_API_Routes_Misc(t *testing.T) {
 		t.Fatal("bad http status code from /api/v2/statistics/stats")
 	}
 
+	// test mini create bucket
+	// /api/v2/admin/mini/create/bucket
+	if err = os.Setenv("MINI_SSL_ENABLE", "false"); err != nil {
+		t.Fatal(err)
+	}
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/admin/mini/create/bucket", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues := url.Values{}
+	urlValues.Add("bucket_name", "filesuploadbucket")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/admin/mini/create/bucket")
+	}
 }
 
 func Test_API_Routes_IPFS(t *testing.T) {
@@ -222,6 +237,46 @@ func Test_API_Routes_IPFS(t *testing.T) {
 		t.Fatal("bad api status code from /api/v2/ipfs/public/file/add")
 	}
 	hash := apiResp.Response
+
+	// add a file advanced
+	// /api/v2/ipfs/public/file/add/advanced
+	bodyBuf = &bytes.Buffer{}
+	bodyWriter = multipart.NewWriter(bodyBuf)
+	fileWriter, err = bodyWriter.CreateFormFile("file", "../../testenv/config.json")
+	fh, err = os.Open("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fh.Close()
+	if _, err = io.Copy(fileWriter, fh); err != nil {
+		t.Fatal(err)
+	}
+	bodyWriter.Close()
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/public/file/add/advanced", bodyBuf)
+	req.Header.Add("Authorization", authHeader)
+	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "5")
+	urlValues.Add("passphrase", "password123")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code recovered from /api/v2/ipfs/public/file/add/advanced")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipfs/public/file/add/advanced")
+	}
 
 	// test pinning
 	// /api/v2/ipfs/public/pin
