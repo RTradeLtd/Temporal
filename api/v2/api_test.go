@@ -1,9 +1,12 @@
 package v2
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -180,15 +183,82 @@ func Test_API_Routes_IPFS(t *testing.T) {
 	// format authorization header
 	authHeader := "Bearer " + loginResp.Token
 
-	// test check pinning
-	// /api/v2/ipfs/public/pin/check
+	// add a file normally
+	// /api/v2/ipfs/public/file/add
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+	fileWriter, err := bodyWriter.CreateFormFile("file", "../../testenv/config.json")
+	fh, err := os.Open("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fh.Close()
+	if _, err = io.Copy(fileWriter, fh); err != nil {
+		t.Fatal(err)
+	}
+	bodyWriter.Close()
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/ipfs/public/pin/check/"+testCID, nil)
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/public/file/add", bodyBuf)
+	req.Header.Add("Authorization", authHeader)
+	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
+	urlValues := url.Values{}
+	urlValues.Add("hold_time", "5")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code recovered from /api/v2/ipfs/public/file/add")
+	}
+	var apiResp apiResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipfs/public/file/add")
+	}
+	hash := apiResp.Response
+
+	// test pinning
+	// /api/v2/ipfs/public/pin
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/public/pin/"+hash, nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "5")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	// validate the http status code
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from  /api/v2/ipfs/public/pin")
+	}
+	apiResp = apiResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from  /api/v2/ipfs/public/pin")
+	}
+
+	// test pin check
+	// /api/v2/ipfs/public/check/pin
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/public/pin/check/"+hash, nil)
 	req.Header.Add("Authorization", authHeader)
 	api.r.ServeHTTP(testRecorder, req)
 	// validate the http status code
 	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipfs/public/pin/check")
+		t.Fatal("bad http status code from /api/v2/ipfs/public/check/pin")
 	}
 	type pinCheckResponse struct {
 		Code     int  `json:"code"`
@@ -205,9 +275,98 @@ func Test_API_Routes_IPFS(t *testing.T) {
 	}
 	// validate the response code
 	if pinCheckResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/ipfs/public/pin/check")
+		t.Fatal("bad api status code from  /api/v2/ipfs/public/check/pin")
+	}
+
+	// test pubsub publish
+	// /api/v2/ipfs/pubsub/publish/topic
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/public/pubsub/publish/foo", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("message", "bar")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/pubsub/publish/topic")
+	}
+	type pubSubResponse struct {
+		Code     int   `json:"code"`
+		Response gin.H `json:"response"`
+	}
+	var pubSubResp pubSubResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &pubSubResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if pubSubResp.Code != 200 {
+		t.Fatal("bad api status code from  /api/v2/pubsub/publish/topic")
+	}
+	if pubSubResp.Response["topic"] != "foo" {
+		t.Fatal("bad response")
+	}
+	if pubSubResp.Response["message"] != "bar" {
+		t.Fatal("bad response")
+	}
+
+	// test object stat
+	// /api/v2/ipfs/stat
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/public/stat/"+hash, nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/public/stat/")
+	}
+	type statResponse struct {
+		Code     int         `json:"code"`
+		Response interface{} `json:"response"`
+	}
+	var statResp statResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &statResp); err != nil {
+		t.Fatal(err)
+	}
+	if statResp.Code != 200 {
+		t.Fatal("bad response status code from /api/v2/ipfs/public/stat")
+	}
+
+	// test get dag
+	// /api/v2/ipfs/public/dag
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/public/dag/"+hash, nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/public/dag/")
+	}
+	type dagResponse struct {
+		Code     int         `json:"code"`
+		Response interface{} `json:"response"`
+	}
+	var dagResp dagResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &dagResp); err != nil {
+		t.Fatal(err)
+	}
+	if dagResp.Code != 200 {
+		t.Fatal("bad response status code from /api/v2/ipfs/public/dag/")
 	}
 }
+
 func Test_API_Routes_Account(t *testing.T) {
 	// load configuration
 	cfg, err := config.LoadConfig("../../testenv/config.json")
