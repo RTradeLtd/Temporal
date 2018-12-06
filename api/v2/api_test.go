@@ -457,6 +457,10 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
@@ -515,6 +519,39 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipns/records")
+	}
+
+	// generate a fake key to publish
+	um := models.NewUserManager(db)
+	um.AddIPFSKeyForUser("testuser", "mytestkey", "suchkeymuchwow")
+	// test ipns publishing (public)
+	// api/v2/ipns/public/publish/details
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipns/public/publish/details", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues := url.Values{}
+	urlValues.Add("hash", hash)
+	urlValues.Add("life_time", "24h")
+	urlValues.Add("ttl", "1h")
+	urlValues.Add("key", "mytestkey")
+	urlValues.Add("resolve", "true")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipns/public/publish/details")
+	}
+	var apiResp apiResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipns/public/publish/details")
 	}
 }
 
