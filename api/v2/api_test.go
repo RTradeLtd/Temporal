@@ -58,6 +58,26 @@ type loginResponse struct {
 	Token  string `json:"token"`
 }
 
+type boolAPIResponse struct {
+	Code     int  `json:"code"`
+	Response bool `json:"bool"`
+}
+
+type mapAPIResponse struct {
+	Code     int   `json:"code"`
+	Response gin.H `json:"response"`
+}
+
+type interfaceAPIResponse struct {
+	Code     int         `json:"code"`
+	Response interface{} `json:"response"`
+}
+
+type floatAPIResponse struct {
+	Code     int     `json:"code"`
+	Response float64 `json:"response"`
+}
+
 func Test_API_Setup(t *testing.T) {
 	var err error
 	// load configuration
@@ -288,21 +308,17 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/public/check/pin")
 	}
-	type pinCheckResponse struct {
-		Code     int  `json:"code"`
-		Response bool `json:"response"`
-	}
-	var pinCheckResp pinCheckResponse
+	var boolAPIResp boolAPIResponse
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &pinCheckResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &boolAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if pinCheckResp.Code != 200 {
+	if boolAPIResp.Code != 200 {
 		t.Fatal("bad api status code from  /api/v2/ipfs/public/check/pin")
 	}
 
@@ -318,27 +334,23 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/pubsub/publish/topic")
 	}
-	type pubSubResponse struct {
-		Code     int   `json:"code"`
-		Response gin.H `json:"response"`
-	}
-	var pubSubResp pubSubResponse
+	var mapAPIResp mapAPIResponse
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &pubSubResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &mapAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if pubSubResp.Code != 200 {
+	if mapAPIResp.Code != 200 {
 		t.Fatal("bad api status code from  /api/v2/pubsub/publish/topic")
 	}
-	if pubSubResp.Response["topic"] != "foo" {
+	if mapAPIResp.Response["topic"] != "foo" {
 		t.Fatal("bad response")
 	}
-	if pubSubResp.Response["message"] != "bar" {
+	if mapAPIResp.Response["message"] != "bar" {
 		t.Fatal("bad response")
 	}
 
@@ -351,20 +363,16 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/public/stat/")
 	}
-	type statResponse struct {
-		Code     int         `json:"code"`
-		Response interface{} `json:"response"`
-	}
-	var statResp statResponse
+	var interfaceAPIResp interfaceAPIResponse
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &statResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
-	if statResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad response status code from /api/v2/ipfs/public/stat")
 	}
 
@@ -377,20 +385,16 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/public/dag/")
 	}
-	type dagResponse struct {
-		Code     int         `json:"code"`
-		Response interface{} `json:"response"`
-	}
-	var dagResp dagResponse
+	interfaceAPIResp = interfaceAPIResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &dagResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
-	if dagResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad response status code from /api/v2/ipfs/public/dag/")
 	}
 
@@ -541,21 +545,17 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/private/check/pin")
 	}
-	type pinCheckResponse struct {
-		Code     int  `json:"code"`
-		Response bool `json:"response"`
-	}
-	var pinCheckResp pinCheckResponse
+	var boolAPIResp boolAPIResponse
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &pinCheckResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &boolAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if pinCheckResp.Code != 200 {
+	if boolAPIResp.Code != 200 {
 		t.Fatal("bad api status code from  /api/v2/ipfs/private/check/pin")
 	}
 
@@ -572,27 +572,23 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/private/pubsub/publish/topic")
 	}
-	type pubSubResponse struct {
-		Code     int   `json:"code"`
-		Response gin.H `json:"response"`
-	}
-	var pubSubResp pubSubResponse
+	var mapAPIResp mapAPIResponse
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &pubSubResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &mapAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if pubSubResp.Code != 200 {
+	if mapAPIResp.Code != 200 {
 		t.Fatal("bad api status code from  /api/v2/ipfs/private/pubsub/publish/topic")
 	}
-	if pubSubResp.Response["topic"] != "foo" {
+	if mapAPIResp.Response["topic"] != "foo" {
 		t.Fatal("bad response")
 	}
-	if pubSubResp.Response["message"] != "bar" {
+	if mapAPIResp.Response["message"] != "bar" {
 		t.Fatal("bad response")
 	}
 
@@ -605,20 +601,16 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/private/stat/")
 	}
-	type statResponse struct {
-		Code     int         `json:"code"`
-		Response interface{} `json:"response"`
-	}
-	var statResp statResponse
+	var interfaceAPIResp interfaceAPIResponse
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &statResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
-	if statResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad response status code from /api/v2/ipfs/private/stat")
 	}
 
@@ -631,20 +623,16 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/private/dag/")
 	}
-	type dagResponse struct {
-		Code     int         `json:"code"`
-		Response interface{} `json:"response"`
-	}
-	var dagResp dagResponse
+	interfaceAPIResp = interfaceAPIResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &dagResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
-	if dagResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad response status code from /api/v2/ipfs/private/dag/")
 	}
 
@@ -672,16 +660,16 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 		t.Fatal("bad http status code from /api/v2/ipfs/private/networks")
 	}
 	// reuse the dag response
-	dagResp = dagResponse{}
+	interfaceAPIResp = interfaceAPIResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &dagResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
-	if dagResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad response status code from /api/v2/ipfs/private/networks/")
 	}
 
@@ -695,16 +683,16 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 		t.Fatal("bad http status code from /api/v2/ipfs/private/uploads")
 	}
 	// reuse the dag response
-	dagResp = dagResponse{}
+	interfaceAPIResp = interfaceAPIResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &dagResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
-	if dagResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad response status code from /api/v2/ipfs/private/uploads")
 	}
 }
@@ -803,21 +791,17 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/cluster/sync/errors/local")
 	}
-	type clusterErrorsSyncResponse struct {
-		Code     int         `json:"code"`
-		Response interface{} `json:"response"`
-	}
-	var clusterErrorsSyncResp clusterErrorsSyncResponse
+	var interfaceAPIResp interfaceAPIResponse
 	// unmarshal the response
 	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &clusterErrorsSyncResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if clusterErrorsSyncResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/ipfs/cluster/sync/errors/local")
 	}
 
@@ -864,21 +848,17 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/cluster/status/pin/local")
 	}
-	type clusterPinStatusLocalResponse struct {
-		Code     int         `json:"code"`
-		Response interface{} `json:"response"`
-	}
-	var clusterPinStatusLocalResp clusterPinStatusLocalResponse
+	interfaceAPIResp = interfaceAPIResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &clusterPinStatusLocalResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if clusterPinStatusLocalResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/ipfs/cluster/status/pin/local")
 	}
 
@@ -891,17 +871,17 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/cluster/status/pin/global")
 	}
-	clusterPinStatusLocalResp = clusterPinStatusLocalResponse{}
+	interfaceAPIResp = interfaceAPIResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &clusterPinStatusLocalResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if clusterPinStatusLocalResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/ipfs/cluster/status/pin/global")
 	}
 
@@ -914,17 +894,17 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/ipfs/cluster/status/local")
 	}
-	clusterPinStatusLocalResp = clusterPinStatusLocalResponse{}
+	interfaceAPIResp = interfaceAPIResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &clusterPinStatusLocalResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if clusterPinStatusLocalResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/ipfs/cluster/status/local")
 	}
 }
@@ -949,22 +929,18 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/frontend/cost/calculate")
 	}
-	type costCalculateResponse struct {
-		Code     int     `json:"code"`
-		Response float64 `json:"response"`
-	}
-	var costCalculateResp costCalculateResponse
+	var floatAPIResp floatAPIResponse
 	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &costCalculateResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &floatAPIResp); err != nil {
 		t.Fatal(err)
 	}
-	if costCalculateResp.Code != 200 {
+	if floatAPIResp.Code != 200 {
 		t.Fatal("bad response code from /api/v2/frontend/cost/calculate")
 	}
-	if costCalculateResp.Response == 0 {
+	if floatAPIResp.Response == 0 {
 		t.Fatal("failed to calculate cost /api/v2/frontend/cost/calculate")
 	}
 
@@ -993,20 +969,20 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code recovered from /api/v2/frontend/cost/calculate/file")
 	}
-	costCalculateResp = costCalculateResponse{}
+	floatAPIResp = floatAPIResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &costCalculateResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &floatAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if costCalculateResp.Code != 200 {
+	if floatAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/frontend/cost/calculate/file")
 	}
-	if costCalculateResp.Response == 0 {
+	if floatAPIResp.Response == 0 {
 		t.Fatal("failed to calculate cost /api/v2/frontend/cost/calculate/file")
 	}
 }
@@ -1021,21 +997,17 @@ func Test_API_Routes_Database(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/database/uploads")
 	}
-	type uploadsResponse struct {
-		Code     int         `json:"code"`
-		Response interface{} `json:"response"`
-	}
-	var uploadsResp uploadsResponse
+	var interfaceAPIResp interfaceAPIResponse
 	// unmarshal the response
 	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &uploadsResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if uploadsResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad api status code from api/v2/database/uploads")
 	}
 
@@ -1048,17 +1020,17 @@ func Test_API_Routes_Database(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /api/v2/database/uploads/testuser")
 	}
-	uploadsResp = uploadsResponse{}
+	interfaceAPIResp = interfaceAPIResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &uploadsResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if uploadsResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad api status code from api/v2/database/uploads/testuser")
 	}
 }
@@ -1256,21 +1228,17 @@ func Test_API_Routes_Account(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Error("bad http status code from /api/v2/account/key/ipfs/get")
 	}
-	type keyCreationResponse struct {
-		Code     int   `json:"code"`
-		Response gin.H `json:"response"`
-	}
-	var keyCreationResp keyCreationResponse
+	var mapAPIResp mapAPIResponse
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &keyCreationResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &mapAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if keyCreationResp.Code != 200 {
+	if mapAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/account/key/ipfs/get")
 	}
 
@@ -1283,21 +1251,17 @@ func Test_API_Routes_Account(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Error("bad http status code from /api/v2/account/credits/available")
 	}
-	type creditAPIResponse struct {
-		Code     int     `json:"code"`
-		Response float64 `json:"response"`
-	}
-	var creditResp creditAPIResponse
+	var floatAPIResp floatAPIResponse
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &creditResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &floatAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if apiResp.Code != 200 {
+	if floatAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/account/credits/available")
 	}
 
@@ -1315,21 +1279,17 @@ func Test_API_Routes_Account(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Error("bad http status code from /api/v2/auth/register")
 	}
-	type signupResponse struct {
-		Code     int         `json:"code"`
-		Response models.User `json:"response"`
-	}
-	var signupResp signupResponse
+	var interfaceAPIResp interfaceAPIResponse
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &signupResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if signupResp.Code != 200 {
+	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/auth/register")
 	}
 
