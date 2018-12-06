@@ -78,6 +78,11 @@ type floatAPIResponse struct {
 	Response float64 `json:"response"`
 }
 
+type ipnsAPIResponse struct {
+	Code     int            `json:"code"`
+	Response *[]models.IPNS `json:"response"`
+}
+
 func Test_API_Setup(t *testing.T) {
 	var err error
 	// load configuration
@@ -842,6 +847,37 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	// validate the response code
 	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/ipns/private/publish/details")
+	}
+
+	// test get ipns records
+	// /api/v2/ipns/records
+	// spoof a fake record as we arent using the queues in this test
+	im := models.NewIPNSManager(db)
+	if _, err := im.CreateEntry("fakekey", "fakehash", "fakekeyname", "public", "testuser", time.Minute, time.Minute); err != nil {
+		t.Fatal(err)
+	}
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipns/records", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipns/records")
+	}
+	var ipnsAPIResp ipnsAPIResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &ipnsAPIResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipns/private/publish/details")
+	}
+	if len(*ipnsAPIResp.Response) == 0 {
+		t.Fatal("no records discovered")
 	}
 }
 
