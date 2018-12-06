@@ -19,6 +19,7 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/RTradeLtd/Temporal/mocks"
+	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
@@ -66,11 +67,18 @@ func Test_API_Routes_Misc(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	imCluster, err := rtfscluster.Initialize(
+		cfg.IPFSCluster.APIConnection.Host,
+		cfg.IPFSCluster.APIConnection.Port,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// create our test api
 	testRecorder := httptest.NewRecorder()
 	_, engine := gin.CreateTestContext(testRecorder)
 	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, false, os.Stdout)
+	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,11 +175,18 @@ func Test_API_Routes_IPFS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	imCluster, err := rtfscluster.Initialize(
+		cfg.IPFSCluster.APIConnection.Host,
+		cfg.IPFSCluster.APIConnection.Port,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// create our test api
 	testRecorder := httptest.NewRecorder()
 	_, engine := gin.CreateTestContext(testRecorder)
 	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, false, os.Stdout)
+	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -436,6 +451,197 @@ func Test_API_Routes_IPFS(t *testing.T) {
 	}
 }
 
+func Test_API_Routes_Cluster(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup connection to ipfs-node-1
+	im, err := rtfs.NewManager(
+		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
+		nil,
+		time.Minute*10,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	imCluster, err := rtfscluster.Initialize(
+		cfg.IPFSCluster.APIConnection.Host,
+		cfg.IPFSCluster.APIConnection.Port,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// create our test api
+	testRecorder := httptest.NewRecorder()
+	_, engine := gin.CreateTestContext(testRecorder)
+	lensClient := mocks.FakeIndexerAPIClient{}
+	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup api routes
+	if err = api.setupRoutes(); err != nil {
+		t.Fatal(err)
+	}
+
+	// authenticate with the the api to get our token for testing
+	// /api/v2/auth/login
+	testRecorder = httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}"))
+	req.Header.Add("Content-Type", "application/json")
+	api.r.ServeHTTP(testRecorder, req)
+	// validate the http status code
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/auth/login")
+	}
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var loginResp loginResponse
+	if err = json.Unmarshal(bodyBytes, &loginResp); err != nil {
+		t.Fatal(err)
+	}
+	// format authorization header
+	authHeader := "Bearer " + loginResp.Token
+
+	// test cluster sync
+	// /api/v2/ipfs/cluster/sync/errors/local
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/cluster/sync/errors/local", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/cluster/sync/errors/local")
+	}
+	type clusterErrorsSyncResponse struct {
+		Code     int         `json:"code"`
+		Response interface{} `json:"response"`
+	}
+	var clusterErrorsSyncResp clusterErrorsSyncResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &clusterErrorsSyncResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if clusterErrorsSyncResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipfs/cluster/sync/errors/local")
+	}
+
+	// test cluster pin
+	// /api/v2/ipfs/cluster/pin
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/cluster/pin/"+hash, nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues := url.Values{}
+	urlValues.Add("hold_time", "5")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/cluster/pin")
+	}
+	var apiResp apiResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipfs/cluster/pin")
+	}
+	// manually pin since we aren't using queues
+	decoded, err := api.ipfsCluster.DecodeHashString(hash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = api.ipfsCluster.Pin(decoded); err != nil {
+		t.Fatal(err)
+	}
+
+	// test cluster local status
+	// /api/v2/ipfs/cluster/status/pin/local
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/cluster/status/pin/local/"+hash, nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/cluster/status/pin/local")
+	}
+	type clusterPinStatusLocalResponse struct {
+		Code     int         `json:"code"`
+		Response interface{} `json:"response"`
+	}
+	var clusterPinStatusLocalResp clusterPinStatusLocalResponse
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &clusterPinStatusLocalResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if clusterPinStatusLocalResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipfs/cluster/status/pin/local")
+	}
+
+	// test cluster local status
+	// /api/v2/ipfs/cluster/status/pin/global
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/cluster/status/pin/global/"+hash, nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/cluster/status/pin/global")
+	}
+	clusterPinStatusLocalResp = clusterPinStatusLocalResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &clusterPinStatusLocalResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if clusterPinStatusLocalResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipfs/cluster/status/pin/global")
+	}
+
+	// test cluster local status
+	// /api/v2/ipfs/cluster/status/local
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/ipfs/cluster/status/local", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/cluster/status/local")
+	}
+	clusterPinStatusLocalResp = clusterPinStatusLocalResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &clusterPinStatusLocalResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if clusterPinStatusLocalResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/ipfs/cluster/status/local")
+	}
+}
+
 func Test_API_Routes_Frontend(t *testing.T) {
 	// load configuration
 	cfg, err := config.LoadConfig("../../testenv/config.json")
@@ -451,11 +657,18 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	imCluster, err := rtfscluster.Initialize(
+		cfg.IPFSCluster.APIConnection.Host,
+		cfg.IPFSCluster.APIConnection.Port,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// create our test api
 	testRecorder := httptest.NewRecorder()
 	_, engine := gin.CreateTestContext(testRecorder)
 	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, false, os.Stdout)
+	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -581,11 +794,18 @@ func Test_API_Routes_Database(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	imCluster, err := rtfscluster.Initialize(
+		cfg.IPFSCluster.APIConnection.Host,
+		cfg.IPFSCluster.APIConnection.Port,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// create our test api
 	testRecorder := httptest.NewRecorder()
 	_, engine := gin.CreateTestContext(testRecorder)
 	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, false, os.Stdout)
+	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -685,11 +905,18 @@ func Test_API_Routes_Account(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	imCluster, err := rtfscluster.Initialize(
+		cfg.IPFSCluster.APIConnection.Host,
+		cfg.IPFSCluster.APIConnection.Port,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// create our test api
 	testRecorder := httptest.NewRecorder()
 	_, engine := gin.CreateTestContext(testRecorder)
 	lensClient := mocks.FakeIndexerAPIClient{}
-	api, err := new(cfg, engine, &lensClient, im, false, os.Stdout)
+	api, err := new(cfg, engine, &lensClient, im, imCluster, false, os.Stdout)
 	if err != nil {
 		t.Fatal(err)
 	}

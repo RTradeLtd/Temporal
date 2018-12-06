@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/rtfscluster"
+
 	"github.com/RTradeLtd/kaas"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
@@ -45,26 +47,27 @@ const (
 
 // API is our API service
 type API struct {
-	ipfs    rtfs.Manager
-	keys    *kaas.Client
-	r       *gin.Engine
-	cfg     *config.TemporalConfig
-	dbm     *database.Manager
-	um      *models.UserManager
-	im      *models.IpnsManager
-	pm      *models.PaymentManager
-	dm      *models.DropManager
-	ue      *models.EncryptedUploadManager
-	zm      *models.ZoneManager
-	rm      *models.RecordManager
-	nm      *models.IPFSNetworkManager
-	l       *log.Logger
-	signer  *clients.SignerClient
-	orch    *clients.IPFSOrchestratorClient
-	lens    pbLens.IndexerAPIClient
-	dc      *dash.Client
-	queues  queues
-	service string
+	ipfs        rtfs.Manager
+	ipfsCluster *rtfscluster.ClusterManager
+	keys        *kaas.Client
+	r           *gin.Engine
+	cfg         *config.TemporalConfig
+	dbm         *database.Manager
+	um          *models.UserManager
+	im          *models.IpnsManager
+	pm          *models.PaymentManager
+	dm          *models.DropManager
+	ue          *models.EncryptedUploadManager
+	zm          *models.ZoneManager
+	rm          *models.RecordManager
+	nm          *models.IPFSNetworkManager
+	l           *log.Logger
+	signer      *clients.SignerClient
+	orch        *clients.IPFSOrchestratorClient
+	lens        pbLens.IndexerAPIClient
+	dc          *dash.Client
+	queues      queues
+	service     string
 }
 
 // Initialize is used ot initialize our API service. debug = true is useful
@@ -93,8 +96,15 @@ func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPICl
 	if err != nil {
 		return nil, err
 	}
+	imCluster, err := rtfscluster.Initialize(
+		cfg.IPFSCluster.APIConnection.Host,
+		cfg.IPFSCluster.APIConnection.Port,
+	)
+	if err != nil {
+		return nil, err
+	}
 	// set up API struct
-	api, err := new(cfg, router, lens, im, debug, logfile)
+	api, err := new(cfg, router, lens, im, imCluster, debug, logfile)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +119,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPICl
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIClient, ipfs rtfs.Manager, debug bool, out io.Writer) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool, out io.Writer) (*API, error) {
 	var (
 		logger = log.New()
 		dbm    *database.Manager
@@ -209,22 +219,23 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIC
 		return nil, err
 	}
 	return &API{
-		ipfs:    ipfs,
-		keys:    keys,
-		cfg:     cfg,
-		service: "api",
-		r:       router,
-		l:       logger,
-		dbm:     dbm,
-		um:      models.NewUserManager(dbm.DB),
-		im:      models.NewIPNSManager(dbm.DB),
-		pm:      models.NewPaymentManager(dbm.DB),
-		dm:      models.NewDropManager(dbm.DB),
-		ue:      models.NewEncryptedUploadManager(dbm.DB),
-		lens:    lens,
-		signer:  signer,
-		orch:    orch,
-		dc:      dc,
+		ipfs:        ipfs,
+		ipfsCluster: ipfsCluster,
+		keys:        keys,
+		cfg:         cfg,
+		service:     "api",
+		r:           router,
+		l:           logger,
+		dbm:         dbm,
+		um:          models.NewUserManager(dbm.DB),
+		im:          models.NewIPNSManager(dbm.DB),
+		pm:          models.NewPaymentManager(dbm.DB),
+		dm:          models.NewDropManager(dbm.DB),
+		ue:          models.NewEncryptedUploadManager(dbm.DB),
+		lens:        lens,
+		signer:      signer,
+		orch:        orch,
+		dc:          dc,
 		queues: queues{
 			pin:        qmPin,
 			file:       qmFile,
