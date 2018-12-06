@@ -3,6 +3,7 @@ package v2
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/mini"
@@ -29,7 +30,7 @@ func (api *API) makeBucket(c *gin.Context) {
 		secretKey = api.cfg.MINIO.SecretKey
 		endpoint  = fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
 	)
-	manager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, true)
+	manager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, os.Getenv("MINIO_SSL_ENABLE") == "true")
 	if err != nil {
 		api.LogError(err, eh.MinioConnectionError)(c)
 		return
