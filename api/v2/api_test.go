@@ -410,6 +410,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 
 	// test public network beam
+	// /api/v2/ipfs/utils/laser/beam
 	testRecorder = httptest.NewRecorder()
 	req = httptest.NewRequest("POST", "/api/v2/ipfs/utils/laser/beam", nil)
 	req.Header.Add("Authorization", authHeader)
@@ -709,6 +710,54 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	}
 	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad response status code from /api/v2/ipfs/private/uploads")
+	}
+
+	// test private network beam - source private, dest public
+	// /api/v2/ipfs/utils/laser/beam
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/utils/laser/beam", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("source_network", "abc123")
+	urlValues.Add("destination_network", "public")
+	urlValues.Add("content_hash", hash)
+	urlValues.Add("passphrase", "password123")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/utils/laser/beam")
+	}
+
+	// test private network beam - source public, dest private
+	// /api/v2/ipfs/utils/laser/beam
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/utils/laser/beam", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("source_network", "public")
+	urlValues.Add("destination_network", "abc123")
+	urlValues.Add("content_hash", hash)
+	urlValues.Add("passphrase", "password123")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/utils/laser/beam")
+	}
+
+	// test private network beam - source private, dest private
+	// /api/v2/ipfs/utils/laser/beam
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/utils/laser/beam", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("source_network", "abc123")
+	urlValues.Add("destination_network", "abc123")
+	urlValues.Add("content_hash", hash)
+	urlValues.Add("passphrase", "password123")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/ipfs/utils/laser/beam")
 	}
 }
 
