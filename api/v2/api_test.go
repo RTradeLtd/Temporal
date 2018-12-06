@@ -420,6 +420,17 @@ func Test_API_Routes_IPFS(t *testing.T) {
 	if dagResp.Code != 200 {
 		t.Fatal("bad response status code from /api/v2/ipfs/public/dag/")
 	}
+
+	// test download
+	// /api/v2/ipfs/public/download
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/ipfs/public/download/"+hash, nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		fmt.Println(testRecorder.Code)
+		t.Fatal("bad http status code from/api/v2/ipfs/public/download")
+	}
 }
 
 func Test_API_Routes_Database(t *testing.T) {
