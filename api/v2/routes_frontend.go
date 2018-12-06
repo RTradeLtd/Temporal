@@ -31,12 +31,9 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	forms := api.extractPostForms(c, "private_network")
-	if len(forms) == 0 {
-		return
-	}
+	privateNet := c.PostForm("private_network")
 	var isPrivate bool
-	switch forms["private_network"] {
+	switch privateNet {
 	case "true":
 		isPrivate = true
 	default:
@@ -71,7 +68,7 @@ func (api *API) calculateFileCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	forms := api.extractPostForms(c, "hold_time", "private_network")
+	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
 		return
 	}

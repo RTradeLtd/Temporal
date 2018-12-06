@@ -29,7 +29,10 @@ import (
 const (
 	tooManyCredits = 10.9999997e+07
 	testUser       = "testuser"
-	hash           = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
+)
+
+var (
+	hash = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
 )
 
 type apiResponse struct {
@@ -236,7 +239,7 @@ func Test_API_Routes_IPFS(t *testing.T) {
 	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/ipfs/public/file/add")
 	}
-	hash := apiResp.Response
+	hash = apiResp.Response
 
 	// add a file advanced
 	// /api/v2/ipfs/public/file/add/advanced
@@ -430,6 +433,136 @@ func Test_API_Routes_IPFS(t *testing.T) {
 	if testRecorder.Code != 200 {
 		fmt.Println(testRecorder.Code)
 		t.Fatal("bad http status code from/api/v2/ipfs/public/download")
+	}
+}
+
+func Test_API_Routes_Frontend(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup connection to ipfs-node-1
+	im, err := rtfs.NewManager(
+		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
+		nil,
+		time.Minute*10,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// create our test api
+	testRecorder := httptest.NewRecorder()
+	_, engine := gin.CreateTestContext(testRecorder)
+	lensClient := mocks.FakeIndexerAPIClient{}
+	api, err := new(cfg, engine, &lensClient, im, false, os.Stdout)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup api routes
+	if err = api.setupRoutes(); err != nil {
+		t.Fatal(err)
+	}
+
+	// authenticate with the the api to get our token for testing
+	// /api/v2/auth/login
+	testRecorder = httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}"))
+	req.Header.Add("Content-Type", "application/json")
+	api.r.ServeHTTP(testRecorder, req)
+	// validate the http status code
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/auth/login")
+	}
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var loginResp loginResponse
+	if err = json.Unmarshal(bodyBytes, &loginResp); err != nil {
+		t.Fatal(err)
+	}
+	// format authorization header
+	authHeader := "Bearer " + loginResp.Token
+
+	// test get encrypted uploads
+	// /api/v2/frontend/uploads/encrypted
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/frontend/uploads/encrypted", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/frontend/uploads/encrypted")
+	}
+
+	// test pin cost calculate
+	// /api/v2/frontend/cost/calculate/:hash/:holTime
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/frontend/cost/calculate/"+hash+"/5", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/frontend/cost/calculate")
+	}
+	type costCalculateResponse struct {
+		Code     int     `json:"code"`
+		Response float64 `json:"response"`
+	}
+	var costCalculateResp costCalculateResponse
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &costCalculateResp); err != nil {
+		t.Fatal(err)
+	}
+	if costCalculateResp.Code != 200 {
+		t.Fatal("bad response code from /api/v2/frontend/cost/calculate")
+	}
+	if costCalculateResp.Response == 0 {
+		t.Fatal("failed to calculate cost /api/v2/frontend/cost/calculate")
+	}
+
+	// test file upload cost calculation
+	// /api/v2/frontend/cost/calculate/file
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+	fileWriter, err := bodyWriter.CreateFormFile("file", "../../testenv/config.json")
+	fh, err := os.Open("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fh.Close()
+	if _, err = io.Copy(fileWriter, fh); err != nil {
+		t.Fatal(err)
+	}
+	bodyWriter.Close()
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/frontend/cost/calculate/file", bodyBuf)
+	req.Header.Add("Authorization", authHeader)
+	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
+	urlValues := url.Values{}
+	urlValues.Add("hold_time", "5")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code recovered from /api/v2/frontend/cost/calculate/file")
+	}
+	costCalculateResp = costCalculateResponse{}
+	// unmarshal the response
+	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bodyBytes, &costCalculateResp); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if costCalculateResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/frontend/cost/calculate/file")
+	}
+	if costCalculateResp.Response == 0 {
+		t.Fatal("failed to calculate cost /api/v2/frontend/cost/calculate/file")
 	}
 }
 
