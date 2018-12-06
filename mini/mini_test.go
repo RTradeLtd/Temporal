@@ -59,8 +59,14 @@ func TestListBuckets(t *testing.T) {
 	if len(buckets) == 0 {
 		t.Fatal("no buckets found")
 	}
-	if buckets[0].Name != bucket {
-		t.Fatal("bad bucket name recovered")
+	var foundBucket bool
+	for _, v := range buckets {
+		if v.Name == bucket {
+			foundBucket = true
+		}
+	}
+	if !foundBucket {
+		t.Fatal("failed to find correct bucket")
 	}
 }
 
