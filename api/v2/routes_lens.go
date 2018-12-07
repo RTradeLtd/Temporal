@@ -15,20 +15,14 @@ import (
 
 // submitIndexRequest is used to submit an object to be indexed by Lens
 func (api *API) submitIndexRequest(c *gin.Context) {
-	objectType, exists := c.GetPostForm("object_type")
-	if !exists {
-		FailWithMissingField(c, "object_type")
+	forms := api.extractPostForms(c, "object_type", "object_identifier")
+	if len(forms) == 0 {
 		return
 	}
-	objectIdentifier, exists := c.GetPostForm("object_identifier")
-	if !exists {
-		FailWithMissingField(c, "object_identifier")
-		return
-	}
-	switch objectType {
+	switch forms["object_type"] {
 	case "ipld":
 		// validate the object identifier
-		if _, err := gocid.Decode(objectIdentifier); err != nil {
+		if _, err := gocid.Decode(forms["object_identifier"]); err != nil {
 			Fail(c, err)
 			return
 		}
@@ -37,8 +31,8 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 		return
 	}
 	resp, err := api.lens.Index(context.Background(), &request.Index{
-		DataType:         objectType,
-		ObjectIdentifier: objectIdentifier,
+		DataType:         forms["object_type"],
+		ObjectIdentifier: forms["object_identifier"],
 	})
 	if err != nil {
 		api.LogError(err, eh.FailedToIndexError)(c, http.StatusBadRequest)
@@ -73,7 +67,7 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 	}
 	if len(resp.GetObjects()) == 0 {
 		api.LogInfo(fmt.Sprintf("no search results found for keywords %s", keywordsLower))
-		Respond(c, http.StatusBadRequest, gin.H{"response": "no results found"})
+		Respond(c, http.StatusOK, gin.H{"response": "no results found"})
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{

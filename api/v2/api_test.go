@@ -142,6 +142,60 @@ func Test_API_Setup(t *testing.T) {
 	// format authorization header
 	authHeader = "Bearer " + loginResp.Token
 }
+
+func Test_API_Routes_Lens(t *testing.T) {
+	// test lens index - valid object type
+	// /api/v2/lens/index
+	testRecorder = httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/v2/lens/index", nil)
+	urlValues := url.Values{}
+	urlValues.Add("object_type", "ipld")
+	urlValues.Add("object_identifier", hash)
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code recovered from /api/v2/lens/index")
+	}
+
+	// test lens index - invalid object type
+	// /api/v2/lens/index
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/lens/index", nil)
+	urlValues = url.Values{}
+	urlValues.Add("object_type", "storj")
+	urlValues.Add("object_identifier", hash)
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 400 {
+		t.Fatal("bad http status code recovered from /api/v2/lens/index")
+	}
+
+	// test lens index - bad format hash
+	// /api/v2/lens/index
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/lens/index", nil)
+	urlValues = url.Values{}
+	urlValues.Add("object_type", "ipld")
+	urlValues.Add("object_identifier", "notarealipfshash")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 400 {
+		t.Fatal("bad http status code recovered from /api/v2/lens/index")
+	}
+
+	// test lens search
+	// /api/v2/lens/search
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/lens/search", nil)
+	urlValues = url.Values{}
+	urlValues.Add("keywords", "minivan")
+	urlValues.Add("keywords", "protocols")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code recovered from /api/v2/lens/search")
+	}
+}
 func Test_API_Routes_Misc(t *testing.T) {
 	// test systems check route
 	// //api/v2/systems/check
