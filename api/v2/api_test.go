@@ -397,24 +397,12 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 
 	// test pinning
 	// /api/v2/ipfs/public/pin
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/ipfs/public/pin/"+hash, nil)
-	req.Header.Add("Authorization", authHeader)
+	apiResp = apiResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("hold_time", "5")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from  /api/v2/ipfs/public/pin")
-	}
-	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/public/pin/"+hash, 200, nil, urlValues, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -424,21 +412,10 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 
 	// test pin check
 	// /api/v2/ipfs/public/check/pin
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/ipfs/public/pin/check/"+hash, nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipfs/public/check/pin")
-	}
 	var boolAPIResp boolAPIResponse
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &boolAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/ipfs/public/pin/check/"+hash, 200, nil, nil, &boolAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -448,23 +425,12 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 
 	// test pubsub publish
 	// /api/v2/ipfs/pubsub/publish/topic
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/ipfs/public/pubsub/publish/foo", nil)
-	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("message", "bar")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/pubsub/publish/topic")
-	}
 	var mapAPIResp mapAPIResponse
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &mapAPIResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/public/pubsub/publish/foo", 200, nil, urlValues, &mapAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -480,20 +446,10 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 
 	// test object stat
 	// /api/v2/ipfs/stat
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/ipfs/public/stat/"+hash, nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipfs/public/stat/")
-	}
 	var interfaceAPIResp interfaceAPIResponse
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/ipfs/public/stat/"+hash, 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	if interfaceAPIResp.Code != 200 {
@@ -502,20 +458,10 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 
 	// test get dag
 	// /api/v2/ipfs/public/dag
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/ipfs/public/dag/"+hash, nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipfs/public/dag/")
-	}
 	interfaceAPIResp = interfaceAPIResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/ipfs/public/dag/"+hash, 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	if interfaceAPIResp.Code != 200 {
@@ -524,29 +470,23 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 
 	// test download
 	// /api/v2/ipfs/public/download
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/ipfs/public/download/"+hash, nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		fmt.Println(testRecorder.Code)
-		t.Fatal("bad http status code from/api/v2/ipfs/public/download")
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/public/download/"+hash, 200, nil, nil, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 
 	// test public network beam
 	// /api/v2/ipfs/utils/laser/beam
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/ipfs/utils/laser/beam", nil)
-	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("source_network", "public")
 	urlValues.Add("destination_network", "public")
 	urlValues.Add("content_hash", hash)
 	urlValues.Add("passphrase", "password123")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipfs/utils/laser/beam")
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 }
 
