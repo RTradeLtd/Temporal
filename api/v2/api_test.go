@@ -821,20 +821,10 @@ func Test_API_Routes_IPNS(t *testing.T) {
 func Test_API_Routes_Cluster(t *testing.T) {
 	// test cluster sync
 	// /api/v2/ipfs/cluster/sync/errors/local
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/ipfs/cluster/sync/errors/local", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipfs/cluster/sync/errors/local")
-	}
 	var interfaceAPIResp interfaceAPIResponse
-	// unmarshal the response
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/cluster/sync/errors/local", 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -844,23 +834,12 @@ func Test_API_Routes_Cluster(t *testing.T) {
 
 	// test cluster pin
 	// /api/v2/ipfs/cluster/pin
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/ipfs/cluster/pin/"+hash, nil)
-	req.Header.Add("Authorization", authHeader)
+	var apiResp apiResponse
 	urlValues := url.Values{}
 	urlValues.Add("hold_time", "5")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipfs/cluster/pin")
-	}
-	var apiResp apiResponse
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/cluster/pin/"+hash, 200, nil, urlValues, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -878,20 +857,10 @@ func Test_API_Routes_Cluster(t *testing.T) {
 
 	// test cluster local status
 	// /api/v2/ipfs/cluster/status/pin/local
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/ipfs/cluster/status/pin/local/"+hash, nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipfs/cluster/status/pin/local")
-	}
 	interfaceAPIResp = interfaceAPIResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/ipfs/cluster/status/pin/local/"+hash, 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -901,20 +870,10 @@ func Test_API_Routes_Cluster(t *testing.T) {
 
 	// test cluster local status
 	// /api/v2/ipfs/cluster/status/pin/global
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/ipfs/cluster/status/pin/global/"+hash, nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipfs/cluster/status/pin/global")
-	}
 	interfaceAPIResp = interfaceAPIResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/ipfs/cluster/status/pin/global/"+hash, 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -924,20 +883,10 @@ func Test_API_Routes_Cluster(t *testing.T) {
 
 	// test cluster local status
 	// /api/v2/ipfs/cluster/status/local
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/ipfs/cluster/status/local", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipfs/cluster/status/local")
-	}
 	interfaceAPIResp = interfaceAPIResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/ipfs/cluster/status/local", 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -949,29 +898,18 @@ func Test_API_Routes_Cluster(t *testing.T) {
 func Test_API_Routes_Frontend(t *testing.T) {
 	// test get encrypted uploads
 	// /api/v2/frontend/uploads/encrypted
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/api/v2/frontend/uploads/encrypted", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/frontend/uploads/encrypted")
+	if err := sendRequest(
+		"GET", "/api/v2/frontend/uploads/encrypted", 200, nil, nil, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 
 	// test pin cost calculate
 	// /api/v2/frontend/cost/calculate/:hash/:holTime
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/frontend/cost/calculate/"+hash+"/5", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/frontend/cost/calculate")
-	}
 	var floatAPIResp floatAPIResponse
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &floatAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/frontend/cost/calculate/"+hash+"/5", 200, nil, nil, &floatAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	if floatAPIResp.Code != 200 {
@@ -996,7 +934,7 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	}
 	bodyWriter.Close()
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/frontend/cost/calculate/file", bodyBuf)
+	req := httptest.NewRequest("POST", "/api/v2/frontend/cost/calculate/file", bodyBuf)
 	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 	urlValues := url.Values{}
@@ -1008,7 +946,7 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	}
 	floatAPIResp = floatAPIResponse{}
 	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1027,20 +965,10 @@ func Test_API_Routes_Frontend(t *testing.T) {
 func Test_API_Routes_Database(t *testing.T) {
 	// test database global uploads
 	// /api/v2/database/uploads
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/api/v2/database/uploads", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/database/uploads")
-	}
 	var interfaceAPIResp interfaceAPIResponse
-	// unmarshal the response
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/database/uploads", 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -1050,46 +978,25 @@ func Test_API_Routes_Database(t *testing.T) {
 
 	// test database specific uploads
 	// /api/v2/database/uploads/testuser
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/database/uploads/testuser", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/database/uploads/testuser")
-	}
 	interfaceAPIResp = interfaceAPIResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/database/uploads/testuser", 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if interfaceAPIResp.Code != 200 {
-		t.Fatal("bad api status code from api/v2/database/uploads/testuser")
+		t.Fatal("bad api status code from api/v2/database/uploads")
 	}
 }
 
 func Test_API_Routes_Account(t *testing.T) {
 	// verify the username from the token
 	// /api/v2/account/token/username
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/api/v2/account/token/username", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	// validate http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/account/token/username")
-	}
 	var apiResp apiResponse
-	// unmarshal the response
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/account/token/username", 200, nil, nil, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -1102,21 +1009,10 @@ func Test_API_Routes_Account(t *testing.T) {
 
 	// get an email verification token
 	// /api/v2/account/email/token/get
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/account/email/token/get", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/account/email/token/get")
-	}
 	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/account/email/token/get", 200, nil, nil, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -1135,24 +1031,12 @@ func Test_API_Routes_Account(t *testing.T) {
 
 	// verify the email verification token
 	// /api/v2/account/email/token/verify
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/account/email/token/verify", nil)
-	// setup the call parameters
-	req.Header.Add("Authorization", authHeader)
 	urlValues := url.Values{}
 	urlValues.Add("token", user.EmailVerificationToken)
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/account/email/token/verify")
-	}
 	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/account/email/token/verify", 200, nil, urlValues, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -1169,83 +1053,51 @@ func Test_API_Routes_Account(t *testing.T) {
 
 	// verify account password change
 	// /api/v2/account/password/change
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/account/password/change", nil)
-	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("old_password", "admin")
 	urlValues.Add("new_password", "admin1234@")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/account/password/change")
-	}
 	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/account/password/change", 200, nil, urlValues, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		fmt.Println(apiResp.Response)
 		t.Fatal("bad api status code from /api/v2/account/password/change")
 	}
 
 	// create ipfs keys
 	// /api/v2/account/key/ipfs/new
-	testRecorder = httptest.NewRecorder()
-	// test ed25519 keys
-	req = httptest.NewRequest("POST", "/api/v2/account/key/ipfs/new", nil)
-	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("key_type", "ed25519")
 	urlValues.Add("key_bits", "256")
 	urlValues.Add("key_name", "key1")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/account/key/ipfs/new")
-	}
 	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/account/key/ipfs/new", 200, nil, urlValues, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		fmt.Println(apiResp.Response)
 		t.Fatal("bad api status code from /api/v2/account/key/ipfs/new")
 	}
-	testRecorder = httptest.NewRecorder()
 	// test rsa keys
 	urlValues.Add("key_type", "rsa")
 	urlValues.Add("key_bits", "2048")
 	urlValues.Add("key_name", "key2")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/account/key/ipfs/new")
-	}
 	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/account/key/ipfs/new", 200, nil, urlValues, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		fmt.Println(apiResp.Response)
+		t.Fatal("bad api status code from /api/v2/account/key/ipfs/new")
+	}
+	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/account/key/ipfs/new")
 	}
 	// manually create the keys since we arent using queues
@@ -1258,20 +1110,10 @@ func Test_API_Routes_Account(t *testing.T) {
 
 	// get ipfs keys
 	// /api/v2/account/key/ipfs/get
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/account/key/ipfs/get", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Error("bad http status code from /api/v2/account/key/ipfs/get")
-	}
 	var mapAPIResp mapAPIResponse
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &mapAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/account/key/ipfs/get", 200, nil, nil, &mapAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -1281,20 +1123,10 @@ func Test_API_Routes_Account(t *testing.T) {
 
 	// get available credits
 	// /api/v2/account/credits/available
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/account/credits/available", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Error("bad http status code from /api/v2/account/credits/available")
-	}
 	var floatAPIResp floatAPIResponse
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &floatAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/account/credits/available", 200, nil, nil, &floatAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -1302,27 +1134,16 @@ func Test_API_Routes_Account(t *testing.T) {
 		t.Fatal("bad api status code from /api/v2/account/credits/available")
 	}
 
-	// get available credits
+	// register user account
 	// /api/v2/auth/register
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/auth/register", nil)
-	req.Header.Add("Authorization", authHeader)
+	var interfaceAPIResp interfaceAPIResponse
 	urlValues = url.Values{}
 	urlValues.Add("username", "testuser2")
 	urlValues.Add("password", "password123")
 	urlValues.Add("email_address", "testuser2+test@example.org")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Error("bad http status code from /api/v2/auth/register")
-	}
-	var interfaceAPIResp interfaceAPIResponse
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &interfaceAPIResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -1332,20 +1153,10 @@ func Test_API_Routes_Account(t *testing.T) {
 
 	// forgot email
 	// /api/v2/account/email/forgot
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/account/email/forgot", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/account/email/forgot")
-	}
 	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/account/email/forgot", 200, nil, nil, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -1356,22 +1167,12 @@ func Test_API_Routes_Account(t *testing.T) {
 	// test@email.com
 	// forgot username
 	// /api/v2/forgot/username
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/forgot/username", nil)
+	apiResp = apiResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("email_address", "test@email.com")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/forgot/username")
-	}
-	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/forgot/username", 200, nil, urlValues, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -1382,22 +1183,12 @@ func Test_API_Routes_Account(t *testing.T) {
 	// test@email.com
 	// forgot password
 	// /api/v2/forgot/password
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/forgot/password", nil)
+	apiResp = apiResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("email_address", "test@email.com")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/forgot/password")
-	}
-	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/forgot/password", 200, nil, urlValues, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
