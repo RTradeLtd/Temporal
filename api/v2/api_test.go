@@ -196,6 +196,75 @@ func Test_API_Routes_Lens(t *testing.T) {
 		t.Fatal("bad http status code recovered from /api/v2/lens/search")
 	}
 }
+
+func Test_API_Routes_Payments(t *testing.T) {
+	// test basic dash payment
+	// /api/v2/payments/create/dash
+	testRecorder = httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/v2/payments/create/dash", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues := url.Values{}
+	urlValues.Add("credit_value", "10")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+
+	// test request signed payment message - rtc
+	// /api/v2/payments/request
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/payments/request", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("payment_type", "rtc")
+	urlValues.Add("sender_address", "0x0")
+	urlValues.Add("credit_value", "10")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+
+	// test request signed payment message - eth
+	// /api/v2/payments/request
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/payments/request", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("payment_type", "eth")
+	urlValues.Add("sender_address", "0x0")
+	urlValues.Add("credit_value", "10")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+
+	// test payment confirmation
+	// /api/v2/payments/confirm
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/payments/confirm", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("payment_number", "10")
+	urlValues.Add("tx_hash", "0x1")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+
+	// test valid deposit address
+	args := []string{"eth", "rtc", "btc", "ltc", "xmr", "dash"}
+	for _, v := range args {
+		testRecorder = httptest.NewRecorder()
+		req = httptest.NewRequest("GET", "/api/v2/payments/deposit/address/"+v, nil)
+		req.Header.Add("Authorization", authHeader)
+		api.r.ServeHTTP(testRecorder, req)
+		if testRecorder.Code != 200 {
+			t.Fatal("bad http status code from /api/v2/payments/deposit/address")
+		}
+	}
+
+	// test invalid deposit address
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v2/payments/deposit/address/invalid", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != 400 {
+		t.Fatal("bad http statu scode from /api/v2/payments/deposit/address")
+	}
+}
+
 func Test_API_Routes_Misc(t *testing.T) {
 	// test systems check route
 	// //api/v2/systems/check
@@ -1569,6 +1638,9 @@ func Test_Utils(t *testing.T) {
 			}
 			if valid := api.validateBlockchain(tt.args.blockchain); !valid != tt.wantErr {
 				t.Errorf("validateBlockchain() error = %v, wantErr %v", valid, tt.wantErr)
+			}
+			if _, err := api.getUSDValue(tt.args.paymentType); (err != nil) != tt.wantErr {
+				t.Errorf("getUSDValue() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
