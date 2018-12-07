@@ -83,6 +83,27 @@ type ipnsAPIResponse struct {
 	Response *[]models.IPNS `json:"response"`
 }
 
+// sendRequest is a helper method used to handle sending an api request
+func sendRequest(method, url string, wantStatus int, body io.Reader, urlValues url.Values, out interface{}) error {
+	testRecorder := httptest.NewRecorder()
+	req := httptest.NewRequest(method, url, body)
+	req.Header.Add("Authorization", authHeader)
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != wantStatus {
+		return fmt.Errorf("received status %v expected %v from api call %s", testRecorder.Code, wantStatus, url)
+	}
+	if out == nil {
+		return nil
+	}
+	// unmarshal the response
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(bodyBytes, out)
+}
+
 func Test_API_Setup(t *testing.T) {
 	var err error
 	// load configuration
@@ -146,54 +167,46 @@ func Test_API_Setup(t *testing.T) {
 func Test_API_Routes_Lens(t *testing.T) {
 	// test lens index - valid object type
 	// /api/v2/lens/index
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/lens/index", nil)
 	urlValues := url.Values{}
 	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", hash)
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code recovered from /api/v2/lens/index")
+	if err := sendRequest(
+		"POST", "/api/v2/lens/index", 200, nil, urlValues, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 
 	// test lens index - invalid object type
 	// /api/v2/lens/index
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/lens/index", nil)
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "storj")
 	urlValues.Add("object_identifier", hash)
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 400 {
-		t.Fatal("bad http status code recovered from /api/v2/lens/index")
+	if err := sendRequest(
+		"POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 
 	// test lens index - bad format hash
 	// /api/v2/lens/index
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/lens/index", nil)
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", "notarealipfshash")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 400 {
-		t.Fatal("bad http status code recovered from /api/v2/lens/index")
+	if err := sendRequest(
+		"POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 
 	// test lens search
 	// /api/v2/lens/search
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/lens/search", nil)
 	urlValues = url.Values{}
 	urlValues.Add("keywords", "minivan")
 	urlValues.Add("keywords", "protocols")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code recovered from /api/v2/lens/search")
+	if err := sendRequest(
+		"POST", "/api/v2/lens/search", 200, nil, urlValues, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -246,41 +259,28 @@ func Test_API_Routes_Payments(t *testing.T) {
 	// test valid deposit address
 	args := []string{"eth", "rtc", "btc", "ltc", "xmr", "dash"}
 	for _, v := range args {
-		testRecorder = httptest.NewRecorder()
-		req = httptest.NewRequest("GET", "/api/v2/payments/deposit/address/"+v, nil)
-		req.Header.Add("Authorization", authHeader)
-		api.r.ServeHTTP(testRecorder, req)
-		if testRecorder.Code != 200 {
-			t.Fatal("bad http status code from /api/v2/payments/deposit/address")
+		if err := sendRequest(
+			"GET", "/api/v2/payments/deposit/address/"+v, 200, nil, nil, nil,
+		); err != nil {
+			t.Fatal(err)
 		}
 	}
 
 	// test invalid deposit address
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/payments/deposit/address/invalid", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 400 {
-		t.Fatal("bad http statu scode from /api/v2/payments/deposit/address")
+	if err := sendRequest(
+		"GET", "/api/v2/payments/deposit/address/invalidType", 400, nil, nil, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 }
 
 func Test_API_Routes_Misc(t *testing.T) {
 	// test systems check route
 	// //api/v2/systems/check
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/api/v2/systems/check", nil)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/systems/check")
-	}
 	var apiResp apiResponse
-	// unmarshal the response
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/systems/check", 200, nil, nil, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -293,28 +293,24 @@ func Test_API_Routes_Misc(t *testing.T) {
 
 	// test systems statistics
 	// /api/v2/statistics/stats
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/statistics/stats", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/statistics/stats")
+
+	if err := sendRequest(
+		"GET", "/api/v2/statistics/stats", 200, nil, nil, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 
 	// test mini create bucket
 	// /api/v2/admin/mini/create/bucket
-	if err = os.Setenv("MINI_SSL_ENABLE", "false"); err != nil {
+	if err := os.Setenv("MINI_SSL_ENABLE", "false"); err != nil {
 		t.Fatal(err)
 	}
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/admin/mini/create/bucket", nil)
-	req.Header.Add("Authorization", authHeader)
 	urlValues := url.Values{}
 	urlValues.Add("bucket_name", "filesuploadbucket")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/admin/mini/create/bucket")
+	if err := sendRequest(
+		"POST", "/api/v2/admin/mini/create/bucket", 200, nil, urlValues, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 }
 
