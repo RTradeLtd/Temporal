@@ -749,29 +749,18 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	// test ipns publishing (public)
 	// api/v2/ipns/public/publish/details
 	// generate a fake key to publish
+	var apiResp apiResponse
 	um := models.NewUserManager(db)
 	um.AddIPFSKeyForUser("testuser", "mytestkey", "suchkeymuchwow")
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/ipns/public/publish/details", nil)
-	req.Header.Add("Authorization", authHeader)
 	urlValues := url.Values{}
 	urlValues.Add("hash", hash)
 	urlValues.Add("life_time", "24h")
 	urlValues.Add("ttl", "1h")
 	urlValues.Add("key", "mytestkey")
 	urlValues.Add("resolve", "true")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipns/public/publish/details")
-	}
-	var apiResp apiResponse
-	// unmarshal the response
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/ipns/public/publish/details", 200, nil, urlValues, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -782,16 +771,14 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	// test ipns publishing (private)
 	// api/v2/ipns/private/publish/details
 	// create a fake private network
+	apiResp = apiResponse{}
 	nm := models.NewHostedIPFSNetworkManager(db)
 	if _, err := nm.CreateHostedPrivateNetwork("testnetwork", "fakeswarmkey", nil, []string{"testuser"}); err != nil {
 		t.Fatal(err)
 	}
-	if err = um.AddIPFSNetworkForUser("testuser", "testnetwork"); err != nil {
+	if err := um.AddIPFSNetworkForUser("testuser", "testnetwork"); err != nil {
 		t.Fatal(err)
 	}
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/ipns/private/publish/details", nil)
-	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("hash", hash)
 	urlValues.Add("life_time", "24h")
@@ -799,18 +786,9 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	urlValues.Add("key", "mytestkey")
 	urlValues.Add("resolve", "true")
 	urlValues.Add("network_name", "testnetwork")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipns/private/publish/details")
-	}
-	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err := sendRequest(
+		"POST", "/api/v2/ipns/private/publish/details", 200, nil, urlValues, &apiResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
@@ -821,28 +799,18 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	// test get ipns records
 	// /api/v2/ipns/records
 	// spoof a fake record as we arent using the queues in this test
+	var ipnsAPIResp ipnsAPIResponse
 	im := models.NewIPNSManager(db)
 	if _, err := im.CreateEntry("fakekey", "fakehash", "fakekeyname", "public", "testuser", time.Minute, time.Minute); err != nil {
 		t.Fatal(err)
 	}
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/api/v2/ipns/records", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipns/records")
-	}
-	var ipnsAPIResp ipnsAPIResponse
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &ipnsAPIResp); err != nil {
+	if err := sendRequest(
+		"GET", "/api/v2/ipns/records", 200, nil, nil, &ipnsAPIResp,
+	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if apiResp.Code != 200 {
+	if ipnsAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/ipns/private/publish/details")
 	}
 	if len(*ipnsAPIResp.Response) == 0 {
