@@ -28,7 +28,7 @@ func TestAPIMiddleware(t *testing.T) {
 		t.Fatal(err)
 	}
 	apiMiddleware := APIRestrictionMiddleware(db)
-	if reflect.TypeOf(apiMidldeware).String() != "gin.HandlerFunc" {
+	if reflect.TypeOf(apiMiddleware).String() != "gin.HandlerFunc" {
 		t.Fatal("failed to reflect correct middleware type")
 	}
 }
