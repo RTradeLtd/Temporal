@@ -19,6 +19,7 @@ const (
 
 // LensClient is a lens client used to make requests to the Lens gRPC server
 type LensClient struct {
+	conn *grpc.ClientConn
 	pb.IndexerAPIClient
 }
 
@@ -58,6 +59,10 @@ func NewLensClient(opts config.Endpoints) (*LensClient, error) {
 		return nil, err
 	}
 	return &LensClient{
+		conn:             conn,
 		IndexerAPIClient: pb.NewIndexerAPIClient(conn),
 	}, nil
 }
+
+// Close shuts down the client's gRPC connection
+func (l *LensClient) Close() { l.conn.Close() }

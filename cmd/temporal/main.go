@@ -46,6 +46,7 @@ var commands = map[string]cmd.Cmd{
 			if err != nil {
 				log.Fatal(err)
 			}
+			defer lc.Close()
 			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true", lc)
 			if err != nil {
 				log.Fatal(err)
