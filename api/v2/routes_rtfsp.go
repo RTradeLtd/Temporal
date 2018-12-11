@@ -666,15 +666,16 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 		api.LogError(err, "failed to remove network assets")(c)
 		return
 	}
-	// remove network from database
-	if err = api.nm.Delete(networkName); err != nil {
-		api.LogError(err, "failed to remove network from database")(c, http.StatusBadRequest)
-		return
-	}
-	// search for the network
+	// search for the network to get list of users who have access
+	// this allows us to search through the user table, and remove the network from it
 	network, err := api.nm.GetNetworkByName(networkName)
 	if err != nil {
 		api.LogError(err, eh.NetworkSearchError)(c, http.StatusBadRequest)
+		return
+	}
+	// remove network from database
+	if err = api.nm.Delete(networkName); err != nil {
+		api.LogError(err, "failed to remove network from database")(c, http.StatusBadRequest)
 		return
 	}
 	// remove network from users authorized networks
