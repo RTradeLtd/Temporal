@@ -693,21 +693,32 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 	})
 }
 
-// GetIPFSPrivateNetworkByName is used to get connection information for a priavate ipfs network
+// GetIPFSPrivateNetworkByName is used to get connection information for a private ipfs network
 func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
-	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
+	netName := c.Param("name")
+	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
+	if err != nil {
+		api.LogError(err, eh.PrivateNetworkAccessError)(c)
 		return
 	}
-	netName := c.Param("name")
+	var found bool
+	for _, v := range networks {
+		if v == netName {
+			found = true
+			break
+		}
+	}
+	if !found {
+		Fail(c, errors.New(eh.PrivateNetworkAccessError))
+		return
+	}
 	logger := api.LogWithUser(username).WithField("network_name", netName)
 	logger.Info("private ipfs network by name requested")
-
 	net, err := api.nm.GetNetworkByName(netName)
 	if err != nil {
 		api.LogError(err, eh.NetworkSearchError)(c)
