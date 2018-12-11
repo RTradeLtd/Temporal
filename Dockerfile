@@ -29,4 +29,7 @@ ENV CONFIG_DAG /temporal/config.json
 COPY ./testenv/config.json /temporal/config.json
 
 # Set default command
-ENTRYPOINT [ "temporal", "api" ]
+ENTRYPOINT [ "temporal" ]
+
+# Run API by default
+CMD [ "api" ]
