@@ -34,7 +34,7 @@ var (
 	db           *gorm.DB
 	ctx          context.Context
 	cancel       context.CancelFunc
-	logFilePath  = "/var/log/temporal"
+	logFilePath  = "/var/log/temporal/"
 )
 
 var commands = map[string]cmd.Cmd{
