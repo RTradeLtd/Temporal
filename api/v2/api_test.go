@@ -83,6 +83,11 @@ type ipnsAPIResponse struct {
 	Response *[]models.IPNS `json:"response"`
 }
 
+type stringSliceAPIResponse struct {
+	Code     int      `json:"code"`
+	Response []string `json:"response"`
+}
+
 // sendRequest is a helper method used to handle sending an api request
 func sendRequest(method, url string, wantStatus int, body io.Reader, urlValues url.Values, out interface{}) error {
 	testRecorder := httptest.NewRecorder()
@@ -505,6 +510,44 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
+
+	// get private network information
+	// /api/v2/ipfs/private/network
+	var interfaceAPIResp interfaceAPIResponse
+	if err := sendRequest(
+		"GET", "/api/v2/ipfs/private/network/abc123", 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if interfaceAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/ipfs/private/network/abc123")
+	}
+
+	// get all authorized private networks
+	// /api/v2/ipfs/private/networks
+	var stringSliceAPIResp stringSliceAPIResponse
+	if err := sendRequest(
+		"GET", "/api/v2/ipfs/private/networks", 200, nil, nil, &stringSliceAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if stringSliceAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/ipfs/private/networks")
+	}
+	if len(stringSliceAPIResp.Response) == 0 {
+		t.Fatal("failed to find any from /api/v2/ipfs/private/networks")
+	}
+	var found bool
+	for _, v := range stringSliceAPIResp.Response {
+		if v == "abc123" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatal("failed to find correct network from /api/v2/ipfs/private/networks")
+	}
+
 	// add a file normally
 	// /api/v2/ipfs/private/file/add
 	bodyBuf := &bytes.Buffer{}
@@ -640,7 +683,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 
 	// test object stat
 	// /api/v2/ipfs/private/stat
-	var interfaceAPIResp interfaceAPIResponse
+	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
 		"GET", "/api/v2/ipfs/private/stat/"+hash+"/abc123", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {

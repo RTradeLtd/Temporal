@@ -456,6 +456,7 @@ func (api *API) setupRoutes() error {
 		private := ipfs.Group("/private")
 		{
 			// network management routes
+			private.GET("/networks", api.getAuthorizedPrivateNetworks)
 			network := private.Group("/network")
 			{
 				network.GET("/:name", api.getIPFSPrivateNetworkByName)
@@ -485,7 +486,6 @@ func (api *API) setupRoutes() error {
 			private.GET("/stat/:hash/:networkName", api.getObjectStatForIpfsForHostedIPFSNetwork)
 			// general routes
 			private.GET("/dag/:hash/:networkName", api.getDagObjectForHostedIPFSNetwork)
-			private.GET("/networks", api.getAuthorizedPrivateNetworks)
 			private.GET("/uploads/:networkName", api.getUploadsByNetworkName)
 			private.POST("/download/:hash", api.downloadContentHashForPrivateNetwork)
 		}
