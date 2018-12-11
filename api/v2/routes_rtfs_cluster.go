@@ -8,7 +8,6 @@ import (
 	"github.com/RTradeLtd/Temporal/utils"
 
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -70,14 +69,8 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	// initialize a connection to the cluster
-	manager, err := rtfscluster.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c)
-		return
-	}
 	// parse the local cluster status, and sync any errors, retunring the cids that were in an error state
-	syncedCids, err := manager.ParseLocalStatusAllAndSync()
+	syncedCids, err := api.ipfsCluster.ParseLocalStatusAllAndSync()
 	if err != nil {
 		api.LogError(err, eh.IPFSClusterStatusError)(c)
 		return
@@ -103,14 +96,8 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	// initialize a connection to the cluster
-	manager, err := rtfscluster.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSClusterConnectionError)(c)
-		return
-	}
 	// get the cluster status for the cid only asking the local cluster node
-	status, err := manager.GetStatusForCidLocally(hash)
+	status, err := api.ipfsCluster.GetStatusForCidLocally(hash)
 	if err != nil {
 		api.LogError(err, eh.IPFSClusterStatusError)(c)
 		return
@@ -137,14 +124,8 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	// initialize a connection to the cluster
-	manager, err := rtfscluster.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSClusterConnectionError)(c)
-		return
-	}
 	// get the cluster wide status for this particular pin
-	status, err := manager.GetStatusForCidGlobally(hash)
+	status, err := api.ipfsCluster.GetStatusForCidGlobally(hash)
 	if err != nil {
 		api.LogError(err, eh.IPFSClusterStatusError)(c)
 		return
@@ -170,14 +151,8 @@ func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 	var cids []gocid.Cid
 	// this will hold all the statuses of the content hashes
 	var statuses []string
-	// initialize a connection to the cluster
-	manager, err := rtfscluster.Initialize("", "")
-	if err != nil {
-		api.LogError(err, eh.IPFSClusterConnectionError)(c)
-		return
-	}
 	// fetch a map of all the statuses
-	maps, err := manager.FetchLocalStatus()
+	maps, err := api.ipfsCluster.FetchLocalStatus()
 	if err != nil {
 		api.LogError(err, eh.IPFSClusterStatusError)(c)
 		return

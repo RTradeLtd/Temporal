@@ -11,6 +11,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/RTradeLtd/Temporal/grpc-clients"
+
 	"github.com/RTradeLtd/Temporal/api/v2"
 	"github.com/RTradeLtd/Temporal/api/v3"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -30,6 +32,9 @@ var (
 	keyFile      = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
 	tCfg         config.TemporalConfig
 	db           *gorm.DB
+	ctx          context.Context
+	cancel       context.CancelFunc
+	logFilePath  = "/var/log/temporal"
 )
 
 var commands = map[string]cmd.Cmd{
@@ -37,7 +42,12 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true")
+			lc, err := clients.NewLensClient(cfg.Endpoints)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer lc.Close()
+			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true", lc)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -79,13 +89,12 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.New(queue.IpnsEntryQueue, mqConnectionURL, false)
+							qm, err := queue.New(queue.IpnsEntryQueue, mqConnectionURL, false, logFilePath)
 							if err != nil {
 								log.Fatal(err)
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							ctx, cancel := context.WithCancel(context.Background())
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
@@ -104,13 +113,12 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.New(queue.IpfsPinQueue, mqConnectionURL, false)
+							qm, err := queue.New(queue.IpfsPinQueue, mqConnectionURL, false, logFilePath)
 							if err != nil {
 								log.Fatal(err)
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							ctx, cancel := context.WithCancel(context.Background())
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
@@ -129,13 +137,12 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.New(queue.IpfsFileQueue, mqConnectionURL, false)
+							qm, err := queue.New(queue.IpfsFileQueue, mqConnectionURL, false, logFilePath)
 							if err != nil {
 								log.Fatal(err)
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							ctx, cancel := context.WithCancel(context.Background())
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
@@ -154,13 +161,12 @@ var commands = map[string]cmd.Cmd{
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.New(queue.IpfsKeyCreationQueue, mqConnectionURL, false)
+							qm, err := queue.New(queue.IpfsKeyCreationQueue, mqConnectionURL, false, logFilePath)
 							if err != nil {
 								log.Fatal(err)
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							ctx, cancel := context.WithCancel(context.Background())
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
@@ -179,13 +185,12 @@ var commands = map[string]cmd.Cmd{
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.New(queue.IpfsClusterPinQueue, mqConnectionURL, false)
+							qm, err := queue.New(queue.IpfsClusterPinQueue, mqConnectionURL, false, logFilePath)
 							if err != nil {
 								log.Fatal(err)
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							ctx, cancel := context.WithCancel(context.Background())
 							waitGroup := &sync.WaitGroup{}
 							waitGroup.Add(1)
 							go func() {
@@ -206,13 +211,12 @@ var commands = map[string]cmd.Cmd{
 				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.New(queue.DatabaseFileAddQueue, mqConnectionURL, false)
+					qm, err := queue.New(queue.DatabaseFileAddQueue, mqConnectionURL, false, logFilePath)
 					if err != nil {
 						log.Fatal(err)
 					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-					ctx, cancel := context.WithCancel(context.Background())
 					waitGroup := &sync.WaitGroup{}
 					waitGroup.Add(1)
 					go func() {
@@ -231,13 +235,12 @@ var commands = map[string]cmd.Cmd{
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.New(queue.EmailSendQueue, mqConnectionURL, false)
+					qm, err := queue.New(queue.EmailSendQueue, mqConnectionURL, false, logFilePath)
 					if err != nil {
 						log.Fatal(err)
 					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-					ctx, cancel := context.WithCancel(context.Background())
 					waitGroup := &sync.WaitGroup{}
 					waitGroup.Add(1)
 					go func() {
@@ -305,7 +308,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "create a user",
 		Description: "Create a Temporal user. Provide args as username, password, email. Do not use in production.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if len(os.Args) < 5 {
+			if len(args) < 3 {
 				log.Fatal("insufficient fields provided")
 			}
 			d, err := database.Initialize(&cfg, database.Options{
@@ -315,7 +318,7 @@ var commands = map[string]cmd.Cmd{
 				log.Fatal(err)
 			}
 			if _, err := models.NewUserManager(d.DB).NewUserAccount(
-				os.Args[2], os.Args[3], os.Args[4], false,
+				args["user"], args["pass"], args["email"], false,
 			); err != nil {
 				log.Fatal(err)
 			}
@@ -326,8 +329,8 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "assign user as an admin",
 		Description: "Assign an existing Temporal user as an administrator.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if len(os.Args) < 3 {
-				log.Fatal("no user provided")
+			if args["dbAdmin"] == "" {
+				log.Fatal("no user provided through command line argument")
 			}
 			d, err := database.Initialize(&cfg, database.Options{
 				SSLModeDisable: true,
@@ -335,12 +338,12 @@ var commands = map[string]cmd.Cmd{
 			if err != nil {
 				log.Fatal(err)
 			}
-			found, err := models.NewUserManager(d.DB).ToggleAdmin(os.Args[2])
+			found, err := models.NewUserManager(d.DB).ToggleAdmin(args["dbAdmin"])
 			if err != nil {
 				log.Fatal(err)
 			}
 			if !found {
-				log.Fatalf("user %s not found", os.Args[2])
+				log.Fatalf("user %s not found", args["dbAdmin"])
 			}
 		},
 	},
@@ -409,35 +412,25 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	// initialize global context
+	ctx, cancel = context.WithCancel(context.Background())
 	// load arguments
 	flags := map[string]string{
 		"configDag":     configDag,
 		"certFilePath":  tCfg.API.Connection.Certificates.CertPath,
 		"keyFilePath":   tCfg.API.Connection.Certificates.KeyPath,
 		"listenAddress": tCfg.API.Connection.ListenAddress,
-
-		"dbPass": tCfg.Database.Password,
-		"dbURL":  tCfg.Database.URL,
-		"dbUser": tCfg.Database.Username,
+		"dbPass":        tCfg.Database.Password,
+		"dbURL":         tCfg.Database.URL,
+		"dbUser":        tCfg.Database.Username,
 	}
-	var (
-		peerAddr string
-		isTns    bool
-	)
-	// check for tns client operation and load peer addr
-	for _, v := range os.Args {
-		if v == "tns" {
-			isTns = true
-		}
-		if isTns && v == "client" {
-			peerAddr = os.Getenv("PEER_ADDR")
-			if peerAddr == "" {
-				log.Fatal("PEER_ADDR env var is empty")
-			}
-		}
+	if os.Args[1] == "user" {
+		flags["user"] = os.Args[2]
+		flags["pass"] = os.Args[3]
+		flags["email"] = os.Args[4]
 	}
-	if isTns && peerAddr != "" {
-		flags["peerAddr"] = peerAddr
+	if os.Args[1] == "admin" {
+		flags["dbAdmin"] = os.Args[2]
 	}
 	fmt.Println(tCfg.APIKeys.ChainRider)
 	// execute

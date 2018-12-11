@@ -1,9 +1,12 @@
 package middleware
 
 import (
+	"net/http/httptest"
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
@@ -24,8 +27,8 @@ func TestAPIMiddleware(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	api := APIRestrictionMiddleware(db)
-	if reflect.TypeOf(api).String() != "gin.HandlerFunc" {
+	apiMiddleware := APIRestrictionMiddleware(db)
+	if reflect.TypeOf(apiMiddleware).String() != "gin.HandlerFunc" {
 		t.Fatal("failed to reflect correct middleware type")
 	}
 }
@@ -47,6 +50,23 @@ func TestJwtMiddleware(t *testing.T) {
 	}
 	if jwt.Realm != testRealm {
 		t.Fatal("failed to set correct realm name")
+	}
+	testRecorder := httptest.NewRecorder()
+	testCtx, _ := gin.CreateTestContext(testRecorder)
+	if token, valid := jwt.Authenticator("testuser", "admin", testCtx); !valid {
+		t.Fatal("failed to authenticate user")
+	} else if token != "testuser" {
+		t.Fatal("failed to authenticate")
+	}
+	if valid := jwt.Authorizator("testuser", testCtx); !valid {
+		t.Fatal("failed to authorize user")
+	}
+	if valid := jwt.Authorizator("testuser2", testCtx); valid {
+		t.Fatal("failed to authorize user")
+	}
+	jwt.Unauthorized(testCtx, 401, "unauthorized access")
+	if testRecorder.Code != 401 {
+		t.Fatal("failed to validate http status code")
 	}
 }
 

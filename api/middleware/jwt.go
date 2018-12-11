@@ -19,8 +19,6 @@ type Login struct {
 // JwtConfigGenerate is used to generate our JWT configuration
 func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, logger *log.Logger) *jwt.GinJWTMiddleware {
 
-	// will implement metamaks/msg signing with ethereum accounts
-	// as the authentication metho
 	authMiddleware := &jwt.GinJWTMiddleware{
 		Realm:      realmName,
 		Key:        []byte(jwtKey),
@@ -46,7 +44,11 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, logger *log.Logger
 			return userId, true
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {
-
+			// as a final security step, ensure that we can find the user in our database
+			userManager := models.NewUserManager(db)
+			if _, err := userManager.FindByUserName(userId); err != nil {
+				return false
+			}
 			return true
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
