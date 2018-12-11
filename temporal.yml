@@ -28,6 +28,69 @@ services:
       - CONFIG_DAG=/data/temporal/config.json
     volumes:
       - ${BASE}/data/temporal:/data/temporal
+  
+  queue-dfa:
+    image: rtradetech/temporal:${API}
+    network_mode: "host" # expose all
+    command: queue dfa
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+  
+  queue-email-send:
+    image: rtradetech/temporal:${API}
+    network_mode: "host" # expose all
+    command: queue email-send
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-ipfs-cluster:
+    image: rtradetech/temporal:${API}
+    network_mode: "host" # expose all
+    command: queue ipfs cluster
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-ipfs-file:
+    image: rtradetech/temporal:${API}
+    network_mode: "host" # expose all
+    command: queue ipfs file
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-ipfs-ipns-entry:
+    image: rtradetech/temporal:${API}
+    network_mode: "host" # expose all
+    command: queue ipfs ipns-entry
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-ipfs-key-creation:
+    image: rtradetech/temporal:${API}
+    network_mode: "host" # expose all
+    command: queue ipfs key-creation
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-ipfs-pin:
+    image: rtradetech/temporal:${API}
+    network_mode: "host" # expose all
+    command: queue ipfs pin
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
 
   ipfs:
     image: ipfs/go-ipfs:v0.4.18
