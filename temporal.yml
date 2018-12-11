@@ -1,7 +1,7 @@
 # Production docker-compose setup for Temporal.
 #
 # Usage:
-#   env API=latest BASE=/my/dir docker-compose -f prod.yml up
+#   env TEMPORAL=latest BASE=/my/dir docker-compose -f prod.yml up
 #
 # Data:
 #   - Leave BASE unassigned to use the root directory.
@@ -10,7 +10,7 @@
 # Configuration:
 #   * temporal, queue-*:
 #     - configuration file should be in data directory
-#     - set API in env to use desired version
+#     - set TEMPORAL in env to use desired version
 #   * ipfs, ipfs-cluster:
 #     - configuration files should be in data directory
 #   * minio:
@@ -22,7 +22,7 @@ version: '3'
 
 services:
   temporal:
-    image: rtradetech/temporal:${API}
+    image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     environment:
       - CONFIG_DAG=/data/temporal/config.json
@@ -30,7 +30,7 @@ services:
       - ${BASE}/data/temporal:/data/temporal
   
   queue-dfa:
-    image: rtradetech/temporal:${API}
+    image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue dfa
     environment:
@@ -39,7 +39,7 @@ services:
       - ${BASE}/data/temporal:/data/temporal
   
   queue-email-send:
-    image: rtradetech/temporal:${API}
+    image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue email-send
     environment:
@@ -48,7 +48,7 @@ services:
       - ${BASE}/data/temporal:/data/temporal
 
   queue-ipfs-cluster:
-    image: rtradetech/temporal:${API}
+    image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue ipfs cluster
     environment:
@@ -57,7 +57,7 @@ services:
       - ${BASE}/data/temporal:/data/temporal
 
   queue-ipfs-file:
-    image: rtradetech/temporal:${API}
+    image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue ipfs file
     environment:
@@ -66,7 +66,7 @@ services:
       - ${BASE}/data/temporal:/data/temporal
 
   queue-ipfs-ipns-entry:
-    image: rtradetech/temporal:${API}
+    image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue ipfs ipns-entry
     environment:
@@ -75,7 +75,7 @@ services:
       - ${BASE}/data/temporal:/data/temporal
 
   queue-ipfs-key-creation:
-    image: rtradetech/temporal:${API}
+    image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue ipfs key-creation
     environment:
@@ -84,7 +84,7 @@ services:
       - ${BASE}/data/temporal:/data/temporal
 
   queue-ipfs-pin:
-    image: rtradetech/temporal:${API}
+    image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue ipfs pin
     environment:
