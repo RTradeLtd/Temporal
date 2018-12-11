@@ -8,7 +8,7 @@
 #   - Generally, component data goes in $BASE/data/$COMPONENT.
 #
 # Configuration:
-#   * temporal:
+#   * temporal, queue-*:
 #     - configuration file should be in data directory
 #     - set API in env to use desired version
 #   * ipfs, ipfs-cluster:
