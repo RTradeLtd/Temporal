@@ -548,6 +548,30 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 		t.Fatal("failed to find correct network from /api/v2/ipfs/private/networks")
 	}
 
+	// stop private network
+	// /api/v2/ipfs/private/network/stop
+	// for now until we implement proper grpc testing, this will fail
+	var mapAPIResp mapAPIResponse
+	urlValues := url.Values{}
+	urlValues.Add("network_name", "abc123")
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/private/network/stop", 400, nil, urlValues, &mapAPIResp,
+	); err == nil {
+		t.Fatal("failed to properly handle api call")
+	}
+
+	// start private network
+	// /api/v2/ipfs/private/network/start
+	// for now until we implement proper grpc testing, this will fail
+	mapAPIResp = mapAPIResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("network_name", "abc123")
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/private/network/start", 400, nil, urlValues, &mapAPIResp,
+	); err == nil {
+		t.Fatal("failed to properly handle api call")
+	}
+
 	// add a file normally
 	// /api/v2/ipfs/private/file/add
 	bodyBuf := &bytes.Buffer{}
@@ -566,7 +590,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	req := httptest.NewRequest("POST", "/api/v2/ipfs/private/file/add", bodyBuf)
 	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
-	urlValues := url.Values{}
+	urlValues = url.Values{}
 	urlValues.Add("hold_time", "5")
 	urlValues.Add("network_name", "abc123")
 	req.PostForm = urlValues
@@ -661,7 +685,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 
 	// test pubsub publish
 	// /api/v2/ipfs/private/publish/topic
-	var mapAPIResp mapAPIResponse
+	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("message", "bar")
 	urlValues.Add("network_name", "abc123")
@@ -775,6 +799,18 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 		"POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
+	}
+
+	// remove private network
+	// /api/v2/ipfs/private/network/remove
+	// for now until we implement proper grpc testing, this will fail
+	mapAPIResp = mapAPIResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("network_name", "abc123")
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/private/network/remove", 400, nil, urlValues, &mapAPIResp,
+	); err == nil {
+		t.Fatal("failed to properly handle api call")
 	}
 }
 
