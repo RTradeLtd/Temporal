@@ -228,11 +228,28 @@ func Test_API_Routes_Lens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// test lens search
+	// test lens search - with no objects
+	// /api/v2/lens/search
+	var apiResp apiResponse
+	fakeLensClient.SearchReturnsOnCall(0, nil, nil)
+	urlValues = url.Values{}
+	urlValues.Add("keywords", "notarealsearch")
+	if err := sendRequest(
+		"POST", "/api/v2/lens/search", 200, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if apiResp.Code != 200 {
+		t.Fatal("bad api response code from /api/v2/lens/search")
+	}
+	if apiResp.Response != "no results found" {
+		t.Fatal("failed to correctly detect no results found")
+	}
+
+	// test lens search - with objects
 	// /api/v2/lens/search
 	// setup our mock search response
 	var lensSearchAPIResp lensSearchAPIResponse
-	mapAPIResp = mapAPIResponse{}
 	obj := pbLensResp.Object{
 		Name:     hash,
 		MimeType: "application/pdf",
@@ -240,7 +257,7 @@ func Test_API_Routes_Lens(t *testing.T) {
 	}
 	var objs []*pbLensResp.Object
 	objs = append(objs, &obj)
-	fakeLensClient.SearchReturnsOnCall(0, &pbLensResp.Results{
+	fakeLensClient.SearchReturnsOnCall(1, &pbLensResp.Results{
 		Objects: objs,
 	}, nil)
 	urlValues = url.Values{}
