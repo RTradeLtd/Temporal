@@ -31,6 +31,7 @@ import (
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
 
+	pbOrch "github.com/RTradeLtd/grpc/ipfs-orchestrator"
 	pbLens "github.com/RTradeLtd/grpc/lens"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -63,7 +64,7 @@ type API struct {
 	nm          *models.IPFSNetworkManager
 	l           *log.Logger
 	signer      *clients.SignerClient
-	orch        *clients.IPFSOrchestratorClient
+	orch        pbOrch.ServiceClient
 	lens        pbLens.IndexerAPIClient
 	dc          *dash.Client
 	queues      queues
@@ -72,7 +73,7 @@ type API struct {
 
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
-func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPIClient) (*API, error) {
+func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient) (*API, error) {
 	var (
 		err    error
 		router = gin.Default()
@@ -104,7 +105,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPICl
 		return nil, err
 	}
 	// set up API struct
-	api, err := new(cfg, router, lens, im, imCluster, debug, logfile)
+	api, err := new(cfg, router, lens, orch, im, imCluster, debug, logfile)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +120,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPICl
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool, out io.Writer) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool, out io.Writer) (*API, error) {
 	var (
 		logger = log.New()
 		dbm    *database.Manager
@@ -157,10 +158,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIC
 		return nil, err
 	}
 
-	orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator)
-	if err != nil {
-		return nil, err
-	}
 	var networkVersion string
 	if dev {
 		networkVersion = "testnet"
@@ -257,7 +254,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIC
 func (api *API) Close() {
 	// close grpc connections
 	api.signer.Close()
-	api.orch.Close()
 	// close queue resources
 	if err := api.queues.cluster.Close(); err != nil {
 		api.LogError(err, "failed to properly close cluster queue connection")

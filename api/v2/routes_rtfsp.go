@@ -611,12 +611,13 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 		})
 		return
 	}
-
+	fmt.Println(1)
 	if _, err := api.orch.StopNetwork(c, &ipfs_orchestrator.NetworkRequest{
 		Network: networkName}); err != nil {
 		api.LogError(err, "failed to stop network")(c)
 		return
 	}
+	fmt.Println(2)
 	logger.Info("network stopped")
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{

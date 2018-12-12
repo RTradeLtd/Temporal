@@ -47,7 +47,12 @@ var commands = map[string]cmd.Cmd{
 				log.Fatal(err)
 			}
 			defer lc.Close()
-			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true", lc)
+			orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer orch.Close()
+			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true", lc, orch)
 			if err != nil {
 				log.Fatal(err)
 			}

@@ -15,31 +15,37 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
+	pbOrch "github.com/RTradeLtd/grpc/ipfs-orchestrator"
+	pbLensResp "github.com/RTradeLtd/grpc/lens/response"
 	"github.com/RTradeLtd/rtfs"
 	"github.com/c2h5oh/datasize"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
 const (
-	tooManyCredits = 10.9999997e+07
-	testUser       = "testuser"
+	tooManyCredits     = 10.9999997e+07
+	testUser           = "testuser"
+	testSwarmKey       = "7fcb5a1b19bdda69da7307162e3becd2d6bd485d5aad778470b305f3f306cf79"
+	testBootstrapPeer1 = "/ip4/172.218.49.115/tcp/5002/ipfs/Qmf964tiE9JaxqntDsSBGasD4aaofPQtfYZyMSJJkRrVTQ"
+	testBootstrapPeer2 = "/ip4/192.168.1.249/tcp/4001/ipfs/QmXuGVPzEz2Ji7g54AYyqoobRJNHqtnrfaEceAes2bTKMh"
 )
 
 var (
-	hash         = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
-	api          *API
-	db           *gorm.DB
-	engine       *gin.Engine
-	testRecorder *httptest.ResponseRecorder
-	authHeader   string
-	cfg          *config.TemporalConfig
+	hash           = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
+	api            *API
+	db             *gorm.DB
+	engine         *gin.Engine
+	testRecorder   *httptest.ResponseRecorder
+	authHeader     string
+	cfg            *config.TemporalConfig
+	fakeLensClient *mocks.FakeIndexerAPIClient
+	fakeOrchClient *mocks.FakeServiceClient
 )
 
 type apiResponse struct {
@@ -86,6 +92,11 @@ type ipnsAPIResponse struct {
 type stringSliceAPIResponse struct {
 	Code     int      `json:"code"`
 	Response []string `json:"response"`
+}
+
+type lensSearchAPIResponse struct {
+	Code     int                 `json:"code"`
+	Response []map[string]string `json:"response"`
 }
 
 // sendRequest is a helper method used to handle sending an api request
@@ -139,7 +150,12 @@ func Test_API_Setup(t *testing.T) {
 	// create our test api
 	testRecorder = httptest.NewRecorder()
 	_, engine = gin.CreateTestContext(testRecorder)
-	api, err = new(cfg, engine, &mocks.FakeIndexerAPIClient{}, im, imCluster, false, os.Stdout)
+
+	// setup fake mock clients
+	fakeLensClient = &mocks.FakeIndexerAPIClient{}
+	fakeOrchClient = &mocks.FakeServiceClient{}
+
+	api, err = new(cfg, engine, fakeLensClient, fakeOrchClient, im, imCluster, false, os.Stdout)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,13 +188,22 @@ func Test_API_Setup(t *testing.T) {
 func Test_API_Routes_Lens(t *testing.T) {
 	// test lens index - valid object type
 	// /api/v2/lens/index
+	var mapAPIResp mapAPIResponse
 	urlValues := url.Values{}
 	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", hash)
+	// setup our mock index response
+	fakeLensClient.IndexReturnsOnCall(0, &pbLensResp.Index{
+		Id:       "fakeid",
+		Keywords: []string{"protocols", "minivan"},
+	}, nil)
 	if err := sendRequest(
-		"POST", "/api/v2/lens/index", 200, nil, urlValues, nil,
+		"POST", "/api/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
+	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/lens/index")
 	}
 
 	// test lens index - invalid object type
@@ -205,13 +230,39 @@ func Test_API_Routes_Lens(t *testing.T) {
 
 	// test lens search
 	// /api/v2/lens/search
+	// setup our mock search response
+	var lensSearchAPIResp lensSearchAPIResponse
+	mapAPIResp = mapAPIResponse{}
+	obj := pbLensResp.Object{
+		Name:     hash,
+		MimeType: "application/pdf",
+		Category: "documents",
+	}
+	var objs []*pbLensResp.Object
+	objs = append(objs, &obj)
+	fakeLensClient.SearchReturnsOnCall(0, &pbLensResp.Results{
+		Objects: objs,
+	}, nil)
 	urlValues = url.Values{}
 	urlValues.Add("keywords", "minivan")
 	urlValues.Add("keywords", "protocols")
 	if err := sendRequest(
-		"POST", "/api/v2/lens/search", 200, nil, urlValues, nil,
+		"POST", "/api/v2/lens/search", 200, nil, urlValues, &lensSearchAPIResp,
 	); err != nil {
 		t.Fatal(err)
+	}
+	fmt.Println(lensSearchAPIResp)
+	if lensSearchAPIResp.Code != 200 {
+		t.Fatal("bad api response code from /api/v2/lens/search")
+	}
+	if lensSearchAPIResp.Response[0]["name"] != hash {
+		t.Fatal("failed to search for correct hash")
+	}
+	if lensSearchAPIResp.Response[0]["category"] != "documents" {
+		t.Fatal("failed to search for correct category")
+	}
+	if lensSearchAPIResp.Response[0]["mimeType"] != "application/pdf" {
+		t.Fatal("failed to search for correct mimetpye")
 	}
 }
 
@@ -498,12 +549,36 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// create a private network for us to test against
 	nm := models.NewHostedIPFSNetworkManager(db)
-	um := models.NewUserManager(db)
+	/*um := models.NewUserManager(db)
 	if _, err := nm.CreateHostedPrivateNetwork("abc123", "abc123", nil, []string{"testuser"}); err != nil {
 		t.Fatal(err)
 	}
 	if err := um.AddIPFSNetworkForUser("testuser", "abc123"); err != nil {
 		t.Fatal(err)
+	}*/
+
+	// create private network
+	// /api/v2/ipfs/private/new
+	var mapAPIResp mapAPIResponse
+	urlValues := url.Values{}
+	urlValues.Add("network_name", "abc123")
+	fakeOrchClient.StartNetworkReturnsOnCall(0, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5001", SwarmKey: testSwarmKey}, nil)
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/ipfs/private/new")
+	}
+	if mapAPIResp.Response["network_name"] != "abc123" {
+		t.Fatal("failed to retrieve correct network name")
+	}
+	if mapAPIResp.Response["api_url"] != "/ip4/127.0.0.1/tcp/5001" {
+		t.Fatal("failed to retrieve correct api url")
+	}
+	if mapAPIResp.Response["swarm_key"] != testSwarmKey {
+		t.Fatal("failed to get correct swarm key")
 	}
 	if err := nm.UpdateNetworkByName("abc123", map[string]interface{}{
 		"api_url": cfg.IPFS.APIConnection.Host + ":" + cfg.IPFS.APIConnection.Port,
@@ -511,8 +586,35 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// get private network information
+	// create private network with parameters
 	// /api/v2/ipfs/private/network
+	mapAPIResp = mapAPIResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("network_name", "xyz123")
+	urlValues.Add("swarm_key", testSwarmKey)
+	urlValues.Add("bootstrap_peers", testBootstrapPeer1)
+	urlValues.Add("bootstrap_peers", testBootstrapPeer2)
+	fakeOrchClient.StartNetworkReturnsOnCall(1, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5002", SwarmKey: "swarmStorm"}, nil)
+	if err := sendRequest(
+		"POST", "/api/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/ipfs/private/new")
+	}
+	if mapAPIResp.Response["network_name"] != "xyz123" {
+		t.Fatal("failed to retrieve correct network name")
+	}
+	if mapAPIResp.Response["api_url"] != "/ip4/127.0.0.1/tcp/5002" {
+		t.Fatal("failed to retrieve correct api url")
+	}
+	if mapAPIResp.Response["swarm_key"] != "swarmStorm" {
+		t.Fatal("failed to get correct swarm key")
+	}
+
+	// get private network information
+	// /api/v2/ipfs/private/network/:name
 	var interfaceAPIResp interfaceAPIResponse
 	if err := sendRequest(
 		"GET", "/api/v2/ipfs/private/network/abc123", 200, nil, nil, &interfaceAPIResp,
@@ -551,13 +653,20 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// stop private network
 	// /api/v2/ipfs/private/network/stop
 	// for now until we implement proper grpc testing, this will fail
-	var mapAPIResp mapAPIResponse
-	urlValues := url.Values{}
+	mapAPIResp = mapAPIResponse{}
+	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
+	fakeOrchClient.StopNetworkReturnsOnCall(0, &pbOrch.Empty{}, nil)
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/private/network/stop", 400, nil, urlValues, &mapAPIResp,
-	); err == nil {
-		t.Fatal("failed to properly handle api call")
+		"POST", "/api/v2/ipfs/private/network/stop", 200, nil, urlValues, &mapAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api resposne code from /api/v2/ipfs/private/network/stop")
+	}
+	if mapAPIResp.Response["state"] != "stopped" {
+		t.Fatal("failed to stop network")
 	}
 
 	// start private network
@@ -566,10 +675,17 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
+	fakeOrchClient.StartNetworkReturnsOnCall(2, &pbOrch.StartNetworkResponse{Api: "test", SwarmKey: "test"}, nil)
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/private/network/start", 400, nil, urlValues, &mapAPIResp,
-	); err == nil {
-		t.Fatal("failed to properly handle api call")
+		"POST", "/api/v2/ipfs/private/network/start", 200, nil, urlValues, &mapAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api resposne code from /api/v2/ipfs/private/network/stop")
+	}
+	if mapAPIResp.Response["state"] != "started" {
+		t.Fatal("failed to stop network")
 	}
 
 	// add a file normally
@@ -807,10 +923,17 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
+	fakeOrchClient.RemoveNetworkReturnsOnCall(0, &pbOrch.Empty{}, nil)
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/private/network/remove", 400, nil, urlValues, &mapAPIResp,
-	); err == nil {
-		t.Fatal("failed to properly handle api call")
+		"DELETE", "/api/v2/ipfs/private/network/remove", 200, nil, urlValues, &mapAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/ipfs/private/network/remove")
+	}
+	if mapAPIResp.Response["state"] != "removed" {
+		t.Fatal("failed to remove network")
 	}
 }
 
@@ -1280,7 +1403,7 @@ func Test_Utils(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	api, err := Initialize(cfg, true, &mocks.FakeIndexerAPIClient{})
+	api, err := Initialize(cfg, true, &mocks.FakeIndexerAPIClient{}, &mocks.FakeServiceClient{})
 	if err != nil {
 		t.Fatal(err)
 	}
