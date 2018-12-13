@@ -2,6 +2,7 @@ package v2
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -1830,6 +1831,51 @@ func Test_API_Initialize_Main_Network(t *testing.T) {
 		t.Fatal(err)
 	}
 	api.Close()
+}
+
+func Test_API_Initialize_ListenAndServe(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	type args struct {
+		certFilePath string
+		keyFilePath  string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"NoTLS", args{"", ""}},
+		{"TLS", args{"../../testenv/certs/api.cert", "../../testenv/certs/api.key"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			api, err := Initialize(cfg, true, fakeLens, fakeOrch, fakeSigner)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+			defer cancel()
+			defer api.Close()
+			if tt.args.certFilePath != "" {
+				err = api.ListenAndServe(ctx, "127.0.0.1:6700", &TLSConfig{tt.args.certFilePath, tt.args.keyFilePath})
+			} else {
+				err = api.ListenAndServe(ctx, "127.0.0.1:6701", nil)
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+
 }
 
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
