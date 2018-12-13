@@ -446,6 +446,9 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 }
 
 func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	defer func() {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsKeyCreationQueue))
 	}()
@@ -496,6 +499,9 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 }
 
 func TestQueue_IPFSPin_Failure(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	defer func() {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsPinQueue))
 	}()
@@ -524,6 +530,9 @@ func TestQueue_IPFSPin_Failure(t *testing.T) {
 }
 
 func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	defer func() {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsFileQueue))
 	}()
@@ -549,6 +558,9 @@ func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
 }
 
 func TestQueue_IPFSFile_Failure_RabbitMQ(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	defer func() {
 		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsFileQueue))
 	}()
