@@ -6,13 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/jinzhu/gorm"
 )
 
-func TestAPI_NoTLS(t *testing.T) {
+func TestAPI(t *testing.T) {
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -21,18 +20,38 @@ func TestAPI_NoTLS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	lens = &mocks.FakeIndexerAPIClient{}
-	orch = &mocks.FakeServiceClient{}
-	signer = &mocks.FakeSignerClient{}
-	if err = os.Setenv("API_PORT", "6767"); err != nil {
-		t.Fatal(err)
+	type args struct {
+		port          string
+		listenAddress string
+		certFilePath  string
+		keyFilePath   string
 	}
-	flags := map[string]string{
-		"listenAddress": "127.0.0.1",
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"NoTLS-NoPort", args{"", "127.0.0.1", "", ""}},
+		{"NoTLS-WithPort", args{"6768", "127.0.0.1", "", ""}},
+		{"TLS-WithPort", args{"6769", "127.0.0.1", "../../testenv/certs/api.cert", "../../testenv/certs/api.key"}},
 	}
-	ctx, cancel = context.WithTimeout(context.Background(), time.Second*20)
-	commands["api"].Action(*cfg, flags)
-	cancel()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// setup environment variable
+			if err := os.Setenv("API_PORT", tt.args.port); err != nil {
+				t.Fatal(err)
+			}
+			// setup call args
+			flags := map[string]string{
+				"listenAddress": tt.args.listenAddress,
+				"certFilePath":  tt.args.certFilePath,
+				"keyFilePath":   tt.args.keyFilePath,
+			}
+			// setup global context
+			ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
+			commands["api"].Action(*cfg, flags)
+			cancel()
+		})
+	}
 }
 
 // TestQueueIPFS is used to test IPFS queues

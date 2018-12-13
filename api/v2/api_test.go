@@ -37,16 +37,8 @@ const (
 )
 
 var (
-	hash             = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
-	api              *API
-	db               *gorm.DB
-	engine           *gin.Engine
-	testRecorder     *httptest.ResponseRecorder
-	authHeader       string
-	cfg              *config.TemporalConfig
-	fakeLensClient   *mocks.FakeIndexerAPIClient
-	fakeOrchClient   *mocks.FakeServiceClient
-	fakeSignerClient *mocks.FakeSignerClient
+	hash       = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
+	authHeader string
 )
 
 type apiResponse struct {
@@ -101,7 +93,7 @@ type lensSearchAPIResponse struct {
 }
 
 // sendRequest is a helper method used to handle sending an api request
-func sendRequest(method, url string, wantStatus int, body io.Reader, urlValues url.Values, out interface{}) error {
+func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, urlValues url.Values, out interface{}) error {
 	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest(method, url, body)
 	req.Header.Add("Authorization", authHeader)
@@ -121,17 +113,7 @@ func sendRequest(method, url string, wantStatus int, body io.Reader, urlValues u
 	return json.Unmarshal(bodyBytes, out)
 }
 
-func Test_API_Setup(t *testing.T) {
-	var err error
-	// load configuration
-	cfg, err = config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err = loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
+func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
@@ -139,30 +121,47 @@ func Test_API_Setup(t *testing.T) {
 		time.Minute*10,
 	)
 	if err != nil {
-		t.Fatal(err)
+		return nil, nil, err
 	}
 	imCluster, err := rtfscluster.Initialize(
 		cfg.IPFSCluster.APIConnection.Host,
 		cfg.IPFSCluster.APIConnection.Port,
 	)
 	if err != nil {
-		t.Fatal(err)
+		return nil, nil, err
 	}
 	// create our test api
-	testRecorder = httptest.NewRecorder()
-	_, engine = gin.CreateTestContext(testRecorder)
+	testRecorder := httptest.NewRecorder()
+	_, engine := gin.CreateTestContext(testRecorder)
 
-	// setup fake mock clients
-	fakeLensClient = &mocks.FakeIndexerAPIClient{}
-	fakeOrchClient = &mocks.FakeServiceClient{}
-	fakeSignerClient = &mocks.FakeSignerClient{}
-
-	api, err = new(cfg, engine, fakeLensClient, fakeOrchClient, fakeSignerClient, im, imCluster, false, os.Stdout)
+	api, err := new(cfg, engine, fakeLens, fakeOrch, fakeSigner, im, imCluster, false, os.Stdout)
 	if err != nil {
-		t.Fatal(err)
+		return nil, nil, err
 	}
 	// setup api routes
 	if err = api.setupRoutes(); err != nil {
+		return nil, nil, err
+	}
+	return api, testRecorder, nil
+}
+func Test_API_Setup(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, testRecorder, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
 		t.Fatal(err)
 	}
 	// authenticate with the the api to get our token for testing
@@ -188,6 +187,25 @@ func Test_API_Setup(t *testing.T) {
 }
 
 func Test_API_Routes_Lens(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// test lens index - valid object type
 	// /api/v2/lens/index
 	var mapAPIResp mapAPIResponse
@@ -195,12 +213,12 @@ func Test_API_Routes_Lens(t *testing.T) {
 	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", hash)
 	// setup our mock index response
-	fakeLensClient.IndexReturnsOnCall(0, &pbLensResp.Index{
+	fakeLens.IndexReturnsOnCall(0, &pbLensResp.Index{
 		Id:       "fakeid",
 		Keywords: []string{"protocols", "minivan"},
 	}, nil)
 	if err := sendRequest(
-		"POST", "/api/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/api/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +232,7 @@ func Test_API_Routes_Lens(t *testing.T) {
 	urlValues.Add("object_type", "storj")
 	urlValues.Add("object_identifier", hash)
 	if err := sendRequest(
-		"POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
+		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -225,7 +243,7 @@ func Test_API_Routes_Lens(t *testing.T) {
 	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", "notarealipfshash")
 	if err := sendRequest(
-		"POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
+		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -233,11 +251,11 @@ func Test_API_Routes_Lens(t *testing.T) {
 	// test lens search - with no objects
 	// /api/v2/lens/search
 	var apiResp apiResponse
-	fakeLensClient.SearchReturnsOnCall(0, nil, nil)
+	fakeLens.SearchReturnsOnCall(0, nil, nil)
 	urlValues = url.Values{}
 	urlValues.Add("keywords", "notarealsearch")
 	if err := sendRequest(
-		"POST", "/api/v2/lens/search", 400, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/lens/search", 400, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -259,14 +277,14 @@ func Test_API_Routes_Lens(t *testing.T) {
 	}
 	var objs []*pbLensResp.Object
 	objs = append(objs, &obj)
-	fakeLensClient.SearchReturnsOnCall(1, &pbLensResp.Results{
+	fakeLens.SearchReturnsOnCall(1, &pbLensResp.Results{
 		Objects: objs,
 	}, nil)
 	urlValues = url.Values{}
 	urlValues.Add("keywords", "minivan")
 	urlValues.Add("keywords", "protocols")
 	if err := sendRequest(
-		"POST", "/api/v2/lens/search", 200, nil, urlValues, &lensSearchAPIResp,
+		api, "POST", "/api/v2/lens/search", 200, nil, urlValues, &lensSearchAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -286,6 +304,25 @@ func Test_API_Routes_Lens(t *testing.T) {
 }
 
 func Test_API_Routes_Payments(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, testRecorder, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// test basic dash payment
 	// /api/v2/payments/create/dash
 	testRecorder = httptest.NewRecorder()
@@ -335,7 +372,7 @@ func Test_API_Routes_Payments(t *testing.T) {
 	args := []string{"eth", "rtc", "btc", "ltc", "xmr", "dash"}
 	for _, v := range args {
 		if err := sendRequest(
-			"GET", "/api/v2/payments/deposit/address/"+v, 200, nil, nil, nil,
+			api, "GET", "/api/v2/payments/deposit/address/"+v, 200, nil, nil, nil,
 		); err != nil {
 			t.Fatal(err)
 		}
@@ -343,18 +380,38 @@ func Test_API_Routes_Payments(t *testing.T) {
 
 	// test invalid deposit address
 	if err := sendRequest(
-		"GET", "/api/v2/payments/deposit/address/invalidType", 400, nil, nil, nil,
+		api, "GET", "/api/v2/payments/deposit/address/invalidType", 400, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func Test_API_Routes_Misc(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	// test systems check route
 	// //api/v2/systems/check
 	var apiResp apiResponse
 	if err := sendRequest(
-		"GET", "/api/v2/systems/check", 200, nil, nil, &apiResp,
+		api, "GET", "/api/v2/systems/check", 200, nil, nil, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -370,7 +427,7 @@ func Test_API_Routes_Misc(t *testing.T) {
 	// /api/v2/statistics/stats
 
 	if err := sendRequest(
-		"GET", "/api/v2/statistics/stats", 200, nil, nil, nil,
+		api, "GET", "/api/v2/statistics/stats", 200, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -383,13 +440,32 @@ func Test_API_Routes_Misc(t *testing.T) {
 	urlValues := url.Values{}
 	urlValues.Add("bucket_name", "filesuploadbucket")
 	if err := sendRequest(
-		"POST", "/api/v2/admin/mini/create/bucket", 200, nil, urlValues, nil,
+		api, "POST", "/api/v2/admin/mini/create/bucket", 200, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func Test_API_Routes_IPFS_Public(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, testRecorder, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// add a file normally
 	// /api/v2/ipfs/public/file/add
 	bodyBuf := &bytes.Buffer{}
@@ -476,7 +552,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	urlValues = url.Values{}
 	urlValues.Add("hold_time", "5")
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/public/pin/"+hash, 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/ipfs/public/pin/"+hash, 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -489,7 +565,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	// /api/v2/ipfs/public/check/pin
 	var boolAPIResp boolAPIResponse
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/public/pin/check/"+hash, 200, nil, nil, &boolAPIResp,
+		api, "GET", "/api/v2/ipfs/public/pin/check/"+hash, 200, nil, nil, &boolAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -504,7 +580,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	urlValues.Add("message", "bar")
 	var mapAPIResp mapAPIResponse
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/public/pubsub/publish/foo", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/api/v2/ipfs/public/pubsub/publish/foo", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -523,7 +599,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	// /api/v2/ipfs/stat
 	var interfaceAPIResp interfaceAPIResponse
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/public/stat/"+hash, 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/ipfs/public/stat/"+hash, 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -535,7 +611,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	// /api/v2/ipfs/public/dag
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/public/dag/"+hash, 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/ipfs/public/dag/"+hash, 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -546,7 +622,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	// test download
 	// /api/v2/ipfs/public/download
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/public/download/"+hash, 200, nil, nil, nil,
+		api, "POST", "/api/v2/ipfs/public/download/"+hash, 200, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -559,31 +635,44 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	urlValues.Add("content_hash", hash)
 	urlValues.Add("passphrase", "password123")
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
+		api, "POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func Test_API_Routes_IPFS_Private(t *testing.T) {
-	// create a private network for us to test against
-	nm := models.NewHostedIPFSNetworkManager(db)
-	/*um := models.NewUserManager(db)
-	if _, err := nm.CreateHostedPrivateNetwork("abc123", "abc123", nil, []string{"testuser"}); err != nil {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
 		t.Fatal(err)
 	}
-	if err := um.AddIPFSNetworkForUser("testuser", "abc123"); err != nil {
+	db, err := loadDatabase(cfg)
+	if err != nil {
 		t.Fatal(err)
-	}*/
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, testRecorder, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// create a private network for us to test against
+	nm := models.NewHostedIPFSNetworkManager(db)
 
 	// create private network
 	// /api/v2/ipfs/private/new
 	var mapAPIResp mapAPIResponse
 	urlValues := url.Values{}
 	urlValues.Add("network_name", "abc123")
-	fakeOrchClient.StartNetworkReturnsOnCall(0, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5001", SwarmKey: testSwarmKey}, nil)
+	fakeOrch.StartNetworkReturnsOnCall(0, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5001", SwarmKey: testSwarmKey}, nil)
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/api/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -613,9 +702,9 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues.Add("swarm_key", testSwarmKey)
 	urlValues.Add("bootstrap_peers", testBootstrapPeer1)
 	urlValues.Add("bootstrap_peers", testBootstrapPeer2)
-	fakeOrchClient.StartNetworkReturnsOnCall(1, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5002", SwarmKey: "swarmStorm"}, nil)
+	fakeOrch.StartNetworkReturnsOnCall(1, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5002", SwarmKey: "swarmStorm"}, nil)
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/api/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -636,7 +725,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// /api/v2/ipfs/private/network/:name
 	var interfaceAPIResp interfaceAPIResponse
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/private/network/abc123", 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/ipfs/private/network/abc123", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -648,7 +737,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// /api/v2/ipfs/private/networks
 	var stringSliceAPIResp stringSliceAPIResponse
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/private/networks", 200, nil, nil, &stringSliceAPIResp,
+		api, "GET", "/api/v2/ipfs/private/networks", 200, nil, nil, &stringSliceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -675,9 +764,9 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
-	fakeOrchClient.StopNetworkReturnsOnCall(0, &pbOrch.Empty{}, nil)
+	fakeOrch.StopNetworkReturnsOnCall(0, &pbOrch.Empty{}, nil)
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/private/network/stop", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/api/v2/ipfs/private/network/stop", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -694,9 +783,9 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
-	fakeOrchClient.StartNetworkReturnsOnCall(2, &pbOrch.StartNetworkResponse{Api: "test", SwarmKey: "test"}, nil)
+	fakeOrch.StartNetworkReturnsOnCall(2, &pbOrch.StartNetworkResponse{Api: "test", SwarmKey: "test"}, nil)
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/private/network/start", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/api/v2/ipfs/private/network/start", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -796,7 +885,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues.Add("hold_time", "5")
 	urlValues.Add("network_name", "abc123")
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/private/pin/"+hash, 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/ipfs/private/pin/"+hash, 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -809,7 +898,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// /api/v2/ipfs/private/check/pin
 	var boolAPIResp boolAPIResponse
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/private/pin/check/"+hash+"/abc123", 200, nil, nil, &boolAPIResp,
+		api, "GET", "/api/v2/ipfs/private/pin/check/"+hash+"/abc123", 200, nil, nil, &boolAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -825,7 +914,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues.Add("message", "bar")
 	urlValues.Add("network_name", "abc123")
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/private/pubsub/publish/foo", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/api/v2/ipfs/private/pubsub/publish/foo", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -844,7 +933,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// /api/v2/ipfs/private/stat
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/private/stat/"+hash+"/abc123", 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/ipfs/private/stat/"+hash+"/abc123", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -856,7 +945,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// /api/v2/ipfs/private/dag
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/private/dag/"+hash+"/abc123", 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/ipfs/private/dag/"+hash+"/abc123", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -869,7 +958,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/private/download/"+hash, 200, nil, urlValues, nil,
+		api, "POST", "/api/v2/ipfs/private/download/"+hash, 200, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -878,7 +967,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// /api/v2/ipfs/private/networks
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/private/networks", 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/ipfs/private/networks", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -890,7 +979,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// /api/v2/ipfs/private/networks
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/private/uploads/abc123", 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/ipfs/private/uploads/abc123", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -905,7 +994,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues.Add("content_hash", hash)
 	urlValues.Add("passphrase", "password123")
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
+		api, "POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -918,7 +1007,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues.Add("content_hash", hash)
 	urlValues.Add("passphrase", "password123")
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
+		api, "POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -931,7 +1020,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues.Add("content_hash", hash)
 	urlValues.Add("passphrase", "password123")
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
+		api, "POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -942,9 +1031,9 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
-	fakeOrchClient.RemoveNetworkReturnsOnCall(0, &pbOrch.Empty{}, nil)
+	fakeOrch.RemoveNetworkReturnsOnCall(0, &pbOrch.Empty{}, nil)
 	if err := sendRequest(
-		"DELETE", "/api/v2/ipfs/private/network/remove", 200, nil, urlValues, &mapAPIResp,
+		api, "DELETE", "/api/v2/ipfs/private/network/remove", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -957,6 +1046,26 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 }
 
 func Test_API_Routes_IPNS(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, testRecorder, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	// test get ipns records
 	// /api/v2/ipns/records
 	testRecorder = httptest.NewRecorder()
@@ -980,7 +1089,7 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	urlValues.Add("key", "mytestkey")
 	urlValues.Add("resolve", "true")
 	if err := sendRequest(
-		"POST", "/api/v2/ipns/public/publish/details", 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/ipns/public/publish/details", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1008,7 +1117,7 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	urlValues.Add("resolve", "true")
 	urlValues.Add("network_name", "testnetwork")
 	if err := sendRequest(
-		"POST", "/api/v2/ipns/private/publish/details", 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/ipns/private/publish/details", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1026,7 +1135,7 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := sendRequest(
-		"GET", "/api/v2/ipns/records", 200, nil, nil, &ipnsAPIResp,
+		api, "GET", "/api/v2/ipns/records", 200, nil, nil, &ipnsAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1040,11 +1149,31 @@ func Test_API_Routes_IPNS(t *testing.T) {
 }
 
 func Test_API_Routes_Cluster(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	// test cluster sync
 	// /api/v2/ipfs/cluster/sync/errors/local
 	var interfaceAPIResp interfaceAPIResponse
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/cluster/sync/errors/local", 200, nil, nil, &interfaceAPIResp,
+		api, "POST", "/api/v2/ipfs/cluster/sync/errors/local", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1059,7 +1188,7 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	urlValues := url.Values{}
 	urlValues.Add("hold_time", "5")
 	if err := sendRequest(
-		"POST", "/api/v2/ipfs/cluster/pin/"+hash, 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/ipfs/cluster/pin/"+hash, 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1080,7 +1209,7 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	// /api/v2/ipfs/cluster/status/pin/local
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/cluster/status/pin/local/"+hash, 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/ipfs/cluster/status/pin/local/"+hash, 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1093,7 +1222,7 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	// /api/v2/ipfs/cluster/status/pin/global
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/cluster/status/pin/global/"+hash, 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/ipfs/cluster/status/pin/global/"+hash, 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1106,7 +1235,7 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	// /api/v2/ipfs/cluster/status/local
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
-		"GET", "/api/v2/ipfs/cluster/status/local", 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/ipfs/cluster/status/local", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1117,10 +1246,30 @@ func Test_API_Routes_Cluster(t *testing.T) {
 }
 
 func Test_API_Routes_Frontend(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, testRecorder, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	// test get encrypted uploads
 	// /api/v2/frontend/uploads/encrypted
 	if err := sendRequest(
-		"GET", "/api/v2/frontend/uploads/encrypted", 200, nil, nil, nil,
+		api, "GET", "/api/v2/frontend/uploads/encrypted", 200, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1129,7 +1278,7 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	// /api/v2/frontend/cost/calculate/:hash/:holTime
 	var floatAPIResp floatAPIResponse
 	if err := sendRequest(
-		"GET", "/api/v2/frontend/cost/calculate/"+hash+"/5", 200, nil, nil, &floatAPIResp,
+		api, "GET", "/api/v2/frontend/cost/calculate/"+hash+"/5", 200, nil, nil, &floatAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1184,11 +1333,31 @@ func Test_API_Routes_Frontend(t *testing.T) {
 }
 
 func Test_API_Routes_Database(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	// test database global uploads
 	// /api/v2/database/uploads
 	var interfaceAPIResp interfaceAPIResponse
 	if err := sendRequest(
-		"GET", "/api/v2/database/uploads", 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/database/uploads", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1201,7 +1370,7 @@ func Test_API_Routes_Database(t *testing.T) {
 	// /api/v2/database/uploads/testuser
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
-		"GET", "/api/v2/database/uploads/testuser", 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/api/v2/database/uploads/testuser", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1212,11 +1381,31 @@ func Test_API_Routes_Database(t *testing.T) {
 }
 
 func Test_API_Routes_Account(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	// verify the username from the token
 	// /api/v2/account/token/username
 	var apiResp apiResponse
 	if err := sendRequest(
-		"GET", "/api/v2/account/token/username", 200, nil, nil, &apiResp,
+		api, "GET", "/api/v2/account/token/username", 200, nil, nil, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1232,7 +1421,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	// /api/v2/account/email/token/get
 	apiResp = apiResponse{}
 	if err := sendRequest(
-		"GET", "/api/v2/account/email/token/get", 200, nil, nil, &apiResp,
+		api, "GET", "/api/v2/account/email/token/get", 200, nil, nil, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1256,7 +1445,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	urlValues.Add("token", user.EmailVerificationToken)
 	apiResp = apiResponse{}
 	if err := sendRequest(
-		"POST", "/api/v2/account/email/token/verify", 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/account/email/token/verify", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1279,7 +1468,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	urlValues.Add("new_password", "admin1234@")
 	apiResp = apiResponse{}
 	if err := sendRequest(
-		"POST", "/api/v2/account/password/change", 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/account/password/change", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1296,7 +1485,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	urlValues.Add("key_name", "key1")
 	apiResp = apiResponse{}
 	if err := sendRequest(
-		"POST", "/api/v2/account/key/ipfs/new", 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/account/key/ipfs/new", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1310,7 +1499,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	urlValues.Add("key_name", "key2")
 	apiResp = apiResponse{}
 	if err := sendRequest(
-		"POST", "/api/v2/account/key/ipfs/new", 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/account/key/ipfs/new", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1333,7 +1522,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	// /api/v2/account/key/ipfs/get
 	var mapAPIResp mapAPIResponse
 	if err := sendRequest(
-		"GET", "/api/v2/account/key/ipfs/get", 200, nil, nil, &mapAPIResp,
+		api, "GET", "/api/v2/account/key/ipfs/get", 200, nil, nil, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1346,7 +1535,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	// /api/v2/account/credits/available
 	var floatAPIResp floatAPIResponse
 	if err := sendRequest(
-		"GET", "/api/v2/account/credits/available", 200, nil, nil, &floatAPIResp,
+		api, "GET", "/api/v2/account/credits/available", 200, nil, nil, &floatAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1363,7 +1552,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	urlValues.Add("password", "password123")
 	urlValues.Add("email_address", "testuser2+test@example.org")
 	if err := sendRequest(
-		"POST", "/api/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
+		api, "POST", "/api/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1376,7 +1565,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	// /api/v2/account/email/forgot
 	apiResp = apiResponse{}
 	if err := sendRequest(
-		"POST", "/api/v2/account/email/forgot", 200, nil, nil, &apiResp,
+		api, "POST", "/api/v2/account/email/forgot", 200, nil, nil, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1392,7 +1581,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	urlValues = url.Values{}
 	urlValues.Add("email_address", "test@email.com")
 	if err := sendRequest(
-		"POST", "/api/v2/forgot/username", 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/forgot/username", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1408,7 +1597,7 @@ func Test_API_Routes_Account(t *testing.T) {
 	urlValues = url.Values{}
 	urlValues.Add("email_address", "test@email.com")
 	if err := sendRequest(
-		"POST", "/api/v2/forgot/password", 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/forgot/password", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
