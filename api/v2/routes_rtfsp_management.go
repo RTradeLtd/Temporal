@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	ipfs_orchestrator "github.com/RTradeLtd/grpc/ipfs-orchestrator"
@@ -23,6 +24,9 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 	if !exists {
 		FailWithMissingField(c, "network_name")
 		return
+	}
+	if strings.ToLower(networkName) == "public" {
+		Fail(c, errors.New("network name can't be public, or PUBLIC"))
 	}
 	logger := api.LogWithUser(username).WithField("network_name", networkName)
 	logger.Info("network creation request received")

@@ -690,7 +690,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 
 	nm := models.NewHostedIPFSNetworkManager(db)
 
-	// create private network - failure
+	// create private network - failure missing name
 	// /api/v2/ipfs/private/new
 	var apiResp apiResponse
 	urlValues := url.Values{}
@@ -704,6 +704,34 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	}
 	if apiResp.Response != "network_name not present" {
 		t.Fatal("failed to detect missing network_name field")
+	}
+
+	// create private network - failure name is PUBLIC
+	// /api/v2/ipfs/private/new
+	apiResp = apiResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("network_name", "PUBLIC")
+	if err := sendRequest(
+		api, "POST", "/api/v2/ipfs/private/network/new", 400, nil, nil, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if apiResp.Code != 400 {
+		t.Fatal("bad api status code from /api/v2/ipfs/private/network/new")
+	}
+
+	// create private network - failure name is public
+	// /api/v2/ipfs/private/new
+	apiResp = apiResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("network_name", "public")
+	if err := sendRequest(
+		api, "POST", "/api/v2/ipfs/private/network/new", 400, nil, nil, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if apiResp.Code != 400 {
+		t.Fatal("bad api status code from /api/v2/ipfs/private/network/new")
 	}
 
 	// create private network
@@ -1115,6 +1143,9 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	um := models.NewUserManager(db)
+	um.AddIPFSKeyForUser("testuser", "mytestkey", "suchkeymuchwow")
+
 	// test get ipns records
 	// /api/v2/ipns/records
 	testRecorder = httptest.NewRecorder()
@@ -1125,13 +1156,41 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal("bad http status code from /api/v2/ipns/records")
 	}
 
+	// test ipns publishing (public) - bad hash
+	// /api/v2/ipns/public/publish/details
+	var apiResp apiResponse
+	urlValues := url.Values{}
+	urlValues.Add("hash", "notavalidipfshash")
+	urlValues.Add("life_time", "24h")
+	urlValues.Add("ttl", "1h")
+	urlValues.Add("key", "mytestkey")
+	urlValues.Add("resolve", "true")
+	if err := sendRequest(
+		api, "POST", "/api/v2/ipns/public/publish/details", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+
+	// test ipns publishing (private) - bad hash
+	// /api/v2/ipns/private/publish/details
+	apiResp = apiResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("hash", "notavalidipfshash")
+	urlValues.Add("life_time", "24h")
+	urlValues.Add("ttl", "1h")
+	urlValues.Add("key", "mytestkey")
+	urlValues.Add("resolve", "true")
+	urlValues.Add("network_name", "testnetwork")
+	if err := sendRequest(
+		api, "POST", "/api/v2/ipns/private/publish/details", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+
 	// test ipns publishing (public)
 	// api/v2/ipns/public/publish/details
-	// generate a fake key to publish
-	var apiResp apiResponse
-	um := models.NewUserManager(db)
-	um.AddIPFSKeyForUser("testuser", "mytestkey", "suchkeymuchwow")
-	urlValues := url.Values{}
+	apiResp = apiResponse{}
+	urlValues = url.Values{}
 	urlValues.Add("hash", hash)
 	urlValues.Add("life_time", "24h")
 	urlValues.Add("ttl", "1h")
