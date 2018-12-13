@@ -20,6 +20,9 @@ import (
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
+	pbOrch "github.com/RTradeLtd/grpc/ipfs-orchestrator"
+	pbLens "github.com/RTradeLtd/grpc/lens"
+	pbSigner "github.com/RTradeLtd/grpc/temporal"
 	"github.com/RTradeLtd/kaas"
 	"github.com/jinzhu/gorm"
 )
@@ -35,6 +38,10 @@ var (
 	ctx          context.Context
 	cancel       context.CancelFunc
 	logFilePath  = "/var/log/temporal"
+	orch         pbOrch.ServiceClient
+	lens         pbLens.IndexerAPIClient
+	signer       pbSigner.SignerClient
+	err          error
 )
 
 var commands = map[string]cmd.Cmd{
@@ -42,33 +49,31 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			lc, err := clients.NewLensClient(cfg.Endpoints)
+			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true", lens, orch, signer)
 			if err != nil {
 				log.Fatal(err)
 			}
-			defer lc.Close()
-			orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer orch.Close()
-			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true", lc, orch)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer service.Close()
+			//defer service.Close()
 
 			port := os.Getenv("API_PORT")
 			if port == "" {
 				port = "6767"
 			}
+			quitChannel := make(chan os.Signal)
+			signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+			go func() {
+				fmt.Println(closeMessage)
+				<-quitChannel
+				service.Close()
+				cancel()
+			}()
 			addr := fmt.Sprintf("%s:%s", args["listenAddress"], port)
 			if args["certFilePath"] == "" || args["keyFilePath"] == "" {
 				fmt.Println("TLS config incomplete - starting API service without TLS...")
-				err = service.ListenAndServe(addr, nil)
+				err = service.ListenAndServe(ctx, addr, nil)
 			} else {
 				fmt.Println("Starting API service with TLS...")
-				err = service.ListenAndServe(addr, &v2.TLSConfig{
+				err = service.ListenAndServe(ctx, addr, &v2.TLSConfig{
 					CertFile: args["certFilePath"],
 					KeyFile:  args["keyFilePath"],
 				})
@@ -429,13 +434,32 @@ func main() {
 		"dbURL":         tCfg.Database.URL,
 		"dbUser":        tCfg.Database.Username,
 	}
-	if os.Args[1] == "user" {
+	switch os.Args[1] {
+	case "user":
 		flags["user"] = os.Args[2]
 		flags["pass"] = os.Args[3]
 		flags["email"] = os.Args[4]
-	}
-	if os.Args[1] == "admin" {
+	case "admin":
 		flags["dbAdmin"] = os.Args[2]
+	case "api":
+		lensClient, err := clients.NewLensClient(tCfg.Endpoints)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer lensClient.Close()
+		lens = lensClient
+		orchClient, err := clients.NewOcrhestratorClient(tCfg.Orchestrator)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer orchClient.Close()
+		orch = orchClient
+		signerClient, err := clients.NewSignerClient(tCfg, os.Getenv("SSL_MODE_DISABLE") == "true")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer signerClient.Close()
+		signer = signerClient
 	}
 	fmt.Println(tCfg.APIKeys.ChainRider)
 	// execute

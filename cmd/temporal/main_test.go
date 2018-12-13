@@ -6,10 +6,34 @@ import (
 	"testing"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/jinzhu/gorm"
 )
+
+func TestAPI_NoTLS(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err = loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lens = &mocks.FakeIndexerAPIClient{}
+	orch = &mocks.FakeServiceClient{}
+	signer = &mocks.FakeSignerClient{}
+	if err = os.Setenv("API_PORT", "6767"); err != nil {
+		t.Fatal(err)
+	}
+	flags := map[string]string{
+		"listenAddress": "127.0.0.1",
+	}
+	ctx, cancel = context.WithTimeout(context.Background(), time.Second*20)
+	commands["api"].Action(*cfg, flags)
+	cancel()
+}
 
 // TestQueueIPFS is used to test IPFS queues
 func TestQueuesIPFS(t *testing.T) {

@@ -37,15 +37,16 @@ const (
 )
 
 var (
-	hash           = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
-	api            *API
-	db             *gorm.DB
-	engine         *gin.Engine
-	testRecorder   *httptest.ResponseRecorder
-	authHeader     string
-	cfg            *config.TemporalConfig
-	fakeLensClient *mocks.FakeIndexerAPIClient
-	fakeOrchClient *mocks.FakeServiceClient
+	hash             = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
+	api              *API
+	db               *gorm.DB
+	engine           *gin.Engine
+	testRecorder     *httptest.ResponseRecorder
+	authHeader       string
+	cfg              *config.TemporalConfig
+	fakeLensClient   *mocks.FakeIndexerAPIClient
+	fakeOrchClient   *mocks.FakeServiceClient
+	fakeSignerClient *mocks.FakeSignerClient
 )
 
 type apiResponse struct {
@@ -154,8 +155,9 @@ func Test_API_Setup(t *testing.T) {
 	// setup fake mock clients
 	fakeLensClient = &mocks.FakeIndexerAPIClient{}
 	fakeOrchClient = &mocks.FakeServiceClient{}
+	fakeSignerClient = &mocks.FakeSignerClient{}
 
-	api, err = new(cfg, engine, fakeLensClient, fakeOrchClient, im, imCluster, false, os.Stdout)
+	api, err = new(cfg, engine, fakeLensClient, fakeOrchClient, fakeSignerClient, im, imCluster, false, os.Stdout)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1420,7 +1422,7 @@ func Test_Utils(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	api, err := Initialize(cfg, true, &mocks.FakeIndexerAPIClient{}, &mocks.FakeServiceClient{})
+	api, err := Initialize(cfg, true, &mocks.FakeIndexerAPIClient{}, &mocks.FakeServiceClient{}, &mocks.FakeSignerClient{})
 	if err != nil {
 		t.Fatal(err)
 	}
