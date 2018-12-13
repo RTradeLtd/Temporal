@@ -1840,21 +1840,19 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
-	fakeOrch := &mocks.FakeServiceClient{}
-	fakeSigner := &mocks.FakeSignerClient{}
-
 	type args struct {
 		certFilePath string
 		keyFilePath  string
 	}
 	tests := []struct {
-		name string
-		args args
+		name    string
+		args    args
+		wantErr bool
 	}{
-		{"NoTLS", args{"", ""}},
-		{"TLS", args{"../../testenv/certs/api.cert", "../../testenv/certs/api.key"}},
+		{"NoTLS", args{"", ""}, false},
+		{"TLS", args{"../../testenv/certs/api.cert", "../../testenv/certs/api.key"}, false},
+		{"TLS-Missing-Cert", args{"../../README.md", "../../testenv/certs/api.key"}, true},
+		{"TLS-Missing-Key", args{"../../testenv/certs/api.cert", "../../README.md"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1873,8 +1871,8 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 			} else {
 				err = api.ListenAndServe(ctx, "127.0.0.1:6701", nil)
 			}
-			if err != nil {
-				t.Fatal(err)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("ListenAndServer() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
