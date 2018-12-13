@@ -1858,6 +1858,9 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			fakeLens := &mocks.FakeIndexerAPIClient{}
+			fakeOrch := &mocks.FakeServiceClient{}
+			fakeSigner := &mocks.FakeSignerClient{}
 			api, err := Initialize(cfg, true, fakeLens, fakeOrch, fakeSigner)
 			if err != nil {
 				t.Fatal(err)
