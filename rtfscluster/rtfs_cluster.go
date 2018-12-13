@@ -24,8 +24,10 @@ func Initialize(hostAddress, hostPort string) (*ClusterManager, error) {
 		cm.Config.Port = hostPort
 	}
 	// modify default config with infrastructure specific settings
-	err := cm.GenClient()
-	if err != nil {
+	if err := cm.GenClient(); err != nil {
+		return nil, err
+	}
+	if _, err := cm.ListPeers(); err != nil {
 		return nil, err
 	}
 	return &cm, nil

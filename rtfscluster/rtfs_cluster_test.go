@@ -29,9 +29,13 @@ func TestInitialize(t *testing.T) {
 	if id.Version == "" {
 		t.Fatal("version is empty string when it shouldn't be")
 	}
-	fmt.Println(id)
 }
 
+func TestInitialize_Failure(t *testing.T) {
+	if _, err := rtfscluster.Initialize("10.255.255.255", "9094"); err == nil {
+		t.Fatal("expected error")
+	}
+}
 func TestParseLocalStatusAllAndSync(t *testing.T) {
 	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
