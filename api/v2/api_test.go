@@ -646,9 +646,9 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 
 	// test download
-	// /api/v2/ipfs/download
+	// /api/v2/ipfs/utils/download
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipfs/download/"+hash, 200, nil, nil, nil,
+		api, "POST", "/api/v2/ipfs/utils/download/"+hash, 200, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1003,11 +1003,11 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	}
 
 	// test download
-	// /api/v2/ipfs/download
+	// /api/v2/ipfs/utils/download
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipfs/download/"+hash, 200, nil, urlValues, nil,
+		api, "POST", "/api/v2/ipfs/utils/download/"+hash, 200, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}

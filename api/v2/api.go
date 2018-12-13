@@ -430,8 +430,6 @@ func (api *API) setupRoutes() error {
 	// ipfs routes
 	ipfs := v2.Group("/ipfs", authware...)
 	{
-		// generic download route
-		ipfs.POST("/download/:hash", api.downloadContentHash)
 		// public ipfs routes
 		public := ipfs.Group("/public")
 		{
@@ -496,6 +494,8 @@ func (api *API) setupRoutes() error {
 		// utility routes
 		utils := ipfs.Group("/utils")
 		{
+			// generic download
+			utils.POST("/download/:hash", api.downloadContentHash)
 			laser := utils.Group("/laser")
 			{
 				laser.POST("/beam", api.beamContent)
