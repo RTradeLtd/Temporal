@@ -1,7 +1,6 @@
 package v2
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/utils"
-	"github.com/RTradeLtd/crypto"
 	gocid "github.com/ipfs/go-cid"
 
 	"github.com/RTradeLtd/Temporal/queue"
@@ -335,83 +333,4 @@ func (api *API) getDagObject(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": out})
-}
-
-// DownloadContentHash is used to download a particular content hash from the network
-func (api *API) downloadContentHash(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
-		return
-	}
-	// fetch the specified content type from the user
-	contentType, exists := c.GetPostForm("content_type")
-	if !exists {
-		contentType = "application/octet-stream"
-	}
-
-	// get any extra headers the user might want
-	exHeaders := c.PostFormArray("extra_headers")
-
-	// get the content hash that is to be downloaded
-	contentHash := c.Param("hash")
-	if _, err := gocid.Decode(contentHash); err != nil {
-		Fail(c, err)
-		return
-	}
-
-	var (
-		response []byte
-		size     int
-	)
-
-	// read the contents of the file
-	if response, err = api.ipfs.Cat(contentHash); err != nil {
-		api.LogError(err, eh.IPFSCatError)(c)
-		return
-	}
-	reader := bytes.NewReader(response)
-	// decrypt Temporal-encrypted content if key is provided
-	decryptKey := c.PostForm("decrypt_key")
-	if decryptKey != "" {
-		decrypted, err := crypto.NewEncryptManager(decryptKey).Decrypt(reader)
-		if err != nil {
-			Fail(c, err)
-			return
-		}
-		size = len(decrypted)
-		reader = bytes.NewReader(decrypted)
-	} else {
-		stats, err := api.ipfs.Stat(contentHash)
-		if err != nil {
-			api.LogError(err, eh.IPFSObjectStatError)(c, http.StatusBadRequest)
-			return
-		}
-		size = stats.CumulativeSize
-	}
-
-	// parse extra headers if there are any
-	extraHeaders := make(map[string]string)
-	// only process if there is actual data to process
-	if len(exHeaders) > 0 {
-		// the array must be of equal length, as a header has two parts
-		// the name of the header, and its value
-		if len(exHeaders)%2 != 0 {
-			FailWithMessage(c, "extra_headers post form is not even in length")
-			return
-		}
-		// parse through the available headers
-		for i := 0; i < len(exHeaders); i += 2 {
-			if i+1 < len(exHeaders) {
-				header := exHeaders[i]
-				value := exHeaders[i+1]
-				extraHeaders[header] = value
-			}
-		}
-	}
-
-	api.LogWithUser(username).Info("ipfs content download requested")
-
-	// send them the file
-	c.DataFromReader(200, int64(size), contentType, reader, extraHeaders)
 }

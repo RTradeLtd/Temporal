@@ -60,6 +60,7 @@ type API struct {
 	pm          *models.PaymentManager
 	dm          *models.DropManager
 	ue          *models.EncryptedUploadManager
+	upm         *models.UploadManager
 	zm          *models.ZoneManager
 	rm          *models.RecordManager
 	nm          *models.IPFSNetworkManager
@@ -224,6 +225,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIC
 		pm:          models.NewPaymentManager(dbm.DB),
 		dm:          models.NewDropManager(dbm.DB),
 		ue:          models.NewEncryptedUploadManager(dbm.DB),
+		upm:         models.NewUploadManager(dbm.DB),
 		lens:        lens,
 		signer:      signer,
 		orch:        orch,
@@ -428,6 +430,8 @@ func (api *API) setupRoutes() error {
 	// ipfs routes
 	ipfs := v2.Group("/ipfs", authware...)
 	{
+		// generic download route
+		ipfs.POST("/download/:hash", api.downloadContentHash)
 		// public ipfs routes
 		public := ipfs.Group("/public")
 		{
@@ -451,7 +455,6 @@ func (api *API) setupRoutes() error {
 			// general routes
 			public.GET("/stat/:key", api.getObjectStatForIpfs)
 			public.GET("/dag/:hash", api.getDagObject)
-			public.POST("/download/:hash", api.downloadContentHash)
 		}
 
 		// private ipfs routes
@@ -462,7 +465,7 @@ func (api *API) setupRoutes() error {
 			network := private.Group("/network")
 			{
 				network.GET("/:name", api.getIPFSPrivateNetworkByName)
-				network.POST("/new", api.createHostedIPFSNetworkEntryInDatabase)
+				network.POST("/new", api.createIPFSNetwork)
 				network.POST("/stop", api.stopIPFSPrivateNetwork)
 				network.POST("/start", api.startIPFSPrivateNetwork)
 				network.DELETE("/remove", api.removeIPFSPrivateNetwork)
@@ -489,7 +492,6 @@ func (api *API) setupRoutes() error {
 			// general routes
 			private.GET("/dag/:hash/:networkName", api.getDagObjectForHostedIPFSNetwork)
 			private.GET("/uploads/:networkName", api.getUploadsByNetworkName)
-			private.POST("/download/:hash", api.downloadContentHashForPrivateNetwork)
 		}
 		// utility routes
 		utils := ipfs.Group("/utils")

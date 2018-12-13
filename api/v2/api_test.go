@@ -146,6 +146,7 @@ func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceC
 	return api, testRecorder, nil
 }
 
+// this does a quick initial test of the API, and setups a second user account to use for testing
 func Test_API_Setup(t *testing.T) {
 	// load configuration
 	cfg, err := config.LoadConfig("../../testenv/config.json")
@@ -186,6 +187,23 @@ func Test_API_Setup(t *testing.T) {
 	}
 	// format authorization header
 	authHeader = "Bearer " + loginResp.Token
+
+	// register user account
+	// /api/v2/auth/register
+	var interfaceAPIResp interfaceAPIResponse
+	urlValues := url.Values{}
+	urlValues.Add("username", "testuser2")
+	urlValues.Add("password", "password123")
+	urlValues.Add("email_address", "testuser2+test@example.org")
+	if err := sendRequest(
+		api, "POST", "/api/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if interfaceAPIResp.Code != 200 {
+		t.Fatal("bad api status code from /api/v2/auth/register")
+	}
 }
 
 func Test_API_Routes_Lens(t *testing.T) {
@@ -628,9 +646,9 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 
 	// test download
-	// /api/v2/ipfs/public/download
+	// /api/v2/ipfs/download
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipfs/public/download/"+hash, 200, nil, nil, nil,
+		api, "POST", "/api/v2/ipfs/download/"+hash, 200, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -670,13 +688,28 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// create a private network for us to test against
 	nm := models.NewHostedIPFSNetworkManager(db)
+
+	// create private network - failure
+	// /api/v2/ipfs/private/new
+	var apiResp apiResponse
+	urlValues := url.Values{}
+	if err := sendRequest(
+		api, "POST", "/api/v2/ipfs/private/network/new", 400, nil, nil, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if apiResp.Code != 400 {
+		t.Fatal("bad api status code from /api/v2/ipfs/private/network/new")
+	}
+	if apiResp.Response != "network_name not present" {
+		t.Fatal("failed to detect missing network_name field")
+	}
 
 	// create private network
 	// /api/v2/ipfs/private/new
 	var mapAPIResp mapAPIResponse
-	urlValues := url.Values{}
+	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
 	fakeOrch.StartNetworkReturnsOnCall(0, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5001", SwarmKey: testSwarmKey}, nil)
 	if err := sendRequest(
@@ -710,6 +743,8 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues.Add("swarm_key", testSwarmKey)
 	urlValues.Add("bootstrap_peers", testBootstrapPeer1)
 	urlValues.Add("bootstrap_peers", testBootstrapPeer2)
+	urlValues.Add("users", "testuser")
+	urlValues.Add("users", "testuser2")
 	fakeOrch.StartNetworkReturnsOnCall(1, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5002", SwarmKey: "swarmStorm"}, nil)
 	if err := sendRequest(
 		api, "POST", "/api/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
@@ -833,7 +868,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code recovered from /api/v2/ipfs/private/file/add")
 	}
-	var apiResp apiResponse
+	apiResp = apiResponse{}
 	// unmarshal the response
 	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
@@ -968,11 +1003,11 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	}
 
 	// test download
-	// /api/v2/ipfs/public/download
+	// /api/v2/ipfs/download
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipfs/private/download/"+hash, 200, nil, urlValues, nil,
+		api, "POST", "/api/v2/ipfs/download/"+hash, 200, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -1559,23 +1594,6 @@ func Test_API_Routes_Account(t *testing.T) {
 	// validate the response code
 	if floatAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/account/credits/available")
-	}
-
-	// register user account
-	// /api/v2/auth/register
-	var interfaceAPIResp interfaceAPIResponse
-	urlValues = url.Values{}
-	urlValues.Add("username", "testuser2")
-	urlValues.Add("password", "password123")
-	urlValues.Add("email_address", "testuser2+test@example.org")
-	if err := sendRequest(
-		api, "POST", "/api/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if interfaceAPIResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/auth/register")
 	}
 
 	// forgot email
