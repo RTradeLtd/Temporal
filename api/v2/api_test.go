@@ -235,11 +235,11 @@ func Test_API_Routes_Lens(t *testing.T) {
 	urlValues = url.Values{}
 	urlValues.Add("keywords", "notarealsearch")
 	if err := sendRequest(
-		"POST", "/api/v2/lens/search", 200, nil, urlValues, &apiResp,
+		"POST", "/api/v2/lens/search", 400, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
-	if apiResp.Code != 200 {
+	if apiResp.Code != 400 {
 		t.Fatal("bad api response code from /api/v2/lens/search")
 	}
 	if apiResp.Response != "no results found" {
