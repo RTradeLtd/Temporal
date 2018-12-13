@@ -54,7 +54,7 @@ func (qm *Manager) processDatabaseFileAdd(d amqp.Delivery, wg *sync.WaitGroup, u
 	if upload == nil {
 		_, err = um.NewUpload(dfa.Hash, "file", opts)
 	} else {
-		// we have seen this upload before, so lets update teh database record
+		// we have seen this upload before, so lets update the database record
 		_, err = um.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName)
 	}
 	if err != nil {

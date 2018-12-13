@@ -588,6 +588,9 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
 	fileWriter, err := bodyWriter.CreateFormFile("file", "../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
 	fh, err := os.Open("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -628,6 +631,9 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	bodyBuf = &bytes.Buffer{}
 	bodyWriter = multipart.NewWriter(bodyBuf)
 	fileWriter, err = bodyWriter.CreateFormFile("file", "../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
 	fh, err = os.Open("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -918,6 +924,9 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
 	fileWriter, err := bodyWriter.CreateFormFile("file", "../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
 	fh, err := os.Open("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -959,6 +968,9 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	bodyBuf = &bytes.Buffer{}
 	bodyWriter = multipart.NewWriter(bodyBuf)
 	fileWriter, err = bodyWriter.CreateFormFile("file", "../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
 	fh, err = os.Open("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -1411,6 +1423,9 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
 	fileWriter, err := bodyWriter.CreateFormFile("file", "../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
 	fh, err := os.Open("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -1795,6 +1810,9 @@ func Test_Utils(t *testing.T) {
 	previousCreditAmount := user.Credits
 	api.refundUserCredits(testUser, "ipfs-pin", 10)
 	user, err = api.um.FindByUserName(testUser)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if user.Credits != previousCreditAmount+10 {
 		t.Fatal("failed to refund credits")
 	}
