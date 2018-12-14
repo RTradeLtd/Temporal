@@ -12,6 +12,7 @@ import (
 )
 
 func TestAPI(t *testing.T) {
+	logFilePath = "../../testenv"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -56,7 +57,7 @@ func TestAPI(t *testing.T) {
 
 // TestQueueIPFS is used to test IPFS queues
 func TestQueuesIPFS(t *testing.T) {
-	logFilePath = "../../templogs.log"
+	logFilePath = "../../testenv"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -91,7 +92,7 @@ func TestQueuesIPFS(t *testing.T) {
 }
 
 func TestQueuesDFA(t *testing.T) {
-	logFilePath = "../../templogs.log"
+	logFilePath = "../../testenv"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -102,6 +103,7 @@ func TestQueuesDFA(t *testing.T) {
 }
 
 func TestQueuesEmailSend(t *testing.T) {
+	logFilePath = "../../testenv"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -112,7 +114,7 @@ func TestQueuesEmailSend(t *testing.T) {
 }
 
 func TestMigrations(t *testing.T) {
-	logFilePath = "../../templogs.log"
+	logFilePath = "../../testenv"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -122,7 +124,7 @@ func TestMigrations(t *testing.T) {
 	commands["migrate-insecure"].Action(*cfg, nil)
 }
 func TestInit(t *testing.T) {
-	logFilePath = "../../templogs.log"
+	logFilePath = "../../testenv"
 	if err := os.Setenv("CONFIG_DAG", "../../testenv/new_config.json"); err != nil {
 		t.Fatal(err)
 	}
@@ -130,7 +132,7 @@ func TestInit(t *testing.T) {
 }
 
 func TestAdmin(t *testing.T) {
-	logFilePath = "../../templogs.log"
+	logFilePath = "../../testenv"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -142,7 +144,7 @@ func TestAdmin(t *testing.T) {
 }
 
 func TestUser(t *testing.T) {
-	logFilePath = "../../templogs.log"
+	logFilePath = "../../testenv"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)

@@ -41,7 +41,7 @@ var (
 	lens         pbLens.IndexerAPIClient
 	signer       pbSigner.SignerClient
 	err          error
-	logFilePath  = "/var/log/temporal/"
+	logFilePath  = "/var/log/temporal"
 )
 
 var commands = map[string]cmd.Cmd{
