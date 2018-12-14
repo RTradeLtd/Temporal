@@ -193,7 +193,7 @@ func Test_API_Setup(t *testing.T) {
 	var interfaceAPIResp interfaceAPIResponse
 	urlValues := url.Values{}
 	urlValues.Add("username", "testuser2")
-	urlValues.Add("password", "password123")
+	urlValues.Add("password", "password123!@#$%^&&**(!@#!")
 	urlValues.Add("email_address", "testuser2+test@example.org")
 	if err := sendRequest(
 		api, "POST", "/api/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
@@ -203,6 +203,14 @@ func Test_API_Setup(t *testing.T) {
 	// validate the response code
 	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/auth/register")
+	}
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser2\",\n  \"password\": \"password123!@#$%^&&**(!@#!\"\n}"))
+	req.Header.Add("Content-Type", "application/json")
+	api.r.ServeHTTP(testRecorder, req)
+	// validate the http status code
+	if testRecorder.Code != 200 {
+		t.Fatal("bad http status code from /api/v2/auth/login")
 	}
 }
 

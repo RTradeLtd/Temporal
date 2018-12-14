@@ -3,6 +3,7 @@ package v2
 import (
 	"errors"
 	"fmt"
+	"html"
 	"net/http"
 	"strconv"
 
@@ -78,11 +79,14 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 	if len(forms) == 0 {
 		return
 	}
+	forms["old_password"] = html.UnescapeString(forms["old_password"])
+	forms["new_password"] = html.UnescapeString(forms["new_password"])
 	api.l.WithFields(log.Fields{
 		"service": "api",
 		"user":    username,
 	}).Info("password change requested")
 	if ok, err := api.um.ChangePassword(username, forms["old_password"], forms["new_password"]); err != nil {
+		fmt.Println(err)
 		api.LogError(err, eh.PasswordChangeError)(c, http.StatusBadRequest)
 		return
 	} else if !ok {
@@ -103,6 +107,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	if len(forms) == 0 {
 		return
 	}
+	forms["password"] = html.UnescapeString(forms["password"])
 	api.l.WithFields(log.Fields{
 		"service": "api",
 	}).Info("user account registration detected")
