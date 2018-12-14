@@ -1,16 +1,16 @@
 # Production docker-compose setup for Temporal.
 #
 # Usage:
-#   env API=latest BASE=/my/dir docker-compose -f prod.yml up
+#   env TEMPORAL=latest BASE=/my/dir docker-compose -f prod.yml up
 #
 # Data:
 #   - Leave BASE unassigned to use the root directory.
 #   - Generally, component data goes in $BASE/data/$COMPONENT.
 #
 # Configuration:
-#   * temporal:
+#   * temporal, queue-*:
 #     - configuration file should be in data directory
-#     - set API in env to use desired version
+#     - set TEMPORAL in env to use desired version
 #   * ipfs, ipfs-cluster:
 #     - configuration files should be in data directory
 #   * minio:
@@ -22,8 +22,71 @@ version: '3'
 
 services:
   temporal:
-    image: rtradetech/temporal:${API}
+    image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-dfa:
+    image: rtradetech/temporal:${TEMPORAL}
+    network_mode: "host" # expose all
+    command: queue dfa
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-email-send:
+    image: rtradetech/temporal:${TEMPORAL}
+    network_mode: "host" # expose all
+    command: queue email-send
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-ipfs-cluster:
+    image: rtradetech/temporal:${TEMPORAL}
+    network_mode: "host" # expose all
+    command: queue ipfs cluster
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-ipfs-file:
+    image: rtradetech/temporal:${TEMPORAL}
+    network_mode: "host" # expose all
+    command: queue ipfs file
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-ipfs-ipns-entry:
+    image: rtradetech/temporal:${TEMPORAL}
+    network_mode: "host" # expose all
+    command: queue ipfs ipns-entry
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-ipfs-key-creation:
+    image: rtradetech/temporal:${TEMPORAL}
+    network_mode: "host" # expose all
+    command: queue ipfs key-creation
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  queue-ipfs-pin:
+    image: rtradetech/temporal:${TEMPORAL}
+    network_mode: "host" # expose all
+    command: queue ipfs pin
     environment:
       - CONFIG_DAG=/data/temporal/config.json
     volumes:
@@ -47,8 +110,6 @@ services:
       - 9094:9094
       - 9095:9095
       - 9096:9096
-    environment:
-      - IPFS_API=/ip4/127.0.0.1/tcp/5001
     volumes:
       - ${BASE}/data/ipfs-cluster:/data/ipfs-cluster
 
