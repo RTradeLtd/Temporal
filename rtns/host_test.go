@@ -25,11 +25,6 @@ func TestPublisher_Gen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := publisher.Close(); err != nil {
-			t.Fatal(err)
-		}
-	}()
 	// sleep giving time for our node to discover some peers
 	time.Sleep(time.Second * 15)
 	// create our private key
@@ -58,11 +53,6 @@ func TestPublisher_NoGen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := publisher.Close(); err != nil {
-			t.Fatal(err)
-		}
-	}()
 	// sleep giving time for our node to discover some peers
 	time.Sleep(time.Second * 15)
 	// create our private key
