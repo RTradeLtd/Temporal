@@ -88,5 +88,5 @@ func (p *Publisher) PublishWithEOL(ctx context.Context, pk ci.PrivKey, content s
 
 // Close is used to terminate our libp2p connection
 func (p *Publisher) Close() error {
-	p.host.Close()
+	return p.host.Close()
 }
