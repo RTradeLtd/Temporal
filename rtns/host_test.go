@@ -16,7 +16,7 @@ type contextKey string
 
 const (
 	ipnsPublishTTL contextKey = "ipns-publish-ttl"
-	testPath                  = "/ipfs/QmNdm1ZyLX7hBVTDYhfiZ6oVjQHdEkN1VxV5rfJDHBVZyH"
+	testPath                  = "/ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 	testSwarmADDR             = "/ip4/0.0.0.0/tcp/4002"
 )
 
@@ -25,6 +25,11 @@ func TestPublisher_Gen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer func() {
+		if err := publisher.Close(); err != nil {
+			t.Fatal(err)
+		}
+	}()
 	// sleep giving time for our node to discover some peers
 	time.Sleep(time.Second * 15)
 	// create our private key
@@ -53,6 +58,11 @@ func TestPublisher_NoGen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer func() {
+		if err := publisher.Close(); err != nil {
+			t.Fatal(err)
+		}
+	}()
 	// sleep giving time for our node to discover some peers
 	time.Sleep(time.Second * 15)
 	// create our private key
