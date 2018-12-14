@@ -16,7 +16,7 @@ import (
 const (
 	testCID           = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 	testRabbitAddress = "amqp://127.0.0.1:5672"
-	testLogFilePath   = "../templogs"
+	testLogFilePath   = "../testenv/"
 	testCfgPath       = "../testenv/config.json"
 )
 
