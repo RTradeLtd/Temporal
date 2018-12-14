@@ -39,6 +39,7 @@ func TestQueue_Publish(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			defer qm.Close()
 			if tt.name == "PConfirmQ" {
 				if err := qm.PublishMessage(PaymentConfirmation{
 					UserName:      "testuser",
