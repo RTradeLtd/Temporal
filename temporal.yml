@@ -110,8 +110,6 @@ services:
       - 9094:9094
       - 9095:9095
       - 9096:9096
-    environment:
-      - IPFS_API=/ip4/127.0.0.1/tcp/5001
     volumes:
       - ${BASE}/data/ipfs-cluster:/data/ipfs-cluster
 
