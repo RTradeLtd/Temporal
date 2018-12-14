@@ -160,16 +160,13 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIC
 	} else {
 		networkVersion = "main"
 	}
-	dc, err := dash.NewClient(&dash.ConfigOpts{
+	dc := dash.NewClient(&dash.ConfigOpts{
 		APIVersion:      "v1",
 		DigitalCurrency: "dash",
 		//TODO: change to main before production release
 		Blockchain: networkVersion,
 		Token:      cfg.APIKeys.ChainRider,
 	})
-	if err != nil {
-		return nil, err
-	}
 	keys, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return nil, err

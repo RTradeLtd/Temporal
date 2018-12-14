@@ -9,7 +9,7 @@ import (
 )
 
 // NewClient is used to initialize our ChainRider client
-func NewClient(opts *ConfigOpts) (*Client, error) {
+func NewClient(opts *ConfigOpts) *Client {
 	if opts == nil {
 		opts = &ConfigOpts{
 			APIVersion:      defaultAPIVersion,
@@ -26,7 +26,7 @@ func NewClient(opts *ConfigOpts) (*Client, error) {
 	}
 	// generate our payload
 	c.GeneratePayload()
-	return c, nil
+	return c
 }
 
 // GeneratePayload is used to generate our payload
