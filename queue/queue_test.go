@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	testCID           = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
+	testCID           = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 	testRabbitAddress = "amqp://127.0.0.1:5672"
 	testLogFilePath   = "../templogs"
 	testCfgPath       = "../testenv/config.json"
@@ -39,7 +39,6 @@ func TestQueue_Publish(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer qm.Close()
 			if tt.name == "PConfirmQ" {
 				if err := qm.PublishMessage(PaymentConfirmation{
 					UserName:      "testuser",
@@ -134,7 +133,7 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
 		Hash:             testCID,
 		HoldTimeInMonths: 10,
@@ -178,7 +177,7 @@ func TestQueue_IPFSFile(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	if err := qmPublisher.PublishMessage(IPFSFile{
 		MinioHostIP:      "127.0.0.1:9090",
 		FileName:         "testfile",
@@ -228,7 +227,7 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	if err := qmPublisher.PublishMessage(IPFSClusterPin{
 		CID:              testCID,
 		NetworkName:      "public",
@@ -274,7 +273,7 @@ func TestQueue_EmailSend(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	if err := qmPublisher.PublishMessage(EmailSend{
 		Subject:     "test email",
 		Content:     "this is a test email",
@@ -320,7 +319,7 @@ func TestQueue_IPNSEntry(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	if err := qmPublisher.PublishMessage(IPNSEntry{
 		CID:         testCID,
 		LifeTime:    time.Minute,
@@ -375,7 +374,7 @@ func TestQueue_IPFSPin(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	if err := qmPublisher.PublishMessageWithExchange(IPFSPin{
 		CID:              testCID,
 		NetworkName:      "public",
@@ -426,7 +425,7 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	if err := qmPublisher.PublishMessageWithExchange(IPFSKeyCreation{
 		UserName:    "testuser",
 		Name:        "mykey",
@@ -489,7 +488,7 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.Endpoints.Krab.TLS.CertPath = "/root"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
@@ -517,7 +516,7 @@ func TestQueue_IPFSPin_Failure(t *testing.T) {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
 	cfg.RabbitMQ.URL = "notarealurl"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
@@ -542,7 +541,7 @@ func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.IPFS.APIConnection.Host = "notarealip"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
@@ -567,7 +566,7 @@ func TestQueue_IPFSFile_Failure_RabbitMQ(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.RabbitMQ.URL = "notarealip"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
