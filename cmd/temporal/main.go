@@ -37,11 +37,11 @@ var (
 	db           *gorm.DB
 	ctx          context.Context
 	cancel       context.CancelFunc
-	logFilePath  = "/var/log/temporal"
 	orch         pbOrch.ServiceClient
 	lens         pbLens.IndexerAPIClient
 	signer       pbSigner.SignerClient
 	err          error
+	logFilePath  = "/var/log/temporal/"
 )
 
 var commands = map[string]cmd.Cmd{
