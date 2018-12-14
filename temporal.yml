@@ -28,7 +28,7 @@ services:
       - CONFIG_DAG=/data/temporal/config.json
     volumes:
       - ${BASE}/data/temporal:/data/temporal
-  
+
   queue-dfa:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
@@ -37,7 +37,7 @@ services:
       - CONFIG_DAG=/data/temporal/config.json
     volumes:
       - ${BASE}/data/temporal:/data/temporal
-  
+
   queue-email-send:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
