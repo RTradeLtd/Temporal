@@ -38,7 +38,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		return err
 	}
 	// user a long running publisher
-	publisher, err := rtns.NewPublisher(&rtns.Opts{PK: pk}, "/ip4/0.0.0.0/tcp/3999")
+	publisher, err := rtns.NewPublisher(pk, true, "/ip4/0.0.0.0/tcp/3999")
 	if err != nil {
 		return err
 	}

@@ -20,36 +20,13 @@ const (
 	testSwarmADDR             = "/ip4/0.0.0.0/tcp/4002"
 )
 
-func TestPublisher_Gen(t *testing.T) {
-	publisher, err := rtns.NewPublisher(nil, testSwarmADDR)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// sleep giving time for our node to discover some peers
-	time.Sleep(time.Second * 15)
-	// create our private key
-	pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if pid, err := peer.IDFromPrivateKey(pk); err != nil {
-		t.Fatal(err)
-	} else {
-		fmt.Println("id to check ", pid.Pretty())
-	}
-	ctx := context.WithValue(context.Background(), ipnsPublishTTL, time.Minute*10)
-	if err := publisher.Publish(ctx, pk, testPath); err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestPublisher_NoGen(t *testing.T) {
 	// create our private key
 	pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
 	if err != nil {
 		t.Fatal(err)
 	}
-	publisher, err := rtns.NewPublisher(&rtns.Opts{PK: pk}, testSwarmADDR)
+	publisher, err := rtns.NewPublisher(pk, false, testSwarmADDR)
 	if err != nil {
 		t.Fatal(err)
 	}

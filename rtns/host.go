@@ -27,19 +27,7 @@ type Opts struct {
 }
 
 // NewPublisher is used to generate our IPNS publisher
-func NewPublisher(opts *Opts, swarmAddrs ...string) (*Publisher, error) {
-	var (
-		pk  ci.PrivKey
-		err error
-	)
-	if opts != nil && opts.PK != nil {
-		pk = opts.PK
-	} else {
-		pk, _, err = ci.GenerateKeyPair(ci.Ed25519, 256)
-		if err != nil {
-			return nil, err
-		}
-	}
+func NewPublisher(pk ci.PrivKey, permanent bool, swarmAddrs ...string) (*Publisher, error) {
 	pid, err := peer.IDFromPrivateKey(pk)
 	if err != nil {
 		return nil, err
@@ -65,7 +53,7 @@ func NewPublisher(opts *Opts, swarmAddrs ...string) (*Publisher, error) {
 	// create a new node
 	host, err := core.NewNode(context.Background(), &core.BuildCfg{
 		Online:    true,
-		Permanent: true,
+		Permanent: permanent,
 		Repo:      &repoMock,
 	})
 	if err != nil {
