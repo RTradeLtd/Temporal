@@ -42,6 +42,11 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if err := publisher.Close(); err != nil {
+			qm.LogError(err, "failed to properly close libp2p connections")
+		}
+	}()
 	ipnsManager := models.NewIPNSManager(qm.db)
 	qm.LogInfo("processing ipns entry creation requests")
 	for {
