@@ -34,7 +34,7 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, l *zap.SugaredLogg
 				l.With("user", userId).Error("bad login")
 				return userId, false
 			}
-			l.With("user", userId).Info("successful login")
+			l.Info("successful login")
 			return userId, true
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {
