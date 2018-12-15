@@ -14,12 +14,8 @@ func TestNewLogger(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"Dev", args{"./tmp/dev.log", true}, false},
-		{"Prod", args{"./tmp/prog.log", false}, false},
-		{"DevFailDir", args{"./tmp", true}, true},
-		{"ProdFailDir", args{"./tmp", false}, true},
-		{"stdout-dev", args{"stdout", true}, false},
-		{"stdout-prod", args{"stdout", false}, false},
+		{"dev", args{"", true}, false},
+		{"prod", args{"./tmp/log", false}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -31,9 +27,15 @@ func TestNewLogger(t *testing.T) {
 			if !tt.wantErr && gotSugar == nil {
 				t.Error("got unexpected nil logger")
 			}
-			if !tt.wantErr && gotSugar != nil {
-				gotSugar.Info("test" + tt.name)
-			}
 		})
+	}
+}
+
+func TestNewProcessLogger(t *testing.T) {
+	l, out := NewTestLogger()
+	logger := NewProcessLogger(l, "network_up", "id", "1234")
+	logger.Info("hi")
+	if out.All()[0].ContextMap()["network_up.id"].(string) != "1234" {
+		t.Error("bad logger")
 	}
 }
