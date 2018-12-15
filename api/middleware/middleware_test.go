@@ -59,6 +59,10 @@ func TestJwtMiddleware(t *testing.T) {
 	} else if token != "testuser" {
 		t.Fatal("failed to authenticate")
 	}
+	// test a failed auth
+	if _, valid := jwt.Authenticator("testuser22", "admin22", testCtx); valid {
+		t.Fatal("user authenticated when auth should've failed")
+	}
 	if valid := jwt.Authorizator("testuser", testCtx); !valid {
 		t.Fatal("failed to authorize user")
 	}
