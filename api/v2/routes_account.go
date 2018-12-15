@@ -89,7 +89,8 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		api.LogError(err, eh.PasswordChangeError)(c)
 		return
 	}
-	api.l.With("user", username).Info("password changed")
+	api.l.Infow("password changed",
+		"user", username)
 	Respond(c, http.StatusOK, gin.H{"response": "password changed"})
 }
 
