@@ -30,6 +30,7 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, l *zap.SugaredLogg
 			if err != nil {
 				return userId, false
 			}
+			l = l.With("user", userId)
 			if !validLogin {
 				l.With("user", userId).Error("bad login")
 				return userId, false
