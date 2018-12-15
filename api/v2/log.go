@@ -29,16 +29,6 @@ func (api *API) LogError(err error, message string, fields ...interface{}) func(
 	return func(c *gin.Context, code ...int) { FailWithMessage(c, message, code...) }
 }
 
-// LogInfo is a wrapper used by the API to handle simple info logs
-func (api *API) LogInfo(message ...interface{}) {
-	api.l.Info(message...)
-}
-
-// LogDebug is a wrapper used by the API to handle simple debug logs
-func (api *API) LogDebug(message ...interface{}) {
-	api.l.Debug(message...)
-}
-
 // LogWithUser creates entry context with user
 func (api *API) LogWithUser(user string) *zap.SugaredLogger {
 	return api.l.With("user", user)

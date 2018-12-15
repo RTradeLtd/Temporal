@@ -14,35 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestAPI_LogInfo(t *testing.T) {
-	type args struct {
-		message string
-	}
-	tests := []struct {
-		name        string
-		args        args
-		wantMessage string
-	}{
-		{"Single", args{"hello"}, "hello"},
-		{"Double", args{"hello world"}, "hello world"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			observer, out := observer.New(zap.InfoLevel)
-			logger := zap.New(observer).Sugar()
-			api := API{l: logger, service: "test"}
-			//	r := httptest.NewRecorder()
-			//	c, _ := gin.CreateTestContext(r)
-			api.LogInfo(tt.args.message)
-			// check log message and context
-			b, _ := json.Marshal(out.All()[0].ContextMap())
-			entry := out.All()[0].Message + string(b)
-			if !strings.Contains(entry, tt.wantMessage) {
-				t.Errorf("got %s, want %s", entry, tt.wantMessage)
-			}
-		})
-	}
-}
 func TestAPI_LogError(t *testing.T) {
 	type args struct {
 		err     error

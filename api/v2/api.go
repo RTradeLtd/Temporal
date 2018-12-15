@@ -118,7 +118,7 @@ func Initialize(cfg *config.TemporalConfig, l *zap.SugaredLogger, debug bool, le
 	if err = api.setupRoutes(); err != nil {
 		return nil, err
 	}
-	api.LogInfo("api initialization successful")
+	api.l.Info("api initialization successful")
 
 	// return our configured API service
 	return api, nil
@@ -578,6 +578,6 @@ func (api *API) setupRoutes() error {
 		}
 	}
 
-	api.LogInfo("Routes initialized")
+	api.l.Info("Routes initialized")
 	return nil
 }

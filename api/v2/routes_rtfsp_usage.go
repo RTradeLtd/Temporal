@@ -122,7 +122,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
-	api.LogDebug("opening file")
+	api.l.Debug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, eh.FileOpenError)
@@ -130,7 +130,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	api.LogDebug("file opened")
+	api.l.Debug("file opened")
 	// generate object name
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)

@@ -24,7 +24,7 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 		api.LogError(err, eh.UploadSearchError)(c, http.StatusInternalServerError)
 		return
 	}
-	api.LogInfo("all uploads from database requested")
+	api.l.Info("all uploads from database requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 
@@ -49,7 +49,7 @@ func (api *API) getUploadsForUser(c *gin.Context) {
 		api.LogError(err, eh.UploadSearchError)(c, http.StatusInternalServerError)
 		return
 	}
-	api.LogInfo("specific uploads from database requested")
+	api.l.Info("specific uploads from database requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 

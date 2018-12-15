@@ -182,15 +182,15 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	// open the file
-	api.LogDebug("opening file")
+	api.l.Debug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, eh.FileOpenError)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
-	api.LogDebug("file opened")
-	api.LogDebug("initializing manager")
+	api.l.Debug("file opened")
+	api.l.Debug("initializing manager")
 	// initialize a connection to the local ipfs node
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
@@ -198,14 +198,14 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	// pin the file
-	api.LogDebug("adding file...")
+	api.l.Debug("adding file...")
 	resp, err := api.ipfs.Add(openFile)
 	if err != nil {
 		api.LogError(err, eh.IPFSAddError)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
-	api.LogDebug("file added")
+	api.l.Debug("file added")
 	if err = api.queues.pin.PublishMessageWithExchange(queue.IPFSPin{
 		CID:              resp,
 		NetworkName:      "public",
