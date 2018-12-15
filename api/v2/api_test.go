@@ -239,10 +239,22 @@ func Test_API_Routes_Lens(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// test lens index - missing post form
+	// /api/v2/lens/index
+	var apiResp apiResponse
+	urlValues := url.Values{}
+	urlValues.Add("object_type", "ipld")
+	if err := sendRequest(
+		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+
 	// test lens index - valid object type
 	// /api/v2/lens/index
 	var mapAPIResp mapAPIResponse
-	urlValues := url.Values{}
+	urlValues = url.Values{}
 	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", hash)
 	// setup our mock index response
@@ -283,7 +295,7 @@ func Test_API_Routes_Lens(t *testing.T) {
 
 	// test lens search - with no objects
 	// /api/v2/lens/search
-	var apiResp apiResponse
+	apiResp = apiResponse{}
 	fakeLens.SearchReturnsOnCall(0, nil, nil)
 	urlValues = url.Values{}
 	urlValues.Add("keywords", "notarealsearch")
