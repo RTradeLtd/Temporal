@@ -15,22 +15,11 @@ func (api *API) LogError(err error, message string, fields ...interface{}) func(
 	logger := api.l
 
 	// write log
-	if err == nil {
-		// mod 2 allows us to check the fields are even in length
-		if fields != nil && len(fields)%2 == 0 {
-			logger.With(fields...).Error(message)
-		} else {
-			logger.Error(message)
-		}
+	if fields != nil && len(fields)%2 == 0 {
+		fields = append(fields, "error", err.Error())
+		logger.Errorw(message, fields...)
 	} else {
-		// mod 2 allows us to check that fields are even in length
-		if fields != nil && len(fields)%2 == 0 {
-			fields = append(fields, "error")
-			fields = append(fields, err.Error())
-			logger.With(fields...).Error(message)
-		} else {
-			logger.With("error", err.Error()).Error(message)
-		}
+		logger.Errorw(message, "error", err.Error())
 	}
 
 	// return utility callback
