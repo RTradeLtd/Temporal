@@ -312,6 +312,6 @@ func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("authorized private ipfs network listing requested")
+	api.l.Infow("authorized private ipfs network listing requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": networks})
 }

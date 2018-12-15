@@ -56,7 +56,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}
-	api.LogWithUser(username).Info("ipfs pin request sent to backend")
+	api.l.Infow("ipfs pin request sent to backend", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": "pin request sent to backend"})
 }
 
@@ -228,7 +228,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
-	api.LogWithUser(username).Info("simple ipfs file upload processed")
+	api.l.Infow("simple ipfs file upload processed", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": resp})
 }
 
@@ -264,7 +264,7 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("ipfs pub sub message published")
+	api.l.Infow("ipfs pub sub message published", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": forms["message"]}})
 }
 
@@ -287,7 +287,7 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("ipfs object stat requested")
+	api.l.Infow("ipfs object stat requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": stats})
 }
 
@@ -313,7 +313,7 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("ipfs pin check requested")
+	api.l.Infow("ipfs pin check requested", "user", username)
 
 	Respond(c, http.StatusOK, gin.H{"response": present})
 }

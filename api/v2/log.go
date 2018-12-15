@@ -2,7 +2,6 @@ package v2
 
 import (
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 // LogError is a wrapper used by the API to handle logging of errors. Returns a
@@ -27,9 +26,4 @@ func (api *API) LogError(err error, message string, fields ...interface{}) func(
 		return func(c *gin.Context, code ...int) { Fail(c, err, code...) }
 	}
 	return func(c *gin.Context, code ...int) { FailWithMessage(c, message, code...) }
-}
-
-// LogWithUser creates entry context with user
-func (api *API) LogWithUser(user string) *zap.SugaredLogger {
-	return api.l.With("user", user)
 }

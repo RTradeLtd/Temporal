@@ -215,6 +215,6 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		}
 	}
 
-	api.LogWithUser(username).Info("private ipfs content download served")
+	api.l.Infow("private ipfs content download served", "user", username)
 	c.DataFromReader(200, int64(stats.CumulativeSize), contentType, reader, extraHeaders)
 }

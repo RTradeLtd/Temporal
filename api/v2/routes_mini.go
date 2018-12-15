@@ -42,8 +42,7 @@ func (api *API) makeBucket(c *gin.Context) {
 		api.LogError(err, eh.MinioBucketCreationError)(c)
 		return
 	}
-
-	api.LogWithUser(username).Info("minio bucket created")
+	api.l.Infow("minio bucket created", "user", username)
 
 	Respond(c, http.StatusOK, gin.H{"response": "bucket created"})
 }

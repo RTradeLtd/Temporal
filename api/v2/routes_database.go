@@ -71,6 +71,6 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("uploads forprivate ifps network requested")
+	api.l.Infow("uploads forprivate ifps network requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }

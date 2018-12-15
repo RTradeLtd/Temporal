@@ -157,7 +157,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
-	api.LogWithUser(username).Info("private ipns entry creation request sent to backend")
+	api.l.Infow("private ipns entry creation request sent to backend", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": "ipns entry creation request sent to backend"})
 }
 

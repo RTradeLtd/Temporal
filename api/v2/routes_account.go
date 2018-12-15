@@ -215,7 +215,7 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 		Fail(c, errors.New(eh.NoKeyError), http.StatusNotFound)
 		return
 	}
-	api.LogWithUser(username).Info("key name list requested")
+	api.l.Infow("key name list requested", "user", username)
 
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"key_names": keys["key_names"], "key_ids": keys["key_ids"]}})
 }
@@ -232,7 +232,7 @@ func (api *API) getCredits(c *gin.Context) {
 		api.LogError(err, eh.CreditCheckError)(c, http.StatusBadRequest)
 		return
 	}
-	api.LogWithUser(username).Info("credit check requested")
+	api.l.Infow("credit check requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": credits})
 }
 
