@@ -13,16 +13,24 @@ import (
 func (api *API) LogError(err error, message string, fields ...interface{}) func(c *gin.Context, code ...int) {
 	// create base entry
 	logger := api.l
-	// add additional fields
-	if fields != nil {
-		logger.With(fields...)
-	}
 
 	// write log
 	if err == nil {
-		logger.Error(message)
+		// mod 2 allows us to check the fields are even in length
+		if fields != nil && len(fields)%2 == 0 {
+			logger.With(fields...).Error(message)
+		} else {
+			logger.Error(message)
+		}
 	} else {
-		logger.With("error", err.Error()).Error(message)
+		// mod 2 allows us to check that fields are even in length
+		if fields != nil && len(fields)%2 == 0 {
+			fields = append(fields, "error")
+			fields = append(fields, err.Error())
+			logger.With(fields...).Error(message)
+		} else {
+			logger.With("error", err.Error()).Error(message)
+		}
 	}
 
 	// return utility callback

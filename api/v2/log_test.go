@@ -47,12 +47,19 @@ func TestAPI_LogError(t *testing.T) {
 			} else {
 				api.LogError(tt.args.err, tt.args.message)(c)
 			}
-
 			// grab the last log generated
-			lastLogNumber := len(out.All()) - 1
-			fmt.Println(out.All()[0].Message)
+			lastLogNumber := out.Len() - 1
+
+			// check log message
+			if !strings.Contains(out.All()[lastLogNumber].Message, tt.args.message) {
+				t.Error("failed to check for message ", tt.args.message)
+			}
+
 			// check log output
 			if !strings.Contains(out.All()[lastLogNumber].Message, tt.wantLog) {
+				fmt.Println("context ", out.All()[lastLogNumber].ContextMap())
+				fmt.Printf("%+v\n", tt)
+				fmt.Printf("%+v\n", out.All()[lastLogNumber])
 				t.Errorf("got %s, want %s", out.All()[lastLogNumber].Message, tt.wantLog)
 			}
 
