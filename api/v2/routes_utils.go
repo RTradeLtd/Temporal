@@ -14,6 +14,7 @@ import (
 	"github.com/RTradeLtd/rtfs"
 	"github.com/RTradeLtd/rtfs/beam"
 	"github.com/gin-gonic/gin"
+	gocid "github.com/ipfs/go-cid"
 )
 
 // SystemsCheck is a basic check of system integrity
@@ -129,4 +130,91 @@ func (api *API) exportKey(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": phrase})
+}
+
+// downloadContentHash is used to download content from  a private ipfs network
+func (api *API) downloadContentHash(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		return
+	}
+	// get the content hash that is to be downloaded
+	contentHash := c.Param("hash")
+	// ensure it's a valid content hash
+	if _, err := gocid.Decode(contentHash); err != nil {
+		Fail(c, err)
+		return
+	}
+	// get the network name, default to public if not specified
+	networkName := c.PostForm("network_name")
+	var manager rtfs.Manager
+	if networkName == "" {
+		networkName = "public"
+		manager = api.ipfs
+	} else if networkName != "public" {
+		// validate user access to network
+		if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
+			api.LogError(err, eh.PrivateNetworkAccessError)(c)
+			return
+		}
+		// retrieve api url
+		apiURL, err := api.nm.GetAPIURLByName(networkName)
+		if err != nil {
+			api.LogError(err, eh.APIURLCheckError)(c)
+			return
+		}
+		// initialize our connection to IPFS
+		manager, err = rtfs.NewManager(apiURL, nil, time.Minute*10)
+		if err != nil {
+			api.LogError(err, eh.IPFSConnectionError)(c)
+			return
+		}
+	}
+	// fetch the specified content type from the user
+	contentType := c.PostForm("content_type")
+	// if not specified, provide a default
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+
+	// get any extra headers the user might want
+	exHeaders := c.PostFormArray("extra_headers")
+
+	// read the contents of the file
+	contents, err := manager.Cat(contentHash)
+	if err != nil {
+		api.LogError(err, eh.IPFSCatError)(c)
+		return
+	}
+	reader := bytes.NewReader(contents)
+	// get the size of hte file in bytes
+	stats, err := manager.Stat(contentHash)
+	if err != nil {
+		api.LogError(err, eh.IPFSObjectStatError)(c)
+		return
+	}
+
+	// parse extra headers if there are any
+	extraHeaders := make(map[string]string)
+	// only process if there is actual data to process
+	if len(exHeaders) > 0 {
+		// the array must be of equal length, as a header has two parts
+		// the name of the header, and its value
+		if len(exHeaders)%2 != 0 {
+			FailWithMessage(c, "extra_headers post form is not even in length")
+			return
+		}
+		// parse through the available headers
+		for i := 0; i < len(exHeaders); i += 2 {
+			if i+1 < len(exHeaders) {
+				header := exHeaders[i]
+				value := exHeaders[i+1]
+				extraHeaders[header] = value
+			}
+		}
+	}
+
+	api.LogWithUser(username).Info("private ipfs content download served")
+	c.DataFromReader(200, int64(stats.CumulativeSize), contentType, reader, extraHeaders)
 }

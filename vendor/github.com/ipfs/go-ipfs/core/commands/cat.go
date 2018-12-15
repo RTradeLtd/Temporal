@@ -9,7 +9,7 @@ import (
 	"github.com/ipfs/go-ipfs/core/commands/cmdenv"
 	"github.com/ipfs/go-ipfs/core/coreapi/interface"
 
-	cmds "gx/ipfs/Qma6uuSyjkecGhMFFLfzyJDPyoDtNJSHJNweDccZhaWkgU/go-ipfs-cmds"
+	cmds "gx/ipfs/QmPdvMtgpnMuU68mWhGtzCxnddXJoV96tT9aPcNbQsqPaM/go-ipfs-cmds"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
@@ -33,20 +33,9 @@ var CatCmd = &cmds.Command{
 		cmdkit.Int64Option(lengthOptionName, "l", "Maximum number of bytes to read."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		node, err := cmdenv.GetNode(env)
-		if err != nil {
-			return err
-		}
-
 		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
-		}
-
-		if !node.OnlineMode() {
-			if err := node.SetupOfflineRouting(); err != nil {
-				return err
-			}
 		}
 
 		offset, _ := req.Options[offsetOptionName].(int64)
@@ -55,9 +44,7 @@ var CatCmd = &cmds.Command{
 		}
 
 		max, found := req.Options[lengthOptionName].(int64)
-		if err != nil {
-			return err
-		}
+
 		if max < 0 {
 			return fmt.Errorf("cannot specify negative length")
 		}

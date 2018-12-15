@@ -3,6 +3,7 @@
 package v2
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -14,7 +15,6 @@ import (
 	"github.com/RTradeLtd/kaas"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
-	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/rtfs"
 
@@ -31,7 +31,9 @@ import (
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
 
+	pbOrch "github.com/RTradeLtd/grpc/ipfs-orchestrator"
 	pbLens "github.com/RTradeLtd/grpc/lens"
+	pbSigner "github.com/RTradeLtd/grpc/temporal"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
@@ -58,12 +60,13 @@ type API struct {
 	pm          *models.PaymentManager
 	dm          *models.DropManager
 	ue          *models.EncryptedUploadManager
+	upm         *models.UploadManager
 	zm          *models.ZoneManager
 	rm          *models.RecordManager
 	nm          *models.IPFSNetworkManager
 	l           *log.Logger
-	signer      *clients.SignerClient
-	orch        *clients.IPFSOrchestratorClient
+	signer      pbSigner.SignerClient
+	orch        pbOrch.ServiceClient
 	lens        pbLens.IndexerAPIClient
 	dc          *dash.Client
 	queues      queues
@@ -72,7 +75,7 @@ type API struct {
 
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
-func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPIClient) (*API, error) {
+func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient) (*API, error) {
 	var (
 		err    error
 		router = gin.Default()
@@ -104,7 +107,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPICl
 		return nil, err
 	}
 	// set up API struct
-	api, err := new(cfg, router, lens, im, imCluster, debug, logfile)
+	api, err := new(cfg, router, lens, orch, signer, im, imCluster, debug, logfile)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +122,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPICl
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool, out io.Writer) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool, out io.Writer) (*API, error) {
 	var (
 		logger = log.New()
 		dbm    *database.Manager
@@ -151,32 +154,19 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIC
 	} else {
 		logger.Info("secure database connection established")
 	}
-
-	signer, err := clients.NewSignerClient(cfg, os.Getenv("MODE") == "development")
-	if err != nil {
-		return nil, err
-	}
-
-	orch, err := clients.NewOcrhestratorClient(cfg.Orchestrator)
-	if err != nil {
-		return nil, err
-	}
 	var networkVersion string
 	if dev {
 		networkVersion = "testnet"
 	} else {
 		networkVersion = "main"
 	}
-	dc, err := dash.NewClient(&dash.ConfigOpts{
+	dc := dash.NewClient(&dash.ConfigOpts{
 		APIVersion:      "v1",
 		DigitalCurrency: "dash",
 		//TODO: change to main before production release
 		Blockchain: networkVersion,
 		Token:      cfg.APIKeys.ChainRider,
 	})
-	if err != nil {
-		return nil, err
-	}
 	keys, err := kaas.NewClient(cfg.Endpoints)
 	if err != nil {
 		return nil, err
@@ -232,6 +222,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIC
 		pm:          models.NewPaymentManager(dbm.DB),
 		dm:          models.NewDropManager(dbm.DB),
 		ue:          models.NewEncryptedUploadManager(dbm.DB),
+		upm:         models.NewUploadManager(dbm.DB),
 		lens:        lens,
 		signer:      signer,
 		orch:        orch,
@@ -255,9 +246,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIC
 
 // Close releases API resources
 func (api *API) Close() {
-	// close grpc connections
-	api.signer.Close()
-	api.orch.Close()
 	// close queue resources
 	if err := api.queues.cluster.Close(); err != nil {
 		api.LogError(err, "failed to properly close cluster queue connection")
@@ -289,11 +277,24 @@ type TLSConfig struct {
 }
 
 // ListenAndServe spins up the API server
-func (api *API) ListenAndServe(addr string, tls *TLSConfig) error {
-	if tls != nil {
-		return api.r.RunTLS(addr, tls.CertFile, tls.KeyFile)
+func (api *API) ListenAndServe(ctx context.Context, addr string, tls *TLSConfig) error {
+	errChan := make(chan error, 1)
+	go func() {
+		if tls != nil {
+			errChan <- api.r.RunTLS(addr, tls.CertFile, tls.KeyFile)
+			return
+		}
+		errChan <- api.r.Run(addr)
+		return
+	}()
+	for {
+		select {
+		case err := <-errChan:
+			return err
+		case <-ctx.Done():
+			return nil
+		}
 	}
-	return api.r.Run(addr)
 }
 
 // setupRoutes is used to setup all of our api routes
@@ -449,7 +450,6 @@ func (api *API) setupRoutes() error {
 			// general routes
 			public.GET("/stat/:key", api.getObjectStatForIpfs)
 			public.GET("/dag/:hash", api.getDagObject)
-			public.POST("/download/:hash", api.downloadContentHash)
 		}
 
 		// private ipfs routes
@@ -460,7 +460,7 @@ func (api *API) setupRoutes() error {
 			network := private.Group("/network")
 			{
 				network.GET("/:name", api.getIPFSPrivateNetworkByName)
-				network.POST("/new", api.createHostedIPFSNetworkEntryInDatabase)
+				network.POST("/new", api.createIPFSNetwork)
 				network.POST("/stop", api.stopIPFSPrivateNetwork)
 				network.POST("/start", api.startIPFSPrivateNetwork)
 				network.DELETE("/remove", api.removeIPFSPrivateNetwork)
@@ -487,11 +487,12 @@ func (api *API) setupRoutes() error {
 			// general routes
 			private.GET("/dag/:hash/:networkName", api.getDagObjectForHostedIPFSNetwork)
 			private.GET("/uploads/:networkName", api.getUploadsByNetworkName)
-			private.POST("/download/:hash", api.downloadContentHashForPrivateNetwork)
 		}
 		// utility routes
 		utils := ipfs.Group("/utils")
 		{
+			// generic download
+			utils.POST("/download/:hash", api.downloadContentHash)
 			laser := utils.Group("/laser")
 			{
 				laser.POST("/beam", api.beamContent)

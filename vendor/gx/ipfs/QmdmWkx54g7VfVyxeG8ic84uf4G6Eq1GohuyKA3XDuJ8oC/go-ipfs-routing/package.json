@@ -1,0 +1,111 @@
+{
+  "author": "hsanjuan",
+  "bugs": {
+    "url": "https://github.com/ipfs/go-ipfs-routing"
+  },
+  "gx": {
+    "dvcsimport": "github.com/ipfs/go-ipfs-routing"
+  },
+  "gxDependencies": [
+    {
+      "author": "whyrusleeping",
+      "hash": "QmfD51tKgJiTMnW9JEiDiPwsCY4mqUoxkhKhBfyW12spTC",
+      "name": "go-libp2p-host",
+      "version": "3.0.20"
+    },
+    {
+      "hash": "QmRASJXJUFygM5qU4YrH7k7jD6S4Hg8nJmgqJ4bYJvLatd",
+      "name": "go-libp2p-routing",
+      "version": "2.7.6"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmZ9zH2FnLcxv1xyzFeUpDUeo55xEhZQHgveZijcxr7TLj",
+      "name": "go-libp2p-peerstore",
+      "version": "2.0.12"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY",
+      "name": "go-libp2p-peer",
+      "version": "3.0.0"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw",
+      "name": "go-cid",
+      "version": "0.9.1"
+    },
+    {
+      "author": "jbenet",
+      "hash": "Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM",
+      "name": "go-datastore",
+      "version": "3.4.1"
+    },
+    {
+      "author": "hsanjuan",
+      "hash": "QmUe1WCHkQaz4UeNKiHDUBV2T6i9prc3DniqyHPXyfGaUq",
+      "name": "go-ipfs-delay",
+      "version": "0.1.0"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmPuhRE325DR8ChNcFtgd6F1eANCHy1oohXZPpYop4xsK6",
+      "name": "go-testutil",
+      "version": "1.2.14"
+    },
+    {
+      "hash": "QmfARXVCzpwFXQdepAJZuqyNDgV9doEsMnVCo1ssmuSe1U",
+      "name": "go-libp2p-record",
+      "version": "4.1.12"
+    },
+    {
+      "author": "hsanjuan",
+      "hash": "QmauEMWPoSqggfpSDHMMXuDn12DTd7TaFBvn39eeurzKT2",
+      "name": "go-ipfs-ds-help",
+      "version": "0.1.5"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmNohiVssaPw3KVLZik59DBVGTSm2dGvYT9eoXt5DQ36Yz",
+      "name": "go-ipfs-util",
+      "version": "1.2.9"
+    },
+    {
+      "hash": "QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C",
+      "name": "go-log",
+      "version": "1.5.8"
+    },
+    {
+      "author": "multiformats",
+      "hash": "QmRKLtwMw131aK7ugC3G7ybpumMz78YrJe5dzneyindvG1",
+      "name": "go-multiaddr",
+      "version": "1.3.6"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmdxUuburamoF6zF9qjeQC4WYcWGbWuRmdLacMEsW8ioD8",
+      "name": "gogo-protobuf",
+      "version": "0.0.0"
+    },
+    {
+      "author": "multiformats",
+      "hash": "QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW",
+      "name": "go-multihash",
+      "version": "1.0.9"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s",
+      "name": "go-libp2p-crypto",
+      "version": "2.0.4"
+    }
+  ],
+  "gxVersion": "0.12.1",
+  "language": "go",
+  "license": "MIT",
+  "name": "go-ipfs-routing",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.1.12"
+}
+

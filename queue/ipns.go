@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
+	peer "gx/ipfs/QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY/go-libp2p-peer"
 
 	"github.com/RTradeLtd/Temporal/rtns"
 	pb "github.com/RTradeLtd/grpc/krab"
@@ -38,7 +38,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		return err
 	}
 	// user a long running publisher
-	publisher, err := rtns.NewPublisher(&rtns.Opts{PK: pk}, "/ip4/0.0.0.0/tcp/3999")
+	publisher, err := rtns.NewPublisher(pk, true, "/ip4/0.0.0.0/tcp/3999")
 	if err != nil {
 		return err
 	}

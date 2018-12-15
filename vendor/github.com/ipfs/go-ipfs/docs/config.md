@@ -1,16 +1,19 @@
 # The go-ipfs config file
 
-The go-ipfs config file is a json document. It is read once at node instantiation,
-either for an offline command, or when starting the daemon. Commands that execute
-on a running daemon do not read the config file at runtime.
+The go-ipfs config file is a JSON document located at `$IPFS_PATH/config`. It
+is read once at node instantiation, either for an offline command, or when
+starting the daemon. Commands that execute on a running daemon do not read the
+config file at runtime.
 
 #### Profiles
+
 Configuration profiles allow to tweak configuration quickly. Profiles can be
-applied with `--profile` flag to `ipfs init` or with `ipfs config profile apply`
-command. When a profile is applied a backup of the configuration file will
-be created in $IPFS_PATH
+applied with `--profile` flag to `ipfs init` or with the `ipfs config profile
+apply` command. When a profile is applied a backup of the configuration file
+will be created in `$IPFS_PATH`.
 
 Available profiles:
+
 - `server`
 
   Recommended for nodes with public IPv4 address (servers, VPSes, etc.),
@@ -308,6 +311,7 @@ Tells reprovider what should be announced. Valid strategies are:
   - "roots" - only announce directly pinned keys and root keys of recursive pins
 
 ## `Swarm`
+
 Options for configuring the swarm.
 
 - `AddrFilters`
@@ -331,15 +335,41 @@ Enables HOP relay for the node. If this is enabled, the node will act as
 an intermediate (Hop Relay) node in relay circuits for connected peers.
 
 ### `ConnMgr`
-Connection manager configuration.
+
+The connection manager determines which and how many connections to keep and can be configured to keep.
 
 - `Type`
-Sets the type of connection manager to use, options are: `"none"` and `"basic"`.
+Sets the type of connection manager to use, options are: `"none"` (no connection management) and `"basic"`.
+
+#### Basic Connection Manager
 
 - `LowWater`
 LowWater is the minimum number of connections to maintain.
 
 - `HighWater`
 HighWater is the number of connections that, when exceeded, will trigger a connection GC operation.
+
 - `GracePeriod`
 GracePeriod is a time duration that new connections are immune from being closed by the connection manager.
+
+The "basic" connection manager tries to keep between `LowWater` and `HighWater` connections. It works by:
+
+1. Keeping all connections until `HighWater` connections is reached.
+2. Once `HighWater` is reached, it closes connections until `LowWater` is reached.
+3. To prevent thrashing, it never closes connections established within the `GracePeriod`.
+
+**Example:**
+
+
+```json
+{
+  "Swarm": {
+    "ConnMgr": {
+      "Type": "basic",
+      "LowWater": 100,
+      "HighWater": 200,
+      "GracePeriod": "30s"
+    }
+  }
+}
+```

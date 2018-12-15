@@ -18,12 +18,12 @@
   revision = "3d3fc2fb493d8d889dddd5a4524283ac2faa4732"
 
 [[projects]]
-  digest = "1:cf2939df30718bf7e5ba78886eced2a4688e404ea166c7e3374a328752741c9f"
+  digest = "1:8c0de084c65b43922d0c9e4d92884215ef5f0ec7874db83634f889e08b218ad5"
   name = "github.com/RTradeLtd/ChainRider-Go"
   packages = ["dash"]
   pruneopts = "UT"
-  revision = "03c00f1c5be65db05c0dc67ce3c9891dcba558e7"
-  version = "v1.0.6"
+  revision = "b349e4d6e951fd702607156ec4ee4064ef57f2ab"
+  version = "v1.0.7"
 
 [[projects]]
   digest = "1:f0ddcc93863663609316065cd0bf866691ea6c1872ec6ea45935ce64825df0b7"
@@ -1565,8 +1565,10 @@
     "github.com/RTradeLtd/grpc/krab",
     "github.com/RTradeLtd/grpc/lens",
     "github.com/RTradeLtd/grpc/lens/request",
+    "github.com/RTradeLtd/grpc/lens/response",
     "github.com/RTradeLtd/grpc/temporal",
     "github.com/RTradeLtd/grpc/temporal/request",
+    "github.com/RTradeLtd/grpc/temporal/response",
     "github.com/RTradeLtd/kaas",
     "github.com/RTradeLtd/rtfs",
     "github.com/RTradeLtd/rtfs/beam",

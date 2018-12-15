@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	testCID           = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
+	testCID           = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 	testRabbitAddress = "amqp://127.0.0.1:5672"
-	testLogFilePath   = "../templogs"
+	testLogFilePath   = "../testenv/"
 	testCfgPath       = "../testenv/config.json"
 )
 
@@ -443,6 +443,134 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	}
 	cancel()
 	waitGroup.Wait()
+}
+
+func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
+	defer func() {
+		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsKeyCreationQueue))
+	}()
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, testLogFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if qmConsumer.ExchangeName != IpfsKeyExchange {
+		t.Fatal("failed to properly set exchange name on consumer")
+	}
+	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, testLogFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if qmPublisher.ExchangeName != IpfsKeyExchange {
+		t.Fatal("failed to properly set exchange name on publisher")
+	}
+	defer func() {
+		if err := qmPublisher.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
+	if err := qmPublisher.PublishMessageWithExchange(IPFSKeyCreation{
+		UserName:    "testuser",
+		Name:        "mykey",
+		Type:        "rsa",
+		Size:        2048,
+		NetworkName: "public",
+		CreditCost:  0}, IpfsKeyExchange,
+	); err != nil {
+		t.Fatal(err)
+	}
+	cfg.Endpoints.Krab.TLS.CertPath = "/root"
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
+	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestQueue_IPFSPin_Failure(t *testing.T) {
+	defer func() {
+		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsPinQueue))
+	}()
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, testLogFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if qmConsumer.ExchangeName != PinExchange {
+		t.Fatal("failed to properly set exchange name on consumer")
+	}
+	cfg.RabbitMQ.URL = "notarealurl"
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
+	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
+	defer func() {
+		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsFileQueue))
+	}()
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, testLogFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.IPFS.APIConnection.Host = "notarealip"
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
+	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestQueue_IPFSFile_Failure_RabbitMQ(t *testing.T) {
+	defer func() {
+		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsFileQueue))
+	}()
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, testLogFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.RabbitMQ.URL = "notarealip"
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
+	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
+		t.Fatal("expected error")
+	}
 }
 
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {

@@ -155,7 +155,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 	// cluster support for private networks isn't available yet
 	// as such, skip additional processing for cluster pins
 	if pin.NetworkName != "public" {
-		qm.LogInfo("successfully proccessed private network pin")
+		qm.LogInfo("successfully processed private network pin")
 		d.Ack(false)
 		return
 	}

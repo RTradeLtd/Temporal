@@ -18,7 +18,7 @@ import (
 func (qm *Manager) setupLogging(logFilePath ...string) error {
 	var logFileName string
 	if len(logFilePath) > 0 {
-		logFileName = fmt.Sprintf("%s-%s_service.log", logFilePath[0], qm.QueueName)
+		logFileName = fmt.Sprintf("%s/%s_service.log", logFilePath[0], qm.QueueName)
 	} else {
 		logFileName = fmt.Sprintf("/var/log/temporal/%s_service.log", qm.QueueName)
 	}

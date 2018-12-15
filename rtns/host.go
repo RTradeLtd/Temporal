@@ -5,11 +5,11 @@ import (
 	"encoding/base64"
 	"time"
 
-	path "gx/ipfs/QmQtg7N4XjAk2ZYpBjjv8B6gQprsRekabHBCnF6i46JYKJ/go-path"
+	path "gx/ipfs/QmZErC2Ay6WuGi96CPg316PwitdwgLo6RxZRqVjJjRj2MR/go-path"
 
 	ci "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
-	config "gx/ipfs/QmXctaABKwgzmQgNM4bucMJf7zJnxxvhmPM1Pw95dxUfB5/go-ipfs-config"
-	peer "gx/ipfs/QmcqU6QUDSXprb1518vYDGczrTJTyGwLG9eUa5iNX4xUtS/go-libp2p-peer"
+	peer "gx/ipfs/QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY/go-libp2p-peer"
+	config "gx/ipfs/QmYyzmMnhNTtoXx5ttgUaRdHHckYnQWjPL98hgLAR2QLDD/go-ipfs-config"
 	ds "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
 
 	"github.com/ipfs/go-ipfs/core"
@@ -27,19 +27,7 @@ type Opts struct {
 }
 
 // NewPublisher is used to generate our IPNS publisher
-func NewPublisher(opts *Opts, swarmAddrs ...string) (*Publisher, error) {
-	var (
-		pk  ci.PrivKey
-		err error
-	)
-	if opts != nil && opts.PK != nil {
-		pk = opts.PK
-	} else {
-		pk, _, err = ci.GenerateKeyPair(ci.Ed25519, 256)
-		if err != nil {
-			return nil, err
-		}
-	}
+func NewPublisher(pk ci.PrivKey, permanent bool, swarmAddrs ...string) (*Publisher, error) {
 	pid, err := peer.IDFromPrivateKey(pk)
 	if err != nil {
 		return nil, err
@@ -65,7 +53,7 @@ func NewPublisher(opts *Opts, swarmAddrs ...string) (*Publisher, error) {
 	// create a new node
 	host, err := core.NewNode(context.Background(), &core.BuildCfg{
 		Online:    true,
-		Permanent: true,
+		Permanent: permanent,
 		Repo:      &repoMock,
 	})
 	if err != nil {
