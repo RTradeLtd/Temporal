@@ -1,8 +1,8 @@
 package v2
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http/httptest"
 	"strings"
@@ -15,9 +15,6 @@ import (
 )
 
 func TestAPI_LogError(t *testing.T) {
-	observer, out := observer.New(zap.InfoLevel)
-	logger := zap.New(observer).Sugar()
-	api := API{l: logger, service: "test"}
 	type args struct {
 		err     error
 		message string
@@ -38,29 +35,24 @@ func TestAPI_LogError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(r)
+			observer, out := observer.New(zap.InfoLevel)
+			logger := zap.New(observer).Sugar()
+			api := API{l: logger, service: "test"}
 
 			// log error and execute callback
+			r := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(r)
 			if tt.args.fields != nil {
 				api.LogError(tt.args.err, tt.args.message, tt.args.fields...)(c)
 			} else {
 				api.LogError(tt.args.err, tt.args.message)(c)
 			}
-			// grab the last log generated
-			lastLogNumber := out.Len() - 1
 
-			// check log message
-			if !strings.Contains(out.All()[lastLogNumber].Message, tt.args.message) {
-				t.Error("failed to check for message ", tt.args.message)
-			}
-
-			// check log output
-			if !strings.Contains(out.All()[lastLogNumber].Message, tt.wantLog) {
-				fmt.Println("context ", out.All()[lastLogNumber].ContextMap())
-				fmt.Printf("%+v\n", tt)
-				fmt.Printf("%+v\n", out.All()[lastLogNumber])
-				t.Errorf("got %s, want %s", out.All()[lastLogNumber].Message, tt.wantLog)
+			// check log message and context
+			b, _ := json.Marshal(out.All()[0].ContextMap())
+			entry := out.All()[0].Message + string(b)
+			if !strings.Contains(entry, tt.wantLog) {
+				t.Errorf("got %s, want %s", entry, tt.wantLog)
 			}
 
 			// check http response
