@@ -56,7 +56,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}
-	api.LogWithUser(username).Info("ipfs pin request sent to backend")
+	api.l.Infow("ipfs pin request sent to backend", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": "pin request sent to backend"})
 }
 
@@ -69,7 +69,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
-	logger := api.LogWithUser(username)
+	logger := api.l.With("user", username)
 	logger.Debug("file upload request received from user")
 	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
@@ -145,9 +145,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
-	logger.
-		WithField("request", ifp).
-		Info("advanced ipfs file upload requested")
+	logger.With("request", ifp).Info("advanced file upload requested")
 	Respond(c, http.StatusOK, gin.H{"response": "file upload request sent to backend"})
 }
 
@@ -184,15 +182,15 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	// open the file
-	api.LogDebug("opening file")
+	api.l.Debug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, eh.FileOpenError)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
-	api.LogDebug("file opened")
-	api.LogDebug("initializing manager")
+	api.l.Debug("file opened")
+	api.l.Debug("initializing manager")
 	// initialize a connection to the local ipfs node
 	if err != nil {
 		api.LogError(err, eh.IPFSConnectionError)(c)
@@ -200,14 +198,14 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	// pin the file
-	api.LogDebug("adding file...")
+	api.l.Debug("adding file...")
 	resp, err := api.ipfs.Add(openFile)
 	if err != nil {
 		api.LogError(err, eh.IPFSAddError)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
-	api.LogDebug("file added")
+	api.l.Debug("file added")
 	if err = api.queues.pin.PublishMessageWithExchange(queue.IPFSPin{
 		CID:              resp,
 		NetworkName:      "public",
@@ -230,7 +228,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
-	api.LogWithUser(username).Info("simple ipfs file upload processed")
+	api.l.Infow("simple ipfs file upload processed", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": resp})
 }
 
@@ -266,7 +264,7 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("ipfs pub sub message published")
+	api.l.Infow("ipfs pub sub message published", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": forms["message"]}})
 }
 
@@ -289,7 +287,7 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("ipfs object stat requested")
+	api.l.Infow("ipfs object stat requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": stats})
 }
 
@@ -315,7 +313,7 @@ func (api *API) checkLocalNodeForPin(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("ipfs pin check requested")
+	api.l.Infow("ipfs pin check requested", "user", username)
 
 	Respond(c, http.StatusOK, gin.H{"response": present})
 }

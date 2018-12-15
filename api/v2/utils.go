@@ -10,7 +10,6 @@ import (
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
 )
 
 var nilTime time.Time
@@ -97,12 +96,7 @@ func (api *API) validateUserCredits(username string, cost float64) error {
 // remediate the situation
 func (api *API) refundUserCredits(username, callType string, cost float64) {
 	if _, err := api.um.AddCredits(username, cost); err != nil {
-		api.l.WithFields(log.Fields{
-			"service":   api.service,
-			"user":      username,
-			"call_type": callType,
-			"error":     err.Error(),
-		}).Error(eh.CreditRefundError)
+		api.l.With("user", username, "call_type", callType, "error", err.Error()).Error(eh.CreditRefundError)
 	}
 }
 

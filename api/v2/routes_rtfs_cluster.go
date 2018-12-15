@@ -54,7 +54,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		api.refundUserCredits(username, "cluster-pin", cost)
 		return
 	}
-	api.LogWithUser(username).Info("cluster pin request sent to backend")
+	api.l.Infow("cluster pin request sent to backend", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": "cluster pin request sent to backend"})
 }
 
@@ -76,7 +76,7 @@ func (api *API) syncClusterErrorsLocally(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("local cluster errors parsed")
+	api.l.Infow("local cluster errors parsed", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": syncedCids})
 }
 
@@ -103,7 +103,7 @@ func (api *API) getLocalStatusForClusterPin(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("local cluster status for pin requested")
+	api.l.Infow("local cluster status for pin requested", "user", username)
 
 	Respond(c, http.StatusOK, gin.H{"response": status})
 }
@@ -131,7 +131,7 @@ func (api *API) getGlobalStatusForClusterPin(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("global cluster status for pin requested")
+	api.l.Infow("global cluster status for pin requested", "user", username)
 
 	Respond(c, http.StatusOK, gin.H{"response": status})
 }
@@ -163,6 +163,6 @@ func (api *API) fetchLocalClusterStatus(c *gin.Context) {
 		statuses = append(statuses, v)
 	}
 
-	api.LogWithUser(username).Info("local cluster state fetched")
+	api.l.Infow("local cluster state fetched", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"cids": cids, "statuses": statuses}})
 }

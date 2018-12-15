@@ -24,7 +24,7 @@ func (api *API) getUploadsFromDatabase(c *gin.Context) {
 		api.LogError(err, eh.UploadSearchError)(c, http.StatusInternalServerError)
 		return
 	}
-	api.LogInfo("all uploads from database requested")
+	api.l.Info("all uploads from database requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 
@@ -49,7 +49,7 @@ func (api *API) getUploadsForUser(c *gin.Context) {
 		api.LogError(err, eh.UploadSearchError)(c, http.StatusInternalServerError)
 		return
 	}
-	api.LogInfo("specific uploads from database requested")
+	api.l.Info("specific uploads from database requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 
@@ -71,6 +71,6 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("uploads forprivate ifps network requested")
+	api.l.Infow("uploads forprivate ifps network requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }

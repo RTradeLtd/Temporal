@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -11,10 +10,10 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/RTradeLtd/Temporal/grpc-clients"
-
 	"github.com/RTradeLtd/Temporal/api/v2"
 	"github.com/RTradeLtd/Temporal/api/v3"
+	"github.com/RTradeLtd/Temporal/grpc-clients"
+	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd"
 	"github.com/RTradeLtd/config"
@@ -41,7 +40,8 @@ var (
 	lens         pbLens.IndexerAPIClient
 	signer       pbSigner.SignerClient
 	err          error
-	logFilePath  = "/var/log/temporal"
+	logFilePath  = "/var/log/temporal/"
+	dev          bool
 )
 
 var commands = map[string]cmd.Cmd{
@@ -49,9 +49,14 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			service, err := v2.Initialize(&cfg, os.Getenv("DEBUG") == "true", lens, orch, signer)
+			logger, err := log.NewLogger(logFilePath+"api_service.log", dev)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println("failed to start logger ", err)
+				os.Exit(1)
+			}
+			service, err := v2.Initialize(&cfg, logger, os.Getenv("DEBUG") == "true", lens, orch, signer)
+			if err != nil {
+				logger.Fatal(err)
 			}
 			//defer service.Close()
 
@@ -101,7 +106,8 @@ var commands = map[string]cmd.Cmd{
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.New(queue.IpnsEntryQueue, mqConnectionURL, false, logFilePath)
 							if err != nil {
-								log.Fatal(err)
+								fmt.Println("failed to start queue", err)
+								os.Exit(1)
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -113,7 +119,8 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-								log.Fatal(err)
+								fmt.Println("failed to consume messages", err)
+								os.Exit(1)
 							}
 							waitGroup.Wait()
 						},
@@ -125,7 +132,8 @@ var commands = map[string]cmd.Cmd{
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.New(queue.IpfsPinQueue, mqConnectionURL, false, logFilePath)
 							if err != nil {
-								log.Fatal(err)
+								fmt.Println("failed to start queue", err)
+								os.Exit(1)
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -137,7 +145,8 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-								log.Fatal(err)
+								fmt.Println("failed to consume messages", err)
+								os.Exit(1)
 							}
 							waitGroup.Wait()
 						},
@@ -149,7 +158,8 @@ var commands = map[string]cmd.Cmd{
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.New(queue.IpfsFileQueue, mqConnectionURL, false, logFilePath)
 							if err != nil {
-								log.Fatal(err)
+								fmt.Println("failed to start queue", err)
+								os.Exit(1)
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -161,7 +171,8 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-								log.Fatal(err)
+								fmt.Println("failed to consume messages", err)
+								os.Exit(1)
 							}
 							waitGroup.Wait()
 						},
@@ -173,7 +184,8 @@ var commands = map[string]cmd.Cmd{
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.New(queue.IpfsKeyCreationQueue, mqConnectionURL, false, logFilePath)
 							if err != nil {
-								log.Fatal(err)
+								fmt.Println("failed to start queue", err)
+								os.Exit(1)
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -185,7 +197,8 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-								log.Fatal(err)
+								fmt.Println("failed to consume messages", err)
+								os.Exit(1)
 							}
 							waitGroup.Wait()
 						},
@@ -197,7 +210,8 @@ var commands = map[string]cmd.Cmd{
 							mqConnectionURL := cfg.RabbitMQ.URL
 							qm, err := queue.New(queue.IpfsClusterPinQueue, mqConnectionURL, false, logFilePath)
 							if err != nil {
-								log.Fatal(err)
+								fmt.Println("failed to start queue", err)
+								os.Exit(1)
 							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -209,7 +223,8 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-								log.Fatal(err)
+								fmt.Println("failed to consume messages", err)
+								os.Exit(1)
 							}
 							waitGroup.Wait()
 						},
@@ -223,7 +238,8 @@ var commands = map[string]cmd.Cmd{
 					mqConnectionURL := cfg.RabbitMQ.URL
 					qm, err := queue.New(queue.DatabaseFileAddQueue, mqConnectionURL, false, logFilePath)
 					if err != nil {
-						log.Fatal(err)
+						fmt.Println("failed to start queue", err)
+						os.Exit(1)
 					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -235,7 +251,8 @@ var commands = map[string]cmd.Cmd{
 						cancel()
 					}()
 					if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-						log.Fatal(err)
+						fmt.Println("failed to consume messages", err)
+						os.Exit(1)
 					}
 					waitGroup.Wait()
 				},
@@ -247,7 +264,8 @@ var commands = map[string]cmd.Cmd{
 					mqConnectionURL := cfg.RabbitMQ.URL
 					qm, err := queue.New(queue.EmailSendQueue, mqConnectionURL, false, logFilePath)
 					if err != nil {
-						log.Fatal(err)
+						fmt.Println("failed to start queue", err)
+						os.Exit(1)
 					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -259,7 +277,8 @@ var commands = map[string]cmd.Cmd{
 						cancel()
 					}()
 					if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-						log.Fatal(err)
+						fmt.Println("failed to consume messages", err)
+						os.Exit(1)
 					}
 					waitGroup.Wait()
 				},
@@ -271,7 +290,8 @@ var commands = map[string]cmd.Cmd{
 		Description: "Runs the krab grpc server, allowing for secure private key management",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			if err := kaas.NewServer(cfg.Endpoints.Krab.URL, "tcp", &cfg); err != nil {
-				log.Fatal(err)
+				fmt.Println("failed to start krab server", err)
+				os.Exit(1)
 			}
 		},
 	},
@@ -282,7 +302,8 @@ var commands = map[string]cmd.Cmd{
 			if _, err := database.Initialize(&cfg, database.Options{
 				RunMigrations: true,
 			}); err != nil {
-				log.Fatal(err)
+				fmt.Println("failed to perform secure migration", err)
+				os.Exit(1)
 			}
 		},
 	},
@@ -295,7 +316,8 @@ var commands = map[string]cmd.Cmd{
 				RunMigrations:  true,
 				SSLModeDisable: true,
 			}); err != nil {
-				log.Fatal(err)
+				fmt.Println("failed to perform insecure migration", err)
+				os.Exit(1)
 			}
 		},
 	},
@@ -306,10 +328,12 @@ var commands = map[string]cmd.Cmd{
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			configDag := os.Getenv("CONFIG_DAG")
 			if configDag == "" {
-				log.Fatal("CONFIG_DAG is not set")
+				fmt.Println("CONFIG_DAG is not set")
+				os.Exit(1)
 			}
 			if err := config.GenerateConfig(configDag); err != nil {
-				log.Fatal(err)
+				fmt.Println("failed to generate default config template", err)
+				os.Exit(1)
 			}
 		},
 	},
@@ -319,18 +343,21 @@ var commands = map[string]cmd.Cmd{
 		Description: "Create a Temporal user. Provide args as username, password, email. Do not use in production.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			if len(args) < 3 {
-				log.Fatal("insufficient fields provided")
+				fmt.Println("insufficient arguments provided")
+				os.Exit(1)
 			}
 			d, err := database.Initialize(&cfg, database.Options{
 				SSLModeDisable: true,
 			})
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println("failed to initialize database", err)
+				os.Exit(1)
 			}
 			if _, err := models.NewUserManager(d.DB).NewUserAccount(
 				args["user"], args["pass"], args["email"], false,
 			); err != nil {
-				log.Fatal(err)
+				fmt.Println("failed to create user account", err)
+				os.Exit(1)
 			}
 		},
 	},
@@ -340,20 +367,24 @@ var commands = map[string]cmd.Cmd{
 		Description: "Assign an existing Temporal user as an administrator.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			if args["dbAdmin"] == "" {
-				log.Fatal("no user provided through command line argument")
+				fmt.Println("dbAdmin flag not provided")
+				os.Exit(1)
 			}
 			d, err := database.Initialize(&cfg, database.Options{
 				SSLModeDisable: true,
 			})
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println("failed to initialize database", err)
+				os.Exit(1)
 			}
 			found, err := models.NewUserManager(d.DB).ToggleAdmin(args["dbAdmin"])
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println("failed to tag user as admin", err)
+				os.Exit(1)
 			}
 			if !found {
-				log.Fatalf("user %s not found", args["dbAdmin"])
+				fmt.Println("failed to find user", err)
+				os.Exit(1)
 			}
 		},
 	},
@@ -367,19 +398,27 @@ var commands = map[string]cmd.Cmd{
 				Blurb: "run a RESTful proxy for the Temporal V3 API",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					if len(os.Args) < 4 {
-						log.Fatal("no address provided")
+						fmt.Println("no address provided")
+						os.Exit(1)
 					}
-					log.Fatal(v3.REST(os.Args[3]))
+					if err := v3.REST(os.Args[3]); err != nil {
+						fmt.Println("error occurred during proxy initialization", err)
+						os.Exit(1)
+					}
 				},
 			},
 			"server": {
 				Blurb: "run the Temporal V3 API server",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					if len(os.Args) < 4 {
-						log.Fatal("no address provided")
+						fmt.Println("no address provided")
+						os.Exit(1)
 					}
 					s := v3.New()
-					log.Fatal(s.Run(context.Background(), os.Args[3]))
+					if err := s.Run(context.Background(), os.Args[3]); err != nil {
+						fmt.Println("error starting v3 API server", err)
+						os.Exit(1)
+					}
 				},
 			},
 		},
@@ -399,15 +438,19 @@ func main() {
 	if exit := temporal.PreRun(os.Args[1:]); exit == cmd.CodeOK {
 		os.Exit(0)
 	}
-
+	logger, err := log.NewLogger("stdout", false)
+	if err != nil {
+		fmt.Println("failed to initialize logger")
+		os.Exit(1)
+	}
 	// load config
 	configDag := os.Getenv("CONFIG_DAG")
 	if configDag == "" {
-		log.Fatal("CONFIG_DAG is not set")
+		logger.Fatal("CONFIG_DAG is not set")
 	}
 	tCfg, err := config.LoadConfig(configDag)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	if initDB := os.Getenv("INIT_DB"); strings.ToLower(initDB) == "true" {
 		sslDisabled := os.Getenv("SSL_MODE_DISABLE") == "true"
@@ -419,7 +462,7 @@ func main() {
 			SSLModeDisable: sslDisabled,
 		})
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal(err)
 		}
 	}
 	// initialize global context
@@ -444,19 +487,19 @@ func main() {
 	case "api":
 		lensClient, err := clients.NewLensClient(tCfg.Endpoints)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal(err)
 		}
 		defer lensClient.Close()
 		lens = lensClient
 		orchClient, err := clients.NewOcrhestratorClient(tCfg.Orchestrator)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal(err)
 		}
 		defer orchClient.Close()
 		orch = orchClient
 		signerClient, err := clients.NewSignerClient(tCfg, os.Getenv("SSL_MODE_DISABLE") == "true")
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal(err)
 		}
 		defer signerClient.Close()
 		signer = signerClient

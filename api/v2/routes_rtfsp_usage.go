@@ -11,7 +11,6 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/rtfs"
 	gocid "github.com/ipfs/go-cid"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/database/models"
 
@@ -76,10 +75,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		api.refundUserCredits(username, "private-pin", cost)
 		return
 	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    username,
-	}).Info("ipfs pin request for private network sent to backend")
+	api.l.With("user", username).Info("private network pin request sent to backend")
 	Respond(c, http.StatusOK, gin.H{"response": "content pin request sent to backend"})
 }
 
@@ -126,7 +122,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
-	api.LogDebug("opening file")
+	api.l.Debug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
 		api.LogError(err, eh.FileOpenError)
@@ -134,7 +130,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	api.LogDebug("file opened")
+	api.l.Debug("file opened")
 	// generate object name
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
@@ -168,7 +164,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	api.LogWithUser(username).Info("advanced private ipfs file upload requested")
+	api.l.Infow("advanced private ipfs file upload requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": "file upload request sent to backend"})
 }
 
@@ -256,7 +252,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
-	api.LogWithUser(username).Info("simple private ipfs file upload processed")
+	api.l.Infow("simple private ipfs file upload processed", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": resp})
 }
 
@@ -301,7 +297,7 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("private ipfs pub sub message published")
+	api.l.Infow("private ipfs pub sub message published", "user", username)
 
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"topic": topic, "message": forms["message"]}})
 }
@@ -341,7 +337,7 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.IPFSObjectStatError)(c)
 		return
 	}
-	api.LogWithUser(username).Info("private ipfs object stat requested")
+	api.l.Infow("private ipfs object stat requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": stats})
 }
 
@@ -382,7 +378,7 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.IPFSPinParseError)(c)
 		return
 	}
-	api.LogWithUser(username).Info("private ipfs pin check requested")
+	api.l.Infow("private ipfs pin check requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": present})
 }
 

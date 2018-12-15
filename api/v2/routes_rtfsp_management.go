@@ -28,7 +28,7 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 	if strings.ToLower(networkName) == "public" {
 		Fail(c, errors.New("network name can't be public, or PUBLIC"))
 	}
-	logger := api.LogWithUser(username).WithField("network_name", networkName)
+	logger := api.l.With("user", username, "network_name", networkName)
 	logger.Info("network creation request received")
 
 	// retrieve parameters - thse are all optional
@@ -46,15 +46,14 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 		api.LogError(err, eh.NetworkCreationError)(c)
 		return
 	}
-	logger.WithField("db_id", network.ID).Info("database entry created")
-
+	logger.With("db_id", network.ID).Info("database entry created")
 	if len(users) > 0 {
 		for _, v := range users {
 			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil && err.Error() != "network already configured for user" {
 				api.LogError(err, eh.NetworkCreationError)(c)
 				return
 			}
-			logger.WithField("user", v).Info("network added to user")
+			api.l.With("user", v).Info("network added to user)")
 		}
 	}
 
@@ -68,7 +67,7 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 		)(c)
 		return
 	}
-	logger.WithField("response", resp).Info("network node started")
+	api.l.With("response", resp).Info("network node started")
 
 	// respond with network details
 	Respond(c, http.StatusOK, gin.H{
@@ -93,7 +92,7 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 		FailWithMissingField(c, "network_name")
 		return
 	}
-	logger := api.LogWithUser(username).WithField("network_name", networkName)
+	logger := api.l.With("user", username, "network_name", networkName)
 	logger.Info("private ipfs network start requested")
 
 	// verify access to the requested network
@@ -141,7 +140,7 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 		FailWithMissingField(c, "network_name")
 		return
 	}
-	logger := api.LogWithUser(username).WithField("network_name", networkName)
+	logger := api.l.With("user", username, "network_name", networkName)
 	logger.Info("private ipfs network shutdown requested")
 
 	// retrieve authorized networks to check if person has access
@@ -190,7 +189,7 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 		FailWithMissingField(c, "network_name")
 		return
 	}
-	logger := api.LogWithUser(username).WithField("network_name", networkName)
+	logger := api.l.With("user", username, "network_name", networkName)
 	logger.Info("private ipfs network shutdown requested")
 	// retrieve authorized networks to check if person has access
 	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
@@ -271,7 +270,7 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 		Fail(c, errors.New(eh.PrivateNetworkAccessError))
 		return
 	}
-	logger := api.LogWithUser(username).WithField("network_name", netName)
+	logger := api.l.With("user", username, "network_name", netName)
 	logger.Info("private ipfs network by name requested")
 	net, err := api.nm.GetNetworkByName(netName)
 	if err != nil {
@@ -313,6 +312,6 @@ func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
 		return
 	}
 
-	api.LogWithUser(username).Info("authorized private ipfs network listing requested")
+	api.l.Infow("authorized private ipfs network listing requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": networks})
 }

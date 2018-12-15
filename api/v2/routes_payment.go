@@ -207,8 +207,12 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 			DestinationAddress: api.cfg.Wallets.DASH,
 		},
 	)
-	if err != nil || response.Error != "" {
+	if err != nil {
 		api.LogError(err, eh.ChainRiderAPICallError)(c, http.StatusBadRequest)
+		return
+	}
+	if response.Error != "" {
+		api.LogError(errors.New(response.Error), eh.ChainRiderAPICallError)(c, http.StatusBadRequest)
 		return
 	}
 	if _, err = api.pm.NewPayment(
