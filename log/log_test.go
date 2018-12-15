@@ -6,7 +6,7 @@ import (
 
 func TestNewLogger(t *testing.T) {
 	type args struct {
-		logPath string
+		logpath string
 		dev     bool
 	}
 	tests := []struct {
@@ -14,15 +14,20 @@ func TestNewLogger(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"Dev", args{"../testenv/dev.log", true}, false},
-		{"NoDev", args{"../testenv/nodev.log", false}, false},
-		{"DevFail", args{"../testenv", true}, true},
-		{"NoDevFail", args{"../testenv", false}, true},
+		{"Dev", args{"./tmp/dev.log", true}, false},
+		{"Prod", args{"./tmp/prog.log", false}, false},
+		{"DevFailDir", args{"./tmp", true}, true},
+		{"ProdFailDir", args{"./tmp", false}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := NewLogger(tt.args.logPath, tt.args.dev); (err != nil) != tt.wantErr {
-				t.Fatalf("NewLogger() error = %v, wantErr %v", err, tt.wantErr)
+			gotSugar, err := NewLogger(tt.args.logpath, tt.args.dev)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewLogger() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && gotSugar == nil {
+				t.Error("got unexpected nil logger")
 			}
 		})
 	}
