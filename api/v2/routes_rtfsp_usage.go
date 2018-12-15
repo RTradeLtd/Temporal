@@ -11,7 +11,6 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/rtfs"
 	gocid "github.com/ipfs/go-cid"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/database/models"
 
@@ -76,10 +75,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		api.refundUserCredits(username, "private-pin", cost)
 		return
 	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    username,
-	}).Info("ipfs pin request for private network sent to backend")
+	api.l.With("user", username).Info("private network pin request sent to backend")
 	Respond(c, http.StatusOK, gin.H{"response": "content pin request sent to backend"})
 }
 

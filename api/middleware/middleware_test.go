@@ -2,16 +2,15 @@ package middleware
 
 import (
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -42,8 +41,10 @@ func TestJwtMiddleware(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger := log.New()
-	logger.Out = os.Stdout
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	jwt := JwtConfigGenerate(cfg.API.JwtKey, testRealm, db, logger)
 	if reflect.TypeOf(jwt).String() != "*jwt.GinJWTMiddleware" {
 		t.Fatal("failed to reflect correct middleware type")

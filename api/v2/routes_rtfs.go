@@ -69,7 +69,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
-	logger := api.LogWithUser(username)
+	logger := api.l.With("user", username)
 	logger.Debug("file upload request received from user")
 	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
@@ -145,9 +145,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
-	logger.
-		WithField("request", ifp).
-		Info("advanced ipfs file upload requested")
+	logger.With("request", ifp).Info("advanced file upload requested")
 	Respond(c, http.StatusOK, gin.H{"response": "file upload request sent to backend"})
 }
 

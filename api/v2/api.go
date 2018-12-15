@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/rtfscluster"
+	"go.uber.org/zap"
 
 	"github.com/RTradeLtd/kaas"
 
@@ -64,7 +65,7 @@ type API struct {
 	zm          *models.ZoneManager
 	rm          *models.RecordManager
 	nm          *models.IPFSNetworkManager
-	l           *log.Logger
+	l           *zap.SugaredLogger
 	signer      pbSigner.SignerClient
 	orch        pbOrch.ServiceClient
 	lens        pbLens.IndexerAPIClient
@@ -75,7 +76,8 @@ type API struct {
 
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
-func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient) (*API, error) {
+func Initialize(cfg *config.TemporalConfig, l *zap.SugaredLogger, debug bool, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient) (*API, error) {
+	l = l.Named("api")
 	var (
 		err    error
 		router = gin.Default()
@@ -107,7 +109,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPICl
 		return nil, err
 	}
 	// set up API struct
-	api, err := new(cfg, router, lens, orch, signer, im, imCluster, debug, logfile)
+	api, err := new(cfg, router, l, lens, orch, signer, im, imCluster, debug, logfile)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +124,7 @@ func Initialize(cfg *config.TemporalConfig, debug bool, lens pbLens.IndexerAPICl
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool, out io.Writer) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool, out io.Writer) (*API, error) {
 	var (
 		logger = log.New()
 		dbm    *database.Manager
@@ -215,7 +217,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, lens pbLens.IndexerAPIC
 		cfg:         cfg,
 		service:     "api",
 		r:           router,
-		l:           logger,
+		l:           l,
 		dbm:         dbm,
 		um:          models.NewUserManager(dbm.DB),
 		im:          models.NewIPNSManager(dbm.DB),

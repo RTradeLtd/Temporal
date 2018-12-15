@@ -18,6 +18,8 @@ func TestNewLogger(t *testing.T) {
 		{"Prod", args{"./tmp/prog.log", false}, false},
 		{"DevFailDir", args{"./tmp", true}, true},
 		{"ProdFailDir", args{"./tmp", false}, true},
+		{"stdout-dev", args{"stdout", true}, false},
+		{"stdout-prod", args{"stdout", false}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -28,6 +30,9 @@ func TestNewLogger(t *testing.T) {
 			}
 			if !tt.wantErr && gotSugar == nil {
 				t.Error("got unexpected nil logger")
+			}
+			if !tt.wantErr && gotSugar != nil {
+				gotSugar.Info("test" + tt.name)
 			}
 		})
 	}

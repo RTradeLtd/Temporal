@@ -10,7 +10,6 @@ import (
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
-	log "github.com/sirupsen/logrus"
 )
 
 // CalculatePinCost is used to calculate the cost of pinning something to temporal
@@ -45,10 +44,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    username,
-	}).Info("pin cost calculation requested")
+	api.l.With("user", username).Info("pin cost calculation requested")
 	Respond(c, http.StatusOK, gin.H{"response": totalCost})
 }
 
@@ -85,11 +81,7 @@ func (api *API) calculateFileCost(c *gin.Context) {
 	default:
 		isPrivate = false
 	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    username,
-	}).Info("file cost calculation requested")
-
+	api.l.With("user", username).Info("file cost calculation requested")
 	cost := utils.CalculateFileCost(holdTimeInt, file.Size, isPrivate)
 	Respond(c, http.StatusOK, gin.H{"response": cost})
 }

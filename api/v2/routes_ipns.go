@@ -10,7 +10,6 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	gocid "github.com/ipfs/go-cid"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -84,10 +83,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    username,
-	}).Info("ipns entry creation request sent to backend")
+	api.l.With("user", username).Info("ipns entry creation sent to backend")
 	Respond(c, http.StatusOK, gin.H{"response": "ipns entry creation sent to backend"})
 }
 

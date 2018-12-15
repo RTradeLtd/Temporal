@@ -7,7 +7,7 @@ import (
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // Login is used to unmarshal a login in request so that we can parse it
@@ -17,8 +17,8 @@ type Login struct {
 }
 
 // JwtConfigGenerate is used to generate our JWT configuration
-func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, logger *log.Logger) *jwt.GinJWTMiddleware {
-
+func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, l *zap.SugaredLogger) *jwt.GinJWTMiddleware {
+	l = l.Named("jwt-middleware")
 	authMiddleware := &jwt.GinJWTMiddleware{
 		Realm:      realmName,
 		Key:        []byte(jwtKey),
@@ -31,16 +31,10 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, logger *log.Logger
 				return userId, false
 			}
 			if !validLogin {
-				logger.WithFields(log.Fields{
-					"service": "api",
-					"user":    userId,
-				}).Error("bad login")
+				l.With("user", userId).Error("bad login")
 				return userId, false
 			}
-			logger.WithFields(log.Fields{
-				"service": "api",
-				"user":    userId,
-			}).Info("successful login")
+			l.With("user", userId).Info("successful login")
 			return userId, true
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {
@@ -52,9 +46,7 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, logger *log.Logger
 			return true
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
-			logger.WithFields(log.Fields{
-				"service": "api",
-			}).Error("invalid login detected")
+			l.Error("invalid login detected")
 			c.JSON(code, gin.H{
 				"code":    code,
 				"message": message,

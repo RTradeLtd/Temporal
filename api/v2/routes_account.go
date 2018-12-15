@@ -11,7 +11,6 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 )
 
 // getUserFromToken is used to get the username of the associated token
@@ -81,12 +80,8 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 	}
 	forms["old_password"] = html.UnescapeString(forms["old_password"])
 	forms["new_password"] = html.UnescapeString(forms["new_password"])
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    username,
-	}).Info("password change requested")
+	api.l.With("user", username).Info("password change requested")
 	if ok, err := api.um.ChangePassword(username, forms["old_password"], forms["new_password"]); err != nil {
-		fmt.Println(err)
 		api.LogError(err, eh.PasswordChangeError)(c, http.StatusBadRequest)
 		return
 	} else if !ok {
@@ -94,10 +89,7 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		api.LogError(err, eh.PasswordChangeError)(c)
 		return
 	}
-	api.l.WithFields(log.Fields{
-		"service": api,
-		"user":    username,
-	}).Info("password changed")
+	api.l.With("user", username).Info("password changed")
 	Respond(c, http.StatusOK, gin.H{"response": "password changed"})
 }
 
@@ -108,9 +100,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		return
 	}
 	forms["password"] = html.UnescapeString(forms["password"])
-	api.l.WithFields(log.Fields{
-		"service": "api",
-	}).Info("user account registration detected")
+	api.l.Info("user account registration detected")
 	userModel, err := api.um.NewUserAccount(forms["username"], forms["password"], forms["email_address"], false)
 	if err != nil {
 		switch err.Error() {
@@ -125,10 +115,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 			return
 		}
 	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    forms["username"],
-	}).Info("user account registered")
+	api.l.With("user", forms["username"]).Info("user account registered")
 	userModel.HashedPassword = "scrubbed"
 	Respond(c, http.StatusOK, gin.H{"response": userModel})
 }
@@ -207,10 +194,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
-	api.l.WithFields(log.Fields{
-		"service": "api",
-		"user":    username,
-	}).Info("key creation request sent to backend")
+	api.l.With("user", username).Info("key creation request sent to backend")
 	Respond(c, http.StatusOK, gin.H{"response": "key creation sent to backend"})
 }
 

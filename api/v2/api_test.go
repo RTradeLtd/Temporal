@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	log "github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/config"
@@ -134,8 +135,12 @@ func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceC
 	// create our test api
 	testRecorder := httptest.NewRecorder()
 	_, engine := gin.CreateTestContext(testRecorder)
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	api, err := new(cfg, engine, fakeLens, fakeOrch, fakeSigner, im, imCluster, false, os.Stdout)
+	api, err := new(cfg, engine, logger, fakeLens, fakeOrch, fakeSigner, im, imCluster, false, os.Stdout)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1713,7 +1718,11 @@ func Test_Utils(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	api, err := Initialize(cfg, true, &mocks.FakeIndexerAPIClient{}, &mocks.FakeServiceClient{}, &mocks.FakeSignerClient{})
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	api, err := Initialize(cfg, logger, true, &mocks.FakeIndexerAPIClient{}, &mocks.FakeServiceClient{}, &mocks.FakeSignerClient{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1806,7 +1815,10 @@ func Test_API_Initialize_Cluster_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup an unreachable cluster host
 	cfg.IPFSCluster.APIConnection.Host = "10.255.255.255"
 
@@ -1814,7 +1826,7 @@ func Test_API_Initialize_Cluster_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	if _, err := Initialize(cfg, true, fakeLens, fakeOrch, fakeSigner); err == nil {
+	if _, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -1825,7 +1837,10 @@ func Test_API_Initialize_IPFS_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup an unreachable cluster host
 	cfg.IPFS.APIConnection.Host = "notarealip"
 
@@ -1833,7 +1848,7 @@ func Test_API_Initialize_IPFS_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	if _, err := Initialize(cfg, true, fakeLens, fakeOrch, fakeSigner); err == nil {
+	if _, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -1844,7 +1859,10 @@ func Test_API_Initialize_Setup_Routes_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup an invalid connection limit
 	cfg.API.Connection.Limit = "notanumber"
 
@@ -1853,27 +1871,7 @@ func Test_API_Initialize_Setup_Routes_Failure(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	if _, err := Initialize(cfg, true, fakeLens, fakeOrch, fakeSigner); err == nil {
-		t.Fatal("expected error")
-	}
-}
-
-func Test_API_Initialize_LogFile_Failure(t *testing.T) {
-	// load configuration
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// setup an invalid connection limit
-	cfg.API.LogFile = "/root"
-
-	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
-	fakeOrch := &mocks.FakeServiceClient{}
-	fakeSigner := &mocks.FakeSignerClient{}
-
-	if _, err := Initialize(cfg, true, fakeLens, fakeOrch, fakeSigner); err == nil {
+	if _, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -1884,7 +1882,10 @@ func Test_API_Initialize_Kaas_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup an invalid connection limit
 	cfg.Endpoints.Krab.TLS.CertPath = "/root"
 
@@ -1893,7 +1894,7 @@ func Test_API_Initialize_Kaas_Failure(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	if _, err := Initialize(cfg, true, fakeLens, fakeOrch, fakeSigner); err == nil {
+	if _, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -1903,7 +1904,10 @@ func Test_API_Initialize_Main_Network(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	dev = false
 
 	// setup fake mock clients
@@ -1911,7 +1915,7 @@ func Test_API_Initialize_Main_Network(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	api, err := Initialize(cfg, true, fakeLens, fakeOrch, fakeSigner)
+	api, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1924,7 +1928,10 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	type args struct {
 		certFilePath string
 		keyFilePath  string
@@ -1944,7 +1951,7 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 			fakeLens := &mocks.FakeIndexerAPIClient{}
 			fakeOrch := &mocks.FakeServiceClient{}
 			fakeSigner := &mocks.FakeSignerClient{}
-			api, err := Initialize(cfg, true, fakeLens, fakeOrch, fakeSigner)
+			api, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner)
 			if err != nil {
 				t.Fatal(err)
 			}
