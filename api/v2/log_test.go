@@ -1,19 +1,23 @@
 package v2
 
 import (
-	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
+
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestAPI_LogError(t *testing.T) {
-	api := API{l: log.New(), service: "test"}
+	observer, out := observer.New(zap.InfoLevel)
+	logger := zap.New(observer).Sugar()
+	api := API{l: logger, service: "test"}
 	type args struct {
 		err     error
 		message string
@@ -34,8 +38,6 @@ func TestAPI_LogError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var buf bytes.Buffer
-			api.l.Out = &buf
 			r := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(r)
 
@@ -46,17 +48,16 @@ func TestAPI_LogError(t *testing.T) {
 				api.LogError(tt.args.err, tt.args.message)(c)
 			}
 
+			// grab the last log generated
+			lastLogNumber := len(out.All()) - 1
+			fmt.Println(out.All()[0].Message)
 			// check log output
-			b, err := ioutil.ReadAll(&buf)
-			if err != nil {
-				t.Error(err)
-			}
-			if !strings.Contains(string(b), tt.wantLog) {
-				t.Errorf("got %s, want %s", string(b), tt.wantLog)
+			if !strings.Contains(out.All()[lastLogNumber].Message, tt.wantLog) {
+				t.Errorf("got %s, want %s", out.All()[lastLogNumber].Message, tt.wantLog)
 			}
 
 			// check http response
-			b, err = ioutil.ReadAll(r.Body)
+			b, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				t.Error(err)
 			}
