@@ -14,8 +14,12 @@ func TestNewLogger(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"dev", args{"", true}, false},
-		{"prod", args{"./tmp/log", false}, false},
+		{"dev-no-path", args{"", true}, false},
+		{"prod-no-path", args{"", false}, false},
+		{"dev-with-path", args{"./tmp/log", true}, false},
+		{"prod-with-path", args{"./tmp/log", false}, false},
+		{"bad-dir-dev", args{"/root/toor", true}, true},
+		{"bad-dir-prod", args{"/root/toor", false}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

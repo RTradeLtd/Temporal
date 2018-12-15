@@ -41,7 +41,7 @@ func NewLogger(logpath string, dev bool) (sugar *zap.SugaredLogger, err error) {
 	}
 
 	if logger, err = config.Build(); err != nil {
-		return
+		return nil, err
 	}
 
 	return logger.Sugar(), nil
