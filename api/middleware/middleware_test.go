@@ -41,7 +41,7 @@ func TestJwtMiddleware(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("stdout", true)
+	logger, err := log.NewLogger("", true)
 	if err != nil {
 		t.Fatal(err)
 	}
