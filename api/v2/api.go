@@ -5,8 +5,6 @@ package v2
 import (
 	"context"
 	"fmt"
-	"io"
-	"os"
 	"strconv"
 	"time"
 
@@ -21,7 +19,6 @@ import (
 
 	limit "github.com/aviddiviner/gin-limit"
 	helmet "github.com/danielkov/gin-helmet"
-	"github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/config"
 	xss "github.com/dvwright/xss-mw"
@@ -36,7 +33,6 @@ import (
 	pbLens "github.com/RTradeLtd/grpc/lens"
 	pbSigner "github.com/RTradeLtd/grpc/temporal"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -88,11 +84,6 @@ func Initialize(cfg *config.TemporalConfig, l *zap.SugaredLogger, debug bool, le
 	p.SetListenAddress(fmt.Sprintf("%s:6768", cfg.API.Connection.ListenAddress))
 	p.Use(router)
 
-	// open log file
-	logfile, err := os.OpenFile(cfg.API.LogFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open log file: %s", err)
-	}
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
 		nil,
@@ -109,7 +100,7 @@ func Initialize(cfg *config.TemporalConfig, l *zap.SugaredLogger, debug bool, le
 		return nil, err
 	}
 	// set up API struct
-	api, err := new(cfg, router, l, lens, orch, signer, im, imCluster, debug, logfile)
+	api, err := new(cfg, router, l, lens, orch, signer, im, imCluster, debug)
 	if err != nil {
 		return nil, err
 	}
@@ -124,27 +115,16 @@ func Initialize(cfg *config.TemporalConfig, l *zap.SugaredLogger, debug bool, le
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool, out io.Writer) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool) (*API, error) {
 	var (
-		logger = log.New()
-		dbm    *database.Manager
-		err    error
+		dbm *database.Manager
+		err error
 	)
-
-	// set up logger
-	logger.Out = out
-	logger.Info("logger initialized")
-
-	// enable debug mode if requested
-	if debug {
-		logger.SetLevel(logrus.DebugLevel)
-	}
 
 	// set up database manager
 	dbm, err = database.Initialize(cfg, database.Options{LogMode: debug})
 	if err != nil {
-		logger.Warnf("failed to connect to database: %s", err.Error())
-		logger.Warnf("failed to connect to database with secure connection - attempting insecure connection...")
+		l.Warnw("failed to connect to database with secure connection - attempting insecure", "error", err.Error())
 		dbm, err = database.Initialize(cfg, database.Options{
 			LogMode:        debug,
 			SSLModeDisable: true,
@@ -152,9 +132,9 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		if err != nil {
 			return nil, fmt.Errorf("failed to connect to database with insecure connection: %s", err.Error())
 		}
-		logger.Warnf("insecure database connection established")
+		l.Warn("insecure database connection established")
 	} else {
-		logger.Info("secure database connection established")
+		l.Info("secure database connection established")
 	}
 	var networkVersion string
 	if dev {

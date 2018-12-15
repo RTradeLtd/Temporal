@@ -140,7 +140,7 @@ func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceC
 		return nil, nil, err
 	}
 
-	api, err := new(cfg, engine, logger, fakeLens, fakeOrch, fakeSigner, im, imCluster, false, os.Stdout)
+	api, err := new(cfg, engine, logger, fakeLens, fakeOrch, fakeSigner, im, imCluster, false)
 	if err != nil {
 		return nil, nil, err
 	}
