@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 
-	"github.com/libp2p/go-floodsub"
+	floodsub "github.com/libp2p/go-floodsub"
 	"github.com/libp2p/go-libp2p-peer"
 )
 
