@@ -11,6 +11,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+/*
 func TestAPI(t *testing.T) {
 	logFilePath = "../../testenv"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
@@ -48,9 +49,55 @@ func TestAPI(t *testing.T) {
 				"keyFilePath":   tt.args.keyFilePath,
 			}
 			// setup global context
-			ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
+			ctx, cancel = context.WithTimeout(context.Background(), time.Second*7)
 			commands["api"].Action(*cfg, flags)
 			cancel()
+		})
+	}
+}
+*/
+func TestAPI(t *testing.T) {
+	logFilePath = "../../testenv"
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err = loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type args struct {
+		port          string
+		listenAddress string
+		certFilePath  string
+		keyFilePath   string
+		logDir        string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"NoTLS-NoPort-NoLogDir", args{"", "127.0.0.1", "", "", ""}},
+		{"NoTLS-WithPort-WithLogDir", args{"6768", "127.0.0.1", "", "", "./tmp"}},
+		{"TLS-WithPort-WithLogDir", args{"6769", "127.0.0.1", "../../testenv/certs/api.cert", "../../testenv/certs/api.key", "./tmp"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// setup environment variable
+			if err := os.Setenv("API_PORT", tt.args.port); err != nil {
+				t.Fatal(err)
+			}
+			// setup call args
+			flags := map[string]string{
+				"listenAddress": tt.args.listenAddress,
+				"certFilePath":  tt.args.certFilePath,
+				"keyFilePath":   tt.args.keyFilePath,
+			}
+			cfg.LogDir = tt.args.logDir
+			// setup global context
+			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+			commands["api"].Action(*cfg, flags)
 		})
 	}
 }
@@ -69,24 +116,34 @@ func TestQueuesIPFS(t *testing.T) {
 	type args struct {
 		parentCmd string
 		childCmd  string
+		logDir    string
 	}
 	tests := []struct {
 		name string
 		args args
 	}{
-		{"IPNSEntry", args{"ipfs", "ipns-entry"}},
-		{"IPFSPin", args{"ipfs", "pin"}},
-		{"IPFSFile", args{"ipfs", "file"}},
-		{"IPFSKey", args{"ipfs", "key-creation"}},
-		{"IPFSCluster", args{"ipfs", "cluster"}},
+		{"IPNSEntry-NoLogDir", args{"ipfs", "ipns-entry", ""}},
+		{"IPNSEntry-LogDir", args{"ipfs", "ipns-entry", "./tmp"}},
+		// omit this test, as ipfs pin spawns a cluster queue publisher
+		// by specifying "", the cluster publisher will attempt to log in the / directory
+		// {"IPFSPin-NoLogDir", args{"ipfs", "pin", ""}},
+		{"IPFSPin-LogDir", args{"ipfs", "pin", "./tmp"}},
+		// omit this test for the same reasons as specified above
+		// {"IPFSFile-NoLogDir", args{"ipfs", "file", ""}},
+		{"IPFSFile-LogDir", args{"ipfs", "file", "./tmp"}},
+		{"IPFSKey-NoLogDir", args{"ipfs", "key-creation", ""}},
+		{"IPFSKey-LogDir", args{"ipfs", "key-creation", "./tmp"}},
+		{"IPFSCluster-NoLogDir", args{"ipfs", "cluster", ""}},
+		{"IPFSCluster-LogDir", args{"ipfs", "cluster", "./tmp"}},
 	}
 	queueCmds := commands["queue"]
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
+			cfg.LogDir = tt.args.logDir
+			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
 			queueCmds.Children[tt.args.parentCmd].Children[tt.args.childCmd].Action(*cfg, nil)
-			cancel()
 		})
 	}
 }
@@ -97,9 +154,25 @@ func TestQueuesDFA(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	commands["queue"].Children["dfa"].Action(*cfg, nil)
+	type args struct {
+		logDir string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"NoLogDir", args{""}},
+		{"LogDir", args{"./tmp"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg.LogDir = tt.args.logDir
+			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+			commands["queue"].Children["dfa"].Action(*cfg, nil)
+		})
+	}
+
 }
 
 func TestQueuesEmailSend(t *testing.T) {
@@ -108,9 +181,25 @@ func TestQueuesEmailSend(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	commands["queue"].Children["email-send"].Action(*cfg, nil)
+	type args struct {
+		logDir string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"NoLogDir", args{""}},
+		{"LogDir", args{"./tmp"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg.LogDir = tt.args.logDir
+			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+			commands["queue"].Children["email-send"].Action(*cfg, nil)
+		})
+	}
+
 }
 
 func TestMigrations(t *testing.T) {
