@@ -9,6 +9,7 @@ import (
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/database/models"
 	"github.com/jinzhu/gorm"
 )
 
@@ -151,6 +152,16 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	um := models.NewUploadManager(db)
+	// create a test upload in database
+	if _, err := um.NewUpload(testCID, "file", models.UploadOptions{
+		NetworkName:      "public",
+		Username:         "testuser",
+		HoldTimeInMonths: 10,
+		Encrypted:        false,
+	}); err != nil {
+		t.Fatal(err)
+	}
 	// setup our queue backend
 	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, loggerConsumer)
 	if err != nil {
@@ -165,11 +176,20 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
 		Hash:             testCID,
 		HoldTimeInMonths: 10,
 		UserName:         "testuser",
+		NetworkName:      "public",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// test a bad user
+	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
+		Hash:             "notarealhash",
+		HoldTimeInMonths: 10,
+		UserName:         "testuserthatdoesnotexist",
+		NetworkName:      "public",
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -179,10 +199,11 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
-	cancel()
 	waitGroup.Wait()
 }
 
@@ -293,6 +314,26 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 	if err := qmPublisher.PublishMessage(""); err != nil {
 		t.Fatal(err)
 	}
+	// test private network detection
+	if err := qmPublisher.PublishMessage(IPFSClusterPin{
+		CID:              testCID,
+		NetworkName:      "myprivatenetwork",
+		UserName:         "testuser",
+		HoldTimeInMonths: 10,
+		CreditCost:       10,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// test invalid cid format
+	if err := qmPublisher.PublishMessage(IPFSClusterPin{
+		CID:              "notarealcid",
+		NetworkName:      "myprivatenetwork",
+		UserName:         "testuser",
+		HoldTimeInMonths: 10,
+		CreditCost:       10,
+	}); err != nil {
+		t.Fatal(err)
+	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
@@ -339,8 +380,8 @@ func TestQueue_EmailSend(t *testing.T) {
 		Subject:     "test email",
 		Content:     "this is a test email",
 		ContentType: "text/html",
-		UserNames:   []string{"testuser"},
-		Emails:      []string{"testuser@example.com"},
+		UserNames:   []string{"testuser", "testuer"},
+		Emails:      []string{"testuser@example.com", "testuser2@example.com"},
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -390,6 +431,7 @@ func TestQueue_IPNSEntry(t *testing.T) {
 		}
 	}()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
 	if err := qmPublisher.PublishMessage(IPNSEntry{
 		CID:         testCID,
 		LifeTime:    time.Minute,
@@ -406,12 +448,24 @@ func TestQueue_IPNSEntry(t *testing.T) {
 	if err := qmPublisher.PublishMessage(""); err != nil {
 		t.Fatal(err)
 	}
+	// test private network detection
+	if err := qmPublisher.PublishMessage(IPNSEntry{
+		CID:         testCID,
+		LifeTime:    time.Minute,
+		TTL:         time.Second,
+		Resolve:     true,
+		Key:         "testkey",
+		UserName:    "testuser",
+		NetworkName: "myprivatenetwork",
+		CreditCost:  10,
+	}); err != nil {
+		t.Fatal(err)
+	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
-	cancel()
 	waitGroup.Wait()
 }
 
@@ -464,6 +518,15 @@ func TestQueue_IPFSPin(t *testing.T) {
 	}
 	// test a bad publish
 	if err := qmPublisher.PublishMessage(""); err != nil {
+		t.Fatal(err)
+	}
+	// test a private network
+	if err := qmPublisher.PublishMessageWithExchange(IPFSPin{
+		CID:              testCID,
+		NetworkName:      "myprivatenetwork",
+		HoldTimeInMonths: 10},
+		PinExchange,
+	); err != nil {
 		t.Fatal(err)
 	}
 	waitGroup := &sync.WaitGroup{}
@@ -678,6 +741,33 @@ func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
 	}
 }
 
+func TestQueue_IPFSFile_Failure_LogDir(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loggerConsumer, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.IPFS.APIConnection.Host = "notarealip"
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
+	cfg.LogDir = "/root/toor"
+	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
+		t.Fatal("expected error")
+	}
+}
+
 func TestQueue_IPFSFile_Failure_RabbitMQ(t *testing.T) {
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
@@ -701,6 +791,32 @@ func TestQueue_IPFSFile_Failure_RabbitMQ(t *testing.T) {
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
+	}
+}
+
+func TestQueue_IPNSEntry_Failure_Krab(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loggerConsumer, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, loggerConsumer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
+	cfg.Endpoints.Krab.TLS.CertPath = "/root/toor"
+	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
+		t.Fatal(err)
 	}
 }
 

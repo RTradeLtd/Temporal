@@ -50,8 +50,8 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:a69f00d2703ed80439cf96684bf0587f0e1dcf1db4a7024d103c1aaaa2ed90d3"
+  branch = "gorm"
+  digest = "1:f63ff159b462a0f9eead39b22c5b884f80402960c3e63c6ceb579443066d5bbc"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "282779ef8fd64ed8f6fb42da63a80f6062971cef"
+  revision = "fcc4e47064bcd7e11485b75e5f568c384782f69a"
 
 [[projects]]
   branch = "master"
@@ -593,15 +593,15 @@
   revision = "4f4301a06e153ff90e17793577ab6bf79f8dc5c5"
 
 [[projects]]
-  digest = "1:6895fbe5a10c5aebd1965cac6f6905dcdb21bee01e08912d3ba6a805c2485f6a"
+  branch = "master"
+  digest = "1:7b4c43b17175f212ca55e83034f9f2ea7c34602819e8a6db994d37d2b9218659"
   name = "github.com/jinzhu/gorm"
   packages = [
     ".",
     "dialects/postgres",
   ]
   pruneopts = "UT"
-  revision = "6ed508ec6a4ecb3531899a69cbc746ccf65a4166"
-  version = "v1.9.1"
+  revision = "5ad6f621e6f59672f5b5061df85b243436fde048"
 
 [[projects]]
   branch = "master"

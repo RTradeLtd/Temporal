@@ -19,7 +19,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/database"
-  branch = "master"
+  branch = "gorm"
 
 [[override]]
   name = "github.com/RTradeLtd/rtfs"
@@ -123,10 +123,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   name = "github.com/gin-gonic/gin"
   branch = "master"
-
-[[constraint]]
-  name = "github.com/jinzhu/gorm"
-  version = "1.9.1"
 
 [[constraint]]
   branch = "master"
