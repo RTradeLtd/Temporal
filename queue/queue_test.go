@@ -2,11 +2,13 @@ package queue
 
 import (
 	"context"
+	"os"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/log"
+	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
@@ -15,6 +17,7 @@ import (
 
 const (
 	testCID           = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
+	testCID2          = "QmQ5vhrL7uv6tuoN9KeVBwd4PwfQkXdVVmDLUZuTNxqgvm"
 	testRabbitAddress = "amqp://127.0.0.1:5672"
 	testLogFilePath   = "../testenv/"
 	testCfgPath       = "../testenv/config.json"
@@ -176,6 +179,7 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 			t.Error(err)
 		}
 	}()
+	// test a regular database file add
 	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
 		Hash:             testCID,
 		HoldTimeInMonths: 10,
@@ -217,6 +221,55 @@ func TestQueue_IPFSFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// create a fake private network
+	nm := models.NewHostedIPFSNetworkManager(db)
+	um := models.NewUserManager(db)
+	if _, err := nm.CreateHostedPrivateNetwork(
+		"myipfsfileprivatenetwork", "fakeswarm", nil, []string{"testuser"},
+	); err != nil {
+		t.Fatal(err)
+	}
+	if err := um.AddIPFSNetworkForUser("testuser", "myipfsfileprivatenetwork"); err != nil {
+		t.Fatal(err)
+	}
+	if err := nm.UpdateNetworkByName("myipfsfileprivatenetwork", map[string]interface{}{
+		"api_url": cfg.IPFS.APIConnection.Host + ":" + cfg.IPFS.APIConnection.Port,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// connect to minio so we can store fake data
+	mm, err := mini.NewMinioManager(
+		cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
+		cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, err := os.Open("../README.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	stats, err := file.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := mm.PutObject(
+		"object1",
+		file,
+		stats.Size(),
+		mini.PutObjectOptions{
+			Bucket: "filesuploadbucket"},
+	); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := mm.PutObject(
+		"object2",
+		file,
+		stats.Size(),
+		mini.PutObjectOptions{
+			Bucket: "filesuploadbucket"},
+	); err != nil {
+		t.Fatal(err)
+	}
 	loggerConsumer, err := log.NewLogger("", true)
 	if err != nil {
 		t.Fatal(err)
@@ -239,15 +292,85 @@ func TestQueue_IPFSFile(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// test public network
 	if err := qmPublisher.PublishMessage(IPFSFile{
-		MinioHostIP:      "127.0.0.1:9090",
+		MinioHostIP:      cfg.MINIO.Connection.IP,
+		FileName:         "testfile",
+		FileSize:         100,
+		BucketName:       "filesuploadbucket",
+		ObjectName:       "object1",
+		UserName:         "testuser",
+		NetworkName:      "public",
+		HoldTimeInMonths: "10",
+		CreditCost:       10,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// test private network - exists
+	if err := qmPublisher.PublishMessage(IPFSFile{
+		MinioHostIP:      cfg.MINIO.Connection.IP,
+		FileName:         "testfile",
+		FileSize:         100,
+		BucketName:       "filesuploadbucket",
+		ObjectName:       "object2",
+		UserName:         "testuser",
+		NetworkName:      "myipfsfileprivatenetwork",
+		HoldTimeInMonths: "10",
+		CreditCost:       10,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// test private network - does not exist
+	if err := qmPublisher.PublishMessage(IPFSFile{
+		MinioHostIP:      cfg.MINIO.Connection.IP,
+		FileName:         "testfile",
+		FileSize:         100,
+		BucketName:       "filesuploadbucket",
+		ObjectName:       "object2",
+		UserName:         "testuser",
+		NetworkName:      "myipfsfileprivatenetwork-doesnotexist",
+		HoldTimeInMonths: "10",
+		CreditCost:       10,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// test non existing object
+	if err := qmPublisher.PublishMessage(IPFSFile{
+		MinioHostIP:      cfg.MINIO.Connection.IP,
+		FileName:         "testfile",
+		FileSize:         100,
+		BucketName:       "filesuploadbucket",
+		ObjectName:       "notarealobject",
+		UserName:         "testuser",
+		NetworkName:      "public",
+		HoldTimeInMonths: "10",
+		CreditCost:       10,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// test non existing bucket
+	if err := qmPublisher.PublishMessage(IPFSFile{
+		MinioHostIP:      cfg.MINIO.Connection.IP,
+		FileName:         "testfile",
+		FileSize:         100,
+		BucketName:       "notarealbucket",
+		ObjectName:       "notarealobject",
+		UserName:         "testuser",
+		NetworkName:      "private",
+		HoldTimeInMonths: "10",
+		CreditCost:       10,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// test bad minio ip
+	if err := qmPublisher.PublishMessage(IPFSFile{
+		MinioHostIP:      "notarealip",
 		FileName:         "testfile",
 		FileSize:         100,
 		BucketName:       "filesuploadbucket",
 		ObjectName:       "myobject",
 		UserName:         "testuser",
-		NetworkName:      "public",
+		NetworkName:      "private",
 		HoldTimeInMonths: "10",
 		CreditCost:       10,
 	}); err != nil {
@@ -261,10 +384,11 @@ func TestQueue_IPFSFile(t *testing.T) {
 	waitGroup.Add(1)
 	// set temporary log dig
 	cfg.LogDir = "./tmp/"
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
-	cancel()
 	waitGroup.Wait()
 }
 
@@ -300,9 +424,19 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// test an already seen update (this comes from the previous database file add)
 	if err := qmPublisher.PublishMessage(IPFSClusterPin{
 		CID:              testCID,
+		NetworkName:      "public",
+		UserName:         "testuser",
+		HoldTimeInMonths: 10,
+		CreditCost:       10,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// test a previously unseen upload
+	if err := qmPublisher.PublishMessage(IPFSClusterPin{
+		CID:              testCID2,
 		NetworkName:      "public",
 		UserName:         "testuser",
 		HoldTimeInMonths: 10,
@@ -327,7 +461,7 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 	// test invalid cid format
 	if err := qmPublisher.PublishMessage(IPFSClusterPin{
 		CID:              "notarealcid",
-		NetworkName:      "myprivatenetwork",
+		NetworkName:      "public",
 		UserName:         "testuser",
 		HoldTimeInMonths: 10,
 		CreditCost:       10,
@@ -336,10 +470,11 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
-	cancel()
 	waitGroup.Wait()
 }
 
@@ -375,12 +510,12 @@ func TestQueue_EmailSend(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// test a email send
 	if err := qmPublisher.PublishMessage(EmailSend{
 		Subject:     "test email",
 		Content:     "this is a test email",
 		ContentType: "text/html",
-		UserNames:   []string{"testuser", "testuer"},
+		UserNames:   []string{"testuser", "testuser"},
 		Emails:      []string{"testuser@example.com", "testuser2@example.com"},
 	}); err != nil {
 		t.Fatal(err)
@@ -391,10 +526,11 @@ func TestQueue_EmailSend(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
-	cancel()
 	waitGroup.Wait()
 }
 
@@ -430,8 +566,7 @@ func TestQueue_IPNSEntry(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
-	defer cancel()
+	// test a valid publish
 	if err := qmPublisher.PublishMessage(IPNSEntry{
 		CID:         testCID,
 		LifeTime:    time.Minute,
@@ -463,6 +598,8 @@ func TestQueue_IPNSEntry(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
@@ -507,7 +644,7 @@ func TestQueue_IPFSPin(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// test a valid pin
 	if err := qmPublisher.PublishMessageWithExchange(IPFSPin{
 		CID:              testCID,
 		NetworkName:      "public",
@@ -533,10 +670,11 @@ func TestQueue_IPFSPin(t *testing.T) {
 	waitGroup.Add(1)
 	// set temporary log dig
 	cfg.LogDir = "./tmp/"
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
-	cancel()
 	waitGroup.Wait()
 }
 
@@ -578,7 +716,7 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// test a normal publish
 	if err := qmPublisher.PublishMessageWithExchange(IPFSKeyCreation{
 		UserName:    "testuser",
 		Name:        "mykey",
@@ -595,10 +733,11 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
-	cancel()
 	waitGroup.Wait()
 }
 
@@ -759,10 +898,9 @@ func TestQueue_IPFSFile_Failure_LogDir(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.IPFS.APIConnection.Host = "notarealip"
+	cfg.LogDir = "/root/toor"
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
-	cfg.LogDir = "/root/toor"
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
 	}
@@ -812,9 +950,9 @@ func TestQueue_IPNSEntry_Failure_Krab(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	cfg.Endpoints.Krab.TLS.CertPath = "/root/toor"
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
-	cfg.Endpoints.Krab.TLS.CertPath = "/root/toor"
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal(err)
 	}

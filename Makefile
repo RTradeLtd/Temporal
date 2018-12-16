@@ -1,3 +1,9 @@
+ACCESSKEY=C03T49S17RP0APEZDK6M
+SECRETKEY=q4I9t2MN/6bAgLkbF6uyS7jtQrXuNARcyrm2vvNA
+ALIAS=minio
+BUCKET=filesuploadbucket
+HOST=http://127.0.0.1:9000
+
 all: check cli
 
 # Build temporal if binary is not already present
@@ -52,6 +58,11 @@ testenv:
 	@env CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go migrate-insecure
 	make api-user
 	make api-admin
+	# create minio bucket
+	wget https://dl.minio.io/client/mc/release/linux-amd64/mc
+	chmod +x mc
+	./mc config host add $(ALIAS) $(HOST) $(ACCESSKEY) $(SECRETKEY)
+	./mc mb $(ALIAS)/$(BUCKET)
 	@echo "===================          done           ==================="
 
 # Shut down testenv
