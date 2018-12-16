@@ -49,7 +49,12 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			logger, err := log.NewLogger(logFilePath+"api_service.log", dev)
+			if cfg.LogDir == "" {
+				logFilePath = logFilePath + "api_service.log"
+			} else {
+				logFilePath = cfg.LogDir + "api_service.log"
+			}
+			logger, err := log.NewLogger(logFilePath, dev)
 			if err != nil {
 				fmt.Println("failed to start logger ", err)
 				os.Exit(1)
@@ -103,8 +108,17 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "IPNS entry creation queue",
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.New(queue.IpnsEntryQueue, mqConnectionURL, false, logFilePath)
+							if cfg.LogDir == "" {
+								logFilePath = logFilePath + "ipns_consumer.log"
+							} else {
+								logFilePath = cfg.LogDir + "ipns_consumer.log"
+							}
+							logger, err := log.NewLogger(logFilePath, dev)
+							if err != nil {
+								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+							qm, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, false, logger)
 							if err != nil {
 								fmt.Println("failed to start queue", err)
 								os.Exit(1)
@@ -129,8 +143,17 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Pin addition queue",
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.New(queue.IpfsPinQueue, mqConnectionURL, false, logFilePath)
+							if cfg.LogDir == "" {
+								logFilePath = logFilePath + "pin_consumer.log"
+							} else {
+								logFilePath = cfg.LogDir + "pin_consumer.log"
+							}
+							logger, err := log.NewLogger(logFilePath, dev)
+							if err != nil {
+								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+							qm, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, false, logger)
 							if err != nil {
 								fmt.Println("failed to start queue", err)
 								os.Exit(1)
@@ -155,8 +178,17 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "File upload queue",
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.New(queue.IpfsFileQueue, mqConnectionURL, false, logFilePath)
+							if cfg.LogDir == "" {
+								logFilePath = logFilePath + "file_consumer.log"
+							} else {
+								logFilePath = cfg.LogDir + "file_consumer.log"
+							}
+							logger, err := log.NewLogger(logFilePath, dev)
+							if err != nil {
+								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+							qm, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, false, logger)
 							if err != nil {
 								fmt.Println("failed to start queue", err)
 								os.Exit(1)
@@ -181,8 +213,17 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Key creation queue",
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.New(queue.IpfsKeyCreationQueue, mqConnectionURL, false, logFilePath)
+							if cfg.LogDir == "" {
+								logFilePath = logFilePath + "key_consumer.log"
+							} else {
+								logFilePath = cfg.LogDir + "key_consumer.log"
+							}
+							logger, err := log.NewLogger(logFilePath, dev)
+							if err != nil {
+								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+							qm, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, false, logger)
 							if err != nil {
 								fmt.Println("failed to start queue", err)
 								os.Exit(1)
@@ -207,8 +248,17 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Cluster pin queue",
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							mqConnectionURL := cfg.RabbitMQ.URL
-							qm, err := queue.New(queue.IpfsClusterPinQueue, mqConnectionURL, false, logFilePath)
+							if cfg.LogDir == "" {
+								logFilePath = logFilePath + "cluster_pin_consumer.log"
+							} else {
+								logFilePath = cfg.LogDir + "cluster_pin_consumer.log"
+							}
+							logger, err := log.NewLogger(logFilePath, dev)
+							if err != nil {
+								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+							qm, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, logger)
 							if err != nil {
 								fmt.Println("failed to start queue", err)
 								os.Exit(1)
@@ -235,8 +285,17 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "Database file add queue",
 				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.New(queue.DatabaseFileAddQueue, mqConnectionURL, false, logFilePath)
+					if cfg.LogDir == "" {
+						logFilePath = logFilePath + "dfa_consumer.log"
+					} else {
+						logFilePath = cfg.LogDir + "dfa_consumer.log"
+					}
+					logger, err := log.NewLogger(logFilePath, dev)
+					if err != nil {
+						fmt.Println("failed to start logger ", err)
+						os.Exit(1)
+					}
+					qm, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, false, logger)
 					if err != nil {
 						fmt.Println("failed to start queue", err)
 						os.Exit(1)
@@ -261,8 +320,17 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "Email send queue",
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					mqConnectionURL := cfg.RabbitMQ.URL
-					qm, err := queue.New(queue.EmailSendQueue, mqConnectionURL, false, logFilePath)
+					if cfg.LogDir == "" {
+						logFilePath = logFilePath + "email_consumer.log"
+					} else {
+						logFilePath = cfg.LogDir + "email_consumer.log"
+					}
+					logger, err := log.NewLogger(logFilePath, dev)
+					if err != nil {
+						fmt.Println("failed to start logger ", err)
+						os.Exit(1)
+					}
+					qm, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, false, logger)
 					if err != nil {
 						fmt.Println("failed to start queue", err)
 						os.Exit(1)

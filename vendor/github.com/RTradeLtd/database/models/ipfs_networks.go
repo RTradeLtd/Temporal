@@ -12,18 +12,26 @@ import (
 
 // HostedIPFSPrivateNetwork is a private network for which we are responsible of the infrastructure
 type HostedIPFSPrivateNetwork struct {
-	ID                     uint `gorm:"primary_key"`
-	CreatedAt              time.Time
-	UpdatedAt              time.Time
-	Name                   string         `gorm:"unique;type:varchar(255)"`
-	APIURL                 string         `gorm:"type:varchar(255)"`
-	SwarmKey               string         `gorm:"type:varchar(255)"`
-	Users                  pq.StringArray `gorm:"type:text[]"` // these are the users to which this IPFS network connection applies to specified by eth address
-	LocalNodePeerAddresses pq.StringArray `gorm:"type:text[]"` // these are the nodes whichwe run, and can connect to
-	LocalNodePeerIDs       pq.StringArray `gorm:"type:text[];column:local_node_peer_ids"`
+	ID        uint `gorm:"primary_key"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+
+	Name      string         `gorm:"unique;type:varchar(255)"`
+	APIURL    string         `gorm:"type:varchar(255)"`
+	SwarmKey  string         `gorm:"type:varchar(255)"`
+	Users     pq.StringArray `gorm:"type:text[]"` // these are the users to which this IPFS network connection applies to specified by eth address
+	Activated time.Time
+
 	BootstrapPeerAddresses pq.StringArray `gorm:"type:text[]"`
 	BootstrapPeerIDs       pq.StringArray `gorm:"type:text[];column:bootstrap_peer_ids"`
-	Activated              time.Time
+
+	ResourcesCPUs     int
+	ResourcesDiskGB   int
+	ResourcesMemoryGB int
+
+	// note: local addresses currently unused
+	LocalNodePeerAddresses pq.StringArray `gorm:"type:text[]"` // these are the nodes whichwe run, and can connect to
+	LocalNodePeerIDs       pq.StringArray `gorm:"type:text[];column:local_node_peer_ids"`
 }
 
 // IPFSNetworkManager is used to manipulate IPFS network models in the database

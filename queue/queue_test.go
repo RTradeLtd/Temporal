@@ -2,12 +2,11 @@ package queue
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/jinzhu/gorm"
@@ -34,8 +33,12 @@ func TestQueue_Publish(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			logger, err := log.NewLogger("", true)
+			if err != nil {
+				t.Fatal(err)
+			}
 			qm, err := New(tt.args.queueName,
-				testRabbitAddress, tt.args.publish)
+				testRabbitAddress, tt.args.publish, logger)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -61,7 +64,11 @@ func TestQueue_Publish(t *testing.T) {
 
 // Covers the default case in `setupExchange`
 func TestQueue_ExchangeFail(t *testing.T) {
-	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, testLogFilePath)
+	logger, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,8 +86,12 @@ func TestQueue_RefundCredits(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	logger, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup our queue backend
-	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, testLogFilePath)
+	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,9 +119,14 @@ func TestQueue_RefundCredits(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_DatabaseFileAdd(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, DatabaseFileAddQueue))
-	}()
+	loggerConsumer, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loggerPublisher, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -120,11 +136,11 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, testLogFilePath)
+	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(DatabaseFileAddQueue, testRabbitAddress, true, testLogFilePath)
+	qmPublisher, err := New(DatabaseFileAddQueue, testRabbitAddress, true, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,9 +168,6 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_IPFSFile(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsFileQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -163,12 +176,20 @@ func TestQueue_IPFSFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// setup our queue backend
-	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, testLogFilePath)
+	loggerConsumer, err := log.NewLogger("", true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpfsFileQueue, testRabbitAddress, true, testLogFilePath)
+	loggerPublisher, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qmPublisher, err := New(IpfsFileQueue, testRabbitAddress, true, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,6 +214,8 @@ func TestQueue_IPFSFile(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
+	// set temporary log dig
+	cfg.LogDir = "./tmp/"
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
@@ -202,9 +225,6 @@ func TestQueue_IPFSFile(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_IPFSClusterPin(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsClusterPinQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -213,12 +233,20 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// setup our queue backend
-	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, testLogFilePath)
+	loggerConsumer, err := log.NewLogger("", true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpfsClusterPinQueue, testRabbitAddress, true, testLogFilePath)
+	loggerPublisher, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, loggerConsumer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qmPublisher, err := New(IpfsClusterPinQueue, testRabbitAddress, true, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -248,9 +276,6 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_EmailSend(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, EmailSendQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -259,12 +284,20 @@ func TestQueue_EmailSend(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// setup our queue backend
-	qmConsumer, err := New(EmailSendQueue, testRabbitAddress, false, testLogFilePath)
+	loggerConsumer, err := log.NewLogger("", true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(EmailSendQueue, testRabbitAddress, true, testLogFilePath)
+	loggerPublisher, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(EmailSendQueue, testRabbitAddress, false, loggerConsumer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qmPublisher, err := New(EmailSendQueue, testRabbitAddress, true, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,9 +327,6 @@ func TestQueue_EmailSend(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_IPNSEntry(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpnsEntryQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -305,12 +335,20 @@ func TestQueue_IPNSEntry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// setup our queue backend
-	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, testLogFilePath)
+	loggerConsumer, err := log.NewLogger("", true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpnsEntryQueue, testRabbitAddress, true, testLogFilePath)
+	loggerPublisher, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, loggerConsumer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qmPublisher, err := New(IpnsEntryQueue, testRabbitAddress, true, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -343,9 +381,6 @@ func TestQueue_IPNSEntry(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_IPFSPin(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsPinQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -354,15 +389,23 @@ func TestQueue_IPFSPin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	loggerConsumer, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loggerPublisher, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, testLogFilePath)
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if qmConsumer.ExchangeName != PinExchange {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
-	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, testLogFilePath)
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -385,6 +428,8 @@ func TestQueue_IPFSPin(t *testing.T) {
 	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
+	// set temporary log dig
+	cfg.LogDir = "./tmp/"
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
 		t.Fatal(err)
 	}
@@ -394,9 +439,6 @@ func TestQueue_IPFSPin(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_IPFSKeyCreation(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsKeyCreationQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -405,15 +447,23 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	loggerConsumer, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loggerPublisher, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, testLogFilePath)
+	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if qmConsumer.ExchangeName != IpfsKeyExchange {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
-	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, testLogFilePath)
+	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -446,9 +496,6 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 }
 
 func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsKeyCreationQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -457,15 +504,23 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	loggerConsumer, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loggerPublisher, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, testLogFilePath)
+	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if qmConsumer.ExchangeName != IpfsKeyExchange {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
-	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, testLogFilePath)
+	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -496,9 +551,6 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 }
 
 func TestQueue_IPFSPin_Failure(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsPinQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -507,8 +559,12 @@ func TestQueue_IPFSPin_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	loggerConsumer, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, testLogFilePath)
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -524,9 +580,6 @@ func TestQueue_IPFSPin_Failure(t *testing.T) {
 }
 
 func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsFileQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -535,8 +588,12 @@ func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	loggerConsumer, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, testLogFilePath)
+	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -549,9 +606,6 @@ func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
 }
 
 func TestQueue_IPFSFile_Failure_RabbitMQ(t *testing.T) {
-	defer func() {
-		os.Remove(fmt.Sprintf("%s-%s_service.log", testLogFilePath, IpfsFileQueue))
-	}()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -560,8 +614,12 @@ func TestQueue_IPFSFile_Failure_RabbitMQ(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	loggerConsumer, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, testLogFilePath)
+	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}

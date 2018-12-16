@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"go.uber.org/zap"
 
@@ -153,40 +154,44 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 	if err != nil {
 		return nil, err
 	}
+	logger, err := log.NewLogger("", dev)
+	if err != nil {
+		return nil, err
+	}
 	// setup our queues
-	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true)
+	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true)
+	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmDatabase, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, true)
+	qmDatabase, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmFile, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, true)
+	qmFile, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true)
+	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true)
+	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true)
+	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true)
+	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmPayConfirm, err := queue.New(queue.PaymentConfirmationQueue, cfg.RabbitMQ.URL, true)
+	qmPayConfirm, err := queue.New(queue.PaymentConfirmationQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
 	}

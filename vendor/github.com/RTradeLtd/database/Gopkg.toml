@@ -1,6 +1,6 @@
 [[constraint]]
   name = "github.com/RTradeLtd/config"
-  version = "1.0.15"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/ipfs/go-ipfs-addr"

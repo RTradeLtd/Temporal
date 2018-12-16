@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/kaas"
 	"github.com/RTradeLtd/rtfs"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/RTradeLtd/database/models"
 	"github.com/jinzhu/gorm"
@@ -30,7 +30,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 		return err
 	}
 	userManager := models.NewUserManager(qm.db)
-	qm.LogInfo("processing ipfs key creation requests")
+	qm.l.Info("processing ipfs key creation requests")
 	for {
 		select {
 		case d := <-msgs:
@@ -49,13 +49,17 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 	userManager := models.NewUserManager(qm.db)
 	networkManager := models.NewHostedIPFSNetworkManager(qm.db)
 	uploadManager := models.NewUploadManager(qm.db)
-	// initialize a connection to the cluster pin queue so we can trigger pinning of this content to our cluster
-	qmCluster, err := New(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true)
+	logger, err := log.NewLogger(qm.cfg.LogDir+"/cluster_publisher.log", false)
 	if err != nil {
-		qm.LogError(err, "failed to initialize cluster pin queue connection")
 		return err
 	}
-	qm.LogInfo("processing ipfs pins")
+	// initialize a connection to the cluster pin queue so we can trigger pinning of this content to our cluster
+	qmCluster, err := New(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true, logger)
+	if err != nil {
+		qm.l.Errorw("failed to intialize cluster pin queue connection", "error", err.Error())
+		return err
+	}
+	qm.l.Info("processing ipfs pins")
 	for {
 		select {
 		case d := <-msgs:
@@ -74,19 +78,22 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
 	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, nil, time.Minute*10)
 	if err != nil {
-		qm.LogError(err, "failed to initialize connection to ipfs")
+		qm.l.Errorw("failed to initialize connection to ipfs", "error", err.Error())
 		return err
 	}
-	// initialize connection to pin queues
-	qmPin, err := New(IpfsPinQueue, qm.cfg.RabbitMQ.URL, true)
+	logger, err := log.NewLogger(qm.cfg.LogDir+"/pin_publisher.log", false)
 	if err != nil {
-		qm.LogError(err, "failed to initialize pin queue connection")
+		return err
+	} // initialize connection to pin queues
+	qmPin, err := New(IpfsPinQueue, qm.cfg.RabbitMQ.URL, true, logger)
+	if err != nil {
+		qm.l.Errorw("failed to initialize pin queue connection", "error", err.Error())
 		return err
 	}
 	ue := models.NewEncryptedUploadManager(qm.db)
 	userManager := models.NewUserManager(qm.db)
 	networkManager := models.NewHostedIPFSNetworkManager(qm.db)
-	qm.LogInfo("processing ipfs files")
+	qm.l.Info("processing ipfs files")
 	for {
 		select {
 		case d := <-msgs:
@@ -102,10 +109,10 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 
 func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *models.UserManager, nm *models.IPFSNetworkManager, upldm *models.UploadManager, qmCluster *Manager) {
 	defer wg.Done()
-	qm.LogInfo("new message detected")
+	qm.l.Info("new pin request detected")
 	pin := &IPFSPin{}
 	if err := json.Unmarshal(d.Body, pin); err != nil {
-		qm.LogError(err, "failed to unmarshal message")
+		qm.l.Errorw("failed to unmarshal message", "error", err.Error())
 		d.Ack(false)
 		return
 	}
@@ -117,49 +124,72 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 		canAccess, err := usrm.CheckIfUserHasAccessToNetwork(pin.UserName, pin.NetworkName)
 		if err != nil {
 			qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
-			qm.LogError(err, "failed to lookup private network in database")
+			qm.l.Errorw("failed to lookup private network in database", "error", err.Error())
 			d.Ack(false)
 			return
 		}
 		if !canAccess {
 			qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
-			qm.LogError(errors.New("user does not have access to private network"), "invalid private network access")
+			qm.l.Errorw(
+				"unauthorized private network access",
+				"error", errors.New("user does not have access to private network").Error(),
+				"user", pin.UserName)
 			d.Ack(false)
 			return
 		}
 		apiURL, err = nm.GetAPIURLByName(pin.NetworkName)
 		if err != nil {
 			qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
-			qm.LogError(err, "failed to search for api url")
+			qm.l.Errorw(
+				"failed to search for api url",
+				"error", err.Error(),
+				"user", pin.UserName)
 			d.Ack(false)
 			return
 		}
 	}
-	qm.LogInfo("initializing connection to ipfs")
+	qm.l.Infow(
+		"initializing connection to ipfs",
+		"user", pin.UserName)
 	// connect to ipfs
 	ipfsManager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
 	if err != nil {
 		qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
-		qm.LogError(err, "failed to initialize connection to ipfs")
+		qm.l.Infow(
+			"failed to initialize connection to ipfs",
+			"error", err.Error(),
+			"user", pin.UserName,
+			"network", pin.NetworkName)
 		d.Ack(false)
 		return
 	}
-	qm.LogInfo("pinning hash to ipfs")
+	qm.l.Infow(
+		"pinning hash to ipfs",
+		"cid", pin.CID,
+		"user", pin.UserName,
+		"network", pin.NetworkName)
 	// pin the content
 	if err = ipfsManager.Pin(pin.CID); err != nil {
 		qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
-		qm.LogError(err, "failed to pin hash to ipfs")
+		qm.l.Errorw(
+			"failed to pin hash to ipfs",
+			"error", err.Error(),
+			"user", pin.UserName,
+			"network", pin.NetworkName)
 		d.Ack(false)
 		return
 	}
 	// cluster support for private networks isn't available yet
 	// as such, skip additional processing for cluster pins
+	qm.l.Infof(
+		"successfully process pin request",
+		"user", pin.UserName,
+		"network", pin.NetworkName)
 	if pin.NetworkName != "public" {
-		qm.LogInfo("successfully processed private network pin")
+		// private networks do not yet support cluster so skip additional processing
 		d.Ack(false)
 		return
 	}
-	qm.LogInfo("successfully pinned hash to ipfs")
 	clusterAddMsg := IPFSClusterPin{
 		CID:              pin.CID,
 		NetworkName:      pin.NetworkName,
@@ -169,13 +199,19 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 	// do not perform credit handling, as the content is already pinned
 	clusterAddMsg.CreditCost = 0
 	if err = qmCluster.PublishMessage(clusterAddMsg); err != nil {
-		qm.LogError(err, "failed to publish cluster pin message to rabbitmq")
+		qm.l.Errorw(
+			"failed to publish cluster pin message to rabbitmq",
+			"error", err.Error(),
+			"user", pin.UserName)
 		d.Ack(false)
 		return
 	}
 	upload, err := upldm.FindUploadByHashAndNetwork(pin.CID, pin.NetworkName)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		qm.LogError(err, "failed to find upload in database")
+		qm.l.Errorw(
+			"fail to check database for upload",
+			"error", err.Error(),
+			"user", pin.UserName)
 		d.Ack(false)
 		return
 	}
@@ -191,9 +227,10 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 	}
 	// validate whether or not the database was updated properly
 	if err != nil {
-		qm.LogError(err, "failed to update upload in data, but cluster pin successfuly sent")
-	} else {
-		qm.LogInfo("successfully processed pin request")
+		qm.l.Errorw(
+			"failed to update database",
+			"error", err.Error(),
+			"user", pin.UserName)
 	}
 	d.Ack(false)
 	return // we must return here in order to trigger the wg.Done() defer
@@ -201,11 +238,13 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 
 func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *models.EncryptedUploadManager, um *models.UserManager, nm *models.IPFSNetworkManager, ipfs *rtfs.IpfsManager, qmPin *Manager) {
 	defer wg.Done()
-	qm.LogInfo("new message detected")
+	qm.l.Info("new file upload request detected")
 	ipfsFile := IPFSFile{}
 	// unmarshal the messagee
 	if err := json.Unmarshal(d.Body, &ipfsFile); err != nil {
-		qm.LogError(err, "failed to unmarshal message")
+		qm.l.Errorw(
+			"failed to unmarshal message",
+			"error", err.Error())
 		d.Ack(false)
 		return
 	}
@@ -217,7 +256,10 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 	// setup our connection to minio
 	minioManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
-		qm.LogError(err, "failed to initialize connection to minio")
+		qm.l.Errorw(
+			"failed to connect to minio",
+			"error", err.Error(),
+			"user", ipfsFile.UserName)
 		qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 		d.Ack(false)
 		return
@@ -226,27 +268,42 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 	if ipfsFile.NetworkName != "public" {
 		canAccess, err := um.CheckIfUserHasAccessToNetwork(ipfsFile.UserName, ipfsFile.NetworkName)
 		if err != nil {
-			qm.LogError(err, "failed to check database for user network access", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
+			qm.l.Errorw(
+				"failed to check database for private network access",
+				"error", err.Error(),
+				"user", ipfsFile.UserName,
+				"network", ipfsFile.NetworkName)
 			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 			d.Ack(false)
 			return
 		}
 		if !canAccess {
-			qm.LogError(err, "unauthorized access to private network", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
+			qm.l.Errorw(
+				"unauthorized private network access",
+				"error", errors.New("user does not have access to private network").Error(),
+				"user", ipfsFile.UserName,
+				"network", ipfsFile.NetworkName)
 			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 			d.Ack(false)
 			return
 		}
 		apiURLName, err := nm.GetAPIURLByName(ipfsFile.NetworkName)
 		if err != nil {
-			qm.LogError(err, "failed to look for api url by name", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
+			qm.l.Errorw(
+				"failed to search for api url",
+				"error", err.Error(),
+				"user", ipfsFile.UserName)
 			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 			d.Ack(false)
 			return
 		}
 		ipfs, err = rtfs.NewManager(apiURLName, nil, time.Minute*10)
 		if err != nil {
-			qm.LogError(err, "failed to initialize connection to private ifps network", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
+			qm.l.Errorw(
+				"failed to initialize connection to private ipfs network",
+				"error", err.Error(),
+				"user", ipfsFile.UserName,
+				"network", ipfsFile.NetworkName)
 			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 			d.Ack(false)
 			return
@@ -258,32 +315,50 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 	// 3. send a pin request
 	// 4. *optional* perform as needed special processing
 	// NOTE: we do not trigger a database update here, as that is handled by the pin queue
-	qm.LogInfo("retrieving object from minio")
+	qm.l.Infow(
+		"retrieving object from minio",
+		"object", ipfsFile.ObjectName,
+		"user", ipfsFile.UserName,
+		"network", ipfsFile.NetworkName)
 	obj, err := minioManager.GetObject(ipfsFile.ObjectName, mini.GetObjectOptions{
 		Bucket: ipfsFile.BucketName,
 	})
 	if err != nil {
-		qm.LogError(err, "failed to get object from minio", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
+		qm.l.Errorw(
+			"failed to retrieve object from minio",
+			"error", err.Error(),
+			"object", ipfsFile.ObjectName,
+			"user", ipfsFile.UserName,
+			"network", ipfsFile.NetworkName)
 		qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 		d.Ack(false)
 		return
 	}
-	qm.LogInfo("successfully retrieved object from minio, adding file to ipfs")
+	qm.l.Infow(
+		"uploading file to ipfs",
+		"object", ipfsFile.ObjectName,
+		"user", ipfsFile.UserName,
+		"network", ipfsFile.NetworkName)
 	resp, err := ipfs.Add(obj)
 	if err != nil {
-		qm.LogError(err, "failed to add file to ipfs", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
+		qm.l.Errorw(
+			"failed to upload file to ipfs",
+			"error", err.Error(),
+			"object", ipfsFile.ObjectName,
+			"user", ipfsFile.UserName,
+			"network", ipfsFile.NetworkName)
 		qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 		d.Ack(false)
 		return
 	}
-	qm.logger.WithFields(log.Fields{
-		"service": qm.Service,
-		"user":    ipfsFile.UserName,
-		"network": ipfsFile.NetworkName,
-	}).Info("file added to ipfs")
+	qm.l.Infow(
+		"successfully uploaded file to ipfs",
+		"object", ipfsFile.ObjectName,
+		"cid", resp,
+		"user", ipfsFile.UserName,
+		"network", ipfsFile.NetworkName)
 	holdTimeInt, err := strconv.ParseInt(ipfsFile.HoldTimeInMonths, 10, 64)
 	if err != nil {
-		qm.LogError(err, "failed to parse string to int, using default of 1 month")
 		holdTimeInt = 1
 	}
 	pin := IPFSPin{
@@ -293,11 +368,6 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       0,
 	}
-	if err = qmPin.PublishMessageWithExchange(pin, PinExchange); err != nil {
-		qm.LogError(err, "failed to publish pin request to queue", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
-		d.Ack(false)
-		return
-	}
 	// if encrypted upload, do some special processing
 	if ipfsFile.Encrypted {
 		if _, err = ue.NewUpload(
@@ -306,18 +376,43 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 			ipfsFile.NetworkName,
 			resp,
 		); err != nil {
-			qm.LogError(err, "failed to update database with encrypted upload", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
-			d.Ack(false)
-			return
+			qm.l.Errorw(
+				"failed to update database with encrypted upload",
+				"error", err.Error(),
+				"cid", resp,
+				"user", ipfsFile.UserName,
+				"network", ipfsFile.NetworkName)
+			// dont ack/fail yet as there is still additional processing to do
 		}
 	}
-	qm.LogInfo("removing object from minio")
-	if err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName); err != nil {
-		qm.LogError(err, "failed to remove object from minio", []interface{}{"user", ipfsFile.UserName, "network", ipfsFile.NetworkName})
+	if err = qmPin.PublishMessageWithExchange(pin, PinExchange); err != nil {
+		qm.l.Errorw(
+			"failed to publish pin request to rabbitmq",
+			"error", err.Error(),
+			"cid", resp,
+			"user", ipfsFile.UserName,
+			"network", ipfsFile.NetworkName)
+		// we want to ack and return here, as removing the file from minio
+		// could lead to us being unable to reprocess this later on
 		d.Ack(false)
 		return
 	}
-	qm.LogInfo("successfully processed file upload")
+	qm.l.Infow(
+		"removing object from minio",
+		"object", ipfsFile.ObjectName,
+		"user", ipfsFile.UserName)
+	if err = minioManager.RemoveObject(ipfsFile.BucketName, ipfsFile.ObjectName); err != nil {
+		qm.l.Errorw(
+			"failed to remove object from minio",
+			"error", err.Error(),
+			"object", ipfsFile.ObjectName,
+			"user", ipfsFile.UserName)
+	} else {
+		qm.l.Infow(
+			"removed object from minio",
+			"object", ipfsFile.ObjectName,
+			"user", ipfsFile.UserName)
+	}
 	d.Ack(false)
 	return // we must return here in order to trigger the wg.Done() defer
 
@@ -325,10 +420,12 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 
 func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, kb *kaas.Client, um *models.UserManager) {
 	defer wg.Done()
-	qm.LogInfo("new message detected")
+	qm.l.Info("new key creation request detected")
 	key := IPFSKeyCreation{}
 	if err := json.Unmarshal(d.Body, &key); err != nil {
-		qm.LogError(err, "failed to unmarshal message")
+		qm.l.Errorw(
+			"failed to unmarshal message",
+			"error", err.Error())
 		d.Ack(false)
 		return
 	}
@@ -351,8 +448,12 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 		// ed25519 keys use 256 bits, so regardless of what the user provides for bit size, hard set 256
 		bitsInt = 256
 	default:
+		qm.l.Errorw(
+			"invalid key type for creation request",
+			"error", fmt.Errorf("key must be ed25519 or rsa, not %s", key.Type),
+			"user", key.UserName,
+			"key_name", key.Name)
 		qm.refundCredits(key.UserName, "key", key.CreditCost)
-		qm.LogError(errors.New("invalid key type"), "invalid key type must be ed25519 or rsa")
 		d.Ack(false)
 		return
 	}
@@ -360,7 +461,11 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 	pk, _, err := ci.GenerateKeyPair(keyTypeInt, bitsInt)
 	if err != nil {
 		qm.refundCredits(key.UserName, "key", key.CreditCost)
-		qm.LogError(err, "failed to create key")
+		qm.l.Errorw(
+			"failed to create key",
+			"error", err.Error(),
+			"user", key.UserName,
+			"key_name", key.Name)
 		d.Ack(false)
 		return
 	}
@@ -368,7 +473,11 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 	id, err := peer.IDFromPrivateKey(pk)
 	if err != nil {
 		qm.refundCredits(key.UserName, "key", key.CreditCost)
-		qm.LogError(err, "failed to get id from private key")
+		qm.l.Errorw(
+			"failed to get peer id from private key",
+			"error", err.Error(),
+			"user", key.UserName,
+			"Key_name", key.Name)
 		d.Ack(false)
 		return
 	}
@@ -376,7 +485,11 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 	pkBytes, err := pk.Bytes()
 	if err != nil {
 		qm.refundCredits(key.UserName, "key", key.CreditCost)
-		qm.LogError(err, "failed to create key")
+		qm.l.Errorw(
+			"failed to marshal key to bytes",
+			"error", err.Error(),
+			"user", key.UserName,
+			"key_name", key.Name)
 		d.Ack(false)
 		return
 	}
@@ -387,17 +500,27 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 	// store the key in krab
 	if _, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: keyName, PrivateKey: pkBytes}); err != nil {
 		qm.refundCredits(key.UserName, "key", key.CreditCost)
-		qm.LogError(err, "failed to create key")
+		qm.l.Errorw(
+			"failed to store key in krab",
+			"error", err.Error(),
+			"user", key.UserName,
+			"key_name", key.Name)
 		d.Ack(false)
 		return
 	}
 	// doesn't need a refund, key was generated and stored in our keystore, but information not saved to db
 	if err := um.AddIPFSKeyForUser(key.UserName, keyName, id.Pretty()); err != nil {
-		qm.LogError(err, "failed to add ipfs key to database")
-		d.Ack(false)
-		return
+		qm.l.Errorw(
+			"failed to update database",
+			"error", err.Error(),
+			"user", key.UserName,
+			"key_name", key.Name)
+	} else {
+		qm.l.Infow(
+			"successfully processed key creation request",
+			"user", key.UserName,
+			"key_name", key.Name)
 	}
-	qm.LogInfo("successfully processed ipfs key creation request")
 	d.Ack(false)
 	return // we must return here in order to trigger the wg.Done() defer
 }

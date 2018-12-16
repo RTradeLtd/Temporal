@@ -4,52 +4,40 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"os"
 	"sync"
 
 	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/RTradeLtd/config"
 	"github.com/streadway/amqp"
 )
 
-func (qm *Manager) setupLogging(logFilePath ...string) error {
-	var logFileName string
-	if len(logFilePath) > 0 {
-		logFileName = fmt.Sprintf("%s/%s_service.log", logFilePath[0], qm.QueueName)
-	} else {
-		logFileName = fmt.Sprintf("/var/log/temporal/%s_service.log", qm.QueueName)
-	}
-	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
-	if err != nil {
-		return err
-	}
-	logger := log.New()
-	logger.Out = logFile
-	qm.logger = logger
-	qm.logger.Info("Logging initialized")
-	return nil
-}
-
 // New is used to instantiate a new connection to rabbitmq as a publisher or consumer
-func New(queue, url string, publish bool, logFilePath ...string) (*Manager, error) {
+func New(queue, url string, publish bool, logger *zap.SugaredLogger) (*Manager, error) {
 	conn, err := setupConnection(url)
 	if err != nil {
 		return nil, err
 	}
-	qm := Manager{connection: conn, QueueName: queue}
+	var queueType string
+	if publish {
+		queueType = "publish"
+	} else {
+		queueType = "consumer"
+	}
+	// create base queue manager
+	qm := Manager{connection: conn, QueueName: queue, l: logger.Named(queue + "." + queueType)}
+
 	// open a channel
 	if err := qm.openChannel(); err != nil {
 		return nil, err
 	}
+
+	// if we aren't publishing, and are consuming
+	// setup a queue to receive messages on
 	if !publish {
 		qm.Service = queue
 		if err = qm.declareQueue(); err != nil {
-			return nil, err
-		}
-		if err = qm.setupLogging(logFilePath...); err != nil {
 			return nil, err
 		}
 	}
@@ -77,9 +65,7 @@ func (qm *Manager) openChannel() error {
 	if err != nil {
 		return err
 	}
-	if qm.logger != nil {
-		qm.LogInfo("channel opened")
-	}
+	qm.l.Info("channel opened")
 	qm.channel = ch
 	return qm.channel.Qos(10, 0, false)
 }
@@ -99,9 +85,7 @@ func (qm *Manager) declareQueue() error {
 	if err != nil {
 		return err
 	}
-	if qm.logger != nil {
-		qm.LogInfo("queue declared")
-	}
+	qm.l.Info("queue declared")
 	qm.queue = &q
 	return nil
 }
