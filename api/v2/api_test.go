@@ -483,7 +483,7 @@ func Test_API_Routes_Misc(t *testing.T) {
 		t.Fatal(err)
 	}
 	urlValues := url.Values{}
-	urlValues.Add("bucket_name", "filesuploadbucket")
+	urlValues.Add("bucket_name", "filesuploadbucket2")
 	if err := sendRequest(
 		api, "POST", "/api/v2/admin/mini/create/bucket", 200, nil, urlValues, nil,
 	); err != nil {
