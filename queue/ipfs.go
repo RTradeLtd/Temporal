@@ -84,7 +84,8 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 	logger, err := log.NewLogger(qm.cfg.LogDir+"/pin_publisher.log", false)
 	if err != nil {
 		return err
-	} // initialize connection to pin queues
+	}
+	// initialize connection to pin queues
 	qmPin, err := New(IpfsPinQueue, qm.cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		qm.l.Errorw("failed to initialize pin queue connection", "error", err.Error())

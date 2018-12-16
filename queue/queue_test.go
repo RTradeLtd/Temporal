@@ -116,15 +116,17 @@ func TestQueue_RefundCredits(t *testing.T) {
 		cost     float64
 	}
 	tests := []struct {
-		name string
-		args args
+		name    string
+		args    args
+		wantErr bool
 	}{
-		{"HasCost", args{"testuser", "ipfs-pin", 1}},
-		{"NoCost", args{"testuser", "ipfs-pin", 0}},
+		{"HasCost", args{"testuser", "ipfs-pin", 1}, false},
+		{"NoCost", args{"testuser", "ipfs-pin", 0}, false},
+		{"RefundFail", args{"userdoesnotexist", "ipfs-pin", 10}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := qmConsumer.refundCredits(tt.args.username, tt.args.callType, tt.args.cost); err != nil {
+			if err := qmConsumer.refundCredits(tt.args.username, tt.args.callType, tt.args.cost); (err != nil) != tt.wantErr {
 				t.Fatal(err)
 			}
 		})
@@ -564,7 +566,7 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 	}
 }
 
-func TestQueue_IPFSPin_Failure(t *testing.T) {
+func TestQueue_IPFSPin_Failure_RabbitMQ(t *testing.T) {
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -586,6 +588,35 @@ func TestQueue_IPFSPin_Failure(t *testing.T) {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
 	cfg.RabbitMQ.URL = "notarealurl"
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
+	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestQueue_IPFSPin_Failure_LogFile(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loggerConsumer, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup our queue backend
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, loggerConsumer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if qmConsumer.ExchangeName != PinExchange {
+		t.Fatal("failed to properly set exchange name on consumer")
+	}
+	cfg.LogDir = "/root/toor"
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
