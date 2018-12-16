@@ -42,11 +42,10 @@ func TestPublisher_Success(t *testing.T) {
 	} else {
 		fmt.Println("id to check ", pid.Pretty())
 	}
-	if err := publisher.Publish(context.Background(), pk, testPath); err != nil {
-		t.Fatal(err)
-	}
+	// set the lifetime
+	eol := time.Now().Add(time.Minute * 10)
 	ctx := context.WithValue(context.Background(), ipnsPublishTTL, time.Minute*10)
-	if err := publisher.Publish(ctx, pk, testPath); err != nil {
+	if err := publisher.PublishWithEOL(ctx, pk, testPath, eol); err != nil {
 		t.Fatal(err)
 	}
 }
