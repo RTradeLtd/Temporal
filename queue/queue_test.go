@@ -43,19 +43,33 @@ func TestQueue_Publish(t *testing.T) {
 				t.Fatal(err)
 			}
 			if tt.name == "PConfirmQ" {
+				// test a successful publish
 				if err := qm.PublishMessage(PaymentConfirmation{
 					UserName:      "testuser",
 					PaymentNumber: 22,
 				}); err != nil {
 					t.Fatal(err)
 				}
+				// test a bad publish
+				if err := qm.PublishMessage(map[string]interface{}{
+					"foo": make(chan int),
+				}); err == nil {
+					t.Fatal("expected error")
+				}
 			} else if tt.name == "DPCQ" {
+				// test a successful publish
 				if err := qm.PublishMessage(DashPaymenConfirmation{
 					UserName:         "testuser",
 					PaymentForwardID: "paymentforwardi",
 					PaymentNumber:    23,
 				}); err != nil {
 					t.Fatal(err)
+				}
+				// test a bad publish
+				if err := qm.PublishMessage(map[string]interface{}{
+					"foo": make(chan int),
+				}); err == nil {
+					t.Fatal("expected error")
 				}
 			}
 		})
