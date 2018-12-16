@@ -179,7 +179,16 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	// test a regular database file add
+	// test a new add
+	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
+		Hash:             "weeeee",
+		HoldTimeInMonths: 10,
+		UserName:         "testuser",
+		NetworkName:      "public",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// test an update add
 	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
 		Hash:             testCID,
 		HoldTimeInMonths: 10,
