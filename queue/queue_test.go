@@ -173,6 +173,10 @@ func TestQueue_DatabaseFileAdd(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
+	// test a bad publish
+	if err := qmPublisher.PublishMessage(""); err != nil {
+		t.Fatal(err)
+	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
@@ -228,6 +232,10 @@ func TestQueue_IPFSFile(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
+	// test a bad publish
+	if err := qmPublisher.PublishMessage(""); err != nil {
+		t.Fatal(err)
+	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
 	// set temporary log dig
@@ -281,6 +289,10 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
+	// test a bad publish
+	if err := qmPublisher.PublishMessage(""); err != nil {
+		t.Fatal(err)
+	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
@@ -330,6 +342,10 @@ func TestQueue_EmailSend(t *testing.T) {
 		UserNames:   []string{"testuser"},
 		Emails:      []string{"testuser@example.com"},
 	}); err != nil {
+		t.Fatal(err)
+	}
+	// test a bad publish
+	if err := qmPublisher.PublishMessage(""); err != nil {
 		t.Fatal(err)
 	}
 	waitGroup := &sync.WaitGroup{}
@@ -386,6 +402,10 @@ func TestQueue_IPNSEntry(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
+	// test a bad publish
+	if err := qmPublisher.PublishMessage(""); err != nil {
+		t.Fatal(err)
+	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
@@ -440,6 +460,10 @@ func TestQueue_IPFSPin(t *testing.T) {
 		HoldTimeInMonths: 10},
 		PinExchange,
 	); err != nil {
+		t.Fatal(err)
+	}
+	// test a bad publish
+	if err := qmPublisher.PublishMessage(""); err != nil {
 		t.Fatal(err)
 	}
 	waitGroup := &sync.WaitGroup{}
@@ -500,6 +524,10 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 		NetworkName: "public",
 		CreditCost:  0}, IpfsKeyExchange,
 	); err != nil {
+		t.Fatal(err)
+	}
+	// test a bad publish
+	if err := qmPublisher.PublishMessage(""); err != nil {
 		t.Fatal(err)
 	}
 	waitGroup := &sync.WaitGroup{}
