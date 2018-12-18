@@ -1975,7 +1975,7 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 			} else {
 				err = api.ListenAndServe(ctx, "127.0.0.1:6701", nil)
 			}
-			if (err != nil) != tt.wantErr {
+			if (err != nil && err != http.ErrServerClosed) != tt.wantErr {
 				t.Fatalf("ListenAndServer() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
