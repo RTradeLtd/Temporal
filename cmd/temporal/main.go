@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -66,7 +67,10 @@ var commands = map[string]cmd.Cmd{
 			}
 			quitChannel := make(chan os.Signal)
 			signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+			waitGroup := &sync.WaitGroup{}
+			waitGroup.Add(1)
 			go func() {
+				defer waitGroup.Done()
 				fmt.Println(closeMessage)
 				<-quitChannel
 				service.Close()
@@ -83,10 +87,14 @@ var commands = map[string]cmd.Cmd{
 					KeyFile:  args["keyFilePath"],
 				})
 			}
-			if err != nil {
+			// need to ignore http.ErrServerclosed
+			// as this is returned whenever the server shutdowns
+			if err != nil && err != http.ErrServerClosed {
 				fmt.Printf("API service execution failed: %s\n", err.Error())
 				fmt.Println("Refer to the logs for more details")
 			}
+			waitGroup.Wait()
+			logger.Info("api server shutdown")
 		},
 	},
 	"queue": {

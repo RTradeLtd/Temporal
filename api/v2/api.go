@@ -5,6 +5,7 @@ package v2
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -250,6 +251,7 @@ func (api *API) Close() {
 	if err := api.queues.pin.Close(); err != nil {
 		api.LogError(err, "failed to properly close pin queue connection")
 	}
+	api.l.Info("api services shutdown")
 }
 
 // TLSConfig is used to enable TLS on the API service
@@ -260,23 +262,24 @@ type TLSConfig struct {
 
 // ListenAndServe spins up the API server
 func (api *API) ListenAndServe(ctx context.Context, addr string, tls *TLSConfig) error {
-	errChan := make(chan error, 1)
-	go func() {
-		if tls != nil {
-			errChan <- api.r.RunTLS(addr, tls.CertFile, tls.KeyFile)
-			return
-		}
-		errChan <- api.r.Run(addr)
-		return
-	}()
-	for {
-		select {
-		case err := <-errChan:
-			return err
-		case <-ctx.Done():
-			return nil
-		}
+	server := &http.Server{
+		Addr:    addr,
+		Handler: api.r,
 	}
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				if err := server.Shutdown(ctx); err != nil {
+					api.l.Fatal(err)
+				}
+			}
+		}
+	}()
+	if tls != nil {
+		return server.ListenAndServeTLS(tls.CertFile, tls.KeyFile)
+	}
+	return server.ListenAndServe()
 }
 
 // setupRoutes is used to setup all of our api routes

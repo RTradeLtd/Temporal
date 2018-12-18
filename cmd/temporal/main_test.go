@@ -49,8 +49,8 @@ func TestAPI(t *testing.T) {
 			}
 			// setup global context
 			ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
+			defer cancel()
 			commands["api"].Action(*cfg, flags)
-			cancel()
 		})
 	}
 }
