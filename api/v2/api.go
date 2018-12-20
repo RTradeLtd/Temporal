@@ -530,7 +530,7 @@ func (api *API) setupRoutes() error {
 	{
 		database.GET("/uploads", api.getUploadsFromDatabase)  // admin locked
 		database.GET("/uploads/:user", api.getUploadsForUser) // partial admin locked
-		database.GET("/uploads/encrypted", api.getEncryptedUploadsForUser)
+		database.GET("/encrypted/uploads", api.getEncryptedUploadsForUser)
 	}
 
 	// frontend
