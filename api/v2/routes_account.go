@@ -168,6 +168,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
+	// prefix the key name for validation, and further processing
 	keyNamePrefixed := fmt.Sprintf("%s-%s", username, forms["key_name"])
 	for _, v := range keys["key_names"] {
 		if v == keyNamePrefixed {
@@ -184,7 +185,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	}
 	key := queue.IPFSKeyCreation{
 		UserName:    username,
-		Name:        forms["key_name"],
+		Name:        keyNamePrefixed,
 		Type:        forms["key_type"],
 		Size:        bitsInt,
 		NetworkName: "public",
