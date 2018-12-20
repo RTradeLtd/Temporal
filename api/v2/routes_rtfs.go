@@ -2,6 +2,7 @@ package v2
 
 import (
 	"fmt"
+	"html"
 	"net/http"
 	"strconv"
 
@@ -118,7 +119,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size,
 		mini.PutObjectOptions{
 			Bucket:            FilesUploadBucket,
-			EncryptPassphrase: c.PostForm("passphrase"),
+			EncryptPassphrase: html.UnescapeString(c.PostForm("passphrase")),
 		}); err != nil {
 		api.LogError(err, eh.MinioPutError,
 			"user", username)(c)
