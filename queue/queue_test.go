@@ -436,6 +436,16 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
+	if err := qmPublisher.PublishMessageWithExchange(IPFSKeyCreation{
+		UserName:    "testuser",
+		Name:        "mykey",
+		Type:        "rsa",
+		Size:        2048,
+		NetworkName: "public",
+		CreditCost:  0}, IpfsKeyExchange,
+	); err != nil {
+		t.Fatal(err)
+	}
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
 	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
