@@ -57,7 +57,7 @@ func TestAPI(t *testing.T) {
 }
 */
 func TestAPI(t *testing.T) {
-	logFilePath = "../../testenv"
+	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -78,8 +78,8 @@ func TestAPI(t *testing.T) {
 		args args
 	}{
 		{"NoTLS-NoPort-NoLogDir", args{"", "127.0.0.1", "", "", ""}},
-		{"NoTLS-WithPort-WithLogDir", args{"6768", "127.0.0.1", "", "", "./tmp"}},
-		{"TLS-WithPort-WithLogDir", args{"6769", "127.0.0.1", "../../testenv/certs/api.cert", "../../testenv/certs/api.key", "./tmp"}},
+		{"NoTLS-WithPort-WithLogDir", args{"6768", "127.0.0.1", "", "", "./tmp/"}},
+		{"TLS-WithPort-WithLogDir", args{"6769", "127.0.0.1", "../../testenv/certs/api.cert", "../../testenv/certs/api.key", "./tmp/"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -104,7 +104,7 @@ func TestAPI(t *testing.T) {
 
 // TestQueueIPFS is used to test IPFS queues
 func TestQueuesIPFS(t *testing.T) {
-	logFilePath = "../../testenv"
+	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -123,18 +123,15 @@ func TestQueuesIPFS(t *testing.T) {
 		args args
 	}{
 		{"IPNSEntry-NoLogDir", args{"ipfs", "ipns-entry", ""}},
-		{"IPNSEntry-LogDir", args{"ipfs", "ipns-entry", "./tmp"}},
-		// omit this test, as ipfs pin spawns a cluster queue publisher
-		// by specifying "", the cluster publisher will attempt to log in the / directory
-		// {"IPFSPin-NoLogDir", args{"ipfs", "pin", ""}},
-		{"IPFSPin-LogDir", args{"ipfs", "pin", "./tmp"}},
-		// omit this test for the same reasons as specified above
-		// {"IPFSFile-NoLogDir", args{"ipfs", "file", ""}},
-		{"IPFSFile-LogDir", args{"ipfs", "file", "./tmp"}},
+		{"IPNSEntry-LogDir", args{"ipfs", "ipns-entry", "./tmp/"}},
+		{"IPFSPin-NoLogDir", args{"ipfs", "pin", ""}},
+		{"IPFSPin-LogDir", args{"ipfs", "pin", "./tmp/"}},
+		{"IPFSFile-NoLogDir", args{"ipfs", "file", ""}},
+		{"IPFSFile-LogDir", args{"ipfs", "file", "./tmp/"}},
 		{"IPFSKey-NoLogDir", args{"ipfs", "key-creation", ""}},
-		{"IPFSKey-LogDir", args{"ipfs", "key-creation", "./tmp"}},
+		{"IPFSKey-LogDir", args{"ipfs", "key-creation", "./tmp/"}},
 		{"IPFSCluster-NoLogDir", args{"ipfs", "cluster", ""}},
-		{"IPFSCluster-LogDir", args{"ipfs", "cluster", "./tmp"}},
+		{"IPFSCluster-LogDir", args{"ipfs", "cluster", "./tmp/"}},
 	}
 	queueCmds := commands["queue"]
 
@@ -149,7 +146,7 @@ func TestQueuesIPFS(t *testing.T) {
 }
 
 func TestQueuesDFA(t *testing.T) {
-	logFilePath = "../../testenv"
+	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -176,7 +173,7 @@ func TestQueuesDFA(t *testing.T) {
 }
 
 func TestQueuesEmailSend(t *testing.T) {
-	logFilePath = "../../testenv"
+	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -203,7 +200,7 @@ func TestQueuesEmailSend(t *testing.T) {
 }
 
 func TestMigrations(t *testing.T) {
-	logFilePath = "../../testenv"
+	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -213,7 +210,7 @@ func TestMigrations(t *testing.T) {
 	commands["migrate-insecure"].Action(*cfg, nil)
 }
 func TestInit(t *testing.T) {
-	logFilePath = "../../testenv"
+	logFilePath = "../../testenv/"
 	if err := os.Setenv("CONFIG_DAG", "../../testenv/new_config.json"); err != nil {
 		t.Fatal(err)
 	}
@@ -221,7 +218,7 @@ func TestInit(t *testing.T) {
 }
 
 func TestAdmin(t *testing.T) {
-	logFilePath = "../../testenv"
+	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -233,7 +230,7 @@ func TestAdmin(t *testing.T) {
 }
 
 func TestUser(t *testing.T) {
-	logFilePath = "../../testenv"
+	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)

@@ -49,7 +49,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 	userManager := models.NewUserManager(qm.db)
 	networkManager := models.NewHostedIPFSNetworkManager(qm.db)
 	uploadManager := models.NewUploadManager(qm.db)
-	logger, err := log.NewLogger(qm.cfg.LogDir+"/cluster_publisher.log", false)
+	logger, err := log.NewLogger(qm.cfg.LogDir+"cluster_publisher.log", false)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 		qm.l.Errorw("failed to initialize connection to ipfs", "error", err.Error())
 		return err
 	}
-	logger, err := log.NewLogger(qm.cfg.LogDir+"/pin_publisher.log", false)
+	logger, err := log.NewLogger(qm.cfg.LogDir+"pin_publisher.log", false)
 	if err != nil {
 		return err
 	}
