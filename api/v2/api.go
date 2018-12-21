@@ -68,17 +68,33 @@ type API struct {
 	dc          *dash.Client
 	queues      queues
 	service     string
+
+	version string
 }
 
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
-func Initialize(cfg *config.TemporalConfig, l *zap.SugaredLogger, debug bool, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient) (*API, error) {
-	l = l.Named("api")
+func Initialize(
+
+	// configuration
+	cfg *config.TemporalConfig,
+	version string,
+	debug bool,
+
+	// API dependencies
+	l *zap.SugaredLogger,
+	lens pbLens.IndexerAPIClient,
+	orch pbOrch.ServiceClient,
+	signer pbSigner.SignerClient,
+
+) (*API, error) {
 	var (
 		err    error
 		router = gin.Default()
 		p      = ginprometheus.NewPrometheus("gin")
 	)
+
+	l = l.Named("api")
 
 	// set up prometheus monitoring
 	p.SetListenAddress(fmt.Sprintf("%s:6768", cfg.API.Connection.ListenAddress))
@@ -104,6 +120,7 @@ func Initialize(cfg *config.TemporalConfig, l *zap.SugaredLogger, debug bool, le
 	if err != nil {
 		return nil, err
 	}
+	api.version = version
 
 	// init routes
 	if err = api.setupRoutes(); err != nil {

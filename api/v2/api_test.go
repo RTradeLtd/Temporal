@@ -1734,7 +1734,7 @@ func Test_Utils(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	api, err := Initialize(cfg, logger, true, &mocks.FakeIndexerAPIClient{}, &mocks.FakeServiceClient{}, &mocks.FakeSignerClient{})
+	api, err := Initialize(cfg, "", true, logger, &mocks.FakeIndexerAPIClient{}, &mocks.FakeServiceClient{}, &mocks.FakeSignerClient{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1838,7 +1838,7 @@ func Test_API_Initialize_Cluster_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	if _, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner); err == nil {
+	if _, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -1860,7 +1860,7 @@ func Test_API_Initialize_IPFS_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	if _, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner); err == nil {
+	if _, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -1883,7 +1883,7 @@ func Test_API_Initialize_Setup_Routes_Failure(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	if _, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner); err == nil {
+	if _, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -1906,7 +1906,7 @@ func Test_API_Initialize_Kaas_Failure(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	if _, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner); err == nil {
+	if _, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -1927,7 +1927,7 @@ func Test_API_Initialize_Main_Network(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	api, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner)
+	api, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1963,7 +1963,7 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 			fakeLens := &mocks.FakeIndexerAPIClient{}
 			fakeOrch := &mocks.FakeServiceClient{}
 			fakeSigner := &mocks.FakeSignerClient{}
-			api, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner)
+			api, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1980,7 +1980,6 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {

@@ -19,7 +19,10 @@ import (
 
 // SystemsCheck is a basic check of system integrity
 func (api *API) SystemsCheck(c *gin.Context) {
-	Respond(c, http.StatusOK, gin.H{"response": "systems online"})
+	Respond(c, http.StatusOK, gin.H{
+		"version":  api.version,
+		"response": "systems online",
+	})
 }
 
 // BeamContent is used to beam content from one network to another
