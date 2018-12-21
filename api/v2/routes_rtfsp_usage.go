@@ -2,6 +2,7 @@ package v2
 
 import (
 	"fmt"
+	"html"
 	"net/http"
 	"strconv"
 	"time"
@@ -138,7 +139,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	fmt.Println("storing file in minio")
 	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size, mini.PutObjectOptions{
 		Bucket:            FilesUploadBucket,
-		EncryptPassphrase: c.PostForm("passphrase"),
+		EncryptPassphrase: html.UnescapeString(c.PostForm("passphrase")),
 	}); err != nil {
 		api.LogError(err, eh.MinioPutError)
 		api.refundUserCredits(username, "private-file", cost)

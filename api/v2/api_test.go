@@ -1399,14 +1399,6 @@ func Test_API_Routes_Frontend(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// test get encrypted uploads
-	// /api/v2/frontend/uploads/encrypted
-	if err := sendRequest(
-		api, "GET", "/api/v2/frontend/uploads/encrypted", 200, nil, nil, nil,
-	); err != nil {
-		t.Fatal(err)
-	}
-
 	// test pin cost calculate
 	// /api/v2/frontend/cost/calculate/:hash/:holTime
 	var floatAPIResp floatAPIResponse
@@ -1513,6 +1505,14 @@ func Test_API_Routes_Database(t *testing.T) {
 	// validate the response code
 	if interfaceAPIResp.Code != 200 {
 		t.Fatal("bad api status code from api/v2/database/uploads")
+	}
+
+	// test get encrypted uploads
+	// /api/v2/frontend/uploads/encrypted
+	if err := sendRequest(
+		api, "GET", "/api/v2/database/encrypted/uploads", 200, nil, nil, nil,
+	); err != nil {
+		t.Fatal(err)
 	}
 }
 
