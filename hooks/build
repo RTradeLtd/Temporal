@@ -1,8 +1,8 @@
 #!/bin/bash
 
-TEMPORALVERSION=`git describe --tags`
-echo => Version set as $TEMPORALVERSION
+export TEMPORALVERSION=$(git describe --tags)
+echo "=> Version set as " $TEMPORALVERSION
 
 docker build \
   --build-arg TEMPORALVERSION=$(TEMPORALVERSION) \
-	-t rtradetech/temporal .
+  -t $(IMAGE_NAME) .
