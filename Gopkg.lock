@@ -50,7 +50,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "gorm"
   digest = "1:f63ff159b462a0f9eead39b22c5b884f80402960c3e63c6ceb579443066d5bbc"
   name = "github.com/RTradeLtd/database"
   packages = [
@@ -59,7 +58,8 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "fcc4e47064bcd7e11485b75e5f568c384782f69a"
+  revision = "66696633b29dbc9d02c24bda05499a895a7aa7f9"
+  version = "v1.1.1"
 
 [[projects]]
   branch = "master"

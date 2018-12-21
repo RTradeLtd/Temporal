@@ -142,4 +142,4 @@ api-admin:
 
 .PHONY: files-bucket
 files-bucket:
-	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go make-bucket-insecure $(BUCKET)
+	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go make-bucket $(BUCKET)
