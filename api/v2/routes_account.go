@@ -169,7 +169,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		return
 	}
 	// prefix the key name for validation, and further processing
-	keyNamePrefixed := fmt.Sprintf("%s-%s", username, forms["key_name"])
+	keyName := fmt.Sprintf("%s-%s", username, forms["key_name"])
 	for _, v := range keys["key_names"] {
 		if v == keyNamePrefixed {
 			err = fmt.Errorf("key with name already exists")
