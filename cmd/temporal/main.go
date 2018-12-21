@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/api/v2"
 	"github.com/RTradeLtd/Temporal/api/v3"
@@ -428,7 +429,7 @@ var commands = map[string]cmd.Cmd{
 
 func main() {
 	if Version == "" {
-		Version = "latest"
+		Version = fmt.Sprintf("latest-%d", time.Now().UTC().Unix())
 	}
 
 	// create app
