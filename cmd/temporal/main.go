@@ -28,7 +28,8 @@ import (
 
 var (
 	// Version denotes the tag of this build
-	Version      string
+	Version string
+
 	closeMessage = "press CTRL+C to stop processing and close queue resources"
 	certFile     = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
 	keyFile      = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
@@ -426,6 +427,10 @@ var commands = map[string]cmd.Cmd{
 }
 
 func main() {
+	if Version == "" {
+		Version = "latest"
+	}
+
 	// create app
 	temporal := cmd.New(commands, cmd.Config{
 		Name:     "Temporal",
