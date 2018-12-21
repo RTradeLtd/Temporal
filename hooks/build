@@ -4,5 +4,5 @@ export TEMPORALVERSION=$(git describe --tags)
 echo "=> Version set as " $TEMPORALVERSION
 
 docker build \
-  --build-arg TEMPORALVERSION=$(TEMPORALVERSION) \
-  -t $(IMAGE_NAME) .
+  --build-arg TEMPORALVERSION=$TEMPORALVERSION \
+  -t $IMAGE_NAME .
