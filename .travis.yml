@@ -29,6 +29,8 @@ after_success:
 
 before_deploy:
   - make release-cli
+  - docker login -u $DOCKER_USER -p $DOCKER_KEY
+  - make release-docker
 
 deploy:
   provider: releases

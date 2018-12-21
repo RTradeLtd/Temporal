@@ -1,3 +1,5 @@
+TEMPORALVERSION=`git describe --tags`
+
 all: check cli
 
 # Build temporal if binary is not already present
@@ -108,7 +110,7 @@ vendor:
 .PHONY: release-cli
 release-cli:
 	@echo "===================   cross-compiling CLI   ==================="
-	@bash .scripts/release.sh
+	@bash .scripts/cli.sh
 	@echo "===================          done           ==================="
 
 # Build docker release
@@ -117,6 +119,13 @@ docker:
 	@echo "===================  building docker image  ==================="
 	@docker build --build-arg TEMPORALVERSION=$(TEMPORALVERSION) \
 		-t rtradetech/temporal:$(TEMPORALVERSION) .
+	@echo "===================          done           ==================="
+
+# Build docker release and push to repository
+.PHONY: release-docker
+release-docker: docker
+	@echo "===================  building docker image  ==================="
+	@docker push rtradetech/temporal:$(TEMPORALVERSION)
 	@echo "===================          done           ==================="
 
 # Run development API
