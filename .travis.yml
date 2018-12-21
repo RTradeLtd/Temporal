@@ -6,7 +6,7 @@ services:
 sudo: required
 env:
   - SSL_MODE_DISABLE=true
-  
+
 install:
   - docker pull koalaman/shellcheck
   - go get -u golang.org/x/lint/golint
@@ -29,8 +29,6 @@ after_success:
 
 before_deploy:
   - make release-cli
-  - docker login -u $DOCKER_USER -p $DOCKER_KEY
-  - make release-docker
 
 deploy:
   provider: releases

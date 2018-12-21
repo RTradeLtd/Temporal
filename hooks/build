@@ -1,0 +1,8 @@
+#!/bin/bash
+
+TEMPORALVERSION=`git describe --tags`
+echo => Version set as $TEMPORALVERSION
+
+docker build \
+  --build-arg TEMPORALVERSION=$(TEMPORALVERSION) \
+	-t rtradetech/temporal .
