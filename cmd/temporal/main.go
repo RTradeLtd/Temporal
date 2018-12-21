@@ -10,6 +10,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/RTradeLtd/Temporal/mini"
+
 	"github.com/RTradeLtd/Temporal/api/v2"
 	"github.com/RTradeLtd/Temporal/api/v3"
 	"github.com/RTradeLtd/Temporal/grpc-clients"
@@ -363,18 +365,6 @@ var commands = map[string]cmd.Cmd{
 			}
 		},
 	},
-	"migrate": {
-		Blurb:       "run database migrations",
-		Description: "Runs our initial database migrations, creating missing tables, etc..",
-		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if _, err := database.Initialize(&cfg, database.Options{
-				RunMigrations: true,
-			}); err != nil {
-				fmt.Println("failed to perform secure migration", err)
-				os.Exit(1)
-			}
-		},
-	},
 	"migrate-insecure": {
 		Hidden:      true,
 		Blurb:       "run database migrations without SSL",
@@ -491,6 +481,36 @@ var commands = map[string]cmd.Cmd{
 			},
 		},
 	},
+	"make-bucket": {
+		Hidden:      true,
+		Blurb:       "used to create a minio bucket, run against localhost only",
+		Description: "Allows the creation of buckets with minio, useful for the initial setup of temporal",
+		Action: func(cfg config.TemporalConfig, args map[string]string) {
+			mm, err := mini.NewMinioManager(
+				cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
+				cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
+			if err != nil {
+				fmt.Println("failed to initialize minio manager")
+				os.Exit(1)
+			}
+			if err = mm.MakeBucket(args); err != nil {
+				fmt.Println("failed to create bucket")
+				os.Exit(1)
+			}
+		},
+	},
+	"migrate": {
+		Blurb:       "run database migrations",
+		Description: "Runs our initial database migrations, creating missing tables, etc..",
+		Action: func(cfg config.TemporalConfig, args map[string]string) {
+			if _, err := database.Initialize(&cfg, database.Options{
+				RunMigrations: true,
+			}); err != nil {
+				fmt.Println("failed to perform secure migration", err)
+				os.Exit(1)
+			}
+		},
+	},
 }
 
 func main() {
@@ -571,6 +591,8 @@ func main() {
 		}
 		defer signerClient.Close()
 		signer = signerClient
+	case "make-bucket", "make-bucket-insecure":
+		flags["name"] = os.Args[2]
 	}
 	fmt.Println(tCfg.APIKeys.ChainRider)
 	// execute

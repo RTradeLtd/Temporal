@@ -243,6 +243,17 @@ func TestUser(t *testing.T) {
 	commands["user"].Action(*cfg, flags)
 }
 
+func TestBucket(t *testing.T) {
+	logFilePath = "../../testenv/"
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	flags := map[string]string{
+		"name": "filesuploadbucket"}
+	commands["make-bucket"].Action(*cfg, flags)
+}
+
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
 	return database.OpenDBConnection(database.DBOptions{
 		User:           cfg.Database.Username,
