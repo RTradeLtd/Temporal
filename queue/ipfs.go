@@ -436,7 +436,7 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 	// this check ensures that the key was properly prefixed
 	if strings.Split(key.Name, "-")[0] != key.UserName {
 		qm.refundCredits(key.UserName, "key", key.CreditCost)
-		qm.LogError(errors.New("invalid key name format"), "invalid key name, it must be prefixed with username")
+		qm.l.Errorf("invalid key name %s, must be prefixed with: %s-", key.Name, key.UserName)
 		d.Ack(false)
 		return
 	}
@@ -517,7 +517,7 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 		return
 	}
 	// doesn't need a refund, key was generated and stored in our keystore, but information not saved to db
-	if err := um.AddIPFSKeyForUser(key.UserName, keyName, id.Pretty()); err != nil {
+	if err := um.AddIPFSKeyForUser(key.UserName, key.Name, id.Pretty()); err != nil {
 		qm.l.Errorw(
 			"failed to update database",
 			"error", err.Error(),
