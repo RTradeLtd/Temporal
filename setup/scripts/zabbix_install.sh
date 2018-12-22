@@ -5,8 +5,8 @@ DISTRO=$(lsb_release -sc)
 
 cd ~ || exit
 
-wget https://repo.zabbix.com/zabbix/3.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.4-1+bionic_all.deb
-sudo dpkg -i zabbix-release_3.4-1+bionic_all.deb
+wget https://repo.zabbix.com/zabbix/4.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_4.0-2+bionic_all.deb
+sudo dpkg -i zabbix-release_4.0-2+bionic_all.deb
 sudo apt update -y
 
 if [[ "$DISTRO" == "bionic" && "$MODE" == "server" ]]; then

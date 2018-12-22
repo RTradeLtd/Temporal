@@ -1,7 +1,7 @@
 #! /bin/bash
 
 IPFS_PATH="/ipfs"
-PRIVATE_NODE="yes"
+PRIVATE_NODE="no"
 IPFS_DOWNLOAD_URL="https://dist.ipfs.io/go-ipfs/v0.4.18/go-ipfs_v0.4.18_linux-amd64.tar.gz"
 export IPFS_PATH="/ipfs"
 
