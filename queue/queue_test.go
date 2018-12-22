@@ -428,6 +428,16 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	if err := qmPublisher.PublishMessageWithExchange(IPFSKeyCreation{
 		UserName:    "testuser",
+		Name:        "testuser-mykey",
+		Type:        "rsa",
+		Size:        2048,
+		NetworkName: "public",
+		CreditCost:  0}, IpfsKeyExchange,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if err := qmPublisher.PublishMessageWithExchange(IPFSKeyCreation{
+		UserName:    "testuser",
 		Name:        "mykey",
 		Type:        "rsa",
 		Size:        2048,
