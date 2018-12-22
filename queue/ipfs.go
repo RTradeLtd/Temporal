@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -430,6 +431,15 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 		d.Ack(false)
 		return
 	}
+	// to prevent key name collision, we need to ensure that the keyname was prefixed with their username and a hyphen
+	// whenever a user creates a key, the API call will prepend their username and a hyphen before sending the message for processing
+	// this check ensures that the key was properly prefixed
+	if strings.Split(key.Name, "-")[0] != key.UserName {
+		qm.refundCredits(key.UserName, "key", key.CreditCost)
+		qm.LogError(errors.New("invalid key name format"), "invalid key name, it must be prefixed with username")
+		d.Ack(false)
+		return
+	}
 	var (
 		keyTypeInt int
 		bitsInt    int
@@ -495,11 +505,8 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 		return
 	}
 
-	// to prevent key name collision, we prefix the keyname by a hyphen, and the username
-	// key name of key2 for user testuser becomes testuser-key2
-	keyName := fmt.Sprintf("%s-%s", key.UserName, key.Name)
 	// store the key in krab
-	if _, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: keyName, PrivateKey: pkBytes}); err != nil {
+	if _, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {
 		qm.refundCredits(key.UserName, "key", key.CreditCost)
 		qm.l.Errorw(
 			"failed to store key in krab",
