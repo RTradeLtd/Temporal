@@ -547,15 +547,12 @@ func (api *API) setupRoutes() error {
 	{
 		database.GET("/uploads", api.getUploadsFromDatabase)  // admin locked
 		database.GET("/uploads/:user", api.getUploadsForUser) // partial admin locked
+		database.GET("/encrypted/uploads", api.getEncryptedUploadsForUser)
 	}
 
 	// frontend
 	frontend := v2.Group("/frontend", authware...)
 	{
-		uploads := frontend.Group("/uploads")
-		{
-			uploads.GET("/encrypted", api.getEncryptedUploadsForUser)
-		}
 		cost := frontend.Group("/cost")
 		{
 			calculate := cost.Group("/calculate")

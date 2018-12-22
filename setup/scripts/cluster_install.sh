@@ -17,7 +17,7 @@ export IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
 
 cd ~ || exit
 echo "[INFO] Downloading ipfs cluster"
-wget https://dist.ipfs.io/ipfs-cluster-service/v0.5.0/ipfs-cluster-service_v0.5.0_linux-amd64.tar.gz
+wget https://dist.ipfs.io/ipfs-cluster-service/v0.7.0/ipfs-cluster-service_v0.7.0_linux-amd64.tar.gz
 tar zxvf ipfs-cluster-service*.tar.gz
 rm -- *gz
 cd ipfs-cluster-service || exit
@@ -26,7 +26,7 @@ echo "[INFO] Initializing ipfs cluster configuration"
 sudo cp ipfs-cluster-service /usr/local/bin
 cd ~ || exit
 echo "[INFO] Downloading ipfs cluster ctl"
-wget https://dist.ipfs.io/ipfs-cluster-ctl/v0.5.0/ipfs-cluster-ctl_v0.5.0_linux-amd64.tar.gz
+wget https://dist.ipfs.io/ipfs-cluster-ctl/v0.7.0/ipfs-cluster-ctl_v0.7.0_linux-amd64.tar.gz
 tar zxvf ipfs-cluster-ctl*.tar.gz
 rm -- *gz
 cd ipfs-cluster-ctl || exit
