@@ -250,7 +250,7 @@ func TestBucket(t *testing.T) {
 		t.Fatal(err)
 	}
 	flags := map[string]string{
-		"name": "filesuploadbucket"}
+		"name": "mytestbucket"}
 	commands["make-bucket"].Action(*cfg, flags)
 }
 
