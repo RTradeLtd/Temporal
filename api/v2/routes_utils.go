@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -108,8 +107,7 @@ func (api *API) exportKey(c *gin.Context) {
 		return
 	}
 	keyName := c.Param("name")
-	keyNamePrefixed := fmt.Sprintf("%s-%s", username, keyName)
-	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyNamePrefixed)
+	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyName)
 	if err != nil {
 		api.LogError(err, eh.KeySearchError)(c, http.StatusBadRequest)
 		return
@@ -119,7 +117,7 @@ func (api *API) exportKey(c *gin.Context) {
 		return
 	}
 
-	resp, err := api.keys.GetPrivateKey(context.Background(), &pb.KeyGet{Name: keyNamePrefixed})
+	resp, err := api.keys.GetPrivateKey(context.Background(), &pb.KeyGet{Name: keyName})
 	if err != nil {
 		api.LogError(err, eh.KeyExportError)(c, http.StatusBadRequest)
 		return

@@ -168,9 +168,10 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
-	keyNamePrefixed := fmt.Sprintf("%s-%s", username, forms["key_name"])
+	// prefix the key name for validation, and further processing
+	keyName := fmt.Sprintf("%s-%s", username, forms["key_name"])
 	for _, v := range keys["key_names"] {
-		if v == keyNamePrefixed {
+		if v == keyName {
 			err = fmt.Errorf("key with name already exists")
 			api.LogError(err, eh.DuplicateKeyCreationError)(c, http.StatusConflict)
 			api.refundUserCredits(username, "key", cost)
@@ -184,7 +185,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	}
 	key := queue.IPFSKeyCreation{
 		UserName:    username,
-		Name:        forms["key_name"],
+		Name:        keyName,
 		Type:        forms["key_type"],
 		Size:        bitsInt,
 		NetworkName: "public",
