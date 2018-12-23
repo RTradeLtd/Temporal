@@ -1,10 +1,10 @@
 #! /bin/bash
 
-# installs prometheus node exporter
+VERSION="0.17.0"
 
 cd ~ || exit
 echo "[INFO] Downloading prometheus onode exporter"
-wget https://github.com/prometheus/node_exporter/releases/download/v0.17.0/node_exporter-0.17.0.linux-amd64.tar.gz
+wget "https://github.com/prometheus/node_exporter/releases/download/v${VERSION}/node_exporter-${VERSION}.linux-amd64.tar.gz"
 echo "[INFO] Unpacking node exporter"
 tar zxvf node_exporter*.tar.gz
 rm -- *.gz
