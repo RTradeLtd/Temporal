@@ -14,12 +14,13 @@ import (
 // No credit handling is done, as this route is only called to update the database
 func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
 	uploadManager := models.NewUploadManager(qm.db)
-	qm.LogInfo("processing database file adds")
+	userManager := models.NewUserManager(qm.db)
+	qm.l.Info("processing database file adds")
 	for {
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processDatabaseFileAdd(d, wg, uploadManager)
+			go qm.processDatabaseFileAdd(d, wg, uploadManager, userManager)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -28,20 +29,32 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGro
 	}
 }
 
-func (qm *Manager) processDatabaseFileAdd(d amqp.Delivery, wg *sync.WaitGroup, um *models.UploadManager) {
+func (qm *Manager) processDatabaseFileAdd(d amqp.Delivery, wg *sync.WaitGroup, upm *models.UploadManager, usrm *models.UserManager) {
 	defer wg.Done()
-	qm.LogInfo("detected new message")
+	qm.l.Info("new database file add detected")
 	dfa := DatabaseFileAdd{}
 	// unmarshal the message body into the dfa struct
 	if err := json.Unmarshal(d.Body, &dfa); err != nil {
-		qm.LogError(err, "failed to unmarshal message")
+		qm.l.Errorw(
+			"failed to unmarshal message",
+			"error", err.Error())
 		d.Ack(false)
 		return
 	}
-	qm.LogInfo("message successfully unmarshaled")
-	upload, err := um.FindUploadByHashAndNetwork(dfa.Hash, dfa.NetworkName)
+	// validate the user exists
+	if _, err := usrm.FindByUserName(dfa.UserName); err != nil {
+		qm.l.Errorw(
+			"user does not exist",
+			"user", dfa.UserName)
+		d.Ack(false)
+		return
+	}
+	upload, err := upm.FindUploadByHashAndNetwork(dfa.Hash, dfa.NetworkName)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		qm.LogError(err, "database check for upload failed")
+		qm.l.Errorw(
+			"failed to check database for upload",
+			"error", err.Error(),
+			"user", dfa.UserName)
 		d.Ack(false)
 		return
 	}
@@ -52,15 +65,20 @@ func (qm *Manager) processDatabaseFileAdd(d amqp.Delivery, wg *sync.WaitGroup, u
 		Encrypted:        false,
 	}
 	if upload == nil {
-		_, err = um.NewUpload(dfa.Hash, "file", opts)
+		_, err = upm.NewUpload(dfa.Hash, "file", opts)
 	} else {
 		// we have seen this upload before, so lets update the database record
-		_, err = um.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName)
+		_, err = upm.UpdateUpload(dfa.HoldTimeInMonths, dfa.UserName, dfa.Hash, dfa.NetworkName)
 	}
 	if err != nil {
-		qm.LogError(err, "failed to process database file upload")
+		qm.l.Errorw(
+			"failed to process database file add",
+			"error", err.Error(),
+			"user", dfa.UserName)
 	} else {
-		qm.LogInfo("database file add processed")
+		qm.l.Infow(
+			"successfully processed database file add",
+			"user", dfa.UserName)
 	}
 	d.Ack(false)
 	return // we must return here in order to trigger the wg.Done() defer

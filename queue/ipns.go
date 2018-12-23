@@ -3,7 +3,6 @@ package queue
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"sync"
 	"time"
 
@@ -43,7 +42,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		return err
 	}
 	ipnsManager := models.NewIPNSManager(qm.db)
-	qm.LogInfo("processing ipns entry creation requests")
+	qm.l.Info("processing ipns entry creation requests")
 	for {
 		select {
 		case d := <-msgs:
@@ -59,26 +58,39 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 
 func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kb *kaas.Client, pub *rtns.Publisher, im *models.IpnsManager) {
 	defer wg.Done()
-	qm.LogInfo("neww message detected")
+	qm.l.Info("new ipns entry creation detected")
 	ie := IPNSEntry{}
 	if err := json.Unmarshal(d.Body, &ie); err != nil {
-		qm.LogError(err, "failed to unmarshal message")
+		qm.l.Errorw(
+			"failed to unmarshal message",
+			"error", err.Error())
 		d.Ack(false)
 		return
 	}
 	// temporarily do not process ipns creation requests for non public networks
 	if ie.NetworkName != "public" {
 		qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
-		qm.LogError(errors.New("private networks not supported"), "private networks not supported")
+		qm.l.Errorw(
+			"private networks not supported for ipns",
+			"user", ie.UserName)
 		d.Ack(false)
 		return
 	}
-	qm.LogInfo("publishing ipns entry")
+	qm.l.Infow(
+		"publishing ipns entry",
+		"user", ie.UserName,
+		"key", ie.Key,
+		"cid", ie.CID)
 	// get the private key from krab to use with publishing
 	resp, err := kb.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
 	if err != nil {
 		qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
-		qm.LogError(err, "failed to retrieve private key")
+		qm.l.Errorw(
+			"failed to retrieve private key from krab",
+			"error", err.Error(),
+			"user", ie.UserName,
+			"key", ie.Key,
+			"cid", ie.CID)
 		d.Ack(false)
 		return
 	}
@@ -86,7 +98,12 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 	pk2, err := ci.UnmarshalPrivateKey(resp.PrivateKey)
 	if err != nil {
 		qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
-		qm.LogError(err, "failed to unmarshal private key")
+		qm.l.Errorw(
+			"failed to unmarshal private key",
+			"error", err.Error(),
+			"user", ie.UserName,
+			"key", ie.Key,
+			"cid", ie.CID)
 		d.Ack(false)
 		return
 	}
@@ -96,7 +113,12 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 	eol := time.Now().Add(ie.LifeTime)
 	if err := pub.PublishWithEOL(ctx, pk2, ie.CID, eol); err != nil {
 		qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
-		qm.LogError(err, "failed to publish ipns entry")
+		qm.l.Errorw(
+			"failed to publish ipns entry",
+			"error", err.Error(),
+			"user", ie.UserName,
+			"key", ie.Key,
+			"cid", ie.CID)
 		d.Ack(false)
 		return
 	}
@@ -104,7 +126,12 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 	id, err := peer.IDFromPrivateKey(pk2)
 	if err != nil {
 		// do not refund here since the record is published
-		qm.LogError(err, "failed to unmarshal peer identity")
+		qm.l.Errorw(
+			"failed to unmarshal peer identity private key",
+			"error", err.Error(),
+			"user", ie.UserName,
+			"key", ie.Key,
+			"cid", ie.CID)
 		d.Ack(false)
 		return
 	}
@@ -115,9 +142,18 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 		_, err = im.UpdateIPNSEntry(id.Pretty(), ie.CID, ie.NetworkName, ie.UserName, ie.LifeTime, ie.TTL)
 	}
 	if err != nil {
-		qm.LogError(err, "failed to save ipns entry in database, but the record was published")
+		qm.l.Errorw(
+			"failed to update ipns entry in database",
+			"error", err.Error(),
+			"user", ie.UserName,
+			"key", ie.Key,
+			"cid", ie.CID)
 	} else {
-		qm.LogInfo("successfully published and saved ipns entry to database")
+		qm.l.Infow(
+			"successfully processed ipns entry creation request",
+			"user", ie.UserName,
+			"key", ie.Key,
+			"cid", ie.CID)
 	}
 	d.Ack(false)
 	return // we must return here in order to trigger the wg.Done() defer

@@ -34,12 +34,12 @@
   version = "v1.0.4"
 
 [[projects]]
-  digest = "1:8e3fb2f520f9dc842a894c28b893c8bf5250e1bf8c7c88589d69026687b6c44c"
+  branch = "master"
+  digest = "1:f10cf72d0da5fe82c6a7f45933f41d37996c18de31f49a49bc79bb322d3602d2"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ed6bea444ae3a52e0f95c5d4f6d4f227cb091698"
-  version = "v1.0.15"
+  revision = "858050bd60710361598cd4da2d8b316677fe6374"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -50,8 +50,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:53b48a7333b146ee214fee2dec90b5ab21e374310e1ab7995b309734ba8fa824"
+  digest = "1:f63ff159b462a0f9eead39b22c5b884f80402960c3e63c6ceb579443066d5bbc"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +58,8 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "53d94a551b2e55e4ceb6bfe7d5ec5ea031338489"
+  revision = "66696633b29dbc9d02c24bda05499a895a7aa7f9"
+  version = "v1.1.1"
 
 [[projects]]
   branch = "master"
@@ -97,12 +97,12 @@
   revision = "f3d3b84b0af8d646d68b11043f77599b0fbf785b"
 
 [[projects]]
-  digest = "1:c40131fabf02417f203fbe60854768f747771b65adc787cd0ca8f5e9324a50cb"
+  digest = "1:812bbf0fc4977ee96ef1d3848d9c0267d17afbe37b762e7019abe63fa6a43cfc"
   name = "github.com/RTradeLtd/kaas"
   packages = ["."]
   pruneopts = "UT"
-  revision = "e20a104ada3f7a0532542af3d9250d478e66fcb8"
-  version = "v1.0.1"
+  revision = "a7598a8ddf5beec6209825fed17ae3e06747d642"
+  version = "v1.0.2"
 
 [[projects]]
   branch = "master"
@@ -593,15 +593,15 @@
   revision = "4f4301a06e153ff90e17793577ab6bf79f8dc5c5"
 
 [[projects]]
-  digest = "1:6895fbe5a10c5aebd1965cac6f6905dcdb21bee01e08912d3ba6a805c2485f6a"
+  branch = "master"
+  digest = "1:7b4c43b17175f212ca55e83034f9f2ea7c34602819e8a6db994d37d2b9218659"
   name = "github.com/jinzhu/gorm"
   packages = [
     ".",
     "dialects/postgres",
   ]
   pruneopts = "UT"
-  revision = "6ed508ec6a4ecb3531899a69cbc746ccf65a4166"
-  version = "v1.9.1"
+  revision = "5ad6f621e6f59672f5b5061df85b243436fde048"
 
 [[projects]]
   branch = "master"

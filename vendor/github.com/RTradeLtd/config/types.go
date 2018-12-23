@@ -16,6 +16,7 @@ type TemporalConfig struct {
 	APIKeys      `json:"api_keys,omitempty"`
 	Endpoints    `json:"endpoints,omitempty"`
 	Orchestrator `json:"orchestrator,omitempty"`
+	LogDir       string `json:"log_dir,omitempty"`
 }
 
 // API configures the Temporal API
