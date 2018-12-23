@@ -17,8 +17,8 @@ Versions are denoted as `MAJOR.MINOR.PATCH`, and are updated as follows:
 
 ### Projects
 
-Temporal projects are packages related to Temporal, but that aren't within the
-main Temporal repository. These include:
+"Temporal projects" are all projects and packages related to Temporal. These
+include:
 
 * [Temporal](https://github.com/RTradeLtd/Temporal)
 * [Pay](https://github.com/RTradeLtd/Pay)
@@ -46,6 +46,7 @@ When these projects are finalized and production-ready, they will be tagged with
 the same `MAJOR.MINOR` version as the released projects.
 
 ### Why Start Production At Version 2?
+
 This is primarily my (postables/alex) "fault". For awhile I was the only developer
 on Temporal, and it was still pretty unclear until recently (around September)
 whether or not we would actually go ahead and pursue Temporal beyond just a hobby
