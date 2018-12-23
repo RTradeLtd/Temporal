@@ -1,4 +1,4 @@
-# Versioning
+# Versioning ![](https://img.shields.io/github/release/RTradeLtd/Temporal.svg?) ![](https://img.shields.io/github/release-pre/RTradeLtd/Temporal.svg?label=preview)
 
 This document outlines version policies that will be upheld with Temporal V2 and
 all future Temporal releases. It is a reduced public version of an internal
