@@ -14,7 +14,7 @@ case "$1" in
         fi
         ;;
     queued-pin-count)
-        echo ipfs-cluster-ctl status | grep PIN_QUEUED | wc -l
+        echo ipfs-cluster-ctl status | grep -c PIN_QUEUED
         ;;
     pin-count)
         COUNT=$(ipfs-cluster-ctl pin ls | wc -l)

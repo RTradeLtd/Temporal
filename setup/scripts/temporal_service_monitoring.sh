@@ -35,14 +35,6 @@ case "$1" in
             echo 1
         fi
         ;;
-    pin-payment-confirmation-queue)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue payment pin-confirmation" | grep -iv grep | awk '{print $2}')
-        if [[ "$PID" == "" ]]; then
-            echo 0
-        else
-            echo 1
-        fi
-        ;;
     email-send-queue)
         PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue email-send" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
