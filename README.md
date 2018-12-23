@@ -1,4 +1,4 @@
-<h1 align="center">Temporal</h1>
+<h1 align="center">Temporal ☄️</h1>
 
 <p align="center">
   <a href="#about-temporal"><strong>About Temporal</strong></a> · 
