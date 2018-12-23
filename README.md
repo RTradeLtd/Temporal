@@ -19,7 +19,15 @@
     <img src="https://travis-ci.com/RTradeLtd/Temporal.svg?branch=V2"
       alt="Travis Build Status" />
   </a>
-<a href="https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=shield"/></a>
+
+  <a href="https://github.com/RTradeLtd/Temporal/releases">
+    <img src="https://img.shields.io/github/release-pre/RTradeLtd/Temporal.svg?label=preview"
+      alt="Release" />
+  </a>
+
+  <a href="https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_shield" alt="FOSSA Status">
+    <img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=shield"/>
+  </a>
 
   <a href="https://goreportcard.com/report/github.com/RTradeLtd/Temporal">
     <img src="https://goreportcard.com/badge/github.com/RTradeLtd/Temporal"
