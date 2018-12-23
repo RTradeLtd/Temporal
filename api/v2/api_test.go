@@ -1927,7 +1927,7 @@ func Test_API_Initialize_Queue_Failure(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	if _, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner); err == nil {
+	if _, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
 		t.Fatal("expected error")
 	}
 }
