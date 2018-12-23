@@ -19,7 +19,7 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 		return err
 	}
 	uploadManager := models.NewUploadManager(qm.db)
-	qm.LogInfo("processing ipfs cluster pins")
+	qm.l.Info("processing ipfs cluster pin requests")
 	for {
 		select {
 		case d := <-msgs:
@@ -35,37 +35,57 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 
 func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm *rtfscluster.ClusterManager, um *models.UploadManager) {
 	defer wg.Done()
-	qm.LogInfo("new message detected")
+	qm.l.Info("new cluster pin request detected")
 	clusterAdd := IPFSClusterPin{}
 	if err := json.Unmarshal(d.Body, &clusterAdd); err != nil {
-		qm.LogError(err, "failed to unmarshal message")
+		qm.l.Errorw(
+			"failed to unmarshal message",
+			"error", err.Error())
 		d.Ack(false)
 		return
 	}
 	if clusterAdd.NetworkName != "public" {
 		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
-		qm.LogError(errors.New("private networks not supported for ipfs cluster"), "private networks not supported for ipfs cluster")
+		qm.l.Errorw(
+			"private clustered networks not yet supported",
+			"error", errors.New("private network clusters not supported").Error(),
+			"cid", clusterAdd.CID,
+			"user", clusterAdd.UserName)
 		d.Ack(false)
 		return
 	}
-	qm.LogInfo("successfully unmarshaled message, decoding hash string")
 	encodedCid, err := cm.DecodeHashString(clusterAdd.CID)
 	if err != nil {
 		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
-		qm.LogError(err, "failed to decode hash string")
+		qm.l.Errorw(
+			"bad cid format detected",
+			"error", err.Error(),
+			"cid", clusterAdd.CID,
+			"user", clusterAdd.UserName)
 		d.Ack(false)
 		return
 	}
-	qm.LogInfo("pinning hash to cluster")
+	qm.l.Infow(
+		"pinning has to cluster",
+		"cid", clusterAdd.CID,
+		"user", clusterAdd.UserName)
 	if err = cm.Pin(encodedCid); err != nil {
 		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
-		qm.LogError(err, "failed to pin hash to cluster")
+		qm.l.Errorw(
+			"failed to pin hash to cluster",
+			"error", err.Error(),
+			"cid", clusterAdd.CID,
+			"user", clusterAdd.UserName)
 		d.Ack(false)
 		return
 	}
 	upload, err := um.FindUploadByHashAndNetwork(clusterAdd.CID, clusterAdd.NetworkName)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		qm.LogError(err, "failed to search database for upload")
+		qm.l.Errorw(
+			"failed to check database for upload",
+			"error", err.Error(),
+			"cid", clusterAdd.CID,
+			"user", clusterAdd.UserName)
 		d.Ack(false)
 		return
 	}
@@ -78,9 +98,16 @@ func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm
 		_, err = um.UpdateUpload(clusterAdd.HoldTimeInMonths, clusterAdd.UserName, clusterAdd.CID, clusterAdd.NetworkName)
 	}
 	if err != nil {
-		qm.LogError(err, "failed to pin update database, but cluster was pinned")
+		qm.l.Errorw(
+			"failed to update database",
+			"error", err.Error(),
+			"cid", clusterAdd.CID,
+			"user", clusterAdd.UserName)
 	} else {
-		qm.LogInfo("successfully pinned hash to cluster and updated database")
+		qm.l.Infow(
+			"successfully processed cluster pin request",
+			"cid", clusterAdd.CID,
+			"user", clusterAdd.UserName)
 	}
 	d.Ack(false)
 	return // we must return here in order to trigger the wg.Done() defer
