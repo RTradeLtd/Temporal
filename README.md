@@ -41,6 +41,10 @@ We have a [telegram chat](https://t.me/RTradeTEMPORAL), feel free to join and as
 
 TEMPORAL is a work in progress, and current code does not represent quality of the final product. Before a production release there will be an extremely heavy review, and updates to code quality.
 
+### Versioning Policy
+
+Information about our versioning policies are available in [VERSIONING.md](/VERSIONING.md)
+
 ### Web Interfaces
 
 Temporal now has a working web interface! This provides a slick and easy way to interact with Temporal without the need for using our API. We currently have two versions of the web interface, running over regular HTTP, and one over I2P!
