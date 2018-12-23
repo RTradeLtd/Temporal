@@ -483,7 +483,7 @@ func Test_API_Routes_Misc(t *testing.T) {
 		t.Fatal(err)
 	}
 	urlValues := url.Values{}
-	urlValues.Add("bucket_name", "filesuploadbucket")
+	urlValues.Add("bucket_name", "filesuploadbucket2")
 	if err := sendRequest(
 		api, "POST", "/api/v2/admin/mini/create/bucket", 200, nil, urlValues, nil,
 	); err != nil {
@@ -1910,6 +1910,28 @@ func Test_API_Initialize_Kaas_Failure(t *testing.T) {
 		t.Fatal("expected error")
 	}
 }
+
+func Test_API_Initialize_Queue_Failure(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	logger, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.RabbitMQ.URL = "notarealip"
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	if _, err := Initialize(cfg, logger, true, fakeLens, fakeOrch, fakeSigner); err == nil {
+		t.Fatal("expected error")
+	}
+}
+
 func Test_API_Initialize_Main_Network(t *testing.T) {
 	// load configuration
 	cfg, err := config.LoadConfig("../../testenv/config.json")

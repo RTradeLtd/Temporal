@@ -5,8 +5,8 @@ import (
 
 	"github.com/RTradeLtd/config"
 	"github.com/jinzhu/gorm"
+	"go.uber.org/zap"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -61,7 +61,7 @@ type Manager struct {
 	connection   *amqp.Connection
 	channel      *amqp.Channel
 	queue        *amqp.Queue
-	logger       *log.Logger
+	l            *zap.SugaredLogger
 	db           *gorm.DB
 	cfg          *config.TemporalConfig
 	QueueName    string

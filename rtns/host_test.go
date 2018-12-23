@@ -20,7 +20,7 @@ const (
 	testSwarmADDR             = "/ip4/0.0.0.0/tcp/4002"
 )
 
-func TestPublisher_NoGen(t *testing.T) {
+func TestPublisher_Success(t *testing.T) {
 	// create our private key
 	pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
 	if err != nil {
@@ -42,11 +42,21 @@ func TestPublisher_NoGen(t *testing.T) {
 	} else {
 		fmt.Println("id to check ", pid.Pretty())
 	}
-	if err := publisher.Publish(context.Background(), pk, testPath); err != nil {
+	// set the lifetime
+	eol := time.Now().Add(time.Minute * 10)
+	ctx := context.WithValue(context.Background(), ipnsPublishTTL, time.Minute*10)
+	if err := publisher.PublishWithEOL(ctx, pk, testPath, eol); err != nil {
 		t.Fatal(err)
 	}
-	ctx := context.WithValue(context.Background(), ipnsPublishTTL, time.Minute*10)
-	if err := publisher.Publish(ctx, pk, testPath); err != nil {
+}
+
+func TestPublisher_Failure(t *testing.T) {
+	// create our private key
+	pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
+	if err != nil {
 		t.Fatal(err)
+	}
+	if _, err := rtns.NewPublisher(pk, false, "notarealaddress"); err == nil {
+		t.Fatal("expected error")
 	}
 }

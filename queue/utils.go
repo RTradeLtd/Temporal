@@ -2,7 +2,6 @@ package queue
 
 import (
 	"github.com/RTradeLtd/database/models"
-	log "github.com/sirupsen/logrus"
 )
 
 // refundCredits is used to refund a users credits. We do not check for errors,
@@ -13,12 +12,12 @@ func (qm *Manager) refundCredits(username, callType string, cost float64) error 
 	}
 	um := models.NewUserManager(qm.db)
 	if _, err := um.AddCredits(username, cost); err != nil {
-		qm.logger.WithFields(log.Fields{
-			"service":   qm.Service,
-			"user":      username,
-			"call_type": callType,
-			"error":     err.Error(),
-		}).Error("unable to refund user credits")
+		qm.l.Errorw(
+			"failed to refund user credits",
+			"error", err.Error(),
+			"user", username,
+			"call_type", callType,
+			"cost", cost)
 		return err
 	}
 	return nil

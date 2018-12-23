@@ -1,4 +1,5 @@
 TEMPORALVERSION=`git describe --tags`
+BUCKET=filesuploadbucket
 
 all: check cli
 
@@ -54,6 +55,8 @@ testenv:
 	@env CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go migrate-insecure
 	make api-user
 	make api-admin
+	# create minio bucket
+	make files-bucket
 	@echo "===================          done           ==================="
 
 # Shut down testenv
@@ -144,3 +147,7 @@ api-user:
 .PHONY: api-admin
 api-admin:
 	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go admin $(USER)
+
+.PHONY: files-bucket
+files-bucket:
+	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go make-bucket $(BUCKET)

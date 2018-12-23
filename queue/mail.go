@@ -14,10 +14,9 @@ import (
 func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, db *gorm.DB, msgs <-chan amqp.Delivery) error {
 	mm, err := mail.NewManager(qm.cfg, db)
 	if err != nil {
-		qm.LogError(err, "failed to generate mail manager")
 		return err
 	}
-	qm.LogInfo("processing email sends")
+	qm.l.Info("processing email send requests")
 	for {
 		select {
 		case d := <-msgs:
@@ -33,28 +32,29 @@ func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, db 
 
 func (qm *Manager) processMailSend(d amqp.Delivery, wg *sync.WaitGroup, mm *mail.Manager) {
 	defer wg.Done()
-	qm.LogInfo("detected new message")
+	qm.l.Info("new email send request detected")
 	es := EmailSend{}
 	if err := json.Unmarshal(d.Body, &es); err != nil {
-		qm.LogError(err, "failed to unmarshal message")
+		qm.l.Errorw(
+			"failed to unmarshal message",
+			"error", err.Error())
 		d.Ack(false)
 		return
 	}
-	var emailSent bool
 	for k, v := range es.Emails {
 		_, err := mm.SendEmail(es.Subject, es.Content, es.ContentType, es.UserNames[k], v)
 		if err != nil {
-			qm.LogError(err, "failed to send email")
-			d.Ack(false)
-			emailSent = false
-			continue
+			qm.l.Errorw(
+				"failed to send email",
+				"error", err.Error(),
+				"email", v,
+				"user", es.UserNames[k])
 		}
-		emailSent = true
+		qm.l.Infow(
+			"email sent",
+			"email", v,
+			"user", es.UserNames[k])
 	}
-	if !emailSent {
-		return
-	}
-	qm.LogInfo("successfully sent email(s)")
 	d.Ack(false)
 	return // we must return here in order to trigger the wg.Done() defer
 }

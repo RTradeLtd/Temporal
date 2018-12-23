@@ -1,56 +1,44 @@
 package queue
 
 import (
-	"bytes"
-	"errors"
-	"io/ioutil"
-	"strings"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/RTradeLtd/config"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
 )
 
-func TestQueue_LogError(t *testing.T) {
-	qm := Manager{
-		logger: log.New(),
+func TestLog_Publisher(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
 	}
-	type args struct {
-		err     error
-		message string
-		fields  []interface{}
+	observer, out := observer.New(zap.InfoLevel)
+	logger := zap.New(observer).Sugar()
+	_, err = New(IpfsFileQueue, cfg.RabbitMQ.URL, true, logger)
+	if err != nil {
+		t.Fatal(err)
 	}
-	tests := []struct {
-		name     string
-		args     args
-		wantLog  string
-		wantResp string
-	}{
-		{"with err no message", args{errors.New("hi"), "", nil}, "hi", "hi"},
-		{"with err and message", args{errors.New("hi"), "bye", nil}, "hi", "bye"},
-		{"with message and no err", args{nil, "bye", nil}, "bye", "bye"},
-		{"no message and no err", args{nil, "", nil}, "", ""},
-		{"message and additional fields", args{nil, "hi", []interface{}{"wow", "amazing"}}, "amazing", "hi"},
-		{"message and odd fields should ignore fields", args{nil, "hi", []interface{}{"wow"}}, "hi", "hi"},
+	if out.All()[out.Len()-1].Message != "channel opened" {
+		t.Fatal("failed to recover correct message")
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var buf bytes.Buffer
-			qm.logger.Out = &buf
-			// log error and execute callback
-			if tt.args.fields != nil {
-				qm.LogError(tt.args.err, tt.args.message, tt.args.fields...)
-			} else {
-				qm.LogError(tt.args.err, tt.args.message)
-			}
+}
 
-			// check log output
-			b, err := ioutil.ReadAll(&buf)
-			if err != nil {
-				t.Error(err)
-			}
-			if !strings.Contains(string(b), tt.wantLog) {
-				t.Errorf("got %s, want %s", string(b), tt.wantLog)
-			}
-		})
+func TestLog_Consumer(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	observer, out := observer.New(zap.InfoLevel)
+	logger := zap.New(observer).Sugar()
+	qm, err := New(IpfsFileQueue, cfg.RabbitMQ.URL, false, logger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out.All()[out.Len()-1].Message != "queue declared" {
+		t.Fatal("failed to recover correct message")
+	}
+	if err = qm.Close(); err != nil {
+		t.Fatal(err)
 	}
 }

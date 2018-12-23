@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:8e3fb2f520f9dc842a894c28b893c8bf5250e1bf8c7c88589d69026687b6c44c"
+  branch = "master"
+  digest = "1:f10cf72d0da5fe82c6a7f45933f41d37996c18de31f49a49bc79bb322d3602d2"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ed6bea444ae3a52e0f95c5d4f6d4f227cb091698"
-  version = "v1.0.15"
+  revision = "858050bd60710361598cd4da2d8b316677fe6374"
 
 [[projects]]
   branch = "master"
@@ -67,15 +67,15 @@
   version = "v1.5.7"
 
 [[projects]]
-  digest = "1:6895fbe5a10c5aebd1965cac6f6905dcdb21bee01e08912d3ba6a805c2485f6a"
+  branch = "master"
+  digest = "1:7b4c43b17175f212ca55e83034f9f2ea7c34602819e8a6db994d37d2b9218659"
   name = "github.com/jinzhu/gorm"
   packages = [
     ".",
     "dialects/postgres",
   ]
   pruneopts = "UT"
-  revision = "6ed508ec6a4ecb3531899a69cbc746ccf65a4166"
-  version = "v1.9.1"
+  revision = "5ad6f621e6f59672f5b5061df85b243436fde048"
 
 [[projects]]
   branch = "master"
