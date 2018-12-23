@@ -1,8 +1,8 @@
 #! /bin/bash
 
 IPFS_PATH="/ipfs"
-PRIVATE_NODE="yes"
-IPFS_DOWNLOAD_URL="https://dist.ipfs.io/go-ipfs/v0.4.18/go-ipfs_v0.4.18_linux-amd64.tar.gz"
+PRIVATE_NODE="no"
+VERSION="v0.4.18"
 export IPFS_PATH="/ipfs"
 
 cd ~ || exit
@@ -10,7 +10,7 @@ cd ~ || exit
 sudo mkdir /ipfs
 sudo chown -R rtrade:rtrade /ipfs
 echo "[INFO] Downloading IPFS"
-wget "$IPFS_DOWNLOAD_URL"
+wget "https://dist.ipfs.io/go-ipfs/${VERSION}/go-ipfs_${VERSION}_linux-amd64.tar.gz"
 tar zxvf go-ipfs*.gz
 rm -- *gz
 cd go-ipfs || exit

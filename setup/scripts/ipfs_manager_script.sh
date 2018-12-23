@@ -9,7 +9,7 @@ export IPFS_PATH=/ipfs
 case "$MODE" in
 
     daemon)
-        ipfs daemon --enable-pubsub-experiment 2>&1 | tee --append /var/log/ipfs/ipfs_daemon.log
+        ipfs daemon --enable-namesys-pubsub 2>&1 | tee --append /var/log/ipfs/ipfs_daemon.log
         ;;
 
     cluster-daemon)

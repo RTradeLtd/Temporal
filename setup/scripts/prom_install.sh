@@ -1,9 +1,10 @@
 #! /bin/bash
 
-# This is used to install our prometheus
+VERSION="2.6.0"
+
 cd ~ || exit
 echo "[INFO] Downloading prometheus"
-wget https://github.com/prometheus/prometheus/releases/download/v2.2.1/prometheus-2.2.1.linux-amd64.tar.gz
+wget "https://github.com/prometheus/prometheus/releases/download/v${VERSION}/prometheus-${VERSION}.linux-amd64.tar.gz"
 echo "[INFO] Unpacking prometheus"
 tar zxvf prometheus-*tar.gz
 rm -- *.gz
