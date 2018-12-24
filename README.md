@@ -1,4 +1,4 @@
-<h1 align="center">Temporal (Heavy WIP)</h1>
+<h1 align="center">Temporal ☄️</h1>
 
 <p align="center">
   <a href="#about-temporal"><strong>About Temporal</strong></a> · 
@@ -19,7 +19,15 @@
     <img src="https://travis-ci.com/RTradeLtd/Temporal.svg?branch=V2"
       alt="Travis Build Status" />
   </a>
-<a href="https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=shield"/></a>
+
+  <a href="https://github.com/RTradeLtd/Temporal/releases">
+    <img src="https://img.shields.io/github/release-pre/RTradeLtd/Temporal.svg?label=preview"
+      alt="Release" />
+  </a>
+
+  <a href="https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_shield" alt="FOSSA Status">
+    <img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=shield"/>
+  </a>
 
   <a href="https://goreportcard.com/report/github.com/RTradeLtd/Temporal">
     <img src="https://goreportcard.com/badge/github.com/RTradeLtd/Temporal"
@@ -40,6 +48,10 @@ Temporal is being designed with a "Plug and Play" style design such that the und
 We have a [telegram chat](https://t.me/RTradeTEMPORAL), feel free to join and ask any questions you may have that could not be answered by reading the documentation here. The documentation contained is fairly detailed, as all my notes are public, however it is fairly scattered and unorganized for now.
 
 TEMPORAL is a work in progress, and current code does not represent quality of the final product. Before a production release there will be an extremely heavy review, and updates to code quality.
+
+### Versioning Policy
+
+Information about our versioning policies are available in [VERSIONING.md](/VERSIONING.md)
 
 ### Web Interfaces
 
