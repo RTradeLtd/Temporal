@@ -13,6 +13,6 @@ func CORSMiddleware() gin.HandlerFunc {
 	// allow the DELETE method, allowed methods are now
 	// DELETE GET POST PUT HEAD
 	corsConfig.AddAllowMethods("DELETE")
-	corsConfig.AddAllowHeaders("cache-control", "Authorization")
+	corsConfig.AddAllowHeaders("cache-control", "Authorization", "Content-Type")
 	return cors.New(corsConfig)
 }

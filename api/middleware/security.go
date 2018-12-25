@@ -6,9 +6,8 @@ import (
 )
 
 // NewSecWare is used to initialize our security middleware
-func NewSecWare() gin.HandlerFunc {
+func NewSecWare(devMode bool) gin.HandlerFunc {
 	config := secure.DefaultConfig()
-	config.AllowedHosts = []string{"https://nuts.rtradetechnologies.com:6771", "https://web.temporal.cloud:6771"}
-	config.SSLRedirect = true
+	config.IsDevelopment = devMode
 	return secure.New(config)
 }

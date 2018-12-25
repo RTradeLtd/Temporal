@@ -83,11 +83,16 @@ func TestCORSMiddleware(t *testing.T) {
 }
 
 func TestSecMiddleware(t *testing.T) {
-	sec := NewSecWare()
+	sec := NewSecWare(false)
+	if reflect.TypeOf(sec).String() != "gin.HandlerFunc" {
+		t.Fatal("failed to reflect correct middleware type")
+	}
+	sec = NewSecWare(true)
 	if reflect.TypeOf(sec).String() != "gin.HandlerFunc" {
 		t.Fatal("failed to reflect correct middleware type")
 	}
 }
+
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
 	return database.OpenDBConnection(database.DBOptions{
 		User:           cfg.Database.Username,
