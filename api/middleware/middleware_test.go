@@ -17,21 +17,6 @@ const (
 	testRealm = "test-realm"
 )
 
-func TestAPIMiddleware(t *testing.T) {
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	apiMiddleware := APIRestrictionMiddleware(db)
-	if reflect.TypeOf(apiMiddleware).String() != "gin.HandlerFunc" {
-		t.Fatal("failed to reflect correct middleware type")
-	}
-}
-
 func TestJwtMiddleware(t *testing.T) {
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {

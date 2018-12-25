@@ -313,10 +313,7 @@ func (api *API) setupRoutes() error {
 
 	// set up middleware
 	ginjwt := middleware.JwtConfigGenerate(api.cfg.API.JwtKey, realName, api.dbm.DB, api.l)
-	authware := []gin.HandlerFunc{
-		ginjwt.MiddlewareFunc(),
-		middleware.APIRestrictionMiddleware(api.dbm.DB),
-	}
+	authware := []gin.HandlerFunc{ginjwt.MiddlewareFunc()}
 
 	// V2 API
 	v2 := api.r.Group("/api/v2")
