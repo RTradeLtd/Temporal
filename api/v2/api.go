@@ -19,7 +19,6 @@ import (
 	"github.com/RTradeLtd/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
-	helmet "github.com/danielkov/gin-helmet"
 
 	"github.com/RTradeLtd/config"
 	xss "github.com/dvwright/xss-mw"
@@ -301,16 +300,12 @@ func (api *API) setupRoutes() error {
 	}
 	// set up defaults
 	api.r.Use(
-		// slightly more complex xss removal
+		// slightly more complex auto-XSS removal
 		xssMdlwr.RemoveXss(),
 		// rate limiting
 		limit.MaxAllowed(connLimit),
-		// security restrictions
-		helmet.NoSniff(),
-		helmet.IENoOpen(),
-		helmet.NoCache(),
-		// basic xss removal
-		helmet.XSSFilter(),
+		// security middleware
+		middleware.NewSecWare(),
 		// cors middleware
 		middleware.CORSMiddleware(),
 		// stats middleware
