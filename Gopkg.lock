@@ -50,7 +50,8 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:f63ff159b462a0f9eead39b22c5b884f80402960c3e63c6ceb579443066d5bbc"
+  branch = "remove/api-restriction"
+  digest = "1:6cb9d9bd3dcbf42b6a4b7dca6d8765f6c9ab6e8780032995918f2cb015995e96"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -58,8 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "66696633b29dbc9d02c24bda05499a895a7aa7f9"
-  version = "v1.1.1"
+  revision = "31d0ad7d78e0d8914b669796350a3dd20cb485c5"
 
 [[projects]]
   branch = "master"
@@ -196,14 +196,6 @@
   pruneopts = "UT"
   revision = "8ab6407b697782a06568d4b7f1db25550ec2e4c6"
   version = "v0.2.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:5b32fb97f9d0eb3fc2d13aa1e75984750f255a2fece842c7206a9af1207f8ee0"
-  name = "github.com/danielkov/gin-helmet"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "1387e224435edcb84dfc4bfc81fe56fc807ca98b"
 
 [[projects]]
   branch = "master"
@@ -1615,7 +1607,6 @@
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",
-    "github.com/danielkov/gin-helmet",
     "github.com/dvwright/xss-mw",
     "github.com/gin-contrib/cors",
     "github.com/gin-contrib/secure",
