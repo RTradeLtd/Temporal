@@ -37,7 +37,7 @@ import (
 
 var (
 	xssMdlwr xss.XssMw
-	dev      = true
+	dev      = false
 )
 
 const (
@@ -305,7 +305,7 @@ func (api *API) setupRoutes() error {
 		// rate limiting
 		limit.MaxAllowed(connLimit),
 		// security middleware
-		middleware.NewSecWare(),
+		middleware.NewSecWare(dev),
 		// cors middleware
 		middleware.CORSMiddleware(),
 		// stats middleware

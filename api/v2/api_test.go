@@ -116,6 +116,7 @@ func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, u
 }
 
 func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
+	dev = true
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
