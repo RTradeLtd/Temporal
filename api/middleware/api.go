@@ -3,7 +3,6 @@ package middleware
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/RTradeLtd/database/models"
 	jwt "github.com/appleboy/gin-jwt"
@@ -11,20 +10,13 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-/*
-api middleware is used to secure access to the api
-*/
-
-var user models.User
-var nilTime time.Time
-
 // APIRestrictionMiddleware is used to restrict access to API calls
 func APIRestrictionMiddleware(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims := jwt.ExtractClaims(c)
 		username := claims["id"]
-		db.Where("user_name = ?", username).First(&user)
-		if user.CreatedAt == nilTime {
+		var user models.User
+		if check := db.Where("user_name = ?", username).First(&user); check.Error != nil {
 			c.AbortWithError(http.StatusBadRequest, errors.New("invalid user account"))
 			return
 		}
