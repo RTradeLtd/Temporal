@@ -278,6 +278,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:d36b47fc0e5a4a0b26f3d0bbbd272d2be3cbdc0a148a66ff164cdd8a67a6bf73"
+  name = "github.com/gin-contrib/secure"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "eef217bee5464470fb978b8c3774beafb3edee1c"
+
+[[projects]]
+  branch = "master"
   digest = "1:36fe9527deed01d2a317617e59304eb2c4ce9f8a24115bcc5c2e37b3aee5bae4"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
@@ -1610,6 +1618,7 @@
     "github.com/danielkov/gin-helmet",
     "github.com/dvwright/xss-mw",
     "github.com/gin-contrib/cors",
+    "github.com/gin-contrib/secure",
     "github.com/gin-gonic/gin",
     "github.com/golang/protobuf/proto",
     "github.com/grpc-ecosystem/grpc-gateway/runtime",
