@@ -6,13 +6,13 @@ import (
 )
 
 // CORSMiddleware is used to load our CORS handling logic
-// TODO: need to cleanup and restrict origins, the all origin allow
-// and credentials disable is a temporary measure
 func CORSMiddleware() gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowAllOrigins = true
-	corsConfig.AllowCredentials = false
+	// update the allowed origins (covers development website, and the production website)
+	corsConfig.AllowOrigins = []string{"https://nuts.rtradetechnologies.com:6771", "https://web.temporal.cloud:6771"}
+	// allow the DELETE method, allowed methods are now
+	// DELETE GET POST PUT HEAD
 	corsConfig.AddAllowMethods("DELETE")
-	corsConfig.AddAllowHeaders("cache-control", "Access-Control-Allow-Headers", "Authorization", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Request-Headers")
+	corsConfig.AddAllowHeaders("cache-control", "Authorization")
 	return cors.New(corsConfig)
 }
