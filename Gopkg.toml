@@ -25,9 +25,9 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/RTradeLtd/rtfs"
   branch = "master"
   
-[[constraint]]
+[[override]]
   name = "github.com/RTradeLtd/config"
-  branch = "master"
+  version = "v1.1.2"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"
