@@ -476,28 +476,8 @@ func (api *API) setupRoutes() error {
 		// ipfs cluster routes
 		cluster := ipfs.Group("/cluster")
 		{
-			// sync control routes
-			sync := cluster.Group("/sync")
-			{
-				errors := sync.Group("/errors")
-				{
-					errors.POST("/local", api.syncClusterErrorsLocally) // admin locked
-				}
-			}
-			// status routes
-			status := cluster.Group("/status")
-			{
-				// pin status route
-				pin := status.Group("/pin")
-				{
-					pin.GET("/local/:hash", api.getLocalStatusForClusterPin)   // admin locked
-					pin.GET("/global/:hash", api.getGlobalStatusForClusterPin) // admin locked
-				}
-				// local cluster status route
-				status.GET("/local", api.fetchLocalClusterStatus)
-			}
 			// general routes
-			cluster.POST("/pin/:hash", api.pinHashToCluster) // admin locked
+			cluster.POST("/pin/:hash", api.pinHashToCluster)
 		}
 	}
 
@@ -521,9 +501,8 @@ func (api *API) setupRoutes() error {
 	// database
 	database := v2.Group("/database", authware...)
 	{
-		database.GET("/uploads", api.getUploadsFromDatabase)  // admin locked
-		database.GET("/uploads/:user", api.getUploadsForUser) // partial admin locked
-		database.GET("/encrypted/uploads", api.getEncryptedUploadsForUser)
+		database.GET("/uploads", api.getUploadsForUser)
+		database.GET("/uploads/encrypted", api.getEncryptedUploadsForUser)
 	}
 
 	// frontend
@@ -536,15 +515,6 @@ func (api *API) setupRoutes() error {
 				calculate.GET("/:hash/:holdtime", api.calculatePinCost)
 				calculate.POST("/file", api.calculateFileCost)
 			}
-		}
-	}
-
-	// admin
-	admin := v2.Group("/admin", authware...)
-	{
-		mini := admin.Group("/mini")
-		{
-			mini.POST("/create/bucket", api.makeBucket)
 		}
 	}
 
