@@ -409,7 +409,6 @@ func (api *API) setupRoutes() error {
 			pin := public.Group("/pin")
 			{
 				pin.POST("/:hash", api.pinHashLocally)
-				pin.GET("/check/:hash", api.checkLocalNodeForPin)
 			}
 			// file upload routes
 			file := public.Group("/file")

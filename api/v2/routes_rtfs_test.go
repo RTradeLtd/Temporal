@@ -136,19 +136,6 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 		t.Fatal("bad api status code from  /api/v2/ipfs/public/pin")
 	}
 
-	// test pin check
-	// /api/v2/ipfs/public/check/pin
-	var boolAPIResp boolAPIResponse
-	if err := sendRequest(
-		api, "GET", "/api/v2/ipfs/public/pin/check/"+hash, 200, nil, nil, &boolAPIResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if boolAPIResp.Code != 200 {
-		t.Fatal("bad api status code from  /api/v2/ipfs/public/check/pin")
-	}
-
 	// test pubsub publish
 	// /api/v2/ipfs/pubsub/publish/topic
 	urlValues = url.Values{}
