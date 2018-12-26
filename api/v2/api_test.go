@@ -34,7 +34,7 @@ const (
 )
 
 var (
-	hash       = "QmPY5iMFjNZKxRbUZZC85wXb9CFgNSyzAy1LxwL62D8VGr"
+	hash       = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 	authHeader string
 )
 
