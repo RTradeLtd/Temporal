@@ -40,10 +40,6 @@ var (
 	dev      = false
 )
 
-const (
-	realName = "temporal-realm"
-)
-
 // API is our API service
 type API struct {
 	ipfs        rtfs.Manager
@@ -312,7 +308,7 @@ func (api *API) setupRoutes() error {
 		stats.RequestStats())
 
 	// set up middleware
-	ginjwt := middleware.JwtConfigGenerate(api.cfg.API.JwtKey, realName, api.dbm.DB, api.l)
+	ginjwt := middleware.JwtConfigGenerate(api.cfg.JWT.Key, api.cfg.JWT.Realm, api.dbm.DB, api.l)
 	authware := []gin.HandlerFunc{ginjwt.MiddlewareFunc()}
 
 	// V2 API

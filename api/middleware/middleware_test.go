@@ -13,10 +13,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-const (
-	testRealm = "test-realm"
-)
-
 func TestJwtMiddleware(t *testing.T) {
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
@@ -30,11 +26,11 @@ func TestJwtMiddleware(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	jwt := JwtConfigGenerate(cfg.API.JwtKey, testRealm, db, logger)
+	jwt := JwtConfigGenerate(cfg.JWT.Key, cfg.JWT.Realm, db, logger)
 	if reflect.TypeOf(jwt).String() != "*jwt.GinJWTMiddleware" {
 		t.Fatal("failed to reflect correct middleware type")
 	}
-	if jwt.Realm != testRealm {
+	if jwt.Realm != cfg.JWT.Realm {
 		t.Fatal("failed to set correct realm name")
 	}
 	testRecorder := httptest.NewRecorder()
