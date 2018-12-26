@@ -43,12 +43,4 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from /api/v2/ipfs/cluster/pin")
 	}
-	// manually pin since we aren't using queues
-	decoded, err := api.ipfsCluster.DecodeHashString(hash)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = api.ipfsCluster.Pin(decoded); err != nil {
-		t.Fatal(err)
-	}
 }
