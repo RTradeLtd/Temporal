@@ -4,7 +4,9 @@ package v2
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -252,21 +254,42 @@ func (api *API) Close() {
 	}
 }
 
-// TLSConfig is used to enable TLS on the API service
-type TLSConfig struct {
+// TLSFiles is used to enable TLS on the API service
+type TLSFiles struct {
 	CertFile string
 	KeyFile  string
 }
 
 // ListenAndServe spins up the API server
-func (api *API) ListenAndServe(ctx context.Context, addr string, tls *TLSConfig) error {
+func (api *API) ListenAndServe(ctx context.Context, addr string, tlsFiles *TLSFiles) error {
+	server := &http.Server{
+		Addr:    addr,
+		Handler: api.r,
+	}
 	errChan := make(chan error, 1)
 	go func() {
-		if tls != nil {
-			errChan <- api.r.RunTLS(addr, tls.CertFile, tls.KeyFile)
+		if tlsFiles != nil {
+			// configure TLS to override defaults
+			tlsConfig := &tls.Config{
+				CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+				PreferServerCipherSuites: true,
+				CipherSuites: []uint16{
+					// super duper secure ciphers
+					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+					tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+					tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+					tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+					// allow HTTP/2
+					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				},
+				// consider whether or not to fix to tls1.2
+				MinVersion: tls.VersionTLS11,
+			}
+			server.TLSConfig = tlsConfig
+			errChan <- server.ListenAndServeTLS(tlsFiles.CertFile, tlsFiles.KeyFile)
 			return
 		}
-		errChan <- api.r.Run(addr)
+		errChan <- server.ListenAndServe()
 		return
 	}()
 	for {
