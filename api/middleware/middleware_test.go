@@ -57,6 +57,18 @@ func TestJwtMiddleware(t *testing.T) {
 }
 
 func TestCORSMiddleware(t *testing.T) {
+	if len(allowedOrigins) == 0 {
+		t.Fatal("bad allowed origins configuration")
+	}
+	var validOrigins bool
+	for _, v := range allowedOrigins {
+		if v == "https://temporal.cloud" {
+			validOrigins = true
+		}
+	}
+	if !validOrigins {
+		t.Fatal("no valid origins configured")
+	}
 	cors := CORSMiddleware()
 	if reflect.TypeOf(cors).String() != "gin.HandlerFunc" {
 		t.Fatal("failed to reflect correct middleware type")
