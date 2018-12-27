@@ -277,10 +277,8 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsFiles *TLSFi
 					// super duper secure ciphers
 					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 					tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-					tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-					tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-					// allow HTTP/2
-					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+					tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+					tls.TLS_RSA_WITH_AES_256_CBC_SHA,
 				},
 				// consider whether or not to fix to tls1.2
 				MinVersion: tls.VersionTLS11,
