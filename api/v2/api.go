@@ -271,14 +271,16 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsFiles *TLSFi
 		if tlsFiles != nil {
 			// configure TLS to override defaults
 			tlsConfig := &tls.Config{
-				CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-				PreferServerCipherSuites: true,
+				CurvePreferences: []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+				// disabling this allows for HTTP/2 connectivity
+				// PreferServerCipherSuites: true,
 				CipherSuites: []uint16{
 					// super duper secure ciphers
 					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 					tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
 					tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
 					tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 				},
 				// consider whether or not to fix to tls1.2
 				MinVersion: tls.VersionTLS11,
