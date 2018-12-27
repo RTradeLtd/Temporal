@@ -85,7 +85,7 @@ var commands = map[string]cmd.Cmd{
 				err = service.ListenAndServe(ctx, addr, nil)
 			} else {
 				fmt.Println("Starting API service with TLS...")
-				err = service.ListenAndServe(ctx, addr, &v2.TLSConfig{
+				err = service.ListenAndServe(ctx, addr, &v2.TLSFiles{
 					CertFile: args["certFilePath"],
 					KeyFile:  args["keyFilePath"],
 				})
