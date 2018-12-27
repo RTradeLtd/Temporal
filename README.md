@@ -97,6 +97,8 @@ Channels:
 
 Our datacenter and cloud environments are all located within Canada, which has exceptional data-privacy laws. We comply with all laws and regulations surrounding data storage regulation within Canada. Should you feel like there is any discrepancy here, please contact us at admin@rtradetechnologies.com and we will be happy to resolve your concerns, and if there's anything we need to change, we will do so.
 
+One of the big concerns with IPFS, and even cloud data storage in general is encryption. As IPFS doesn't yet support native data encryption, we allow users to encrypt their data using AES256-CFB. While this is better than storing data without encryption on IPFS, there are still some concerns with encrypted data storage on IPFS. Namely, if anyone is ever able to discover the content hash and pin the content, it will always be available to them. This is of big concern when using encryption algorithms as it is theoretically possible for someone to persist that data within their own storage system until the desired ciphers are broken, and they can crack the encryption algorithm. If this is something that is of concern to you, and even better solution is to encrypt your data, and store in on private networks. We have plans to eventually migrate to AES256-GCM which is more secure than AES256-CFB.
+
 ## Usage and Features
 
 ### Spinning up a Node
@@ -123,6 +125,7 @@ Our API documentation is through [postman](https://documenter.getpostman.com/vie
 * Public+Private IPNS usage
 * Private IPFS Network Management
 * Modular design allowing for ease of integration with multiple storage protocols
+* Optional data encryption before your content leaves server memory, and touches any distributed storage network.
 * Redundant architecture designed for running two of every service, allowing for service availability despite catastrophic hardware failures.
 
 ### Supported Technologies
