@@ -272,17 +272,18 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsFiles *TLSFi
 			// configure TLS to override defaults
 			tlsConfig := &tls.Config{
 				CurvePreferences: []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-				// disabling this allows us to support http/2 with the listed cipher suite
-				// otherwise golang will throw an error warning about connectivity issues
 				//PreferServerCipherSuites: true,
 				CipherSuites: []uint16{
+					// http/2 mandated supported cipher
+					// unforunately this is a less secure cipher
+					// but specifying it first is the only way to accept
+					// http/2 connections without go throwing an error
+					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 					// super duper secure ciphers
 					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 					tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
 					tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
 					tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-					// http/2 mandated supported cipher
-					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 				},
 				// consider whether or not to fix to tls1.2
 				MinVersion: tls.VersionTLS11,
