@@ -322,7 +322,8 @@ func (api *API) setupRoutes() error {
 	}
 	// set up defaults
 	api.r.Use(
-		// slightly more complex auto-XSS removal
+		// allows for automatic xss removal
+		// greater than what can be configured with HTTP Headers
 		xssMdlwr.RemoveXss(),
 		// rate limiting
 		limit.MaxAllowed(connLimit),
