@@ -5,11 +5,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	allowedOrigins = []string{"https://temporal.cloud"}
+)
+
 // CORSMiddleware is used to load our CORS handling logic
 func CORSMiddleware() gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
-	// update the allowed origins (covers development website, and the production website)
-	corsConfig.AllowOrigins = []string{"https://nuts.rtradetechnologies.com:6771", "https://web.temporal.cloud:6771"}
+	// configure allowed origins
+	corsConfig.AllowOrigins = allowedOrigins
 	// allow the DELETE method, allowed methods are now
 	// DELETE GET POST PUT HEAD
 	corsConfig.AddAllowMethods("DELETE")
