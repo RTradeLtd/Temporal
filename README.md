@@ -57,7 +57,7 @@ Information about our versioning policies are available in [VERSIONING.md](/VERS
 
 For those less interested in API usage, we have a web interface which can be used with two methods of access:
 
-* [Clearnet, Recommended](https://temporal.cloud)
+* [Clearnet](https://temporal.cloud) (recommended)
 * [I2P](http://riqdsr6ijsujw4tagdufhbv7drlghe2cljy2xow3irvy7grq34fq.b32.i2p/)
 
 Please note that support for the I2P Interface is very experimental at the moment and does not offer HTTPS, as well as very infrequent updates.There are no stability, or even functionality guarantees for the I2P interface.
