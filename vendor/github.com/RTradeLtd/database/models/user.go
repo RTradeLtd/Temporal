@@ -16,17 +16,17 @@ type User struct {
 	gorm.Model
 	UserName               string  `gorm:"type:varchar(255);unique"`
 	EmailAddress           string  `gorm:"type:varchar(255);unique"`
-	EnterpriseEnabled      bool    `gorm:"type:boolean"`
 	AccountEnabled         bool    `gorm:"type:boolean"`
-	APIAccess              bool    `gorm:"type:boolean"`
 	EmailEnabled           bool    `gorm:"type:boolean"`
 	EmailVerificationToken string  `gorm:"type:varchar(255)"`
 	AdminAccess            bool    `gorm:"type:boolean"`
 	HashedPassword         string  `gorm:"type:varchar(255)"`
 	Credits                float64 `gorm:"type:float;default:0"`
-	// IPFSKeyNames is an array of IPFS keys this user has created
-	IPFSKeyNames     pq.StringArray `gorm:"type:text[];column:ipfs_key_names"`
-	IPFSKeyIDs       pq.StringArray `gorm:"type:text[];column:ipfs_key_ids"`
+	// IPFSKeyNames is an array of IPFS key name this user has created
+	IPFSKeyNames pq.StringArray `gorm:"type:text[];column:ipfs_key_names"`
+	// IPFSKeyIDs is an array of public key hashes for IPFS keys this user has created
+	IPFSKeyIDs pq.StringArray `gorm:"type:text[];column:ipfs_key_ids"`
+	// IPFSNetworkNames is an array of private IPFS networks this user has access to
 	IPFSNetworkNames pq.StringArray `gorm:"type:text[];column:ipfs_network_names"`
 }
 
@@ -241,7 +241,7 @@ func (um *UserManager) FindByEmail(email string) (*User, error) {
 }
 
 // NewUserAccount is used to create a new user account
-func (um *UserManager) NewUserAccount(username, password, email string, enterpriseEnabled bool) (*User, error) {
+func (um *UserManager) NewUserAccount(username, password, email string) (*User, error) {
 	user, err := um.FindByEmail(email)
 	if err == nil {
 		return nil, errors.New("email address already taken")
@@ -255,14 +255,12 @@ func (um *UserManager) NewUserAccount(username, password, email string, enterpri
 		return nil, err
 	}
 	user = &User{
-		UserName:          username,
-		EnterpriseEnabled: enterpriseEnabled,
-		HashedPassword:    hex.EncodeToString(hashedPass),
-		EmailAddress:      email,
-		AccountEnabled:    true,
-		APIAccess:         true,
-		AdminAccess:       false,
-		Credits:           99999999, // this is temporary and will need to be removed before production
+		UserName:       username,
+		HashedPassword: hex.EncodeToString(hashedPass),
+		EmailAddress:   email,
+		AccountEnabled: true,
+		AdminAccess:    false,
+		Credits:        99999999, // this is temporary and will need to be removed before production
 	}
 	if check := um.DB.Create(user); check.Error != nil {
 		return nil, check.Error

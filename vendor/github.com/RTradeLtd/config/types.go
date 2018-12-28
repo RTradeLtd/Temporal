@@ -12,7 +12,6 @@ type TemporalConfig struct {
 	Sendgrid     `json:"sendgrid,omitempty"`
 	Ethereum     `json:"ethereum,omitempty"`
 	Wallets      `json:"wallets,omitempty"`
-	TNS          `json:"tns,omitempty"`
 	APIKeys      `json:"api_keys,omitempty"`
 	Endpoints    `json:"endpoints,omitempty"`
 	Orchestrator `json:"orchestrator,omitempty"`
@@ -27,17 +26,20 @@ type API struct {
 			KeyPath  string `json:"key_path"`
 		}
 		ListenAddress string `json:"listen_address"`
+		// defines parameters for prometheus metric collector
+		Prometheus struct {
+			IP   string `json:"ip"`
+			Port string `json:"port"`
+		}
 		// define the maximum number of people allowed to connect to the API
 		Limit string `json:"limit"`
 	} `json:"connection"`
-	Sessions struct {
-		AuthKey       string `json:"auth_key"`
-		EncryptionKey string `json:"encryption_key"`
-	} `json:"sessions"`
-	JwtKey               string  `json:"jwt_key"`
+	JWT struct {
+		Key   string `json:"key"`
+		Realm string `json:"realm"`
+	} `json:"jwt"`
 	SizeLimitInGigaBytes string  `json:"size_limit_in_giga_bytes"`
 	Payment              Payment `json:"payment"`
-	LogFile              string  `json:"logfile"`
 }
 
 // Payment configures the GRPC Payment Server API
@@ -134,14 +136,6 @@ type Wallets struct {
 	DASH string `json:"dash"`
 	BTC  string `json:"btc"`
 	LTC  string `json:"ltc"`
-}
-
-// TNS configures our TNS manager
-type TNS struct {
-	ZoneName           string `json:"zone_name"`
-	ZoneManagerKeyName string `json:"zone_manager_key_name"`
-	ZoneKeyName        string `json:"zone_key_name"`
-	LogFile            string `json:"log_file"`
 }
 
 // APIKeys are the various API keys we use

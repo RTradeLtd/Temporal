@@ -4,7 +4,9 @@ package v2
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -19,7 +21,6 @@ import (
 	"github.com/RTradeLtd/rtfs"
 
 	limit "github.com/aviddiviner/gin-limit"
-	helmet "github.com/danielkov/gin-helmet"
 
 	"github.com/RTradeLtd/config"
 	xss "github.com/dvwright/xss-mw"
@@ -38,11 +39,7 @@ import (
 
 var (
 	xssMdlwr xss.XssMw
-	dev      = true
-)
-
-const (
-	realName = "temporal-realm"
+	dev      = false
 )
 
 // API is our API service
@@ -56,7 +53,6 @@ type API struct {
 	um          *models.UserManager
 	im          *models.IpnsManager
 	pm          *models.PaymentManager
-	dm          *models.DropManager
 	ue          *models.EncryptedUploadManager
 	upm         *models.UploadManager
 	zm          *models.ZoneManager
@@ -224,7 +220,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		um:          models.NewUserManager(dbm.DB),
 		im:          models.NewIPNSManager(dbm.DB),
 		pm:          models.NewPaymentManager(dbm.DB),
-		dm:          models.NewDropManager(dbm.DB),
 		ue:          models.NewEncryptedUploadManager(dbm.DB),
 		upm:         models.NewUploadManager(dbm.DB),
 		lens:        lens,
@@ -281,14 +276,39 @@ type TLSConfig struct {
 }
 
 // ListenAndServe spins up the API server
-func (api *API) ListenAndServe(ctx context.Context, addr string, tls *TLSConfig) error {
+func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSConfig) error {
+	server := &http.Server{
+		Addr:    addr,
+		Handler: api.r,
+	}
 	errChan := make(chan error, 1)
 	go func() {
-		if tls != nil {
-			errChan <- api.r.RunTLS(addr, tls.CertFile, tls.KeyFile)
+		if tlsConfig != nil {
+			// configure TLS to override defaults
+			tlsCfg := &tls.Config{
+				CurvePreferences: []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+				//PreferServerCipherSuites: true,
+				CipherSuites: []uint16{
+					// http/2 mandated supported cipher
+					// unforunately this is a less secure cipher
+					// but specifying it first is the only way to accept
+					// http/2 connections without go throwing an error
+					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+					// super duper secure ciphers
+					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+					tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+					tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+					tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+				},
+				// consider whether or not to fix to tls1.2
+				MinVersion: tls.VersionTLS11,
+			}
+			// set tls configuration
+			server.TLSConfig = tlsCfg
+			errChan <- server.ListenAndServeTLS(tlsConfig.CertFile, tlsConfig.KeyFile)
 			return
 		}
-		errChan <- api.r.Run(addr)
+		errChan <- server.ListenAndServe()
 		return
 	}()
 	for {
@@ -318,27 +338,21 @@ func (api *API) setupRoutes() error {
 	}
 	// set up defaults
 	api.r.Use(
-		// slightly more complex xss removal
+		// allows for automatic xss removal
+		// greater than what can be configured with HTTP Headers
 		xssMdlwr.RemoveXss(),
 		// rate limiting
 		limit.MaxAllowed(connLimit),
-		// security restrictions
-		helmet.NoSniff(),
-		helmet.IENoOpen(),
-		helmet.NoCache(),
-		// basic xss removal
-		helmet.XSSFilter(),
+		// security middleware
+		middleware.NewSecWare(dev),
 		// cors middleware
-		middleware.CORSMiddleware(),
+		middleware.CORSMiddleware(dev),
 		// stats middleware
 		stats.RequestStats())
 
 	// set up middleware
-	ginjwt := middleware.JwtConfigGenerate(api.cfg.API.JwtKey, realName, api.dbm.DB, api.l)
-	authware := []gin.HandlerFunc{
-		ginjwt.MiddlewareFunc(),
-		middleware.APIRestrictionMiddleware(api.dbm.DB),
-	}
+	ginjwt := middleware.JwtConfigGenerate(api.cfg.JWT.Key, api.cfg.JWT.Realm, api.dbm.DB, api.l)
+	authware := []gin.HandlerFunc{ginjwt.MiddlewareFunc()}
 
 	// V2 API
 	v2 := api.r.Group("/api/v2")
@@ -438,7 +452,6 @@ func (api *API) setupRoutes() error {
 			pin := public.Group("/pin")
 			{
 				pin.POST("/:hash", api.pinHashLocally)
-				pin.GET("/check/:hash", api.checkLocalNodeForPin)
 			}
 			// file upload routes
 			file := public.Group("/file")
@@ -505,28 +518,8 @@ func (api *API) setupRoutes() error {
 		// ipfs cluster routes
 		cluster := ipfs.Group("/cluster")
 		{
-			// sync control routes
-			sync := cluster.Group("/sync")
-			{
-				errors := sync.Group("/errors")
-				{
-					errors.POST("/local", api.syncClusterErrorsLocally) // admin locked
-				}
-			}
-			// status routes
-			status := cluster.Group("/status")
-			{
-				// pin status route
-				pin := status.Group("/pin")
-				{
-					pin.GET("/local/:hash", api.getLocalStatusForClusterPin)   // admin locked
-					pin.GET("/global/:hash", api.getGlobalStatusForClusterPin) // admin locked
-				}
-				// local cluster status route
-				status.GET("/local", api.fetchLocalClusterStatus)
-			}
 			// general routes
-			cluster.POST("/pin/:hash", api.pinHashToCluster) // admin locked
+			cluster.POST("/pin/:hash", api.pinHashToCluster)
 		}
 	}
 
@@ -550,9 +543,8 @@ func (api *API) setupRoutes() error {
 	// database
 	database := v2.Group("/database", authware...)
 	{
-		database.GET("/uploads", api.getUploadsFromDatabase)  // admin locked
-		database.GET("/uploads/:user", api.getUploadsForUser) // partial admin locked
-		database.GET("/encrypted/uploads", api.getEncryptedUploadsForUser)
+		database.GET("/uploads", api.getUploadsForUser)
+		database.GET("/uploads/encrypted", api.getEncryptedUploadsForUser)
 	}
 
 	// frontend
@@ -565,15 +557,6 @@ func (api *API) setupRoutes() error {
 				calculate.GET("/:hash/:holdtime", api.calculatePinCost)
 				calculate.POST("/file", api.calculateFileCost)
 			}
-		}
-	}
-
-	// admin
-	admin := v2.Group("/admin", authware...)
-	{
-		mini := admin.Group("/mini")
-		{
-			mini.POST("/create/bucket", api.makeBucket)
 		}
 	}
 

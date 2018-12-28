@@ -13,25 +13,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-const (
-	testRealm = "test-realm"
-)
-
-func TestAPIMiddleware(t *testing.T) {
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	apiMiddleware := APIRestrictionMiddleware(db)
-	if reflect.TypeOf(apiMiddleware).String() != "gin.HandlerFunc" {
-		t.Fatal("failed to reflect correct middleware type")
-	}
-}
-
 func TestJwtMiddleware(t *testing.T) {
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
@@ -45,11 +26,11 @@ func TestJwtMiddleware(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	jwt := JwtConfigGenerate(cfg.API.JwtKey, testRealm, db, logger)
+	jwt := JwtConfigGenerate(cfg.JWT.Key, cfg.JWT.Realm, db, logger)
 	if reflect.TypeOf(jwt).String() != "*jwt.GinJWTMiddleware" {
 		t.Fatal("failed to reflect correct middleware type")
 	}
-	if jwt.Realm != testRealm {
+	if jwt.Realm != cfg.JWT.Realm {
 		t.Fatal("failed to set correct realm name")
 	}
 	testRecorder := httptest.NewRecorder()
@@ -76,8 +57,35 @@ func TestJwtMiddleware(t *testing.T) {
 }
 
 func TestCORSMiddleware(t *testing.T) {
-	cors := CORSMiddleware()
+	if len(allowedOrigins) == 0 {
+		t.Fatal("bad allowed origins configuration")
+	}
+	var validOrigins bool
+	for _, v := range allowedOrigins {
+		if v == "https://temporal.cloud" {
+			validOrigins = true
+		}
+	}
+	if !validOrigins {
+		t.Fatal("no valid origins configured")
+	}
+	cors := CORSMiddleware(true)
 	if reflect.TypeOf(cors).String() != "gin.HandlerFunc" {
+		t.Fatal("failed to reflect correct middleware type")
+	}
+	cors = CORSMiddleware(false)
+	if reflect.TypeOf(cors).String() != "gin.HandlerFunc" {
+		t.Fatal("failed to reflect correct middleware type")
+	}
+}
+
+func TestSecMiddleware(t *testing.T) {
+	sec := NewSecWare(false)
+	if reflect.TypeOf(sec).String() != "gin.HandlerFunc" {
+		t.Fatal("failed to reflect correct middleware type")
+	}
+	sec = NewSecWare(true)
+	if reflect.TypeOf(sec).String() != "gin.HandlerFunc" {
 		t.Fatal("failed to reflect correct middleware type")
 	}
 }

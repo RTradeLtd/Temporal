@@ -102,7 +102,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	}
 	forms["password"] = html.UnescapeString(forms["password"])
 	api.l.Info("user account registration detected")
-	userModel, err := api.um.NewUserAccount(forms["username"], forms["password"], forms["email_address"], false)
+	userModel, err := api.um.NewUserAccount(forms["username"], forms["password"], forms["email_address"])
 	if err != nil {
 		switch err.Error() {
 		case eh.DuplicateEmailError:
