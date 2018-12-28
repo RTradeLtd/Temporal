@@ -168,50 +168,79 @@ func Test_API_Setup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// authenticate with the the api to get our token for testing
-	// /api/v2/auth/login
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}"))
-	req.Header.Add("Content-Type", "application/json")
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/auth/login")
+	type args struct {
+		method   string
+		call     string
+		username string
+		password string
+		email    string
 	}
-	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var loginResp loginResponse
-	if err = json.Unmarshal(bodyBytes, &loginResp); err != nil {
-		t.Fatal(err)
-	}
-	// format authorization header
-	authHeader = "Bearer " + loginResp.Token
 
-	// register user account
-	// /api/v2/auth/register
-	var interfaceAPIResp interfaceAPIResponse
-	urlValues := url.Values{}
-	urlValues.Add("username", "testuser2")
-	urlValues.Add("password", "password123!@#$%^&&**(!@#!")
-	urlValues.Add("email_address", "testuser2+test@example.org")
-	if err := sendRequest(
-		api, "POST", "/api/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
-	); err != nil {
-		t.Fatal(err)
+	// register calls
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"Register-testuser2", args{"POST", "/api/v2/auth/register", "testuser2", "password123!@#$%^&&**(!@#!", "testuser@example.org"}},
 	}
-	// validate the response code
-	if interfaceAPIResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/auth/register")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// register user account
+			// /api/v2/auth/register
+			var interfaceAPIResp interfaceAPIResponse
+			urlValues := url.Values{}
+			urlValues.Add("username", tt.args.username)
+			urlValues.Add("password", tt.args.password)
+			urlValues.Add("email_address", tt.args.email)
+			if err := sendRequest(
+				api, "POST", "/api/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
+			); err != nil {
+				t.Fatal(err)
+			}
+			if testRecorder.Code != 200 {
+				t.Fatalf("bad http status code from %s", tt.args.call)
+			}
+			// validate the response code
+			if interfaceAPIResp.Code != 200 {
+				t.Fatalf("bad api status code from %s", tt.args.call)
+			}
+		})
 	}
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/auth/login", strings.NewReader("{\n  \"username\": \"testuser2\",\n  \"password\": \"password123!@#$%^&&**(!@#!\"\n}"))
-	req.Header.Add("Content-Type", "application/json")
-	api.r.ServeHTTP(testRecorder, req)
-	// validate the http status code
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/auth/login")
+
+	// login calls
+	tests = []struct {
+		name string
+		args args
+	}{
+		{"Login-testuser2", args{"POST", "/api/v2/auth/login", "testuser2", "password123!@#$%^&&**(!@#!", ""}},
+		{"Login-testuser", args{"POST", "/api/v2/auth/login", "testuser", "admin", ""}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testRecorder = httptest.NewRecorder()
+			req := httptest.NewRequest(
+				tt.args.method,
+				tt.args.call,
+				strings.NewReader(fmt.Sprintf("{\n  \"username\": \"%s\",\n  \"password\": \"%s\"\n}", tt.args.username, tt.args.password)),
+			)
+			api.r.ServeHTTP(testRecorder, req)
+			if testRecorder.Code != 200 {
+				t.Fatalf("bad http status code from %s", tt.args.call)
+			}
+			bodBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// if we're logging in with the account used for testing the v2 api, update our authorization header
+			if tt.args.username == "testuser" {
+				var loginResp loginResponse
+				if err = json.Unmarshal(bodBytes, &loginResp); err != nil {
+					t.Fatal(err)
+				}
+				authHeader = "Bearer " + loginResp.Token
+			}
+		})
 	}
 }
 
