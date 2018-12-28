@@ -44,10 +44,17 @@ Temporal is an enterprise-grade storage solution featuring an easy to consume AP
 
 Temporal's API comes in two flavours, hosted or on-site. Should you not have the resources, or interest in maintaining your own infrastructure you can take advantage of our hosted API running in our very own datacenter. Those which have the interest, and/or resources may deploy Temporal within your own environments. For those that deploy Temporal themselves, we offer paid for support, installation, tutorials, and product usage information sessions allowing organizations to leverage all the capabilities that Temporal offers.
 
-Temporal is modular such that the underlying protocols it connects to, can easily be upgraded, and replaced with without having to change the overall architecture. Simply write the interface for whatever protocol you're interested in, and a subsequent RabbitMQ consumer, and you're good to go.
-
+Temporal is modular such that the underlying protocols it connects to, can easily be upgraded, and replaced with without having to change the overall architecture. Simply write the interface for whatever protocol you're interested in, and a subsequent RabbitMQ consumer, and you're good to go. For a guideline on how this can be accomplished see [ProtocolExpansionGuidelines.md](/ProtocolExpansionGuidelines.md)
 
 We have a [telegram chat](https://t.me/RTradeTEMPORAL), feel free to join and ask any questions you may have that could not be answered by reading the documentation here. We have an in-depth [wiki](https://rtradetechnologies.atlassian.net/wiki/spaces/TEM/overview) which contains additional information such as architectural diagrams, design decisions, and more.
+
+### Goals
+
+* Provide an easy to use interface into distributed and decentralized storage technologies.
+* Target developers via the API, and non-developers via the web interface.
+* Educate about decentralized and distributed storage technologies
+* Introduce these new storage technologies to audiences who may have otherwise not heard of them
+* Help organizations make informed decisions about whether or not integrating distributed and decentralized storage technologies is the right choice for your business needs.
 
 ## Versioning Policy
 
@@ -61,14 +68,6 @@ For those less interested in API usage, we have a web interface which can be use
 * [I2P](http://riqdsr6ijsujw4tagdufhbv7drlghe2cljy2xow3irvy7grq34fq.b32.i2p/)
 
 Please note that support for the I2P Interface is very experimental at the moment and does not offer HTTPS, as well as very infrequent updates.There are no stability, or even functionality guarantees for the I2P interface.
-
-## Goals
-
-* Provide an easy to use interface into distributed and decentralized storage technologies.
-* Target developers via the API, and non-developers via the web interface.
-* Educate about decentralized and distributed storage technologies
-* Introduce these new storage technologies to audiences who may have otherwise not heard of them
-* Help organizations make informed decisions about whether or not integrating distributed and decentralized storage technologies is the right choice for your business needs.
 
 ## How We're Different
 
