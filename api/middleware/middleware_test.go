@@ -69,7 +69,11 @@ func TestCORSMiddleware(t *testing.T) {
 	if !validOrigins {
 		t.Fatal("no valid origins configured")
 	}
-	cors := CORSMiddleware()
+	cors := CORSMiddleware(true)
+	if reflect.TypeOf(cors).String() != "gin.HandlerFunc" {
+		t.Fatal("failed to reflect correct middleware type")
+	}
+	cors = CORSMiddleware(false)
 	if reflect.TypeOf(cors).String() != "gin.HandlerFunc" {
 		t.Fatal("failed to reflect correct middleware type")
 	}

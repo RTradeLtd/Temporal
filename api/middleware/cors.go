@@ -10,10 +10,15 @@ var (
 )
 
 // CORSMiddleware is used to load our CORS handling logic
-func CORSMiddleware() gin.HandlerFunc {
+func CORSMiddleware(devMode bool) gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
-	// configure allowed origins
-	corsConfig.AllowOrigins = allowedOrigins
+	if devMode {
+		corsConfig.AllowAllOrigins = true
+		corsConfig.AllowCredentials = false
+	} else {
+		// configure allowed origins
+		corsConfig.AllowOrigins = allowedOrigins
+	}
 	// allow the DELETE method, allowed methods are now
 	// DELETE GET POST PUT HEAD
 	corsConfig.AddAllowMethods("DELETE")
