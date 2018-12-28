@@ -50,8 +50,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "remove/api-restriction"
-  digest = "1:6cb9d9bd3dcbf42b6a4b7dca6d8765f6c9ab6e8780032995918f2cb015995e96"
+  digest = "1:d027a3c8d4e346b4115eb6a694e69d6dbebe228511a494506aefe58f6674a2c2"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +58,8 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "31d0ad7d78e0d8914b669796350a3dd20cb485c5"
+  revision = "717f2aebaac95e13d855b836958b5788902e8cfe"
+  version = "v1.1.2"
 
 [[projects]]
   branch = "master"

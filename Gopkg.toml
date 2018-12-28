@@ -19,7 +19,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/database"
-  branch = "remove/api-restriction"
+  version = "v1.1.2"
 
 [[override]]
   name = "github.com/RTradeLtd/rtfs"

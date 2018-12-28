@@ -53,7 +53,6 @@ type API struct {
 	um          *models.UserManager
 	im          *models.IpnsManager
 	pm          *models.PaymentManager
-	dm          *models.DropManager
 	ue          *models.EncryptedUploadManager
 	upm         *models.UploadManager
 	zm          *models.ZoneManager
@@ -221,7 +220,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		um:          models.NewUserManager(dbm.DB),
 		im:          models.NewIPNSManager(dbm.DB),
 		pm:          models.NewPaymentManager(dbm.DB),
-		dm:          models.NewDropManager(dbm.DB),
 		ue:          models.NewEncryptedUploadManager(dbm.DB),
 		upm:         models.NewUploadManager(dbm.DB),
 		lens:        lens,
