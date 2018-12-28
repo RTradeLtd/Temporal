@@ -530,7 +530,7 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 			defer cancel()
 			defer api.Close()
 			if tt.args.certFilePath != "" {
-				err = api.ListenAndServe(ctx, "127.0.0.1:6700", &TLSFiles{tt.args.certFilePath, tt.args.keyFilePath})
+				err = api.ListenAndServe(ctx, "127.0.0.1:6700", &TLSConfig{tt.args.certFilePath, tt.args.keyFilePath})
 			} else {
 				err = api.ListenAndServe(ctx, "127.0.0.1:6701", nil)
 			}

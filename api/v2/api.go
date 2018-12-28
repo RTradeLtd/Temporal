@@ -254,23 +254,23 @@ func (api *API) Close() {
 	}
 }
 
-// TLSFiles is used to enable TLS on the API service
-type TLSFiles struct {
+// TLSConfig is used to enable TLS on the API service
+type TLSConfig struct {
 	CertFile string
 	KeyFile  string
 }
 
 // ListenAndServe spins up the API server
-func (api *API) ListenAndServe(ctx context.Context, addr string, tlsFiles *TLSFiles) error {
+func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSConfig) error {
 	server := &http.Server{
 		Addr:    addr,
 		Handler: api.r,
 	}
 	errChan := make(chan error, 1)
 	go func() {
-		if tlsFiles != nil {
+		if tlsConfig != nil {
 			// configure TLS to override defaults
-			tlsConfig := &tls.Config{
+			tlsCfg := &tls.Config{
 				CurvePreferences: []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
 				//PreferServerCipherSuites: true,
 				CipherSuites: []uint16{
@@ -289,8 +289,8 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsFiles *TLSFi
 				MinVersion: tls.VersionTLS11,
 			}
 			// set tls configuration
-			server.TLSConfig = tlsConfig
-			errChan <- server.ListenAndServeTLS(tlsFiles.CertFile, tlsFiles.KeyFile)
+			server.TLSConfig = tlsCfg
+			errChan <- server.ListenAndServeTLS(tlsConfig.CertFile, tlsConfig.KeyFile)
 			return
 		}
 		errChan <- server.ListenAndServe()
