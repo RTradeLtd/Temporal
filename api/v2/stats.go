@@ -18,5 +18,8 @@ func (api *API) getStats(c *gin.Context) {
 		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
 		return
 	}
-	c.JSON(http.StatusOK, stats.Report())
+	c.JSON(http.StatusOK, gin.H{
+		"version":  api.version,
+		"response": stats.Report(),
+	})
 }

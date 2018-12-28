@@ -30,7 +30,8 @@ import (
 
 var (
 	// Version denotes the tag of this build
-	Version      string
+	Version string
+
 	closeMessage = "press CTRL+C to stop processing and close queue resources"
 	certFile     = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
 	keyFile      = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
@@ -61,11 +62,11 @@ var commands = map[string]cmd.Cmd{
 				fmt.Println("failed to start logger ", err)
 				os.Exit(1)
 			}
-			service, err := v2.Initialize(&cfg, logger, os.Getenv("DEBUG") == "true", lens, orch, signer)
+			logger = logger.With("version", args["version"])
+			service, err := v2.Initialize(&cfg, args["version"], os.Getenv("DEBUG") == "true", logger, lens, orch, signer)
 			if err != nil {
 				logger.Fatal(err)
 			}
-			//defer service.Close()
 
 			port := os.Getenv("API_PORT")
 			if port == "" {
@@ -514,6 +515,10 @@ var commands = map[string]cmd.Cmd{
 }
 
 func main() {
+	if Version == "" {
+		Version = "latest"
+	}
+
 	// create app
 	temporal := cmd.New(commands, cmd.Config{
 		Name:     "Temporal",
@@ -564,6 +569,7 @@ func main() {
 		"dbPass":        tCfg.Database.Password,
 		"dbURL":         tCfg.Database.URL,
 		"dbUser":        tCfg.Database.Username,
+		"version":       Version,
 	}
 	switch os.Args[1] {
 	case "user":

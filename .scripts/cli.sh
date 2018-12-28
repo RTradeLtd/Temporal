@@ -4,7 +4,7 @@
 go get -u github.com/mitchellh/gox
 
 RELEASE=$(git describe --tags)
-TARGETS="linux/amd64 linux/386 linux/arm darwin/amd64 windows/amd64"
+TARGETS="linux/amd64 darwin/amd64 windows/amd64"
 
 mkdir -p release
 
