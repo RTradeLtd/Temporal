@@ -92,6 +92,11 @@ Channels:
 * [Steemit](https://steemit.com/@rtrade)
 * [LinkedIn](https://www.linkedin.com/company/rtrade-technologies/)
 
+Selected Content:
+
+* [Podcast with postables discussing IPFS, and Temporal](https://www.youtube.com/watch?v=TDvgcdMxmzo&feature=youtu.be)
+* [ChainLink and RTrade partnership announcement](https://steemit.com/cryptocurrency/@rtrade/rtrade-technologies-to-use-chainlink-to-provide-oracles-for-high-quality-off-chain-data-storage)
+
 ## Data Privacy
 
 Our datacenter and cloud environments are all located within Canada, which has exceptional data-privacy laws. We comply with all laws and regulations surrounding data storage regulation within Canada. Should you feel like there is any discrepancy here, please contact us at admin@rtradetechnologies.com and we will be happy to resolve your concerns, and if there's anything we need to change, we will do so.
