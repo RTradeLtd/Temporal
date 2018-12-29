@@ -316,7 +316,7 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 		case err := <-errChan:
 			return err
 		case <-ctx.Done():
-			return nil
+			return server.Close()
 		}
 	}
 }
