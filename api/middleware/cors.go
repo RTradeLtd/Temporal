@@ -5,14 +5,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	allowedOrigins = []string{"https://temporal.cloud"}
+)
+
 // CORSMiddleware is used to load our CORS handling logic
-// TODO: need to cleanup and restrict origins, the all origin allow
-// and credentials disable is a temporary measure
-func CORSMiddleware() gin.HandlerFunc {
+func CORSMiddleware(devMode bool) gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowAllOrigins = true
-	corsConfig.AllowCredentials = false
+	if devMode {
+		corsConfig.AllowAllOrigins = true
+		corsConfig.AllowCredentials = false
+	} else {
+		// configure allowed origins
+		corsConfig.AllowOrigins = allowedOrigins
+	}
+	// allow the DELETE method, allowed methods are now
+	// DELETE GET POST PUT HEAD
 	corsConfig.AddAllowMethods("DELETE")
-	corsConfig.AddAllowHeaders("cache-control", "Access-Control-Allow-Headers", "Authorization", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Request-Headers")
+	corsConfig.AddAllowHeaders("cache-control", "Authorization", "Content-Type")
 	return cors.New(corsConfig)
 }

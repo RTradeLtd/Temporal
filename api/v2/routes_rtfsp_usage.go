@@ -354,10 +354,6 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
-		return
-	}
 	networkName := c.Param("networkName")
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(err, eh.PrivateNetworkAccessError)(c)

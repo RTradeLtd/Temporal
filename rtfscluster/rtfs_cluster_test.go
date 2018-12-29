@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	testPIN = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
+	testPIN = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 	// ip address of our first ipfs and ipfs cluster node as per our makefile
 	nodeOneAPIAddr = "192.168.1.101"
 	// ip address of our second ipfs and ipfs cluster node as per our makefile
@@ -64,23 +64,6 @@ func TestDecodeHashString(t *testing.T) {
 		})
 	}
 }
-func TestParseLocalStatusAllAndSync(t *testing.T) {
-	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
-	if err != nil {
-		t.Fatal(err)
-	}
-	syncedCids, err := cm.ParseLocalStatusAllAndSync()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(syncedCids) > 0 {
-		fmt.Println("uh oh cluster errors detected")
-		fmt.Println("this isn't indicative of a test failure")
-		fmt.Println("but that the cluster is experiencing some issues")
-	} else {
-		fmt.Println("yay no cluster errors detected")
-	}
-}
 
 func TestClusterPin(t *testing.T) {
 	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
@@ -108,6 +91,24 @@ func TestClusterPin(t *testing.T) {
 				t.Fatalf("Pin() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestParseLocalStatusAllAndSync(t *testing.T) {
+	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
+	if err != nil {
+		t.Fatal(err)
+	}
+	syncedCids, err := cm.ParseLocalStatusAllAndSync()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(syncedCids) > 0 {
+		fmt.Println("uh oh cluster errors detected")
+		fmt.Println("this isn't indicative of a test failure")
+		fmt.Println("but that the cluster is experiencing some issues")
+	} else {
+		fmt.Println("yay no cluster errors detected")
 	}
 }
 

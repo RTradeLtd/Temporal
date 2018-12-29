@@ -413,7 +413,7 @@ var commands = map[string]cmd.Cmd{
 				os.Exit(1)
 			}
 			if _, err := models.NewUserManager(d.DB).NewUserAccount(
-				args["user"], args["pass"], args["email"], false,
+				args["user"], args["pass"], args["email"],
 			); err != nil {
 				fmt.Println("failed to create user account", err)
 				os.Exit(1)

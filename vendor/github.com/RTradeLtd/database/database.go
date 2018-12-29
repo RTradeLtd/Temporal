@@ -25,8 +25,6 @@ var (
 	IpnsObj *models.IPNS
 	// HostedIpfsNetObj is our hosted ipfs network model
 	HostedIpfsNetObj *models.HostedIPFSPrivateNetwork
-	// DropObj is our airdrop model
-	DropObj *models.Drop
 	// TnsZoneObj is our tns zone model
 	TnsZoneObj *models.Zone
 	// TnsRecordObj is our tns record model
@@ -79,7 +77,6 @@ func (dbm *Manager) RunMigrations() {
 	dbm.DB.AutoMigrate(PaymentObj)
 	dbm.DB.AutoMigrate(IpnsObj)
 	dbm.DB.AutoMigrate(HostedIpfsNetObj)
-	dbm.DB.AutoMigrate(DropObj)
 	dbm.DB.AutoMigrate(EncryptedUploadObj)
 	dbm.DB.AutoMigrate(TnsZoneObj)
 	dbm.DB.AutoMigrate(TnsRecordObj)

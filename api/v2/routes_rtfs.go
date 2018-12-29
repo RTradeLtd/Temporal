@@ -292,33 +292,6 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": stats})
 }
 
-// CheckLocalNodeForPin is used to check whether or not the serving node is tacking the particular pin
-func (api *API) checkLocalNodeForPin(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
-		return
-	}
-	if err := api.validateAdminRequest(username); err != nil {
-		FailNotAuthorized(c, eh.UnAuthorizedAdminAccess)
-		return
-	}
-	hash := c.Param("hash")
-	if _, err := gocid.Decode(hash); err != nil {
-		Fail(c, err)
-		return
-	}
-	present, err := api.ipfs.CheckPin(hash)
-	if err != nil {
-		api.LogError(err, eh.IPFSPinParseError)(c)
-		return
-	}
-
-	api.l.Infow("ipfs pin check requested", "user", username)
-
-	Respond(c, http.StatusOK, gin.H{"response": present})
-}
-
 // GetDagObject is used to retrieve an IPLD object from ipfs
 func (api *API) getDagObject(c *gin.Context) {
 	hash := c.Param("hash")
