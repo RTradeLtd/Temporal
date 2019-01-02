@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"sync"
 	"syscall"
 
@@ -25,7 +24,6 @@ import (
 	pbLens "github.com/RTradeLtd/grpc/lens"
 	pbSigner "github.com/RTradeLtd/grpc/temporal"
 	"github.com/RTradeLtd/kaas"
-	"github.com/jinzhu/gorm"
 )
 
 // Version denotes the tag of this build
@@ -40,12 +38,23 @@ const (
 var (
 	devMode = flag.Bool("dev", false,
 		"toggle dev mode")
+
+	// db configuration
+	dbNoSSL = flag.Bool("db.no_ssl", false,
+		"toggle SSL connection with database")
+
+	// grpc configuration
+	grpcNoSSL = flag.Bool("grpc.no_ssl", false,
+		"toggle SSL connection with GRPC services")
+
+	// api configuration
+	apiPort = flag.String("api.port", "6767",
+		"set port to expose API on")
 )
 
 // globals
 var (
 	tCfg   config.TemporalConfig
-	db     *gorm.DB
 	ctx    context.Context
 	cancel context.CancelFunc
 	orch   pbOrch.ServiceClient
@@ -64,15 +73,11 @@ var commands = map[string]cmd.Cmd{
 				os.Exit(1)
 			}
 			logger = logger.With("version", args["version"])
-			service, err := v2.Initialize(&cfg, args["version"], os.Getenv("DEBUG") == "true", logger, lens, orch, signer)
+			service, err := v2.Initialize(&cfg, args["version"], *devMode, logger, lens, orch, signer)
 			if err != nil {
 				logger.Fatal(err)
 			}
 
-			port := os.Getenv("API_PORT")
-			if port == "" {
-				port = "6767"
-			}
 			quitChannel := make(chan os.Signal)
 			signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 			go func() {
@@ -81,7 +86,7 @@ var commands = map[string]cmd.Cmd{
 				service.Close()
 				cancel()
 			}()
-			addr := fmt.Sprintf("%s:%s", args["listenAddress"], port)
+			addr := fmt.Sprintf("%s:%s", args["listenAddress"], *apiPort)
 			if args["certFilePath"] == "" || args["keyFilePath"] == "" {
 				fmt.Println("TLS config incomplete - starting API service without TLS...")
 				err = service.ListenAndServe(ctx, addr, nil)
@@ -117,11 +122,18 @@ var commands = map[string]cmd.Cmd{
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
+
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
+								os.Exit(1)
+							}
 							qm, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, false, logger)
 							if err != nil {
 								fmt.Println("failed to start queue", err)
 								os.Exit(1)
 							}
+
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 							waitGroup := &sync.WaitGroup{}
@@ -145,6 +157,11 @@ var commands = map[string]cmd.Cmd{
 							logger, err := log.NewLogger(logPath(cfg.LogDir, "pin_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
 								os.Exit(1)
 							}
 							qm, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, false, logger)
@@ -177,6 +194,11 @@ var commands = map[string]cmd.Cmd{
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
+								os.Exit(1)
+							}
 							qm, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, false, logger)
 							if err != nil {
 								fmt.Println("failed to start queue", err)
@@ -207,6 +229,11 @@ var commands = map[string]cmd.Cmd{
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
+								os.Exit(1)
+							}
 							qm, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, false, logger)
 							if err != nil {
 								fmt.Println("failed to start queue", err)
@@ -235,6 +262,11 @@ var commands = map[string]cmd.Cmd{
 							logger, err := log.NewLogger(logPath(cfg.LogDir, "cluster_pin_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
 								os.Exit(1)
 							}
 							qm, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, logger)
@@ -269,6 +301,11 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("failed to start logger ", err)
 						os.Exit(1)
 					}
+					db, err := newDB(cfg, *dbNoSSL)
+					if err != nil {
+						fmt.Println("failed to start db", err)
+						os.Exit(1)
+					}
 					qm, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, false, logger)
 					if err != nil {
 						fmt.Println("failed to start queue", err)
@@ -297,6 +334,11 @@ var commands = map[string]cmd.Cmd{
 					logger, err := log.NewLogger(logPath(cfg.LogDir, "email_consumer.log"), *devMode)
 					if err != nil {
 						fmt.Println("failed to start logger ", err)
+						os.Exit(1)
+					}
+					db, err := newDB(cfg, *dbNoSSL)
+					if err != nil {
+						fmt.Println("failed to start db", err)
 						os.Exit(1)
 					}
 					qm, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, false, logger)
@@ -519,19 +561,6 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	if initDB := os.Getenv("INIT_DB"); strings.ToLower(initDB) == "true" {
-		sslDisabled := os.Getenv("SSL_MODE_DISABLE") == "true"
-		db, err = database.OpenDBConnection(database.DBOptions{
-			User:           tCfg.Database.Username,
-			Password:       tCfg.Database.Password,
-			Address:        tCfg.Database.URL,
-			Port:           tCfg.Database.Port,
-			SSLModeDisable: sslDisabled,
-		})
-		if err != nil {
-			logger.Fatal(err)
-		}
-	}
 
 	// load arguments
 	flags := map[string]string{
@@ -564,7 +593,7 @@ func main() {
 		}
 		defer orchClient.Close()
 		orch = orchClient
-		signerClient, err := clients.NewSignerClient(tCfg, os.Getenv("SSL_MODE_DISABLE") == "true")
+		signerClient, err := clients.NewSignerClient(tCfg, *grpcNoSSL)
 		if err != nil {
 			logger.Fatal(err)
 		}

@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database"
-	"github.com/jinzhu/gorm"
 )
 
 /*
@@ -62,10 +60,7 @@ func TestAPI(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.LogDir = "../../testenv/"
-	db, err = loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
+	*dbNoSSL = true
 	type args struct {
 		port          string
 		listenAddress string
@@ -109,10 +104,7 @@ func TestQueuesIPFS(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.LogDir = "../../testenv/"
-	db, err = loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
+	*dbNoSSL = true
 	type args struct {
 		parentCmd string
 		childCmd  string
@@ -251,14 +243,4 @@ func TestBucket(t *testing.T) {
 	flags := map[string]string{
 		"name": "mytestbucket"}
 	commands["make-bucket"].Action(*cfg, flags)
-}
-
-func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
-	return database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
-		SSLModeDisable: true,
-	})
 }
