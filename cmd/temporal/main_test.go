@@ -202,9 +202,7 @@ func TestMigrations(t *testing.T) {
 	commands["migrate-insecure"].Action(*cfg, nil)
 }
 func TestInit(t *testing.T) {
-	if err := os.Setenv("CONFIG_DAG", "../../testenv/new_config.json"); err != nil {
-		t.Fatal(err)
-	}
+	*configPath = "../../testenv/new_config.json"
 	commands["init"].Action(config.TemporalConfig{}, nil)
 }
 

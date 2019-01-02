@@ -52,7 +52,7 @@ testenv:
 	@echo "===================   preparing test env    ==================="
 	( cd testenv ; make testenv )
 	@echo "Running migrations..."
-	@env CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go migrate-insecure
+	go run cmd/temporal/main.go -config ./testenv/config.json migrate-insecure
 	make api-user
 	make api-admin
 	# create minio bucket
@@ -134,7 +134,7 @@ release-docker: docker
 # Run development API
 .PHONY: api
 api:
-	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go api
+	go run cmd/temporal/main.go -config ./testenv/config.json api
 
 USER=testuser
 PASSWORD=admin
@@ -142,12 +142,12 @@ EMAIL=test@email.com
 
 .PHONY: api-user
 api-user:
-	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go user $(USER) $(PASSWORD) $(EMAIL)
+	go run cmd/temporal/main.go -config ./testenv/config.json user $(USER) $(PASSWORD) $(EMAIL)
 
 .PHONY: api-admin
 api-admin:
-	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go admin $(USER)
+	go run cmd/temporal/main.go -config ./testenv/config.json admin $(USER)
 
 .PHONY: files-bucket
 files-bucket:
-	CONFIG_DAG=./testenv/config.json go run cmd/temporal/main.go make-bucket $(BUCKET)
+	go run cmd/temporal/main.go -config ./testenv/config.json make-bucket $(BUCKET)

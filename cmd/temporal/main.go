@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 
 	"github.com/RTradeLtd/Temporal/mini"
+	"github.com/jinzhu/gorm"
 
 	"github.com/RTradeLtd/Temporal/api/v2"
 	"github.com/RTradeLtd/Temporal/api/v3"
@@ -38,6 +40,8 @@ const (
 var (
 	devMode = flag.Bool("dev", false,
 		"toggle dev mode")
+	configPath = flag.String("config", os.Getenv("CONFIG_DAG"),
+		"path to Temporal configuration")
 
 	// db configuration
 	dbNoSSL = flag.Bool("db.no_ssl", false,
@@ -61,6 +65,25 @@ var (
 	lens   pbLens.IndexerAPIClient
 	signer pbSigner.SignerClient
 )
+
+func logPath(base, file string) (logPath string) {
+	if base == "" {
+		logPath = filepath.Join(base, file)
+	} else {
+		logPath = filepath.Join(base, file)
+	}
+	return
+}
+
+func newDB(cfg config.TemporalConfig, noSSL bool) (*gorm.DB, error) {
+	return database.OpenDBConnection(database.DBOptions{
+		User:           tCfg.Database.Username,
+		Password:       tCfg.Database.Password,
+		Address:        tCfg.Database.URL,
+		Port:           tCfg.Database.Port,
+		SSLModeDisable: noSSL,
+	})
+}
 
 var commands = map[string]cmd.Cmd{
 	"api": {
@@ -391,14 +414,10 @@ var commands = map[string]cmd.Cmd{
 	"init": {
 		PreRun:      true,
 		Blurb:       "initialize blank Temporal configuration",
-		Description: "Initializes a blank Temporal configuration template at CONFIG_DAG.",
+		Description: "Initializes a blank Temporal configuration template at path provided by the '-config' flag",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			configDag := os.Getenv("CONFIG_DAG")
-			if configDag == "" {
-				fmt.Println("CONFIG_DAG is not set")
-				os.Exit(1)
-			}
-			if err := config.GenerateConfig(configDag); err != nil {
+			println("generating config at", *configPath)
+			if err := config.GenerateConfig(*configPath); err != nil {
 				fmt.Println("failed to generate default config template", err)
 				os.Exit(1)
 			}
@@ -553,18 +572,15 @@ func main() {
 	}
 
 	// load config
-	configDag := os.Getenv("CONFIG_DAG")
-	if configDag == "" {
-		logger.Fatal("CONFIG_DAG is not set")
-	}
-	tCfg, err := config.LoadConfig(configDag)
+	logger.Infow("loading config",
+		"path", *configPath)
+	tCfg, err := config.LoadConfig(*configPath)
 	if err != nil {
 		logger.Fatal(err)
 	}
 
 	// load arguments
 	flags := map[string]string{
-		"configDag":     configDag,
 		"certFilePath":  tCfg.API.Connection.Certificates.CertPath,
 		"keyFilePath":   tCfg.API.Connection.Certificates.KeyPath,
 		"listenAddress": tCfg.API.Connection.ListenAddress,
