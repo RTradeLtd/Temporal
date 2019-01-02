@@ -1,5 +1,3 @@
-// Package v2 is the main package for Temporal's
-// http api
 package v2
 
 import (
