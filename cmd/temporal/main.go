@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strings"
 	"sync"
 	"syscall"
@@ -28,23 +28,29 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-var (
-	// Version denotes the tag of this build
-	Version string
+// Version denotes the tag of this build
+var Version string
 
-	closeMessage = "press CTRL+C to stop processing and close queue resources"
-	certFile     = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
-	keyFile      = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
-	tCfg         config.TemporalConfig
-	db           *gorm.DB
-	ctx          context.Context
-	cancel       context.CancelFunc
-	orch         pbOrch.ServiceClient
-	lens         pbLens.IndexerAPIClient
-	signer       pbSigner.SignerClient
-	err          error
-	logFilePath  = "/var/log/temporal/"
-	dev          bool
+const (
+	closeMessage   = "press CTRL+C to stop processing and close queue resources"
+	defaultLogPath = "/var/log/temporal/"
+)
+
+// command-line flags
+var (
+	devMode = flag.Bool("dev", false,
+		"toggle dev mode")
+)
+
+// globals
+var (
+	tCfg   config.TemporalConfig
+	db     *gorm.DB
+	ctx    context.Context
+	cancel context.CancelFunc
+	orch   pbOrch.ServiceClient
+	lens   pbLens.IndexerAPIClient
+	signer pbSigner.SignerClient
 )
 
 var commands = map[string]cmd.Cmd{
@@ -52,12 +58,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if cfg.LogDir == "" {
-				logFilePath = logFilePath + "api_service.log"
-			} else {
-				logFilePath = cfg.LogDir + "api_service.log"
-			}
-			logger, err := log.NewLogger(logFilePath, dev)
+			logger, err := log.NewLogger(logPath(cfg.LogDir, "api_service.log"), *devMode)
 			if err != nil {
 				fmt.Println("failed to start logger ", err)
 				os.Exit(1)
@@ -111,12 +112,7 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "IPNS entry creation queue",
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							if cfg.LogDir == "" {
-								logFilePath = logFilePath + "ipns_consumer.log"
-							} else {
-								logFilePath = cfg.LogDir + "ipns_consumer.log"
-							}
-							logger, err := log.NewLogger(logFilePath, dev)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "ipns_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
@@ -146,12 +142,7 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Pin addition queue",
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							if cfg.LogDir == "" {
-								logFilePath = logFilePath + "pin_consumer.log"
-							} else {
-								logFilePath = cfg.LogDir + "pin_consumer.log"
-							}
-							logger, err := log.NewLogger(logFilePath, dev)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "pin_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
@@ -181,12 +172,7 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "File upload queue",
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							if cfg.LogDir == "" {
-								logFilePath = logFilePath + "file_consumer.log"
-							} else {
-								logFilePath = cfg.LogDir + "file_consumer.log"
-							}
-							logger, err := log.NewLogger(logFilePath, dev)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "file_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
@@ -216,12 +202,7 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Key creation queue",
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							if cfg.LogDir == "" {
-								logFilePath = logFilePath + "key_consumer.log"
-							} else {
-								logFilePath = cfg.LogDir + "key_consumer.log"
-							}
-							logger, err := log.NewLogger(logFilePath, dev)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "key_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
@@ -251,12 +232,7 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Cluster pin queue",
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							if cfg.LogDir == "" {
-								logFilePath = logFilePath + "cluster_pin_consumer.log"
-							} else {
-								logFilePath = cfg.LogDir + "cluster_pin_consumer.log"
-							}
-							logger, err := log.NewLogger(logFilePath, dev)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "cluster_pin_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
@@ -288,12 +264,7 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "Database file add queue",
 				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					if cfg.LogDir == "" {
-						logFilePath = logFilePath + "dfa_consumer.log"
-					} else {
-						logFilePath = cfg.LogDir + "dfa_consumer.log"
-					}
-					logger, err := log.NewLogger(logFilePath, dev)
+					logger, err := log.NewLogger(logPath(cfg.LogDir, "dfa_consumer.log"), *devMode)
 					if err != nil {
 						fmt.Println("failed to start logger ", err)
 						os.Exit(1)
@@ -323,12 +294,7 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "Email send queue",
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					if cfg.LogDir == "" {
-						logFilePath = logFilePath + "email_consumer.log"
-					} else {
-						logFilePath = cfg.LogDir + "email_consumer.log"
-					}
-					logger, err := log.NewLogger(logFilePath, dev)
+					logger, err := log.NewLogger(logPath(cfg.LogDir, "email_consumer.log"), *devMode)
 					if err != nil {
 						fmt.Println("failed to start logger ", err)
 						os.Exit(1)
@@ -519,6 +485,13 @@ func main() {
 		Version = "latest"
 	}
 
+	// initialize global context
+	ctx, cancel = context.WithCancel(context.Background())
+
+	// load flags and args
+	flag.Parse()
+	var args = flag.Args()
+
 	// create app
 	temporal := cmd.New(commands, cmd.Config{
 		Name:     "Temporal",
@@ -528,7 +501,7 @@ func main() {
 	})
 
 	// run no-config commands, exit if command was run
-	if exit := temporal.PreRun(os.Args[1:]); exit == cmd.CodeOK {
+	if exit := temporal.PreRun(args); exit == cmd.CodeOK {
 		os.Exit(0)
 	}
 	logger, err := log.NewLogger("stdout", false)
@@ -536,6 +509,7 @@ func main() {
 		fmt.Println("failed to initialize logger")
 		os.Exit(1)
 	}
+
 	// load config
 	configDag := os.Getenv("CONFIG_DAG")
 	if configDag == "" {
@@ -558,8 +532,7 @@ func main() {
 			logger.Fatal(err)
 		}
 	}
-	// initialize global context
-	ctx, cancel = context.WithCancel(context.Background())
+
 	// load arguments
 	flags := map[string]string{
 		"configDag":     configDag,
@@ -571,13 +544,13 @@ func main() {
 		"dbUser":        tCfg.Database.Username,
 		"version":       Version,
 	}
-	switch os.Args[1] {
+	switch args[0] {
 	case "user":
-		flags["user"] = os.Args[2]
-		flags["pass"] = os.Args[3]
-		flags["email"] = os.Args[4]
+		flags["user"] = args[1]
+		flags["pass"] = args[2]
+		flags["email"] = args[3]
 	case "admin":
-		flags["dbAdmin"] = os.Args[2]
+		flags["dbAdmin"] = args[1]
 	case "api":
 		lensClient, err := clients.NewLensClient(tCfg.Endpoints)
 		if err != nil {
@@ -598,9 +571,9 @@ func main() {
 		defer signerClient.Close()
 		signer = signerClient
 	case "make-bucket", "make-bucket-insecure":
-		flags["name"] = os.Args[2]
+		flags["name"] = args[1]
 	}
-	fmt.Println(tCfg.APIKeys.ChainRider)
+
 	// execute
-	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
+	os.Exit(temporal.Run(*tCfg, flags, args))
 }

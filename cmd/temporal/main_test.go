@@ -57,11 +57,11 @@ func TestAPI(t *testing.T) {
 }
 */
 func TestAPI(t *testing.T) {
-	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	cfg.LogDir = "../../testenv/"
 	db, err = loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -104,11 +104,11 @@ func TestAPI(t *testing.T) {
 
 // TestQueueIPFS is used to test IPFS queues
 func TestQueuesIPFS(t *testing.T) {
-	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	cfg.LogDir = "../../testenv/"
 	db, err = loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -146,11 +146,11 @@ func TestQueuesIPFS(t *testing.T) {
 }
 
 func TestQueuesDFA(t *testing.T) {
-	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	cfg.LogDir = "../../testenv/"
 	type args struct {
 		logDir string
 	}
@@ -173,11 +173,11 @@ func TestQueuesDFA(t *testing.T) {
 }
 
 func TestQueuesEmailSend(t *testing.T) {
-	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	cfg.LogDir = "../../testenv/"
 	type args struct {
 		logDir string
 	}
@@ -200,17 +200,16 @@ func TestQueuesEmailSend(t *testing.T) {
 }
 
 func TestMigrations(t *testing.T) {
-	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	cfg.LogDir = "../../testenv/"
 	// this wont work with our test environment as the psql server doesn't have ssl
 	//commands["migrate"].Action(*cfg, nil)
 	commands["migrate-insecure"].Action(*cfg, nil)
 }
 func TestInit(t *testing.T) {
-	logFilePath = "../../testenv/"
 	if err := os.Setenv("CONFIG_DAG", "../../testenv/new_config.json"); err != nil {
 		t.Fatal(err)
 	}
@@ -218,11 +217,11 @@ func TestInit(t *testing.T) {
 }
 
 func TestAdmin(t *testing.T) {
-	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	cfg.LogDir = "../../testenv/"
 	flags := map[string]string{
 		"dbAdmin": "testuser",
 	}
@@ -230,11 +229,11 @@ func TestAdmin(t *testing.T) {
 }
 
 func TestUser(t *testing.T) {
-	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	cfg.LogDir = "../../testenv/"
 	flags := map[string]string{
 		"user":  "myuser",
 		"pass":  "mypass",
@@ -244,11 +243,11 @@ func TestUser(t *testing.T) {
 }
 
 func TestBucket(t *testing.T) {
-	logFilePath = "../../testenv/"
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	cfg.LogDir = "../../testenv/"
 	flags := map[string]string{
 		"name": "mytestbucket"}
 	commands["make-bucket"].Action(*cfg, flags)
