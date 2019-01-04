@@ -52,7 +52,7 @@ testenv:
 	@echo "===================   preparing test env    ==================="
 	( cd testenv ; make testenv )
 	@echo "Running migrations..."
-	go run cmd/temporal/main.go -config ./testenv/config.json migrate-insecure
+	go run cmd/temporal/main.go -config ./testenv/config.json --db.no_ssl migrate
 	make api-user
 	make api-admin
 	# create minio bucket

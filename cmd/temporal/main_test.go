@@ -147,9 +147,10 @@ func TestMigrations(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.LogDir = "../../testenv/"
+	*dbNoSSL = true
 	// this wont work with our test environment as the psql server doesn't have ssl
 	//commands["migrate"].Action(*cfg, nil)
-	commands["migrate-insecure"].Action(*cfg, nil)
+	commands["migrate"].Action(*cfg, nil)
 }
 
 func TestInit(t *testing.T) {

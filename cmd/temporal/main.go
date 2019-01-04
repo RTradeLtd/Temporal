@@ -46,6 +46,8 @@ var (
 	// db configuration
 	dbNoSSL = flag.Bool("db.no_ssl", false,
 		"toggle SSL connection with database")
+	dbMigrate = flag.Bool("db.migrate", false,
+		"toggle whether a database migration should occur")
 
 	// grpc configuration
 	grpcNoSSL = flag.Bool("grpc.no_ssl", false,
@@ -397,20 +399,6 @@ var commands = map[string]cmd.Cmd{
 			}
 		},
 	},
-	"migrate-insecure": {
-		Hidden:      true,
-		Blurb:       "run database migrations without SSL",
-		Description: "Runs our initial database migrations, creating missing tables, etc.. without SSL",
-		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if _, err := database.Initialize(&cfg, database.Options{
-				RunMigrations:  true,
-				SSLModeDisable: true,
-			}); err != nil {
-				fmt.Println("failed to perform insecure migration", err)
-				os.Exit(1)
-			}
-		},
-	},
 	"init": {
 		PreRun:      true,
 		Blurb:       "initialize blank Temporal configuration",
@@ -433,7 +421,8 @@ var commands = map[string]cmd.Cmd{
 				os.Exit(1)
 			}
 			d, err := database.Initialize(&cfg, database.Options{
-				SSLModeDisable: true,
+				SSLModeDisable: *dbNoSSL,
+				RunMigrations:  *dbMigrate,
 			})
 			if err != nil {
 				fmt.Println("failed to initialize database", err)
@@ -457,7 +446,8 @@ var commands = map[string]cmd.Cmd{
 				os.Exit(1)
 			}
 			d, err := database.Initialize(&cfg, database.Options{
-				SSLModeDisable: true,
+				SSLModeDisable: *dbNoSSL,
+				RunMigrations:  *dbMigrate,
 			})
 			if err != nil {
 				fmt.Println("failed to initialize database", err)
@@ -529,10 +519,11 @@ var commands = map[string]cmd.Cmd{
 	},
 	"migrate": {
 		Blurb:       "run database migrations",
-		Description: "Runs our initial database migrations, creating missing tables, etc..",
+		Description: "Runs our initial database migrations, creating missing tables, etc. Not affected by --db.migrate",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			if _, err := database.Initialize(&cfg, database.Options{
-				RunMigrations: true,
+				SSLModeDisable: *dbNoSSL,
+				RunMigrations:  true,
 			}); err != nil {
 				fmt.Println("failed to perform secure migration", err)
 				os.Exit(1)
