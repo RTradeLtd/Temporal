@@ -4,7 +4,7 @@
   <a href="#about-temporal"><strong>About Temporal</strong></a> · 
   <a href="#web-interfaces"><strong>Web Interfaces</strong></a> · 
   <a href="#usage-and-features"><strong>Usage and Features</strong></a> · 
-  <a href="#development"><strong>Development</strong></a> · 
+  <a href="/CONTRIBUTING.md"><strong>Contributing</strong></a> · 
   <a href="#license"><strong>License</strong></a> · 
   <a href="#thanks"><strong>Thanks</strong></a> ·
 
@@ -139,72 +139,6 @@ Currently we fully support all non-experimental IPFS and IPNS feature-sets. Feat
 ### System Monitoring
 
 Temporal is designed to be monitored witha combination of Zabbix, and Grafana+Prometheus. Zabbix is used for operating system, and hardware level metric collection, while Grafana+Prometheus are used to scrape API metrics, along with IPFS and IPFS Cluster node metrics. We include Zabbix templates, and Grafana graphs within the `setup/configs` folder.
-
-## Development
-
-### Building
-
-Dependencies are vendored by default, so there is no need to install anything if you have the Go toolchain. Temporal is built with `go1.11` and is the only gauranteed version of Golang to work.
-
-To build run the following commands:
-
-```bash
-$ go get github.com/RTradeLtd/Temporal
-$ cd $GOPATH/src/github.com/RTradeLtd/Temporal
-$ make
-```
-
-Due to our very large dependency tree which is vendored, running the initial `go get` will take a very long time, anywhere from 15 -> 30 minutes depending on your computer processing capabilities, internet connection, and such. This isn't likely to change anytime soon, so patience is greatly appreciated!
-
-### Running Locally
-
-To run the API locally:
-
-```bash
-$ make testenv
-$ make api
-```
-
-### Testing
-
-Most tests can be run using the following commands:
-
-```bash
-$ make testenv
-$ make test
-```
-
-This requires Docker running and docker-compose installed.
-
-To run the full suite of tests, more advanced setup and configuration is required. If all the prerequisites are set up, you can execute the tests using `make test-all`.
-
-Occassionally the test environment make files may not work on your distribution due to variations in ethernet NIC identifiers. This can be solved by editing `testenv/Makefile` and updating the `INTERFACE=eth0` declaration on line 3.
-
-### Linting
-
-The following command will run some lint checks:
-
-```bash
-$ make lint
-```
-
-This requires golint and spellcheck to be installed.
-
-### Vendoring
-
-To update or rebuild the dependencies, run:
-
-```bash
-$ make vendor
-```
-
-This requires the GX dependency management tool to be installed.
-
-### Repository Contents
-
-Refer to the [documentation](https://godoc.org/github.com/RTradeLtd/Temporal) for an overview of Temporal's package structure.
-
-The project also depends on a [range of sub-repositories](https://github.com/search?q=topic%3Atemporal+org%3ARTradeLtd&type=Repositories).
 
 ## License
 
