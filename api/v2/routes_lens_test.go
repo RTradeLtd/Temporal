@@ -86,7 +86,7 @@ func Test_API_Routes_Lens(t *testing.T) {
 
 	// test lens index - valid object type, with reindex
 	// /api/v2/lens/index
-	var mapAPIResp mapAPIResponse
+	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", hash)
@@ -107,7 +107,7 @@ func Test_API_Routes_Lens(t *testing.T) {
 
 	// test lens index - valid object type, with non yes reindex
 	// /api/v2/lens/index
-	var mapAPIResp mapAPIResponse
+	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", hash)
