@@ -8,13 +8,15 @@ import (
 	"github.com/RTradeLtd/config"
 )
 
+func init() {
+	*dbNoSSL = true
+}
+
 func TestAPI(t *testing.T) {
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.LogDir = "../../testenv/"
-	*dbNoSSL = true
 	type args struct {
 		port          string
 		listenAddress string
@@ -54,8 +56,6 @@ func TestQueuesIPFS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.LogDir = "../../testenv/"
-	*dbNoSSL = true
 	type args struct {
 		parentCmd string
 		childCmd  string
@@ -93,7 +93,6 @@ func TestQueuesDFA(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.LogDir = "../../testenv/"
 	type args struct {
 		logDir string
 	}
@@ -119,7 +118,6 @@ func TestQueuesEmailSend(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.LogDir = "../../testenv/"
 	type args struct {
 		logDir string
 	}
@@ -146,7 +144,6 @@ func TestMigrations(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.LogDir = "../../testenv/"
 	*dbNoSSL = true
 	// this wont work with our test environment as the psql server doesn't have ssl
 	//commands["migrate"].Action(*cfg, nil)
@@ -154,7 +151,7 @@ func TestMigrations(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	*configPath = "../../testenv/new_config.json"
+	*configPath = "tmp/new_config.json"
 	commands["init"].Action(config.TemporalConfig{}, nil)
 }
 
@@ -163,7 +160,6 @@ func TestAdmin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.LogDir = "../../testenv/"
 	flags := map[string]string{
 		"dbAdmin": "testuser",
 	}
@@ -175,7 +171,6 @@ func TestUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.LogDir = "../../testenv/"
 	flags := map[string]string{
 		"user":  "myuser",
 		"pass":  "mypass",
@@ -189,7 +184,6 @@ func TestBucket(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.LogDir = "../../testenv/"
 	flags := map[string]string{
 		"name": "mytestbucket"}
 	commands["make-bucket"].Action(*cfg, flags)
