@@ -42,26 +42,6 @@ func Test_API_Routes_Lens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// test lens index - valid object type
-	// /api/v2/lens/index
-	var mapAPIResp mapAPIResponse
-	urlValues = url.Values{}
-	urlValues.Add("object_type", "ipld")
-	urlValues.Add("object_identifier", hash)
-	// setup our mock index response
-	fakeLens.IndexReturnsOnCall(0, &pbLensResp.Index{
-		Id:       "fakeid",
-		Keywords: []string{"protocols", "minivan"},
-	}, nil)
-	if err := sendRequest(
-		api, "POST", "/api/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	if mapAPIResp.Code != 200 {
-		t.Fatal("bad api response status code from /api/v2/lens/index")
-	}
-
 	// test lens index - invalid object type
 	// /api/v2/lens/index
 	urlValues = url.Values{}
@@ -82,6 +62,68 @@ func Test_API_Routes_Lens(t *testing.T) {
 		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
+	}
+
+	// test lens index - valid object type, no reindex
+	// /api/v2/lens/index
+	var mapAPIResp mapAPIResponse
+	urlValues = url.Values{}
+	urlValues.Add("object_type", "ipld")
+	urlValues.Add("object_identifier", hash)
+	// setup our mock index response
+	fakeLens.IndexReturnsOnCall(0, &pbLensResp.Index{
+		Id:       "fakeid",
+		Keywords: []string{"protocols", "minivan"},
+	}, nil)
+	if err := sendRequest(
+		api, "POST", "/api/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/lens/index")
+	}
+
+	// test lens index - valid object type, with reindex
+	// /api/v2/lens/index
+	var mapAPIResp mapAPIResponse
+	urlValues = url.Values{}
+	urlValues.Add("object_type", "ipld")
+	urlValues.Add("object_identifier", hash)
+	urlValues.Add("reindex", "yes")
+	// setup our mock index response
+	fakeLens.IndexReturnsOnCall(1, &pbLensResp.Index{
+		Id:       "fakeid",
+		Keywords: []string{"protocols", "minivan"},
+	}, nil)
+	if err := sendRequest(
+		api, "POST", "/api/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/lens/index")
+	}
+
+	// test lens index - valid object type, with non yes reindex
+	// /api/v2/lens/index
+	var mapAPIResp mapAPIResponse
+	urlValues = url.Values{}
+	urlValues.Add("object_type", "ipld")
+	urlValues.Add("object_identifier", hash)
+	urlValues.Add("reindex", "notyes")
+	// setup our mock index response
+	fakeLens.IndexReturnsOnCall(2, &pbLensResp.Index{
+		Id:       "fakeid",
+		Keywords: []string{"protocols", "minivan"},
+	}, nil)
+	if err := sendRequest(
+		api, "POST", "/api/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/lens/index")
 	}
 
 	// test lens search - with no objects
