@@ -31,8 +31,9 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 		return
 	}
 	resp, err := api.lens.Index(context.Background(), &request.Index{
-		DataType:         forms["object_type"],
-		ObjectIdentifier: forms["object_identifier"],
+		Type:       forms["object_type"],
+		Identifier: forms["object_identifier"],
+		Reindex:    c.PostForm("reindex") == "yes",
 	})
 	if err != nil {
 		api.LogError(err, eh.FailedToIndexError)(c, http.StatusBadRequest)
