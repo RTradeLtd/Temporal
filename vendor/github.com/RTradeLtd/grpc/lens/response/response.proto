@@ -5,11 +5,11 @@ option go_package = "github.com/RTradeLtd/grpc/lens/response";
 
 message Index {
     // id is the identifier of the indexed object according to the lens system
-    string id = 1;
+    string id                = 1;
+    // data is miscellaneous data associated with the response
+    bytes data               = 3;
     // keywords are the keywords that you can use to search for this object within lens
     repeated string keywords = 2;
-    // data is miscellaneous data associated with the response
-    bytes data = 3;
 }
 
 message Results {
@@ -18,11 +18,9 @@ message Results {
 
 message Object {
     // name is the "name" of the object, such as an IPFS content hash
-    string name = 1;
-
+    string name     = 1;
     string mimeType = 2;
-
     string category = 3;
     // type is the type of the object, such as IPLD
-    string type = 4;
+    string type     = 4;
 }

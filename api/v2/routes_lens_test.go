@@ -42,7 +42,29 @@ func Test_API_Routes_Lens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// test lens index - valid object type
+	// test lens index - invalid object type
+	// /v2/lens/index
+	urlValues = url.Values{}
+	urlValues.Add("object_type", "storj")
+	urlValues.Add("object_identifier", hash)
+	if err := sendRequest(
+		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
+	); err != nil {
+		t.Fatal(err)
+	}
+
+	// test lens index - bad format hash
+	// /api/v2/lens/index
+	urlValues = url.Values{}
+	urlValues.Add("object_type", "ipld")
+	urlValues.Add("object_identifier", "notarealipfshash")
+	if err := sendRequest(
+		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
+	); err != nil {
+		t.Fatal(err)
+	}
+
+	// test lens index - valid object type, no reindex
 	// /v2/lens/index
 	var mapAPIResp mapAPIResponse
 	urlValues = url.Values{}
@@ -62,26 +84,46 @@ func Test_API_Routes_Lens(t *testing.T) {
 		t.Fatal("bad api response status code from /v2/lens/index")
 	}
 
-	// test lens index - invalid object type
+	// test lens index - valid object type, with reindex
 	// /v2/lens/index
+	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
-	urlValues.Add("object_type", "storj")
+	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", hash)
+	urlValues.Add("reindex", "yes")
+	// setup our mock index response
+	fakeLens.IndexReturnsOnCall(1, &pbLensResp.Index{
+		Id:       "fakeid",
+		Keywords: []string{"protocols", "minivan"},
+	}, nil)
 	if err := sendRequest(
-		api, "POST", "/v2/lens/index", 400, nil, urlValues, nil,
+		api, "POST", "/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/lens/index")
+	}
 
-	// test lens index - bad format hash
+	// test lens index - valid object type, with non yes reindex
 	// /v2/lens/index
+	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "ipld")
-	urlValues.Add("object_identifier", "notarealipfshash")
+	urlValues.Add("object_identifier", hash)
+	urlValues.Add("reindex", "notyes")
+	// setup our mock index response
+	fakeLens.IndexReturnsOnCall(2, &pbLensResp.Index{
+		Id:       "fakeid",
+		Keywords: []string{"protocols", "minivan"},
+	}, nil)
 	if err := sendRequest(
-		api, "POST", "/v2/lens/index", 400, nil, urlValues, nil,
+		api, "POST", "/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
+	}
+	if mapAPIResp.Code != 200 {
+		t.Fatal("bad api response status code from /api/v2/lens/index")
 	}
 
 	// test lens search - with no objects
