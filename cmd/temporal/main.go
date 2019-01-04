@@ -58,7 +58,6 @@ var (
 
 // globals
 var (
-	tCfg   config.TemporalConfig
 	ctx    context.Context
 	cancel context.CancelFunc
 	orch   pbOrch.ServiceClient
