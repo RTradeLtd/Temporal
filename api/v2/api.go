@@ -353,7 +353,7 @@ func (api *API) setupRoutes() error {
 	authware := []gin.HandlerFunc{ginjwt.MiddlewareFunc()}
 
 	// V2 API
-	v2 := api.r.Group("/api/v2")
+	v2 := api.r.Group("/v2")
 
 	// system checks used to verify the integrity of our services
 	systemChecks := v2.Group("/systems")
