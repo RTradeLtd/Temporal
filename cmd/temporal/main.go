@@ -12,7 +12,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mini"
 
-	"github.com/RTradeLtd/Temporal/v2"
+	"github.com/RTradeLtd/Temporal/api/v2"
 	"github.com/RTradeLtd/Temporal/api/v3"
 	"github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/log"
