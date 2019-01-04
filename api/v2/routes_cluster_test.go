@@ -30,17 +30,17 @@ func Test_API_Routes_Cluster(t *testing.T) {
 	}
 
 	// test cluster pin
-	// /api/v2/ipfs/cluster/pin
+	// /v2/ipfs/cluster/pin
 	var apiResp apiResponse
 	urlValues := url.Values{}
 	urlValues.Add("hold_time", "5")
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipfs/cluster/pin/"+hash, 200, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipfs/cluster/pin/"+hash, 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/ipfs/cluster/pin")
+		t.Fatal("bad api status code from /v2/ipfs/cluster/pin")
 	}
 }

@@ -37,22 +37,22 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	}
 
 	// test pin cost calculate
-	// /api/v2/frontend/cost/calculate/:hash/:holTime
+	// /v2/frontend/cost/calculate/:hash/:holTime
 	var floatAPIResp floatAPIResponse
 	if err := sendRequest(
-		api, "GET", "/api/v2/frontend/cost/calculate/"+hash+"/5", 200, nil, nil, &floatAPIResp,
+		api, "GET", "/v2/frontend/cost/calculate/"+hash+"/5", 200, nil, nil, &floatAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	if floatAPIResp.Code != 200 {
-		t.Fatal("bad response code from /api/v2/frontend/cost/calculate")
+		t.Fatal("bad response code from /v2/frontend/cost/calculate")
 	}
 	if floatAPIResp.Response == 0 {
-		t.Fatal("failed to calculate cost /api/v2/frontend/cost/calculate")
+		t.Fatal("failed to calculate cost /v2/frontend/cost/calculate")
 	}
 
 	// test file upload cost calculation
-	// /api/v2/frontend/cost/calculate/file
+	// /v2/frontend/cost/calculate/file
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
 	fileWriter, err := bodyWriter.CreateFormFile("file", "../../testenv/config.json")
@@ -69,7 +69,7 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	}
 	bodyWriter.Close()
 	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/frontend/cost/calculate/file", bodyBuf)
+	req := httptest.NewRequest("POST", "/v2/frontend/cost/calculate/file", bodyBuf)
 	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 	urlValues := url.Values{}
@@ -77,7 +77,7 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code recovered from /api/v2/frontend/cost/calculate/file")
+		t.Fatal("bad http status code recovered from /v2/frontend/cost/calculate/file")
 	}
 	floatAPIResp = floatAPIResponse{}
 	// unmarshal the response
@@ -90,9 +90,9 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	}
 	// validate the response code
 	if floatAPIResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/frontend/cost/calculate/file")
+		t.Fatal("bad api status code from /v2/frontend/cost/calculate/file")
 	}
 	if floatAPIResp.Response == 0 {
-		t.Fatal("failed to calculate cost /api/v2/frontend/cost/calculate/file")
+		t.Fatal("failed to calculate cost /v2/frontend/cost/calculate/file")
 	}
 }

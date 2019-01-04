@@ -29,10 +29,10 @@ func Test_API_Routes_Database(t *testing.T) {
 	}
 
 	// test database specific uploads
-	// /api/v2/database/uploads/testuser
+	// /v2/database/uploads/testuser
 	var interfaceAPIResp interfaceAPIResponse
 	if err := sendRequest(
-		api, "GET", "/api/v2/database/uploads", 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/v2/database/uploads", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -42,9 +42,9 @@ func Test_API_Routes_Database(t *testing.T) {
 	}
 
 	// test get encrypted uploads
-	// /api/v2/frontend/uploads/encrypted
+	// /v2/frontend/uploads/encrypted
 	if err := sendRequest(
-		api, "GET", "/api/v2/database/uploads/encrypted", 200, nil, nil, nil,
+		api, "GET", "/v2/database/uploads/encrypted", 200, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
