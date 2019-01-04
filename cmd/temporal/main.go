@@ -69,7 +69,7 @@ func logPath(base, file string) (logPath string) {
 	if base == "" {
 		logPath = filepath.Join(base, file)
 	} else {
-		logPath = filepath.Join(base, file)
+		logPath = filepath.Join(base, "temporal.log")
 	}
 	return
 }
