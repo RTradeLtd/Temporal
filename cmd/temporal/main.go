@@ -77,10 +77,10 @@ func logPath(base, file string) (logPath string) {
 
 func newDB(cfg config.TemporalConfig, noSSL bool) (*gorm.DB, error) {
 	return database.OpenDBConnection(database.DBOptions{
-		User:           tCfg.Database.Username,
-		Password:       tCfg.Database.Password,
-		Address:        tCfg.Database.URL,
-		Port:           tCfg.Database.Port,
+		User:           cfg.Database.Username,
+		Password:       cfg.Database.Password,
+		Address:        cfg.Database.URL,
+		Port:           cfg.Database.Port,
 		SSLModeDisable: noSSL,
 	})
 }
@@ -109,7 +109,8 @@ var commands = map[string]cmd.Cmd{
 				service.Close()
 				cancel()
 			}()
-			addr := fmt.Sprintf("%s:%s", args["listenAddress"], *apiPort)
+
+			var addr = fmt.Sprintf("%s:%s", args["listenAddress"], *apiPort)
 			if args["certFilePath"] == "" || args["keyFilePath"] == "" {
 				fmt.Println("TLS config incomplete - starting API service without TLS...")
 				err = service.ListenAndServe(ctx, addr, nil)
