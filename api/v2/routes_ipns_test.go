@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
+
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
@@ -145,18 +147,34 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	}
 
 	// test pinning of an ipns hash
-	// /api/v2/ipfs/public/pin
+	// for this we need to create a temporary ipns record
+	ipfsapi := ipfsapi.NewShell(api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port)
+	resp, err := ipfsapi.PublishWithDetails(hash, "self", time.Hour*24, time.Hour*24, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// /v2/ipfs/public/pin
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("hold_time", "5")
-	urlValues.Add("ipns_path", ipnsPath)
+	urlValues.Add("ipns_path", resp.Name)
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipns/public/pin", 200, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipns/public/pin", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from  /api/v2/ipfs/public/pin")
+		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
+	}
+	// /v2/ipfs/public/pin - bad path
+	apiResp = apiResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "5")
+	urlValues.Add("ipns_path", "/not/a/real/path")
+	if err := sendRequest(
+		api, "POST", "/v2/ipns/public/pin", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
 	}
 }

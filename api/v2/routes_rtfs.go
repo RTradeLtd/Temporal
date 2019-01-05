@@ -6,13 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
-	path "gx/ipfs/QmZErC2Ay6WuGi96CPg316PwitdwgLo6RxZRqVjJjRj2MR/go-path"
-
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
-	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -31,77 +28,6 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	}
 	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
-		return
-	}
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, false)
-	if err != nil {
-		api.LogError(err, eh.PinCostCalculationError)(c, http.StatusBadRequest)
-		return
-	}
-	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
-		return
-	}
-	ip := queue.IPFSPin{
-		CID:              hash,
-		NetworkName:      "public",
-		UserName:         username,
-		HoldTimeInMonths: holdTimeInt,
-		CreditCost:       cost,
-	}
-	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c)
-		api.refundUserCredits(username, "pin", cost)
-		return
-	}
-	api.l.Infow("ipfs pin request sent to backend", "user", username)
-	Respond(c, http.StatusOK, gin.H{"response": "pin request sent to backend"})
-}
-
-// PinIPNSHash is used to pin the content referenced by an IPNS record
-// only usable by public IPFS.
-// The processing logic is as follows:
-// 1) parse the path which will be /ipns/hash
-// 2) validate that it is a valid path
-// 3) resolve the cid referenced by the record
-// 4) pop the last segment of the path, which will be the hash we are looking to pin
-func (api *API) pinIPNSHash(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
-		return
-	}
-	forms := api.extractPostForms(c, "hold_time", "ipns_path")
-	if len(forms) == 0 {
-		return
-	}
-	parsedPath := path.FromString(forms["ipns_path"])
-	if err := parsedPath.IsValid(); err != nil {
-		Fail(c, err, http.StatusBadRequest)
-		return
-	}
-	// extract the hash to pin
-	// as an unfortunate work-around we need to establish a seperate shell for this
-	// TODO: come back to this and make it work without this janky work-around
-	shell := ipfsapi.NewShell(api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port)
-	if !shell.IsUp() {
-		api.LogError(err, eh.IPFSConnectionError)(c, http.StatusBadRequest)
-		return
-	}
-	hashToPin, err := shell.Resolve(forms["ipns_path"])
-	if err != nil {
-		api.LogError(err, eh.IpnsRecordSearchError)(c, http.StatusBadRequest)
-		return
-	}
-	// pop the last segment which is what we're after to pin
-	_, hash, err := path.FromString(hashToPin).PopLastSegment()
-	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
 		return
 	}
 	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)

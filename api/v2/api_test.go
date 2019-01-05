@@ -35,7 +35,6 @@ const (
 
 var (
 	hash       = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
-	ipnsPath   = "/ipns/Qmd2GzQc68XXicmUpJZUadjsTcPUsXgP1iP1Hp6CYaY4xU"
 	authHeader string
 )
 
