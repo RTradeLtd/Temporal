@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -218,7 +219,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	// this will likely need to wait for IPFS Cluster 0.8.0
 	shell := ipfsapi.NewShell(api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port)
 	if !shell.IsUp() {
-		api.LogError(err, eh.IPFSConnectionError)(c, http.StatusBadRequest)
+		api.LogError(errors.New("node is not online"), eh.IPFSConnectionError)(c, http.StatusBadRequest)
 		return
 	}
 	hashToPin, err := shell.Resolve(forms["ipns_path"])
