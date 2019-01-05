@@ -143,4 +143,20 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	if len(*ipnsAPIResp.Response) == 0 {
 		t.Fatal("no records discovered")
 	}
+
+	// test pinning of an ipns hash
+	// /api/v2/ipfs/public/pin
+	apiResp = apiResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "5")
+	urlValues.Add("ipns_path", ipnsPath)
+	if err := sendRequest(
+		api, "POST", "/api/v2/ipns/public/pin/"+hash, 200, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from  /api/v2/ipfs/public/pin")
+	}
 }

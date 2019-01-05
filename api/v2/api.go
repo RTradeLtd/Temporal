@@ -528,6 +528,7 @@ func (api *API) setupRoutes() error {
 		public := ipns.Group("/public")
 		{
 			public.POST("/publish/details", api.publishToIPNSDetails)
+			public.POST("/pin", api.pinIPNSHash)
 		}
 		// private ipns routes
 		private := ipns.Group("/private")
