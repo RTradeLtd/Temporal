@@ -177,4 +177,14 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
+	// /v2/ipfs/public/pin - bad ipfs path
+	apiResp = apiResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "5")
+	urlValues.Add("ipns_path", "/ipfs/QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n/a/real/path")
+	if err := sendRequest(
+		api, "POST", "/v2/ipns/public/pin", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
 }
