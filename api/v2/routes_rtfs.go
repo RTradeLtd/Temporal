@@ -8,11 +8,10 @@ import (
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/mini"
-	"github.com/RTradeLtd/Temporal/utils"
-	gocid "github.com/ipfs/go-cid"
-
 	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
+	gocid "github.com/ipfs/go-cid"
 )
 
 // PinHashLocally is used to pin a hash to the local ipfs node

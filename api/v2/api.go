@@ -528,6 +528,10 @@ func (api *API) setupRoutes() error {
 		public := ipns.Group("/public")
 		{
 			public.POST("/publish/details", api.publishToIPNSDetails)
+			// used to handle pinning of IPNS records on public ipfs
+			// this involves first resolving the record, parsing it
+			// and extracting the hash to pin
+			public.POST("/pin", api.pinIPNSHash)
 		}
 		// private ipns routes
 		private := ipns.Group("/private")
