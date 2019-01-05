@@ -151,7 +151,7 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	urlValues.Add("hold_time", "5")
 	urlValues.Add("ipns_path", ipnsPath)
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipns/public/pin/"+hash, 200, nil, urlValues, &apiResp,
+		api, "POST", "/api/v2/ipns/public/pin", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
