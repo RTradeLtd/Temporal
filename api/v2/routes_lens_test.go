@@ -48,18 +48,18 @@ func Test_API_Routes_Lens(t *testing.T) {
 	urlValues.Add("object_type", "storj")
 	urlValues.Add("object_identifier", hash)
 	if err := sendRequest(
-		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
+		api, "POST", "/v2/lens/index", 400, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
 
 	// test lens index - bad format hash
-	// /api/v2/lens/index
+	// /v2/lens/index
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", "notarealipfshash")
 	if err := sendRequest(
-		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
+		api, "POST", "/v2/lens/index", 400, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +102,7 @@ func Test_API_Routes_Lens(t *testing.T) {
 		t.Fatal(err)
 	}
 	if mapAPIResp.Code != 200 {
-		t.Fatal("bad api response status code from /api/v2/lens/index")
+		t.Fatal("bad api response status code from /v2/lens/index")
 	}
 
 	// test lens index - valid object type, with non yes reindex
@@ -123,7 +123,7 @@ func Test_API_Routes_Lens(t *testing.T) {
 		t.Fatal(err)
 	}
 	if mapAPIResp.Code != 200 {
-		t.Fatal("bad api response status code from /api/v2/lens/index")
+		t.Fatal("bad api response status code from /v2/lens/index")
 	}
 
 	// test lens search - with no objects
