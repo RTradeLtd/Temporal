@@ -345,6 +345,8 @@ func (api *API) setupRoutes() error {
 		middleware.NewSecWare(dev),
 		// cors middleware
 		middleware.CORSMiddleware(dev),
+		// request id middleware
+		middleware.RequestID(),
 		// stats middleware
 		stats.RequestStats())
 
