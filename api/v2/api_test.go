@@ -182,19 +182,19 @@ func Test_API_Setup(t *testing.T) {
 		name string
 		args args
 	}{
-		{"Register-testuser2", args{"POST", "/api/v2/auth/register", "testuser2", "password123!@#$%^&&**(!@#!", "testuser@example.org"}},
+		{"Register-testuser2", args{"POST", "/v2/auth/register", "testuser2", "password123!@#$%^&&**(!@#!", "testuser@example.org"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// register user account
-			// /api/v2/auth/register
+			// /v2/auth/register
 			var interfaceAPIResp interfaceAPIResponse
 			urlValues := url.Values{}
 			urlValues.Add("username", tt.args.username)
 			urlValues.Add("password", tt.args.password)
 			urlValues.Add("email_address", tt.args.email)
 			if err := sendRequest(
-				api, "POST", "/api/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
+				api, "POST", "/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
 			); err != nil {
 				t.Fatal(err)
 			}
@@ -213,8 +213,8 @@ func Test_API_Setup(t *testing.T) {
 		name string
 		args args
 	}{
-		{"Login-testuser2", args{"POST", "/api/v2/auth/login", "testuser2", "password123!@#$%^&&**(!@#!", ""}},
-		{"Login-testuser", args{"POST", "/api/v2/auth/login", "testuser", "admin", ""}},
+		{"Login-testuser2", args{"POST", "/v2/auth/login", "testuser2", "password123!@#$%^&&**(!@#!", ""}},
+		{"Login-testuser", args{"POST", "/v2/auth/login", "testuser", "admin", ""}},
 	}
 
 	for _, tt := range tests {
@@ -267,26 +267,26 @@ func Test_API_Routes_Misc(t *testing.T) {
 	}
 
 	// test systems check route
-	// //api/v2/systems/check
+	// //v2/systems/check
 	var apiResp apiResponse
 	if err := sendRequest(
-		api, "GET", "/api/v2/systems/check", 200, nil, nil, &apiResp,
+		api, "GET", "/v2/systems/check", 200, nil, nil, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/systems/check")
+		t.Fatal("bad api status code from /v2/systems/check")
 	}
 	if apiResp.Response != "systems online" {
 		t.Fatal("bad system status recovered")
 	}
 
 	// test systems statistics
-	// /api/v2/statistics/stats
+	// /v2/statistics/stats
 
 	if err := sendRequest(
-		api, "GET", "/api/v2/statistics/stats", 200, nil, nil, nil,
+		api, "GET", "/v2/statistics/stats", 200, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}

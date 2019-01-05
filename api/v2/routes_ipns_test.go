@@ -36,17 +36,17 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	um.AddIPFSKeyForUser("testuser", "mytestkey", "suchkeymuchwow")
 
 	// test get ipns records
-	// /api/v2/ipns/records
+	// /v2/ipns/records
 	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/api/v2/ipns/records", nil)
+	req := httptest.NewRequest("GET", "/v2/ipns/records", nil)
 	req.Header.Add("Authorization", authHeader)
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /api/v2/ipns/records")
+		t.Fatal("bad http status code from /v2/ipns/records")
 	}
 
 	// test ipns publishing (public) - bad hash
-	// /api/v2/ipns/public/publish/details
+	// /v2/ipns/public/publish/details
 	var apiResp apiResponse
 	urlValues := url.Values{}
 	urlValues.Add("hash", "notavalidipfshash")
@@ -55,13 +55,13 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	urlValues.Add("key", "mytestkey")
 	urlValues.Add("resolve", "true")
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipns/public/publish/details", 400, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipns/public/publish/details", 400, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 
 	// test ipns publishing (private) - bad hash
-	// /api/v2/ipns/private/publish/details
+	// /v2/ipns/private/publish/details
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("hash", "notavalidipfshash")
@@ -71,7 +71,7 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	urlValues.Add("resolve", "true")
 	urlValues.Add("network_name", "testnetwork")
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipns/private/publish/details", 400, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipns/private/publish/details", 400, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -86,13 +86,13 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	urlValues.Add("key", "mytestkey")
 	urlValues.Add("resolve", "true")
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipns/public/publish/details", 200, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipns/public/publish/details", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/ipns/public/publish/details")
+		t.Fatal("bad api status code from /v2/ipns/public/publish/details")
 	}
 
 	// test ipns publishing (private)
@@ -114,17 +114,17 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	urlValues.Add("resolve", "true")
 	urlValues.Add("network_name", "testnetwork")
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipns/private/publish/details", 200, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipns/private/publish/details", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/ipns/private/publish/details")
+		t.Fatal("bad api status code from /v2/ipns/private/publish/details")
 	}
 
 	// test get ipns records
-	// /api/v2/ipns/records
+	// /v2/ipns/records
 	// spoof a fake record as we arent using the queues in this test
 	var ipnsAPIResp ipnsAPIResponse
 	im := models.NewIPNSManager(db)
@@ -132,13 +132,13 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := sendRequest(
-		api, "GET", "/api/v2/ipns/records", 200, nil, nil, &ipnsAPIResp,
+		api, "GET", "/v2/ipns/records", 200, nil, nil, &ipnsAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if ipnsAPIResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/ipns/private/publish/details")
+		t.Fatal("bad api status code from /v2/ipns/private/publish/details")
 	}
 	if len(*ipnsAPIResp.Response) == 0 {
 		t.Fatal("no records discovered")

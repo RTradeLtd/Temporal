@@ -36,7 +36,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 		t.Fatal(err)
 	}
 	// add a file normally
-	// /api/v2/ipfs/public/file/add
+	// /v2/ipfs/public/file/add
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
 	fileWriter, err := bodyWriter.CreateFormFile("file", "../../testenv/config.json")
@@ -53,7 +53,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 	bodyWriter.Close()
 	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/ipfs/public/file/add", bodyBuf)
+	req := httptest.NewRequest("POST", "/v2/ipfs/public/file/add", bodyBuf)
 	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 	urlValues := url.Values{}
@@ -61,7 +61,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code recovered from /api/v2/ipfs/public/file/add")
+		t.Fatal("bad http status code recovered from /v2/ipfs/public/file/add")
 	}
 	var apiResp apiResponse
 	// unmarshal the response
@@ -74,12 +74,12 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/ipfs/public/file/add")
+		t.Fatal("bad api status code from /v2/ipfs/public/file/add")
 	}
 	hash = apiResp.Response
 
 	// add a file advanced
-	// /api/v2/ipfs/public/file/add/advanced
+	// /v2/ipfs/public/file/add/advanced
 	bodyBuf = &bytes.Buffer{}
 	bodyWriter = multipart.NewWriter(bodyBuf)
 	fileWriter, err = bodyWriter.CreateFormFile("file", "../../testenv/config.json")
@@ -96,7 +96,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 	bodyWriter.Close()
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/ipfs/public/file/add/advanced", bodyBuf)
+	req = httptest.NewRequest("POST", "/v2/ipfs/public/file/add/advanced", bodyBuf)
 	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 	urlValues = url.Values{}
@@ -105,7 +105,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code recovered from /api/v2/ipfs/public/file/add/advanced")
+		t.Fatal("bad http status code recovered from /v2/ipfs/public/file/add/advanced")
 	}
 	apiResp = apiResponse{}
 	// unmarshal the response
@@ -118,37 +118,37 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /api/v2/ipfs/public/file/add/advanced")
+		t.Fatal("bad api status code from /v2/ipfs/public/file/add/advanced")
 	}
 
 	// test pinning
-	// /api/v2/ipfs/public/pin
+	// /v2/ipfs/public/pin
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("hold_time", "5")
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipfs/public/pin/"+hash, 200, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipfs/public/pin/"+hash, 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from  /api/v2/ipfs/public/pin")
+		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
 	}
 
 	// test pubsub publish
-	// /api/v2/ipfs/pubsub/publish/topic
+	// /v2/ipfs/pubsub/publish/topic
 	urlValues = url.Values{}
 	urlValues.Add("message", "bar")
 	var mapAPIResp mapAPIResponse
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipfs/public/pubsub/publish/foo", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/v2/ipfs/public/pubsub/publish/foo", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if mapAPIResp.Code != 200 {
-		t.Fatal("bad api status code from  /api/v2/pubsub/publish/topic")
+		t.Fatal("bad api status code from  /v2/pubsub/publish/topic")
 	}
 	if mapAPIResp.Response["topic"] != "foo" {
 		t.Fatal("bad response")
@@ -158,46 +158,46 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 
 	// test object stat
-	// /api/v2/ipfs/stat
+	// /v2/ipfs/stat
 	var interfaceAPIResp interfaceAPIResponse
 	if err := sendRequest(
-		api, "GET", "/api/v2/ipfs/public/stat/"+hash, 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/v2/ipfs/public/stat/"+hash, 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	if interfaceAPIResp.Code != 200 {
-		t.Fatal("bad response status code from /api/v2/ipfs/public/stat")
+		t.Fatal("bad response status code from /v2/ipfs/public/stat")
 	}
 
 	// test get dag
-	// /api/v2/ipfs/public/dag
+	// /v2/ipfs/public/dag
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
-		api, "GET", "/api/v2/ipfs/public/dag/"+hash, 200, nil, nil, &interfaceAPIResp,
+		api, "GET", "/v2/ipfs/public/dag/"+hash, 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	if interfaceAPIResp.Code != 200 {
-		t.Fatal("bad response status code from /api/v2/ipfs/public/dag/")
+		t.Fatal("bad response status code from /v2/ipfs/public/dag/")
 	}
 
 	// test download
-	// /api/v2/ipfs/utils/download
+	// /v2/ipfs/utils/download
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipfs/utils/download/"+hash, 200, nil, nil, nil,
+		api, "POST", "/v2/ipfs/utils/download/"+hash, 200, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
 
 	// test public network beam
-	// /api/v2/ipfs/utils/laser/beam
+	// /v2/ipfs/utils/laser/beam
 	urlValues = url.Values{}
 	urlValues.Add("source_network", "public")
 	urlValues.Add("destination_network", "public")
 	urlValues.Add("content_hash", hash)
 	urlValues.Add("passphrase", "password123")
 	if err := sendRequest(
-		api, "POST", "/api/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
+		api, "POST", "/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}

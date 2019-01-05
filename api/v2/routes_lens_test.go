@@ -32,40 +32,40 @@ func Test_API_Routes_Lens(t *testing.T) {
 	}
 
 	// test lens index - missing post form
-	// /api/v2/lens/index
+	// /v2/lens/index
 	var apiResp apiResponse
 	urlValues := url.Values{}
 	urlValues.Add("object_type", "ipld")
 	if err := sendRequest(
-		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, &apiResp,
+		api, "POST", "/v2/lens/index", 400, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 
 	// test lens index - invalid object type
-	// /api/v2/lens/index
+	// /v2/lens/index
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "storj")
 	urlValues.Add("object_identifier", hash)
 	if err := sendRequest(
-		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
+		api, "POST", "/v2/lens/index", 400, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
 
 	// test lens index - bad format hash
-	// /api/v2/lens/index
+	// /v2/lens/index
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "ipld")
 	urlValues.Add("object_identifier", "notarealipfshash")
 	if err := sendRequest(
-		api, "POST", "/api/v2/lens/index", 400, nil, urlValues, nil,
+		api, "POST", "/v2/lens/index", 400, nil, urlValues, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
 
 	// test lens index - valid object type, no reindex
-	// /api/v2/lens/index
+	// /v2/lens/index
 	var mapAPIResp mapAPIResponse
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "ipld")
@@ -76,16 +76,16 @@ func Test_API_Routes_Lens(t *testing.T) {
 		Keywords: []string{"protocols", "minivan"},
 	}, nil)
 	if err := sendRequest(
-		api, "POST", "/api/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	if mapAPIResp.Code != 200 {
-		t.Fatal("bad api response status code from /api/v2/lens/index")
+		t.Fatal("bad api response status code from /v2/lens/index")
 	}
 
 	// test lens index - valid object type, with reindex
-	// /api/v2/lens/index
+	// /v2/lens/index
 	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "ipld")
@@ -97,16 +97,16 @@ func Test_API_Routes_Lens(t *testing.T) {
 		Keywords: []string{"protocols", "minivan"},
 	}, nil)
 	if err := sendRequest(
-		api, "POST", "/api/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	if mapAPIResp.Code != 200 {
-		t.Fatal("bad api response status code from /api/v2/lens/index")
+		t.Fatal("bad api response status code from /v2/lens/index")
 	}
 
 	// test lens index - valid object type, with non yes reindex
-	// /api/v2/lens/index
+	// /v2/lens/index
 	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("object_type", "ipld")
@@ -118,34 +118,34 @@ func Test_API_Routes_Lens(t *testing.T) {
 		Keywords: []string{"protocols", "minivan"},
 	}, nil)
 	if err := sendRequest(
-		api, "POST", "/api/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
+		api, "POST", "/v2/lens/index", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	if mapAPIResp.Code != 200 {
-		t.Fatal("bad api response status code from /api/v2/lens/index")
+		t.Fatal("bad api response status code from /v2/lens/index")
 	}
 
 	// test lens search - with no objects
-	// /api/v2/lens/search
+	// /v2/lens/search
 	apiResp = apiResponse{}
 	fakeLens.SearchReturnsOnCall(0, nil, nil)
 	urlValues = url.Values{}
 	urlValues.Add("keywords", "notarealsearch")
 	if err := sendRequest(
-		api, "POST", "/api/v2/lens/search", 400, nil, urlValues, &apiResp,
+		api, "POST", "/v2/lens/search", 400, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	if apiResp.Code != 400 {
-		t.Fatal("bad api response code from /api/v2/lens/search")
+		t.Fatal("bad api response code from /v2/lens/search")
 	}
 	if apiResp.Response != "no results found" {
 		t.Fatal("failed to correctly detect no results found")
 	}
 
 	// test lens search - with objects
-	// /api/v2/lens/search
+	// /v2/lens/search
 	// setup our mock search response
 	var lensSearchAPIResp lensSearchAPIResponse
 	obj := pbLensResp.Object{
@@ -162,13 +162,13 @@ func Test_API_Routes_Lens(t *testing.T) {
 	urlValues.Add("keywords", "minivan")
 	urlValues.Add("keywords", "protocols")
 	if err := sendRequest(
-		api, "POST", "/api/v2/lens/search", 200, nil, urlValues, &lensSearchAPIResp,
+		api, "POST", "/v2/lens/search", 200, nil, urlValues, &lensSearchAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(lensSearchAPIResp)
 	if lensSearchAPIResp.Code != 200 {
-		t.Fatal("bad api response code from /api/v2/lens/search")
+		t.Fatal("bad api response code from /v2/lens/search")
 	}
 	if lensSearchAPIResp.Response[0]["name"] != hash {
 		t.Fatal("failed to search for correct hash")
