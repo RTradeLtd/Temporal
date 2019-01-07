@@ -283,9 +283,16 @@ func Test_API_Routes_Misc(t *testing.T) {
 
 	// test systems statistics
 	// /v2/statistics/stats
-
 	if err := sendRequest(
 		api, "GET", "/v2/statistics/stats", 200, nil, nil, nil,
+	); err != nil {
+		t.Fatal(err)
+	}
+
+	// test token refresh
+	// /v2/auth/refresh
+	if err := sendRequest(
+		api, "GET", "/v2/auth/refresh", 200, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}

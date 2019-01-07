@@ -15,9 +15,6 @@ func (api *API) LogError(err error, message string, fields ...interface{}) func(
 
 	// write log
 	if fields != nil && len(fields)%2 == 0 {
-		logger = logger.With(fields...)
-	}
-	if fields != nil && len(fields)%2 == 0 {
 		fields = append(fields, "error", err.Error())
 		logger.Errorw(message, fields...)
 	} else {
