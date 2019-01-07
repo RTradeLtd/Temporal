@@ -1,5 +1,6 @@
 TEMPORALVERSION=`git describe --tags`
 BUCKET=filesuploadbucket
+TEMPORALDEVFLAGS=-config ./testenv/config.json -db.no_ssl
 
 all: check cli
 
@@ -134,7 +135,7 @@ release-docker: docker
 # Run development API
 .PHONY: api
 api:
-	go run cmd/temporal/main.go -config ./testenv/config.json api
+	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) api
 
 USER=testuser
 PASSWORD=admin
@@ -142,12 +143,12 @@ EMAIL=test@email.com
 
 .PHONY: api-user
 api-user:
-	go run cmd/temporal/main.go -config ./testenv/config.json user $(USER) $(PASSWORD) $(EMAIL)
+	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) user $(USER) $(PASSWORD) $(EMAIL)
 
 .PHONY: api-admin
 api-admin:
-	go run cmd/temporal/main.go -config ./testenv/config.json admin $(USER)
+	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) admin $(USER)
 
 .PHONY: files-bucket
 files-bucket:
-	go run cmd/temporal/main.go -config ./testenv/config.json make-bucket $(BUCKET)
+	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) make-bucket $(BUCKET)
