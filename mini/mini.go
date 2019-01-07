@@ -43,30 +43,6 @@ func (mm *MinioManager) ListBuckets() ([]minio.BucketInfo, error) {
 	return mm.Client.ListBuckets()
 }
 
-// MakeBucket is a wrapper for te minio MakeBucket method
-func (mm *MinioManager) MakeBucket(args map[string]string) error {
-	var name, location string
-	_, ok := args["name"]
-	if !ok {
-		return errors.New("name item is missing from args")
-	}
-	_, ok = args["location"]
-	if ok {
-		location = args["location"]
-	} else {
-		location = DefaultBucketLocation
-	}
-	name = args["name"]
-	exists, err := mm.CheckIfBucketExists(name)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return errors.New("bucket already exists")
-	}
-	return mm.Client.MakeBucket(name, location)
-}
-
 // PutObjectOptions are options used to configure storing an object in a bucket
 type PutObjectOptions struct {
 	Bucket            string

@@ -35,18 +35,6 @@ func TestNewMinioManagerSecure(t *testing.T) {
 	}
 }
 
-func TestMakeBucket(t *testing.T) {
-	mm, err := newMM(false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = mm.MakeBucket(map[string]string{"name": bucket}); err != nil {
-		t.Fatal(err)
-	}
-	if err = mm.MakeBucket(map[string]string{"name": bucket}); err == nil {
-		t.Fatal("error expected")
-	}
-}
 func TestListBuckets(t *testing.T) {
 	mm, err := newMM(false)
 	if err != nil {

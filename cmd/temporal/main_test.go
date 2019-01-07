@@ -9,7 +9,8 @@ import (
 )
 
 func init() {
-	*dbNoSSL = true
+	var t = true
+	dbNoSSL = &t
 }
 
 func TestAPI(t *testing.T) {

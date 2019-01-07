@@ -10,12 +10,14 @@ import (
 	"sync"
 	"syscall"
 
+	"go.uber.org/zap"
+
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/jinzhu/gorm"
 
-	"github.com/RTradeLtd/Temporal/api/v2"
-	"github.com/RTradeLtd/Temporal/api/v3"
-	"github.com/RTradeLtd/Temporal/grpc-clients"
+	v2 "github.com/RTradeLtd/Temporal/api/v2"
+	v3 "github.com/RTradeLtd/Temporal/api/v3"
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd"
@@ -36,28 +38,6 @@ const (
 	defaultLogPath = "/var/log/temporal/"
 )
 
-// command-line flags
-var (
-	devMode = flag.Bool("dev", false,
-		"toggle dev mode")
-	configPath = flag.String("config", os.Getenv("CONFIG_DAG"),
-		"path to Temporal configuration")
-
-	// db configuration
-	dbNoSSL = flag.Bool("db.no_ssl", false,
-		"toggle SSL connection with database")
-	dbMigrate = flag.Bool("db.migrate", false,
-		"toggle whether a database migration should occur")
-
-	// grpc configuration
-	grpcNoSSL = flag.Bool("grpc.no_ssl", false,
-		"toggle SSL connection with GRPC services")
-
-	// api configuration
-	apiPort = flag.String("api.port", "6767",
-		"set port to expose API on")
-)
-
 // globals
 var (
 	ctx    context.Context
@@ -66,6 +46,42 @@ var (
 	lens   pbLens.IndexerAPIClient
 	signer pbSigner.SignerClient
 )
+
+// command-line flags
+var (
+	devMode    *bool
+	configPath *string
+	dbNoSSL    *bool
+	dbMigrate  *bool
+	grpcNoSSL  *bool
+	apiPort    *string
+)
+
+func baseFlagSet() *flag.FlagSet {
+	var f = flag.NewFlagSet("", flag.ExitOnError)
+
+	// basic flags
+	devMode = f.Bool("dev", false,
+		"toggle dev mode")
+	configPath = f.String("config", os.Getenv("CONFIG_DAG"),
+		"path to Temporal configuration")
+
+	// db configuration
+	dbNoSSL = f.Bool("db.no_ssl", false,
+		"toggle SSL connection with database")
+	dbMigrate = f.Bool("db.migrate", false,
+		"toggle whether a database migration should occur")
+
+	// grpc configuration
+	grpcNoSSL = f.Bool("grpc.no_ssl", false,
+		"toggle SSL connection with GRPC services")
+
+	// api configuration
+	apiPort = f.String("api.port", "6767",
+		"set port to expose API on")
+
+	return f
+}
 
 func logPath(base, file string) (logPath string) {
 	if base == "" {
@@ -86,6 +102,36 @@ func newDB(cfg config.TemporalConfig, noSSL bool) (*gorm.DB, error) {
 	})
 }
 
+func initClients(l *zap.SugaredLogger, cfg *config.TemporalConfig) (closers []func()) {
+	closers = make([]func(), 0)
+	if lens == nil {
+		client, err := clients.NewLensClient(cfg.Endpoints)
+		if err != nil {
+			l.Fatal(err)
+		}
+		closers = append(closers, client.Close)
+		lens = client
+	}
+	if orch == nil {
+		client, err := clients.NewOcrhestratorClient(cfg.Orchestrator)
+		if err != nil {
+			l.Fatal(err)
+		}
+		defer client.Close()
+		closers = append(closers, client.Close)
+		orch = client
+	}
+	if signer == nil {
+		client, err := clients.NewSignerClient(cfg, *grpcNoSSL)
+		if err != nil {
+			l.Fatal(err)
+		}
+		closers = append(closers, client.Close)
+		signer = client
+	}
+	return
+}
+
 var commands = map[string]cmd.Cmd{
 	"api": {
 		Blurb:       "start Temporal api server",
@@ -97,11 +143,24 @@ var commands = map[string]cmd.Cmd{
 				os.Exit(1)
 			}
 			logger = logger.With("version", args["version"])
+
+			// init api service
 			service, err := v2.Initialize(&cfg, args["version"], *devMode, logger, lens, orch, signer)
 			if err != nil {
 				logger.Fatal(err)
 			}
 
+			// init clients and clean up if necessary
+			var closers = initClients(logger, &cfg)
+			if closers != nil {
+				defer func() {
+					for _, c := range closers {
+						c()
+					}
+				}()
+			}
+
+			// set up clean interrupt
 			quitChannel := make(chan os.Signal)
 			signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 			go func() {
@@ -111,6 +170,7 @@ var commands = map[string]cmd.Cmd{
 				cancel()
 			}()
 
+			// go!
 			var addr = fmt.Sprintf("%s:%s", args["listenAddress"], *apiPort)
 			if args["certFilePath"] == "" || args["keyFilePath"] == "" {
 				fmt.Println("TLS config incomplete - starting API service without TLS...")
@@ -415,6 +475,7 @@ var commands = map[string]cmd.Cmd{
 		Hidden:      true,
 		Blurb:       "create a user",
 		Description: "Create a Temporal user. Provide args as username, password, email. Do not use in production.",
+		Args:        []string{"user", "pass", "email"},
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			if len(args) < 3 {
 				fmt.Println("insufficient arguments provided")
@@ -440,6 +501,7 @@ var commands = map[string]cmd.Cmd{
 		Hidden:      true,
 		Blurb:       "assign user as an admin",
 		Description: "Assign an existing Temporal user as an administrator.",
+		Args:        []string{"dbAdmin"},
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			if args["dbAdmin"] == "" {
 				fmt.Println("dbAdmin flag not provided")
@@ -501,8 +563,9 @@ var commands = map[string]cmd.Cmd{
 	},
 	"make-bucket": {
 		Hidden:      true,
-		Blurb:       "used to create a minio bucket, run against localhost only",
-		Description: "Allows the creation of buckets with minio, useful for the initial setup of temporal",
+		Blurb:       "create a minio bucket - for use against localhost only",
+		Description: "Allows the creation of buckets with minio, useful for initial Temporal setup.",
+		Args:        []string{"name", "location"},
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			mm, err := mini.NewMinioManager(
 				cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
@@ -511,10 +574,30 @@ var commands = map[string]cmd.Cmd{
 				fmt.Println("failed to initialize minio manager")
 				os.Exit(1)
 			}
-			if err = mm.MakeBucket(args); err != nil {
-				fmt.Println("failed to create bucket")
+			var name, location string
+			var ok bool
+			if name, ok = args["name"]; !ok {
+				println("name item is missing from args")
 				os.Exit(1)
 			}
+			if location, ok = args["location"]; ok {
+				location = args["location"]
+			} else {
+				location = mini.DefaultBucketLocation
+			}
+			fmt.Printf("preparing to create bucket '%s' at '%s'\n", name, location)
+			if exists, err := mm.CheckIfBucketExists(name); err != nil {
+				println(err.Error())
+				os.Exit(1)
+			} else if exists {
+				fmt.Printf("bucket '%s' exists", name)
+				os.Exit(1)
+			}
+			if err := mm.Client.MakeBucket(name, location); err != nil {
+				println(err.Error())
+				os.Exit(1)
+			}
+			println("bucket created")
 		},
 	},
 	"migrate": {
@@ -540,34 +623,25 @@ func main() {
 	// initialize global context
 	ctx, cancel = context.WithCancel(context.Background())
 
-	// load flags and args
-	flag.Parse()
-	var args = flag.Args()
-
 	// create app
 	temporal := cmd.New(commands, cmd.Config{
 		Name:     "Temporal",
 		ExecName: "temporal",
 		Version:  Version,
 		Desc:     "Temporal is an easy-to-use interface into distributed and decentralized storage technologies for personal and enterprise use cases.",
+		Options:  baseFlagSet(),
 	})
 
 	// run no-config commands, exit if command was run
-	if exit := temporal.PreRun(args); exit == cmd.CodeOK {
+	if exit := temporal.PreRun(nil, os.Args[1:]); exit == cmd.CodeOK {
 		os.Exit(0)
-	}
-	logger, err := log.NewLogger("stdout", false)
-	if err != nil {
-		fmt.Println("failed to initialize logger")
-		os.Exit(1)
 	}
 
 	// load config
-	logger.Infow("loading config",
-		"path", *configPath)
 	tCfg, err := config.LoadConfig(*configPath)
 	if err != nil {
-		logger.Fatal(err)
+		println("failed to load config at", *configPath)
+		os.Exit(1)
 	}
 
 	// load arguments
@@ -580,36 +654,7 @@ func main() {
 		"dbUser":        tCfg.Database.Username,
 		"version":       Version,
 	}
-	switch args[0] {
-	case "user":
-		flags["user"] = args[1]
-		flags["pass"] = args[2]
-		flags["email"] = args[3]
-	case "admin":
-		flags["dbAdmin"] = args[1]
-	case "api":
-		lensClient, err := clients.NewLensClient(tCfg.Endpoints)
-		if err != nil {
-			logger.Fatal(err)
-		}
-		defer lensClient.Close()
-		lens = lensClient
-		orchClient, err := clients.NewOcrhestratorClient(tCfg.Orchestrator)
-		if err != nil {
-			logger.Fatal(err)
-		}
-		defer orchClient.Close()
-		orch = orchClient
-		signerClient, err := clients.NewSignerClient(tCfg, *grpcNoSSL)
-		if err != nil {
-			logger.Fatal(err)
-		}
-		defer signerClient.Close()
-		signer = signerClient
-	case "make-bucket", "make-bucket-insecure":
-		flags["name"] = args[1]
-	}
 
 	// execute
-	os.Exit(temporal.Run(*tCfg, flags, args))
+	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
 }
