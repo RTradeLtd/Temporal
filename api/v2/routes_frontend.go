@@ -16,7 +16,7 @@ import (
 func (api *API) calculatePinCost(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
 	hash := c.Param("hash")
@@ -40,7 +40,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 	}
 	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, isPrivate)
 	if err != nil {
-		api.LogError(err, eh.PinCostCalculationError)
+		api.LogError(c, err, eh.PinCostCalculationError)
 		Fail(c, err)
 		return
 	}
@@ -52,7 +52,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 func (api *API) calculateFileCost(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
 	file, err := c.FormFile("file")
@@ -90,12 +90,12 @@ func (api *API) calculateFileCost(c *gin.Context) {
 func (api *API) getEncryptedUploadsForUser(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
 	uploads, err := api.ue.FindUploadsByUser(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		api.LogError(err, eh.UploadSearchError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.UploadSearchError)(c, http.StatusBadRequest)
 		return
 	}
 	if len(*uploads) == 0 {

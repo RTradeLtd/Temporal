@@ -245,25 +245,25 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 func (api *API) Close() {
 	// close queue resources
 	if err := api.queues.cluster.Close(); err != nil {
-		api.LogError(err, "failed to properly close cluster queue connection")
+		api.l.Error(err, "failed to properly close cluster queue connection")
 	}
 	if err := api.queues.database.Close(); err != nil {
-		api.LogError(err, "failed to properly close database queue connection")
+		api.l.Error(err, "failed to properly close database queue connection")
 	}
 	if err := api.queues.email.Close(); err != nil {
-		api.LogError(err, "failed to properly close email queue connection")
+		api.l.Error(err, "failed to properly close email queue connection")
 	}
 	if err := api.queues.file.Close(); err != nil {
-		api.LogError(err, "failed to properly close file queue connection")
+		api.l.Error(err, "failed to properly close file queue connection")
 	}
 	if err := api.queues.ipns.Close(); err != nil {
-		api.LogError(err, "failed to properly close ipns queue connection")
+		api.l.Error(err, "failed to properly close ipns queue connection")
 	}
 	if err := api.queues.key.Close(); err != nil {
-		api.LogError(err, "failed to properly close key queue connection")
+		api.l.Error(err, "failed to properly close key queue connection")
 	}
 	if err := api.queues.pin.Close(); err != nil {
-		api.LogError(err, "failed to properly close pin queue connection")
+		api.l.Error(err, "failed to properly close pin queue connection")
 	}
 }
 

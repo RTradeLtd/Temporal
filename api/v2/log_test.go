@@ -41,9 +41,9 @@ func TestAPI_LogError(t *testing.T) {
 			r := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(r)
 			if tt.args.fields != nil {
-				api.LogError(tt.args.err, tt.args.message, tt.args.fields...)(c)
+				api.LogError(c, tt.args.err, tt.args.message, tt.args.fields...)(c)
 			} else {
-				api.LogError(tt.args.err, tt.args.message)(c)
+				api.LogError(c, tt.args.err, tt.args.message)(c)
 			}
 
 			// check log message and context

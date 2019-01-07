@@ -23,7 +23,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "hold_time")
@@ -37,11 +37,11 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	}
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, false)
 	if err != nil {
-		api.LogError(err, eh.PinCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.PinCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(c, err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	ip := queue.IPFSPin{
@@ -52,7 +52,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		CreditCost:       cost,
 	}
 	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c)
+		api.LogError(c, err, eh.QueuePublishError)(c)
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}
@@ -66,7 +66,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
 	logger := api.l.With("user", username)
@@ -80,7 +80,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
 	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
 	if err != nil {
-		api.LogError(err, eh.MinioConnectionError)(c)
+		api.LogError(c, err, eh.MinioConnectionError)(c)
 		return
 	}
 	fileHandler, err := c.FormFile("file")
@@ -99,13 +99,13 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	}
 	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, false)
 	if err = api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(c, err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	logger.Debug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, eh.FileOpenError,
+		api.LogError(c, err, eh.FileOpenError,
 			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
@@ -120,7 +120,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 			Bucket:            FilesUploadBucket,
 			EncryptPassphrase: html.UnescapeString(c.PostForm("passphrase")),
 		}); err != nil {
-		api.LogError(err, eh.MinioPutError,
+		api.LogError(c, err, eh.MinioPutError,
 			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
@@ -140,7 +140,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		Encrypted: c.PostForm("passphrase") != "",
 	}
 	if err = api.queues.file.PublishMessage(ifp); err != nil {
-		api.LogError(err, eh.QueuePublishError,
+		api.LogError(c, err, eh.QueuePublishError,
 			"user", username)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
@@ -154,7 +154,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 func (api *API) addFileLocally(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "hold_time")
@@ -178,14 +178,14 @@ func (api *API) addFileLocally(c *gin.Context) {
 	}
 	cost := utils.CalculateFileCost(holdTimeinMonthsInt, fileHandler.Size, false)
 	if err = api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(c, err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	// open the file
 	api.l.Debug("opening file")
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(err, eh.FileOpenError)(c)
+		api.LogError(c, err, eh.FileOpenError)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
@@ -193,7 +193,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	api.l.Debug("initializing manager")
 	// initialize a connection to the local ipfs node
 	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c)
+		api.LogError(c, err, eh.IPFSConnectionError)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
@@ -201,7 +201,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	api.l.Debug("adding file...")
 	resp, err := api.ipfs.Add(openFile)
 	if err != nil {
-		api.LogError(err, eh.IPFSAddError)(c)
+		api.LogError(c, err, eh.IPFSAddError)(c)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
@@ -213,7 +213,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeinMonthsInt,
 		CreditCost:       0,
 	}, queue.PinExchange); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c)
+		api.LogError(c, err, eh.QueuePublishError)(c)
 		return
 	}
 	// construct a message to rabbitmq to upad the database
@@ -225,7 +225,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		CreditCost:       0,
 	}
 	if err = api.queues.database.PublishMessage(dfa); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError)(c, http.StatusBadRequest)
 		return
 	}
 	api.l.Infow("simple ipfs file upload processed", "user", username)
@@ -236,7 +236,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
 	topic := c.Param("topic")
@@ -246,20 +246,20 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	}
 	cost, err := utils.CalculateAPICallCost("pubsub", false)
 	if err != nil {
-		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(c, err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
 		return
 	}
 	if err != nil {
-		api.LogError(err, eh.IPFSConnectionError)(c)
+		api.LogError(c, err, eh.IPFSConnectionError)(c)
 		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
 	if err = api.ipfs.PubSubPublish(topic, forms["message"]); err != nil {
-		api.LogError(err, eh.IPFSPubSubPublishError)(c)
+		api.LogError(c, err, eh.IPFSPubSubPublishError)(c)
 		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
@@ -272,7 +272,7 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 func (api *API) getObjectStatForIpfs(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
 		return
 	}
 	key := c.Param("key")
@@ -282,7 +282,7 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 	}
 	stats, err := api.ipfs.Stat(key)
 	if err != nil {
-		api.LogError(err, eh.IPFSObjectStatError)
+		api.LogError(c, err, eh.IPFSObjectStatError)
 		Fail(c, err)
 		return
 	}
@@ -300,7 +300,7 @@ func (api *API) getDagObject(c *gin.Context) {
 	}
 	var out interface{}
 	if err := api.ipfs.DagGet(hash, &out); err != nil {
-		api.LogError(err, eh.IPFSDagGetError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.IPFSDagGetError)(c, http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": out})

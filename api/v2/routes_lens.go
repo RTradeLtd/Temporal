@@ -36,7 +36,7 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 		Reindex:    c.PostForm("reindex") == "yes",
 	})
 	if err != nil {
-		api.LogError(err, eh.FailedToIndexError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.FailedToIndexError)(c, http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{
@@ -63,7 +63,7 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 	})
 	if err != nil {
 		fmt.Println(err)
-		api.LogError(err, eh.FailedToSearchError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.FailedToSearchError)(c, http.StatusBadRequest)
 		return
 	}
 	if len(resp.GetObjects()) == 0 {
