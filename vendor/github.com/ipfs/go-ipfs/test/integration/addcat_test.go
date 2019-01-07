@@ -120,7 +120,10 @@ func DirectAddCat(data []byte, conf testutil.LatencyConfig) error {
 	}
 	defer catter.Close()
 
-	catterApi := coreapi.NewCoreAPI(catter)
+	catterApi, err := coreapi.NewCoreAPI(catter)
+	if err != nil {
+		return err
+	}
 
 	err = mn.LinkAll()
 	if err != nil {
@@ -154,7 +157,7 @@ func DirectAddCat(data []byte, conf testutil.LatencyConfig) error {
 
 	// verify
 	bufout := new(bytes.Buffer)
-	io.Copy(bufout, readerCatted)
+	io.Copy(bufout, readerCatted.(io.Reader))
 	if 0 != bytes.Compare(bufout.Bytes(), data) {
 		return errors.New("catted data does not match added data")
 	}

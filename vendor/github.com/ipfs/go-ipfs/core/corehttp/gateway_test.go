@@ -20,7 +20,7 @@ import (
 
 	ci "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
 	id "gx/ipfs/QmRBaUEQEeFWywfrZJ64QgsmvcqgLSK3VbvGMR2NM2Edpf/go-libp2p/p2p/protocol/identify"
-	config "gx/ipfs/QmYyzmMnhNTtoXx5ttgUaRdHHckYnQWjPL98hgLAR2QLDD/go-ipfs-config"
+	config "gx/ipfs/QmRd5T3VmYoX6jaNoZovFRQcwWHJqHgTVQTs1Qz92ELJ7C/go-ipfs-config"
 	path "gx/ipfs/QmZErC2Ay6WuGi96CPg316PwitdwgLo6RxZRqVjJjRj2MR/go-path"
 	dag "gx/ipfs/QmdV35UHnL1FM52baPkeUo6u7Fxm2CRUkPTLRPxeF8a4Ap/go-merkledag"
 	datastore "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
@@ -405,6 +405,9 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	if !strings.Contains(s, "<a href=\"/foo%3F%20%23%3C%27/file.txt\">") {
 		t.Fatalf("expected file in directory listing")
 	}
+	if !strings.Contains(s, dagn2.Cid().String()) {
+		t.Fatalf("expected hash in directory listing")
+	}
 
 	// make request to directory listing at root
 	req, err = http.NewRequest("GET", ts.URL, nil)
@@ -434,6 +437,9 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	}
 	if !strings.Contains(s, "<a href=\"/file.txt\">") {
 		t.Fatalf("expected file in directory listing")
+	}
+	if !strings.Contains(s, dagn1.Cid().String()) {
+		t.Fatalf("expected hash in directory listing")
 	}
 
 	// make request to directory listing
@@ -465,6 +471,9 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	if !strings.Contains(s, "<a href=\"/foo%3F%20%23%3C%27/bar/file.txt\">") {
 		t.Fatalf("expected file in directory listing")
 	}
+	if !strings.Contains(s, dagn3.Cid().String()) {
+		t.Fatalf("expected hash in directory listing")
+	}
 
 	// make request to directory listing with prefix
 	req, err = http.NewRequest("GET", ts.URL, nil)
@@ -495,6 +504,9 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	}
 	if !strings.Contains(s, "<a href=\"/good-prefix/file.txt\">") {
 		t.Fatalf("expected file in directory listing")
+	}
+	if !strings.Contains(s, dagn1.Cid().String()) {
+		t.Fatalf("expected hash in directory listing")
 	}
 
 	// make request to directory listing with illegal prefix
@@ -534,6 +546,9 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	}
 	if !strings.Contains(s, "<a href=\"/file.txt\">") {
 		t.Fatalf("expected file in directory listing")
+	}
+	if !strings.Contains(s, dagn1.Cid().String()) {
+		t.Fatalf("expected hash in directory listing")
 	}
 }
 

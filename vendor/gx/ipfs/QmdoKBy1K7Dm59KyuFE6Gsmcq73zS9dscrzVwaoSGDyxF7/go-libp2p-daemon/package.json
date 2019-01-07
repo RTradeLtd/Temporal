@@ -1,0 +1,45 @@
+{
+  "author": "vyzo",
+  "bugs": {},
+  "gx": {
+    "dvcsimport": "github.com/libp2p/go-libp2p-daemon"
+  },
+  "gxDependencies": [
+    {
+      "author": "whyrusleeping",
+      "hash": "QmRBaUEQEeFWywfrZJ64QgsmvcqgLSK3VbvGMR2NM2Edpf",
+      "name": "go-libp2p",
+      "version": "6.0.28"
+    },
+    {
+      "hash": "QmXbPygnUKAPMwseE5U3hQA7Thn59GVm7pQrhkFV63umT8",
+      "name": "go-libp2p-kad-dht",
+      "version": "4.4.17"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmWJBngogUPF87Xz788NotnwfYS1B5oanKew82zuMwUkQu",
+      "name": "go-libp2p-connmgr",
+      "version": "0.3.29"
+    },
+    {
+      "author": "marten-seemann",
+      "hash": "QmSvK3DvgynMo45orM88RQowdupvgdxs3fDyahQsKkmcUP",
+      "name": "go-libp2p-quic-transport",
+      "version": "0.2.14"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmaqGyUhWLsJbVo1QAujSu13mxNjFJ98Kt2VWGSnShGE1Q",
+      "name": "go-libp2p-pubsub",
+      "version": "0.11.9"
+    }
+  ],
+  "gxVersion": "0.12.1",
+  "language": "go",
+  "license": "",
+  "name": "go-libp2p-daemon",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.0.4"
+}
+

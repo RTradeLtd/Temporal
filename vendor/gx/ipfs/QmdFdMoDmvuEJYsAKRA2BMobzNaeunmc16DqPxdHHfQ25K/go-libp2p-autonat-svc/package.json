@@ -1,0 +1,28 @@
+{
+  "author": "vyzo",
+  "bugs": {},
+  "gx": {
+    "dvcsimport": "github.com/libp2p/go-libp2p-autonat-svc"
+  },
+  "gxDependencies": [
+    {
+      "author": "whyrusleeping",
+      "hash": "QmRBaUEQEeFWywfrZJ64QgsmvcqgLSK3VbvGMR2NM2Edpf",
+      "name": "go-libp2p",
+      "version": "6.0.28"
+    },
+    {
+      "author": "vyzo",
+      "hash": "QmQXeTmQcPFnf3ZAvik2qgKxWNoZ27aKGcW8hUBwBrTxT1",
+      "name": "go-libp2p-autonat",
+      "version": "1.0.4"
+    }
+  ],
+  "gxVersion": "0.12.1",
+  "language": "go",
+  "license": "",
+  "name": "go-libp2p-autonat-svc",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "1.0.3"
+}
+

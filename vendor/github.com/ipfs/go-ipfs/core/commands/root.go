@@ -8,7 +8,7 @@ import (
 	ocmd "github.com/ipfs/go-ipfs/core/commands/object"
 	unixfs "github.com/ipfs/go-ipfs/core/commands/unixfs"
 
-	cmds "gx/ipfs/QmPdvMtgpnMuU68mWhGtzCxnddXJoV96tT9aPcNbQsqPaM/go-ipfs-cmds"
+	cmds "gx/ipfs/QmaAP56JAwdjwisPTu4yx17whcjTr6y5JCSCF77Y1rahWV/go-ipfs-cmds"
 	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
@@ -18,10 +18,11 @@ var log = logging.Logger("core/commands")
 var ErrNotOnline = errors.New("this command must be run in online mode. Try running 'ipfs daemon' first")
 
 const (
-	ConfigOption = "config"
-	DebugOption  = "debug"
-	LocalOption  = "local"
-	ApiOption    = "api"
+	ConfigOption  = "config"
+	DebugOption   = "debug"
+	LocalOption   = "local" // DEPRECATED: use OfflineOption
+	OfflineOption = "offline"
+	ApiOption     = "api"
 )
 
 var Root = &cmds.Command{
@@ -92,7 +93,8 @@ The CLI will exit with one of the following values:
 		cmdkit.BoolOption(DebugOption, "D", "Operate in debug mode."),
 		cmdkit.BoolOption(cmds.OptLongHelp, "Show the full command help text."),
 		cmdkit.BoolOption(cmds.OptShortHelp, "Show a short version of the command help text."),
-		cmdkit.BoolOption(LocalOption, "L", "Run the command locally, instead of using the daemon."),
+		cmdkit.BoolOption(LocalOption, "L", "Run the command locally, instead of using the daemon. DEPRECATED: use --offline."),
+		cmdkit.BoolOption(OfflineOption, "Run the command offline."),
 		cmdkit.StringOption(ApiOption, "Use a specific API instance (defaults to /ip4/127.0.0.1/tcp/5001)"),
 
 		// global options, added to every command

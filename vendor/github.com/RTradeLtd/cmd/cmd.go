@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"flag"
+
 	"github.com/RTradeLtd/config"
 )
 
@@ -11,7 +13,11 @@ type Cmd struct {
 	Hidden        bool
 	PreRun        bool
 	ChildRequired bool
+	Children      map[string]Cmd
 
-	Action   func(cfg config.TemporalConfig, flags map[string]string)
-	Children map[string]Cmd
+	Args    []string      // names of required positional arguments. order is enforced
+	Options *flag.FlagSet // command flags
+
+	// flags include arguments loaded by Cmd.Args
+	Action func(cfg config.TemporalConfig, flags map[string]string)
 }

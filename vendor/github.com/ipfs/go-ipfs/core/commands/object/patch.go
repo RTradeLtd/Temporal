@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"io"
 
-	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
+	"github.com/ipfs/go-ipfs/core/commands/cmdenv"
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
 	"github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 
-	cmds "gx/ipfs/QmPdvMtgpnMuU68mWhGtzCxnddXJoV96tT9aPcNbQsqPaM/go-ipfs-cmds"
-	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	"gx/ipfs/QmaAP56JAwdjwisPTu4yx17whcjTr6y5JCSCF77Y1rahWV/go-ipfs-cmds"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 var ObjectPatchCmd = &cmds.Command{
@@ -50,7 +50,7 @@ the limit will not be respected by the network.
 		cmdkit.FileArg("data", true, false, "Data to append.").EnableStdin(),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env)
+		api, err := cmdenv.GetApi(env, req)
 		if err != nil {
 			return err
 		}
@@ -60,12 +60,12 @@ the limit will not be respected by the network.
 			return err
 		}
 
-		data, err := req.Files.NextFile()
+		file, err := cmdenv.GetFileArg(req.Files.Entries())
 		if err != nil {
 			return err
 		}
 
-		p, err := api.Object().AppendData(req.Context, root, data)
+		p, err := api.Object().AppendData(req.Context, root, file)
 		if err != nil {
 			return err
 		}
@@ -97,7 +97,7 @@ Example:
 		cmdkit.FileArg("data", true, false, "The data to set the object to.").EnableStdin(),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env)
+		api, err := cmdenv.GetApi(env, req)
 		if err != nil {
 			return err
 		}
@@ -107,12 +107,12 @@ Example:
 			return err
 		}
 
-		data, err := req.Files.NextFile()
+		file, err := cmdenv.GetFileArg(req.Files.Entries())
 		if err != nil {
 			return err
 		}
 
-		p, err := api.Object().SetData(req.Context, root, data)
+		p, err := api.Object().SetData(req.Context, root, file)
 		if err != nil {
 			return err
 		}
@@ -140,7 +140,7 @@ Remove a Merkle-link from the given object and return the hash of the result.
 		cmdkit.StringArg("name", true, false, "Name of the link to remove."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env)
+		api, err := cmdenv.GetApi(env, req)
 		if err != nil {
 			return err
 		}
@@ -192,7 +192,7 @@ to a file containing 'bar', and returns the hash of the new object.
 		cmdkit.BoolOption("create", "p", "Create intermediary nodes."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env)
+		api, err := cmdenv.GetApi(env, req)
 		if err != nil {
 			return err
 		}

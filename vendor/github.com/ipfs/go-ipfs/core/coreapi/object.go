@@ -17,9 +17,9 @@ import (
 	"github.com/ipfs/go-ipfs/pin"
 
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
+	ft "gx/ipfs/Qmbvw7kpSM2p6rbQ57WGRhhqNfCiNGW6EKH4xgHLw4bsnB/go-unixfs"
 	ipld "gx/ipfs/QmcKKBwfz6FyQdHR2jsXrrF6XeSBXYL86anmWNewpFpoF5/go-ipld-format"
 	dag "gx/ipfs/QmdV35UHnL1FM52baPkeUo6u7Fxm2CRUkPTLRPxeF8a4Ap/go-merkledag"
-	ft "gx/ipfs/QmdYvDbHp7qAhZ7GsCj6e1cMo55ND6y2mjWVzwdvcv4f12/go-unixfs"
 )
 
 const inputLimit = 2 << 20
@@ -118,7 +118,7 @@ func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Obj
 	}
 
 	if options.Pin {
-		defer api.node.Blockstore.PinLock().Unlock()
+		defer api.blockstore.PinLock().Unlock()
 	}
 
 	err = api.dag.Add(ctx, dagnode)
@@ -127,8 +127,8 @@ func (api *ObjectAPI) Put(ctx context.Context, src io.Reader, opts ...caopts.Obj
 	}
 
 	if options.Pin {
-		api.node.Pinning.PinWithMode(dagnode.Cid(), pin.Recursive)
-		err = api.node.Pinning.Flush()
+		api.pinning.PinWithMode(dagnode.Cid(), pin.Recursive)
+		err = api.pinning.Flush()
 		if err != nil {
 			return nil, err
 		}

@@ -26,12 +26,12 @@
   version = "v1.0.7"
 
 [[projects]]
-  digest = "1:f0ddcc93863663609316065cd0bf866691ea6c1872ec6ea45935ce64825df0b7"
+  digest = "1:d86a54c82809f1f5ddc327167039d30aba5db7810b75be6249524d768cfa8a56"
   name = "github.com/RTradeLtd/cmd"
   packages = ["."]
   pruneopts = "UT"
-  revision = "19cbd2e20bc29339ac4e27a8c4b8eb3e3592536c"
-  version = "v1.0.4"
+  revision = "d1a2e3f07b373d8f7befb5a63516374b9dde185f"
+  version = "v2.0.0"
 
 [[projects]]
   digest = "1:5a204e4e607430c5f67e8ff26712abbc9cfb7ff3748a0ae427828be21b8988c3"

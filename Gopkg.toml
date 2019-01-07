@@ -8,7 +8,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 #   RTRADE    #
 ###############
 
-
 [[constraint]]
   name = "github.com/RTradeLtd/ChainRider-Go"
   version = "v1.0.7"
@@ -31,7 +30,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"
-  version = "v1.0.4"
+  version = "~v2.0.0"
 
 [[constraint]]
   name = "github.com/RTradeLtd/crypto"
@@ -48,7 +47,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 ###############
 #    IPFS     #
 ###############
-
 
 [[override]]
   name = "github.com/multiformats/go-multiaddr-dns"
@@ -82,7 +80,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/multiformats/go-multiaddr"
   branch = "master"
 
-
 [[constraint]]
   name = "github.com/ipfs/go-ipfs-config"
   version = "0.2.4"
@@ -98,7 +95,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 ###############
 # THIRD PARTY #
 ###############
-
 
 [[constraint]]
   name = "github.com/minio/minio-go"
