@@ -30,9 +30,9 @@ func Test_API_Routes_Payments(t *testing.T) {
 		t.Fatal(err)
 	}
 	// test basic dash payment
-	// /api/v2/payments/create/dash
+	// /v2/payments/create/dash
 	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/api/v2/payments/create/dash", nil)
+	req := httptest.NewRequest("POST", "/v2/payments/create/dash", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues := url.Values{}
 	urlValues.Add("credit_value", "10")
@@ -40,9 +40,9 @@ func Test_API_Routes_Payments(t *testing.T) {
 	api.r.ServeHTTP(testRecorder, req)
 
 	// test request signed payment message - rtc
-	// /api/v2/payments/request
+	// /v2/payments/request
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/payments/request", nil)
+	req = httptest.NewRequest("POST", "/v2/payments/request", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("payment_type", "rtc")
@@ -52,9 +52,9 @@ func Test_API_Routes_Payments(t *testing.T) {
 	api.r.ServeHTTP(testRecorder, req)
 
 	// test request signed payment message - eth
-	// /api/v2/payments/request
+	// /v2/payments/request
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/payments/request", nil)
+	req = httptest.NewRequest("POST", "/v2/payments/request", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("payment_type", "eth")
@@ -64,9 +64,9 @@ func Test_API_Routes_Payments(t *testing.T) {
 	api.r.ServeHTTP(testRecorder, req)
 
 	// test payment confirmation
-	// /api/v2/payments/confirm
+	// /v2/payments/confirm
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/api/v2/payments/confirm", nil)
+	req = httptest.NewRequest("POST", "/v2/payments/confirm", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("payment_number", "10")
@@ -78,7 +78,7 @@ func Test_API_Routes_Payments(t *testing.T) {
 	args := []string{"eth", "rtc", "btc", "ltc", "xmr", "dash"}
 	for _, v := range args {
 		if err := sendRequest(
-			api, "GET", "/api/v2/payments/deposit/address/"+v, 200, nil, nil, nil,
+			api, "GET", "/v2/payments/deposit/address/"+v, 200, nil, nil, nil,
 		); err != nil {
 			t.Fatal(err)
 		}
@@ -86,7 +86,7 @@ func Test_API_Routes_Payments(t *testing.T) {
 
 	// test invalid deposit address
 	if err := sendRequest(
-		api, "GET", "/api/v2/payments/deposit/address/invalidType", 400, nil, nil, nil,
+		api, "GET", "/v2/payments/deposit/address/invalidType", 400, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}

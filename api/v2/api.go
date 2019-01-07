@@ -353,7 +353,7 @@ func (api *API) setupRoutes() error {
 	authware := []gin.HandlerFunc{ginjwt.MiddlewareFunc()}
 
 	// V2 API
-	v2 := api.r.Group("/api/v2")
+	v2 := api.r.Group("/v2")
 
 	// system checks used to verify the integrity of our services
 	systemChecks := v2.Group("/systems")
@@ -373,6 +373,7 @@ func (api *API) setupRoutes() error {
 	{
 		auth.POST("/register", api.registerUserAccount)
 		auth.POST("/login", ginjwt.LoginHandler)
+		auth.GET("/refresh", ginjwt.RefreshHandler)
 	}
 
 	// statistics
@@ -528,6 +529,10 @@ func (api *API) setupRoutes() error {
 		public := ipns.Group("/public")
 		{
 			public.POST("/publish/details", api.publishToIPNSDetails)
+			// used to handle pinning of IPNS records on public ipfs
+			// this involves first resolving the record, parsing it
+			// and extracting the hash to pin
+			public.POST("/pin", api.pinIPNSHash)
 		}
 		// private ipns routes
 		private := ipns.Group("/private")
