@@ -373,6 +373,7 @@ func (api *API) setupRoutes() error {
 	{
 		auth.POST("/register", api.registerUserAccount)
 		auth.POST("/login", ginjwt.LoginHandler)
+		auth.GET("/refresh", ginjwt.RefreshHandler)
 	}
 
 	// statistics
