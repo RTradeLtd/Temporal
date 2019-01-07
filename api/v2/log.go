@@ -18,9 +18,6 @@ func (api *API) LogError(c *gin.Context, err error, message string, fields ...in
 
 	// write log
 	if fields != nil && len(fields)%2 == 0 {
-		logger = logger.With(fields...)
-	}
-	if fields != nil && len(fields)%2 == 0 {
 		fields = append(fields, "error", err.Error())
 		logger.Errorw(message, fields...)
 	} else {

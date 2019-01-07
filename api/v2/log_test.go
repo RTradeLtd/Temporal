@@ -59,6 +59,9 @@ func TestAPI_LogError(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
+			if strings.Count(string(b), tt.wantResp) > 1 {
+				t.Errorf("had duplicate counts of %s", tt.wantResp)
+			}
 			if !strings.Contains(string(b), tt.wantResp) {
 				t.Errorf("got %s, want %s", string(b), tt.wantResp)
 			}
