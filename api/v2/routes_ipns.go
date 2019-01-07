@@ -23,7 +23,7 @@ import (
 func (api *API) publishToIPNSDetails(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "hash", "life_time", "ttl", "key", "resolve")
@@ -36,22 +36,22 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 	}
 	cost, err := utils.CalculateAPICallCost("ipns", false)
 	if err != nil {
-		api.LogError(c, err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.CallCostCalculationError)(http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(c, err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
 	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, forms["key"])
 	if err != nil {
-		api.LogError(c, err, eh.KeySearchError)(c)
+		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	if !ownsKey {
 		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", username)
-		api.LogError(c, err, eh.KeyUseError)(c)
+		api.LogError(c, err, eh.KeyUseError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
@@ -84,7 +84,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		CreditCost:  cost,
 	}
 	if err = api.queues.ipns.PublishMessage(ie); err != nil {
-		api.LogError(c, err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
@@ -96,7 +96,7 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "network_name", "hash", "life_time", "ttl", "key", "resolve")
@@ -105,15 +105,15 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	}
 	cost, err := utils.CalculateAPICallCost("ipns", true)
 	if err != nil {
-		api.LogError(c, err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.CallCostCalculationError)(http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(c, err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
 	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
-		api.LogError(c, err, eh.PrivateNetworkAccessError)(c)
+		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
 	if _, err := gocid.Decode(forms["hash"]); err != nil {
@@ -122,12 +122,12 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 	}
 	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, forms["key"])
 	if err != nil {
-		api.LogError(c, err, eh.KeySearchError)(c)
+		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
 		return
 	}
 	if !ownsKey {
 		err = fmt.Errorf("unauthorized access to key by user %s", username)
-		api.LogError(c, err, eh.KeyUseError)(c)
+		api.LogError(c, err, eh.KeyUseError)(http.StatusBadRequest)
 		return
 	}
 	resolve, err := strconv.ParseBool(forms["resolve"])
@@ -159,7 +159,7 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		CreditCost:  cost,
 	}
 	if err = api.queues.ipns.PublishMessage(ipnsUpdate); err != nil {
-		api.LogError(c, err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}
 	api.l.Infow("private ipns entry creation request sent to backend", "user", username)
@@ -170,12 +170,12 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	records, err := api.im.FindByUserName(username)
 	if err != nil {
-		api.LogError(c, err, eh.IpnsRecordSearchError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.IpnsRecordSearchError)(http.StatusBadRequest)
 		return
 	}
 	// check if records is nil, or no entries. For len we must dereference first
@@ -196,7 +196,7 @@ func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
 func (api *API) pinIPNSHash(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "hold_time", "ipns_path")
@@ -219,12 +219,12 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	// this will likely need to wait for IPFS Cluster 0.8.0
 	shell := ipfsapi.NewShell(api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port)
 	if !shell.IsUp() {
-		api.LogError(c, errors.New("node is not online"), eh.IPFSConnectionError)(c, http.StatusBadRequest)
+		api.LogError(c, errors.New("node is not online"), eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
 	}
 	hashToPin, err := shell.Resolve(forms["ipns_path"])
 	if err != nil {
-		api.LogError(c, err, eh.IpnsRecordSearchError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.IpnsRecordSearchError)(http.StatusBadRequest)
 		return
 	}
 	// extract the hash to pin by using the cid at the very end of the path
@@ -235,11 +235,11 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	hash := strings.Split(hashToPin, "/")[len(strings.Split(hashToPin, "/"))-1]
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, false)
 	if err != nil {
-		api.LogError(c, err, eh.PinCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.PinCostCalculationError)(http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(c, err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
 	ip := queue.IPFSPin{
@@ -250,7 +250,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		CreditCost:       cost,
 	}
 	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
-		api.LogError(c, err, eh.QueuePublishError)(c)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}

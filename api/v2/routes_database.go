@@ -11,13 +11,13 @@ import (
 func (api *API) getUploadsForUser(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	// fetch all uploads for that address
 	uploads, err := api.upm.GetUploadsForUser(username)
 	if err != nil {
-		api.LogError(c, err, eh.UploadSearchError)(c, http.StatusInternalServerError)
+		api.LogError(c, err, eh.UploadSearchError)(http.StatusInternalServerError)
 		return
 	}
 	api.l.Info("specific uploads from database requested")
@@ -28,17 +28,17 @@ func (api *API) getUploadsForUser(c *gin.Context) {
 func (api *API) getUploadsByNetworkName(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	networkName := c.Param("networkName")
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-		api.LogError(c, err, eh.PrivateNetworkAccessError)(c)
+		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
 	uploads, err := api.upm.FindUploadsByNetwork(networkName)
 	if err != nil {
-		api.LogError(c, err, eh.UploadSearchError)(c)
+		api.LogError(c, err, eh.UploadSearchError)(http.StatusInternalServerError)
 		return
 	}
 

@@ -29,7 +29,7 @@ func (api *API) LogError(c *gin.Context, err error, message string, fields ...in
 
 	// return utility callback
 	if message == "" && err != nil {
-		return func(c *gin.Context, code ...int) { Fail(c, err, code...) }
+		return func(code ...int) { Fail(c, err, code...) }
 	}
-	return func(c *gin.Context, code ...int) { FailWithMessage(c, message, code...) }
+	return func(code ...int) { FailWithMessage(c, message, code...) }
 }

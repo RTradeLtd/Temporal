@@ -28,7 +28,7 @@ func (api *API) SystemsCheck(c *gin.Context) {
 func (api *API) beamContent(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "source_network", "destination_network", "content_hash")
@@ -41,12 +41,12 @@ func (api *API) beamContent(c *gin.Context) {
 		source = api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
 	} else {
 		if err := CheckAccessForPrivateNetwork(username, forms["source_network"], api.dbm.DB); err != nil {
-			api.LogError(c, err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
+			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
 		url, err := api.nm.GetAPIURLByName(forms["source_network"])
 		if err != nil {
-			api.LogError(c, err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
+			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
 		source = url
@@ -56,12 +56,12 @@ func (api *API) beamContent(c *gin.Context) {
 		dest = api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
 	} else {
 		if err := CheckAccessForPrivateNetwork(username, forms["destination_network"], api.dbm.DB); err != nil {
-			api.LogError(c, err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
+			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
 		url, err := api.nm.GetAPIURLByName(forms["destination_network"])
 		if err != nil {
-			api.LogError(c, err, eh.PrivateNetworkAccessError)(c, http.StatusBadRequest)
+			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
 		dest = url
@@ -70,19 +70,19 @@ func (api *API) beamContent(c *gin.Context) {
 		// connect to the source network
 		net1Conn, err := rtfs.NewManager(source, nil, time.Minute*10)
 		if err != nil {
-			api.LogError(c, err, eh.IPFSConnectionError)(c, http.StatusBadRequest)
+			api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 			return
 		}
 		// encrypt the file file
 		data, err := net1Conn.Cat(forms["content_hash"])
 		if err != nil {
-			api.LogError(c, err, eh.IPFSCatError)(c, http.StatusBadRequest)
+			api.LogError(c, err, eh.IPFSCatError)(http.StatusBadRequest)
 			return
 		}
 		// re-add the encrypted content to the source network
 		newCid, err := net1Conn.Add(bytes.NewReader(data))
 		if err != nil {
-			api.LogError(c, err, eh.IPFSAddError)(c, http.StatusBadRequest)
+			api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 			return
 		}
 		// update the content hash to beam
@@ -91,12 +91,12 @@ func (api *API) beamContent(c *gin.Context) {
 	// create our dual network connection
 	laserBeam, err := beam.NewLaser(source, dest)
 	if err != nil {
-		api.LogError(c, err, "failed to initialize laser beam")(c, http.StatusBadRequest)
+		api.LogError(c, err, "failed to initialize laser beam")(http.StatusBadRequest)
 		return
 	}
 	// initiate the content transfer
 	if err := laserBeam.BeamFromSource(forms["content_hash"]); err != nil {
-		api.LogError(c, err, "failed to tranfer content")(c, http.StatusBadRequest)
+		api.LogError(c, err, "failed to tranfer content")(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"status": "content transferred", "content_hash": forms["content_hash"]}})
@@ -106,28 +106,28 @@ func (api *API) beamContent(c *gin.Context) {
 func (api *API) exportKey(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	keyName := c.Param("name")
 	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyName)
 	if err != nil {
-		api.LogError(c, err, eh.KeySearchError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
 		return
 	}
 	if !owns {
-		api.LogError(c, errors.New(eh.KeyUseError), eh.KeyUseError)(c, http.StatusBadRequest)
+		api.LogError(c, errors.New(eh.KeyUseError), eh.KeyUseError)(http.StatusBadRequest)
 		return
 	}
 
 	resp, err := api.keys.GetPrivateKey(context.Background(), &pb.KeyGet{Name: keyName})
 	if err != nil {
-		api.LogError(c, err, eh.KeyExportError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.KeyExportError)(http.StatusBadRequest)
 		return
 	}
 	phrase, err := mnemonics.ToPhrase(resp.PrivateKey, mnemonics.English)
 	if err != nil {
-		api.LogError(c, err, eh.KeyExportError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.KeyExportError)(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": phrase})
@@ -137,7 +137,7 @@ func (api *API) exportKey(c *gin.Context) {
 func (api *API) downloadContentHash(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	// get the content hash that is to be downloaded
@@ -156,19 +156,19 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	} else if networkName != "public" {
 		// validate user access to network
 		if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
-			api.LogError(c, err, eh.PrivateNetworkAccessError)(c)
+			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
 		// retrieve api url
 		apiURL, err := api.nm.GetAPIURLByName(networkName)
 		if err != nil {
-			api.LogError(c, err, eh.APIURLCheckError)(c)
+			api.LogError(c, err, eh.APIURLCheckError)(http.StatusBadRequest)
 			return
 		}
 		// initialize our connection to IPFS
 		manager, err = rtfs.NewManager(apiURL, nil, time.Minute*10)
 		if err != nil {
-			api.LogError(c, err, eh.IPFSConnectionError)(c)
+			api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 			return
 		}
 	}
@@ -185,14 +185,14 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	// read the contents of the file
 	contents, err := manager.Cat(contentHash)
 	if err != nil {
-		api.LogError(c, err, eh.IPFSCatError)(c)
+		api.LogError(c, err, eh.IPFSCatError)(http.StatusBadRequest)
 		return
 	}
 	reader := bytes.NewReader(contents)
 	// get the size of hte file in bytes
 	stats, err := manager.Stat(contentHash)
 	if err != nil {
-		api.LogError(c, err, eh.IPFSObjectStatError)(c)
+		api.LogError(c, err, eh.IPFSObjectStatError)(http.StatusBadRequest)
 		return
 	}
 

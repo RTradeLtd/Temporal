@@ -11,7 +11,7 @@ import (
 func (api *API) getStats(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	if err := api.validateAdminRequest(username); err != nil {

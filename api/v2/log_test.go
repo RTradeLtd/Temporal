@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -41,9 +42,9 @@ func TestAPI_LogError(t *testing.T) {
 			r := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(r)
 			if tt.args.fields != nil {
-				api.LogError(c, tt.args.err, tt.args.message, tt.args.fields...)(c)
+				api.LogError(c, tt.args.err, tt.args.message, tt.args.fields...)(http.StatusBadRequest)
 			} else {
-				api.LogError(c, tt.args.err, tt.args.message)(c)
+				api.LogError(c, tt.args.err, tt.args.message)(http.StatusBadRequest)
 			}
 
 			// check log message and context
