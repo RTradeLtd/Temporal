@@ -187,5 +187,5 @@ func TestBucket(t *testing.T) {
 	}
 	flags := map[string]string{
 		"name": "mytestbucket"}
-	commands["make-bucket"].Action(*cfg, flags)
+	commands["bucket"].Children["new"].Action(*cfg, flags)
 }

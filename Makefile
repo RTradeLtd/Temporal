@@ -151,4 +151,4 @@ api-admin:
 
 .PHONY: files-bucket
 files-bucket:
-	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) make-bucket $(BUCKET)
+	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) bucket new $(BUCKET)

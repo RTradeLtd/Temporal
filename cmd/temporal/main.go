@@ -55,6 +55,9 @@ var (
 	dbMigrate  *bool
 	grpcNoSSL  *bool
 	apiPort    *string
+
+	// bucket flags
+	bucketLocation *string
 )
 
 func baseFlagSet() *flag.FlagSet {
@@ -79,6 +82,15 @@ func baseFlagSet() *flag.FlagSet {
 	// api configuration
 	apiPort = f.String("api.port", "6767",
 		"set port to expose API on")
+
+	return f
+}
+
+func bucketFlagSet() *flag.FlagSet {
+	var f = flag.NewFlagSet("", flag.ExitOnError)
+
+	bucketLocation = f.String("location", mini.DefaultBucketLocation,
+		"set location for bucket")
 
 	return f
 }
@@ -561,43 +573,46 @@ var commands = map[string]cmd.Cmd{
 			},
 		},
 	},
-	"make-bucket": {
-		Hidden:      true,
-		Blurb:       "create a minio bucket - for use against localhost only",
-		Description: "Allows the creation of buckets with minio, useful for initial Temporal setup.",
-		Args:        []string{"name", "location"},
-		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			mm, err := mini.NewMinioManager(
-				cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
-				cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
-			if err != nil {
-				fmt.Println("failed to initialize minio manager")
-				os.Exit(1)
-			}
-			var name, location string
-			var ok bool
-			if name, ok = args["name"]; !ok {
-				println("name item is missing from args")
-				os.Exit(1)
-			}
-			if location, ok = args["location"]; ok {
-				location = args["location"]
-			} else {
-				location = mini.DefaultBucketLocation
-			}
-			fmt.Printf("preparing to create bucket '%s' at '%s'\n", name, location)
-			if exists, err := mm.CheckIfBucketExists(name); err != nil {
-				println(err.Error())
-				os.Exit(1)
-			} else if exists {
-				fmt.Printf("bucket '%s' exists", name)
-				os.Exit(1)
-			}
-			if err := mm.Client.MakeBucket(name, location); err != nil {
-				println(err.Error())
-				os.Exit(1)
-			}
-			println("bucket created")
+	"bucket": {
+		Hidden:        true,
+		Blurb:         "manage Minio buckets",
+		ChildRequired: true,
+		Children: map[string]cmd.Cmd{
+			"new": {
+				Blurb:       "create a minio bucket - for use against localhost only",
+				Description: "Allows the creation of buckets with minio, useful for initial Temporal setup.",
+				Options:     bucketFlagSet(),
+				Args:        []string{"name"},
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					mm, err := mini.NewMinioManager(
+						cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
+						cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
+					if err != nil {
+						fmt.Println("failed to initialize minio manager")
+						os.Exit(1)
+					}
+					var name, location string
+					var ok bool
+					if name, ok = args["name"]; !ok {
+						println("name item is missing from args")
+						os.Exit(1)
+					}
+					location = *bucketLocation
+					fmt.Printf("preparing to create bucket '%s' at '%s'\n", name, location)
+					if exists, err := mm.CheckIfBucketExists(name); err != nil {
+						println(err.Error())
+						os.Exit(1)
+					} else if exists {
+						fmt.Printf("bucket '%s' exists", name)
+						os.Exit(1)
+					}
+					if err := mm.Client.MakeBucket(name, location); err != nil {
+						println(err.Error())
+						os.Exit(1)
+					}
+					println("bucket created")
+				},
+			},
 		},
 	},
 	"migrate": {
