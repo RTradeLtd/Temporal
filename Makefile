@@ -98,7 +98,7 @@ vendor:
 	rm -rf vendor
 
 	# Update standard dependencies
-	dep ensure -v
+	dep ensure -v -update
 
 	# Generate IPFS dependencies
 	rm -rf vendor/github.com/ipfs/go-ipfs
