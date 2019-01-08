@@ -489,16 +489,13 @@ var commands = map[string]cmd.Cmd{
 		Description: "Create a Temporal user. Provide args as username, password, email. Do not use in production.",
 		Args:        []string{"user", "pass", "email"},
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if len(args) < 3 {
-				fmt.Println("insufficient arguments provided")
-				os.Exit(1)
-			}
+			fmt.Printf("creating user '%s' (%s)...\n", args["user"], args["email"])
 			d, err := database.Initialize(&cfg, database.Options{
 				SSLModeDisable: *dbNoSSL,
 				RunMigrations:  *dbMigrate,
 			})
 			if err != nil {
-				fmt.Println("failed to initialize database", err)
+				fmt.Println("failed to initialize database connection", err)
 				os.Exit(1)
 			}
 			if _, err := models.NewUserManager(d.DB).NewUserAccount(
@@ -584,13 +581,6 @@ var commands = map[string]cmd.Cmd{
 				Options:     bucketFlagSet(),
 				Args:        []string{"name"},
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					mm, err := mini.NewMinioManager(
-						cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
-						cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
-					if err != nil {
-						fmt.Println("failed to initialize minio manager")
-						os.Exit(1)
-					}
 					var name, location string
 					var ok bool
 					if name, ok = args["name"]; !ok {
@@ -599,6 +589,13 @@ var commands = map[string]cmd.Cmd{
 					}
 					location = *bucketLocation
 					fmt.Printf("preparing to create bucket '%s' at '%s'\n", name, location)
+					mm, err := mini.NewMinioManager(
+						cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
+						cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
+					if err != nil {
+						fmt.Println("failed to initialize minio manager")
+						os.Exit(1)
+					}
 					if exists, err := mm.CheckIfBucketExists(name); err != nil {
 						println(err.Error())
 						os.Exit(1)
