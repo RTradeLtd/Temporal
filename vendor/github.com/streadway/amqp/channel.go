@@ -889,7 +889,7 @@ and exchanges will also be restored on server restart.
 If the binding could not complete, an error will be returned and the channel
 will be closed.
 
-When noWait is true and the queue could not be bound, the channel will be
+When noWait is false and the queue could not be bound, the channel will be
 closed with an error.
 
 */
@@ -1580,6 +1580,9 @@ multiple messages, reducing the amount of protocol messages to exchange.
 See also Delivery.Reject
 */
 func (ch *Channel) Reject(tag uint64, requeue bool) error {
+	ch.m.Lock()
+	defer ch.m.Unlock()
+
 	return ch.send(&basicReject{
 		DeliveryTag: tag,
 		Requeue:     requeue,

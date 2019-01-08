@@ -77,7 +77,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 // ProccessIPFSFiles is used to process messages sent to rabbitmq to upload files to IPFS.
 // This queue is invoked by advanced file upload requests
 func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, nil, time.Minute*10)
+	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, time.Minute*10)
 	if err != nil {
 		qm.l.Errorw("failed to initialize connection to ipfs", "error", err.Error())
 		return err
@@ -154,7 +154,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 		"initializing connection to ipfs",
 		"user", pin.UserName)
 	// connect to ipfs
-	ipfsManager, err := rtfs.NewManager(apiURL, nil, time.Minute*10)
+	ipfsManager, err := rtfs.NewManager(apiURL, time.Minute*10)
 	if err != nil {
 		qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 		qm.l.Infow(
@@ -299,7 +299,7 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 			d.Ack(false)
 			return
 		}
-		ipfs, err = rtfs.NewManager(apiURLName, nil, time.Minute*10)
+		ipfs, err = rtfs.NewManager(apiURLName, time.Minute*10)
 		if err != nil {
 			qm.l.Errorw(
 				"failed to initialize connection to private ipfs network",

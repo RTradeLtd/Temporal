@@ -12,7 +12,6 @@ import (
 
 func run(commands map[string]Cmd, cfg config.TemporalConfig,
 	flags map[string]string, args []string, baseOptions *flag.FlagSet) (noop bool) {
-
 	// find command
 	c, ok := commands[args[0]]
 	if !ok {
@@ -24,21 +23,22 @@ func run(commands map[string]Cmd, cfg config.TemporalConfig,
 		if err := c.Options.Parse(args[1:]); err != nil {
 			return true
 		}
-		args = c.Options.Args()
-		fmt.Printf("%v\n", args)
+		// Args() drops the first value, but we want to keep that
+		args = append([]string{args[0]}, c.Options.Args()...)
 	}
 
 	// check for action and children
-	if c.Action == nil && (c.Children == nil || len(c.Children) == 0) {
+	if c.Action == nil && len(c.Children) == 0 {
 		return true
 	} else if c.Action != nil {
 		// parse arguments
 		if c.Args != nil {
-			if len(args)-1 != len(c.Args) {
+			var cmdArgs = args[1:]
+			if len(cmdArgs) != len(c.Args) {
 				return true
 			}
 			for pos, name := range c.Args {
-				flags[name] = args[pos+1]
+				flags[name] = cmdArgs[pos]
 			}
 		}
 		// execute action
@@ -144,13 +144,6 @@ OPTIONS:
 	if baseOptions != nil {
 		baseOptions.PrintDefaults()
 		noOpts = false
-	}
-	var calls = strings.Split(exec, " ")
-	for _, c := range calls {
-		if cmds[c].Options != nil {
-			cmds[c].Options.PrintDefaults()
-			noOpts = false
-		}
 	}
 	if noOpts {
 		println("  none")

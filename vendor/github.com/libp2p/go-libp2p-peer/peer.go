@@ -11,15 +11,6 @@ import (
 	mh "github.com/multiformats/go-multihash"
 )
 
-// MaxInlineKeyLength is the maximum length a key can be for it to be inlined in
-// the peer ID.
-//
-// * When `len(pubKey.Bytes()) <= MaxInlineKeyLength`, the peer ID is the
-//   identity multihash hash of the public key.
-// * When `len(pubKey.Bytes()) > MaxInlineKeyLength`, the peer ID is the
-//   sha2-256 multihash of the public key.
-const MaxInlineKeyLength = 42
-
 var (
 	// ErrEmptyPeerID is an error for empty peer ID.
 	ErrEmptyPeerID = errors.New("empty peer ID")
@@ -150,11 +141,7 @@ func IDFromPublicKey(pk ic.PubKey) (ID, error) {
 	if err != nil {
 		return "", err
 	}
-	var alg uint64 = mh.SHA2_256
-	if len(b) <= MaxInlineKeyLength {
-		alg = mh.ID
-	}
-	hash, _ := mh.Sum(b, alg, -1)
+	hash, _ := mh.Sum(b, mh.SHA2_256, -1)
 	return ID(hash), nil
 }
 

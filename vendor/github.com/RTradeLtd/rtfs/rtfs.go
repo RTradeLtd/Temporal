@@ -15,12 +15,11 @@ import (
 // IpfsManager is our helper wrapper for IPFS
 type IpfsManager struct {
 	shell       *ipfsapi.Shell
-	keystore    *KeystoreManager
 	nodeAPIAddr string
 }
 
 // NewManager is used to initialize our Ipfs manager struct
-func NewManager(ipfsURL string, keystore *KeystoreManager, timeout time.Duration) (*IpfsManager, error) {
+func NewManager(ipfsURL string, timeout time.Duration) (*IpfsManager, error) {
 	// set up shell
 	sh := newShell(ipfsURL)
 	sh.SetTimeout(time.Minute * 5)
@@ -32,7 +31,6 @@ func NewManager(ipfsURL string, keystore *KeystoreManager, timeout time.Duration
 	return &IpfsManager{
 		shell:       sh,
 		nodeAPIAddr: ipfsURL,
-		keystore:    keystore,
 	}, nil
 }
 
@@ -40,10 +38,8 @@ func NewManager(ipfsURL string, keystore *KeystoreManager, timeout time.Duration
 func (im *IpfsManager) NodeAddress() string { return im.nodeAPIAddr }
 
 // Add is a wrapper used to add a file to IPFS
-// currently until https://github.com/ipfs/go-ipfs/issues/5376 it is added with no pin
-// thus a manual pin must be triggered afterwards
 func (im *IpfsManager) Add(r io.Reader) (string, error) {
-	return im.shell.AddNoPin(r)
+	return im.shell.Add(r)
 }
 
 // DagPut is used to store data as an ipld object
@@ -71,9 +67,31 @@ func (im *IpfsManager) Stat(hash string) (*ipfsapi.ObjectStats, error) {
 	return im.shell.ObjectStat(hash)
 }
 
-// Pin is a wrapper method to pin a hash to the local node,
-// but also alert the rest of the local nodes to pin
-// after which the pin will be sent to the cluster
+// PatchLink is used to link two objects together
+// path really means the name of the link
+// create is used to specify whether intermediary nodes should be generated
+func (im *IpfsManager) PatchLink(root, path, childHash string, create bool) (string, error) {
+	return im.shell.PatchLink(root, path, childHash, create)
+}
+
+// AppendData is used to modify the raw data within an object, to a max of 1MB
+// Anything larger than 1MB will not be respected by the rest of the network
+func (im *IpfsManager) AppendData(root string, data interface{}) (string, error) {
+	return im.shell.PatchData(root, false, data)
+}
+
+// SetData is used to set the data field of an ipfs object
+func (im *IpfsManager) SetData(root string, data interface{}) (string, error) {
+	return im.shell.PatchData(root, true, data)
+}
+
+// NewObject is used to create a generic object from a template type
+func (im *IpfsManager) NewObject(template string) (string, error) {
+	return im.shell.NewObject(template)
+}
+
+// Pin is a wrapper method to pin a hash.
+// pinning prevents GC and persistently stores on disk
 func (im *IpfsManager) Pin(hash string) error {
 	if err := im.shell.Pin(hash); err != nil {
 		return fmt.Errorf("failed to pin '%s': %s", hash, err.Error())
@@ -95,17 +113,12 @@ func (im *IpfsManager) CheckPin(hash string) (bool, error) {
 
 // Publish is used for fine grained control over IPNS record publishing
 func (im *IpfsManager) Publish(contentHash, keyName string, lifetime, ttl time.Duration, resolve bool) (*ipfsapi.PublishResponse, error) {
-	if im.keystore == nil {
-		return nil, errors.New("attempting to create ipns entry with dynamic keys keystore is not enabled/generated yet")
-	}
-
-	if keyPresent, err := im.keystore.CheckIfKeyExists(keyName); err != nil {
-		return nil, err
-	} else if !keyPresent {
-		return nil, errors.New("attempting to sign with non existent key")
-	}
-
 	return im.shell.PublishWithDetails(contentHash, keyName, lifetime, ttl, resolve)
+}
+
+// Resolve is used to resolve an IPNS hash
+func (im *IpfsManager) Resolve(hash string) (string, error) {
+	return im.shell.Resolve(hash)
 }
 
 // PubSubPublish is used to publish a a message to the given topic
@@ -136,4 +149,9 @@ func (im *IpfsManager) CustomRequest(ctx context.Context, url, commad string,
 	}
 
 	return resp, nil
+}
+
+// SwarmConnect is use to open a connection a one or more ipfs nodes
+func (im *IpfsManager) SwarmConnect(ctx context.Context, addrs ...string) error {
+	return im.shell.SwarmConnect(ctx, addrs...)
 }
