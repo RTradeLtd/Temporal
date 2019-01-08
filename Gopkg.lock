@@ -1592,6 +1592,7 @@
     "github.com/RTradeLtd/database",
     "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/entropy-mnemonics",
+    "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/ipfs-orchestrator",
     "github.com/RTradeLtd/grpc/krab",
