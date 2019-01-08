@@ -36,11 +36,12 @@ func TestAPI_LogError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			observer, out := observer.New(zap.InfoLevel)
 			logger := zap.New(observer).Sugar()
-			api := API{l: logger, service: "test"}
+			r := httptest.NewRecorder()
+			c, e := gin.CreateTestContext(r)
+			api := API{l: logger, service: "test", r: e}
 
 			// log error and execute callback
-			r := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(r)
+			c.Request = httptest.NewRequest("GET", "/", nil)
 			if tt.args.fields != nil {
 				api.LogError(c, tt.args.err, tt.args.message, tt.args.fields...)(http.StatusBadRequest)
 			} else {
