@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"sync"
 	"testing"
@@ -106,14 +107,14 @@ func TestRegisterChannelClosure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := qmPublisher.Close(); err != nil {
-			t.Fatal(err)
-		}
-	}()
+	/*	defer func() {
+			if err := qmPublisher.Close(); err != nil {
+				t.Fatal(err)
+			}
+		}()
+	*/
 	// declare the channel to receive messages on
-	ch := make(chan *amqp.Error)
-	ch = qmPublisher.RegisterConnectionClosure(ch)
+	ch := qmPublisher.RegisterConnectionClosure()
 	go func() {
 		ch <- &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
 	}()
@@ -130,6 +131,11 @@ func TestRegisterChannelClosure(t *testing.T) {
 	if msg.Recover {
 		t.Fatal("bad recover")
 	}
+	if err := qmPublisher.Close(); err != nil {
+		t.Fatal(err)
+	}
+	msg = <-ch
+	fmt.Printf("%+v\n", msg)
 }
 
 func TestQueue_RefundCredits(t *testing.T) {

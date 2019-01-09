@@ -31,6 +31,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 		return err
 	}
 	userManager := models.NewUserManager(qm.db)
+	ch := qm.RegisterConnectionClosure()
 	qm.l.Info("processing ipfs key creation requests")
 	for {
 		select {
@@ -41,6 +42,13 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 			qm.Close()
 			wg.Done()
 			return nil
+		case msg := <-ch:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ReconnectError)
 		}
 	}
 }
@@ -60,6 +68,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 		qm.l.Errorw("failed to intialize cluster pin queue connection", "error", err.Error())
 		return err
 	}
+	ch := qm.RegisterConnectionClosure()
 	qm.l.Info("processing ipfs pins")
 	for {
 		select {
@@ -70,6 +79,13 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 			qm.Close()
 			wg.Done()
 			return nil
+		case msg := <-ch:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ReconnectError)
 		}
 	}
 }
@@ -95,6 +111,7 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 	ue := models.NewEncryptedUploadManager(qm.db)
 	userManager := models.NewUserManager(qm.db)
 	networkManager := models.NewHostedIPFSNetworkManager(qm.db)
+	ch := qm.RegisterConnectionClosure()
 	qm.l.Info("processing ipfs files")
 	for {
 		select {
@@ -105,6 +122,13 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 			qm.Close()
 			wg.Done()
 			return nil
+		case msg := <-ch:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ReconnectError)
 		}
 	}
 }
