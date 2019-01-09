@@ -16,9 +16,7 @@ import (
 func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
 	uploadManager := models.NewUploadManager(qm.db)
 	userManager := models.NewUserManager(qm.db)
-	/*	// register notify channel
-		ch := qm.RegisterConnectionClosure()
-	*/qm.l.Info("processing database file adds")
+	qm.l.Info("processing database file adds")
 	for {
 		select {
 		case d := <-msgs:
