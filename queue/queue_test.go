@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/streadway/amqp"
+
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/config"
@@ -92,6 +94,41 @@ func TestQueue_ExchangeFail(t *testing.T) {
 	}
 	if err = qmPublisher.setupExchange("bad-queue"); err == nil {
 		t.Fatal("error expected")
+	}
+}
+
+func TestRegisterChannelClosure(t *testing.T) {
+	logger, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, logger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := qmPublisher.Close(); err != nil {
+			t.Fatal(err)
+		}
+	}()
+	// declare the channel to receive messages on
+	ch := make(chan *amqp.Error)
+	ch = qmPublisher.RegisterConnectionClosure(ch)
+	go func() {
+		ch <- &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
+	}()
+	msg := <-ch
+	if msg.Code != 400 {
+		t.Fatal("bad code received")
+	}
+	if msg.Reason != "test" {
+		t.Fatal("bad reason")
+	}
+	if !msg.Server {
+		t.Fatal("bad server")
+	}
+	if msg.Recover {
+		t.Fatal("bad recover")
 	}
 }
 
