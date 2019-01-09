@@ -27,7 +27,6 @@ func New(queue, url string, publish bool, logger *zap.SugaredLogger) (*Manager, 
 	}
 	// create base queue manager
 	qm := Manager{connection: conn, QueueName: queue, l: logger.Named(queue + "." + queueType)}
-
 	// open a channel
 	if err := qm.openChannel(); err != nil {
 		return nil, err
@@ -48,6 +47,8 @@ func New(queue, url string, publish bool, logger *zap.SugaredLogger) (*Manager, 
 			return nil, err
 		}
 	}
+	// register err channel notifier
+	qm.RegisterConnectionClosure()
 	return &qm, nil
 }
 
@@ -208,8 +209,8 @@ func (qm *Manager) PublishMessage(body interface{}) error {
 
 // RegisterConnectionClosure is used to register a channel which we may receive
 // connection level errors. This covers all channel, and connection errors.
-func (qm *Manager) RegisterConnectionClosure() chan *amqp.Error {
-	return qm.connection.NotifyClose(make(chan *amqp.Error))
+func (qm *Manager) RegisterConnectionClosure() {
+	qm.errChannel = qm.connection.NotifyClose(make(chan *amqp.Error))
 }
 
 // Close is used to close our queue resources

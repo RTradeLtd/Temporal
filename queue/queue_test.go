@@ -2,7 +2,6 @@ package queue
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"sync"
 	"testing"
@@ -107,18 +106,12 @@ func TestRegisterChannelClosure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	/*	defer func() {
-			if err := qmPublisher.Close(); err != nil {
-				t.Fatal(err)
-			}
-		}()
-	*/
 	// declare the channel to receive messages on
-	ch := qmPublisher.RegisterConnectionClosure()
+	qmPublisher.RegisterConnectionClosure()
 	go func() {
-		ch <- &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
+		qmPublisher.errChannel <- &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
 	}()
-	msg := <-ch
+	msg := <-qmPublisher.errChannel
 	if msg.Code != 400 {
 		t.Fatal("bad code received")
 	}
@@ -134,8 +127,6 @@ func TestRegisterChannelClosure(t *testing.T) {
 	if err := qmPublisher.Close(); err != nil {
 		t.Fatal(err)
 	}
-	msg = <-ch
-	fmt.Printf("%+v\n", msg)
 }
 
 func TestQueue_RefundCredits(t *testing.T) {
@@ -176,6 +167,55 @@ func TestQueue_RefundCredits(t *testing.T) {
 			if err := qmConsumer.refundCredits(tt.args.username, tt.args.callType, tt.args.cost); (err != nil) != tt.wantErr {
 				t.Fatal(err)
 			}
+		})
+	}
+}
+
+func TestQueue_ConnectionClosure(t *testing.T) {
+	logger, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type args struct {
+		queueName string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{DatabaseFileAddQueue, args{DatabaseFileAddQueue}},
+		{IpfsFileQueue, args{IpfsFileQueue}},
+		{IpfsClusterPinQueue, args{IpfsClusterPinQueue}},
+		{EmailSendQueue, args{EmailSendQueue}},
+		{IpnsEntryQueue, args{IpnsEntryQueue}},
+		{IpfsPinQueue, args{IpfsPinQueue}},
+		{IpfsKeyCreationQueue, args{IpfsKeyCreationQueue}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			qmPublisher, err := New(tt.args.queueName, testRabbitAddress, false, logger)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wg := &sync.WaitGroup{}
+			wg.Add(1)
+			go func() {
+				if err := qmPublisher.ConsumeMessages(context.Background(), wg, db, cfg); err != nil && err.Error() != ReconnectError {
+					t.Fatal(err)
+				}
+			}()
+			go func() {
+				qmPublisher.errChannel <- &amqp.Error{Code: 400, Reason: "error", Server: true, Recover: false}
+			}()
+			wg.Wait()
 		})
 	}
 }

@@ -19,7 +19,6 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 		return err
 	}
 	uploadManager := models.NewUploadManager(qm.db)
-	ch := qm.RegisterConnectionClosure()
 	qm.l.Info("processing ipfs cluster pin requests")
 	for {
 		select {
@@ -30,7 +29,7 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 			qm.Close()
 			wg.Done()
 			return nil
-		case msg := <-ch:
+		case msg := <-qm.errChannel:
 			qm.Close()
 			wg.Done()
 			qm.l.Errorw(

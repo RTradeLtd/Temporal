@@ -67,6 +67,7 @@ type Manager struct {
 	l            *zap.SugaredLogger
 	db           *gorm.DB
 	cfg          *config.TemporalConfig
+	errChannel   chan *amqp.Error
 	QueueName    string
 	Service      string
 	ExchangeName string
