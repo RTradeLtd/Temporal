@@ -121,23 +121,31 @@ var commands = map[string]cmd.Cmd{
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
-							qm, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, false, logger)
-							if err != nil {
-								fmt.Println("failed to start queue", err)
-								os.Exit(1)
-							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 							waitGroup := &sync.WaitGroup{}
-							waitGroup.Add(1)
 							go func() {
 								fmt.Println(closeMessage)
 								<-quitChannel
 								cancel()
 							}()
-							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-								fmt.Println("failed to consume messages", err)
-								os.Exit(1)
+							for {
+								qm, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, false, logger)
+								if err != nil {
+									fmt.Println("failed to start queue", err)
+									os.Exit(1)
+								}
+								waitGroup.Add(1)
+								if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ReconnectError {
+									fmt.Println("failed to consume messages", err)
+									os.Exit(1)
+								} else if err != nil && err.Error() == queue.ReconnectError {
+									continue
+								}
+								// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
+								if err == nil {
+									break
+								}
 							}
 							waitGroup.Wait()
 						},
@@ -156,23 +164,31 @@ var commands = map[string]cmd.Cmd{
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
-							qm, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, false, logger)
-							if err != nil {
-								fmt.Println("failed to start queue", err)
-								os.Exit(1)
-							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 							waitGroup := &sync.WaitGroup{}
-							waitGroup.Add(1)
 							go func() {
 								fmt.Println(closeMessage)
 								<-quitChannel
 								cancel()
 							}()
-							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-								fmt.Println("failed to consume messages", err)
-								os.Exit(1)
+							for {
+								qm, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, false, logger)
+								if err != nil {
+									fmt.Println("failed to start queue", err)
+									os.Exit(1)
+								}
+								waitGroup.Add(1)
+								if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ReconnectError {
+									fmt.Println("failed to consume messages", err)
+									os.Exit(1)
+								} else if err != nil && err.Error() == queue.ReconnectError {
+									continue
+								}
+								// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
+								if err == nil {
+									break
+								}
 							}
 							waitGroup.Wait()
 						},
@@ -191,23 +207,31 @@ var commands = map[string]cmd.Cmd{
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
-							qm, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, false, logger)
-							if err != nil {
-								fmt.Println("failed to start queue", err)
-								os.Exit(1)
-							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 							waitGroup := &sync.WaitGroup{}
-							waitGroup.Add(1)
 							go func() {
 								fmt.Println(closeMessage)
 								<-quitChannel
 								cancel()
 							}()
-							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-								fmt.Println("failed to consume messages", err)
-								os.Exit(1)
+							for {
+								qm, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, false, logger)
+								if err != nil {
+									fmt.Println("failed to start queue", err)
+									os.Exit(1)
+								}
+								waitGroup.Add(1)
+								if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ReconnectError {
+									fmt.Println("failed to consume messages", err)
+									os.Exit(1)
+								} else if err != nil && err.Error() == queue.ReconnectError {
+									continue
+								}
+								// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
+								if err == nil {
+									break
+								}
 							}
 							waitGroup.Wait()
 						},
@@ -226,23 +250,31 @@ var commands = map[string]cmd.Cmd{
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
-							qm, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, false, logger)
-							if err != nil {
-								fmt.Println("failed to start queue", err)
-								os.Exit(1)
-							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 							waitGroup := &sync.WaitGroup{}
-							waitGroup.Add(1)
 							go func() {
 								fmt.Println(closeMessage)
 								<-quitChannel
 								cancel()
 							}()
-							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-								fmt.Println("failed to consume messages", err)
-								os.Exit(1)
+							for {
+								qm, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, false, logger)
+								if err != nil {
+									fmt.Println("failed to start queue", err)
+									os.Exit(1)
+								}
+								waitGroup.Add(1)
+								if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ReconnectError {
+									fmt.Println("failed to consume messages", err)
+									os.Exit(1)
+								} else if err != nil && err.Error() == queue.ReconnectError {
+									continue
+								}
+								// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
+								if err == nil {
+									break
+								}
 							}
 							waitGroup.Wait()
 						},
@@ -261,23 +293,31 @@ var commands = map[string]cmd.Cmd{
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
-							qm, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, logger)
-							if err != nil {
-								fmt.Println("failed to start queue", err)
-								os.Exit(1)
-							}
 							quitChannel := make(chan os.Signal)
 							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 							waitGroup := &sync.WaitGroup{}
-							waitGroup.Add(1)
 							go func() {
 								fmt.Println(closeMessage)
 								<-quitChannel
 								cancel()
 							}()
-							if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-								fmt.Println("failed to consume messages", err)
-								os.Exit(1)
+							for {
+								qm, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, logger)
+								if err != nil {
+									fmt.Println("failed to start queue", err)
+									os.Exit(1)
+								}
+								waitGroup.Add(1)
+								if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ReconnectError {
+									fmt.Println("failed to consume messages", err)
+									os.Exit(1)
+								} else if err != nil && err.Error() == queue.ReconnectError {
+									continue
+								}
+								// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
+								if err == nil {
+									break
+								}
 							}
 							waitGroup.Wait()
 						},
@@ -298,23 +338,31 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("failed to start logger ", err)
 						os.Exit(1)
 					}
-					qm, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, false, logger)
-					if err != nil {
-						fmt.Println("failed to start queue", err)
-						os.Exit(1)
-					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 					waitGroup := &sync.WaitGroup{}
-					waitGroup.Add(1)
 					go func() {
 						fmt.Println(closeMessage)
 						<-quitChannel
 						cancel()
 					}()
-					if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-						fmt.Println("failed to consume messages", err)
-						os.Exit(1)
+					for {
+						qm, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, false, logger)
+						if err != nil {
+							fmt.Println("failed to start queue", err)
+							os.Exit(1)
+						}
+						waitGroup.Add(1)
+						if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ReconnectError {
+							fmt.Println("failed to consume messages", err)
+							os.Exit(1)
+						} else if err != nil && err.Error() == queue.ReconnectError {
+							continue
+						}
+						// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
+						if err == nil {
+							break
+						}
 					}
 					waitGroup.Wait()
 				},
@@ -333,23 +381,31 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("failed to start logger ", err)
 						os.Exit(1)
 					}
-					qm, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, false, logger)
-					if err != nil {
-						fmt.Println("failed to start queue", err)
-						os.Exit(1)
-					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 					waitGroup := &sync.WaitGroup{}
-					waitGroup.Add(1)
 					go func() {
 						fmt.Println(closeMessage)
 						<-quitChannel
 						cancel()
 					}()
-					if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil {
-						fmt.Println("failed to consume messages", err)
-						os.Exit(1)
+					for {
+						qm, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, false, logger)
+						if err != nil {
+							fmt.Println("failed to start queue", err)
+							os.Exit(1)
+						}
+						waitGroup.Add(1)
+						if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ReconnectError {
+							fmt.Println("failed to consume messages", err)
+							os.Exit(1)
+						} else if err != nil && err.Error() == queue.ReconnectError {
+							continue
+						}
+						// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
+						if err == nil {
+							break
+						}
 					}
 					waitGroup.Wait()
 				},
