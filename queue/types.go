@@ -61,7 +61,7 @@ var (
 	PaymentConfirmationFailedSubject = "Payment Confirmation Failed"
 	// PaymentConfirmationFailedContent is a content used when a payment confirmation failure occurs
 	PaymentConfirmationFailedContent = "Payment failed for content hash %s with error %s"
-	// ReconnectError is an error emitted when a protocol connection error occurs
+	// ErrReconnect is an error emitted when a protocol connection error occurs
 	// It is used to signal reconnect of queue consumers and publishers
 	ErrReconnect = "protocol connection error, reconnect"
 )

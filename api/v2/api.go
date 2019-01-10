@@ -636,9 +636,8 @@ func (api *API) handleQueueError(amqpErr *amqp.Error, cfg *config.TemporalConfig
 			"queue", queueType.String(),
 			"error", err.Error())
 		return nil, err
-	} else {
-		api.l.Warnw(
-			"successfully re-established queue connection", "queue", queueType.String())
 	}
+	api.l.Warnw(
+		"successfully re-established queue connection", "queue", queueType.String())
 	return qManager, nil
 }
