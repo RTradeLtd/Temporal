@@ -10,7 +10,7 @@ import (
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 )
 
 func TestJwtMiddleware(t *testing.T) {
