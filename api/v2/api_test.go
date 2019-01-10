@@ -651,6 +651,55 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 	}
 }
 
+func TestAPI_HandleQueuError_Failure(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+	api, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type args struct {
+		queueType queue.Queue
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{queue.DatabaseFileAddQueue.String(), args{queue.DatabaseFileAddQueue}},
+		{queue.IpfsFileQueue.String(), args{queue.IpfsFileQueue}},
+		{queue.IpfsClusterPinQueue.String(), args{queue.IpfsClusterPinQueue}},
+		{queue.EmailSendQueue.String(), args{queue.EmailSendQueue}},
+		{queue.IpnsEntryQueue.String(), args{queue.IpnsEntryQueue}},
+		{queue.IpfsPinQueue.String(), args{queue.IpfsPinQueue}},
+		{queue.IpfsKeyCreationQueue.String(), args{queue.IpfsKeyCreationQueue}},
+		{queue.DashPaymentConfirmationQueue.String(), args{queue.DashPaymentConfirmationQueue}},
+		{queue.PaymentConfirmationQueue.String(), args{queue.PaymentConfirmationQueue}},
+	}
+	// setup a bad rabbitmq url for testing connectivity failures
+	api.cfg.RabbitMQ.URL = "notarealprotocol://notarealurl"
+	// declare an error to use for testing
+	amqpErr := &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			//TODO: enable this kind of testing within ListenAndServe eventually
+			// test handleQueueError function directly
+			if _, err := api.handleQueueError(amqpErr, api.cfg.RabbitMQ.URL, tt.args.queueType, true); err == nil {
+				t.Fatal("error expected")
+			}
+		})
+	}
+}
+
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
 	return database.OpenDBConnection(database.DBOptions{
 		User:           cfg.Database.Username,
