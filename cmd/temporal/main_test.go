@@ -11,6 +11,7 @@ import (
 func init() {
 	var t = true
 	dbNoSSL = &t
+	devMode = &t
 }
 
 func TestAPI(t *testing.T) {
@@ -131,8 +132,6 @@ func TestQueuesEmailSend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cfg.LogDir = tt.args.logDir
-			var tr = true
-			dbNoSSL = &tr
 			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
 			defer cancel()
 			commands["queue"].Children["email-send"].Action(*cfg, nil)
@@ -145,7 +144,6 @@ func TestMigrations(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	*dbNoSSL = true
 	// this wont work with our test environment as the psql server doesn't have ssl
 	//commands["migrate"].Action(*cfg, nil)
 	commands["migrate"].Action(*cfg, nil)
