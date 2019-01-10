@@ -109,9 +109,9 @@ func TestRegisterChannelClosure(t *testing.T) {
 	// declare the channel to receive messages on
 	qmPublisher.RegisterConnectionClosure()
 	go func() {
-		qmPublisher.errChannel <- &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
+		qmPublisher.ErrChannel <- &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
 	}()
-	msg := <-qmPublisher.errChannel
+	msg := <-qmPublisher.ErrChannel
 	if msg.Code != 400 {
 		t.Fatal("bad code received")
 	}
@@ -213,7 +213,7 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 				}
 			}()
 			go func() {
-				qmPublisher.errChannel <- &amqp.Error{Code: 400, Reason: "error", Server: true, Recover: false}
+				qmPublisher.ErrChannel <- &amqp.Error{Code: 400, Reason: "error", Server: true, Recover: false}
 			}()
 			wg.Wait()
 		})

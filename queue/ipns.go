@@ -53,7 +53,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 			qm.Close()
 			wg.Done()
 			return nil
-		case msg := <-qm.errChannel:
+		case msg := <-qm.ErrChannel:
 			qm.Close()
 			wg.Done()
 			qm.l.Errorw(

@@ -210,7 +210,7 @@ func (qm *Manager) PublishMessage(body interface{}) error {
 // RegisterConnectionClosure is used to register a channel which we may receive
 // connection level errors. This covers all channel, and connection errors.
 func (qm *Manager) RegisterConnectionClosure() {
-	qm.errChannel = qm.connection.NotifyClose(make(chan *amqp.Error))
+	qm.ErrChannel = qm.connection.NotifyClose(make(chan *amqp.Error))
 }
 
 // Close is used to close our queue resources
