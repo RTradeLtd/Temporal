@@ -4,19 +4,40 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sort"
 
 	version "github.com/ipfs/go-ipfs"
 	core "github.com/ipfs/go-ipfs/core"
 	coreapi "github.com/ipfs/go-ipfs/core/coreapi"
 	options "github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 
-	id "gx/ipfs/QmRBaUEQEeFWywfrZJ64QgsmvcqgLSK3VbvGMR2NM2Edpf/go-libp2p/p2p/protocol/identify"
+	id "gx/ipfs/QmYxivS34F2M2n44WQQnRHGAKS8aoRUxwGpi9wk4Cdn4Jf/go-libp2p/p2p/protocol/identify"
 )
 
 type GatewayConfig struct {
 	Headers      map[string][]string
 	Writable     bool
 	PathPrefixes []string
+}
+
+// A helper function to clean up a set of headers:
+// 1. Canonicalizes.
+// 2. Deduplicates.
+// 3. Sorts.
+func cleanHeaderSet(headers []string) []string {
+	// Deduplicate and canonicalize.
+	m := make(map[string]struct{}, len(headers))
+	for _, h := range headers {
+		m[http.CanonicalHeaderKey(h)] = struct{}{}
+	}
+	result := make([]string, 0, len(m))
+	for k := range m {
+		result = append(result, k)
+	}
+
+	// Sort
+	sort.Strings(result)
+	return result
 }
 
 func GatewayOption(writable bool, paths ...string) ServeOption {
@@ -31,8 +52,43 @@ func GatewayOption(writable bool, paths ...string) ServeOption {
 			return nil, err
 		}
 
+		headers := make(map[string][]string, len(cfg.Gateway.HTTPHeaders))
+		for h, v := range cfg.Gateway.HTTPHeaders {
+			headers[http.CanonicalHeaderKey(h)] = v
+		}
+
+		// Hard-coded headers.
+		const ACAHeadersName = "Access-Control-Allow-Headers"
+		const ACEHeadersName = "Access-Control-Expose-Headers"
+		const ACAOriginName = "Access-Control-Allow-Origin"
+		const ACAMethodsName = "Access-Control-Allow-Methods"
+
+		if _, ok := headers[ACAOriginName]; !ok {
+			// Default to *all*
+			headers[ACAOriginName] = []string{"*"}
+		}
+		if _, ok := headers[ACAMethodsName]; !ok {
+			// Default to GET
+			headers[ACAMethodsName] = []string{"GET"}
+		}
+
+		headers[ACAHeadersName] = cleanHeaderSet(
+			append([]string{
+				"Content-Type",
+				"User-Agent",
+				"Range",
+				"X-Requested-With",
+			}, headers[ACAHeadersName]...))
+
+		headers[ACEHeadersName] = cleanHeaderSet(
+			append([]string{
+				"Content-Range",
+				"X-Chunked-Output",
+				"X-Stream-Output",
+			}, headers[ACEHeadersName]...))
+
 		gateway := newGatewayHandler(n, GatewayConfig{
-			Headers:      cfg.Gateway.HTTPHeaders,
+			Headers:      headers,
 			Writable:     writable,
 			PathPrefixes: cfg.Gateway.PathPrefixes,
 		}, api)

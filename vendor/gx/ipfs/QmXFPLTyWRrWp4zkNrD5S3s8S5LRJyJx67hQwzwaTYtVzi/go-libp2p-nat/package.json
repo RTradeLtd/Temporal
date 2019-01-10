@@ -1,0 +1,53 @@
+{
+  "author": "whyrusleeping",
+  "bugs": {
+    "url": "https://github.com/libp2p/go-libp2p-nat"
+  },
+  "gx": {
+    "dvcsimport": "github.com/libp2p/go-libp2p-nat"
+  },
+  "gxDependencies": [
+    {
+      "author": "fd",
+      "hash": "QmPfFaAVvKzacBFh2UBqUzczkPNQxGcLyAXKKD1hjC22re",
+      "name": "go-nat",
+      "version": "1.0.0"
+    },
+    {
+      "hash": "QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C",
+      "name": "go-log",
+      "version": "1.5.8"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP",
+      "name": "goprocess",
+      "version": "1.0.0"
+    },
+    {
+      "author": "multiformats",
+      "hash": "QmZcLBXKaFe8ND5YHPkJRAwmhJGrVsi1JqDZNyJ4nRK5Mj",
+      "name": "go-multiaddr-net",
+      "version": "1.7.1"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmeQW4ayVqi7Jjay1SrP2wYydsH9KwSrzQBnqyC25gPFnG",
+      "name": "go-notifier",
+      "version": "1.0.0"
+    },
+    {
+      "author": "multiformats",
+      "hash": "QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc",
+      "name": "go-multiaddr",
+      "version": "1.4.0"
+    }
+  ],
+  "gxVersion": "0.10.0",
+  "language": "go",
+  "license": "",
+  "name": "go-libp2p-nat",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.8.10"
+}
+

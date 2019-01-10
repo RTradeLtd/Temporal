@@ -8,14 +8,21 @@ import (
 	"testing"
 	"time"
 
+	ipath "gx/ipfs/QmNYPETsdAu2uQ1k9q9S1jYEGURaLHV6cbYRSVFVRftpF8/go-path"
 	"gx/ipfs/QmXWZCd8jfaHmt4UDSnjKmGcrQMw95bDGWqEeVLVJjoANX/go-ipfs-files"
-	ipath "gx/ipfs/QmZErC2Ay6WuGi96CPg316PwitdwgLo6RxZRqVjJjRj2MR/go-path"
 
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
 	opt "github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 )
 
 func (tp *provider) TestName(t *testing.T) {
+	tp.hasApi(t, func(api coreiface.CoreAPI) error {
+		if api.Name() == nil {
+			return apiNotImplemented
+		}
+		return nil
+	})
+
 	t.Run("TestPublishResolve", tp.TestPublishResolve)
 	t.Run("TestBasicPublishResolveKey", tp.TestBasicPublishResolveKey)
 	t.Run("TestBasicPublishResolveTimeout", tp.TestBasicPublishResolveTimeout)

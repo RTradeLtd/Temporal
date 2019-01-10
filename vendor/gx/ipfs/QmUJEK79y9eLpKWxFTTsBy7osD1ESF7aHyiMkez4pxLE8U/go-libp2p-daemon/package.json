@@ -1,0 +1,50 @@
+{
+  "author": "vyzo",
+  "bugs": {},
+  "gx": {
+    "dvcsimport": "github.com/libp2p/go-libp2p-daemon"
+  },
+  "gxDependencies": [
+    {
+      "author": "whyrusleeping",
+      "hash": "QmYxivS34F2M2n44WQQnRHGAKS8aoRUxwGpi9wk4Cdn4Jf",
+      "name": "go-libp2p",
+      "version": "6.0.30"
+    },
+    {
+      "hash": "QmNoNExMdWrYSPZDiJJTVmxSh6uKLN26xYVzbLzBLedRcv",
+      "name": "go-libp2p-kad-dht",
+      "version": "4.4.19"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmYB44VSn76PMvefjvcKxdhnHtZxB36zrToCSh6u4H9U7M",
+      "name": "go-libp2p-connmgr",
+      "version": "0.3.30"
+    },
+    {
+      "author": "marten-seemann",
+      "hash": "QmR1g19UeP13BrVPCeEJm6R1J1E5yCdueiKpQJfPdnWC9z",
+      "name": "go-libp2p-quic-transport",
+      "version": "0.2.15"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmVRxA4J3UPQpw74dLrQ6NJkfysCA1H4GU28gVpXQt9zMU",
+      "name": "go-libp2p-pubsub",
+      "version": "0.11.10"
+    },
+    {
+      "hash": "QmZcLBXKaFe8ND5YHPkJRAwmhJGrVsi1JqDZNyJ4nRK5Mj",
+      "name": "go-multiaddr-net",
+      "version": "1.7.1"
+    }
+  ],
+  "gxVersion": "0.12.1",
+  "language": "go",
+  "license": "",
+  "name": "go-libp2p-daemon",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.0.5"
+}
+

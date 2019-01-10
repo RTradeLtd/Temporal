@@ -6,10 +6,10 @@ import (
 
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 
 	// import our postgres dialect used to talk with a postgres databse
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/RTradeLtd/gorm/dialects/postgres"
 )
 
 var (

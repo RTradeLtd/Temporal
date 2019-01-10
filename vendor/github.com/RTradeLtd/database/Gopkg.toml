@@ -7,8 +7,8 @@
   version = "0.1.25"
 
 [[constraint]]
-  name = "github.com/jinzhu/gorm"
-  branch = "master"
+  name = "github.com/RTradeLtd/gorm"
+  branch = "versioned"
 
 [[constraint]]
   name = "github.com/lib/pq"

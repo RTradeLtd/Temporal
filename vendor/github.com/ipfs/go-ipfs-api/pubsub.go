@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"encoding/json"
 
-	floodsub "github.com/libp2p/go-floodsub"
-	peer "github.com/libp2p/go-libp2p-peer"
+	"github.com/libp2p/go-floodsub"
+	"github.com/libp2p/go-libp2p-peer"
 )
 
 // PubSubRecord is a record received via PubSub.
