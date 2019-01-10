@@ -41,6 +41,13 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 			qm.Close()
 			wg.Done()
 			return nil
+		case msg := <-qm.ErrCh:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ErrReconnect)
 		}
 	}
 }
@@ -70,6 +77,13 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 			qm.Close()
 			wg.Done()
 			return nil
+		case msg := <-qm.ErrCh:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ErrReconnect)
 		}
 	}
 }
@@ -105,6 +119,13 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 			qm.Close()
 			wg.Done()
 			return nil
+		case msg := <-qm.ErrCh:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ErrReconnect)
 		}
 	}
 }

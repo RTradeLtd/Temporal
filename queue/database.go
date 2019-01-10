@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"sync"
 
 	"github.com/RTradeLtd/database/models"
@@ -25,6 +26,13 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGro
 			qm.Close()
 			wg.Done()
 			return nil
+		case msg := <-qm.ErrCh:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ErrReconnect)
 		}
 	}
 }

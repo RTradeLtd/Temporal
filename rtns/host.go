@@ -55,6 +55,10 @@ func NewPublisher(pk ci.PrivKey, permanent bool, swarmAddrs ...string) (*Publish
 		Online:    true,
 		Permanent: permanent,
 		Repo:      &repoMock,
+		// this is used to enable ipns pubsub
+		ExtraOpts: map[string]bool{
+			"ipnsps": true,
+		},
 	})
 	if err != nil {
 		return nil, err
