@@ -601,7 +601,7 @@ func TestAPI_Queue_Failures_Successful_Reinit(t *testing.T) {
 			t.Fatal(err)
 		}
 	}()
-	api.queues.cluster.ErrChannel <- &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
+	api.queues.cluster.ErrCh <- &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
 }
 
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {

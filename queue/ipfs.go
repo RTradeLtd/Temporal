@@ -41,7 +41,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 			qm.Close()
 			wg.Done()
 			return nil
-		case msg := <-qm.ErrChannel:
+		case msg := <-qm.ErrCh:
 			qm.Close()
 			wg.Done()
 			qm.l.Errorw(
@@ -77,7 +77,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 			qm.Close()
 			wg.Done()
 			return nil
-		case msg := <-qm.ErrChannel:
+		case msg := <-qm.ErrCh:
 			qm.Close()
 			wg.Done()
 			qm.l.Errorw(
@@ -119,7 +119,7 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 			qm.Close()
 			wg.Done()
 			return nil
-		case msg := <-qm.ErrChannel:
+		case msg := <-qm.ErrCh:
 			qm.Close()
 			wg.Done()
 			qm.l.Errorw(

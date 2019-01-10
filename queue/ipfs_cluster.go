@@ -29,7 +29,7 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 			qm.Close()
 			wg.Done()
 			return nil
-		case msg := <-qm.ErrChannel:
+		case msg := <-qm.ErrCh:
 			qm.Close()
 			wg.Done()
 			qm.l.Errorw(

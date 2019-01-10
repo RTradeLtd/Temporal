@@ -26,7 +26,7 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGro
 			qm.Close()
 			wg.Done()
 			return nil
-		case msg := <-qm.ErrChannel:
+		case msg := <-qm.ErrCh:
 			qm.Close()
 			wg.Done()
 			qm.l.Errorw(
