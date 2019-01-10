@@ -19,10 +19,10 @@ import (
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/gorm"
 	"github.com/RTradeLtd/rtfs"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 const (

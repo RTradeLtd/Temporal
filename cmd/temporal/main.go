@@ -14,7 +14,7 @@ import (
 
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/mini"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 
 	v2 "github.com/RTradeLtd/Temporal/api/v2"
 	v3 "github.com/RTradeLtd/Temporal/api/v3"

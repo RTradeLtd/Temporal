@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/queue"

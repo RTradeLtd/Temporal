@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/config"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"go.uber.org/zap"
 
 	"github.com/streadway/amqp"
