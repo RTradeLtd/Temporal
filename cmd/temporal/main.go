@@ -136,7 +136,8 @@ var commands = map[string]cmd.Cmd{
 									os.Exit(1)
 								}
 								waitGroup.Add(1)
-								if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ErrReconnect {
+								err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
+								if err != nil && err.Error() != queue.ErrReconnect {
 									fmt.Println("failed to consume messages", err)
 									os.Exit(1)
 								} else if err != nil && err.Error() == queue.ErrReconnect {
@@ -179,7 +180,8 @@ var commands = map[string]cmd.Cmd{
 									os.Exit(1)
 								}
 								waitGroup.Add(1)
-								if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ErrReconnect {
+								err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
+								if err != nil && err.Error() != queue.ErrReconnect {
 									fmt.Println("failed to consume messages", err)
 									os.Exit(1)
 								} else if err != nil && err.Error() == queue.ErrReconnect {
@@ -222,7 +224,8 @@ var commands = map[string]cmd.Cmd{
 									os.Exit(1)
 								}
 								waitGroup.Add(1)
-								if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ErrReconnect {
+								err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
+								if err != nil && err.Error() != queue.ErrReconnect {
 									fmt.Println("failed to consume messages", err)
 									os.Exit(1)
 								} else if err != nil && err.Error() == queue.ErrReconnect {
@@ -265,7 +268,8 @@ var commands = map[string]cmd.Cmd{
 									os.Exit(1)
 								}
 								waitGroup.Add(1)
-								if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ErrReconnect {
+								err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
+								if err != nil && err.Error() != queue.ErrReconnect {
 									fmt.Println("failed to consume messages", err)
 									os.Exit(1)
 								} else if err != nil && err.Error() == queue.ErrReconnect {
@@ -308,7 +312,8 @@ var commands = map[string]cmd.Cmd{
 									os.Exit(1)
 								}
 								waitGroup.Add(1)
-								if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ErrReconnect {
+								err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
+								if err != nil && err.Error() != queue.ErrReconnect {
 									fmt.Println("failed to consume messages", err)
 									os.Exit(1)
 								} else if err != nil && err.Error() == queue.ErrReconnect {
@@ -353,7 +358,8 @@ var commands = map[string]cmd.Cmd{
 							os.Exit(1)
 						}
 						waitGroup.Add(1)
-						if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ErrReconnect {
+						err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
+						if err != nil && err.Error() != queue.ErrReconnect {
 							fmt.Println("failed to consume messages", err)
 							os.Exit(1)
 						} else if err != nil && err.Error() == queue.ErrReconnect {
@@ -396,7 +402,8 @@ var commands = map[string]cmd.Cmd{
 							os.Exit(1)
 						}
 						waitGroup.Add(1)
-						if err := qm.ConsumeMessages(ctx, waitGroup, db, &cfg); err != nil && err.Error() != queue.ErrReconnect {
+						err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
+						if err != nil && err.Error() != queue.ErrReconnect {
 							fmt.Println("failed to consume messages", err)
 							os.Exit(1)
 						} else if err != nil && err.Error() == queue.ErrReconnect {
