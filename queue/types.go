@@ -63,7 +63,7 @@ var (
 	PaymentConfirmationFailedContent = "Payment failed for content hash %s with error %s"
 	// ReconnectError is an error emitted when a protocol connection error occurs
 	// It is used to signal reconnect of queue consumers and publishers
-	ReconnectError = "protocol connection error, reconnect"
+	ErrReconnect = "protocol connection error, reconnect"
 )
 
 // Manager is a helper struct to interact with rabbitmq
