@@ -920,7 +920,8 @@ func TestQueue_IPFSPin_Failure_RabbitMQ(t *testing.T) {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
 	cfg.RabbitMQ.URL = "notarealurl"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// we don't need time-out since this test will automatically fail
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
@@ -949,7 +950,8 @@ func TestQueue_IPFSPin_Failure_LogFile(t *testing.T) {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
 	cfg.LogDir = "/root/toor"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// we don't need time-out since this test will automatically fail
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
@@ -975,7 +977,8 @@ func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.IPFS.APIConnection.Host = "notarealip"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// we don't need time-out since this test will automatically fail
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
@@ -1001,7 +1004,8 @@ func TestQueue_IPFSFile_Failure_LogDir(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.LogDir = "/root/toor"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// we don't need time-out since this test will automatically fail
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
@@ -1027,7 +1031,8 @@ func TestQueue_IPFSFile_Failure_RabbitMQ(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.RabbitMQ.URL = "notarealip"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// we don't need time-out since this test will automatically fail
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal("expected error")
@@ -1053,7 +1058,8 @@ func TestQueue_IPNSEntry_Failure_Krab(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.Endpoints.Krab.TLS.CertPath = "/root/toor"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	// we don't need time-out since this test will automatically fail
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal(err)
