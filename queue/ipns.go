@@ -59,7 +59,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 			qm.l.Errorw(
 				"a protocol connection error stopping rabbitmq was received",
 				"error", msg.Error())
-			return errors.New(ReconnectError)
+			return errors.New(ErrReconnect)
 		}
 	}
 }

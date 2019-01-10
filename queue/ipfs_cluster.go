@@ -35,7 +35,7 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 			qm.l.Errorw(
 				"a protocol connection error stopping rabbitmq was received",
 				"error", msg.Error())
-			return errors.New(ReconnectError)
+			return errors.New(ErrReconnect)
 		}
 	}
 }

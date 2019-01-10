@@ -32,7 +32,7 @@ func (qm *Manager) ProcessDatabaseFileAdds(ctx context.Context, wg *sync.WaitGro
 			qm.l.Errorw(
 				"a protocol connection error stopping rabbitmq was received",
 				"error", msg.Error())
-			return errors.New(ReconnectError)
+			return errors.New(ErrReconnect)
 		}
 	}
 }
