@@ -318,55 +318,55 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 		case <-ctx.Done():
 			return server.Close()
 		case msg := <-api.queues.cluster.ErrCh:
-			qmCluster, err := api.handleQueueError(msg, api.cfg, queue.IpfsClusterPinQueue, true)
+			qmCluster, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpfsClusterPinQueue, true)
 			if err != nil {
 				return server.Close()
 			}
 			api.queues.cluster = qmCluster
 		case msg := <-api.queues.dash.ErrCh:
-			qmDash, err := api.handleQueueError(msg, api.cfg, queue.DashPaymentConfirmationQueue, true)
+			qmDash, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.DashPaymentConfirmationQueue, true)
 			if err != nil {
 				return server.Close()
 			}
 			api.queues.dash = qmDash
 		case msg := <-api.queues.database.ErrCh:
-			qmDatabase, err := api.handleQueueError(msg, api.cfg, queue.DatabaseFileAddQueue, true)
+			qmDatabase, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.DatabaseFileAddQueue, true)
 			if err != nil {
 				return server.Close()
 			}
 			api.queues.database = qmDatabase
 		case msg := <-api.queues.email.ErrCh:
-			qmEmail, err := api.handleQueueError(msg, api.cfg, queue.EmailSendQueue, true)
+			qmEmail, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.EmailSendQueue, true)
 			if err != nil {
 				return server.Close()
 			}
 			api.queues.email = qmEmail
 		case msg := <-api.queues.file.ErrCh:
-			qmFile, err := api.handleQueueError(msg, api.cfg, queue.IpfsFileQueue, true)
+			qmFile, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpfsFileQueue, true)
 			if err != nil {
 				return server.Close()
 			}
 			api.queues.file = qmFile
 		case msg := <-api.queues.ipns.ErrCh:
-			qmIpns, err := api.handleQueueError(msg, api.cfg, queue.IpnsEntryQueue, true)
+			qmIpns, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpnsEntryQueue, true)
 			if err != nil {
 				return server.Close()
 			}
 			api.queues.ipns = qmIpns
 		case msg := <-api.queues.key.ErrCh:
-			qmKey, err := api.handleQueueError(msg, api.cfg, queue.IpfsKeyCreationQueue, true)
+			qmKey, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpfsKeyCreationQueue, true)
 			if err != nil {
 				return server.Close()
 			}
 			api.queues.key = qmKey
 		case msg := <-api.queues.payConfirm.ErrCh:
-			qmPay, err := api.handleQueueError(msg, api.cfg, queue.PaymentConfirmationQueue, true)
+			qmPay, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.PaymentConfirmationQueue, true)
 			if err != nil {
 				return server.Close()
 			}
 			api.queues.payConfirm = qmPay
 		case msg := <-api.queues.pin.ErrCh:
-			qmPin, err := api.handleQueueError(msg, api.cfg, queue.IpfsPinQueue, true)
+			qmPin, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpfsPinQueue, true)
 			if err != nil {
 				return server.Close()
 			}
@@ -624,12 +624,12 @@ func (api *API) setupRoutes() error {
 }
 
 // HandleQueueError is used to handle queue connectivity issues requiring us to re-connect
-func (api *API) handleQueueError(amqpErr *amqp.Error, cfg *config.TemporalConfig, queueType queue.Queue, publish bool) (*queue.Manager, error) {
+func (api *API) handleQueueError(amqpErr *amqp.Error, rabbitMQURL string, queueType queue.Queue, publish bool) (*queue.Manager, error) {
 	api.l.Errorw(
 		"a protocol connection error stopping rabbitmq was received",
 		"queue", queueType.String(),
 		"error", amqpErr.Error())
-	qManager, err := queue.New(queueType, cfg.RabbitMQ.URL, publish, api.l)
+	qManager, err := queue.New(queueType, rabbitMQURL, publish, api.l)
 	if err != nil {
 		api.l.Errorw(
 			"failed to re-establish queue process, exiting",
