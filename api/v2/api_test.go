@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/streadway/amqp"
+
 	log "github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
@@ -575,6 +577,31 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAPI_Queue_Failures_Successful_Reinit(t *testing.T) {
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	logger, err := log.NewLogger("stdout", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+	api, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	go func() {
+		if err := api.ListenAndServe(context.Background(), "127.0.0.1:6799", &TLSConfig{"../../testenv/certs/api.cert", "../../testenv/certs/api.key"}); err != nil && err != http.ErrServerClosed {
+			t.Fatal(err)
+		}
+	}()
+	api.queues.cluster.ErrChannel <- &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
 }
 
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {

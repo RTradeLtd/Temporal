@@ -40,8 +40,8 @@ func (qm *Manager) declareIPFSKeyExchange() error {
 }
 
 // SetupExchange is used to setup our various exchanges
-func (qm *Manager) setupExchange(queueName string) error {
-	switch queueName {
+func (qm *Manager) setupExchange(queueType Queue) error {
+	switch queueType {
 	case IpfsPinQueue:
 		qm.ExchangeName = PinExchange
 		return qm.declareIPFSPinExchange()

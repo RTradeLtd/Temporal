@@ -27,7 +27,7 @@ const (
 
 func TestQueue_Publish(t *testing.T) {
 	type args struct {
-		queueName string
+		queueName Queue
 		publish   bool
 	}
 	tests := []struct {
@@ -185,19 +185,19 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 		t.Fatal(err)
 	}
 	type args struct {
-		queueName string
+		queueName Queue
 	}
 	tests := []struct {
 		name string
 		args args
 	}{
-		{DatabaseFileAddQueue, args{DatabaseFileAddQueue}},
-		{IpfsFileQueue, args{IpfsFileQueue}},
-		{IpfsClusterPinQueue, args{IpfsClusterPinQueue}},
-		{EmailSendQueue, args{EmailSendQueue}},
-		{IpnsEntryQueue, args{IpnsEntryQueue}},
-		{IpfsPinQueue, args{IpfsPinQueue}},
-		{IpfsKeyCreationQueue, args{IpfsKeyCreationQueue}},
+		{DatabaseFileAddQueue.String(), args{DatabaseFileAddQueue}},
+		{IpfsFileQueue.String(), args{IpfsFileQueue}},
+		{IpfsClusterPinQueue.String(), args{IpfsClusterPinQueue}},
+		{EmailSendQueue.String(), args{EmailSendQueue}},
+		{IpnsEntryQueue.String(), args{IpnsEntryQueue}},
+		{IpfsPinQueue.String(), args{IpfsPinQueue}},
+		{IpfsKeyCreationQueue.String(), args{IpfsKeyCreationQueue}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

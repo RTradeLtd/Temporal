@@ -10,28 +10,35 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// Various variables used by our queue package
+// Various variables and types used by our queue package
+
+// Queue is a typed string used to declare the various queue names
+type Queue string
+
+func (qt Queue) String() string {
+	return string(qt)
+}
 
 var (
 	nilTime time.Time
 	// DatabaseFileAddQueue is a queue used for simple file adds
-	DatabaseFileAddQueue = "dfa-queue"
+	DatabaseFileAddQueue Queue = "dfa-queue"
 	// IpfsPinQueue is a queue used for ipfs pins
-	IpfsPinQueue = "ipfs-pin-queue"
+	IpfsPinQueue Queue = "ipfs-pin-queue"
 	// IpfsFileQueue is a queue used for advanced file adds
-	IpfsFileQueue = "ipfs-file-queue"
+	IpfsFileQueue Queue = "ipfs-file-queue"
 	// IpfsClusterPinQueue is a queue used for ipfs cluster pins
-	IpfsClusterPinQueue = "ipfs-cluster-add-queue"
+	IpfsClusterPinQueue Queue = "ipfs-cluster-add-queue"
 	// EmailSendQueue is a queue used to handle sending email messages
-	EmailSendQueue = "email-send-queue"
+	EmailSendQueue Queue = "email-send-queue"
 	// IpnsEntryQueue is a queue used to handle ipns entry creation
-	IpnsEntryQueue = "ipns-entry-queue"
+	IpnsEntryQueue Queue = "ipns-entry-queue"
 	// IpfsKeyCreationQueue is a queue used to handle ipfs key creation
-	IpfsKeyCreationQueue = "ipfs-key-creation-queue"
+	IpfsKeyCreationQueue Queue = "ipfs-key-creation-queue"
 	// PaymentConfirmationQueue is a queue used to handle payment confirmations
-	PaymentConfirmationQueue = "payment-confirmation-queue"
+	PaymentConfirmationQueue Queue = "payment-confirmation-queue"
 	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
-	DashPaymentConfirmationQueue = "dash-payment-confirmation-queue"
+	DashPaymentConfirmationQueue Queue = "dash-payment-confirmation-queue"
 	// AdminEmail is the email used to notify RTrade about any critical errors
 	AdminEmail = "temporal.reports@rtradetechnologies.com"
 	// IpfsPinFailedContent is a to-be formatted message sent on IPFS pin failures
@@ -68,8 +75,7 @@ type Manager struct {
 	db           *gorm.DB
 	cfg          *config.TemporalConfig
 	ErrChannel   chan *amqp.Error
-	QueueName    string
-	Service      string
+	QueueName    Queue
 	ExchangeName string
 }
 
