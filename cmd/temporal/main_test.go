@@ -36,7 +36,7 @@ func TestAPI(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// set up call args
-			*apiPort = tt.args.port
+			apiPort = &tt.args.port
 			flags := map[string]string{
 				"listenAddress": tt.args.listenAddress,
 				"certFilePath":  tt.args.certFilePath,
@@ -78,7 +78,6 @@ func TestQueuesIPFS(t *testing.T) {
 		{"IPFSCluster-LogDir", args{"ipfs", "cluster", "./tmp/"}},
 	}
 	queueCmds := commands["queue"]
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cfg.LogDir = tt.args.logDir
@@ -132,7 +131,8 @@ func TestQueuesEmailSend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cfg.LogDir = tt.args.logDir
-			*dbNoSSL = true
+			var tr = true
+			dbNoSSL = &tr
 			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
 			defer cancel()
 			commands["queue"].Children["email-send"].Action(*cfg, nil)
