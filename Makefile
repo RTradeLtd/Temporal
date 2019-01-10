@@ -1,5 +1,4 @@
 TEMPORALVERSION=`git describe --tags`
-BUCKET=filesuploadbucket
 TEMPORALDEVFLAGS=-config ./testenv/config.json -db.no_ssl
 
 all: check cli
@@ -57,7 +56,8 @@ testenv:
 	make api-user
 	make api-admin
 	# create minio bucket
-	make files-bucket
+	make bucket
+	make bucket BUCKET=test
 	@echo "===================          done           ==================="
 
 # Shut down testenv
@@ -140,6 +140,7 @@ api:
 USER=testuser
 PASSWORD=admin
 EMAIL=test@email.com
+BUCKET=filesuploadbucket
 
 .PHONY: api-user
 api-user:
@@ -149,6 +150,6 @@ api-user:
 api-admin:
 	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) admin $(USER)
 
-.PHONY: files-bucket
-files-bucket:
+.PHONY: bucket
+bucket:
 	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) bucket new $(BUCKET)
