@@ -579,7 +579,7 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 	}
 }
 
-func TestAPI_HandleQueueError(t *testing.T) {
+func TestAPI_HandleQueuError_Success(t *testing.T) {
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
 		t.Fatal(err)
@@ -615,12 +615,36 @@ func TestAPI_HandleQueueError(t *testing.T) {
 		{queue.IpnsEntryQueue.String(), args{queue.IpnsEntryQueue}},
 		{queue.IpfsPinQueue.String(), args{queue.IpfsPinQueue}},
 		{queue.IpfsKeyCreationQueue.String(), args{queue.IpfsKeyCreationQueue}},
+		{queue.DashPaymentConfirmationQueue.String(), args{queue.DashPaymentConfirmationQueue}},
+		{queue.PaymentConfirmationQueue.String(), args{queue.PaymentConfirmationQueue}},
 	}
 	// declare an error to use for testing
 	amqpErr := &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := api.handleQueueError(amqpErr, api.cfg, tt.args.queueType, true); err != nil {
+			// test ListenAndServe queue function handling
+			switch tt.args.queueType {
+			case queue.DatabaseFileAddQueue:
+				api.queues.database.ErrCh <- amqpErr
+			case queue.IpfsFileQueue:
+				api.queues.file.ErrCh <- amqpErr
+			case queue.IpfsClusterPinQueue:
+				api.queues.cluster.ErrCh <- amqpErr
+			case queue.EmailSendQueue:
+				api.queues.email.ErrCh <- amqpErr
+			case queue.IpnsEntryQueue:
+				api.queues.ipns.ErrCh <- amqpErr
+			case queue.IpfsPinQueue:
+				api.queues.pin.ErrCh <- amqpErr
+			case queue.IpfsKeyCreationQueue:
+				api.queues.key.ErrCh <- amqpErr
+			case queue.DashPaymentConfirmationQueue:
+				api.queues.dash.ErrCh <- amqpErr
+			case queue.PaymentConfirmationQueue:
+				api.queues.payConfirm.ErrCh <- amqpErr
+			}
+			// test handleQueueError function directly
+			if _, err := api.handleQueueError(amqpErr, api.cfg.RabbitMQ.URL, tt.args.queueType, true); err != nil {
 				t.Fatal(err)
 			}
 		})
