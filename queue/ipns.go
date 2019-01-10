@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"sync"
 	"time"
 
@@ -52,6 +53,13 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 			qm.Close()
 			wg.Done()
 			return nil
+		case msg := <-qm.ErrCh:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ErrReconnect)
 		}
 	}
 }

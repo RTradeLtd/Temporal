@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"sync"
 
 	"github.com/RTradeLtd/Temporal/mail"
@@ -26,6 +27,13 @@ func (qm *Manager) ProcessMailSends(ctx context.Context, wg *sync.WaitGroup, db 
 			qm.Close()
 			wg.Done()
 			return nil
+		case msg := <-qm.ErrCh:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ErrReconnect)
 		}
 	}
 }

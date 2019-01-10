@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/streadway/amqp"
+
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/config"
@@ -25,7 +27,7 @@ const (
 
 func TestQueue_Publish(t *testing.T) {
 	type args struct {
-		queueName string
+		queueName Queue
 		publish   bool
 	}
 	tests := []struct {
@@ -95,6 +97,38 @@ func TestQueue_ExchangeFail(t *testing.T) {
 	}
 }
 
+func TestRegisterChannelClosure(t *testing.T) {
+	logger, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, logger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// declare the channel to receive messages on
+	qmPublisher.RegisterConnectionClosure()
+	go func() {
+		qmPublisher.ErrCh <- &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
+	}()
+	msg := <-qmPublisher.ErrCh
+	if msg.Code != 400 {
+		t.Fatal("bad code received")
+	}
+	if msg.Reason != "test" {
+		t.Fatal("bad reason")
+	}
+	if !msg.Server {
+		t.Fatal("bad server")
+	}
+	if msg.Recover {
+		t.Fatal("bad recover")
+	}
+	if err := qmPublisher.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestQueue_RefundCredits(t *testing.T) {
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
@@ -133,6 +167,55 @@ func TestQueue_RefundCredits(t *testing.T) {
 			if err := qmConsumer.refundCredits(tt.args.username, tt.args.callType, tt.args.cost); (err != nil) != tt.wantErr {
 				t.Fatal(err)
 			}
+		})
+	}
+}
+
+func TestQueue_ConnectionClosure(t *testing.T) {
+	logger, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type args struct {
+		queueName Queue
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{DatabaseFileAddQueue.String(), args{DatabaseFileAddQueue}},
+		{IpfsFileQueue.String(), args{IpfsFileQueue}},
+		{IpfsClusterPinQueue.String(), args{IpfsClusterPinQueue}},
+		{EmailSendQueue.String(), args{EmailSendQueue}},
+		{IpnsEntryQueue.String(), args{IpnsEntryQueue}},
+		{IpfsPinQueue.String(), args{IpfsPinQueue}},
+		{IpfsKeyCreationQueue.String(), args{IpfsKeyCreationQueue}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			qmPublisher, err := New(tt.args.queueName, testRabbitAddress, false, logger)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wg := &sync.WaitGroup{}
+			wg.Add(1)
+			go func() {
+				if err := qmPublisher.ConsumeMessages(context.Background(), wg, db, cfg); err != nil && err.Error() != ErrReconnect {
+					t.Fatal(err)
+				}
+			}()
+			go func() {
+				qmPublisher.ErrCh <- &amqp.Error{Code: 400, Reason: "error", Server: true, Recover: false}
+			}()
+			wg.Wait()
 		})
 	}
 }
