@@ -315,6 +315,132 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 			return err
 		case <-ctx.Done():
 			return server.Close()
+		case msg := <-api.queues.cluster.ErrChannel:
+			api.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"queue", "cluster-pin",
+				"error", msg.Error())
+			qmCluster, err := queue.New(queue.IpfsClusterPinQueue, api.cfg.RabbitMQ.URL, true, api.l)
+			if err != nil {
+				api.l.Errorw(
+					"failed to re-establish queue process, exiting",
+					"queue", "cluster-pin",
+					"error", err.Error())
+				return server.Close()
+			}
+			api.queues.cluster = qmCluster
+		case msg := <-api.queues.dash.ErrChannel:
+			api.l.Errorw(
+				"a protocol conection error stopping rabbitmq was received",
+				"queue", "dash-payment",
+				"error", msg.Error())
+			qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, api.cfg.RabbitMQ.URL, true, api.l)
+			if err != nil {
+				api.l.Errorw(
+					"failed to re-establish queue proces, exiting",
+					"queue", "dash-payment",
+					"error", err.Error())
+				return server.Close()
+			}
+			api.queues.dash = qmDash
+		case msg := <-api.queues.database.ErrChannel:
+			api.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"queue", "database-file-add",
+				"error", msg.Error())
+			qmDatabase, err := queue.New(queue.DatabaseFileAddQueue, api.cfg.RabbitMQ.URL, true, api.l)
+			if err != nil {
+				api.l.Errorw(
+					"failed to re-establish queue process, exiting",
+					"queue", "database-file-add",
+					"error", err.Error())
+				return server.Close()
+			}
+			api.queues.database = qmDatabase
+		case msg := <-api.queues.email.ErrChannel:
+			api.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"queue", "email-send",
+				"error", msg.Error())
+			qmEmail, err := queue.New(queue.EmailSendQueue, api.cfg.RabbitMQ.URL, true, api.l)
+			if err != nil {
+				api.l.Errorw(
+					"failed to re-establish queue process, exiting",
+					"queue", "email-send",
+					"error", err.Error())
+				return server.Close()
+			}
+			api.queues.email = qmEmail
+		case msg := <-api.queues.file.ErrChannel:
+			api.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"queue", "ipfs-file",
+				"error", msg.Error())
+			qmFile, err := queue.New(queue.IpfsFileQueue, api.cfg.RabbitMQ.URL, true, api.l)
+			if err != nil {
+				api.l.Errorw(
+					"failed to re-establish queue process, exiting",
+					"queue", "ipfs-file",
+					"error", err.Error())
+				return server.Close()
+			}
+			api.queues.file = qmFile
+		case msg := <-api.queues.ipns.ErrChannel:
+			api.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"queue", "ipns-entry",
+				"error", msg.Error())
+			qmIpns, err := queue.New(queue.IpnsEntryQueue, api.cfg.RabbitMQ.URL, true, api.l)
+			if err != nil {
+				api.l.Errorw(
+					"failed to re-establish queue process, exiting",
+					"queue", "ipns-entry",
+					"error", err.Error())
+				return server.Close()
+			}
+			api.queues.ipns = qmIpns
+		case msg := <-api.queues.key.ErrChannel:
+			api.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"queue", "key-creation",
+				"error", msg.Error())
+			qmKey, err := queue.New(queue.IpfsKeyCreationQueue, api.cfg.RabbitMQ.URL, true, api.l)
+			if err != nil {
+				api.l.Errorw(
+					"failed to re-establish queue process, exiting",
+					"queue", "key-creation",
+					"error", err.Error())
+				return server.Close()
+			}
+			api.queues.key = qmKey
+		case msg := <-api.queues.payConfirm.ErrChannel:
+			api.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"queue", "pay-confirm",
+				"error", msg.Error())
+			qmPay, err := queue.New(queue.PaymentConfirmationQueue, api.cfg.RabbitMQ.URL, true, api.l)
+			if err != nil {
+				api.l.Errorw(
+					"failed to re-establish queue process, exiting",
+					"queue", "pay-confirm",
+					"error", err.Error())
+				return server.Close()
+			}
+			api.queues.payConfirm = qmPay
+		case msg := <-api.queues.pin.ErrChannel:
+			api.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"queue", "ipfs-pin",
+				"error", msg.Error())
+			qmPin, err := queue.New(queue.IpfsPinQueue, api.cfg.RabbitMQ.URL, true, api.l)
+			if err != nil {
+				api.l.Errorw(
+					"failed to re-establish queue process, exiting",
+					"queue", "ipfs-pin",
+					"error", err.Error())
+				return server.Close()
+			}
+			api.queues.pin = qmPin
 		}
 	}
 }
