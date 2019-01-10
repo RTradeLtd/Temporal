@@ -55,8 +55,9 @@ func (cm *ClusterManager) GenClient() error {
 func (cm *ClusterManager) ParseLocalStatusAllAndSync() ([]gocid.Cid, error) {
 	// this will hold all the cids that have been synced
 	var syncedCids []gocid.Cid
-	// only fetch the local status for all pins
-	pinInfo, err := cm.Client.StatusAll(true)
+	// only fetch the local status for all pins - todo: double check if this is
+	// the right TrackerStatusError to user
+	pinInfo, err := cm.Client.StatusAll(api.TrackerStatusError, true)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +106,8 @@ func (cm *ClusterManager) RemovePinFromCluster(cidString string) error {
 // FetchLocalStatus is used to fetch the local status of all pins
 func (cm *ClusterManager) FetchLocalStatus() (map[gocid.Cid]string, error) {
 	var response = make(map[gocid.Cid]string)
-	pinInfo, err := cm.Client.StatusAll(true)
+	// todo: doublecheck if this is the right api.TrackerStatus to use
+	pinInfo, err := cm.Client.StatusAll(api.TrackerStatusPinned, true)
 	if err != nil {
 		return response, err
 	}
