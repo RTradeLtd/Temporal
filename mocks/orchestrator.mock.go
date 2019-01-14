@@ -2,11 +2,11 @@
 package mocks
 
 import (
-	context "context"
-	sync "sync"
+	"context"
+	"sync"
 
 	ipfs_orchestrator "github.com/RTradeLtd/grpc/ipfs-orchestrator"
-	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc"
 )
 
 type FakeServiceClient struct {

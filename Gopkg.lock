@@ -42,12 +42,12 @@
   version = "v1.1.2"
 
 [[projects]]
-  digest = "1:8859d83d94d112382fbdd97fc04c2ce196ea044f271ffe8e170826b25131a4f0"
+  digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
   name = "github.com/RTradeLtd/crypto"
   packages = ["."]
   pruneopts = "UT"
-  revision = "599e51d81bcca545e2d53099ba0a558d149ebff5"
-  version = "v1.1.0"
+  revision = "b12095f9d32129596d8648e13efb3b537fea1b2c"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:87eff96ee49497fff6521c93c10eb7da43c63c8dc2128eb2c49555a21ef11610"
@@ -120,7 +120,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2ed3725a04435668c3fdb472974ff68ab6c41ca8da08bba89d3fd80b94294d7b"
+  digest = "1:26d813bbd6e77e2d4dde8d6f70b9477fae08eeed285a560884d1ac66319fb484"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -128,7 +128,7 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "fd3d1e82aa1ac1a0540a4fc89e15ed12f7298036"
+  revision = "6f454592ca05ae082c3fb8aaeefcc5a7570141bb"
 
 [[projects]]
   branch = "master"
@@ -156,14 +156,6 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "43b5f79762c10a62aab8323f9fc45b87e784625f"
-
-[[projects]]
-  branch = "master"
-  digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
-  name = "github.com/beorn7/perks"
-  packages = ["quantile"]
-  pruneopts = "UT"
-  revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
 
 [[projects]]
   branch = "master"
@@ -545,14 +537,6 @@
   revision = "b497e2f366b8624394fb2e89c10ab607bebdde0b"
 
 [[projects]]
-  digest = "1:d4e6e8584d0a94ce567d237e19192dae44d57d2767ac7e1d7fbf5626d176381a"
-  name = "github.com/jinzhu/gorm"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "472c70caa40267cb89fd8facb07fe6454b578626"
-  version = "v1.9.2"
-
-[[projects]]
   branch = "master"
   digest = "1:fd97437fbb6b7dce04132cf06775bd258cce305c44add58eb55ca86c6c325160"
   name = "github.com/jinzhu/inflection"
@@ -924,14 +908,6 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:ff5ebae34cfbf047d505ee150de27e60570e8c394b3b8fdbb720ff6ac71985fc"
-  name = "github.com/matttproud/golang_protobuf_extensions"
-  packages = ["pbutil"]
-  pruneopts = "UT"
-  revision = "c12348ce28de40eed0136aa2b644d0ee0650e56c"
-  version = "v1.0.1"
-
-[[projects]]
   digest = "1:6ff1026b8d873d074ddec82ad60bb0eb537dc013f456ef26b63d30beba2f99e7"
   name = "github.com/microcosm-cc/bluemonday"
   packages = ["."]
@@ -1087,51 +1063,6 @@
   pruneopts = "UT"
   revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
   version = "v0.8.1"
-
-[[projects]]
-  digest = "1:93a746f1060a8acbcf69344862b2ceced80f854170e1caae089b2834c5fbf7f4"
-  name = "github.com/prometheus/client_golang"
-  packages = [
-    "prometheus",
-    "prometheus/internal",
-    "prometheus/promhttp",
-  ]
-  pruneopts = "UT"
-  revision = "505eaef017263e299324067d40ca2c48f6a2cf50"
-  version = "v0.9.2"
-
-[[projects]]
-  branch = "master"
-  digest = "1:2d5cd61daa5565187e1d96bae64dbbc6080dacf741448e9629c64fd93203b0d4"
-  name = "github.com/prometheus/client_model"
-  packages = ["go"]
-  pruneopts = "UT"
-  revision = "f287a105a20ec685d797f65cd0ce8fbeaef42da1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:ce62b400185bf6b16ef6088011b719e449f5c15c4adb6821589679f752c2788e"
-  name = "github.com/prometheus/common"
-  packages = [
-    "expfmt",
-    "internal/bitbucket.org/ww/goautoneg",
-    "model",
-  ]
-  pruneopts = "UT"
-  revision = "2998b132700a7d019ff618c06a234b47c1f3f681"
-
-[[projects]]
-  branch = "master"
-  digest = "1:08eb8b60450efe841e37512d66ce366a87d187505d7c67b99307a6c1803483a2"
-  name = "github.com/prometheus/procfs"
-  packages = [
-    ".",
-    "internal/util",
-    "nfs",
-    "xfs",
-  ]
-  pruneopts = "UT"
-  revision = "b1a0a9a36d7453ba0f62578b99712f3a6c5f82d1"
 
 [[projects]]
   branch = "master"
@@ -1305,14 +1236,6 @@
   version = "v1.1.2"
 
 [[projects]]
-  branch = "master"
-  digest = "1:bcc3e8b281f79d903661fe821e5271e3732bfed74e7bb61f489f23321e664234"
-  name = "github.com/zsais/go-gin-prometheus"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "58963fb32f547bd98cc0150a6bcbdf181a430967"
-
-[[projects]]
   digest = "1:3c1a69cdae3501bf75e76d0d86dc6f2b0a7421bc205c0cb7b96b19eed464a34d"
   name = "go.uber.org/atomic"
   packages = ["."]
@@ -1366,7 +1289,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:fbf4966a8034a401fe6c2b26861d14c43ab0660feddb29ea2be9d550d0d6f256"
+  digest = "1:2de2767010b509b1e5c71279ff8f3c8412e7227c9ece3082b6d4e1597c4d935e"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -1382,7 +1305,7 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "be1c187aa6c66b9daa1d9461c228d17e9dd2cab7"
+  revision = "915654e7eabcea33ae277abbecf52f0d8b7a9fdc"
 
 [[projects]]
   branch = "master"
@@ -1440,7 +1363,7 @@
     "googleapis/rpc/status",
   ]
   pruneopts = "UT"
-  revision = "ae2f86662275e140f395167f1dab7081a5bd5fa8"
+  revision = "db91494dd46c1fdcbbde05e5ff5eb56df8f7d79a"
 
 [[projects]]
   digest = "1:9edd250a3c46675d0679d87540b30c9ed253b19bd1fd1af08f4f5fb3c79fc487"
@@ -1518,6 +1441,7 @@
     "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/entropy-mnemonics",
     "github.com/RTradeLtd/go-ipfs-api",
+    "github.com/RTradeLtd/gorm",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/ipfs-orchestrator",
     "github.com/RTradeLtd/grpc/krab",
@@ -1546,7 +1470,6 @@
     "github.com/ipfs/go-ipfs/repo",
     "github.com/ipfs/ipfs-cluster/api",
     "github.com/ipfs/ipfs-cluster/api/rest/client",
-    "github.com/jinzhu/gorm",
     "github.com/libp2p/go-libp2p-crypto",
     "github.com/libp2p/go-libp2p-peer",
     "github.com/minio/minio-go",
@@ -1556,7 +1479,6 @@
     "github.com/sendgrid/sendgrid-go/helpers/mail",
     "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
-    "github.com/zsais/go-gin-prometheus",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",
     "go.uber.org/zap/zaptest/observer",
