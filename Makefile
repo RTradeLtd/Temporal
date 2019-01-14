@@ -90,6 +90,18 @@ clean: stop-testenv
 	( cd testenv ; make clean )
 	@echo "===================          done           ==================="
 
+# Rebuild generate code
+.PHONY: gen
+gen:
+	@echo "===================    regenerating code    ==================="
+	counterfeiter -o ./mocks/orchestrator.mock.go \
+		./vendor/github.com/RTradeLtd/grpc/ipfs-orchestrator ServiceClient
+	counterfeiter -o ./mocks/lens.mock.go \
+		./vendor/github.com/RTradeLtd/grpc/lens IndexerAPIClient
+	counterfeiter -o ./mocks/eth.mock.go \
+		./vendor/github.com/RTradeLtd/grpc/temporal SignerClient
+	@echo "===================          done           ==================="
+
 # Rebuild vendored dependencies
 .PHONY: vendor
 vendor:
