@@ -23,7 +23,7 @@ import (
 func (api *API) ConfirmPayment(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "payment_number", "tx_hash")
@@ -36,12 +36,12 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 		return
 	}
 	if _, err := api.pm.FindPaymentByNumber(username, paymentNumberInt); err != nil {
-		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
 	payment, err := api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt)
 	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
 	paymentConfirmation := queue.PaymentConfirmation{
@@ -49,7 +49,7 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 		PaymentNumber: paymentNumberInt,
 	}
 	if err = api.queues.payConfirm.PublishMessage(paymentConfirmation); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": payment})
@@ -59,7 +59,7 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "payment_type", "sender_address", "credit_value")
@@ -84,13 +84,13 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	// get the current value of a single (ie, 1.0 eth) unit of currency of the given payment type
 	usdValueFloat, err := api.getUSDValue(paymentType)
 	if err != nil {
-		api.LogError(err, eh.CmcCheckError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.CmcCheckError)(http.StatusBadRequest)
 		return
 	}
 	// get the number of the current payment we are processing
 	paymentNumber, err := api.pm.GetLatestPaymentNumber(username)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
 	// convert the credits the user wants to buy from string to float
@@ -126,7 +126,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	// using the returned values, we have the information needed to send a call to the smart contract
 	resp, err := api.signer.GetSignedMessage(context.Background(), &signRequest)
 	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
 	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
@@ -140,12 +140,12 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		paymentType,
 		username,
 	); err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
 	vUint, err := strconv.ParseUint(resp.GetV(), 10, 64)
 	if err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
 	formattedH := fmt.Sprintf("0x%s", resp.GetH())
@@ -170,7 +170,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 func (api *API) CreateDashPayment(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "credit_value")
@@ -190,7 +190,7 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 	chargeAmountFloat := creditValueFloat / usdValueFloat
 	paymentNumber, err := api.pm.GetLatestPaymentNumber(username)
 	if err != nil {
-		api.LogError(err, eh.PaymentSearchError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
 	// as we require tx hashes be unique in the database
@@ -208,11 +208,11 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		api.LogError(err, eh.ChainRiderAPICallError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.ChainRiderAPICallError)(http.StatusBadRequest)
 		return
 	}
 	if response.Error != "" {
-		api.LogError(errors.New(response.Error), eh.ChainRiderAPICallError)(c, http.StatusBadRequest)
+		api.LogError(c, errors.New(response.Error), eh.ChainRiderAPICallError)(http.StatusBadRequest)
 		return
 	}
 	if _, err = api.pm.NewPayment(
@@ -225,7 +225,7 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		"dash",
 		username,
 	); err != nil {
-		api.LogError(err, err.Error())(c, http.StatusBadRequest)
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
 	confirmation := &queue.DashPaymenConfirmation{
@@ -234,7 +234,7 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		PaymentNumber:    paymentNumber,
 	}
 	if err = api.queues.dash.PublishMessage(confirmation); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}
 	type pay struct {
@@ -268,7 +268,7 @@ func (api *API) GetDepositAddress(c *gin.Context) {
 	paymentType := c.Param("type")
 	address, err := api.getDepositAddress(paymentType)
 	if err != nil {
-		api.LogError(err, eh.InvalidPaymentTypeError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.InvalidPaymentTypeError)(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": address})
