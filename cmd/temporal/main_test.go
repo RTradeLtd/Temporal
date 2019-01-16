@@ -13,6 +13,8 @@ func init() {
 	dbNoSSL = &t
 	devMode = &t
 	grpcNoSSL = &t
+	var blank string
+	configPath = &blank
 }
 
 func TestAPI(t *testing.T) {
