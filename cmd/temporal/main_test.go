@@ -11,6 +11,7 @@ import (
 func init() {
 	var t = true
 	dbNoSSL = &t
+	dbMigrate = &t
 	devMode = &t
 	grpcNoSSL = &t
 	var blank string
