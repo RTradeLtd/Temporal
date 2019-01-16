@@ -98,7 +98,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/dvwright/xss-mw"
-  version = "1.0.0-Beta"
+  version = "v1.2-Beta"
 
 [[constraint]]
   name = "github.com/gin-gonic/gin"

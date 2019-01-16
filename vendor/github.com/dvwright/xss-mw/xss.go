@@ -550,7 +550,7 @@ func (mw *XssMw) buildJsonApplyPolicy(interf interface{}, buff bytes.Buffer, p *
 		buff.WriteString(scnd.String())
 		buff.WriteByte(',')
 	case []interface{}:
-		b := mw.unravelSlice(v)
+		b := mw.unravelSlice(v, p)
 		buff.WriteString(b.String())
 		buff.WriteByte(',')
 	case json.Number:
@@ -574,7 +574,7 @@ func (mw *XssMw) buildJsonApplyPolicy(interf interface{}, buff bytes.Buffer, p *
 	return buff
 }
 
-func (mw *XssMw) unravelSlice(slce []interface{}) bytes.Buffer {
+func (mw *XssMw) unravelSlice(slce []interface{}, p *bluemonday.Policy) bytes.Buffer {
 	var buff bytes.Buffer
 	buff.WriteByte('[')
 	for _, n := range slce {
@@ -583,6 +583,9 @@ func (mw *XssMw) unravelSlice(slce []interface{}) bytes.Buffer {
 			var sbuff bytes.Buffer
 			scnd := mw.ConstructJson(nn, sbuff)
 			buff.WriteString(scnd.String())
+			buff.WriteByte(',')
+		case string:
+			buff.WriteString(fmt.Sprintf("%q", p.Sanitize(nn)))
 			buff.WriteByte(',')
 		}
 	}

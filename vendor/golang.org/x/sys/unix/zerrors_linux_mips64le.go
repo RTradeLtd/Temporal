@@ -1744,6 +1744,8 @@ const (
 	SECCOMP_MODE_STRICT                  = 0x1
 	SECURITYFS_MAGIC                     = 0x73636673
 	SELINUX_MAGIC                        = 0xf97cff8c
+	SFD_CLOEXEC                          = 0x80000
+	SFD_NONBLOCK                         = 0x80
 	SHUT_RD                              = 0x0
 	SHUT_RDWR                            = 0x2
 	SHUT_WR                              = 0x1
@@ -2098,6 +2100,7 @@ const (
 	TCSETSW                              = 0x540f
 	TCSETSW2                             = 0x8030542c
 	TCXONC                               = 0x5406
+	TIMER_ABSTIME                        = 0x1
 	TIOCCBRK                             = 0x5428
 	TIOCCONS                             = 0x80047478
 	TIOCEXCL                             = 0x740d

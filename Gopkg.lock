@@ -163,7 +163,7 @@
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
   pruneopts = "UT"
-  revision = "5bda5314ca9549a589e63d7b2e6104492a0d5328"
+  revision = "ed77733ec07dfc8a513741138419b8d9d3de9d2d"
 
 [[projects]]
   branch = "master"
@@ -221,12 +221,12 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:36987b37f1f7dbd0b8cd24f68ca418a571a5a56c9fabc7b95cef08dd4de2640c"
+  digest = "1:d5976d8b735aaf4d87a471574a3b7acab423268e25a737b9f079018a8a8f9025"
   name = "github.com/dvwright/xss-mw"
   packages = ["."]
   pruneopts = "UT"
-  revision = "75189b73f592c1cf0a65e91d6051e648d25333a5"
-  version = "1.1"
+  revision = "3b0e27d936532047627248ae1daac184370ff801"
+  version = "v1.2-Beta"
 
 [[projects]]
   digest = "1:d1341a04a4443bba8c8af76ec6c3960206074490a1284b4853ff5a88a66c63b7"
@@ -497,7 +497,7 @@
     "api/rest/client",
   ]
   pruneopts = "UT"
-  revision = "d80f3ee05d5688052b26556a5bb0d9cd2ea21880"
+  revision = "f7bc4687653bbdb2b0c6eac9fa507543d8c946a1"
 
 [[projects]]
   digest = "1:b352ae8b1a77cc6b48fc8e314e34a522cfc76d6ca3a06c93b29c9cde5de6771e"
@@ -1309,7 +1309,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8e5fb08ed821e9ec172a13f9be958fd001578c8520c9ea4759b192dcf2ada73f"
+  digest = "1:ea401bdef5ad0c76b72e731a1f564ae5260c146535ab1331a99d7116e3bcefc0"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1317,7 +1317,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "48ac38b7c8cbedd50b1613c0fccacfc7d88dfcdf"
+  revision = "a457fd036447854c0c02e89ea439481bdcf941a2"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1366,7 +1366,7 @@
   revision = "db91494dd46c1fdcbbde05e5ff5eb56df8f7d79a"
 
 [[projects]]
-  digest = "1:9edd250a3c46675d0679d87540b30c9ed253b19bd1fd1af08f4f5fb3c79fc487"
+  digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -1402,8 +1402,8 @@
     "tap",
   ]
   pruneopts = "UT"
-  revision = "df014850f6dee74ba2fc94874043a9f3f75fbfd8"
-  version = "v1.17.0"
+  revision = "a02b0774206b209466313a0b525d2c738fe407eb"
+  version = "v1.18.0"
 
 [[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
@@ -1475,6 +1475,7 @@
     "github.com/minio/minio-go",
     "github.com/multiformats/go-multiaddr",
     "github.com/semihalev/gin-stats",
+    "github.com/sendgrid/rest",
     "github.com/sendgrid/sendgrid-go",
     "github.com/sendgrid/sendgrid-go/helpers/mail",
     "github.com/sirupsen/logrus",
