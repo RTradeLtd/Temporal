@@ -12,6 +12,7 @@ func init() {
 	var t = true
 	dbNoSSL = &t
 	devMode = &t
+	grpcNoSSL = &t
 }
 
 func TestAPI(t *testing.T) {
