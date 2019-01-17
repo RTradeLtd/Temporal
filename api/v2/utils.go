@@ -7,9 +7,9 @@ import (
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/gorm"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 var nilTime time.Time

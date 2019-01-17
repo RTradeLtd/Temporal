@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/gorm"
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
 )
 

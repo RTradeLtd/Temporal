@@ -3,7 +3,7 @@ package models
 import (
 	"strings"
 
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 )
 
 // EncryptedUpload is an uploaded that has been encrypted by Temporal

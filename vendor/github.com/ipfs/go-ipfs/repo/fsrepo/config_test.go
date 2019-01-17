@@ -10,7 +10,7 @@ import (
 	"github.com/ipfs/go-ipfs/plugin/loader"
 	"github.com/ipfs/go-ipfs/repo/fsrepo"
 
-	"gx/ipfs/QmYyzmMnhNTtoXx5ttgUaRdHHckYnQWjPL98hgLAR2QLDD/go-ipfs-config"
+	"gx/ipfs/QmcRKBUqc2p3L1ZraoJjbXfs9E6xzvEuyK9iypb5RGwfsr/go-ipfs-config"
 )
 
 // note: to test sorting of the mountpoints in the disk spec they are
@@ -75,7 +75,19 @@ var measureConfig = []byte(`{
 }`)
 
 func TestDefaultDatastoreConfig(t *testing.T) {
-	loader.LoadPlugins("")
+	loader, err := loader.NewPluginLoader("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = loader.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = loader.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	dir, err := ioutil.TempDir("", "ipfs-datastore-config-test")
 	if err != nil {

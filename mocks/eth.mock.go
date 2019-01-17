@@ -2,13 +2,13 @@
 package mocks
 
 import (
-	context "context"
-	sync "sync"
+	"context"
+	"sync"
 
-	temporal "github.com/RTradeLtd/grpc/temporal"
-	request "github.com/RTradeLtd/grpc/temporal/request"
-	response "github.com/RTradeLtd/grpc/temporal/response"
-	grpc "google.golang.org/grpc"
+	"github.com/RTradeLtd/grpc/temporal"
+	"github.com/RTradeLtd/grpc/temporal/request"
+	"github.com/RTradeLtd/grpc/temporal/response"
+	"google.golang.org/grpc"
 )
 
 type FakeSignerClient struct {

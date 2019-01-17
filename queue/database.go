@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/RTradeLtd/database/models"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"github.com/streadway/amqp"
 )
 

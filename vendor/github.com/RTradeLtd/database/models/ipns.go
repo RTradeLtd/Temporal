@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"github.com/lib/pq"
 )
 

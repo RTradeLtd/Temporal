@@ -14,7 +14,7 @@ import (
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 )
 
 const (

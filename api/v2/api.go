@@ -25,7 +25,6 @@ import (
 	"github.com/RTradeLtd/config"
 	xss "github.com/dvwright/xss-mw"
 	stats "github.com/semihalev/gin-stats"
-	ginprometheus "github.com/zsais/go-gin-prometheus"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/database"
@@ -88,18 +87,11 @@ func Initialize(
 	var (
 		err    error
 		router = gin.Default()
-		p      = ginprometheus.NewPrometheus("gin")
 	)
 
 	l = l.Named("api")
-
-	// set up prometheus monitoring
-	p.SetListenAddress(fmt.Sprintf("%s:6768", cfg.API.Connection.ListenAddress))
-	p.Use(router)
-
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		nil,
 		time.Minute*10,
 	)
 	if err != nil {
@@ -112,6 +104,7 @@ func Initialize(
 	if err != nil {
 		return nil, err
 	}
+
 	// set up API struct
 	api, err := new(cfg, router, l, lens, orch, signer, im, imCluster, debug)
 	if err != nil {

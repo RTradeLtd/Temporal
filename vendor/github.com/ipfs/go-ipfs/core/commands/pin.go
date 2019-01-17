@@ -15,12 +15,12 @@ import (
 	corerepo "github.com/ipfs/go-ipfs/core/corerepo"
 	pin "github.com/ipfs/go-ipfs/pin"
 
-	cmds "gx/ipfs/QmPdvMtgpnMuU68mWhGtzCxnddXJoV96tT9aPcNbQsqPaM/go-ipfs-cmds"
-	bserv "gx/ipfs/QmPoh3SrQzFBWtdGK6qmHDV4EanKR6kYPj4DD3J2NLoEmZ/go-blockservice"
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
+	dag "gx/ipfs/QmTQdH4848iTVCJmKXYyRiK72HufWTLYQQ8iN3JaQ8K1Hq/go-merkledag"
+	cmds "gx/ipfs/QmWGm4AbZEbnmdgVTza52MSNpEmBdFVqzmAysRbjrRyGbH/go-ipfs-cmds"
 	"gx/ipfs/QmYMQuypUbgsdNHmuCBSUJV6wdQVsBHRivNAp3efHJwZJD/go-verifcid"
+	bserv "gx/ipfs/QmYPZzd9VqmJDwxUnThfeSbV1Y5o53aVPDijTB7j7rS9Ep/go-blockservice"
 	offline "gx/ipfs/QmYZwey1thDTynSrvd6qQkX24UpTka6TFhQ2v569UpoqxD/go-ipfs-exchange-offline"
-	dag "gx/ipfs/QmdV35UHnL1FM52baPkeUo6u7Fxm2CRUkPTLRPxeF8a4Ap/go-merkledag"
 	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
@@ -72,7 +72,7 @@ var addPinCmd = &cmds.Command{
 			return err
 		}
 
-		api, err := cmdenv.GetApi(env)
+		api, err := cmdenv.GetApi(env, req)
 		if err != nil {
 			return err
 		}
@@ -88,7 +88,7 @@ var addPinCmd = &cmds.Command{
 		}
 
 		if !showProgress {
-			added, err := corerepo.Pin(n, api, req.Context, req.Arguments, recursive)
+			added, err := corerepo.Pin(n.Pinning, api, req.Context, req.Arguments, recursive)
 			if err != nil {
 				return err
 			}
@@ -105,7 +105,7 @@ var addPinCmd = &cmds.Command{
 
 		ch := make(chan pinResult, 1)
 		go func() {
-			added, err := corerepo.Pin(n, api, ctx, req.Arguments, recursive)
+			added, err := corerepo.Pin(n.Pinning, api, ctx, req.Arguments, recursive)
 			ch <- pinResult{pins: added, err: err}
 		}()
 
@@ -203,7 +203,7 @@ collected if needed. (By default, recursively. Use -r=false for direct pins.)
 			return err
 		}
 
-		api, err := cmdenv.GetApi(env)
+		api, err := cmdenv.GetApi(env, req)
 		if err != nil {
 			return err
 		}
@@ -215,7 +215,7 @@ collected if needed. (By default, recursively. Use -r=false for direct pins.)
 			return err
 		}
 
-		removed, err := corerepo.Unpin(n, api, req.Context, req.Arguments, recursive)
+		removed, err := corerepo.Unpin(n.Pinning, api, req.Context, req.Arguments, recursive)
 		if err != nil {
 			return err
 		}
@@ -294,7 +294,7 @@ Example:
 			return err
 		}
 
-		api, err := cmdenv.GetApi(env)
+		api, err := cmdenv.GetApi(env, req)
 		if err != nil {
 			return err
 		}
@@ -366,7 +366,7 @@ new pin and removing the old one.
 	},
 	Type: PinOutput{},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env)
+		api, err := cmdenv.GetApi(env, req)
 		if err != nil {
 			return err
 		}

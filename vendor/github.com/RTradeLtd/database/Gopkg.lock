@@ -10,6 +10,17 @@
   revision = "858050bd60710361598cd4da2d8b316677fe6374"
 
 [[projects]]
+  branch = "versioned"
+  digest = "1:cbfe83c6fd0098e4bb003e968c7ec3d5526505287698a972b11c0caa4abe4935"
+  name = "github.com/RTradeLtd/gorm"
+  packages = [
+    ".",
+    "dialects/postgres",
+  ]
+  pruneopts = "UT"
+  revision = "d2072fe8bb4a46e42fe4f8097f8c015cac19b08c"
+
+[[projects]]
   branch = "master"
   digest = "1:4cf11742b199ab3aacf26b00187e72f7ff8ba2145f363b74f295d54f098f79e4"
   name = "github.com/agl/ed25519"
@@ -65,17 +76,6 @@
   pruneopts = "UT"
   revision = "14e95105cbafcda64fdc36197fe6a30b23c693dc"
   version = "v1.5.7"
-
-[[projects]]
-  branch = "master"
-  digest = "1:7b4c43b17175f212ca55e83034f9f2ea7c34602819e8a6db994d37d2b9218659"
-  name = "github.com/jinzhu/gorm"
-  packages = [
-    ".",
-    "dialects/postgres",
-  ]
-  pruneopts = "UT"
-  revision = "5ad6f621e6f59672f5b5061df85b243436fde048"
 
 [[projects]]
   branch = "master"
@@ -237,9 +237,9 @@
   analyzer-version = 1
   input-imports = [
     "github.com/RTradeLtd/config",
+    "github.com/RTradeLtd/gorm",
+    "github.com/RTradeLtd/gorm/dialects/postgres",
     "github.com/ipfs/go-ipfs-addr",
-    "github.com/jinzhu/gorm",
-    "github.com/jinzhu/gorm/dialects/postgres",
     "github.com/lib/pq",
     "github.com/multiformats/go-multiaddr",
     "golang.org/x/crypto/bcrypt",

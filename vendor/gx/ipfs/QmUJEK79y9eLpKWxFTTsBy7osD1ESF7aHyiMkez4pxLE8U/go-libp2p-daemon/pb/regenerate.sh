@@ -1,0 +1,1 @@
+protoc --gogofast_out=. p2pd.proto

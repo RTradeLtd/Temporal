@@ -33,7 +33,7 @@ check:
 
 .PHONY: gen
 gen:
-	ifacemaker -d \
+	ifacemaker \
 		-f rtfs.go \
 		-s IpfsManager \
 		-i Manager \

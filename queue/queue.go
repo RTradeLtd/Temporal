@@ -6,7 +6,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"go.uber.org/zap"
 
 	"github.com/RTradeLtd/config"

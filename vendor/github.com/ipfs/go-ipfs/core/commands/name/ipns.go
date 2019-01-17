@@ -11,8 +11,8 @@ import (
 	options "github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 	nsopts "github.com/ipfs/go-ipfs/namesys/opts"
 
-	cmds "gx/ipfs/QmPdvMtgpnMuU68mWhGtzCxnddXJoV96tT9aPcNbQsqPaM/go-ipfs-cmds"
-	path "gx/ipfs/QmZErC2Ay6WuGi96CPg316PwitdwgLo6RxZRqVjJjRj2MR/go-path"
+	path "gx/ipfs/QmNYPETsdAu2uQ1k9q9S1jYEGURaLHV6cbYRSVFVRftpF8/go-path"
+	cmds "gx/ipfs/QmWGm4AbZEbnmdgVTza52MSNpEmBdFVqzmAysRbjrRyGbH/go-ipfs-cmds"
 	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
 	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
@@ -80,13 +80,12 @@ Resolve the value of a dnslink:
 		cmdkit.BoolOption(streamOptionName, "s", "Stream entries as they are found."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env)
+		api, err := cmdenv.GetApi(env, req)
 		if err != nil {
 			return err
 		}
 
 		nocache, _ := req.Options["nocache"].(bool)
-		local, _ := req.Options["local"].(bool)
 
 		var name string
 		if len(req.Arguments) == 0 {
@@ -105,7 +104,6 @@ Resolve the value of a dnslink:
 		stream, _ := req.Options[streamOptionName].(bool)
 
 		opts := []options.NameResolveOption{
-			options.Name.Local(local),
 			options.Name.Cache(!nocache),
 		}
 

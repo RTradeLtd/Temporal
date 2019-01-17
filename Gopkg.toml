@@ -8,47 +8,45 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 #   RTRADE    #
 ###############
 
-
 [[constraint]]
   name = "github.com/RTradeLtd/ChainRider-Go"
-  version = "v1.0.7"
+  version = "=v1.0.7"
 
 [[override]]
   name = "github.com/RTradeLtd/grpc"
-  version = "v1.2.0"
+  version = "=v1.2.0"
 
 [[override]]
   name = "github.com/RTradeLtd/database"
-  version = "v1.1.2"
+  version = "=v1.2.0"
 
 [[override]]
   name = "github.com/RTradeLtd/rtfs"
   branch = "master"
-  
+
 [[override]]
   name = "github.com/RTradeLtd/config"
-  version = "v1.1.2"
+  version = "=v1.1.2"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"
-  version = "v1.0.4"
+  version = "~v2.0.0"
 
 [[constraint]]
   name = "github.com/RTradeLtd/crypto"
-  version = "v1.0.0"
+  version = "=v1.0.0"
 
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
   version = "v2.0.4"
 
-[[constraint]]
+[[override]]
   name = "github.com/RTradeLtd/kaas"
-  version = "v1.0.2"
+  version = "=v1.0.2"
 
 ###############
 #    IPFS     #
 ###############
-
 
 [[override]]
   name = "github.com/multiformats/go-multiaddr-dns"
@@ -63,14 +61,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   version = "0.9.0"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/ipfs/go-dnslink"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/ipfs/go-ipfs-keystore"
-
-[[constraint]]
   name = "github.com/ipfs/ipfs-cluster"
   branch = "master"
 
@@ -81,11 +71,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   name = "github.com/multiformats/go-multiaddr"
   branch = "master"
-
-
-[[constraint]]
-  name = "github.com/ipfs/go-ipfs-config"
-  version = "0.2.4"
 
 [[constraint]]
   name = "github.com/libp2p/go-libp2p-peer"
@@ -98,7 +83,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 ###############
 # THIRD PARTY #
 ###############
-
 
 [[constraint]]
   name = "github.com/minio/minio-go"
@@ -113,12 +97,8 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/c2h5oh/datasize"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/danielkov/gin-helmet"
-
-[[constraint]]
   name = "github.com/dvwright/xss-mw"
-  version = "1.0.0-Beta"
+  version = "v1.2-Beta"
 
 [[constraint]]
   name = "github.com/gin-gonic/gin"
@@ -133,21 +113,17 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/streadway/amqp"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/zsais/go-gin-prometheus"
-
-[[constraint]]
   name = "github.com/gin-contrib/cors"
   version = "1.2.0"
 
 [[override]]
   name = "github.com/rjeczalik/notify"
   branch = "master"
-
-[[constraint]]
-  name = "github.com/NebulousLabs/entropy-mnemonics"
-  branch = "master"
   
 [[constraint]]
   name = "github.com/appleboy/gin-jwt"
   revision = "f7347d7c16fc8297bf5b7215b9e4847a5ca05d90"
+
+[[override]]
+  name = "github.com/libp2p/go-reuseport-transport"
+  branch = "master"

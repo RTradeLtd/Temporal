@@ -20,10 +20,10 @@ import (
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/gorm"
 	"github.com/RTradeLtd/rtfs"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
 
@@ -117,7 +117,6 @@ func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceC
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		nil,
 		time.Minute*10,
 	)
 	if err != nil {

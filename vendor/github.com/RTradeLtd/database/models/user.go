@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/RTradeLtd/database/utils"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )

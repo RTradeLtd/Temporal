@@ -68,7 +68,7 @@ func (api *API) beamContent(c *gin.Context) {
 	}
 	if passphrase := c.PostForm("passphrase"); passphrase != "" {
 		// connect to the source network
-		net1Conn, err := rtfs.NewManager(source, nil, time.Minute*10)
+		net1Conn, err := rtfs.NewManager(source, time.Minute*10)
 		if err != nil {
 			api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 			return
@@ -166,7 +166,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 			return
 		}
 		// initialize our connection to IPFS
-		manager, err = rtfs.NewManager(apiURL, nil, time.Minute*10)
+		manager, err = rtfs.NewManager(apiURL, time.Minute*10)
 		if err != nil {
 			api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 			return

@@ -2,13 +2,13 @@
 package mocks
 
 import (
-	context "context"
-	sync "sync"
+	"context"
+	"sync"
 
-	clients "github.com/RTradeLtd/Temporal/grpc-clients"
-	request "github.com/RTradeLtd/grpc/lens/request"
-	response "github.com/RTradeLtd/grpc/lens/response"
-	grpc "google.golang.org/grpc"
+	service "github.com/RTradeLtd/grpc/lens"
+	"github.com/RTradeLtd/grpc/lens/request"
+	"github.com/RTradeLtd/grpc/lens/response"
+	"google.golang.org/grpc"
 )
 
 type FakeIndexerAPIClient struct {
@@ -202,4 +202,4 @@ func (fake *FakeIndexerAPIClient) recordInvocation(key string, args []interface{
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ clients.IndexerAPIClient = new(FakeIndexerAPIClient)
+var _ service.IndexerAPIClient = new(FakeIndexerAPIClient)

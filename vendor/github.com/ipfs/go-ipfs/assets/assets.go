@@ -1,4 +1,4 @@
-//go:generate go-bindata -pkg=assets -prefix=$GOPATH/src/gx/ipfs/QmdZ4PvPHFQVLLEve7DgoKDcSY19wwpGBB1GKjjKi2rEL1 init-doc $GOPATH/src/gx/ipfs/QmdZ4PvPHFQVLLEve7DgoKDcSY19wwpGBB1GKjjKi2rEL1/dir-index-html
+//go:generate go-bindata -pkg=assets -prefix=$GOPATH/src/gx/ipfs/QmT1jwrqzSMjSjLG5oBd9w4P9vXPKQksWuf5ghsE3Q88ZV init-doc $GOPATH/src/gx/ipfs/QmT1jwrqzSMjSjLG5oBd9w4P9vXPKQksWuf5ghsE3Q88ZV/dir-index-html
 //go:generate gofmt -w bindata.go
 
 package assets
@@ -11,11 +11,11 @@ import (
 
 	"github.com/ipfs/go-ipfs/core"
 	"github.com/ipfs/go-ipfs/core/coreunix"
+	uio "gx/ipfs/QmQXze9tG878pa4Euya4rrDpyTNX3kQe4dhCaBzBozGgpe/go-unixfs/io"
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	uio "gx/ipfs/QmdYvDbHp7qAhZ7GsCj6e1cMo55ND6y2mjWVzwdvcv4f12/go-unixfs/io"
 
 	// this import keeps gx from thinking the dep isn't used
-	_ "gx/ipfs/QmdZ4PvPHFQVLLEve7DgoKDcSY19wwpGBB1GKjjKi2rEL1/dir-index-html"
+	_ "gx/ipfs/QmT1jwrqzSMjSjLG5oBd9w4P9vXPKQksWuf5ghsE3Q88ZV/dir-index-html"
 )
 
 // initDocPaths lists the paths for the docs we want to seed during --init
@@ -34,7 +34,7 @@ func SeedInitDocs(nd *core.IpfsNode) (cid.Cid, error) {
 	return addAssetList(nd, initDocPaths)
 }
 
-var initDirPath = filepath.Join(os.Getenv("GOPATH"), "gx", "ipfs", "QmdZ4PvPHFQVLLEve7DgoKDcSY19wwpGBB1GKjjKi2rEL1", "dir-index-html")
+var initDirPath = filepath.Join(os.Getenv("GOPATH"), "gx", "ipfs", "QmT1jwrqzSMjSjLG5oBd9w4P9vXPKQksWuf5ghsE3Q88ZV", "dir-index-html")
 var initDirIndex = []string{
 	filepath.Join(initDirPath, "knownIcons.txt"),
 	filepath.Join(initDirPath, "dir-index.html"),

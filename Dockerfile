@@ -25,11 +25,10 @@ RUN mkdir /temporal \
     mkdir -p /var/log/temporal
 
 # Set default configuration
-ENV CONFIG_DAG /temporal/config.json
 COPY ./testenv/config.json /temporal/config.json
 
 # Set default command
-ENTRYPOINT [ "temporal" ]
+ENTRYPOINT [ "temporal", "-config", "/temporal/config.json" ]
 
 # Run API by default
 CMD [ "api" ]

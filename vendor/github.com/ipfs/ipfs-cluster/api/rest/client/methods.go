@@ -135,10 +135,23 @@ func (c *defaultClient) Status(ci cid.Cid, local bool) (api.GlobalPinInfo, error
 	return gpi.ToGlobalPinInfo(), err
 }
 
-// StatusAll gathers Status() for all tracked items.
-func (c *defaultClient) StatusAll(local bool) ([]api.GlobalPinInfo, error) {
+// StatusAll gathers Status() for all tracked items. If a filter is
+// provided, only entries matching the given filter statuses
+// will be returned. A filter can be built by merging TrackerStatuses with
+// a bitwise OR operation (st1 | st2 | ...). A "0" filter value (or
+// api.TrackerStatusUndefined), means all.
+func (c *defaultClient) StatusAll(filter api.TrackerStatus, local bool) ([]api.GlobalPinInfo, error) {
 	var gpis []api.GlobalPinInfoSerial
-	err := c.do("GET", fmt.Sprintf("/pins?local=%t", local), nil, nil, &gpis)
+
+	filterStr := ""
+	if filter != api.TrackerStatusUndefined { // undefined filter means "all"
+		filterStr = filter.String()
+		if filterStr == "" {
+			return nil, errors.New("invalid filter value")
+		}
+	}
+
+	err := c.do("GET", fmt.Sprintf("/pins?local=%t&filter=%s", local, url.QueryEscape(filterStr)), nil, nil, &gpis)
 	result := make([]api.GlobalPinInfo, len(gpis))
 	for i, p := range gpis {
 		result[i] = p.ToGlobalPinInfo()
@@ -332,7 +345,7 @@ func statusReached(target api.TrackerStatus, gblPinInfo api.GlobalPinInfo) (bool
 		switch pinInfo.Status {
 		case target:
 			continue
-		case api.TrackerStatusBug, api.TrackerStatusClusterError, api.TrackerStatusPinError, api.TrackerStatusUnpinError:
+		case api.TrackerStatusUndefined, api.TrackerStatusClusterError, api.TrackerStatusPinError, api.TrackerStatusUnpinError:
 			return false, fmt.Errorf("error has occurred while attempting to reach status: %s", target.String())
 		case api.TrackerStatusRemote:
 			if target == api.TrackerStatusPinned {
@@ -347,7 +360,7 @@ func statusReached(target api.TrackerStatus, gblPinInfo api.GlobalPinInfo) (bool
 }
 
 // logic drawn from go-ipfs-cmds/cli/parse.go: appendFile
-func makeSerialFile(fpath string, params *api.AddParams) (files.File, error) {
+func makeSerialFile(fpath string, params *api.AddParams) (files.Node, error) {
 	if fpath == "." {
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -373,7 +386,7 @@ func makeSerialFile(fpath string, params *api.AddParams) (files.File, error) {
 		}
 	}
 
-	return files.NewSerialFile(path.Base(fpath), fpath, params.Hidden, stat)
+	return files.NewSerialFile(fpath, params.Hidden, stat)
 }
 
 // Add imports files to the cluster from the given paths. A path can
@@ -389,32 +402,33 @@ func (c *defaultClient) Add(
 	out chan<- *api.AddedOutput,
 ) error {
 
-	addFiles := make([]files.File, len(paths), len(paths))
-	for i, path := range paths {
-		u, err := url.Parse(path)
+	addFiles := make([]files.DirEntry, len(paths), len(paths))
+	for i, p := range paths {
+		u, err := url.Parse(p)
 		if err != nil {
 			close(out)
 			return fmt.Errorf("error parsing path: %s", err)
 		}
-		var addFile files.File
+		name := path.Base(p)
+		var addFile files.Node
 		if strings.HasPrefix(u.Scheme, "http") {
 			addFile = files.NewWebFile(u)
+			name = path.Base(u.Path)
 		} else {
-			addFile, err = makeSerialFile(path, params)
+			addFile, err = makeSerialFile(p, params)
 			if err != nil {
 				close(out)
 				return err
 			}
 		}
-		addFiles[i] = addFile
+		addFiles[i] = files.FileEntry(name, addFile)
 	}
 
-	sliceFile := files.NewSliceFile("", "", addFiles)
+	sliceFile := files.NewSliceDirectory(addFiles)
 	// If `form` is set to true, the multipart data will have
 	// a Content-Type of 'multipart/form-data', if `form` is false,
 	// the Content-Type will be 'multipart/mixed'.
-	mfr := files.NewMultiFileReader(sliceFile, true)
-	return c.AddMultiFile(mfr, params, out)
+	return c.AddMultiFile(files.NewMultiFileReader(sliceFile, true), params, out)
 }
 
 // AddMultiFile imports new files from a MultiFileReader. See Add().
@@ -427,6 +441,9 @@ func (c *defaultClient) AddMultiFile(
 
 	headers := make(map[string]string)
 	headers["Content-Type"] = "multipart/form-data; boundary=" + multiFileR.Boundary()
+
+	// This method must run with StreamChannels set.
+	params.StreamChannels = true
 	queryStr := params.ToQueryString()
 
 	// our handler decodes an AddedOutput and puts it

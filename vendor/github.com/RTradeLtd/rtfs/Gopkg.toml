@@ -4,12 +4,8 @@
 
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
-  version = "v2.0.4"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/ipfs/go-ipfs-keystore"
-
+  version = "v2.0.6"
+ 
 [[constraint]]
   name = "github.com/libp2p/go-libp2p-crypto"
   version = "2.0.1"

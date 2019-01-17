@@ -2,19 +2,22 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"sync"
 	"syscall"
 
-	"github.com/RTradeLtd/Temporal/mini"
+	"go.uber.org/zap"
 
-	"github.com/RTradeLtd/Temporal/api/v2"
-	"github.com/RTradeLtd/Temporal/api/v3"
-	"github.com/RTradeLtd/Temporal/grpc-clients"
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
+	"github.com/RTradeLtd/Temporal/mini"
+	"github.com/RTradeLtd/gorm"
+
+	v2 "github.com/RTradeLtd/Temporal/api/v2"
+	v3 "github.com/RTradeLtd/Temporal/api/v3"
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd"
@@ -25,53 +28,151 @@ import (
 	pbLens "github.com/RTradeLtd/grpc/lens"
 	pbSigner "github.com/RTradeLtd/grpc/temporal"
 	"github.com/RTradeLtd/kaas"
-	"github.com/jinzhu/gorm"
 )
 
+// Version denotes the tag of this build
+var Version string
+
+const (
+	closeMessage   = "press CTRL+C to stop processing and close queue resources"
+	defaultLogPath = "/var/log/temporal/"
+)
+
+// globals
 var (
-	// Version denotes the tag of this build
-	Version string
-
-	closeMessage = "press CTRL+C to stop processing and close queue resources"
-	certFile     = filepath.Join(os.Getenv("HOME"), "/certificates/api.pem")
-	keyFile      = filepath.Join(os.Getenv("HOME"), "/certificates/api.key")
-	tCfg         config.TemporalConfig
-	db           *gorm.DB
-	ctx          context.Context
-	cancel       context.CancelFunc
-	orch         pbOrch.ServiceClient
-	lens         pbLens.IndexerAPIClient
-	signer       pbSigner.SignerClient
-	err          error
-	logFilePath  = "/var/log/temporal/"
-	dev          bool
+	ctx    context.Context
+	cancel context.CancelFunc
+	orch   pbOrch.ServiceClient
+	lens   pbLens.IndexerAPIClient
+	signer pbSigner.SignerClient
 )
+
+// command-line flags
+var (
+	devMode    *bool
+	configPath *string
+	dbNoSSL    *bool
+	dbMigrate  *bool
+	grpcNoSSL  *bool
+	apiPort    *string
+
+	// bucket flags
+	bucketLocation *string
+)
+
+func baseFlagSet() *flag.FlagSet {
+	var f = flag.NewFlagSet("", flag.ExitOnError)
+
+	// basic flags
+	devMode = f.Bool("dev", false,
+		"toggle dev mode")
+	configPath = f.String("config", os.Getenv("CONFIG_DAG"),
+		"path to Temporal configuration")
+
+	// db configuration
+	dbNoSSL = f.Bool("db.no_ssl", false,
+		"toggle SSL connection with database")
+	dbMigrate = f.Bool("db.migrate", false,
+		"toggle whether a database migration should occur")
+
+	// grpc configuration
+	grpcNoSSL = f.Bool("grpc.no_ssl", false,
+		"toggle SSL connection with GRPC services")
+
+	// api configuration
+	apiPort = f.String("api.port", "6767",
+		"set port to expose API on")
+
+	return f
+}
+
+func bucketFlagSet() *flag.FlagSet {
+	var f = flag.NewFlagSet("", flag.ExitOnError)
+
+	bucketLocation = f.String("location", mini.DefaultBucketLocation,
+		"set location for bucket")
+
+	return f
+}
+
+func logPath(base, file string) (logPath string) {
+	if base == "" {
+		logPath = filepath.Join(base, file)
+	} else {
+		logPath = filepath.Join(base, "temporal.log")
+	}
+	return
+}
+
+func newDB(cfg config.TemporalConfig, noSSL bool) (*gorm.DB, error) {
+	return database.OpenDBConnection(database.DBOptions{
+		User:           cfg.Database.Username,
+		Password:       cfg.Database.Password,
+		Address:        cfg.Database.URL,
+		Port:           cfg.Database.Port,
+		SSLModeDisable: noSSL,
+	})
+}
+
+func initClients(l *zap.SugaredLogger, cfg *config.TemporalConfig) (closers []func()) {
+	closers = make([]func(), 0)
+	if lens == nil {
+		client, err := clients.NewLensClient(cfg.Endpoints)
+		if err != nil {
+			l.Fatal(err)
+		}
+		closers = append(closers, client.Close)
+		lens = client
+	}
+	if orch == nil {
+		client, err := clients.NewOcrhestratorClient(cfg.Orchestrator)
+		if err != nil {
+			l.Fatal(err)
+		}
+		defer client.Close()
+		closers = append(closers, client.Close)
+		orch = client
+	}
+	if signer == nil {
+		client, err := clients.NewSignerClient(cfg, *grpcNoSSL)
+		if err != nil {
+			l.Fatal(err)
+		}
+		closers = append(closers, client.Close)
+		signer = client
+	}
+	return
+}
 
 var commands = map[string]cmd.Cmd{
 	"api": {
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if cfg.LogDir == "" {
-				logFilePath = logFilePath + "api_service.log"
-			} else {
-				logFilePath = cfg.LogDir + "api_service.log"
-			}
-			logger, err := log.NewLogger(logFilePath, dev)
+			logger, err := log.NewLogger(logPath(cfg.LogDir, "api_service.log"), *devMode)
 			if err != nil {
 				fmt.Println("failed to start logger ", err)
 				os.Exit(1)
 			}
 			logger = logger.With("version", args["version"])
-			service, err := v2.Initialize(&cfg, args["version"], os.Getenv("DEBUG") == "true", logger, lens, orch, signer)
+
+			// init api service
+			service, err := v2.Initialize(&cfg, args["version"], *devMode, logger, lens, orch, signer)
 			if err != nil {
 				logger.Fatal(err)
 			}
 
-			port := os.Getenv("API_PORT")
-			if port == "" {
-				port = "6767"
+			// init clients and clean up if necessary
+			var closers = initClients(logger, &cfg)
+			if closers != nil {
+				defer func() {
+					for _, c := range closers {
+						c()
+					}
+				}()
 			}
+
+			// set up clean interrupt
 			quitChannel := make(chan os.Signal)
 			signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 			go func() {
@@ -80,7 +181,9 @@ var commands = map[string]cmd.Cmd{
 				service.Close()
 				cancel()
 			}()
-			addr := fmt.Sprintf("%s:%s", args["listenAddress"], port)
+
+			// go!
+			var addr = fmt.Sprintf("%s:%s", args["listenAddress"], *apiPort)
 			if args["certFilePath"] == "" || args["keyFilePath"] == "" {
 				fmt.Println("TLS config incomplete - starting API service without TLS...")
 				err = service.ListenAndServe(ctx, addr, nil)
@@ -111,14 +214,14 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "IPNS entry creation queue",
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							if cfg.LogDir == "" {
-								logFilePath = logFilePath + "ipns_consumer.log"
-							} else {
-								logFilePath = cfg.LogDir + "ipns_consumer.log"
-							}
-							logger, err := log.NewLogger(logFilePath, dev)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "ipns_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
 								os.Exit(1)
 							}
 							quitChannel := make(chan os.Signal)
@@ -155,14 +258,15 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Pin addition queue",
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							if cfg.LogDir == "" {
-								logFilePath = logFilePath + "pin_consumer.log"
-							} else {
-								logFilePath = cfg.LogDir + "pin_consumer.log"
-							}
-							logger, err := log.NewLogger(logFilePath, dev)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "pin_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
 								os.Exit(1)
 							}
 							quitChannel := make(chan os.Signal)
@@ -199,14 +303,15 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "File upload queue",
 						Description: "Listens to file upload requests. Only applies to advanced uploads",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							if cfg.LogDir == "" {
-								logFilePath = logFilePath + "file_consumer.log"
-							} else {
-								logFilePath = cfg.LogDir + "file_consumer.log"
-							}
-							logger, err := log.NewLogger(logFilePath, dev)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "file_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
 								os.Exit(1)
 							}
 							quitChannel := make(chan os.Signal)
@@ -243,14 +348,15 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Key creation queue",
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							if cfg.LogDir == "" {
-								logFilePath = logFilePath + "key_consumer.log"
-							} else {
-								logFilePath = cfg.LogDir + "key_consumer.log"
-							}
-							logger, err := log.NewLogger(logFilePath, dev)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "key_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
 								os.Exit(1)
 							}
 							quitChannel := make(chan os.Signal)
@@ -287,14 +393,15 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Cluster pin queue",
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							if cfg.LogDir == "" {
-								logFilePath = logFilePath + "cluster_pin_consumer.log"
-							} else {
-								logFilePath = cfg.LogDir + "cluster_pin_consumer.log"
-							}
-							logger, err := log.NewLogger(logFilePath, dev)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "cluster_pin_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
+								os.Exit(1)
+							}
+
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
 								os.Exit(1)
 							}
 							quitChannel := make(chan os.Signal)
@@ -333,14 +440,15 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "Database file add queue",
 				Description: "Listens to file uploads requests. Only applies to simple upload route",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					if cfg.LogDir == "" {
-						logFilePath = logFilePath + "dfa_consumer.log"
-					} else {
-						logFilePath = cfg.LogDir + "dfa_consumer.log"
-					}
-					logger, err := log.NewLogger(logFilePath, dev)
+					logger, err := log.NewLogger(logPath(cfg.LogDir, "dfa_consumer.log"), *devMode)
 					if err != nil {
 						fmt.Println("failed to start logger ", err)
+						os.Exit(1)
+					}
+
+					db, err := newDB(cfg, *dbNoSSL)
+					if err != nil {
+						fmt.Println("failed to start db", err)
 						os.Exit(1)
 					}
 					quitChannel := make(chan os.Signal)
@@ -377,14 +485,15 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "Email send queue",
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					if cfg.LogDir == "" {
-						logFilePath = logFilePath + "email_consumer.log"
-					} else {
-						logFilePath = cfg.LogDir + "email_consumer.log"
-					}
-					logger, err := log.NewLogger(logFilePath, dev)
+					logger, err := log.NewLogger(logPath(cfg.LogDir, "email_consumer.log"), *devMode)
 					if err != nil {
 						fmt.Println("failed to start logger ", err)
+						os.Exit(1)
+					}
+
+					db, err := newDB(cfg, *dbNoSSL)
+					if err != nil {
+						fmt.Println("failed to start db", err)
 						os.Exit(1)
 					}
 					quitChannel := make(chan os.Signal)
@@ -429,31 +538,13 @@ var commands = map[string]cmd.Cmd{
 			}
 		},
 	},
-	"migrate-insecure": {
-		Hidden:      true,
-		Blurb:       "run database migrations without SSL",
-		Description: "Runs our initial database migrations, creating missing tables, etc.. without SSL",
-		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if _, err := database.Initialize(&cfg, database.Options{
-				RunMigrations:  true,
-				SSLModeDisable: true,
-			}); err != nil {
-				fmt.Println("failed to perform insecure migration", err)
-				os.Exit(1)
-			}
-		},
-	},
 	"init": {
 		PreRun:      true,
 		Blurb:       "initialize blank Temporal configuration",
-		Description: "Initializes a blank Temporal configuration template at CONFIG_DAG.",
+		Description: "Initializes a blank Temporal configuration template at path provided by the '-config' flag",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			configDag := os.Getenv("CONFIG_DAG")
-			if configDag == "" {
-				fmt.Println("CONFIG_DAG is not set")
-				os.Exit(1)
-			}
-			if err := config.GenerateConfig(configDag); err != nil {
+			println("generating config at", *configPath)
+			if err := config.GenerateConfig(*configPath); err != nil {
 				fmt.Println("failed to generate default config template", err)
 				os.Exit(1)
 			}
@@ -463,16 +554,15 @@ var commands = map[string]cmd.Cmd{
 		Hidden:      true,
 		Blurb:       "create a user",
 		Description: "Create a Temporal user. Provide args as username, password, email. Do not use in production.",
+		Args:        []string{"user", "pass", "email"},
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if len(args) < 3 {
-				fmt.Println("insufficient arguments provided")
-				os.Exit(1)
-			}
+			fmt.Printf("creating user '%s' (%s)...\n", args["user"], args["email"])
 			d, err := database.Initialize(&cfg, database.Options{
-				SSLModeDisable: true,
+				SSLModeDisable: *dbNoSSL,
+				RunMigrations:  *dbMigrate,
 			})
 			if err != nil {
-				fmt.Println("failed to initialize database", err)
+				fmt.Println("failed to initialize database connection", err)
 				os.Exit(1)
 			}
 			if _, err := models.NewUserManager(d.DB).NewUserAccount(
@@ -487,13 +577,15 @@ var commands = map[string]cmd.Cmd{
 		Hidden:      true,
 		Blurb:       "assign user as an admin",
 		Description: "Assign an existing Temporal user as an administrator.",
+		Args:        []string{"dbAdmin"},
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			if args["dbAdmin"] == "" {
 				fmt.Println("dbAdmin flag not provided")
 				os.Exit(1)
 			}
 			d, err := database.Initialize(&cfg, database.Options{
-				SSLModeDisable: true,
+				SSLModeDisable: *dbNoSSL,
+				RunMigrations:  *dbMigrate,
 			})
 			if err != nil {
 				fmt.Println("failed to initialize database", err)
@@ -545,30 +637,55 @@ var commands = map[string]cmd.Cmd{
 			},
 		},
 	},
-	"make-bucket": {
-		Hidden:      true,
-		Blurb:       "used to create a minio bucket, run against localhost only",
-		Description: "Allows the creation of buckets with minio, useful for the initial setup of temporal",
-		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			mm, err := mini.NewMinioManager(
-				cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
-				cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
-			if err != nil {
-				fmt.Println("failed to initialize minio manager")
-				os.Exit(1)
-			}
-			if err = mm.MakeBucket(args); err != nil {
-				fmt.Println("failed to create bucket")
-				os.Exit(1)
-			}
+	"bucket": {
+		Hidden:        true,
+		Blurb:         "manage Minio buckets",
+		ChildRequired: true,
+		Children: map[string]cmd.Cmd{
+			"new": {
+				Blurb:       "create a minio bucket - for use against localhost only",
+				Description: "Allows the creation of buckets with minio, useful for initial Temporal setup.",
+				Options:     bucketFlagSet(),
+				Args:        []string{"name"},
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					var name, location string
+					var ok bool
+					if name, ok = args["name"]; !ok {
+						println("name item is missing from args")
+						os.Exit(1)
+					}
+					location = *bucketLocation
+					fmt.Printf("preparing to create bucket '%s' at '%s'\n", name, location)
+					mm, err := mini.NewMinioManager(
+						cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
+						cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
+					if err != nil {
+						fmt.Println("failed to initialize minio manager")
+						os.Exit(1)
+					}
+					if exists, err := mm.CheckIfBucketExists(name); err != nil {
+						println(err.Error())
+						os.Exit(1)
+					} else if exists {
+						fmt.Printf("bucket '%s' exists", name)
+						os.Exit(1)
+					}
+					if err := mm.Client.MakeBucket(name, location); err != nil {
+						println(err.Error())
+						os.Exit(1)
+					}
+					println("bucket created")
+				},
+			},
 		},
 	},
 	"migrate": {
 		Blurb:       "run database migrations",
-		Description: "Runs our initial database migrations, creating missing tables, etc..",
+		Description: "Runs our initial database migrations, creating missing tables, etc. Not affected by --db.migrate",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			if _, err := database.Initialize(&cfg, database.Options{
-				RunMigrations: true,
+				SSLModeDisable: *dbNoSSL,
+				RunMigrations:  true,
 			}); err != nil {
 				fmt.Println("failed to perform secure migration", err)
 				os.Exit(1)
@@ -582,50 +699,32 @@ func main() {
 		Version = "latest"
 	}
 
+	// initialize global context
+	ctx, cancel = context.WithCancel(context.Background())
+
 	// create app
 	temporal := cmd.New(commands, cmd.Config{
 		Name:     "Temporal",
 		ExecName: "temporal",
 		Version:  Version,
 		Desc:     "Temporal is an easy-to-use interface into distributed and decentralized storage technologies for personal and enterprise use cases.",
+		Options:  baseFlagSet(),
 	})
 
 	// run no-config commands, exit if command was run
-	if exit := temporal.PreRun(os.Args[1:]); exit == cmd.CodeOK {
+	if exit := temporal.PreRun(nil, os.Args[1:]); exit == cmd.CodeOK {
 		os.Exit(0)
 	}
-	logger, err := log.NewLogger("stdout", false)
+
+	// load config
+	tCfg, err := config.LoadConfig(*configPath)
 	if err != nil {
-		fmt.Println("failed to initialize logger")
+		println("failed to load config at", *configPath)
 		os.Exit(1)
 	}
-	// load config
-	configDag := os.Getenv("CONFIG_DAG")
-	if configDag == "" {
-		logger.Fatal("CONFIG_DAG is not set")
-	}
-	tCfg, err := config.LoadConfig(configDag)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	if initDB := os.Getenv("INIT_DB"); strings.ToLower(initDB) == "true" {
-		sslDisabled := os.Getenv("SSL_MODE_DISABLE") == "true"
-		db, err = database.OpenDBConnection(database.DBOptions{
-			User:           tCfg.Database.Username,
-			Password:       tCfg.Database.Password,
-			Address:        tCfg.Database.URL,
-			Port:           tCfg.Database.Port,
-			SSLModeDisable: sslDisabled,
-		})
-		if err != nil {
-			logger.Fatal(err)
-		}
-	}
-	// initialize global context
-	ctx, cancel = context.WithCancel(context.Background())
+
 	// load arguments
 	flags := map[string]string{
-		"configDag":     configDag,
 		"certFilePath":  tCfg.API.Connection.Certificates.CertPath,
 		"keyFilePath":   tCfg.API.Connection.Certificates.KeyPath,
 		"listenAddress": tCfg.API.Connection.ListenAddress,
@@ -634,36 +733,7 @@ func main() {
 		"dbUser":        tCfg.Database.Username,
 		"version":       Version,
 	}
-	switch os.Args[1] {
-	case "user":
-		flags["user"] = os.Args[2]
-		flags["pass"] = os.Args[3]
-		flags["email"] = os.Args[4]
-	case "admin":
-		flags["dbAdmin"] = os.Args[2]
-	case "api":
-		lensClient, err := clients.NewLensClient(tCfg.Endpoints)
-		if err != nil {
-			logger.Fatal(err)
-		}
-		defer lensClient.Close()
-		lens = lensClient
-		orchClient, err := clients.NewOcrhestratorClient(tCfg.Orchestrator)
-		if err != nil {
-			logger.Fatal(err)
-		}
-		defer orchClient.Close()
-		orch = orchClient
-		signerClient, err := clients.NewSignerClient(tCfg, os.Getenv("SSL_MODE_DISABLE") == "true")
-		if err != nil {
-			logger.Fatal(err)
-		}
-		defer signerClient.Close()
-		signer = signerClient
-	case "make-bucket", "make-bucket-insecure":
-		flags["name"] = os.Args[2]
-	}
-	fmt.Println(tCfg.APIKeys.ChainRider)
+
 	// execute
 	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
 }

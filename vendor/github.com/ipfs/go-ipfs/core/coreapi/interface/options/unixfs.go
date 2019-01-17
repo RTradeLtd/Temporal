@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	dag "gx/ipfs/QmdV35UHnL1FM52baPkeUo6u7Fxm2CRUkPTLRPxeF8a4Ap/go-merkledag"
+	dag "gx/ipfs/QmTQdH4848iTVCJmKXYyRiK72HufWTLYQQ8iN3JaQ8K1Hq/go-merkledag"
 	mh "gx/ipfs/QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW/go-multihash"
 )
 
@@ -30,7 +30,6 @@ type UnixfsAddSettings struct {
 
 	Pin      bool
 	OnlyHash bool
-	Local    bool
 	FsCache  bool
 	NoCopy   bool
 
@@ -60,7 +59,6 @@ func UnixfsAddOptions(opts ...UnixfsAddOption) (*UnixfsAddSettings, cid.Prefix, 
 
 		Pin:      false,
 		OnlyHash: false,
-		Local:    false,
 		FsCache:  false,
 		NoCopy:   false,
 
@@ -216,16 +214,6 @@ func (unixfsOpts) Pin(pin bool) UnixfsAddOption {
 func (unixfsOpts) HashOnly(hashOnly bool) UnixfsAddOption {
 	return func(settings *UnixfsAddSettings) error {
 		settings.OnlyHash = hashOnly
-		return nil
-	}
-}
-
-// Local will add the data to blockstore without announcing it to the network
-//
-// Note that this doesn't prevent other nodes from getting this data
-func (unixfsOpts) Local(local bool) UnixfsAddOption {
-	return func(settings *UnixfsAddSettings) error {
-		settings.Local = local
 		return nil
 	}
 }
