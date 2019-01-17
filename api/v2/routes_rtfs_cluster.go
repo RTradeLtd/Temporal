@@ -16,7 +16,7 @@ import (
 func (api *API) pinHashToCluster(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	hash := c.Param("hash")
@@ -35,11 +35,11 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 	}
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, false)
 	if err != nil {
-		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.CallCostCalculationError)(http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
 	ipfsClusterPin := queue.IPFSClusterPin{
@@ -50,7 +50,7 @@ func (api *API) pinHashToCluster(c *gin.Context) {
 		CreditCost:       cost,
 	}
 	if err = api.queues.cluster.PublishMessage(ipfsClusterPin); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "cluster-pin", cost)
 		return
 	}

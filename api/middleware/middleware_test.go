@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
@@ -12,6 +13,24 @@ import (
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/gorm"
 )
+
+func TestRequestIDMiddleware(t *testing.T) {
+	testRecorder := httptest.NewRecorder()
+	_, engine := gin.CreateTestContext(testRecorder)
+	engine.Use(RequestID())
+	req, err := http.NewRequest("GET", "/foo", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	engine.GET("/foo", func(c *gin.Context) {
+		c.String(200, "hello")
+	})
+	engine.ServeHTTP(testRecorder, req)
+	if testRecorder.HeaderMap.Get("X-Request-ID") == "" {
+		t.Fatal("failed to set a request header")
+	}
+
+}
 
 func TestJwtMiddleware(t *testing.T) {
 	cfg, err := config.LoadConfig("../../testenv/config.json")

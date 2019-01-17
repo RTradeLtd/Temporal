@@ -17,7 +17,7 @@ import (
 func (api *API) getUserFromToken(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": username})
@@ -27,7 +27,7 @@ func (api *API) getUserFromToken(c *gin.Context) {
 func (api *API) verifyEmailAddress(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "token")
@@ -35,7 +35,7 @@ func (api *API) verifyEmailAddress(c *gin.Context) {
 		return
 	}
 	if _, err := api.um.ValidateEmailVerificationToken(username, forms["token"]); err != nil {
-		api.LogError(err, eh.EmailVerificationError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.EmailVerificationError)(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "email verified"})
@@ -45,12 +45,12 @@ func (api *API) verifyEmailAddress(c *gin.Context) {
 func (api *API) getEmailVerificationToken(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	user, err := api.um.GenerateEmailVerificationToken(username)
 	if err != nil {
-		api.LogError(err, eh.EmailTokenGenerationError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.EmailTokenGenerationError)(http.StatusBadRequest)
 		return
 	}
 	es := queue.EmailSend{
@@ -61,7 +61,7 @@ func (api *API) getEmailVerificationToken(c *gin.Context) {
 		Emails:      []string{user.EmailAddress},
 	}
 	if err = api.queues.email.PublishMessage(es); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "Email verification token sent to email. Please check and follow instructions"})
@@ -71,7 +71,7 @@ func (api *API) getEmailVerificationToken(c *gin.Context) {
 func (api *API) changeAccountPassword(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "old_password", "new_password")
@@ -82,11 +82,11 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 	forms["new_password"] = html.UnescapeString(forms["new_password"])
 	api.l.With("user", username).Info("password change requested")
 	if ok, err := api.um.ChangePassword(username, forms["old_password"], forms["new_password"]); err != nil {
-		api.LogError(err, eh.PasswordChangeError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.PasswordChangeError)(http.StatusBadRequest)
 		return
 	} else if !ok {
 		err = fmt.Errorf("password changed failed for user %s to due an unspecified error", username)
-		api.LogError(err, eh.PasswordChangeError)(c)
+		api.LogError(c, err, eh.PasswordChangeError)(http.StatusBadRequest)
 		return
 	}
 	api.l.Infow("password changed",
@@ -106,13 +106,13 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	if err != nil {
 		switch err.Error() {
 		case eh.DuplicateEmailError:
-			api.LogError(err, eh.DuplicateEmailError)(c, http.StatusBadRequest)
+			api.LogError(c, err, eh.DuplicateEmailError)(http.StatusBadRequest)
 			return
 		case eh.DuplicateUserNameError:
-			api.LogError(err, eh.DuplicateUserNameError)(c, http.StatusBadRequest)
+			api.LogError(c, err, eh.DuplicateUserNameError)(http.StatusBadRequest)
 			return
 		default:
-			api.LogError(err, eh.UserAccountCreationError)(c, http.StatusBadRequest)
+			api.LogError(c, err, eh.UserAccountCreationError)(http.StatusBadRequest)
 			return
 		}
 	}
@@ -125,7 +125,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 func (api *API) createIPFSKey(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "key_type", "key_bits", "key_name")
@@ -143,7 +143,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	}
 	user, err := api.um.FindByUserName(username)
 	if err != nil {
-		api.LogError(err, eh.UserSearchError)(c, http.StatusNotFound)
+		api.LogError(c, err, eh.UserSearchError)(http.StatusNotFound)
 		return
 	}
 	var cost float64
@@ -155,16 +155,16 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		cost, err = utils.CalculateAPICallCost(forms["key_type"], false)
 	}
 	if err != nil {
-		api.LogError(err, eh.CallCostCalculationError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.CallCostCalculationError)(http.StatusBadRequest)
 		return
 	}
 	if err := api.validateUserCredits(username, cost); err != nil && cost > 0 {
-		api.LogError(err, eh.InvalidBalanceError)(c, http.StatusPaymentRequired)
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
 	keys, err := api.um.GetKeysForUser(username)
 	if err != nil {
-		api.LogError(err, eh.KeySearchError)(c, http.StatusNotFound)
+		api.LogError(c, err, eh.KeySearchError)(http.StatusNotFound)
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
@@ -173,7 +173,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	for _, v := range keys["key_names"] {
 		if v == keyName {
 			err = fmt.Errorf("key with name already exists")
-			api.LogError(err, eh.DuplicateKeyCreationError)(c, http.StatusConflict)
+			api.LogError(c, err, eh.DuplicateKeyCreationError)(http.StatusConflict)
 			api.refundUserCredits(username, "key", cost)
 			return
 		}
@@ -192,7 +192,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		CreditCost:  cost,
 	}
 	if err = api.queues.key.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "key", cost)
 		return
 	}
@@ -204,12 +204,12 @@ func (api *API) createIPFSKey(c *gin.Context) {
 func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	keys, err := api.um.GetKeysForUser(username)
 	if err != nil {
-		api.LogError(err, eh.KeySearchError)(c)
+		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
 		return
 	}
 	// if the user has no keys, fail with an error
@@ -226,12 +226,12 @@ func (api *API) getIPFSKeyNamesForAuthUser(c *gin.Context) {
 func (api *API) getCredits(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	credits, err := api.um.GetCreditsForUser(username)
 	if err != nil {
-		api.LogError(err, eh.CreditCheckError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.CreditCheckError)(http.StatusBadRequest)
 		return
 	}
 	api.l.Infow("credit check requested", "user", username)
@@ -242,12 +242,12 @@ func (api *API) getCredits(c *gin.Context) {
 func (api *API) forgotEmail(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(err, eh.NoAPITokenError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
 	user, err := api.um.FindByUserName(username)
 	if err != nil {
-		api.LogError(err, eh.UserSearchError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": user.EmailAddress})
@@ -276,7 +276,7 @@ func (api *API) forgotUserName(c *gin.Context) {
 		Emails:      []string{user.EmailAddress},
 	}
 	if err = api.queues.email.PublishMessage(es); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "username reminder sent account email"})
@@ -290,7 +290,7 @@ func (api *API) resetPassword(c *gin.Context) {
 	}
 	user, err := api.um.FindByEmail(forms["email_address"])
 	if err != nil {
-		api.LogError(err, eh.UserSearchError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
 		return
 	}
 	if !user.EmailEnabled {
@@ -299,7 +299,7 @@ func (api *API) resetPassword(c *gin.Context) {
 	}
 	newPass, err := api.um.ResetPassword(user.UserName)
 	if err != nil {
-		api.LogError(err, eh.PasswordResetError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.PasswordResetError)(http.StatusBadRequest)
 		return
 	}
 	es := queue.EmailSend{
@@ -310,7 +310,7 @@ func (api *API) resetPassword(c *gin.Context) {
 		Emails:      []string{user.EmailAddress},
 	}
 	if err = api.queues.email.PublishMessage(es); err != nil {
-		api.LogError(err, eh.QueuePublishError)(c, http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "password reset, please check your email for a new password"})
