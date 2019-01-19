@@ -12,7 +12,7 @@ case "$1" in
         echo "$COUNT"
         ;;
     pin-count)
-        COUNT=$(ipfs-cluster-ctl pin ls --local=true | wc -l)
+        COUNT=$(ipfs-cluster-ctl pin ls | wc -l)
         echo "$COUNT"
         ;;
     error-count)
