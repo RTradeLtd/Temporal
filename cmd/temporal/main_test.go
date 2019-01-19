@@ -50,7 +50,7 @@ func TestAPI(t *testing.T) {
 			cfg.LogDir = tt.args.logDir
 			// setup global context
 			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
-			go commands["api"].Action(*cfg, flags)
+			commands["api"].Action(*cfg, flags)
 			cancel()
 		})
 	}
