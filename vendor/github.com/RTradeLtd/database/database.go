@@ -29,6 +29,8 @@ var (
 	TnsZoneObj *models.Zone
 	// TnsRecordObj is our tns record model
 	TnsRecordObj *models.Record
+	// UsagesRecordObj is our usage record model
+	UsagesRecordObj *models.Usage
 )
 
 // Manager is used to manage databases
@@ -80,6 +82,7 @@ func (dbm *Manager) RunMigrations() {
 	dbm.DB.AutoMigrate(EncryptedUploadObj)
 	dbm.DB.AutoMigrate(TnsZoneObj)
 	dbm.DB.AutoMigrate(TnsRecordObj)
+	dbm.DB.AutoMigrate(UsagesRecordObj)
 }
 
 // Close shuts down database connection

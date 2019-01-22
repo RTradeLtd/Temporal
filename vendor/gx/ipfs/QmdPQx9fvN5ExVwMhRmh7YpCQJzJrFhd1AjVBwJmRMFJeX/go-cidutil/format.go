@@ -150,3 +150,48 @@ func encode(base mb.Encoder, data []byte, strip bool) string {
 	}
 	return str
 }
+
+// ScanForCid scans bytes for anything resembling a CID. If one is
+// found `i` will point to the begging of the cid and `j` to to the
+// end and the cid will be returned, otherwise `i` and `j` will point
+// the end of the buffer and the cid will be `Undef`.
+func ScanForCid(buf []byte) (i, j int, cid c.Cid, cidStr string) {
+	i = 0
+	for {
+		i = j
+		for i < len(buf) && !asciiIsAlpha(buf[i]) {
+			i++
+		}
+		j = i
+		if i == len(buf) {
+			return
+		}
+		for j < len(buf) && asciiIsAlpha(buf[j]) {
+			j++
+		}
+		if j-i <= 1 || j-i > 128 || !supported[buf[i]] {
+			continue
+		}
+		var err error
+		cidStr = string(buf[i:j])
+		cid, err = c.Decode(cidStr)
+		if err == nil {
+			return
+		}
+	}
+}
+
+var supported = make([]bool, 256)
+
+func init() {
+	// for now base64 encoding are not supported as they contain non
+	// alhphanumeric characters
+	supportedPrefixes := []byte("QfFbBcCvVtThzZ")
+	for _, b := range supportedPrefixes {
+		supported[b] = true
+	}
+}
+
+func asciiIsAlpha(b byte) bool {
+	return ('A' <= b && b <= 'Z') || ('a' <= b && b <= 'z') || ('0' <= b && b <= '9')
+}

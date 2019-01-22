@@ -51,7 +51,7 @@
 
 [[projects]]
   branch = "release/prod-prep"
-  digest = "1:09f9650250b2338677f4a1ed03141de0f967f719783a8dccd51deb002eb1fbba"
+  digest = "1:06e26a34d9f63d0626d35ba789f5a1fbc970bc44cf14d706eacf5a99720011aa"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "1f417726c5023ecc1ebfedf181a8886c1f793b8d"
+  revision = "27b31dced48f1e6ed59c8a972119753ba3442942"
 
 [[projects]]
   branch = "master"
@@ -262,7 +262,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:87c526ec432c8552412a503703309c91aad0bb3b0ceb1ff4048c99a0e8444598"
+  digest = "1:a9e5085d302d562b81a4a630d7c1af451c78ac7fa1b8d55e57044fe4a0f716cd"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
@@ -271,7 +271,7 @@
     "render",
   ]
   pruneopts = "UT"
-  revision = "b4f51559825a055dcec93fa282c20018d073aaaa"
+  revision = "f38a3fe65f102dd765e097166e6a41f9e99777f6"
 
 [[projects]]
   digest = "1:8b4bb15de2e698d359eeec15c42453567c98972a70c8619946050360ec02ec32"
@@ -293,21 +293,17 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:5eae7496bdb74a6c7592bc74ea3da8a6a61a361fd52682820900d755bb144194"
+  digest = "1:fa5e9e1af8a8645086811ec5ab003806026babc57c8bb3a6f7e1ab34b80e2ff1"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
-    "protoc-gen-go/generator",
-    "protoc-gen-go/generator/internal/remap",
-    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
     "ptypes/struct",
     "ptypes/timestamp",
-    "ptypes/wrappers",
   ]
   pruneopts = "UT"
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
@@ -1273,7 +1269,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:be9af6c0abcb4836c4640cbf187c6194c40db04ab9f085abfc8cd6d06a85086f"
+  digest = "1:536b07a2fb55dc654e7a4af38e0675c9d988b220ffe4531a88a75e6a170b5110"
   name = "golang.org/x/crypto"
   packages = [
     "argon2",
@@ -1289,7 +1285,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "ff983b9c42bc9fbf91556e191cc8efb585c16908"
+  revision = "64072686203f69e3fd20143576b27200f18ab0fa"
 
 [[projects]]
   branch = "master"
@@ -1313,7 +1309,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b9e94016f3758eb0bbe8f7883fed88136abce8d358ca9d159be34651e8172031"
+  digest = "1:6623975fef6c398f039272428fb0ba1a579cb07da12b04481ec2cd48e271b031"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1321,7 +1317,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "11f53e03133963fb11ae0588e08b5e0b85be8be5"
+  revision = "770c60269bf0ef965e9e7ac8bedcb6bca2a1cefd"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1360,12 +1356,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5af4d8fdb11165ffed7a2cc049c9879d1e795c595fb1048147fb8a93fe6842e6"
+  digest = "1:6c6b70cf6d2788d9f7dc6589bc88e0e1c7edc40612294431ebb7d09536d12240"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
     "googleapis/rpc/status",
-    "protobuf/field_mask",
   ]
   pruneopts = "UT"
   revision = "db91494dd46c1fdcbbde05e5ff5eb56df8f7d79a"

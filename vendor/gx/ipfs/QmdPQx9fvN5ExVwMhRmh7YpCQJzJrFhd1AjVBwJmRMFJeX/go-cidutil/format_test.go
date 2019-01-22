@@ -72,3 +72,35 @@ func testFmt(t *testing.T, cidStr string, newBase mb.Encoding, fmtStr string, re
 		t.Error(fmt.Sprintf("expected: %s; but got: %s", result, str))
 	}
 }
+
+func TestScanForCid(t *testing.T) {
+	testStr := []byte(`
+/ipfs/QmYFbmndVP7QqAVWyKhpmMuQHMaD88pkK57RgYVimmoh5H 22 45
+/ipfs/zdj7WfLr9DhLrb1hsoSi4fSdjjxuZmeqgEtBPWxMLtPbDNbFD/foobar
+BAFYBEIETJGSRL3EQPQPCABV3G6IUBYTSIFVQ24XRRHD3JUETSKLTGQ7DJA
+skip me (too long): QmYFbmndVP7QqAVWyKhpmMuQHMaD88pkK57RgYVimmoh5H876
+skip me (too short): bafybeietjgsrl3eqpqpcabv3g6iubytsifvq
+bafybeietjgsrl3eqpqpcabv3g6iubytsifvq24xrrhd3juetskltgq7dja
+bafybeietjgsrl3eqpqpcabv3g6iubytsifvq24xrrhd3juetskltgq7dja.
+`)
+	cids := []string{
+		"QmYFbmndVP7QqAVWyKhpmMuQHMaD88pkK57RgYVimmoh5H",
+		"zdj7WfLr9DhLrb1hsoSi4fSdjjxuZmeqgEtBPWxMLtPbDNbFD",
+		"BAFYBEIETJGSRL3EQPQPCABV3G6IUBYTSIFVQ24XRRHD3JUETSKLTGQ7DJA",
+		"bafybeietjgsrl3eqpqpcabv3g6iubytsifvq24xrrhd3juetskltgq7dja",
+		"bafybeietjgsrl3eqpqpcabv3g6iubytsifvq24xrrhd3juetskltgq7dja",
+	}
+
+	buf := testStr
+	idx := 0
+	offset := 0
+	for len(buf) > 0 {
+		_, j, _, cidStr := ScanForCid(buf)
+		if cidStr != "" && cids[idx]  != cidStr {
+			t.Fatalf("Scan failed, expected %s, got %s (idx=%d offset=%d)", cids[idx], cidStr, idx, offset)
+		}
+		buf = buf[j:]
+		offset += j
+		idx++
+	}
+}

@@ -1,18 +1,22 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
-	cidutil "gx/ipfs/QmbfKu17LbMWyGUxHEUns9Wf5Dkm8PT6be4uPhTkk4YvaV/go-cidutil"
+	cidutil "gx/ipfs/QmdPQx9fvN5ExVwMhRmh7YpCQJzJrFhd1AjVBwJmRMFJeX/go-cidutil"
 
 	c "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
 	mb "gx/ipfs/QmekxXDhCxCJRNuzmHreuaT3BsuJcsjcXWNrtV9C8DRHtd/go-multibase"
 )
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: %s [-b multibase-code] [-v cid-version] <fmt-str> <cid> ...\n\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "usage: %s [-b multibase-code] [-v cid-version] [--filter] <fmt-str> <cid> ...\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "--filter will read from stdin and convert anything that looks like a <cid>\n")
+	fmt.Fprintf(os.Stderr, "         -- including any non-cids that are valid Multihashes).\n")
 	fmt.Fprintf(os.Stderr, "<fmt-str> is either 'prefix' or a printf style format string:\n%s", cidutil.FormatRef)
 	os.Exit(2)
 }
@@ -24,8 +28,9 @@ func main() {
 	newBase := mb.Encoding(-1)
 	var verConv func(cid c.Cid) (c.Cid, error)
 	args := os.Args[1:]
+	filter := false
 outer:
-	for {
+	for len(args) > 0 {
 		switch args[0] {
 		case "-b":
 			if len(args) < 2 {
@@ -52,11 +57,14 @@ outer:
 				os.Exit(2)
 			}
 			args = args[2:]
+		case "--filter":
+			filter = true
+			args = args[1:]
 		default:
 			break outer
 		}
 	}
-	if len(args) < 2 {
+	if len(args) < 1 {
 		usage()
 	}
 	fmtStr := args[0]
@@ -69,41 +77,73 @@ outer:
 			os.Exit(2)
 		}
 	}
-	for _, cidStr := range args[1:] {
-		cid, err := c.Decode(cidStr)
-		if err != nil {
-			fmt.Fprintf(os.Stdout, "!INVALID_CID!\n")
-			errorMsg("%s: %v", cidStr, err)
-			// Don't abort on a bad cid
-			continue
-		}
+	format := func(cid c.Cid, cidStr string) (string, error) {
 		base := newBase
-		if newBase == -1 {
+		if base == -1 {
 			base, _ = c.ExtractEncoding(cidStr)
 		}
+		var err error
 		if verConv != nil {
 			cid, err = verConv(cid)
 			if err != nil {
-				fmt.Fprintf(os.Stdout, "!ERROR!\n")
-				errorMsg("%s: %v", cidStr, err)
-				// Don't abort on a bad conversion
-				continue
+				return "", err
 			}
 		}
-		str, err := cidutil.Format(fmtStr, base, cid)
-		switch err.(type) {
-		case cidutil.FormatStringError:
+		return cidutil.Format(fmtStr, base, cid)
+	}
+	if filter {
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			buf := scanner.Bytes()
+			for {
+				i, j, cid, cidStr := cidutil.ScanForCid(buf)
+				os.Stdout.Write(buf[0:i])
+				if i == len(buf) {
+					os.Stdout.Write([]byte{'\n'})
+					break
+				}
+				str, err := format(cid, cidStr)
+				switch err.(type) {
+				case cidutil.FormatStringError:
+					fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+					os.Exit(2)
+				default:
+					// just use the orignal sting on non-fatal error
+					str = cidStr
+				case nil:
+				}
+				io.WriteString(os.Stdout, str)
+				buf = buf[j:]
+			}
+		}
+		if err := scanner.Err(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(2)
-		default:
-			fmt.Fprintf(os.Stdout, "!ERROR!\n")
-			errorMsg("%s: %v", cidStr, err)
-			// Don't abort on cid specific errors
-			continue
-		case nil:
-			// no error
 		}
-		fmt.Fprintf(os.Stdout, "%s\n", str)
+	} else {
+		for _, cidStr := range args[1:] {
+			cid, err := c.Decode(cidStr)
+			if err != nil {
+				fmt.Fprintf(os.Stdout, "!INVALID_CID!\n")
+				errorMsg("%s: %v", cidStr, err)
+				// Don't abort on a bad cid
+				continue
+			}
+			str, err := format(cid, cidStr)
+			switch err.(type) {
+			case cidutil.FormatStringError:
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				os.Exit(2)
+			default:
+				fmt.Fprintf(os.Stdout, "!ERROR!\n")
+				errorMsg("%s: %v", cidStr, err)
+				// Don't abort on cid specific errors
+				continue
+			case nil:
+				// no error
+			}
+			fmt.Fprintf(os.Stdout, "%s\n", str)
+		}
 	}
 	os.Exit(exitCode)
 }
