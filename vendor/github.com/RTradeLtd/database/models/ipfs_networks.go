@@ -16,22 +16,37 @@ type HostedIPFSPrivateNetwork struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	Name      string         `gorm:"unique;type:varchar(255)"`
-	APIURL    string         `gorm:"type:varchar(255)"`
-	SwarmKey  string         `gorm:"type:varchar(255)"`
-	Users     pq.StringArray `gorm:"type:text[]"` // these are the users to which this IPFS network connection applies to specified by eth address
-	Activated time.Time
+	Name      string    `gorm:"unique;type:varchar(255)"` // Name of the network node
+	Activated time.Time // Activated represents the most recent activation, 0-value if offline
 
+	PeerKey string // Private key used to generate peerID for this network node
+
+	// SwarmAddr is the address of swarm port. Slated for deprecation if HTTP path
+	// support is added to the multiaddr spec and go-multiaddr
+	SwarmAddr string `gorm:"type:varchar(255)"`
+	// SwarmKey is the key used to connect to this peer
+	SwarmKey string `gorm:"type:varchar(255)"`
+
+	// Temporary, used for backwards compatability with temporal
+	// and private networks until the Nexus update is complete within Temporal
+	APIURL string `gorm:"type:varchar(255)"`
+	// Used to set Allowed-Origin headers on API requests
+	APIAllowedOrigin string `gorm:"type:varchar(255)"`
+
+	// Toggles whether gateway should be exposed through Nexus delegator
+	GatewayPublic bool `gorm:"type:boolean"`
+
+	// Peers to bootstrap node onto
 	BootstrapPeerAddresses pq.StringArray `gorm:"type:text[]"`
 	BootstrapPeerIDs       pq.StringArray `gorm:"type:text[];column:bootstrap_peer_ids"`
 
+	// Resources for deployed node
 	ResourcesCPUs     int
 	ResourcesDiskGB   int
 	ResourcesMemoryGB int
 
-	// note: local addresses currently unused
-	LocalNodePeerAddresses pq.StringArray `gorm:"type:text[]"` // these are the nodes whichwe run, and can connect to
-	LocalNodePeerIDs       pq.StringArray `gorm:"type:text[];column:local_node_peer_ids"`
+	// Users allowed to control this node. Includes API access.
+	Users pq.StringArray `gorm:"type:text[]"` // these are the users to which this IPFS network connection applies to specified by eth address
 }
 
 // IPFSNetworkManager is used to manipulate IPFS network models in the database
@@ -53,13 +68,38 @@ func (im *IPFSNetworkManager) GetNetworkByName(name string) (*HostedIPFSPrivateN
 	return &pnet, nil
 }
 
-// GetAPIURLByName is used to retrieve the API url for a private network by its network name
-func (im *IPFSNetworkManager) GetAPIURLByName(name string) (string, error) {
-	pnet, err := im.GetNetworkByName(name)
+// SwarmDetails provides data about IPFS swarm connection
+type SwarmDetails struct {
+	Addr string
+	Key  string
+}
+
+// GetSwarmDetails is used to retrieve data about IPFS swarm connection
+func (im *IPFSNetworkManager) GetSwarmDetails(network string) (*SwarmDetails, error) {
+	pnet, err := im.GetNetworkByName(network)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return pnet.APIURL, nil
+	return &SwarmDetails{
+		Addr: pnet.SwarmAddr,
+		Key:  pnet.SwarmKey,
+	}, nil
+}
+
+// APIDetails provides data about IPFS API connection
+type APIDetails struct {
+	AllowedOrigin string
+}
+
+// GetAPIDetails is used to retrieve data about IPFS API connection
+func (im *IPFSNetworkManager) GetAPIDetails(network string) (*APIDetails, error) {
+	pnet, err := im.GetNetworkByName(network)
+	if err != nil {
+		return nil, err
+	}
+	return &APIDetails{
+		AllowedOrigin: pnet.APIAllowedOrigin,
+	}, nil
 }
 
 // UpdateNetworkByName updates the given network with given attributes
@@ -71,8 +111,23 @@ func (im *IPFSNetworkManager) UpdateNetworkByName(name string, attrs map[string]
 	return nil
 }
 
+// SaveNetwork saves the given HostedIPFSPrivateNetwork in the database
+func (im *IPFSNetworkManager) SaveNetwork(n *HostedIPFSPrivateNetwork) error {
+	if check := im.DB.Save(n); check != nil && check.Error != nil {
+		return check.Error
+	}
+	return nil
+}
+
+// NetworkAccessOptions configures access to a hosted private network
+type NetworkAccessOptions struct {
+	Users            []string
+	APIAllowedOrigin string
+	PublicGateway    bool
+}
+
 // CreateHostedPrivateNetwork is used to store a new hosted private network in the database
-func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, swarmKey string, peers, users []string) (*HostedIPFSPrivateNetwork, error) {
+func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, swarmKey string, peers []string, access NetworkAccessOptions) (*HostedIPFSPrivateNetwork, error) {
 	// check if network exists
 	pnet := &HostedIPFSPrivateNetwork{}
 	if check := im.DB.Where("name = ?", name).First(pnet); check.Error != nil && check.Error != gorm.ErrRecordNotFound {
@@ -116,17 +171,21 @@ func (im *IPFSNetworkManager) CreateHostedPrivateNetwork(name, swarmKey string, 
 	}
 
 	// parse authorized users
-	if users != nil && len(users) > 0 {
-		for _, v := range users {
+	if access.Users != nil && len(access.Users) > 0 {
+		for _, v := range access.Users {
 			pnet.Users = append(pnet.Users, v)
 		}
 	} else {
 		pnet.Users = append(pnet.Users, AdminAddress)
 	}
 
-	// assign name, swarm key and create network entry
+	// assign misc details
 	pnet.Name = name
 	pnet.SwarmKey = swarmKey
+	pnet.APIAllowedOrigin = access.APIAllowedOrigin
+	pnet.GatewayPublic = access.PublicGateway
+
+	// create network entry
 	if check := im.DB.Create(pnet); check.Error != nil {
 		return nil, check.Error
 	}

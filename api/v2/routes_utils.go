@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -44,12 +45,7 @@ func (api *API) beamContent(c *gin.Context) {
 			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
-		url, err := api.nm.GetAPIURLByName(forms["source_network"])
-		if err != nil {
-			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
-			return
-		}
-		source = url
+		source = fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, forms["source_network"])
 	}
 
 	if forms["destination_network"] == "public" {
@@ -59,12 +55,7 @@ func (api *API) beamContent(c *gin.Context) {
 			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
-		url, err := api.nm.GetAPIURLByName(forms["destination_network"])
-		if err != nil {
-			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
-			return
-		}
-		dest = url
+		dest = fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, forms["destination_network"])
 	}
 	if passphrase := c.PostForm("passphrase"); passphrase != "" {
 		// connect to the source network
@@ -160,11 +151,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 			return
 		}
 		// retrieve api url
-		apiURL, err := api.nm.GetAPIURLByName(networkName)
-		if err != nil {
-			api.LogError(c, err, eh.APIURLCheckError)(http.StatusBadRequest)
-			return
-		}
+		apiURL := fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, networkName)
 		// initialize our connection to IPFS
 		manager, err = rtfs.NewManager(apiURL, time.Minute*10)
 		if err != nil {

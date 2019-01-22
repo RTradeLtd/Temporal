@@ -102,7 +102,7 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	// create a fake private network
 	apiResp = apiResponse{}
 	nm := models.NewHostedIPFSNetworkManager(db)
-	if _, err := nm.CreateHostedPrivateNetwork("testnetwork", "fakeswarmkey", nil, []string{"testuser"}); err != nil {
+	if _, err := nm.CreateHostedPrivateNetwork("testnetwork", "fakeswarmkey", nil, models.NetworkAccessOptions{Users: []string{"testuser"}}); err != nil {
 		t.Fatal(err)
 	}
 	if err := um.AddIPFSNetworkForUser("testuser", "testnetwork"); err != nil {

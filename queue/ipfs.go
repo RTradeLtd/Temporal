@@ -160,16 +160,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 			d.Ack(false)
 			return
 		}
-		apiURL, err = nm.GetAPIURLByName(pin.NetworkName)
-		if err != nil {
-			qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
-			qm.l.Errorw(
-				"failed to search for api url",
-				"error", err.Error(),
-				"user", pin.UserName)
-			d.Ack(false)
-			return
-		}
+		apiURL = fmt.Sprintf("%s/network/%s/api", qm.cfg.Orchestrator.Host+":"+qm.cfg.Orchestrator.Port, pin.NetworkName)
 	}
 	qm.l.Infow(
 		"initializing connection to ipfs",
@@ -310,17 +301,8 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 			d.Ack(false)
 			return
 		}
-		apiURLName, err := nm.GetAPIURLByName(ipfsFile.NetworkName)
-		if err != nil {
-			qm.l.Errorw(
-				"failed to search for api url",
-				"error", err.Error(),
-				"user", ipfsFile.UserName)
-			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
-			d.Ack(false)
-			return
-		}
-		ipfs, err = rtfs.NewManager(apiURLName, time.Minute*10)
+		apiURL := fmt.Sprintf("%s/network/%s/api", qm.cfg.Orchestrator.Host+":"+qm.cfg.Orchestrator.Port, ipfsFile.NetworkName)
+		ipfs, err = rtfs.NewManager(apiURL, time.Minute*10)
 		if err != nil {
 			qm.l.Errorw(
 				"failed to initialize connection to private ipfs network",

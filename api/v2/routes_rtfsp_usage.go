@@ -13,8 +13,6 @@ import (
 	"github.com/RTradeLtd/rtfs"
 	gocid "github.com/ipfs/go-cid"
 
-	"github.com/RTradeLtd/database/models"
-
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -39,12 +37,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
-	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	url, err := im.GetAPIURLByName(forms["network_name"])
-	if err != nil {
-		api.LogError(c, err, eh.APIURLCheckError)(http.StatusBadRequest)
-		return
-	}
+	url := fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, forms["network_name"])
 	manager, err := rtfs.NewManager(url, time.Minute*10)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
@@ -190,12 +183,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(forms["network_name"])
-	if err != nil {
-		api.LogError(c, err, eh.APIURLCheckError)(http.StatusBadRequest)
-		return
-	}
+	apiURL := fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, forms["network_name"])
 	ipfsManager, err := rtfs.NewManager(apiURL, time.Minute*10)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
@@ -282,12 +270,7 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
-	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(forms["network_name"])
-	if err != nil {
-		api.LogError(c, err, eh.APIURLCheckError)(http.StatusBadRequest)
-		return
-	}
+	apiURL := fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, forms["network_name"])
 	manager, err := rtfs.NewManager(apiURL, time.Minute*10)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
@@ -321,13 +304,7 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 
-	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(networkName)
-	if err != nil {
-		api.LogError(c, err, eh.APIURLCheckError)(http.StatusBadRequest)
-		return
-	}
-
+	apiURL := fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, networkName)
 	manager, err := rtfs.NewManager(apiURL, time.Minute*10)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
@@ -359,12 +336,7 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
-	im := models.NewHostedIPFSNetworkManager(api.dbm.DB)
-	apiURL, err := im.GetAPIURLByName(networkName)
-	if err != nil {
-		api.LogError(c, err, eh.APIURLCheckError)(http.StatusBadRequest)
-		return
-	}
+	apiURL := fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, networkName)
 	manager, err := rtfs.NewManager(apiURL, time.Minute*10)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
@@ -396,11 +368,7 @@ func (api *API) getDagObjectForHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
-	apiURL, err := api.nm.GetAPIURLByName(networkName)
-	if err != nil {
-		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
-		return
-	}
+	apiURL := fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, networkName)
 	im, err := rtfs.NewManager(apiURL, time.Minute*10)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)

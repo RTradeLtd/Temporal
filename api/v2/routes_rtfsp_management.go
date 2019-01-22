@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/RTradeLtd/database/models"
 	ipfs_orchestrator "github.com/RTradeLtd/grpc/ipfs-orchestrator"
 	"github.com/gin-gonic/gin"
 )
@@ -41,7 +42,7 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 		users = append(users, username)
 	}
 
-	network, err := api.nm.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, users)
+	network, err := api.nm.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, models.NetworkAccessOptions{Users: users})
 	if err != nil {
 		api.LogError(c, err, eh.NetworkCreationError)(http.StatusBadRequest)
 		return

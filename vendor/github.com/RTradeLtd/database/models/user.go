@@ -21,6 +21,7 @@ type User struct {
 	EmailVerificationToken string  `gorm:"type:varchar(255)"`
 	AdminAccess            bool    `gorm:"type:boolean"`
 	HashedPassword         string  `gorm:"type:varchar(255)"`
+	Free                   bool    `gorm:"type:boolean"`
 	Credits                float64 `gorm:"type:float;default:0"`
 	// IPFSKeyNames is an array of IPFS key name this user has created
 	IPFSKeyNames pq.StringArray `gorm:"type:text[];column:ipfs_key_names"`
@@ -260,10 +261,15 @@ func (um *UserManager) NewUserAccount(username, password, email string) (*User, 
 		EmailAddress:   email,
 		AccountEnabled: true,
 		AdminAccess:    false,
-		Credits:        99999999, // this is temporary and will need to be removed before production
+		Free:           true,
 	}
+	// create user model
 	if check := um.DB.Create(user); check.Error != nil {
 		return nil, check.Error
+	}
+	usageManager := NewUsageManager(um.DB)
+	if _, err := usageManager.NewUsageEntry(username, Free); err != nil {
+		return nil, err
 	}
 	return user, nil
 }

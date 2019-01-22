@@ -41,6 +41,14 @@
   revision = "67e573d211ace594f1366b4ce9d39726c4b19bd0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:e8891cd354f2af940345f895d5698ab1ed439196d4f69eb44817fc91e80354c1"
+  name = "github.com/c2h5oh/datasize"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "4eba002a5eaea69cf8d235a388fc6b65ae68d2dd"
+
+[[projects]]
   digest = "1:bbadccf3d3317ea03c0dac0b45b673b4b397c8f91a1d2eff550a3c51c4ad770e"
   name = "github.com/gogo/protobuf"
   packages = ["proto"]
@@ -76,6 +84,14 @@
   pruneopts = "UT"
   revision = "14e95105cbafcda64fdc36197fe6a30b23c693dc"
   version = "v1.5.7"
+
+[[projects]]
+  digest = "1:d4e6e8584d0a94ce567d237e19192dae44d57d2767ac7e1d7fbf5626d176381a"
+  name = "github.com/jinzhu/gorm"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "472c70caa40267cb89fd8facb07fe6454b578626"
+  version = "v1.9.2"
 
 [[projects]]
   branch = "master"
@@ -239,7 +255,9 @@
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/gorm",
     "github.com/RTradeLtd/gorm/dialects/postgres",
+    "github.com/c2h5oh/datasize",
     "github.com/ipfs/go-ipfs-addr",
+    "github.com/jinzhu/gorm",
     "github.com/lib/pq",
     "github.com/multiformats/go-multiaddr",
     "golang.org/x/crypto/bcrypt",

@@ -317,7 +317,7 @@ func TestQueue_IPFSFile(t *testing.T) {
 	nm := models.NewHostedIPFSNetworkManager(db)
 	um := models.NewUserManager(db)
 	if _, err := nm.CreateHostedPrivateNetwork(
-		"myipfsfileprivatenetwork", "fakeswarm", nil, []string{"testuser"},
+		"myipfsfileprivatenetwork", "fakeswarm", nil, models.NetworkAccessOptions{Users: []string{"testuser"}},
 	); err != nil {
 		t.Fatal(err)
 	}
