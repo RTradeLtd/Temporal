@@ -129,7 +129,6 @@ func initClients(l *zap.SugaredLogger, cfg *config.TemporalConfig) (closers []fu
 		if err != nil {
 			l.Fatal(err)
 		}
-		defer client.Close()
 		closers = append(closers, client.Close)
 		orch = client
 	}
