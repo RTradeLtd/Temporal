@@ -92,23 +92,23 @@
   revision = "d2072fe8bb4a46e42fe4f8097f8c015cac19b08c"
 
 [[projects]]
-  digest = "1:705a6eb9b570ab40a60fd6be569a99414c1529cace8716f0fb36889024ffcf06"
+  digest = "1:6b643a4a6316e998db3eb2b04d4171a1fdbc9e4f0263c0567969316c066e3155"
   name = "github.com/RTradeLtd/grpc"
   packages = [
     "dialer",
-    "ipfs-orchestrator",
     "krab",
     "lens",
     "lens/request",
     "lens/response",
     "middleware",
-    "temporal",
-    "temporal/request",
-    "temporal/response",
+    "nexus",
+    "pay",
+    "pay/request",
+    "pay/response",
   ]
   pruneopts = "UT"
-  revision = "9279b84930e1123c911e802a230a0cd187080116"
-  version = "v1.2.0"
+  revision = "f632698b9168b58eb55c22a8adf72d53d7a36185"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:812bbf0fc4977ee96ef1d3848d9c0267d17afbe37b762e7019abe63fa6a43cfc"
@@ -293,17 +293,21 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:fa5e9e1af8a8645086811ec5ab003806026babc57c8bb3a6f7e1ab34b80e2ff1"
+  digest = "1:5eae7496bdb74a6c7592bc74ea3da8a6a61a361fd52682820900d755bb144194"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
+    "protoc-gen-go/generator",
+    "protoc-gen-go/generator/internal/remap",
+    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
     "ptypes/struct",
     "ptypes/timestamp",
+    "ptypes/wrappers",
   ]
   pruneopts = "UT"
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
@@ -1309,7 +1313,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6623975fef6c398f039272428fb0ba1a579cb07da12b04481ec2cd48e271b031"
+  digest = "1:535b70ff2423b910383d79c5be670505c5e1a9ac01a7008aee5fad0211e313af"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1317,7 +1321,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "770c60269bf0ef965e9e7ac8bedcb6bca2a1cefd"
+  revision = "054c452bb702e465e95ce8e7a3d9a6cf0cd1188d"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1356,14 +1360,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6c6b70cf6d2788d9f7dc6589bc88e0e1c7edc40612294431ebb7d09536d12240"
+  digest = "1:5af4d8fdb11165ffed7a2cc049c9879d1e795c595fb1048147fb8a93fe6842e6"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
     "googleapis/rpc/status",
+    "protobuf/field_mask",
   ]
   pruneopts = "UT"
-  revision = "db91494dd46c1fdcbbde05e5ff5eb56df8f7d79a"
+  revision = "8819c946db4494a2259bf100a377f51aa585d893"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
@@ -1443,14 +1448,14 @@
     "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/gorm",
     "github.com/RTradeLtd/grpc/dialer",
-    "github.com/RTradeLtd/grpc/ipfs-orchestrator",
     "github.com/RTradeLtd/grpc/krab",
     "github.com/RTradeLtd/grpc/lens",
     "github.com/RTradeLtd/grpc/lens/request",
     "github.com/RTradeLtd/grpc/lens/response",
-    "github.com/RTradeLtd/grpc/temporal",
-    "github.com/RTradeLtd/grpc/temporal/request",
-    "github.com/RTradeLtd/grpc/temporal/response",
+    "github.com/RTradeLtd/grpc/nexus",
+    "github.com/RTradeLtd/grpc/pay",
+    "github.com/RTradeLtd/grpc/pay/request",
+    "github.com/RTradeLtd/grpc/pay/response",
     "github.com/RTradeLtd/kaas",
     "github.com/RTradeLtd/rtfs",
     "github.com/RTradeLtd/rtfs/beam",
