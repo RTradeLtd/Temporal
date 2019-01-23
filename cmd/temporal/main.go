@@ -24,9 +24,9 @@ import (
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
-	pbOrch "github.com/RTradeLtd/grpc/ipfs-orchestrator"
 	pbLens "github.com/RTradeLtd/grpc/lens"
-	pbSigner "github.com/RTradeLtd/grpc/temporal"
+	pbOrch "github.com/RTradeLtd/grpc/nexus"
+	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas"
 )
 

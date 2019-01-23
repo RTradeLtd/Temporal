@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package temporal;
+package pay;
 
 import "request/request.proto";
 import "response/response.proto";

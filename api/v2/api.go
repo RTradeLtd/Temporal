@@ -30,9 +30,9 @@ import (
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
 
-	pbOrch "github.com/RTradeLtd/grpc/ipfs-orchestrator"
 	pbLens "github.com/RTradeLtd/grpc/lens"
-	pbSigner "github.com/RTradeLtd/grpc/temporal"
+	pbOrch "github.com/RTradeLtd/grpc/nexus"
+	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/gin-gonic/gin"
 )
 
@@ -57,6 +57,7 @@ type API struct {
 	zm          *models.ZoneManager
 	rm          *models.RecordManager
 	nm          *models.IPFSNetworkManager
+	usage       *models.UsageManager
 	l           *zap.SugaredLogger
 	signer      pbSigner.SignerClient
 	orch        pbOrch.ServiceClient
@@ -215,6 +216,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		pm:          models.NewPaymentManager(dbm.DB),
 		ue:          models.NewEncryptedUploadManager(dbm.DB),
 		upm:         models.NewUploadManager(dbm.DB),
+		usage:       models.NewUsageManager(dbm.DB),
 		lens:        lens,
 		signer:      signer,
 		orch:        orch,

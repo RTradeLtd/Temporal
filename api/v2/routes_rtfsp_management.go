@@ -8,7 +8,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/models"
-	ipfs_orchestrator "github.com/RTradeLtd/grpc/ipfs-orchestrator"
+	nexus "github.com/RTradeLtd/grpc/nexus"
 	"github.com/gin-gonic/gin"
 )
 
@@ -59,7 +59,7 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 	}
 
 	// request orchestrator to start up network
-	resp, err := api.orch.StartNetwork(c, &ipfs_orchestrator.NetworkRequest{
+	resp, err := api.orch.StartNetwork(c, &nexus.NetworkRequest{
 		Network: networkName,
 	})
 	if err != nil {
@@ -69,13 +69,11 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 		return
 	}
 	api.l.With("response", resp).Info("network node started")
-
 	// respond with network details
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
 			"id":           network.ID,
 			"network_name": networkName,
-			"api_url":      resp.GetApi(),
 			"swarm_key":    resp.GetSwarmKey(),
 			"users":        network.Users,
 		},
@@ -116,7 +114,7 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 		})
 		return
 	}
-	if _, err := api.orch.StartNetwork(c, &ipfs_orchestrator.NetworkRequest{
+	if _, err := api.orch.StartNetwork(c, &nexus.NetworkRequest{
 		Network: networkName}); err != nil {
 		api.LogError(c, err, "failed to start network")(http.StatusBadRequest)
 		return
@@ -165,7 +163,7 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 		return
 	}
 	fmt.Println(1)
-	if _, err := api.orch.StopNetwork(c, &ipfs_orchestrator.NetworkRequest{
+	if _, err := api.orch.StopNetwork(c, &nexus.NetworkRequest{
 		Network: networkName}); err != nil {
 		api.LogError(c, err, "failed to stop network")(http.StatusBadRequest)
 		return
@@ -214,7 +212,7 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 		return
 	}
 	// tell orchestrator to remove the network, and all of its data
-	if _, err = api.orch.RemoveNetwork(c, &ipfs_orchestrator.NetworkRequest{
+	if _, err = api.orch.RemoveNetwork(c, &nexus.NetworkRequest{
 		Network: networkName}); err != nil {
 		api.LogError(c, err, "failed to remove network assets")(http.StatusBadRequest)
 		return
@@ -282,7 +280,7 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 	// retrieve additional stats if requested
 	if c.Param("stats") == "true" {
 		logger.Info("retrieving additional stats from orchestrator")
-		stats, err := api.orch.NetworkStats(c, &ipfs_orchestrator.NetworkRequest{Network: netName})
+		stats, err := api.orch.NetworkStats(c, &nexus.NetworkRequest{Network: netName})
 		if err != nil {
 			api.LogError(c, err, eh.NetworkSearchError)(http.StatusBadRequest)
 			return

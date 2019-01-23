@@ -14,7 +14,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/grpc"
-  version = "=v1.2.0"
+  version = "=v1.4.0"
 
 [[override]]
   name = "github.com/RTradeLtd/database"

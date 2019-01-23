@@ -14,7 +14,7 @@ import (
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
-	pbOrch "github.com/RTradeLtd/grpc/ipfs-orchestrator"
+	pbOrch "github.com/RTradeLtd/grpc/nexus"
 )
 
 func Test_API_Routes_IPFS_Private(t *testing.T) {
@@ -89,7 +89,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	var mapAPIResp mapAPIResponse
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
-	fakeOrch.StartNetworkReturnsOnCall(0, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5001", SwarmKey: testSwarmKey}, nil)
+	fakeOrch.StartNetworkReturnsOnCall(0, &pbOrch.StartNetworkResponse{PeerId: "hello", SwarmKey: testSwarmKey}, nil)
 	if err := sendRequest(
 		api, "POST", "/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
@@ -101,7 +101,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if mapAPIResp.Response["network_name"] != "abc123" {
 		t.Fatal("failed to retrieve correct network name")
 	}
-	if mapAPIResp.Response["api_url"] != "/ip4/127.0.0.1/tcp/5001" {
+	if mapAPIResp.Response["peer_id"] != "hello" {
 		t.Fatal("failed to retrieve correct api url")
 	}
 	if mapAPIResp.Response["swarm_key"] != testSwarmKey {
@@ -123,7 +123,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues.Add("bootstrap_peers", testBootstrapPeer2)
 	urlValues.Add("users", "testuser")
 	urlValues.Add("users", "testuser2")
-	fakeOrch.StartNetworkReturnsOnCall(1, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5002", SwarmKey: "swarmStorm"}, nil)
+	fakeOrch.StartNetworkReturnsOnCall(1, &pbOrch.StartNetworkResponse{PeerId: "hello", SwarmKey: "swarmStorm"}, nil)
 	if err := sendRequest(
 		api, "POST", "/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
@@ -135,7 +135,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if mapAPIResp.Response["network_name"] != "xyz123" {
 		t.Fatal("failed to retrieve correct network name")
 	}
-	if mapAPIResp.Response["api_url"] != "/ip4/127.0.0.1/tcp/5002" {
+	if mapAPIResp.Response["peer_id"] != "hello" {
 		t.Fatal("failed to retrieve correct api url")
 	}
 	if mapAPIResp.Response["swarm_key"] != "swarmStorm" {
@@ -204,7 +204,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
-	fakeOrch.StartNetworkReturnsOnCall(2, &pbOrch.StartNetworkResponse{Api: "test", SwarmKey: "test"}, nil)
+	fakeOrch.StartNetworkReturnsOnCall(2, &pbOrch.StartNetworkResponse{PeerId: "hello", SwarmKey: "test"}, nil)
 	if err := sendRequest(
 		api, "POST", "/v2/ipfs/private/network/start", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {

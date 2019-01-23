@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/RTradeLtd/config"
-	pb "github.com/RTradeLtd/grpc/temporal"
+	pb "github.com/RTradeLtd/grpc/pay"
 	"google.golang.org/grpc"
 )
 

@@ -13,7 +13,7 @@ import (
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
-	greq "github.com/RTradeLtd/grpc/temporal/request"
+	greq "github.com/RTradeLtd/grpc/pay/request"
 	"github.com/gin-gonic/gin"
 )
 
