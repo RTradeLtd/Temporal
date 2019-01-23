@@ -156,12 +156,6 @@ var commands = map[string]cmd.Cmd{
 			}
 			logger = logger.With("version", args["version"])
 
-			// init api service
-			service, err := v2.Initialize(&cfg, args["version"], *devMode, logger, lens, orch, signer)
-			if err != nil {
-				logger.Fatal(err)
-			}
-
 			// init clients and clean up if necessary
 			var closers = initClients(logger, &cfg)
 			if closers != nil {
@@ -170,6 +164,12 @@ var commands = map[string]cmd.Cmd{
 						c()
 					}
 				}()
+			}
+
+			// init api service
+			service, err := v2.Initialize(&cfg, args["version"], *devMode, logger, lens, orch, signer)
+			if err != nil {
+				logger.Fatal(err)
 			}
 
 			// set up clean interrupt
