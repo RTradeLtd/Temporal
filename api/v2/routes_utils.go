@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -45,7 +44,7 @@ func (api *API) beamContent(c *gin.Context) {
 			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
-		source = fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, forms["source_network"])
+		source = api.GetIPFSEndpoint(forms["source_network"])
 	}
 
 	if forms["destination_network"] == "public" {
@@ -55,7 +54,7 @@ func (api *API) beamContent(c *gin.Context) {
 			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
-		dest = fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, forms["destination_network"])
+		dest = api.GetIPFSEndpoint(forms["destination_network"])
 	}
 	if passphrase := c.PostForm("passphrase"); passphrase != "" {
 		// connect to the source network
@@ -151,7 +150,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 			return
 		}
 		// retrieve api url
-		apiURL := fmt.Sprintf("%s/network/%s/api", api.cfg.Orchestrator.Host+":"+api.cfg.Orchestrator.Port, networkName)
+		apiURL := api.GetIPFSEndpoint(networkName)
 		// initialize our connection to IPFS
 		manager, err = rtfs.NewManager(apiURL, time.Minute*10)
 		if err != nil {
