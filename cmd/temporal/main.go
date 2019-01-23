@@ -571,6 +571,10 @@ var commands = map[string]cmd.Cmd{
 				fmt.Println("failed to create user account", err)
 				os.Exit(1)
 			}
+			if _, err := models.NewUserManager(d.DB).AddCredits(args["user"], 99999999); err != nil {
+				fmt.Println("failed to grant credits to user account", err)
+				os.Exit(1)
+			}
 		},
 	},
 	"admin": {
