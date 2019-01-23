@@ -67,12 +67,17 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 		qm.l.Errorw("failed to intialize cluster pin queue connection", "error", err.Error())
 		return err
 	}
+	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, time.Minute*10, false)
+	if err != nil {
+		qm.l.Errorw("failed to initialize connection to ipfs", "error", err.Error())
+		return err
+	}
 	qm.l.Info("processing ipfs pins")
 	for {
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processIPFSPin(d, wg, userManager, networkManager, uploadManager, qmCluster)
+			go qm.processIPFSPin(d, wg, userManager, networkManager, uploadManager, qmCluster, ipfsManager)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -91,7 +96,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 // ProccessIPFSFiles is used to process messages sent to rabbitmq to upload files to IPFS.
 // This queue is invoked by advanced file upload requests
 func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, time.Minute*10)
+	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, time.Minute*10, false)
 	if err != nil {
 		qm.l.Errorw("failed to initialize connection to ipfs", "error", err.Error())
 		return err
@@ -130,7 +135,7 @@ func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, ms
 	}
 }
 
-func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *models.UserManager, nm *models.IPFSNetworkManager, upldm *models.UploadManager, qmCluster *Manager) {
+func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *models.UserManager, nm *models.IPFSNetworkManager, upldm *models.UploadManager, qmCluster *Manager, ipfsManager *rtfs.IpfsManager) {
 	defer wg.Done()
 	qm.l.Info("new pin request detected")
 	pin := &IPFSPin{}
@@ -161,29 +166,29 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 			return
 		}
 		apiURL = fmt.Sprintf("%s/network/%s/api", qm.cfg.Orchestrator.Host+":"+qm.cfg.Orchestrator.Port, pin.NetworkName)
+		// connect to ipfs
+		ipfsManager, err = rtfs.NewManager(apiURL, time.Minute*10, true)
+		if err != nil {
+			qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
+			qm.l.Infow(
+				"failed to initialize connection to ipfs",
+				"error", err.Error(),
+				"user", pin.UserName,
+				"network", pin.NetworkName)
+			d.Ack(false)
+			return
+		}
 	}
 	qm.l.Infow(
 		"initializing connection to ipfs",
 		"user", pin.UserName)
-	// connect to ipfs
-	ipfsManager, err := rtfs.NewManager(apiURL, time.Minute*10)
-	if err != nil {
-		qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
-		qm.l.Infow(
-			"failed to initialize connection to ipfs",
-			"error", err.Error(),
-			"user", pin.UserName,
-			"network", pin.NetworkName)
-		d.Ack(false)
-		return
-	}
 	qm.l.Infow(
 		"pinning hash to ipfs",
 		"cid", pin.CID,
 		"user", pin.UserName,
 		"network", pin.NetworkName)
 	// pin the content
-	if err = ipfsManager.Pin(pin.CID); err != nil {
+	if err := ipfsManager.Pin(pin.CID); err != nil {
 		qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 		qm.l.Errorw(
 			"failed to pin hash to ipfs",
@@ -212,7 +217,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 	}
 	// do not perform credit handling, as the content is already pinned
 	clusterAddMsg.CreditCost = 0
-	if err = qmCluster.PublishMessage(clusterAddMsg); err != nil {
+	if err := qmCluster.PublishMessage(clusterAddMsg); err != nil {
 		qm.l.Errorw(
 			"failed to publish cluster pin message to rabbitmq",
 			"error", err.Error(),
@@ -302,7 +307,7 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 			return
 		}
 		apiURL := fmt.Sprintf("%s/network/%s/api", qm.cfg.Orchestrator.Host+":"+qm.cfg.Orchestrator.Port, ipfsFile.NetworkName)
-		ipfs, err = rtfs.NewManager(apiURL, time.Minute*10)
+		ipfs, err = rtfs.NewManager(apiURL, time.Minute*10, true)
 		if err != nil {
 			qm.l.Errorw(
 				"failed to initialize connection to private ipfs network",

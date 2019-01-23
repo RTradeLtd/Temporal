@@ -1,0 +1,48 @@
+{
+  "author": "hsanjuan",
+  "bugs": {
+    "url": "https://github.com/ipfs/go-mfs"
+  },
+  "gx": {
+    "dvcsimport": "github.com/ipfs/go-mfs"
+  },
+  "gxDependencies": [
+    {
+      "author": "why",
+      "hash": "Qmb2UEG2TAeVrEJSjqsZF7Y2he7wRDkrdt6c3bECxwZf4k",
+      "name": "go-merkledag",
+      "version": "1.1.28"
+    },
+    {
+      "author": "why",
+      "hash": "QmSMJ4rZbCJaih3y82Ebq7BZqK6vU2FHsKcWKQiE1DPTpS",
+      "name": "go-unixfs",
+      "version": "1.2.14"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw",
+      "name": "go-cid",
+      "version": "0.9.1"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmRL22E4paat7ky7vx9MLpR97JHHbFPrg3ytFQw6qp1y1s",
+      "name": "go-ipld-format",
+      "version": "0.8.0"
+    },
+    {
+      "author": "why",
+      "hash": "QmWqh9oob7ZHQRwU5CdTqpnC8ip8BEkFNrwXRxeNo5Y7vA",
+      "name": "go-path",
+      "version": "1.1.30"
+    }
+  ],
+  "gxVersion": "0.12.1",
+  "language": "go",
+  "license": "MIT",
+  "name": "go-mfs",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.1.36"
+}
+

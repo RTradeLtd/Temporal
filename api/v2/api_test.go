@@ -117,7 +117,7 @@ func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceC
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		time.Minute*10,
+		time.Minute*10, false,
 	)
 	if err != nil {
 		return nil, nil, err

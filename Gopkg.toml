@@ -22,7 +22,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/rtfs"
-  branch = "master"
+  branch = "dedup-and-pin"
 
 [[override]]
   name = "github.com/RTradeLtd/config"
@@ -38,7 +38,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
-  version = "v2.0.4"
+  branch = "pin/update"
 
 [[override]]
   name = "github.com/RTradeLtd/kaas"

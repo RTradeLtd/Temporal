@@ -14,12 +14,12 @@ type Laser struct {
 }
 
 // NewLaser creates a laser client to beam content between different ipfs networks
-func NewLaser(srcURL, dstURL string) (*Laser, error) {
-	src, err := rtfs.NewManager(srcURL, time.Minute*10)
+func NewLaser(srcURL, dstURL string, srcDirect, dstDirect bool) (*Laser, error) {
+	src, err := rtfs.NewManager(srcURL, time.Minute*10, srcDirect)
 	if err != nil {
 		return nil, err
 	}
-	dst, err := rtfs.NewManager(dstURL, time.Minute*10)
+	dst, err := rtfs.NewManager(dstURL, time.Minute*10, dstDirect)
 	if err != nil {
 		return nil, err
 	}

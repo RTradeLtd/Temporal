@@ -3,18 +3,9 @@
 # Used to install, and configure IPFS Cluster
 
 NODE="initial_peer"
-VERSION="v0.7.0"
+VERSION="v0.8.0"
 IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
 export IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
-
-# initial peer is responsible for generating a cluster secret
-if [[ "$NODE" == "initial_peer" ]]; then
-    CLUSTER_SECRET=$(od  -vN 32 -An -tx1 /dev/urandom | tr -d ' \n')
-    export CLUSTER_SECRET
-elif [[ "$CLUSTER_SECRET" == "" ]]; then
-    echo "[ERROR] Please set CLUSTER_SECRET environment variable"
-    exit 1
-fi
 
 # download and install ipfs cluster service
 cd ~ || exit

@@ -38,6 +38,14 @@ type Manager interface {
 	// Pin is a wrapper method to pin a hash.
 	// pinning prevents GC and persistently stores on disk
 	Pin(hash string) error
+	// PinUpdate is used to update one pin to another, while making sure all objects
+	// in the new pin are local, followed by removing the old pin.
+	//
+	// This is an optimized version of pinning the new content, and then removing the
+	// old content.
+	//
+	// returns the new pin path
+	PinUpdate(from, to string) (string, error)
 	// CheckPin checks whether or not a pin is present
 	CheckPin(hash string) (bool, error)
 	// Publish is used for fine grained control over IPNS record publishing

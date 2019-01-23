@@ -38,7 +38,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	url := api.GetIPFSEndpoint(forms["network_name"])
-	manager, err := rtfs.NewManager(url, time.Minute*10)
+	manager, err := rtfs.NewManager(url, time.Minute*10, true)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
@@ -184,7 +184,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	apiURL := api.GetIPFSEndpoint(forms["network_name"])
-	ipfsManager, err := rtfs.NewManager(apiURL, time.Minute*10)
+	ipfsManager, err := rtfs.NewManager(apiURL, time.Minute*10, true)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
@@ -271,7 +271,7 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	apiURL := api.GetIPFSEndpoint(forms["network_name"])
-	manager, err := rtfs.NewManager(apiURL, time.Minute*10)
+	manager, err := rtfs.NewManager(apiURL, time.Minute*10, true)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
@@ -305,7 +305,7 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 	}
 
 	apiURL := api.GetIPFSEndpoint(networkName)
-	manager, err := rtfs.NewManager(apiURL, time.Minute*10)
+	manager, err := rtfs.NewManager(apiURL, time.Minute*10, true)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
@@ -337,7 +337,7 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	apiURL := api.GetIPFSEndpoint(networkName)
-	manager, err := rtfs.NewManager(apiURL, time.Minute*10)
+	manager, err := rtfs.NewManager(apiURL, time.Minute*10, true)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
@@ -369,7 +369,7 @@ func (api *API) getDagObjectForHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	apiURL := api.GetIPFSEndpoint(networkName)
-	im, err := rtfs.NewManager(apiURL, time.Minute*10)
+	im, err := rtfs.NewManager(apiURL, time.Minute*10, true)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return

@@ -35,34 +35,45 @@ func (api *API) beamContent(c *gin.Context) {
 	if len(forms) == 0 {
 		return
 	}
-	var source, dest string
-
+	var (
+		source, dest             string
+		sourceDirect, destDirect bool
+		net1Conn                 *rtfs.IpfsManager
+	)
 	if forms["source_network"] == "public" {
 		source = api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
+		net1Conn, err = rtfs.NewManager(source, time.Minute*10, false)
+		sourceDirect = false
 	} else {
 		if err := CheckAccessForPrivateNetwork(username, forms["source_network"], api.dbm.DB); err != nil {
 			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
+		sourceDirect = true
 		source = api.GetIPFSEndpoint(forms["source_network"])
+		net1Conn, err = rtfs.NewManager(source, time.Minute*10, true)
+	}
+	if err != nil {
+		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
+		return
 	}
 
 	if forms["destination_network"] == "public" {
 		dest = api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
+		destDirect = false
 	} else {
 		if err := CheckAccessForPrivateNetwork(username, forms["destination_network"], api.dbm.DB); err != nil {
 			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
+		destDirect = true
 		dest = api.GetIPFSEndpoint(forms["destination_network"])
 	}
+	if err != nil {
+		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
+		return
+	}
 	if passphrase := c.PostForm("passphrase"); passphrase != "" {
-		// connect to the source network
-		net1Conn, err := rtfs.NewManager(source, time.Minute*10)
-		if err != nil {
-			api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
-			return
-		}
 		// encrypt the file file
 		data, err := net1Conn.Cat(forms["content_hash"])
 		if err != nil {
@@ -79,7 +90,7 @@ func (api *API) beamContent(c *gin.Context) {
 		forms["content_hash"] = newCid
 	}
 	// create our dual network connection
-	laserBeam, err := beam.NewLaser(source, dest)
+	laserBeam, err := beam.NewLaser(source, dest, sourceDirect, destDirect)
 	if err != nil {
 		api.LogError(c, err, "failed to initialize laser beam")(http.StatusBadRequest)
 		return
@@ -152,7 +163,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		// retrieve api url
 		apiURL := api.GetIPFSEndpoint(networkName)
 		// initialize our connection to IPFS
-		manager, err = rtfs.NewManager(apiURL, time.Minute*10)
+		manager, err = rtfs.NewManager(apiURL, time.Minute*10, true)
 		if err != nil {
 			api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 			return

@@ -22,15 +22,16 @@ type IpfsManager struct {
 }
 
 // NewManager is used to initialize our Ipfs manager struct
-func NewManager(ipfsURL string, timeout time.Duration) (*IpfsManager, error) {
-	// set up shell
-	sh := newShell(ipfsURL)
-	sh.SetTimeout(time.Minute * 5)
+func NewManager(ipfsURL string, timeout time.Duration, direct bool) (*IpfsManager, error) {
+	// instantiate shell
+	sh := newShell(ipfsURL, direct)
+	// set timeout
+	sh.SetTimeout(timeout)
+	// validate we have an active connection
 	if _, err := sh.ID(); err != nil {
 		return nil, fmt.Errorf("failed to connect to ipfs node at '%s': %s", ipfsURL, err.Error())
 	}
-
-	// instantiate manager
+	// instantiate and return manager
 	return &IpfsManager{
 		shell:       sh,
 		nodeAPIAddr: ipfsURL,
@@ -100,6 +101,24 @@ func (im *IpfsManager) Pin(hash string) error {
 		return fmt.Errorf("failed to pin '%s': %s", hash, err.Error())
 	}
 	return nil
+}
+
+// PinUpdate is used to update one pin to another, while making sure all objects
+// in the new pin are local, followed by removing the old pin.
+//
+// This is an optimized version of pinning the new content, and then removing the
+// old content.
+//
+// returns the new pin path
+func (im *IpfsManager) PinUpdate(from, to string) (string, error) {
+	out, err := im.shell.PinUpdate(from, to)
+	if err != nil {
+		return "", err
+	}
+	if len(out) == 0 || len(out["Pins"]) == 0 {
+		return "", errors.New("failed to retrieve new pin paths")
+	}
+	return out["Pins"][1], nil
 }
 
 // CheckPin checks whether or not a pin is present
