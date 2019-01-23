@@ -73,6 +73,7 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
 			"id":           network.ID,
+			"peer_id":      resp.GetPeerId(),
 			"network_name": networkName,
 			"swarm_key":    resp.GetSwarmKey(),
 			"users":        network.Users,
