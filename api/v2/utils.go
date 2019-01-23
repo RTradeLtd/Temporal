@@ -35,6 +35,16 @@ func CheckAccessForPrivateNetwork(username, networkName string, db *gorm.DB) err
 	return nil
 }
 
+// GetIPFSEndpoint is used to construct the api url to connect to
+// for private ipfs networks. in the case of dev mode it returns
+// an default, non nexus based ipfs api address
+func (api *API) GetIPFSEndpoint(networkName string) string {
+	if dev {
+		return api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
+	}
+	return api.cfg.Orchestrator.Host + ":" + api.cfg.Orchestrator.Port + "/network/" + networkName + "/api"
+}
+
 // FileSizeCheck is used to check and validate the size of the uploaded file
 func (api *API) FileSizeCheck(size int64) error {
 	sizeInt, err := strconv.ParseInt(

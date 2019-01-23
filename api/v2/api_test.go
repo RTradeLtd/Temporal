@@ -243,6 +243,9 @@ func Test_API_Setup(t *testing.T) {
 			}
 		})
 	}
+	if str := api.GetIPFSEndpoint("networkName"); str == "" {
+		t.Fatal("failed to construct api endpoint")
+	}
 }
 
 func Test_API_Routes_Misc(t *testing.T) {
