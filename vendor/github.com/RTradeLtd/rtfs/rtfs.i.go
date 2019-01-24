@@ -58,7 +58,6 @@ type Manager interface {
 	CustomRequest(ctx context.Context, url, commad string, opts map[string]string, args ...string) (*ipfsapi.Response, error)
 	// SwarmConnect is use to open a connection a one or more ipfs nodes
 	SwarmConnect(ctx context.Context, addrs ...string) error
-	// DedupAndCalculatePinSize is used to remove duplicate refers to objects for a more accurate pin size cost
-	// it returns the size of all refs, as well as all unique references
-	DedupAndCalculatePinSize(hash string) (int64, []string, error)
+	// Refs is used to retrieve references of a hash
+	Refs(hash string, recursive, unique bool) ([]string, error)
 }
