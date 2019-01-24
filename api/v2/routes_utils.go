@@ -120,7 +120,6 @@ func (api *API) exportKey(c *gin.Context) {
 		api.LogError(c, errors.New(eh.KeyUseError), eh.KeyUseError)(http.StatusBadRequest)
 		return
 	}
-
 	resp, err := api.keys.GetPrivateKey(context.Background(), &pb.KeyGet{Name: keyName})
 	if err != nil {
 		api.LogError(c, err, eh.KeyExportError)(http.StatusBadRequest)
@@ -129,6 +128,14 @@ func (api *API) exportKey(c *gin.Context) {
 	phrase, err := mnemonics.ToPhrase(resp.PrivateKey, mnemonics.English)
 	if err != nil {
 		api.LogError(c, err, eh.KeyExportError)(http.StatusBadRequest)
+		return
+	}
+	// after successful parsing delete key
+	if resp, err := api.keys.DeletePrivateKey(context.Background(), &pb.KeyDelete{Name: keyName}); err != nil {
+		api.LogError(c, err, "failed to delete key")(http.StatusBadRequest)
+		return
+	} else if resp.Status != "private key deleted" {
+		Fail(c, errors.New("failed to delete private key"))
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": phrase})
