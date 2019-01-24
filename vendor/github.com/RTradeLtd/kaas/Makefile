@@ -2,6 +2,7 @@ all: build
 
 .PHONY: deps
 deps:
+	rm -rf vendor
 	dep ensure -v
 	git submodule update --init
 

@@ -103,6 +103,16 @@ func (s *Server) PutPrivateKey(ctx context.Context, req *pb.KeyPut) (*pb.Respons
 	}, nil
 }
 
+// DeletePrivateKey is used to remove a private key from the keystore
+func (s *Server) DeletePrivateKey(ctx context.Context, req *pb.KeyDelete) (*pb.Response, error) {
+	if err := s.krab.Delete(req.Name); err != nil {
+		return nil, err
+	}
+	return &pb.Response{
+		Status: "private key deleted",
+	}, nil
+}
+
 // Close is used to gracefully stop any grpc connections, followed by closing the datastore
 func (s *Server) close() error {
 	// gracefull store any pending connections first
