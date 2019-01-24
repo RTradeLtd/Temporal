@@ -18,7 +18,7 @@ func TestUtils_CalculatePinCost(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration tests")
 	}
-	manager, err := rtfs.NewManager(nodeOneAPIAddr, time.Minute*10, false)
+	manager, err := rtfs.NewManager(nodeOneAPIAddr, "", time.Minute*10, false)
 	if err != nil {
 		t.Fatal(err)
 	}

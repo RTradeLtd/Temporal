@@ -119,8 +119,8 @@
   revision = "44665f02bf8560d04cb56477a2536eaedd43246c"
 
 [[projects]]
-  branch = "master"
-  digest = "1:470cdee00dbe34a71ce2f74798ebbd7b7fa63a9dbf1880095afc64a106080d62"
+  branch = "authorization"
+  digest = "1:a6baa5790ea495329fa6040edc8b4b7e8bd9d37e3ca72ffdceeea17f6c806fd8"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -128,7 +128,7 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "594e1e8cacd361730b9b5b9ed2b2621c0b9da1a9"
+  revision = "c88e4f504a49baa45bfdc68c3f9bcf0958b43eff"
 
 [[projects]]
   branch = "master"
@@ -254,11 +254,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:36fe9527deed01d2a317617e59304eb2c4ce9f8a24115bcc5c2e37b3aee5bae4"
+  digest = "1:38f00d85208f9f51e51063b0b90687d72f3ad61a7b6135d3ab6cb21e7b68dff2"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
   pruneopts = "UT"
-  revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
+  revision = "61b50c2ef482d0f2c68fa55a1ef570ee5032b0d8"
 
 [[projects]]
   branch = "master"
@@ -1317,7 +1317,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "c6b37f3e92850b723493d63fd35aad34e19e048d"
+  revision = "b90733256f2e882e81d52f9126de08df5615afd9"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"

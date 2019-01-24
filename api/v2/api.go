@@ -93,7 +93,7 @@ func Initialize(
 	l = l.Named("api")
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		time.Minute*10, false,
+		"", time.Minute*10, false,
 	)
 	if err != nil {
 		return nil, err
