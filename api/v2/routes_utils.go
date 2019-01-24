@@ -138,6 +138,7 @@ func (api *API) exportKey(c *gin.Context) {
 		Fail(c, errors.New("failed to delete private key"))
 		return
 	}
+	//TODO: remove private key from database
 	Respond(c, http.StatusOK, gin.H{"response": phrase})
 }
 
