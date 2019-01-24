@@ -67,7 +67,7 @@ func GetAuthenticatedUserFromContext(c *gin.Context) (string, error) {
 // GetAuthToken is used to retrieve the jwt token
 // from an authenticated request
 func GetAuthToken(c *gin.Context) string {
-	token := strings.Split(c.GetHeader("Authorization"), ":")[1]
+	token := strings.Split(c.GetHeader("Authorization"), " ")[1]
 	fmt.Println(token)
 	return token
 }
