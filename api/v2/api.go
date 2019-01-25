@@ -567,12 +567,6 @@ func (api *API) setupRoutes() error {
 				laser.POST("/beam", api.beamContent)
 			}
 		}
-		// ipfs cluster routes
-		cluster := ipfs.Group("/cluster")
-		{
-			// general routes
-			cluster.POST("/pin/:hash", api.pinHashToCluster)
-		}
 	}
 
 	// ipns
