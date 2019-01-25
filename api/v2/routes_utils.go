@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/RTradeLtd/crypto"
 	mnemonics "github.com/RTradeLtd/entropy-mnemonics"
 	pb "github.com/RTradeLtd/grpc/krab"
 	"github.com/RTradeLtd/rtfs"
@@ -208,6 +209,18 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		api.LogError(c, err, eh.IPFSObjectStatError)(http.StatusBadRequest)
 		return
 	}
+	size := stats.CumulativeSize
+	// decrypt Temporal-encrypted content if key is provided
+	decryptKey := c.PostForm("decrypt_key")
+	if decryptKey != "" {
+		decrypted, err := crypto.NewEncryptManager(decryptKey).Decrypt(reader)
+		if err != nil {
+			Fail(c, err)
+			return
+		}
+		size = len(decrypted)
+		reader = bytes.NewReader(decrypted)
+	}
 
 	// parse extra headers if there are any
 	extraHeaders := make(map[string]string)
@@ -230,5 +243,5 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	}
 
 	api.l.Infow("private ipfs content download served", "user", username)
-	c.DataFromReader(200, int64(stats.CumulativeSize), contentType, reader, extraHeaders)
+	c.DataFromReader(200, int64(size), contentType, reader, extraHeaders)
 }
