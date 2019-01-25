@@ -32,6 +32,7 @@ func (api *API) beamContent(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "source_network", "destination_network", "content_hash")
 	if len(forms) == 0 {
 		return
@@ -41,28 +42,34 @@ func (api *API) beamContent(c *gin.Context) {
 		sourceDirect, destDirect bool
 		net1Conn                 *rtfs.IpfsManager
 	)
+	// validate the network to connect to
 	if forms["source_network"] == "public" {
 		source = api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
 		net1Conn, err = rtfs.NewManager(source, "", time.Minute*10, false)
 		sourceDirect = false
 	} else {
+		// if non public network, validate user has access
 		if err := CheckAccessForPrivateNetwork(username, forms["source_network"], api.dbm.DB); err != nil {
 			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
 		sourceDirect = true
+		// format a url to connect to
 		source = api.GetIPFSEndpoint(forms["source_network"])
+		// connect to the actual network
 		net1Conn, err = rtfs.NewManager(source, GetAuthToken(c), time.Minute*10, true)
 	}
+	// ensure connection was successful
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
 	}
-
+	// validate the network to connect to
 	if forms["destination_network"] == "public" {
 		dest = api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
 		destDirect = false
 	} else {
+		// non public network, validate user has access
 		if err := CheckAccessForPrivateNetwork(username, forms["destination_network"], api.dbm.DB); err != nil {
 			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
@@ -70,10 +77,7 @@ func (api *API) beamContent(c *gin.Context) {
 		destDirect = true
 		dest = api.GetIPFSEndpoint(forms["destination_network"])
 	}
-	if err != nil {
-		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
-		return
-	}
+	// perform optional encryption of content
 	if passphrase := c.PostForm("passphrase"); passphrase != "" {
 		// encrypt the file file
 		data, err := net1Conn.Cat(forms["content_hash"])
@@ -101,6 +105,7 @@ func (api *API) beamContent(c *gin.Context) {
 		api.LogError(c, err, "failed to tranfer content")(http.StatusBadRequest)
 		return
 	}
+	// return
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"status": "content transferred", "content_hash": forms["content_hash"]}})
 }
 
@@ -111,27 +116,29 @@ func (api *API) exportKey(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// get the key name
 	keyName := c.Param("name")
-	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyName)
-	if err != nil {
+	// validate user owns key name
+	if owns, err := api.um.CheckIfKeyOwnedByUser(username, keyName); err != nil {
 		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
 		return
-	}
-	if !owns {
+	} else if !owns {
 		api.LogError(c, errors.New(eh.KeyUseError), eh.KeyUseError)(http.StatusBadRequest)
 		return
 	}
+	// get private key from krab keystore
 	resp, err := api.keys.GetPrivateKey(context.Background(), &pb.KeyGet{Name: keyName})
 	if err != nil {
 		api.LogError(c, err, eh.KeyExportError)(http.StatusBadRequest)
 		return
 	}
+	// convert private key to mnemonic phrase
 	phrase, err := mnemonics.ToPhrase(resp.PrivateKey, mnemonics.English)
 	if err != nil {
 		api.LogError(c, err, eh.KeyExportError)(http.StatusBadRequest)
 		return
 	}
-	// after successful parsing delete key
+	// after successful parsing delete key from krab
 	if resp, err := api.keys.DeletePrivateKey(context.Background(), &pb.KeyDelete{Name: keyName}); err != nil {
 		api.LogError(c, err, "failed to delete key")(http.StatusBadRequest)
 		return
@@ -139,15 +146,18 @@ func (api *API) exportKey(c *gin.Context) {
 		Fail(c, errors.New("failed to delete private key"))
 		return
 	}
+	// get key id from database
 	keyID, err := api.um.GetKeyIDByName(username, keyName)
 	if err != nil {
 		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
 		return
 	}
+	// remove key id from database
 	if err := api.um.RemoveIPFSKeyForUser(username, keyName, keyID); err != nil {
 		api.LogError(c, err, "failed to remove key from database")(http.StatusBadRequest)
 		return
 	}
+	// return
 	Respond(c, http.StatusOK, gin.H{"response": phrase})
 }
 

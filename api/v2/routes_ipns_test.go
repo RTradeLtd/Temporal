@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"fmt"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -153,6 +154,7 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	fmt.Printf("%+v\n", resp)
 	// /v2/ipfs/public/pin
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
