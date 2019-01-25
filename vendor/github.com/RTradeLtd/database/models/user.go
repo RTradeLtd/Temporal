@@ -133,6 +133,36 @@ func (um *UserManager) AddIPFSKeyForUser(username, keyName, keyID string) error 
 	return nil
 }
 
+// RemoveIPFSKeyForUser is used to remove a given key name and its id from the users
+// available keys they have created.
+func (um *UserManager) RemoveIPFSKeyForUser(username, keyName, keyID string) error {
+	user, err := um.FindByUserName(username)
+	if err != nil {
+		return err
+	}
+	var (
+		parsedKeyNames []string
+		parsedKeyIDs   []string
+	)
+	for _, name := range user.IPFSKeyNames {
+		if name != keyName {
+			parsedKeyNames = append(parsedKeyNames, name)
+		}
+	}
+	for _, id := range user.IPFSKeyIDs {
+		if id != keyID {
+			parsedKeyIDs = append(parsedKeyIDs, id)
+		}
+	}
+	user.IPFSKeyNames = parsedKeyNames
+	user.IPFSKeyIDs = parsedKeyIDs
+	// update model and return
+	return um.DB.Model(user).Updates(map[string]interface{}{
+		"ipfs_key_names": user.IPFSKeyNames,
+		"ipfs_key_ids":   user.IPFSKeyIDs,
+	}).Error
+}
+
 // GetKeysForUser is used to get a mapping of a users keys
 func (um *UserManager) GetKeysForUser(username string) (map[string][]string, error) {
 	var user User

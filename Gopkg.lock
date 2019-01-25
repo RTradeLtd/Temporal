@@ -51,7 +51,7 @@
 
 [[projects]]
   branch = "release/prod-prep"
-  digest = "1:06e26a34d9f63d0626d35ba789f5a1fbc970bc44cf14d706eacf5a99720011aa"
+  digest = "1:591a6cac7e7bf609591683822c24e7583a3021afdb384d00cecd7a46f4b36ae4"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "27b31dced48f1e6ed59c8a972119753ba3442942"
+  revision = "a61f60ec310417ad13a21fed4de8d02192972226"
 
 [[projects]]
   branch = "master"
@@ -1289,7 +1289,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e695c29f11d31be5b851adba13e10ee1f86865369a0d922435f309b2e543620a"
+  digest = "1:06ed3f55539f2dbd78330fb4af01e8acef89b61b525fbb161460c829d9af4982"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -1305,7 +1305,7 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "ed066c81e75eba56dd9bd2139ade88125b855585"
+  revision = "4b62a64f59f73840b9ab79204c94fee61cd1ba2c"
 
 [[projects]]
   branch = "master"

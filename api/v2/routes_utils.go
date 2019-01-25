@@ -138,7 +138,15 @@ func (api *API) exportKey(c *gin.Context) {
 		Fail(c, errors.New("failed to delete private key"))
 		return
 	}
-	//TODO: remove private key from database
+	keyID, err := api.um.GetKeyIDByName(username, keyName)
+	if err != nil {
+		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
+		return
+	}
+	if err := api.um.RemoveIPFSKeyForUser(username, keyName, keyID); err != nil {
+		api.LogError(c, err, "failed to remove key from database")(http.StatusBadRequest)
+		return
+	}
 	Respond(c, http.StatusOK, gin.H{"response": phrase})
 }
 
