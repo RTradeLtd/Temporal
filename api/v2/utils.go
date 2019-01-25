@@ -42,7 +42,7 @@ func (api *API) GetIPFSEndpoint(networkName string) string {
 	if dev {
 		return api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
 	}
-	return api.cfg.Orchestrator.Host + ":" + api.cfg.Orchestrator.Port + "/network/" + networkName
+	return api.cfg.Nexus.Host + ":" + api.cfg.Nexus.Delegator.Port + "/network/" + networkName
 }
 
 // FileSizeCheck is used to check and validate the size of the uploaded file

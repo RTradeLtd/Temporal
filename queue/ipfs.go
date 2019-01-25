@@ -165,7 +165,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 			d.Ack(false)
 			return
 		}
-		apiURL = fmt.Sprintf("%s/network/%s/api", qm.cfg.Orchestrator.Host+":"+qm.cfg.Orchestrator.Port, pin.NetworkName)
+		apiURL = fmt.Sprintf("%s/network/%s/api", qm.cfg.Nexus.Host+":"+qm.cfg.Nexus.Delegator.Port, pin.NetworkName)
 		// connect to ipfs
 		ipfsManager, err = rtfs.NewManager(apiURL, "", time.Minute*10, true)
 		if err != nil {
@@ -306,7 +306,7 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 			d.Ack(false)
 			return
 		}
-		apiURL := fmt.Sprintf("%s/network/%s/api", qm.cfg.Orchestrator.Host+":"+qm.cfg.Orchestrator.Port, ipfsFile.NetworkName)
+		apiURL := fmt.Sprintf("%s/network/%s/api", qm.cfg.Nexus.Host+":"+qm.cfg.Nexus.Delegator.Port, ipfsFile.NetworkName)
 		ipfs, err = rtfs.NewManager(apiURL, "", time.Minute*10, true)
 		if err != nil {
 			qm.l.Errorw(

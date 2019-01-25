@@ -125,7 +125,7 @@ func initClients(l *zap.SugaredLogger, cfg *config.TemporalConfig) (closers []fu
 		lens = client
 	}
 	if orch == nil {
-		client, err := clients.NewOcrhestratorClient(cfg.Orchestrator)
+		client, err := clients.NewOcrhestratorClient(cfg.Nexus)
 		if err != nil {
 			l.Fatal(err)
 		}

@@ -46,8 +46,8 @@ func TestOrchestratorClient_Fail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.Orchestrator.TLS.CertPath = "fakepath"
-	if _, err = clients.NewOcrhestratorClient(cfg.Orchestrator); err == nil {
+	cfg.Nexus.TLS.CertPath = "fakepath"
+	if _, err = clients.NewOcrhestratorClient(cfg.Nexus); err == nil {
 		t.Fatal("error expected")
 	}
 }
@@ -56,7 +56,7 @@ func TestOrchestratorClient_Pass(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = clients.NewOcrhestratorClient(cfg.Orchestrator); err != nil {
+	if _, err = clients.NewOcrhestratorClient(cfg.Nexus); err != nil {
 		t.Fatal(err)
 	}
 }
