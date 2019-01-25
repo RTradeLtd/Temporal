@@ -51,7 +51,7 @@
 
 [[projects]]
   branch = "release/prod-prep"
-  digest = "1:591a6cac7e7bf609591683822c24e7583a3021afdb384d00cecd7a46f4b36ae4"
+  digest = "1:e0222137755d3359bc74c868e2378ce006047cc9bafcd744e083e4c395faa26f"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "a61f60ec310417ad13a21fed4de8d02192972226"
+  revision = "467224eae9b6085c0418efe01641ea48452bcec0"
 
 [[projects]]
   branch = "master"
@@ -258,7 +258,7 @@
   name = "github.com/gin-contrib/sse"
   packages = ["."]
   pruneopts = "UT"
-  revision = "61b50c2ef482d0f2c68fa55a1ef570ee5032b0d8"
+  revision = "a7658810eb745c2f22927282dea478278103a897"
 
 [[projects]]
   branch = "master"
@@ -293,17 +293,21 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:fa5e9e1af8a8645086811ec5ab003806026babc57c8bb3a6f7e1ab34b80e2ff1"
+  digest = "1:5eae7496bdb74a6c7592bc74ea3da8a6a61a361fd52682820900d755bb144194"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
+    "protoc-gen-go/generator",
+    "protoc-gen-go/generator/internal/remap",
+    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
     "ptypes/struct",
     "ptypes/timestamp",
+    "ptypes/wrappers",
   ]
   pruneopts = "UT"
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
@@ -1356,11 +1360,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6c6b70cf6d2788d9f7dc6589bc88e0e1c7edc40612294431ebb7d09536d12240"
+  digest = "1:5af4d8fdb11165ffed7a2cc049c9879d1e795c595fb1048147fb8a93fe6842e6"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
     "googleapis/rpc/status",
+    "protobuf/field_mask",
   ]
   pruneopts = "UT"
   revision = "8819c946db4494a2259bf100a377f51aa585d893"

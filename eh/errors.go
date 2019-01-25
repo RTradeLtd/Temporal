@@ -123,4 +123,9 @@ const (
 	PasswordResetError = "failed to reset password"
 	// NoAPITokenError is an error when we can't properly validate the jwt token
 	NoAPITokenError = "invalid token provided"
+	// CantUploadError is an error when a user tries to upload more data than their monthly limit
+	CantUploadError = "uploading would breach monthly data limit, please upload a smaller object"
+	// DataUsageUpdateError is an error when a failure occurs while trying to update a users
+	// current data usage
+	DataUsageUpdateError = "an error occured while updating your account data usage"
 )
