@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/c2h5oh/datasize"
+
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -219,8 +221,10 @@ func (api *API) addFileLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	// format size of file into gigabytes
+	fileSizeInGB := float64(fileHandler.Size) / datasize.GB.GBytes()
 	// validate if they can upload an object of this size
-	if err := api.usage.CanUpload(username, float64(fileHandler.Size)); err != nil {
+	if err := api.usage.CanUpload(username, fileSizeInGB); err != nil {
 		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		return
 	}
