@@ -222,7 +222,8 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	// format size of file into gigabytes
-	fileSizeInGB := float64(fileHandler.Size) / datasize.GB.GBytes()
+	fileSizeInGB := float64(fileHandler.Size) / float64(datasize.GB.Bytes())
+	api.l.Debug("user", username, "file_size_in_gb", fileSizeInGB)
 	// validate if they can upload an object of this size
 	if err := api.usage.CanUpload(username, fileSizeInGB); err != nil {
 		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
