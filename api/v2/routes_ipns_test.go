@@ -1,7 +1,6 @@
 package v2
 
 import (
-	"fmt"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -154,12 +153,11 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("%+v\n", resp)
 	// /v2/ipfs/public/pin
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("hold_time", "5")
-	urlValues.Add("ipns_path", resp.Name)
+	urlValues.Add("ipns_path", "/ipns/"+resp.Name)
 	if err := sendRequest(
 		api, "POST", "/v2/ipns/public/pin", 200, nil, urlValues, &apiResp,
 	); err != nil {
