@@ -99,6 +99,7 @@ type IPFSPin struct {
 	UserName         string  `json:"user_name"`
 	HoldTimeInMonths int64   `json:"hold_time_in_months"`
 	CreditCost       float64 `json:"credit_cost"`
+	JWT              string  `json:"jwt,omitempty"`
 }
 
 // IPFSFile is our message for the ipfs file queue
@@ -114,6 +115,7 @@ type IPFSFile struct {
 	HoldTimeInMonths string  `json:"hold_time_in_months"`
 	CreditCost       float64 `json:"credit_cost"`
 	Encrypted        bool    `json:"encrypted"`
+	JWT              string  `json:"jwt,omitempty"`
 }
 
 // IPFSClusterPin is a queue message used when sending a message to the cluster to pin content

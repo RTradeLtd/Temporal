@@ -167,7 +167,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 		}
 		apiURL = fmt.Sprintf("%s/network/%s/api", qm.cfg.Nexus.Host+":"+qm.cfg.Nexus.Delegator.Port, pin.NetworkName)
 		// connect to ipfs
-		ipfsManager, err = rtfs.NewManager(apiURL, "", time.Minute*10, true)
+		ipfsManager, err = rtfs.NewManager(apiURL, pin.JWT, time.Minute*10, true)
 		if err != nil {
 			qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 			qm.l.Infow(
@@ -307,7 +307,7 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 			return
 		}
 		apiURL := fmt.Sprintf("%s/network/%s/api", qm.cfg.Nexus.Host+":"+qm.cfg.Nexus.Delegator.Port, ipfsFile.NetworkName)
-		ipfs, err = rtfs.NewManager(apiURL, "", time.Minute*10, true)
+		ipfs, err = rtfs.NewManager(apiURL, ipfsFile.JWT, time.Minute*10, true)
 		if err != nil {
 			qm.l.Errorw(
 				"failed to initialize connection to private ipfs network",
@@ -377,6 +377,7 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 		UserName:         ipfsFile.UserName,
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       0,
+		JWT:              ipfsFile.JWT,
 	}
 	// if encrypted upload, do some special processing
 	if ipfsFile.Encrypted {

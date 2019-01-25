@@ -63,6 +63,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       cost,
+		JWT:              GetAuthToken(c),
 	}
 	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
@@ -150,6 +151,7 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		NetworkName:      forms["network_name"],
 		HoldTimeInMonths: forms["hold_time"],
 		CreditCost:       cost,
+		JWT:              GetAuthToken(c),
 	}
 	api.l.Debugf("%s stored in minio", objectName)
 	if err = api.queues.file.PublishMessage(ifp); err != nil {
@@ -224,6 +226,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       0,
+		JWT:              GetAuthToken(c),
 	}
 	if err = api.queues.pin.PublishMessageWithExchange(pin, queue.PinExchange); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
