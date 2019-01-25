@@ -26,53 +26,63 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "hash", "life_time", "ttl", "key", "resolve")
 	if len(forms) == 0 {
 		return
 	}
+	// validate that the hash is an ipfs one
 	if _, err := gocid.Decode(forms["hash"]); err != nil {
 		Fail(c, err)
 		return
 	}
+	// get cost for ipns uploads
 	cost, err := utils.CalculateAPICallCost("ipns", false)
 	if err != nil {
 		api.LogError(c, err, eh.CallCostCalculationError)(http.StatusBadRequest)
 		return
 	}
+	// validte the user has enough credits
 	if err := api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
+	// ensure that the user owns the key they want to use
 	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, forms["key"])
 	if err != nil {
 		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
+	// if they don't own it, return an error
 	if !ownsKey {
 		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", username)
 		api.LogError(c, err, eh.KeyUseError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
+	// parse resolve into boolean type
 	resolve, err := strconv.ParseBool(forms["resolve"])
 	if err != nil {
 		Fail(c, err)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
+	// parse lifetime into time.Duration
 	lifetime, err := time.ParseDuration(forms["life_time"])
 	if err != nil {
 		Fail(c, err)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
+	// parse ttl into time.Duration
 	ttl, err := time.ParseDuration(forms["ttl"])
 	if err != nil {
 		Fail(c, err)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
+	// create ipns entry creation message
 	ie := queue.IPNSEntry{
 		CID:         forms["hash"],
 		LifeTime:    lifetime,
@@ -83,11 +93,13 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		NetworkName: "public",
 		CreditCost:  cost,
 	}
+	// send message for processing
 	if err = api.queues.ipns.PublishMessage(ie); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
+	// log and return
 	api.l.With("user", username).Info("ipns entry creation sent to backend")
 	Respond(c, http.StatusOK, gin.H{"response": "ipns entry creation sent to backend"})
 }
