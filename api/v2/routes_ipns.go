@@ -1,7 +1,6 @@
 package v2
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,7 +12,6 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
-	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	gocid "github.com/ipfs/go-cid"
 
 	"github.com/gin-gonic/gin"
@@ -36,6 +34,33 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	// ensure user owns the key
+	if ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, forms["key"]); err != nil {
+		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
+		return
+	} else if !ownsKey {
+		err = fmt.Errorf("unauthorized access to key by user %s", username)
+		api.LogError(c, err, eh.KeyUseError)(http.StatusBadRequest)
+		return
+	}
+	// parse resolve into boolean type
+	resolve, err := strconv.ParseBool(forms["resolve"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// parse lifetime into time.Duration
+	lifetime, err := time.ParseDuration(forms["life_time"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// parse ttl into time.Duration
+	ttl, err := time.ParseDuration(forms["ttl"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
 	// get cost for ipns uploads
 	cost, err := utils.CalculateAPICallCost("ipns", false)
 	if err != nil {
@@ -45,41 +70,6 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 	// validte the user has enough credits
 	if err := api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
-		return
-	}
-	// ensure that the user owns the key they want to use
-	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, forms["key"])
-	if err != nil {
-		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
-		api.refundUserCredits(username, "ipns", cost)
-		return
-	}
-	// if they don't own it, return an error
-	if !ownsKey {
-		err = fmt.Errorf("user %s attempted to generate IPFS entry with unowned key", username)
-		api.LogError(c, err, eh.KeyUseError)(http.StatusBadRequest)
-		api.refundUserCredits(username, "ipns", cost)
-		return
-	}
-	// parse resolve into boolean type
-	resolve, err := strconv.ParseBool(forms["resolve"])
-	if err != nil {
-		Fail(c, err)
-		api.refundUserCredits(username, "ipns", cost)
-		return
-	}
-	// parse lifetime into time.Duration
-	lifetime, err := time.ParseDuration(forms["life_time"])
-	if err != nil {
-		Fail(c, err)
-		api.refundUserCredits(username, "ipns", cost)
-		return
-	}
-	// parse ttl into time.Duration
-	ttl, err := time.ParseDuration(forms["ttl"])
-	if err != nil {
-		Fail(c, err)
-		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	// create ipns entry creation message
@@ -111,55 +101,60 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "network_name", "hash", "life_time", "ttl", "key", "resolve")
 	if len(forms) == 0 {
 		return
 	}
+	// validate the hash
+	if _, err := gocid.Decode(forms["hash"]); err != nil {
+		Fail(c, err)
+		return
+	}
+	// ensure user has access to private network
+	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
+		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
+		return
+	}
+	// ensure user owns the key
+	if ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, forms["key"]); err != nil {
+		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
+		return
+	} else if !ownsKey {
+		err = fmt.Errorf("unauthorized access to key by user %s", username)
+		api.LogError(c, err, eh.KeyUseError)(http.StatusBadRequest)
+		return
+	}
+	// parse boolean type
+	resolve, err := strconv.ParseBool(forms["resolve"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// parse time.Duration type
+	lifetime, err := time.ParseDuration(forms["life_time"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// parse time.Duration type
+	ttl, err := time.ParseDuration(forms["ttl"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// get cost of api call
 	cost, err := utils.CalculateAPICallCost("ipns", true)
 	if err != nil {
 		api.LogError(c, err, eh.CallCostCalculationError)(http.StatusBadRequest)
 		return
 	}
+	// validate user has enough creidts
 	if err := api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
-	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
-		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
-		return
-	}
-	if _, err := gocid.Decode(forms["hash"]); err != nil {
-		Fail(c, err)
-		return
-	}
-	ownsKey, err := api.um.CheckIfKeyOwnedByUser(username, forms["key"])
-	if err != nil {
-		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
-		return
-	}
-	if !ownsKey {
-		err = fmt.Errorf("unauthorized access to key by user %s", username)
-		api.LogError(c, err, eh.KeyUseError)(http.StatusBadRequest)
-		return
-	}
-	resolve, err := strconv.ParseBool(forms["resolve"])
-	if err != nil {
-		// user error, dont log
-		Fail(c, err)
-		return
-	}
-	lifetime, err := time.ParseDuration(forms["life_time"])
-	if err != nil {
-		// user error, dont log
-		Fail(c, err)
-		return
-	}
-	ttl, err := time.ParseDuration(forms["ttl"])
-	if err != nil {
-		// user error, dont log
-		Fail(c, err)
-		return
-	}
+	// create ipns entry message
 	ipnsUpdate := queue.IPNSEntry{
 		CID:         forms["hash"],
 		LifeTime:    lifetime,
@@ -170,8 +165,10 @@ func (api *API) publishDetailedIPNSToHostedIPFSNetwork(c *gin.Context) {
 		UserName:    username,
 		CreditCost:  cost,
 	}
+	// send message for processing
 	if err = api.queues.ipns.PublishMessage(ipnsUpdate); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	api.l.Infow("private ipns entry creation request sent to backend", "user", username)
@@ -185,16 +182,18 @@ func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// search for all records published by this user
 	records, err := api.im.FindByUserName(username)
 	if err != nil {
 		api.LogError(c, err, eh.IpnsRecordSearchError)(http.StatusBadRequest)
 		return
 	}
-	// check if records is nil, or no entries. For len we must dereference first
+	// if they haven't uploaded any records, don't fail just notify them
 	if records == nil || len(*records) == 0 {
 		Respond(c, http.StatusOK, gin.H{"response": "no ipns records found"})
 		return
 	}
+	// return
 	Respond(c, http.StatusOK, gin.H{"response": records})
 }
 
@@ -211,30 +210,25 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "hold_time", "ipns_path")
 	if len(forms) == 0 {
 		return
 	}
+	// validate the provided path is legit
 	parsedPath := path.FromString(forms["ipns_path"])
 	if err := parsedPath.IsValid(); err != nil {
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
+	// parse hold time
 	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
 	}
-	// extract the hash to pin
-	// as an unfortunate work-around we need to establish a seperate shell for this
-	// TODO: come back to this and make it work without this janky work-around
-	// this will likely need to wait for IPFS Cluster 0.8.0
-	shell := ipfsapi.NewShell(api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port)
-	if !shell.IsUp() {
-		api.LogError(c, errors.New("node is not online"), eh.IPFSConnectionError)(http.StatusBadRequest)
-		return
-	}
-	hashToPin, err := shell.Resolve(forms["ipns_path"])
+	// resolve the ipns path to get the hash
+	hashToPin, err := api.ipfs.Resolve(forms["ipns_path"])
 	if err != nil {
 		api.LogError(c, err, eh.IpnsRecordSearchError)(http.StatusBadRequest)
 		return
@@ -245,15 +239,18 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	// IPFS Cluster doesn't, so to keep consistency with the rest of our endpoints
 	// we should only operate on a bare cidC
 	hash := strings.Split(hashToPin, "/")[len(strings.Split(hashToPin, "/"))-1]
+	// get the cost of this object
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, false)
 	if err != nil {
 		api.LogError(c, err, eh.PinCostCalculationError)(http.StatusBadRequest)
 		return
 	}
+	// ensure they have enough credits
 	if err := api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
+	// create pin message
 	ip := queue.IPFSPin{
 		CID:              hash,
 		NetworkName:      "public",
@@ -261,11 +258,13 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       cost,
 	}
+	// send message for processing
 	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}
+	// log and return
 	api.l.Infow("ipfs pin request sent to backend", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": "pin request sent to backend"})
 }

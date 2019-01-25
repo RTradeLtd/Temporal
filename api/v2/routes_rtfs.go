@@ -78,6 +78,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
+		//TODO: reduce data used if this fails
 		return
 	}
 	// log success and return
@@ -102,13 +103,10 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	if len(forms) == 0 {
 		return
 	}
-	// connect to minio
-	accessKey := api.cfg.MINIO.AccessKey
-	secretKey := api.cfg.MINIO.SecretKey
-	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
-	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
+	// parse hold time
+	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
-		api.LogError(c, err, eh.MinioConnectionError)(http.StatusBadRequest)
+		Fail(c, err)
 		return
 	}
 	// extract file handler
@@ -127,24 +125,18 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		return
 	}
-	// parse hold time
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
-	if err != nil {
-		Fail(c, err)
-		return
-	}
 	// calculate the cost of this upload
 	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, false)
+	// validate they have enough credits to pay for the upload
 	if err = api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
-	// open file into memory
 	logger.Debug("opening file")
+	// open file into memory
 	openFile, err := fileHandler.Open()
 	if err != nil {
-		api.LogError(c, err, eh.FileOpenError,
-			"user", username)(http.StatusBadRequest)
+		api.LogError(c, err, eh.FileOpenError, "user", username)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
@@ -155,7 +147,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	objectName := fmt.Sprintf("%s%s", username, randString)
 	logger.Debugf("storing file in minio as %s", objectName)
 	// store object in minio, with optional encryption
-	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size,
+	if _, err = api.mini.PutObject(objectName, openFile, fileHandler.Size,
 		mini.PutObjectOptions{
 			Bucket:            FilesUploadBucket,
 			EncryptPassphrase: html.UnescapeString(c.PostForm("passphrase")),
@@ -188,8 +180,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	}
 	// send file upload message
 	if err = api.queues.file.PublishMessage(ifp); err != nil {
-		api.LogError(c, err, eh.QueuePublishError,
-			"user", username)(http.StatusBadRequest)
+		api.LogError(c, err, eh.QueuePublishError, "user", username)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
@@ -211,6 +202,12 @@ func (api *API) addFileLocally(c *gin.Context) {
 	if len(forms) == 0 {
 		return
 	}
+	// parse hold time
+	holdTimeinMonthsInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
@@ -227,16 +224,17 @@ func (api *API) addFileLocally(c *gin.Context) {
 		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		return
 	}
-	// parse hold time
-	holdTimeinMonthsInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
-	if err != nil {
-		Fail(c, err)
-		return
-	}
 	// calculate code of upload
 	cost := utils.CalculateFileCost(holdTimeinMonthsInt, fileHandler.Size, false)
+	// validate they have enough credits to pay for the upload
 	if err = api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
+		return
+	}
+	// update their data usage
+	if err := api.usage.UpdateDataUsage(username, float64(fileHandler.Size)); err != nil {
+		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
+		api.refundUserCredits(username, "file", cost)
 		return
 	}
 	api.l.Debug("opening file")
@@ -253,11 +251,6 @@ func (api *API) addFileLocally(c *gin.Context) {
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
-		return
-	}
-	// update their data usage
-	if err := api.usage.UpdateDataUsage(username, float64(fileHandler.Size)); err != nil {
-		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
 		return
 	}
 	api.l.Debug("file added")
@@ -319,10 +312,9 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
-	// update pubsub messages
+	// update pubsub message usage
 	if err := api.usage.IncrementPubSubUsage(username, 1); err != nil {
 		api.LogError(c, err, "failed to increment pubsub usage counter")(http.StatusBadRequest)
-		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
 	// log and return

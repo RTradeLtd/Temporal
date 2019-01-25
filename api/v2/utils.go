@@ -88,6 +88,7 @@ func (api *API) validateBlockchain(blockchain string) bool {
 }
 
 // validateUserCredits is used to validate whether or not a user has enough credits to pay for an action
+// and if they do, it is deducted from their account
 func (api *API) validateUserCredits(username string, cost float64) error {
 	availableCredits, err := api.um.GetCreditsForUser(username)
 	if err != nil {

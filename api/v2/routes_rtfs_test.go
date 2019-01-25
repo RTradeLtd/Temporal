@@ -13,6 +13,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database/models"
 )
 
 func Test_API_Routes_IPFS_Public(t *testing.T) {
@@ -33,6 +34,10 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 
 	api, testRecorder, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
 	if err != nil {
+		t.Fatal(err)
+	}
+	// update the users tier
+	if err := api.usage.UpdateTier("testuser", models.Plus); err != nil {
 		t.Fatal(err)
 	}
 	// add a file normally

@@ -26,42 +26,51 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "payment_number", "tx_hash")
 	if len(forms) == 0 {
 		return
 	}
+	// parse payment number
 	paymentNumberInt, err := strconv.ParseInt(forms["payment_number"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
 	}
+	// check to see if this payment is already registered
 	if _, err := api.pm.FindPaymentByNumber(username, paymentNumberInt); err != nil {
 		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
+	// update payment with the new tx hash
 	payment, err := api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt)
 	if err != nil {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
+	// create payment confirmation message
 	paymentConfirmation := queue.PaymentConfirmation{
 		UserName:      username,
 		PaymentNumber: paymentNumberInt,
 	}
+	// send message for processing
 	if err = api.queues.payConfirm.PublishMessage(paymentConfirmation); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}
+	// return
 	Respond(c, http.StatusOK, gin.H{"response": payment})
 }
 
 // RequestSignedPaymentMessage is used to get a signed message from the GRPC API Payments Server
+// this is currently used for ETH+RTC smart-contract facilitated payments
 func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "payment_type", "sender_address", "credit_value")
 	if len(forms) == 0 {
 		return
@@ -70,6 +79,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		paymentType string
 		method      uint64
 	)
+	// ensure it is a valid payment type
 	switch forms["payment_type"] {
 	case "0":
 		paymentType = "rtc"
@@ -129,6 +139,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
+	// format a unique payment number to take the place of deposit address and tx hash temporarily
 	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
 	if _, err = api.pm.NewPayment(
 		paymentNumber,
@@ -143,11 +154,14 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
+	// parse the v parameter into uint type
 	vUint, err := strconv.ParseUint(resp.GetV(), 10, 64)
 	if err != nil {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
+	// format signed message components to send to be used
+	// for submission to contracts
 	formattedH := fmt.Sprintf("0x%s", resp.GetH())
 	formattedR := fmt.Sprintf("0x%s", resp.GetR())
 	formattedS := fmt.Sprintf("0x%s", resp.GetS())
@@ -163,6 +177,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 			"s": formattedS,
 		},
 	}
+	// return
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
 

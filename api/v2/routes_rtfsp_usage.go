@@ -24,39 +24,68 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// get hash to pin
 	hash := c.Param("hash")
+	// ensure validity of hash
 	if _, err := gocid.Decode(hash); err != nil {
 		Fail(c, err)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "network_name", "hold_time")
 	if len(forms) == 0 {
 		return
 	}
+	// ensure user has access to network
 	if err = CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
-	url := api.GetIPFSEndpoint(forms["network_name"])
-	manager, err := rtfs.NewManager(url, GetAuthToken(c), time.Minute*10, true)
-	if err != nil {
-		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
-		return
-	}
+	// parse hold time
 	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
 	}
+	// get a formatted url for the private network
+	url := api.GetIPFSEndpoint(forms["network_name"])
+	// connect to the private network
+	manager, err := rtfs.NewManager(url, GetAuthToken(c), time.Minute*10, true)
+	if err != nil {
+		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
+		return
+	}
+	// get cost of upload
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, manager, true)
 	if err != nil {
 		api.LogError(c, err, eh.CallCostCalculationError)(http.StatusBadRequest)
 		return
 	}
+	// ensure user has enough credits to pay for upload
 	if err := api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
+	// get teh size of the upload
+	stats, err := manager.Stat(hash)
+	if err != nil {
+		api.LogError(c, err, eh.IPFSObjectStatError)(http.StatusBadRequest)
+		api.refundUserCredits(username, "private-pin", cost)
+		return
+	}
+	// check to make sure they can upload an object of this size
+	if err := api.usage.CanUpload(username, float64(stats.CumulativeSize)); err != nil {
+		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
+		api.refundUserCredits(username, "private-pin", cost)
+		return
+	}
+	// update their data usage
+	if err := api.usage.UpdateDataUsage(username, float64(stats.CumulativeSize)); err != nil {
+		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
+		api.refundUserCredits(username, "private-pin", cost)
+		return
+	}
+	// create pin message
 	ip := queue.IPFSPin{
 		CID:              hash,
 		NetworkName:      forms["network_name"],
@@ -65,11 +94,13 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		CreditCost:       cost,
 		JWT:              GetAuthToken(c),
 	}
+	// send message for processing
 	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "private-pin", cost)
 		return
 	}
+	// log and return
 	api.l.With("user", username).Info("private network pin request sent to backend")
 	Respond(c, http.StatusOK, gin.H{"response": "content pin request sent to backend"})
 }
@@ -81,66 +112,64 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "network_name", "hold_time")
 	if len(forms) == 0 {
 		return
 	}
+	// validate access to private network
 	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
+	// parse hold time
 	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
 	if err != nil {
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
-	accessKey := api.cfg.MINIO.AccessKey
-	secretKey := api.cfg.MINIO.SecretKey
-	endpoint := fmt.Sprintf("%s:%s", api.cfg.MINIO.Connection.IP, api.cfg.MINIO.Connection.Port)
-	miniManager, err := mini.NewMinioManager(endpoint, accessKey, secretKey, false)
-	if err != nil {
-		api.LogError(c, err, eh.MinioConnectionError)
-		Fail(c, err)
-		return
-	}
+	// retrieve file handler
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		Fail(c, err)
 		return
 	}
+	// open file into memory
+	openFile, err := fileHandler.Open()
+	if err != nil {
+		api.LogError(c, err, eh.FileOpenError)
+		Fail(c, err)
+		return
+	}
+	// validate size of file is within limits
 	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
 		Fail(c, err)
 		return
 	}
+	// get cost of upload
 	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, true)
+	// validate user has enough credits to pay for the upload
 	if err := api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
 	api.l.Debug("opening file")
-	openFile, err := fileHandler.Open()
-	if err != nil {
-		api.LogError(c, err, eh.FileOpenError)
-		api.refundUserCredits(username, "private-file", cost)
-		Fail(c, err)
-		return
-	}
 	api.l.Debug("file opened")
-	// generate object name
+	// generate object name for object name in temporary storage
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
-	fmt.Println("storing file in minio")
-	if _, err = miniManager.PutObject(objectName, openFile, fileHandler.Size, mini.PutObjectOptions{
+	// store object in minio
+	if _, err = api.mini.PutObject(objectName, openFile, fileHandler.Size, mini.PutObjectOptions{
 		Bucket:            FilesUploadBucket,
 		EncryptPassphrase: html.UnescapeString(c.PostForm("passphrase")),
 	}); err != nil {
-		api.LogError(c, err, eh.MinioPutError)
+		api.LogError(c, err, eh.MinioPutError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "private-file", cost)
-		Fail(c, err)
 		return
 	}
-	fmt.Println("file stored in minio")
+	api.l.Debugf("%s stored in minio", objectName)
+	// construct ipfs file upload message
 	ifp := queue.IPFSFile{
 		MinioHostIP:      api.cfg.MINIO.Connection.IP,
 		FileName:         fileHandler.Filename,
@@ -153,13 +182,13 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		CreditCost:       cost,
 		JWT:              GetAuthToken(c),
 	}
-	api.l.Debugf("%s stored in minio", objectName)
+	// send message for processing
 	if err = api.queues.file.PublishMessage(ifp); err != nil {
-		api.LogError(c, err, eh.QueuePublishError)
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "private-file", cost)
-		Fail(c, err)
 		return
 	}
+	// log and return
 	api.l.Infow("advanced private ipfs file upload requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": "file upload request sent to backend"})
 }
