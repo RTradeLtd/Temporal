@@ -527,7 +527,7 @@ func (api *API) setupRoutes() error {
 				pubsub.POST("/publish/:topic", api.ipfsPubSubPublish)
 			}
 			// general routes
-			public.GET("/stat/:key", api.getObjectStatForIpfs)
+			public.GET("/stat/:hash", api.getObjectStatForIpfs)
 			public.GET("/dag/:hash", api.getDagObject)
 		}
 
