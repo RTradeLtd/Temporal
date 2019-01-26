@@ -41,7 +41,7 @@ func New(queue Queue, url string, publish bool, logger *zap.SugaredLogger) (*Man
 	}
 	// Declare Non Default exchanges for matching queues
 	switch queue {
-	case IpfsPinQueue, IpfsKeyCreationQueue:
+	case IpfsKeyCreationQueue:
 		if err = qm.setupExchange(queue); err != nil {
 			return nil, err
 		}
