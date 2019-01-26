@@ -10,6 +10,7 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
+	"github.com/RTradeLtd/database/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -379,4 +380,45 @@ func (api *API) resetPassword(c *gin.Context) {
 	}
 	// return
 	Respond(c, http.StatusOK, gin.H{"response": "password reset, please check your email for a new password"})
+}
+
+// UpgradeAccount is used to remove free tier restrictions and enable paid access
+// once upgraded, your account can't be reverted
+func (api *API) upgradeAccount(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	// update tier
+	if err := api.usage.UpdateTier(username, models.Light); err != nil {
+		api.LogError(c, err, eh.TierUpgradeError)(http.StatusBadRequest)
+		return
+	}
+	// grant 10 cents in free credits
+	if _, err := api.um.AddCredits(username, 0.115); err != nil {
+		api.LogError(c, err, "an error occurred while granting free credits")(http.StatusBadRequest)
+		return
+	}
+	// find user
+	user, err := api.um.FindByUserName(username)
+	if err != nil {
+		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
+		return
+	}
+	// create email message
+	es := queue.EmailSend{
+		Subject:     "TEMPORAL Account Upgraded",
+		Content:     "your account has been ugpraded to Light tier. Enjoy 11.5 cents of free credit!",
+		ContentType: "text/html",
+		UserNames:   []string{username},
+		Emails:      []string{user.EmailAddress},
+	}
+	// send message to queue system for processing
+	if err = api.queues.email.PublishMessage(es); err != nil {
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
+		return
+	}
+	// return
+	Respond(c, http.StatusOK, gin.H{"response": "account upgraded, enjoy 11.5 cents of free credit, enough to store 0.5gb for 1 month"})
 }

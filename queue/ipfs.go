@@ -67,7 +67,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 		qm.l.Errorw("failed to intialize cluster pin queue connection", "error", err.Error())
 		return err
 	}
-	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, "", time.Minute*10, false)
+	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, "", time.Minute*60, false)
 	if err != nil {
 		qm.l.Errorw("failed to initialize connection to ipfs", "error", err.Error())
 		return err
@@ -96,7 +96,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 // ProccessIPFSFiles is used to process messages sent to rabbitmq to upload files to IPFS.
 // This queue is invoked by advanced file upload requests
 func (qm *Manager) ProccessIPFSFiles(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, "", time.Minute*10, false)
+	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, "", time.Minute*60, false)
 	if err != nil {
 		qm.l.Errorw("failed to initialize connection to ipfs", "error", err.Error())
 		return err

@@ -128,4 +128,6 @@ const (
 	// DataUsageUpdateError is an error when a failure occurs while trying to update a users
 	// current data usage
 	DataUsageUpdateError = "an error occured while updating your account data usage"
+	// TierUpgradeError is an error when a failure to upgrade a user tier occurs
+	TierUpgradeError = "an error occured upgrading your tier"
 )
