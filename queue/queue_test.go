@@ -344,7 +344,7 @@ func TestQueue_IPFSFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := mm.PutObject(
+	if _, _, err := mm.PutObject(
 		"object1",
 		file,
 		stats.Size(),
@@ -353,7 +353,7 @@ func TestQueue_IPFSFile(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := mm.PutObject(
+	if _, _, err := mm.PutObject(
 		"object2",
 		file,
 		stats.Size(),
