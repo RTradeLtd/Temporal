@@ -614,7 +614,7 @@ func (api *API) setupRoutes() error {
 		{
 			calculate := cost.Group("/calculate")
 			{
-				calculate.GET("/:hash/:holdtime", api.calculatePinCost)
+				calculate.GET("/:hash/:hold_time", api.calculatePinCost)
 				calculate.POST("/file", api.calculateFileCost)
 			}
 		}

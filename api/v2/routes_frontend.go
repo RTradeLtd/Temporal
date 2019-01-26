@@ -26,7 +26,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		return
 	}
 	// months to store pin for
-	holdTime := c.Param("holdtime")
+	holdTime := c.Param("hold_time")
 	// parse hold time
 	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
 	if err != nil {
