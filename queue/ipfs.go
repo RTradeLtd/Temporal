@@ -204,27 +204,6 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 		"successfully process pin request",
 		"user", pin.UserName,
 		"network", pin.NetworkName)
-	if pin.NetworkName != "public" {
-		// private networks do not yet support cluster so skip additional processing
-		d.Ack(false)
-		return
-	}
-	clusterAddMsg := IPFSClusterPin{
-		CID:              pin.CID,
-		NetworkName:      pin.NetworkName,
-		HoldTimeInMonths: pin.HoldTimeInMonths,
-		UserName:         pin.UserName,
-	}
-	// do not perform credit handling, as the content is already pinned
-	clusterAddMsg.CreditCost = 0
-	if err := qmCluster.PublishMessage(clusterAddMsg); err != nil {
-		qm.l.Errorw(
-			"failed to publish cluster pin message to rabbitmq",
-			"error", err.Error(),
-			"user", pin.UserName)
-		d.Ack(false)
-		return
-	}
 	upload, err := upldm.FindUploadByHashAndNetwork(pin.CID, pin.NetworkName)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		qm.l.Errorw(
