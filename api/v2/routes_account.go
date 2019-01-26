@@ -132,6 +132,25 @@ func (api *API) registerUserAccount(c *gin.Context) {
 			return
 		}
 	}
+	// generate a random token to validate email
+	user, err := api.um.GenerateEmailVerificationToken(forms["username"])
+	if err != nil {
+		api.LogError(c, err, eh.EmailTokenGenerationError)(http.StatusBadRequest)
+		return
+	}
+	// build email message
+	es := queue.EmailSend{
+		Subject:     "TEMPORAL Email Verification",
+		Content:     fmt.Sprintf("Please submit the following email verification token: %s\n", user.EmailVerificationToken),
+		ContentType: "text/html",
+		UserNames:   []string{user.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	// send email message to queue for processing
+	if err = api.queues.email.PublishMessage(es); err != nil {
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
+		return
+	}
 	// log
 	api.l.With("user", forms["username"]).Info("user account registered")
 	// remove hashed password from output
