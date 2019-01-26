@@ -95,7 +95,7 @@ func (api *API) beamContent(c *gin.Context) {
 		forms["content_hash"] = newCid
 	}
 	// create our dual network connection
-	laserBeam, err := beam.NewLaser(source, GetAuthToken(c), dest, sourceDirect, destDirect)
+	laserBeam, err := beam.NewLaser(source, dest, GetAuthToken(c), sourceDirect, destDirect)
 	if err != nil {
 		api.LogError(c, err, "failed to initialize laser beam")(http.StatusBadRequest)
 		return
