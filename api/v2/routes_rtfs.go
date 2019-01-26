@@ -48,7 +48,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 	// check to make sure they can upload an object of this size
-	if err := api.usage.CanUpload(username, float64(stats.CumulativeSize)); err != nil {
+	if err := api.usage.CanUpload(username, uint64(stats.CumulativeSize)); err != nil {
 		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 	}
 	// determine cost of upload
@@ -63,7 +63,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 	// update their data usage
-	if err := api.usage.UpdateDataUsage(username, float64(stats.CumulativeSize)); err != nil {
+	if err := api.usage.UpdateDataUsage(username, uint64(stats.CumulativeSize)); err != nil {
 		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
 		return
@@ -123,7 +123,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 	// validate that they can upload a file of this size
-	if err := api.usage.CanUpload(username, float64(fileHandler.Size)); err != nil {
+	if err := api.usage.CanUpload(username, uint64(fileHandler.Size)); err != nil {
 		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		return
 	}
@@ -160,7 +160,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 	// update their data usage
-	if err := api.usage.UpdateDataUsage(username, float64(fileHandler.Size)); err != nil {
+	if err := api.usage.UpdateDataUsage(username, uint64(fileHandler.Size)); err != nil {
 		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
 		return
@@ -222,7 +222,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	// format size of file into gigabytes
-	fileSizeInGB := float64(fileHandler.Size) / float64(datasize.GB.Bytes())
+	fileSizeInGB := uint64(fileHandler.Size) / datasize.GB.Bytes()
 	api.l.Debug("user", username, "file_size_in_gb", fileSizeInGB)
 	// validate if they can upload an object of this size
 	if err := api.usage.CanUpload(username, fileSizeInGB); err != nil {
@@ -237,7 +237,10 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	// update their data usage
-	if err := api.usage.UpdateDataUsage(username, float64(fileHandler.Size)); err != nil {
+	if err := api.usage.UpdateDataUsage(username, uint64(fileHandler.Size)); err != nil {
+		usage, _ := api.usage.FindByUserName(username)
+		api.l.Debug("monthly_usage", usage.MonthlyDataLimitGB)
+		api.l.Debug("current_usage", usage.CurrentDataUsedGB)
 		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
 		return

@@ -27,9 +27,6 @@ type HostedIPFSPrivateNetwork struct {
 	// SwarmKey is the key used to connect to this peer
 	SwarmKey string `gorm:"type:varchar(255)"`
 
-	// Temporary, used for backwards compatability with temporal
-	// and private networks until the Nexus update is complete within Temporal
-	APIURL string `gorm:"type:varchar(255)"`
 	// Used to set Allowed-Origin headers on API requests
 	APIAllowedOrigin string `gorm:"type:varchar(255)"`
 

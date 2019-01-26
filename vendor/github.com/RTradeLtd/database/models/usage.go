@@ -64,25 +64,25 @@ var (
 
 	// FreeUploadLimit is the maximum data usage for free accounts
 	// Currrently set to 3GB
-	FreeUploadLimit = datasize.GB.GBytes() * 3
+	FreeUploadLimit = datasize.GB.Bytes() * 3
 
 	// NonFreeUploadLimit is the maximum data usage for non-free accounts
 	// Currently set to 1TB
-	NonFreeUploadLimit = datasize.TB.GBytes()
+	NonFreeUploadLimit = datasize.TB.Bytes()
 
 	// PlusTierMinimumUpload is the current data usage
 	// needed to upgrade from Light -> Plus
 	// currently set to 100GB
-	PlusTierMinimumUpload = datasize.GB.GBytes() * 100
+	PlusTierMinimumUpload = datasize.GB.Bytes() * 100
 )
 
 // Usage is used to handle Usage of Temporal accounts
 type Usage struct {
 	UserName string `gorm:"type:varchar(255);unique"`
 	// keeps track of the max monthly upload limit for the user
-	MonthlyDataLimitGB float64 `gorm:"type:float;default:0"`
+	MonthlyDataLimitGB uint64 `gorm:"type:numeric;default:0"`
 	// keeps track of the current monthyl upload limit used
-	CurrentDataUsedGB float64 `gorm:"type:float;default:0"`
+	CurrentDataUsedGB uint64 `gorm:"type:numeric;default:0"`
 	// keeps track of how many IPNS records the user has published
 	IPNSRecordsPublished int64 `gorm:"type:integer;default:0"`
 	// keeps track of how many messages the user has sent
@@ -164,12 +164,12 @@ func (bm *UsageManager) CanPublishIPNS(username string) (bool, error) {
 }
 
 // CanUpload is used to check if a user can upload an object with the given data size
-func (bm *UsageManager) CanUpload(username string, dataSize float64) error {
+func (bm *UsageManager) CanUpload(username string, dataSizeBytes uint64) error {
 	b, err := bm.FindByUserName(username)
 	if err != nil {
 		return err
 	}
-	if b.CurrentDataUsedGB+dataSize > b.MonthlyDataLimitGB {
+	if b.CurrentDataUsedGB+dataSizeBytes > b.MonthlyDataLimitGB {
 		return errors.New("upload will breach max monthly data usage, please upload a smaller file")
 	}
 	return nil
@@ -201,13 +201,13 @@ func (bm *UsageManager) HasStartedPrivateNetworkTrial(username string) (bool, er
 // above the tier limit, they will be upgraded to the next tier to receive the discounted price
 // the discounted price will apply on subsequent uploads.
 // If the 1TB maximum monthly limit is hit, then we throw an error
-func (bm *UsageManager) UpdateDataUsage(username string, uploadSize float64) error {
+func (bm *UsageManager) UpdateDataUsage(username string, uploadSizeBytes uint64) error {
 	b, err := bm.FindByUserName(username)
 	if err != nil {
 		return err
 	}
 	// update total data used
-	b.CurrentDataUsedGB = b.CurrentDataUsedGB + uploadSize
+	b.CurrentDataUsedGB = b.CurrentDataUsedGB + uploadSizeBytes
 	// perform a tier check for light accounts
 	// if they use more than 100GB, upgrade them to Plus tier
 	if b.Tier == Light {
