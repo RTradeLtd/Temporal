@@ -112,17 +112,18 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code recovered from /v2/ipfs/public/file/add/advanced")
 	}
+	var mapAPIResp mapAPIResponse
 	apiResp = apiResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &mapAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if apiResp.Code != 200 {
+	if mapAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /v2/ipfs/public/file/add/advanced")
 	}
 
@@ -145,7 +146,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	// /v2/ipfs/pubsub/publish/topic
 	urlValues = url.Values{}
 	urlValues.Add("message", "bar")
-	var mapAPIResp mapAPIResponse
+	mapAPIResp = mapAPIResponse{}
 	if err := sendRequest(
 		api, "POST", "/v2/ipfs/public/pubsub/publish/foo", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {

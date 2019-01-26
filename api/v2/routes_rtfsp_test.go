@@ -291,17 +291,17 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code recovered from /v2/ipfs/private/file/add/advanced")
 	}
-	apiResp = apiResponse{}
+	mapAPIResp = mapAPIResponse{}
 	// unmarshal the response
 	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
+	if err = json.Unmarshal(bodyBytes, &mapAPIResp); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
-	if apiResp.Code != 200 {
+	if mapAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /v2/ipfs/private/file/add/advanced")
 	}
 
