@@ -105,7 +105,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 	// a single key creation request, will be sent to all of our consumers ensuring that all of our nodes
 	// will have the same key in their keystore
 	switch qm.ExchangeName {
-	case PinExchange, IpfsKeyExchange:
+	case IpfsKeyExchange:
 		if err := qm.channel.QueueBind(
 			qm.QueueName.String(), // name of the queue
 			"",                    // routing key
@@ -159,7 +159,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 //PublishMessageWithExchange is used to publish a message to a given exchange
 func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
 	switch exchangeName {
-	case PinExchange, IpfsKeyExchange:
+	case IpfsKeyExchange:
 		break
 	default:
 		return errors.New("invalid exchange name provided")

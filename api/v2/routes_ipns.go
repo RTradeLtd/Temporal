@@ -267,7 +267,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		return
 	}
 	// create pin message
-	ip := queue.IPFSPin{
+	qp := queue.IPFSClusterPin{
 		CID:              hash,
 		NetworkName:      "public",
 		UserName:         username,
@@ -275,7 +275,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		CreditCost:       cost,
 	}
 	// send message for processing
-	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
+	if err = api.queues.cluster.PublishMessage(qp); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
 		api.usage.ReduceDataUsage(username, uint64(stats.CumulativeSize))

@@ -57,7 +57,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		JWT:              GetAuthToken(c),
 	}
 	// send message for processing
-	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
+	if err = api.queues.pin.PublishMessage(ip); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}

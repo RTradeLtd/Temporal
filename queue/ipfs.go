@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -368,18 +367,6 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 		"cid", resp,
 		"user", ipfsFile.UserName,
 		"network", ipfsFile.NetworkName)
-	holdTimeInt, err := strconv.ParseInt(ipfsFile.HoldTimeInMonths, 10, 64)
-	if err != nil {
-		holdTimeInt = 1
-	}
-	pin := IPFSPin{
-		CID:              resp,
-		NetworkName:      ipfsFile.NetworkName,
-		UserName:         ipfsFile.UserName,
-		HoldTimeInMonths: holdTimeInt,
-		CreditCost:       0,
-		JWT:              ipfsFile.JWT,
-	}
 	// if encrypted upload, do some special processing
 	if ipfsFile.Encrypted {
 		if _, err = ue.NewUpload(
@@ -396,18 +383,6 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 				"network", ipfsFile.NetworkName)
 			// dont ack/fail yet as there is still additional processing to do
 		}
-	}
-	if err = qmPin.PublishMessageWithExchange(pin, PinExchange); err != nil {
-		qm.l.Errorw(
-			"failed to publish pin request to rabbitmq",
-			"error", err.Error(),
-			"cid", resp,
-			"user", ipfsFile.UserName,
-			"network", ipfsFile.NetworkName)
-		// we want to ack and return here, as removing the file from minio
-		// could lead to us being unable to reprocess this later on
-		d.Ack(false)
-		return
 	}
 	qm.l.Infow(
 		"removing object from minio",

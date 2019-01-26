@@ -721,15 +721,9 @@ func TestQueue_IPFSPin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if qmConsumer.ExchangeName != PinExchange {
-		t.Fatal("failed to properly set exchange name on consumer")
-	}
 	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
-	}
-	if qmPublisher.ExchangeName != PinExchange {
-		t.Fatal("failed to properly set exchange name on publisher")
 	}
 	defer func() {
 		if err := qmPublisher.Close(); err != nil {
@@ -737,11 +731,10 @@ func TestQueue_IPFSPin(t *testing.T) {
 		}
 	}()
 	// test a valid pin
-	if err := qmPublisher.PublishMessageWithExchange(IPFSPin{
+	if err := qmPublisher.PublishMessage(IPFSPin{
 		CID:              testCID,
 		NetworkName:      "public",
 		HoldTimeInMonths: 10},
-		PinExchange,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -750,11 +743,10 @@ func TestQueue_IPFSPin(t *testing.T) {
 		t.Fatal(err)
 	}
 	// test a private network
-	if err := qmPublisher.PublishMessageWithExchange(IPFSPin{
+	if err := qmPublisher.PublishMessage(IPFSPin{
 		CID:              testCID,
 		NetworkName:      "myprivatenetwork",
 		HoldTimeInMonths: 10},
-		PinExchange,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -916,9 +908,6 @@ func TestQueue_IPFSPin_Failure_RabbitMQ(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if qmConsumer.ExchangeName != PinExchange {
-		t.Fatal("failed to properly set exchange name on consumer")
-	}
 	cfg.RabbitMQ.URL = "notarealurl"
 	// we don't need time-out since this test will automatically fail
 	ctx, cancel := context.WithCancel(context.Background())
@@ -945,9 +934,6 @@ func TestQueue_IPFSPin_Failure_LogFile(t *testing.T) {
 	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
-	}
-	if qmConsumer.ExchangeName != PinExchange {
-		t.Fatal("failed to properly set exchange name on consumer")
 	}
 	cfg.LogDir = "/root/toor"
 	// we don't need time-out since this test will automatically fail

@@ -64,6 +64,7 @@ func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm
 	encodedCid, err := cm.DecodeHashString(clusterAdd.CID)
 	if err != nil {
 		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
+		models.NewUsageManager(qm.db).ReduceDataUsage(clusterAdd.UserName, uint64(clusterAdd.Size))
 		qm.l.Errorw(
 			"bad cid format detected",
 			"error", err.Error(),
@@ -78,6 +79,7 @@ func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm
 		"user", clusterAdd.UserName)
 	if err = cm.Pin(encodedCid); err != nil {
 		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
+		models.NewUsageManager(qm.db).ReduceDataUsage(clusterAdd.UserName, uint64(clusterAdd.Size))
 		qm.l.Errorw(
 			"failed to pin hash to cluster",
 			"error", err.Error(),
