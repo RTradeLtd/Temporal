@@ -77,14 +77,14 @@ func (mm *MinioManager) PutObject(objectName string, reader io.Reader, objectSiz
 		// update data and metadata
 		reader = bytes.NewReader(encrypted)
 		objectSize = int64(len(encrypted))
-		// if the provided ipfs api is not nil then
-		// we will hash the data, returning the content hash
-		// allowing for easily retrieving the data in the future
-		if len(ipfs) > 0 {
-			hash, err = ipfs[0].Add(reader, ipfsapi.OnlyHash(true))
-			if err != nil {
-				return "", 0, err
-			}
+	}
+	// if the provided ipfs api is not nil then
+	// we will hash the data, returning the content hash
+	// allowing for easily retrieving the data in the future
+	if len(ipfs) > 0 {
+		hash, err = ipfs[0].Add(reader, ipfsapi.OnlyHash(true))
+		if err != nil {
+			return "", 0, err
 		}
 	}
 	n, err := mm.Client.PutObject(opts.Bucket, objectName, reader, objectSize, opts.PutObjectOptions)
