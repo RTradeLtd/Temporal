@@ -2,7 +2,6 @@ package rtfscluster
 
 import (
 	"fmt"
-	"log"
 
 	gocid "github.com/ipfs/go-cid"
 	"github.com/ipfs/ipfs-cluster/api"
@@ -47,108 +46,6 @@ func (cm *ClusterManager) GenClient() error {
 	}
 	cm.Client = cl
 	return nil
-}
-
-// ParseLocalStatusAllAndSync is used to parse through any errors
-// and resync them
-// TODO: make more robust
-func (cm *ClusterManager) ParseLocalStatusAllAndSync() ([]gocid.Cid, error) {
-	// this will hold all the cids that have been synced
-	var syncedCids []gocid.Cid
-	// only fetch the local status for all pins - todo: double check if this is
-	// the right TrackerStatusError to user
-	pinInfo, err := cm.Client.StatusAll(api.TrackerStatusError, true)
-	if err != nil {
-		return nil, err
-	}
-	// parse through the pin status
-	for _, v := range pinInfo {
-		cid := v.Cid
-		// fetch a mapping of all peers and their status (in this case only 1 will be present)
-		peermap := v.PeerMap
-		// get the client ID of the local IPFS Cluster node
-		id, err := cm.Client.ID()
-		if err != nil {
-			return nil, err
-		}
-		// fetch the pin info for this node only
-		globalPinInfo := peermap[id.ID]
-		// get a list of the errors
-		errString := globalPinInfo.Error
-		// if there are none, then skip processing this cid
-		if errString == "" {
-			continue
-		}
-		// we have an error, so lets fix that
-		_, err = cm.Client.Sync(cid, true)
-		if err != nil {
-			log.Fatal(err)
-		}
-		// add the cid to the list of synced ones
-		syncedCids = append(syncedCids, cid)
-	}
-	return syncedCids, nil
-}
-
-// RemovePinFromCluster is used to remove a pin from the cluster
-func (cm *ClusterManager) RemovePinFromCluster(cidString string) error {
-	decoded, err := cm.DecodeHashString(cidString)
-	if err != nil {
-		return err
-	}
-	err = cm.Client.Unpin(decoded)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// FetchLocalStatus is used to fetch the local status of all pins
-func (cm *ClusterManager) FetchLocalStatus() (map[gocid.Cid]string, error) {
-	var response = make(map[gocid.Cid]string)
-	// todo: doublecheck if this is the right api.TrackerStatus to use
-	pinInfo, err := cm.Client.StatusAll(api.TrackerStatusPinned, true)
-	if err != nil {
-		return response, err
-	}
-	for _, v := range pinInfo {
-		cid := v.Cid
-		peermap := v.PeerMap
-		id, err := cm.Client.ID()
-		if err != nil {
-			return response, err
-		}
-		globalPinInfo := peermap[id.ID]
-		errString := globalPinInfo.Error
-		response[cid] = errString
-	}
-	return response, nil
-}
-
-// GetStatusForCidLocally is used to fetch the local status for a particular cid
-func (cm *ClusterManager) GetStatusForCidLocally(cidString string) (*api.GlobalPinInfo, error) {
-	decoded, err := cm.DecodeHashString(cidString)
-	if err != nil {
-		return nil, err
-	}
-	status, err := cm.Client.Status(decoded, true)
-	if err != nil {
-		return nil, err
-	}
-	return &status, nil
-}
-
-// GetStatusForCidGlobally is used to fetch the global status for a particular cid
-func (cm *ClusterManager) GetStatusForCidGlobally(cidString string) (*api.GlobalPinInfo, error) {
-	decoded, err := cm.DecodeHashString(cidString)
-	if err != nil {
-		return nil, err
-	}
-	status, err := cm.Client.Status(decoded, false)
-	if err != nil {
-		return nil, err
-	}
-	return &status, nil
 }
 
 // ListPeers is used to list the known cluster peers

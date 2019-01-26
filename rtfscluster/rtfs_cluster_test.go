@@ -1,7 +1,6 @@
 package rtfscluster_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/rtfscluster"
@@ -94,98 +93,6 @@ func TestClusterPin(t *testing.T) {
 	}
 }
 
-func TestParseLocalStatusAllAndSync(t *testing.T) {
-	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
-	if err != nil {
-		t.Fatal(err)
-	}
-	syncedCids, err := cm.ParseLocalStatusAllAndSync()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(syncedCids) > 0 {
-		fmt.Println("uh oh cluster errors detected")
-		fmt.Println("this isn't indicative of a test failure")
-		fmt.Println("but that the cluster is experiencing some issues")
-	} else {
-		fmt.Println("yay no cluster errors detected")
-	}
-}
-
-func TestFetchLocalStatus(t *testing.T) {
-	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cidStatuses, err := cm.FetchLocalStatus()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(cidStatuses) == 0 {
-		t.Fatal("no cid statuses found")
-	}
-}
-
-func TestGetStatusForCidLocally(t *testing.T) {
-	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
-	if err != nil {
-		t.Fatal(err)
-	}
-	type args struct {
-		hash string
-	}
-	tests := []struct {
-		name       string
-		args       args
-		wantErr    bool
-		wantStatus bool
-	}{
-		{"Success", args{testPIN}, false, true},
-		{"Failure", args{"blah"}, true, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			status, err := cm.GetStatusForCidLocally(tt.args.hash)
-			if (err != nil) != tt.wantErr {
-				t.Fatalf("GetStatusForCidLocally() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if (status != nil) != tt.wantStatus {
-				t.Fatalf("GetStatusForCidLocally() status = %v, wantStatus %v", status, tt.wantStatus)
-			}
-		})
-	}
-}
-
-func TestGetStatusForCidGlobally(t *testing.T) {
-	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
-	if err != nil {
-		t.Fatal(err)
-	}
-	type args struct {
-		hash string
-	}
-	tests := []struct {
-		name       string
-		args       args
-		wantErr    bool
-		wantStatus bool
-	}{
-		{"Success", args{testPIN}, false, true},
-		{"Failure", args{"blah"}, true, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			status, err := cm.GetStatusForCidGlobally(tt.args.hash)
-			if (err != nil) != tt.wantErr {
-				t.Fatalf("GetStatusForCidGlobally() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if (status != nil) != tt.wantStatus {
-				t.Fatalf("GetStatusForCidGlobally() status = %v, wantStatus %v", status, tt.wantStatus)
-			}
-		})
-	}
-}
-
 func TestListPeers(t *testing.T) {
 	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
 	if err != nil {
@@ -197,40 +104,5 @@ func TestListPeers(t *testing.T) {
 	}
 	if len(peers) == 0 {
 		t.Fatal("no pers found")
-	}
-}
-
-func TestRemovePinFromCluster(t *testing.T) {
-	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
-	if err != nil {
-		t.Fatal(err)
-	}
-	type args struct {
-		hash string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{"Success", args{testPIN}, false},
-		{"Failure", args{"blah"}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := cm.RemovePinFromCluster(tt.args.hash); (err != nil) != tt.wantErr {
-				t.Fatalf("RemovePinFromCluster() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			// trigger a pin so we can run more tests
-			if !tt.wantErr {
-				decoded, err := cm.DecodeHashString(tt.args.hash)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if err := cm.Pin(decoded); err != nil {
-					t.Fatal(err)
-				}
-			}
-		})
 	}
 }
