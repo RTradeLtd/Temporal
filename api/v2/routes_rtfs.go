@@ -69,18 +69,19 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 	// construct pin message
-	ip := queue.IPFSPin{
+	qp := queue.IPFSClusterPin{
 		CID:              hash,
 		NetworkName:      "public",
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
+		Size:             int64(stats.CumulativeSize),
 		CreditCost:       cost,
 	}
 	// sent pin message
-	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
+	if err = api.queues.cluster.PublishMessage(qp); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
-		//TODO: reduce data used if this fails
+		api.usage.ReduceDataUsage(username, uint64(stats.CumulativeSize))
 		return
 	}
 	// log success and return
@@ -184,6 +185,7 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	if err = api.queues.file.PublishMessage(ifp); err != nil {
 		api.LogError(c, err, eh.QueuePublishError, "user", username)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
+		api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
 		return
 	}
 	// log and return
@@ -251,6 +253,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	if err != nil {
 		api.LogError(c, err, eh.FileOpenError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
+		api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
 		return
 	}
 	api.l.Debug("adding file...")
@@ -259,6 +262,7 @@ func (api *API) addFileLocally(c *gin.Context) {
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
+		api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
 		return
 	}
 	api.l.Debug("file added")

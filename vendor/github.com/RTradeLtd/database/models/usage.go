@@ -237,6 +237,34 @@ func (bm *UsageManager) UpdateDataUsage(username string, uploadSizeBytes uint64)
 	}).Error
 }
 
+// ReduceDataUsage is used to reduce a users current data used. This is used in cases
+// where processing within the queue system fails, and we need to reset their data usage
+func (bm *UsageManager) ReduceDataUsage(username string, uploadSizeBytes uint64) error {
+	b, err := bm.FindByUserName(username)
+	if err != nil {
+		return err
+	}
+	// reduce total data used
+	// if the current data used is smaller than the reduction size
+	// reset their data used to 0
+	if b.CurrentDataUsedGB < uploadSizeBytes {
+		b.CurrentDataUsedGB = 0
+	} else {
+		b.CurrentDataUsedGB = b.CurrentDataUsedGB - uploadSizeBytes
+	}
+	// perform tier downgrade check
+	// accounts can never be downgraded below Light to free tier
+	if b.Tier == Plus {
+		if b.CurrentDataUsedGB < PlusTierMinimumUpload {
+			b.Tier = Light
+		}
+	}
+	return bm.DB.Model(b).UpdateColumns(map[string]interface{}{
+		"tier":                 b.Tier,
+		"current_data_used_gb": b.CurrentDataUsedGB,
+	}).Error
+}
+
 // UpdateTier is used to update the Usage tier associated with an account
 func (bm *UsageManager) UpdateTier(username string, tier DataUsageTier) error {
 	b, err := bm.FindByUserName(username)

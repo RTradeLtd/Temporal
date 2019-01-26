@@ -51,7 +51,7 @@
 
 [[projects]]
   branch = "release/prod-prep"
-  digest = "1:d1a91a8ff6152975057cbfe90b71483069057c58fd60e4bfec51a316b6989a6b"
+  digest = "1:0373743aa6d34af2ba7973ed41accc5de58c5a83279838564834bb096d501436"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "ef1b59b7897844f829d98d0620d4fa933b9e99cf"
+  revision = "52c69dd53fa0a464639639c1458d57a3c1e45b44"
 
 [[projects]]
   branch = "master"
@@ -1124,12 +1124,12 @@
   revision = "a314942b2fd9dde7a3f70ba3f1062848ce6eb392"
 
 [[projects]]
-  digest = "1:03aa6e485e528acb119fb32901cf99582c380225fc7d5a02758e08b180cb56c3"
+  digest = "1:4887e9e89c80299aa520d718239809fdd2a47a9aa394909b169959bfbc424ddf"
   name = "github.com/ugorji/go"
   packages = ["codec"]
   pruneopts = "UT"
-  revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
-  version = "v1.1.1"
+  revision = "8fd0f8d918c8f0b52d0af210a812ba882cc31a1e"
+  version = "v1.1.2"
 
 [[projects]]
   branch = "master"

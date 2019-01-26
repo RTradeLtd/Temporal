@@ -239,6 +239,17 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	// IPFS Cluster doesn't, so to keep consistency with the rest of our endpoints
 	// we should only operate on a bare cidC
 	hash := strings.Split(hashToPin, "/")[len(strings.Split(hashToPin, "/"))-1]
+	// get size of object
+	stats, err := api.ipfs.Stat(hash)
+	if err != nil {
+		api.LogError(c, err, eh.IPFSObjectStatError)(http.StatusBadRequest)
+		return
+	}
+	// ensure user can upload
+	if err := api.usage.CanUpload(username, uint64(stats.CumulativeSize)); err != nil {
+		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
+		return
+	}
 	// get the cost of this object
 	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, false)
 	if err != nil {
@@ -248,6 +259,11 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	// ensure they have enough credits
 	if err := api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
+		return
+	}
+	if err := api.usage.UpdateDataUsage(username, uint64(stats.CumulativeSize)); err != nil {
+		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
+		api.refundUserCredits(username, "pin", cost)
 		return
 	}
 	// create pin message
@@ -262,6 +278,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	if err = api.queues.pin.PublishMessageWithExchange(ip, queue.PinExchange); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
+		api.usage.ReduceDataUsage(username, uint64(stats.CumulativeSize))
 		return
 	}
 	// log and return

@@ -190,6 +190,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 	// pin the content
 	if err := ipfsManager.Pin(pin.CID); err != nil {
 		qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
+		models.NewUsageManager(qm.db).ReduceDataUsage(pin.UserName, uint64(pin.Size))
 		qm.l.Errorw(
 			"failed to pin hash to ipfs",
 			"error", err.Error(),

@@ -99,6 +99,7 @@ type IPFSPin struct {
 	UserName         string  `json:"user_name"`
 	HoldTimeInMonths int64   `json:"hold_time_in_months"`
 	CreditCost       float64 `json:"credit_cost"`
+	Size             int64   `json:"size"`
 	JWT              string  `json:"jwt,omitempty"`
 }
 
@@ -124,6 +125,7 @@ type IPFSClusterPin struct {
 	NetworkName      string  `json:"network_name"`
 	UserName         string  `json:"user_name"`
 	HoldTimeInMonths int64   `json:"hold_time_in_months"`
+	Size             int64   `json:"size"`
 	CreditCost       float64 `json:"credit_cost"`
 }
 
