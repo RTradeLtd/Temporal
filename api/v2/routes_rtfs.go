@@ -150,11 +150,14 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 	objectName := fmt.Sprintf("%s%s", username, randString)
 	logger.Debugf("storing file in minio as %s", objectName)
 	// store object in minio, with optional encryption
-	if _, err = api.mini.PutObject(objectName, openFile, fileHandler.Size,
+	// returning the content hash of the added file
+	hash, _, err := api.mini.PutObject(objectName, openFile, fileHandler.Size,
 		mini.PutObjectOptions{
 			Bucket:            FilesUploadBucket,
 			EncryptPassphrase: html.UnescapeString(c.PostForm("passphrase")),
-		}); err != nil {
+		}, api.ipfs)
+	// validate whether or not an error occurred
+	if err != nil {
 		api.LogError(c, err, eh.MinioPutError,
 			"user", username)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
@@ -188,9 +191,15 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
 		return
 	}
-	// log and return
+	// log
 	logger.With("request", ifp).Info("advanced file upload requested")
-	Respond(c, http.StatusOK, gin.H{"response": "file upload request sent to backend"})
+	// return information that the upload is being processed
+	// also return what the hash of the object will be once it's added to ipfs
+	Respond(c, http.StatusOK, gin.H{
+		"response": gin.H{
+			"message": "see hash field for ipfs hash of object once processing is finished",
+			"hash":    hash},
+	})
 }
 
 // AddFileLocally is used to add a file to our local ipfs node in a simple manner

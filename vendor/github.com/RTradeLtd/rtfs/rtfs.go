@@ -49,11 +49,11 @@ func NewManager(ipfsURL, token string, timeout time.Duration, direct bool) (*Ipf
 func (im *IpfsManager) NodeAddress() string { return im.nodeAPIAddr }
 
 // Add is a wrapper used to add a file to IPFS
-func (im *IpfsManager) Add(r io.Reader) (string, error) {
+func (im *IpfsManager) Add(r io.Reader, options ...ipfsapi.AddOpts) (string, error) {
 	if im.direct {
-		return im.shell.WithAuthorization(im.token).Add(r)
+		return im.shell.WithAuthorization(im.token).Add(r, options...)
 	}
-	return im.shell.Add(r)
+	return im.shell.Add(r, options...)
 }
 
 // DagPut is used to store data as an ipld object

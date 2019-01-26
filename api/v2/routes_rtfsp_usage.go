@@ -83,6 +83,14 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
+	// format a url to connect to for private network
+	apiURL := api.GetIPFSEndpoint(forms["network_name"])
+	// connect to private ifps network
+	ipfsManager, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*10, true)
+	if err != nil {
+		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
+		return
+	}
 	// retrieve file handler
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
@@ -108,10 +116,10 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	objectName := fmt.Sprintf("%s%s", username, randString)
 	// store object in minio
-	if _, err = api.mini.PutObject(objectName, openFile, fileHandler.Size, mini.PutObjectOptions{
+	hash, _, err := api.mini.PutObject(objectName, openFile, fileHandler.Size, mini.PutObjectOptions{
 		Bucket:            FilesUploadBucket,
-		EncryptPassphrase: html.UnescapeString(c.PostForm("passphrase")),
-	}); err != nil {
+		EncryptPassphrase: html.UnescapeString(c.PostForm("passphrase"))}, ipfsManager)
+	if err != nil {
 		api.LogError(c, err, eh.MinioPutError)(http.StatusBadRequest)
 		return
 	}
@@ -136,7 +144,13 @@ func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
 	}
 	// log and return
 	api.l.Infow("advanced private ipfs file upload requested", "user", username)
-	Respond(c, http.StatusOK, gin.H{"response": "file upload request sent to backend"})
+	// return information that the upload is being processed
+	// also return what the hash of the object will be once it's added to ipfs
+	Respond(c, http.StatusOK, gin.H{
+		"response": gin.H{
+			"message": "see hash field for ipfs hash of object once processing is finished",
+			"hash":    hash},
+	})
 }
 
 // AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network via the simple method

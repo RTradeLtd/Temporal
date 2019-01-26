@@ -120,7 +120,7 @@
 
 [[projects]]
   branch = "authorization"
-  digest = "1:a6baa5790ea495329fa6040edc8b4b7e8bd9d37e3ca72ffdceeea17f6c806fd8"
+  digest = "1:065685ef4bd5d6088a87b04ac3688cde4d1c121d737cd66ad601035e7e779410"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -128,7 +128,7 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "c88e4f504a49baa45bfdc68c3f9bcf0958b43eff"
+  revision = "887ada717a3d55e000c93d435e6c6e45cb6a44c6"
 
 [[projects]]
   branch = "master"

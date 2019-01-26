@@ -15,7 +15,7 @@ type Manager interface {
 	// NodeAddress returns the node the manager is connected to
 	NodeAddress() string
 	// Add is a wrapper used to add a file to IPFS
-	Add(r io.Reader) (string, error)
+	Add(r io.Reader, options ...ipfsapi.AddOpts) (string, error)
 	// DagPut is used to store data as an ipld object
 	DagPut(data interface{}, encoding, kind string) (string, error)
 	// DagGet is used to get an ipld object

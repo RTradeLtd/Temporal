@@ -122,7 +122,7 @@ func TestPutAndGetObject(t *testing.T) {
 	for _, tt := range putTests {
 		t.Run(tt.name, func(t *testing.T) {
 			var bytesWritten int64
-			if bytesWritten, err = mm.PutObject(tt.args.object, openedFile,
+			if _, bytesWritten, err = mm.PutObject(tt.args.object, openedFile,
 				fileStats.Size(), PutObjectOptions{
 					Bucket:            tt.args.bucket,
 					EncryptPassphrase: tt.args.passphrase,
