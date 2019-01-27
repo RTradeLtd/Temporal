@@ -36,7 +36,7 @@ func TestSignerClient_Pass(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = clients.NewSignerClient(cfg, true); err != nil {
+	if _, err = clients.NewSignerClient(cfg); err != nil {
 		t.Fatal(err)
 	}
 }

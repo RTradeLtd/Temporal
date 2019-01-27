@@ -32,7 +32,7 @@ func TestQueue_Publish(t *testing.T) {
 		name string
 		args args
 	}{
-		{"PConfirmQ", args{PaymentConfirmationQueue, true}},
+		{"PConfirmQ", args{EthPaymentConfirmationQueue, true}},
 		{"DPCQ", args{DashPaymentConfirmationQueue, true}},
 	}
 	for _, tt := range tests {
@@ -48,7 +48,7 @@ func TestQueue_Publish(t *testing.T) {
 			}
 			if tt.name == "PConfirmQ" {
 				// test a successful publish
-				if err := qm.PublishMessage(PaymentConfirmation{
+				if err := qm.PublishMessage(EthPaymentConfirmation{
 					UserName:      "testuser",
 					PaymentNumber: 22,
 				}); err != nil {

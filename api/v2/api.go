@@ -194,7 +194,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 	if err != nil {
 		return nil, err
 	}
-	qmPayConfirm, err := queue.New(queue.PaymentConfirmationQueue, cfg.RabbitMQ.URL, true, logger)
+	qmEth, err := queue.New(queue.EthPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -218,14 +218,14 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		orch:        orch,
 		dc:          dc,
 		queues: queues{
-			pin:        qmPin,
-			cluster:    qmCluster,
-			email:      qmEmail,
-			ipns:       qmIpns,
-			key:        qmKey,
-			database:   qmDatabase,
-			dash:       qmDash,
-			payConfirm: qmPayConfirm,
+			pin:      qmPin,
+			cluster:  qmCluster,
+			email:    qmEmail,
+			ipns:     qmIpns,
+			key:      qmKey,
+			database: qmDatabase,
+			dash:     qmDash,
+			eth:      qmEth,
 		},
 		zm: models.NewZoneManager(dbm.DB),
 		rm: models.NewRecordManager(dbm.DB),
@@ -340,12 +340,12 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 				return server.Close()
 			}
 			api.queues.key = qmKey
-		case msg := <-api.queues.payConfirm.ErrCh:
-			qmPay, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.PaymentConfirmationQueue, true)
+		case msg := <-api.queues.eth.ErrCh:
+			qmEth, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.EthPaymentConfirmationQueue, true)
 			if err != nil {
 				return server.Close()
 			}
-			api.queues.payConfirm = qmPay
+			api.queues.eth = qmEth
 		case msg := <-api.queues.pin.ErrCh:
 			qmPin, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpfsPinQueue, true)
 			if err != nil {

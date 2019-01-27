@@ -123,7 +123,7 @@ func initClients(l *zap.SugaredLogger, cfg *config.TemporalConfig) (closers []fu
 		orch = client
 	}
 	if signer == nil {
-		client, err := clients.NewSignerClient(cfg, *grpcNoSSL)
+		client, err := clients.NewSignerClient(cfg)
 		if err != nil {
 			l.Fatal(err)
 		}

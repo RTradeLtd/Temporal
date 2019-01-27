@@ -34,12 +34,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:841587b63a4bc74cc994f1f9c455b7544035d22402f4207ce1bfa95b22642c39"
+  branch = "signer/tls"
+  digest = "1:e0ca7ad0f62bd1edf0e156908ed2df073851e121ea6399341fef4eb20413e441"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "4032a28c97452b9733d9bbe96d407c4704b5589f"
+  revision = "cc85dc26a4d1a4a3ed4c528a49c26d52430bd981"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -1312,7 +1312,7 @@
     "googleapis/rpc/status",
   ]
   pruneopts = "UT"
-  revision = "8819c946db4494a2259bf100a377f51aa585d893"
+  revision = "7cdc0b958d7541690c155bb01fa9a219bbf35296"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"

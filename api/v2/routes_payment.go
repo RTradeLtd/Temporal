@@ -49,12 +49,12 @@ func (api *API) ConfirmPayment(c *gin.Context) {
 		return
 	}
 	// create payment confirmation message
-	paymentConfirmation := queue.PaymentConfirmation{
+	paymentConfirmation := queue.EthPaymentConfirmation{
 		UserName:      username,
 		PaymentNumber: paymentNumberInt,
 	}
 	// send message for processing
-	if err = api.queues.payConfirm.PublishMessage(paymentConfirmation); err != nil {
+	if err = api.queues.eth.PublishMessage(paymentConfirmation); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}

@@ -33,8 +33,8 @@ var (
 	IpnsEntryQueue Queue = "ipns-entry-queue"
 	// IpfsKeyCreationQueue is a queue used to handle ipfs key creation
 	IpfsKeyCreationQueue Queue = "ipfs-key-creation-queue"
-	// PaymentConfirmationQueue is a queue used to handle payment confirmations
-	PaymentConfirmationQueue Queue = "payment-confirmation-queue"
+	// EthPaymentConfirmationQueue is a queue used to handle ethereum based payment confirmations
+	EthPaymentConfirmationQueue Queue = "eth-payment-confirmation-queue"
 	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
 	DashPaymentConfirmationQueue Queue = "dash-payment-confirmation-queue"
 	// AdminEmail is the email used to notify RTrade about any critical errors
@@ -101,22 +101,6 @@ type IPFSPin struct {
 	JWT              string  `json:"jwt,omitempty"`
 }
 
-// IPFSFile is our message for the ipfs file queue
-type IPFSFile struct {
-	// MinioHostIP is the ip address of the minio host this object is stored on
-	MinioHostIP      string  `json:"minio_host_ip"`
-	FileName         string  `json:"file_name,omitempty"`
-	FileSize         int64   `json:"file_size,omitempty"`
-	BucketName       string  `json:"bucket_name"`
-	ObjectName       string  `json:"object_name"`
-	UserName         string  `json:"user_name"`
-	NetworkName      string  `json:"network_name"`
-	HoldTimeInMonths string  `json:"hold_time_in_months"`
-	CreditCost       float64 `json:"credit_cost"`
-	Encrypted        bool    `json:"encrypted"`
-	JWT              string  `json:"jwt,omitempty"`
-}
-
 // IPFSClusterPin is a queue message used when sending a message to the cluster to pin content
 type IPFSClusterPin struct {
 	CID              string  `json:"cid"`
@@ -177,8 +161,8 @@ type DashPaymenConfirmation struct {
 	PaymentNumber    int64  `json:"payment_number"`
 }
 
-// PaymentConfirmation is a message used to confirm a payment
-type PaymentConfirmation struct {
+// EthPaymentConfirmation is a message used to confirm an ethereum based payment
+type EthPaymentConfirmation struct {
 	UserName      string `json:"user_name"`
 	PaymentNumber int64  `json:"payment_number"`
 }
