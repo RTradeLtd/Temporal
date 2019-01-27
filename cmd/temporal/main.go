@@ -288,51 +288,6 @@ var commands = map[string]cmd.Cmd{
 							waitGroup.Wait()
 						},
 					},
-					"file": {
-						Blurb:       "File upload queue",
-						Description: "Listens to file upload requests. Only applies to advanced uploads",
-						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							logger, err := log.NewLogger(logPath(cfg.LogDir, "file_consumer.log"), *devMode)
-							if err != nil {
-								fmt.Println("failed to start logger ", err)
-								os.Exit(1)
-							}
-
-							db, err := newDB(cfg, *dbNoSSL)
-							if err != nil {
-								fmt.Println("failed to start db", err)
-								os.Exit(1)
-							}
-							quitChannel := make(chan os.Signal)
-							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							waitGroup := &sync.WaitGroup{}
-							go func() {
-								fmt.Println(closeMessage)
-								<-quitChannel
-								cancel()
-							}()
-							for {
-								qm, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, false, logger)
-								if err != nil {
-									fmt.Println("failed to start queue", err)
-									os.Exit(1)
-								}
-								waitGroup.Add(1)
-								err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
-								if err != nil && err.Error() != queue.ErrReconnect {
-									fmt.Println("failed to consume messages", err)
-									os.Exit(1)
-								} else if err != nil && err.Error() == queue.ErrReconnect {
-									continue
-								}
-								// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
-								if err == nil {
-									break
-								}
-							}
-							waitGroup.Wait()
-						},
-					},
 					"key-creation": {
 						Blurb:       "Key creation queue",
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),

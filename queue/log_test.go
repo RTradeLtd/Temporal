@@ -15,7 +15,7 @@ func TestLog_Publisher(t *testing.T) {
 	}
 	observer, out := observer.New(zap.InfoLevel)
 	logger := zap.New(observer).Sugar()
-	_, err = New(IpfsFileQueue, cfg.RabbitMQ.URL, true, logger)
+	_, err = New(IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +31,7 @@ func TestLog_Consumer(t *testing.T) {
 	}
 	observer, out := observer.New(zap.InfoLevel)
 	logger := zap.New(observer).Sugar()
-	qm, err := New(IpfsFileQueue, cfg.RabbitMQ.URL, false, logger)
+	qm, err := New(IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, logger)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -178,10 +178,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 	if err != nil {
 		return nil, err
 	}
-	qmFile, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, true, logger)
-	if err != nil {
-		return nil, err
-	}
 	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, logger)
 	if err != nil {
 		return nil, err
@@ -223,7 +219,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		dc:          dc,
 		queues: queues{
 			pin:        qmPin,
-			file:       qmFile,
 			cluster:    qmCluster,
 			email:      qmEmail,
 			ipns:       qmIpns,
@@ -249,9 +244,6 @@ func (api *API) Close() {
 	}
 	if err := api.queues.email.Close(); err != nil {
 		api.l.Error(err, "failed to properly close email queue connection")
-	}
-	if err := api.queues.file.Close(); err != nil {
-		api.l.Error(err, "failed to properly close file queue connection")
 	}
 	if err := api.queues.ipns.Close(); err != nil {
 		api.l.Error(err, "failed to properly close ipns queue connection")
@@ -336,12 +328,6 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 				return server.Close()
 			}
 			api.queues.email = qmEmail
-		case msg := <-api.queues.file.ErrCh:
-			qmFile, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpfsFileQueue, true)
-			if err != nil {
-				return server.Close()
-			}
-			api.queues.file = qmFile
 		case msg := <-api.queues.ipns.ErrCh:
 			qmIpns, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpnsEntryQueue, true)
 			if err != nil {

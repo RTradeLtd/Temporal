@@ -75,8 +75,6 @@ func TestQueuesIPFS(t *testing.T) {
 		{"IPNSEntry-LogDir", args{"ipfs", "ipns-entry", "./tmp/"}},
 		{"IPFSPin-NoLogDir", args{"ipfs", "pin", ""}},
 		{"IPFSPin-LogDir", args{"ipfs", "pin", "./tmp/"}},
-		{"IPFSFile-NoLogDir", args{"ipfs", "file", ""}},
-		{"IPFSFile-LogDir", args{"ipfs", "file", "./tmp/"}},
 		{"IPFSKey-NoLogDir", args{"ipfs", "key-creation", ""}},
 		{"IPFSKey-LogDir", args{"ipfs", "key-creation", "./tmp/"}},
 		{"IPFSCluster-NoLogDir", args{"ipfs", "cluster", ""}},

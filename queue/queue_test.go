@@ -190,7 +190,6 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 		args args
 	}{
 		{DatabaseFileAddQueue.String(), args{DatabaseFileAddQueue}},
-		{IpfsFileQueue.String(), args{IpfsFileQueue}},
 		{IpfsClusterPinQueue.String(), args{IpfsClusterPinQueue}},
 		{EmailSendQueue.String(), args{EmailSendQueue}},
 		{IpnsEntryQueue.String(), args{IpnsEntryQueue}},
@@ -753,87 +752,6 @@ func TestQueue_IPFSPin_Failure_LogFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.LogDir = "/root/toor"
-	// we don't need time-out since this test will automatically fail
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
-		t.Fatal("expected error")
-	}
-}
-
-func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup our queue backend
-	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg.IPFS.APIConnection.Host = "notarealip"
-	// we don't need time-out since this test will automatically fail
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
-		t.Fatal("expected error")
-	}
-}
-
-func TestQueue_IPFSFile_Failure_LogDir(t *testing.T) {
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup our queue backend
-	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg.LogDir = "/root/toor"
-	// we don't need time-out since this test will automatically fail
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
-		t.Fatal("expected error")
-	}
-}
-
-func TestQueue_IPFSFile_Failure_RabbitMQ(t *testing.T) {
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup our queue backend
-	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg.RabbitMQ.URL = "notarealip"
 	// we don't need time-out since this test will automatically fail
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

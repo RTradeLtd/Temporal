@@ -25,8 +25,6 @@ var (
 	DatabaseFileAddQueue Queue = "dfa-queue"
 	// IpfsPinQueue is a queue used for ipfs pins
 	IpfsPinQueue Queue = "ipfs-pin-queue"
-	// IpfsFileQueue is a queue used for advanced file adds
-	IpfsFileQueue Queue = "ipfs-file-queue"
 	// IpfsClusterPinQueue is a queue used for ipfs cluster pins
 	IpfsClusterPinQueue Queue = "ipfs-cluster-add-queue"
 	// EmailSendQueue is a queue used to handle sending email messages
