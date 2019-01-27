@@ -150,13 +150,11 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 	if pin.NetworkName != "public" {
 		canAccess, err := usrm.CheckIfUserHasAccessToNetwork(pin.UserName, pin.NetworkName)
 		if err != nil {
-			qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 			qm.l.Errorw("failed to lookup private network in database", "error", err.Error())
 			d.Ack(false)
 			return
 		}
 		if !canAccess {
-			qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 			qm.l.Errorw(
 				"unauthorized private network access",
 				"error", errors.New("user does not have access to private network").Error(),
@@ -168,7 +166,6 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 		// connect to ipfs
 		ipfsManager, err = rtfs.NewManager(apiURL, pin.JWT, time.Minute*10, true)
 		if err != nil {
-			qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
 			qm.l.Infow(
 				"failed to initialize connection to ipfs",
 				"error", err.Error(),
@@ -188,7 +185,9 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 		"network", pin.NetworkName)
 	// pin the content
 	if err := ipfsManager.Pin(pin.CID); err != nil {
-		qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
+		if pin.NetworkName == "public" {
+			qm.refundCredits(pin.UserName, "pin", pin.CreditCost)
+		}
 		models.NewUsageManager(qm.db).ReduceDataUsage(pin.UserName, uint64(pin.Size))
 		qm.l.Errorw(
 			"failed to pin hash to ipfs",
@@ -258,7 +257,9 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 			"failed to connect to minio",
 			"error", err.Error(),
 			"user", ipfsFile.UserName)
-		qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
+		if ipfsFile.NetworkName == "public" {
+			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
+		}
 		d.Ack(false)
 		return
 	}
@@ -271,7 +272,6 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 				"error", err.Error(),
 				"user", ipfsFile.UserName,
 				"network", ipfsFile.NetworkName)
-			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 			d.Ack(false)
 			return
 		}
@@ -281,7 +281,6 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 				"error", errors.New("user does not have access to private network").Error(),
 				"user", ipfsFile.UserName,
 				"network", ipfsFile.NetworkName)
-			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 			d.Ack(false)
 			return
 		}
@@ -293,7 +292,6 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 				"error", err.Error(),
 				"user", ipfsFile.UserName,
 				"network", ipfsFile.NetworkName)
-			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
 			d.Ack(false)
 			return
 		}
@@ -319,7 +317,9 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 			"object", ipfsFile.ObjectName,
 			"user", ipfsFile.UserName,
 			"network", ipfsFile.NetworkName)
-		qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
+		if ipfsFile.NetworkName == "public" {
+			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
+		}
 		d.Ack(false)
 		return
 	}
@@ -336,7 +336,9 @@ func (qm *Manager) processIPFSFile(d amqp.Delivery, wg *sync.WaitGroup, ue *mode
 			"object", ipfsFile.ObjectName,
 			"user", ipfsFile.UserName,
 			"network", ipfsFile.NetworkName)
-		qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
+		if ipfsFile.NetworkName == "public" {
+			qm.refundCredits(ipfsFile.UserName, "file", ipfsFile.CreditCost)
+		}
 		d.Ack(false)
 		return
 	}
@@ -399,7 +401,6 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 	// whenever a user creates a key, the API call will prepend their username and a hyphen before sending the message for processing
 	// this check ensures that the key was properly prefixed
 	if strings.Split(key.Name, "-")[0] != key.UserName {
-		qm.refundCredits(key.UserName, "key", key.CreditCost)
 		qm.l.Errorf("invalid key name %s, must be prefixed with: %s-", key.Name, key.UserName)
 		d.Ack(false)
 		return
@@ -428,14 +429,12 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 			"error", fmt.Errorf("key must be ed25519 or rsa, not %s", key.Type),
 			"user", key.UserName,
 			"key_name", key.Name)
-		qm.refundCredits(key.UserName, "key", key.CreditCost)
 		d.Ack(false)
 		return
 	}
 	// generate the appropriate keypair
 	pk, _, err := ci.GenerateKeyPair(keyTypeInt, bitsInt)
 	if err != nil {
-		qm.refundCredits(key.UserName, "key", key.CreditCost)
 		qm.l.Errorw(
 			"failed to create key",
 			"error", err.Error(),
@@ -447,7 +446,6 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 	// retrieve a human friendly format, also verifying the key is a valid ipfs key
 	id, err := peer.IDFromPrivateKey(pk)
 	if err != nil {
-		qm.refundCredits(key.UserName, "key", key.CreditCost)
 		qm.l.Errorw(
 			"failed to get peer id from private key",
 			"error", err.Error(),
@@ -459,7 +457,6 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 	// convert the key to bytes to send to krab for processing
 	pkBytes, err := pk.Bytes()
 	if err != nil {
-		qm.refundCredits(key.UserName, "key", key.CreditCost)
 		qm.l.Errorw(
 			"failed to marshal key to bytes",
 			"error", err.Error(),
@@ -471,7 +468,6 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 
 	// store the key in krab
 	if _, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {
-		qm.refundCredits(key.UserName, "key", key.CreditCost)
 		qm.l.Errorw(
 			"failed to store key in krab",
 			"error", err.Error(),

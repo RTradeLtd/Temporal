@@ -52,7 +52,6 @@ func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm
 		return
 	}
 	if clusterAdd.NetworkName != "public" {
-		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
 		qm.l.Errorw(
 			"private clustered networks not yet supported",
 			"error", errors.New("private network clusters not supported").Error(),

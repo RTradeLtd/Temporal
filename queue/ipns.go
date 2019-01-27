@@ -77,7 +77,6 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 	}
 	// temporarily do not process ipns creation requests for non public networks
 	if ie.NetworkName != "public" {
-		qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
 		qm.l.Errorw(
 			"private networks not supported for ipns",
 			"user", ie.UserName)
