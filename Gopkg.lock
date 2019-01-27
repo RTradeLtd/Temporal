@@ -213,14 +213,6 @@
   revision = "3adb47b1fb0f6d9efcc5051a6c62e2e413ac85a9"
 
 [[projects]]
-  digest = "1:6f9339c912bbdda81302633ad7e99a28dfa5a639c864061f1929510a9a64aa74"
-  name = "github.com/dustin/go-humanize"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9f541cc9db5d55bce703bd99987c9d5cb8eea45e"
-  version = "v1.0.0"
-
-[[projects]]
   digest = "1:d5976d8b735aaf4d87a471574a3b7acab423268e25a737b9f079018a8a8f9025"
   name = "github.com/dvwright/xss-mw"
   packages = ["."]
@@ -272,14 +264,6 @@
   ]
   pruneopts = "UT"
   revision = "d27685e714cb0b9375e0c9d3ca3df5a6a4945a6c"
-
-[[projects]]
-  digest = "1:8b4bb15de2e698d359eeec15c42453567c98972a70c8619946050360ec02ec32"
-  name = "github.com/go-ini/ini"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "6ed8d5f64cd79a498d1f3fab5880cc376ce41bbe"
-  version = "v1.41.0"
 
 [[projects]]
   digest = "1:db75c3971e4fcaa251e4726f132fab3b17ad90beb7829d90ade140533b577861"
@@ -551,14 +535,6 @@
   pruneopts = "UT"
   revision = "1624edc4454b8682399def8740d46db5e4362ba4"
   version = "v1.1.5"
-
-[[projects]]
-  digest = "1:0a69a1c0db3591fcefb47f115b224592c8dfa4368b7ba9fae509d5e16cdc95c8"
-  name = "github.com/konsorten/go-windows-terminal-sequences"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
-  version = "v1.0.1"
 
 [[projects]]
   digest = "1:b18ffc558326ebaed3b4a175617f1e12ed4e3f53d6ebfe5ba372a3de16d22278"
@@ -924,21 +900,6 @@
   revision = "3f5f724cb5b182a5c278d6d3d55b40e7f8c2efb4"
 
 [[projects]]
-  digest = "1:dd970aac864405a9a7261090c5160a00a814c91d47256bd61f71013a7d4ed70c"
-  name = "github.com/minio/minio-go"
-  packages = [
-    ".",
-    "pkg/credentials",
-    "pkg/encrypt",
-    "pkg/s3signer",
-    "pkg/s3utils",
-    "pkg/set",
-  ]
-  pruneopts = "UT"
-  revision = "0be3a44757352b6e617ef00eb47829bce29baab1"
-  version = "v6.0.14"
-
-[[projects]]
   branch = "master"
   digest = "1:ccf646ee8a07f460c43e994bb9a79e594dc3636dca1b607c294b7df5b1624868"
   name = "github.com/minio/sha256-simd"
@@ -947,12 +908,12 @@
   revision = "cc1980cb03383b1d46f518232672584432d7532d"
 
 [[projects]]
-  digest = "1:78bbb1ba5b7c3f2ed0ea1eab57bdd3859aec7e177811563edc41198a760b06af"
+  digest = "1:5d231480e1c64a726869bc4142d270184c419749d34f167646baa21008eb0a79"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ae18d6b8b3205b561c79e8e5f69bff09736185f4"
-  version = "v1.0.0"
+  revision = "af06845cf3004701891bf4fdb884bfe4920b3727"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
@@ -1098,14 +1059,6 @@
   pruneopts = "UT"
   revision = "8caf17aa96b4a98bae8bd216878dd50ff12897b5"
   version = "v3.4.1"
-
-[[projects]]
-  digest = "1:87c2e02fb01c27060ccc5ba7c5a407cc91147726f8f40b70cceeedbc52b1f3a8"
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "e1e72e9de974bd926e5c56f83753fba2df402ce5"
-  version = "v1.3.0"
 
 [[projects]]
   digest = "1:919bb3aa6d9d0b67648c219fa4925312bc3c2872da19e818fa769e9c97a2b643"
@@ -1269,12 +1222,10 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:536b07a2fb55dc654e7a4af38e0675c9d988b220ffe4531a88a75e6a170b5110"
+  digest = "1:89405c62c196dd1b0da798c5f03b1a65dc9dc3b980548b52a8e79a3063cc11ca"
   name = "golang.org/x/crypto"
   packages = [
-    "argon2",
     "bcrypt",
-    "blake2b",
     "blake2s",
     "blowfish",
     "internal/subtle",
@@ -1282,14 +1233,13 @@
     "salsa20",
     "salsa20/salsa",
     "sha3",
-    "ssh/terminal",
   ]
   pruneopts = "UT"
   revision = "057139ce5d2bdbe6fe73c53679e24e9cf007f637"
 
 [[projects]]
   branch = "master"
-  digest = "1:300bcf063d063ae64ce8a262b9b60ddc7a4bb7f86ffe31a45f0be91451e3498d"
+  digest = "1:e4cb09624f31f9e33fce26702314da5a1383962d7e0861bfe39dfdc00a848fa3"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -1301,7 +1251,6 @@
     "http2/hpack",
     "idna",
     "internal/timeseries",
-    "publicsuffix",
     "trace",
   ]
   pruneopts = "UT"
@@ -1473,13 +1422,11 @@
     "github.com/ipfs/ipfs-cluster/api/rest/client",
     "github.com/libp2p/go-libp2p-crypto",
     "github.com/libp2p/go-libp2p-peer",
-    "github.com/minio/minio-go",
     "github.com/multiformats/go-multiaddr",
     "github.com/semihalev/gin-stats",
     "github.com/sendgrid/rest",
     "github.com/sendgrid/sendgrid-go",
     "github.com/sendgrid/sendgrid-go/helpers/mail",
-    "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",

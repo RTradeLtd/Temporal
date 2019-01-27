@@ -179,13 +179,3 @@ func TestUser(t *testing.T) {
 	}
 	commands["user"].Action(*cfg, flags)
 }
-
-func TestBucket(t *testing.T) {
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	flags := map[string]string{
-		"name": "mytestbucket"}
-	commands["bucket"].Children["new"].Action(*cfg, flags)
-}
