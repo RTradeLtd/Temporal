@@ -518,8 +518,7 @@ func (api *API) setupRoutes() error {
 			// file upload routes
 			file := public.Group("/file")
 			{
-				file.POST("/add", api.addFileLocally)
-				file.POST("/add/advanced", api.addFileLocallyAdvanced)
+				file.POST("/add", api.addFile)
 			}
 			// pubsub routes
 			pubsub := public.Group("/pubsub")

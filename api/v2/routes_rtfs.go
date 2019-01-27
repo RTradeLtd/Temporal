@@ -1,18 +1,19 @@
 package v2
 
 import (
+	"bytes"
 	"errors"
-	"fmt"
 	"html"
+	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/c2h5oh/datasize"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
+	"github.com/RTradeLtd/crypto"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -89,126 +90,8 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": "pin request sent to backend"})
 }
 
-// AddFileLocallyAdvanced is used to upload a file in a more resilient
-// and efficient manner than our traditional simple upload. Note that
-// it does not give the user a content hash back immediately
-func (api *API) addFileLocallyAdvanced(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
-		return
-	}
-	// create formatted log
-	logger := api.l.With("user", username)
-	logger.Debug("file upload request received from user")
-	// extract post forms
-	forms := api.extractPostForms(c, "hold_time")
-	if len(forms) == 0 {
-		return
-	}
-	// parse hold time
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	// extract file handler
-	fileHandler, err := c.FormFile("file")
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	// check that the size of upload is within limits
-	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
-		Fail(c, err)
-		return
-	}
-	// validate that they can upload a file of this size
-	if err := api.usage.CanUpload(username, uint64(fileHandler.Size)); err != nil {
-		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
-		return
-	}
-	// calculate the cost of this upload
-	cost, err := utils.CalculateFileCost(username, holdTimeInt, fileHandler.Size, api.usage)
-	if err != nil {
-		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
-		return
-	}
-	// validate they have enough credits to pay for the upload
-	if err = api.validateUserCredits(username, cost); err != nil {
-		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
-		return
-	}
-	logger.Debug("opening file")
-	// open file into memory
-	openFile, err := fileHandler.Open()
-	if err != nil {
-		api.LogError(c, err, eh.FileOpenError, "user", username)(http.StatusBadRequest)
-		api.refundUserCredits(username, "file", cost)
-		return
-	}
-	logger.Debug("file opened")
-	// generate random name for object in temporary storage
-	randUtils := utils.GenerateRandomUtils()
-	randString := randUtils.GenerateString(32, utils.LetterBytes)
-	objectName := fmt.Sprintf("%s%s", username, randString)
-	logger.Debugf("storing file in minio as %s", objectName)
-	// store object in minio, with optional encryption
-	// returning the content hash of the added file
-	hash, _, err := api.mini.PutObject(objectName, openFile, fileHandler.Size,
-		mini.PutObjectOptions{
-			Bucket:            FilesUploadBucket,
-			EncryptPassphrase: html.UnescapeString(c.PostForm("passphrase")),
-		}, api.ipfs)
-	// validate whether or not an error occurred
-	if err != nil {
-		api.LogError(c, err, eh.MinioPutError,
-			"user", username)(http.StatusBadRequest)
-		api.refundUserCredits(username, "file", cost)
-		return
-	}
-	// update their data usage
-	if err := api.usage.UpdateDataUsage(username, uint64(fileHandler.Size)); err != nil {
-		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
-		api.refundUserCredits(username, "file", cost)
-		return
-	}
-	logger.Debugf("file %s stored in minio", objectName)
-	// construct file upload message
-	ifp := queue.IPFSFile{
-		MinioHostIP:      api.cfg.MINIO.Connection.IP,
-		FileSize:         fileHandler.Size,
-		FileName:         fileHandler.Filename,
-		BucketName:       FilesUploadBucket,
-		ObjectName:       objectName,
-		UserName:         username,
-		NetworkName:      "public",
-		HoldTimeInMonths: forms["hold_time1"],
-		CreditCost:       cost,
-		// if passphrase was provided, this file is encrypted
-		Encrypted: c.PostForm("passphrase") != "",
-	}
-	// send file upload message
-	if err = api.queues.file.PublishMessage(ifp); err != nil {
-		api.LogError(c, err, eh.QueuePublishError, "user", username)(http.StatusBadRequest)
-		api.refundUserCredits(username, "file", cost)
-		api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
-		return
-	}
-	// log
-	logger.With("request", ifp).Info("advanced file upload requested")
-	// return information that the upload is being processed
-	// also return what the hash of the object will be once it's added to ipfs
-	Respond(c, http.StatusOK, gin.H{
-		"response": gin.H{
-			"message": "see hash field for ipfs hash of object once processing is finished",
-			"hash":    hash},
-	})
-}
-
-// AddFileLocally is used to add a file to our local ipfs node in a simple manner
-// this route gives the user back a content hash for their file immedaitely
-func (api *API) addFileLocally(c *gin.Context) {
+// AddFile is used to add a file to ipfs with optional encryption
+func (api *API) addFile(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -273,26 +156,41 @@ func (api *API) addFileLocally(c *gin.Context) {
 		api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
 		return
 	}
+	var reader io.Reader
+	// encrypt file
+	if c.PostForm("passphrase") != "" {
+		// html decode strings
+		decodedPassPhrase := html.UnescapeString(c.PostForm("passphrase"))
+		encrypted, err := crypto.NewEncryptManager(decodedPassPhrase).Encrypt(openFile)
+		if err != nil {
+			api.LogError(c, err, eh.EncryptionError)(http.StatusBadRequest)
+			api.refundUserCredits(username, "file", cost)
+			api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
+			return
+		}
+		reader = bytes.NewReader(encrypted)
+		// generate an encryption manager and encrypt
+	} else {
+		reader = openFile
+	}
 	api.l.Debug("adding file...")
 	// add file to ipfs
-	resp, err := api.ipfs.Add(openFile)
+	resp, err := api.ipfs.Add(reader)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
 		api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
 		return
 	}
-	api.l.Debug("file added")
-	// construct database update message
-	dfa := queue.DatabaseFileAdd{
-		Hash:             resp,
-		HoldTimeInMonths: holdTimeinMonthsInt,
-		UserName:         username,
+	api.l.Debug("file uploaded to ipfs")
+	qp := queue.IPFSClusterPin{
+		CID:              resp,
 		NetworkName:      "public",
-		CreditCost:       0,
+		UserName:         username,
+		HoldTimeInMonths: holdTimeinMonthsInt,
 	}
 	// send message to rabbitmq
-	if err = api.queues.database.PublishMessage(dfa); err != nil {
+	if err = api.queues.cluster.PublishMessage(qp); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}
