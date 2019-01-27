@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -70,6 +71,20 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 	// validte the user has enough credits
 	if err := api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
+		return
+	}
+	if can, err := api.usage.CanPublishIPNS(username); err != nil {
+		api.LogError(c, err, "an error occured looking up ipns pubsub ability in database")(http.StatusBadRequest)
+		api.refundUserCredits(username, "ipns", cost)
+		return
+	} else if !can {
+		Fail(c, errors.New("too many ipns records published this month, please wait until next billing cycle"))
+		api.refundUserCredits(username, "ipns", cost)
+		return
+	}
+	if err := api.usage.IncrementIPNSUsage(username, 1); err != nil {
+		api.LogError(c, err, "failed to increment ipns usage")
+		api.refundUserCredits(username, "ipns", cost)
 		return
 	}
 	// create ipns entry creation message
