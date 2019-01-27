@@ -53,8 +53,8 @@ const (
 	DNSLinkEntryError = "failed to create dns link entry"
 	// PaymentCreationError is an error used when creating payments
 	PaymentCreationError = "failed to create payment"
-	// PinCostCalculationError is an error message used when calculating pin costs
-	PinCostCalculationError = "failed to calculate pin cost"
+	// CostCalculationError is an error message emitted when we are unable to calculate the cost of something
+	CostCalculationError = "failed to calculate cost"
 	// PaymentSearchError is an error used when searching for payment
 	PaymentSearchError = "failed to search for payment"
 	// DuplicateKeyCreationError is an error used when creating a key of the same name
@@ -81,8 +81,6 @@ const (
 	DepositAddressCheckError = "failed to get deposit address"
 	// UserSearchError is an error message given to a user when a username cant be found
 	UserSearchError = "unable to find username"
-	// CallCostCalculationError is an error message given to a user when we are unable to calculate the cost of their api call
-	CallCostCalculationError = "unable to calculate api call cost"
 	// CreditRefundError is an error message used when we are unable to refund a users credits
 	CreditRefundError = "failed to refund credits for user"
 	// IpnsRecordSearchError is an error message given to users when we can't search for any records

@@ -33,19 +33,10 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	// determine if this upload is for a private network
-	privateNet := c.PostForm("private_network")
-	var isPrivate bool
-	switch privateNet {
-	case "true":
-		isPrivate = true
-	default:
-		isPrivate = false
-	}
 	// calculate pin cost
-	totalCost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, isPrivate)
+	totalCost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
 	if err != nil {
-		api.LogError(c, err, eh.PinCostCalculationError)
+		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
 		Fail(c, err)
 		return
 	}
@@ -83,18 +74,13 @@ func (api *API) calculateFileCost(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	// determine if this is for a private network
-	privateNetwork := c.PostForm("private_network")
-	var isPrivate bool
-	switch privateNetwork {
-	case "true":
-		isPrivate = true
-	default:
-		isPrivate = false
-	}
 	api.l.With("user", username).Info("file cost calculation requested")
 	// calculate cost
-	cost := utils.CalculateFileCost(holdTimeInt, file.Size, isPrivate)
+	cost, err := utils.CalculateFileCost(username, holdTimeInt, file.Size, api.usage)
+	if err != nil {
+		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
+		return
+	}
 	// return
 	Respond(c, http.StatusOK, gin.H{"response": cost})
 }

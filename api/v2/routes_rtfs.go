@@ -52,9 +52,9 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 	}
 	// determine cost of upload
-	cost, err := utils.CalculatePinCost(hash, holdTimeInt, api.ipfs, false)
+	cost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
 	if err != nil {
-		api.LogError(c, err, eh.PinCostCalculationError)(http.StatusBadRequest)
+		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
 		return
 	}
 	// validate, and deduct credits if they can upload
@@ -129,7 +129,11 @@ func (api *API) addFileLocallyAdvanced(c *gin.Context) {
 		return
 	}
 	// calculate the cost of this upload
-	cost := utils.CalculateFileCost(holdTimeInt, fileHandler.Size, false)
+	cost, err := utils.CalculateFileCost(username, holdTimeInt, fileHandler.Size, api.usage)
+	if err != nil {
+		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
+		return
+	}
 	// validate they have enough credits to pay for the upload
 	if err = api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
@@ -241,7 +245,11 @@ func (api *API) addFileLocally(c *gin.Context) {
 		return
 	}
 	// calculate code of upload
-	cost := utils.CalculateFileCost(holdTimeinMonthsInt, fileHandler.Size, false)
+	cost, err := utils.CalculateFileCost(username, holdTimeinMonthsInt, fileHandler.Size, api.usage)
+	if err != nil {
+		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
+		return
+	}
 	// validate they have enough credits to pay for the upload
 	if err = api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
@@ -307,21 +315,9 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	if len(forms) == 0 {
 		return
 	}
-	// calculate cost of api call
-	cost, err := utils.CalculateAPICallCost("pubsub", false)
-	if err != nil {
-		api.LogError(c, err, eh.CallCostCalculationError)(http.StatusBadRequest)
-		return
-	}
-	// ensure user has enough credits to pay for
-	if err := api.validateUserCredits(username, cost); err != nil {
-		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
-		return
-	}
 	// validate they can submit pubsub message calls
 	if canUpload, err := api.usage.CanPublishPubSub(username); err != nil {
 		api.LogError(c, err, "an error occurred looking up pubsub counts in database")(http.StatusBadRequest)
-		api.refundUserCredits(username, "pubsub", cost)
 		return
 	} else if !canUpload {
 		Fail(c, errors.New("sending a pubsub message will go over your monthly limit"))
@@ -330,7 +326,6 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	// publish the actual message
 	if err = api.ipfs.PubSubPublish(topic, forms["message"]); err != nil {
 		api.LogError(c, err, eh.IPFSPubSubPublishError)(http.StatusBadRequest)
-		api.refundUserCredits(username, "pubsub", cost)
 		return
 	}
 	// update pubsub message usage

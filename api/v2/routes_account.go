@@ -9,7 +9,6 @@ import (
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/database/models"
 	"github.com/gin-gonic/gin"
 )
@@ -182,34 +181,10 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
-	// search for user in database
-	user, err := api.um.FindByUserName(username)
-	if err != nil {
-		api.LogError(c, err, eh.UserSearchError)(http.StatusNotFound)
-		return
-	}
-	var cost float64
-	// if they haven't made a key before, the first one is free
-	if len(user.IPFSKeyIDs) == 0 {
-		cost = 0
-		err = nil
-	} else {
-		cost, err = utils.CalculateAPICallCost(forms["key_type"], false)
-		if err != nil {
-			api.LogError(c, err, eh.CallCostCalculationError)(http.StatusBadRequest)
-			return
-		}
-	}
-	// validate they have enough credits to pay for key creation
-	if err := api.validateUserCredits(username, cost); err != nil && cost > 0 {
-		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
-		return
-	}
 	// get a list of users current keys
 	keys, err := api.um.GetKeysForUser(username)
 	if err != nil {
 		api.LogError(c, err, eh.KeySearchError)(http.StatusNotFound)
-		api.refundUserCredits(username, "key", cost)
 		return
 	}
 	// format key name
@@ -220,7 +195,6 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		if v == keyName {
 			err = fmt.Errorf("key with name already exists")
 			api.LogError(c, err, eh.DuplicateKeyCreationError)(http.StatusConflict)
-			api.refundUserCredits(username, "key", cost)
 			return
 		}
 	}
@@ -237,12 +211,10 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		Type:        forms["key_type"],
 		Size:        bitsInt,
 		NetworkName: "public",
-		CreditCost:  cost,
 	}
 	// send message for processing
 	if err = api.queues.key.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
-		api.refundUserCredits(username, "key", cost)
 		return
 	}
 	// log and return
