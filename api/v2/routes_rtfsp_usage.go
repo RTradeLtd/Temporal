@@ -1,19 +1,19 @@
 package v2
 
 import (
-	"fmt"
+	"bytes"
 	"html"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/RTradeLtd/crypto"
 	"github.com/RTradeLtd/rtfs"
 	gocid "github.com/ipfs/go-cid"
 
-	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -66,93 +66,6 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": "content pin request sent to backend"})
 }
 
-// AddFileToHostedIPFSNetworkAdvanced is used to add a file to a private ipfs network in a more advanced and resilient manner
-func (api *API) addFileToHostedIPFSNetworkAdvanced(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
-		return
-	}
-	// extract post forms
-	forms := api.extractPostForms(c, "network_name", "hold_time")
-	if len(forms) == 0 {
-		return
-	}
-	// validate access to private network
-	if err := CheckAccessForPrivateNetwork(username, forms["network_name"], api.dbm.DB); err != nil {
-		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
-		return
-	}
-	// format a url to connect to for private network
-	apiURL := api.GetIPFSEndpoint(forms["network_name"])
-	// connect to private ifps network
-	ipfsManager, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*10, true)
-	if err != nil {
-		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
-		return
-	}
-	// retrieve file handler
-	fileHandler, err := c.FormFile("file")
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	// validate size of file is within limits
-	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
-		Fail(c, err)
-		return
-	}
-	// open file into memory
-	openFile, err := fileHandler.Open()
-	if err != nil {
-		api.LogError(c, err, eh.FileOpenError)
-		Fail(c, err)
-		return
-	}
-	api.l.Debug("opening file")
-	api.l.Debug("file opened")
-	// generate object name for object name in temporary storage
-	randUtils := utils.GenerateRandomUtils()
-	randString := randUtils.GenerateString(32, utils.LetterBytes)
-	objectName := fmt.Sprintf("%s%s", username, randString)
-	// store object in minio
-	hash, _, err := api.mini.PutObject(objectName, openFile, fileHandler.Size, mini.PutObjectOptions{
-		Bucket:            FilesUploadBucket,
-		EncryptPassphrase: html.UnescapeString(c.PostForm("passphrase"))}, ipfsManager)
-	if err != nil {
-		api.LogError(c, err, eh.MinioPutError)(http.StatusBadRequest)
-		return
-	}
-	api.l.Debugf("%s stored in minio", objectName)
-	// construct ipfs file upload message
-	ifp := queue.IPFSFile{
-		MinioHostIP:      api.cfg.MINIO.Connection.IP,
-		FileName:         fileHandler.Filename,
-		FileSize:         fileHandler.Size,
-		BucketName:       FilesUploadBucket,
-		ObjectName:       objectName,
-		UserName:         username,
-		NetworkName:      forms["network_name"],
-		HoldTimeInMonths: forms["hold_time"],
-		CreditCost:       0,
-		JWT:              GetAuthToken(c),
-	}
-	// send message for processing
-	if err = api.queues.file.PublishMessage(ifp); err != nil {
-		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
-		return
-	}
-	// log and return
-	api.l.Infow("advanced private ipfs file upload requested", "user", username)
-	// return information that the upload is being processed
-	// also return what the hash of the object will be once it's added to ipfs
-	Respond(c, http.StatusOK, gin.H{
-		"response": gin.H{
-			"message": "see hash field for ipfs hash of object once processing is finished",
-			"hash":    hash},
-	})
-}
-
 // AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network via the simple method
 func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
@@ -195,6 +108,20 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.FileOpenError)(http.StatusBadRequest)
 		return
 	}
+	var reader io.Reader
+	// encrypt file if passphrase is given
+	if c.PostForm("passphrase") != "" {
+		// html decode strings
+		decodedPassPhrase := html.UnescapeString(c.PostForm("passphrase"))
+		encrypted, err := crypto.NewEncryptManager(decodedPassPhrase).Encrypt(file)
+		if err != nil {
+			api.LogError(c, err, eh.EncryptionError)(http.StatusBadRequest)
+			return
+		}
+		reader = bytes.NewReader(encrypted)
+	} else {
+		reader = file
+	}
 	// format a url to connect to for private network
 	apiURL := api.GetIPFSEndpoint(forms["network_name"])
 	// connect to private ifps network
@@ -204,7 +131,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	// add file to ipfs
-	resp, err := ipfsManager.Add(file)
+	resp, err := ipfsManager.Add(reader)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		return

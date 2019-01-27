@@ -141,8 +141,6 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 		return qm.ProcessDatabaseFileAdds(ctx, wg, msgs)
 	case IpfsPinQueue:
 		return qm.ProccessIPFSPins(ctx, wg, msgs)
-	case IpfsFileQueue:
-		return qm.ProccessIPFSFiles(ctx, wg, msgs)
 	case EmailSendQueue:
 		return qm.ProcessMailSends(ctx, wg, db, msgs)
 	case IpnsEntryQueue:

@@ -261,50 +261,6 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	}
 	hash = apiResp.Response
 
-	// add a file advanced
-	// /v2/ipfs/private/file/add/advanced
-	bodyBuf = &bytes.Buffer{}
-	bodyWriter = multipart.NewWriter(bodyBuf)
-	fileWriter, err = bodyWriter.CreateFormFile("file", "../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	fh, err = os.Open("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer fh.Close()
-	if _, err = io.Copy(fileWriter, fh); err != nil {
-		t.Fatal(err)
-	}
-	bodyWriter.Close()
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/v2/ipfs/private/file/add/advanced", bodyBuf)
-	req.Header.Add("Authorization", authHeader)
-	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
-	urlValues = url.Values{}
-	urlValues.Add("hold_time", "5")
-	urlValues.Add("passphrase", "password123")
-	urlValues.Add("network_name", "abc123")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code recovered from /v2/ipfs/private/file/add/advanced")
-	}
-	mapAPIResp = mapAPIResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &mapAPIResp); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if mapAPIResp.Code != 200 {
-		t.Fatal("bad api status code from /v2/ipfs/private/file/add/advanced")
-	}
-
 	// test pinning
 	// /v2/ipfs/private/pin
 	apiResp = apiResponse{}

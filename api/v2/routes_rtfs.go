@@ -157,7 +157,7 @@ func (api *API) addFile(c *gin.Context) {
 		return
 	}
 	var reader io.Reader
-	// encrypt file
+	// encrypt file is passphrase is given
 	if c.PostForm("passphrase") != "" {
 		// html decode strings
 		decodedPassPhrase := html.UnescapeString(c.PostForm("passphrase"))

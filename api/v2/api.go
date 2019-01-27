@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/mini"
-
 	"github.com/streadway/amqp"
 
 	"github.com/RTradeLtd/Temporal/log"
@@ -47,7 +45,6 @@ var (
 type API struct {
 	ipfs        rtfs.Manager
 	ipfsCluster *rtfscluster.ClusterManager
-	mini        *mini.MinioManager
 	keys        *kaas.Client
 	r           *gin.Engine
 	cfg         *config.TemporalConfig
@@ -205,16 +202,9 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 	if err != nil {
 		return nil, err
 	}
-	// connect to minio
-	endpoint := fmt.Sprintf("%s:%s", cfg.MINIO.Connection.IP, cfg.MINIO.Connection.Port)
-	miniManager, err := mini.NewMinioManager(endpoint, cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
-	if err != nil {
-		return nil, err
-	}
 	return &API{
 		ipfs:        ipfs,
 		ipfsCluster: ipfsCluster,
-		mini:        miniManager,
 		keys:        keys,
 		cfg:         cfg,
 		service:     "api",
@@ -553,7 +543,6 @@ func (api *API) setupRoutes() error {
 			file := private.Group("/file")
 			{
 				file.POST("/add", api.addFileToHostedIPFSNetwork)
-				file.POST("/add/advanced", api.addFileToHostedIPFSNetworkAdvanced)
 			}
 			// pubsub routes
 			pubsub := private.Group("/pubsub")
