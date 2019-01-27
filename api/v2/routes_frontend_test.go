@@ -89,7 +89,4 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	if floatAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /v2/frontend/cost/calculate/file")
 	}
-	if floatAPIResp.Response == 0 {
-		t.Fatal("failed to calculate cost /v2/frontend/cost/calculate/file")
-	}
 }
