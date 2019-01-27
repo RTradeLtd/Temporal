@@ -47,9 +47,6 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	if floatAPIResp.Code != 200 {
 		t.Fatal("bad response code from /v2/frontend/cost/calculate")
 	}
-	if floatAPIResp.Response == 0 {
-		t.Fatal("failed to calculate cost /v2/frontend/cost/calculate")
-	}
 
 	// test file upload cost calculation
 	// /v2/frontend/cost/calculate/file
