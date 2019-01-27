@@ -27,11 +27,6 @@ case "$1" in
         export INIT_DB
         temporal queue ipfs pin
         ;;
-    ipfs-file-queue)
-        INIT_DB=true
-        export INIT_DB
-        temporal queue ipfs file
-        ;;
     email-send-queue)
         INIT_DB=true
         export INIT_DB
