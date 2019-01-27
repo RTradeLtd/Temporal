@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/RTradeLtd/database/models"
 	"github.com/RTradeLtd/rtfs"
 	"github.com/c2h5oh/datasize"
 )
@@ -68,7 +69,7 @@ func CalculateAPICallCost(callType string, privateNetwork bool) (float64, error)
 }
 
 // CalculatePinCost is used to calculate the cost of pining a particular content hash
-func CalculatePinCost(contentHash string, holdTimeInMonths int64, im rtfs.Manager, privateNetwork bool) (float64, error) {
+func CalculatePinCost(username, contentHash string, holdTimeInMonths int64, im rtfs.Manager, um *models.UsageManager) (float64, error) {
 	objectStat, err := im.Stat(contentHash)
 	if err != nil {
 		return float64(0), err
@@ -83,27 +84,37 @@ func CalculatePinCost(contentHash string, holdTimeInMonths int64, im rtfs.Manage
 	gigabytesFloat := float64(gigaInBytes)
 	// convert object size from bytes to gigabytes
 	objectSizeInGigabytesFloat := sizeInBytesFloat / gigabytesFloat
-	var costPerMonthFloat float64
-	if privateNetwork {
-		costPerMonthFloat = objectSizeInGigabytesFloat * UsdPerGigaBytePerMonthPrivate
-	} else {
-		costPerMonthFloat = objectSizeInGigabytesFloat * UsdPerGigaBytePerMonthPublic
+	// get the users usage model
+	usage, err := um.FindByUserName(username)
+	if err != nil {
+		return 0, err
 	}
+	// if they are free tier, they don't incur data charges
+	if usage.Tier == models.Free {
+		return 0, nil
+	}
+	// dynamic pricing based on their usage tier
+	costPerMonthFloat := objectSizeInGigabytesFloat * usage.Tier.PricePerGB()
 	return costPerMonthFloat * float64(holdTimeInMonths), nil
 }
 
 // CalculateFileCost is used to calculate the cost of storing a file
-func CalculateFileCost(holdTimeInMonths, size int64, privateNetwork bool) float64 {
+func CalculateFileCost(username string, holdTimeInMonths, size int64, um *models.UsageManager) (float64, error) {
 	gigabytesFloat := float64(datasize.GB.Bytes())
 	sizeFloat := float64(size)
 	sizeGigabytesFloat := sizeFloat / gigabytesFloat
-	var costPerMonthFloat float64
-	if privateNetwork {
-		costPerMonthFloat = sizeGigabytesFloat * UsdPerGigaBytePerMonthPrivate
-	} else {
-		costPerMonthFloat = sizeGigabytesFloat * UsdPerGigaBytePerMonthPublic
+	// get the users usage model
+	usage, err := um.FindByUserName(username)
+	if err != nil {
+		return 0, err
 	}
-	return costPerMonthFloat * float64(holdTimeInMonths)
+	// if they are free tier, they don't incur data charges
+	if usage.Tier == models.Free {
+		return 0, nil
+	}
+	// dynamic pricing based on their usage tier
+	costPerMonthFloat := sizeGigabytesFloat * usage.Tier.PricePerGB()
+	return costPerMonthFloat * float64(holdTimeInMonths), nil
 }
 
 // FloatToBigInt used to convert a float to big int

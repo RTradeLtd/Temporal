@@ -5,6 +5,10 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/utils"
+	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/gorm"
 	"github.com/RTradeLtd/rtfs"
 )
 
@@ -22,59 +26,75 @@ func TestUtils_CalculatePinCost(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	cfg, err := config.LoadConfig("../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	usage := models.NewUsageManager(db)
 	type args struct {
-		hash    string
-		months  int64
-		private bool
+		username string
+		hash     string
+		months   int64
 	}
 	tests := []struct {
-		name string
-		args args
+		name    string
+		args    args
+		wantErr bool
 	}{
-		{"Public", args{testHash, int64(10), false}},
-		{"Private", args{testHash, int64(10), true}},
+		{"Pass", args{"testuser", testHash, int64(10)}, false},
+		{"Fail", args{"thisusertotallydoesnotexist", testHash, int64(10)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cost, err := utils.CalculatePinCost(
+			if _, err := utils.CalculatePinCost(
+				tt.args.username,
 				tt.args.hash,
 				tt.args.months,
 				manager,
-				tt.args.private,
-			)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if cost == 0 {
-				t.Fatal("invalid size returned")
+				usage,
+			); (err != nil) != tt.wantErr {
+				t.Fatalf("CalculatePinCost err = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
 func TestUtils_CalculateFileCost(t *testing.T) {
+	cfg, err := config.LoadConfig("../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	usage := models.NewUsageManager(db)
 	type args struct {
-		size    int64
-		months  int64
-		private bool
+		username string
+		size     int64
+		months   int64
 	}
 	tests := []struct {
-		name string
-		args args
+		name    string
+		args    args
+		wantErr bool
 	}{
-		{"Public", args{testSize, int64(10), false}},
-		{"Private", args{testSize, int64(10), true}},
+		{"Pass", args{"testuser", testSize, int64(10)}, false},
+		{"Fail", args{"totallydoesnotexist", testSize, int64(10)}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cost := utils.CalculateFileCost(
+			if _, err := utils.CalculateFileCost(
+				tt.args.username,
 				tt.args.months,
 				tt.args.size,
-				tt.args.private,
-			)
-			if cost == 0 {
-				t.Fatal("invalid size returned")
+				usage,
+			); (err != nil) != tt.wantErr {
+				t.Fatalf("CalculateFileCost err = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -119,4 +139,14 @@ func TestUtils_FloatToBigInt(t *testing.T) {
 	if bigInt.Int64() != want {
 		t.Fatal("failed to properly calculate big int")
 	}
+}
+
+func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
+	return database.OpenDBConnection(database.DBOptions{
+		User:           cfg.Database.Username,
+		Password:       cfg.Database.Password,
+		Address:        cfg.Database.URL,
+		Port:           cfg.Database.Port,
+		SSLModeDisable: true,
+	})
 }
