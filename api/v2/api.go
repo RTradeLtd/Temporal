@@ -36,7 +36,6 @@ import (
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/gin-gonic/gin"
-	"github.com/stripe/stripe-go/client"
 )
 
 var (
@@ -67,7 +66,6 @@ type API struct {
 	lens        pbLens.IndexerAPIClient
 	dc          *dash.Client
 	queues      queues
-	stripe      *client.API
 	service     string
 
 	version string
@@ -202,24 +200,16 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 	if err != nil {
 		return nil, err
 	}
-	// initialize stripe client
-	sc := &client.API{}
-	if cfg.Stripe.SecretKey != "" {
-		sc.Init(cfg.Stripe.SecretKey, nil)
-	} else {
-		stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
-		if stripeSecretKey == "" {
-			return nil, errors.New("failed to initialize stripe client due to missing api key")
-		}
-		sc.Init(stripeSecretKey, nil)
+	stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
+	if stripeSecretKey == "" {
+		return nil, errors.New("failed to initialize stripe client due to missing api key")
 	}
-	if cfg.Stripe.PublishableKey == "" {
-		stripePublishableKey := os.Getenv("STRIPE_PUBLISHABLE_KEY")
-		if stripePublishableKey == "" {
-			return nil, errors.New("no stripe publishable key found")
-		}
-		cfg.Stripe.PublishableKey = stripePublishableKey
+	cfg.Stripe.SecretKey = stripeSecretKey
+	stripePublishableKey := os.Getenv("STRIPE_PUBLISHABLE_KEY")
+	if stripePublishableKey == "" {
+		return nil, errors.New("no stripe publishable key found")
 	}
+	cfg.Stripe.PublishableKey = stripePublishableKey
 	// return
 	return &API{
 		ipfs:        ipfs,
@@ -250,10 +240,9 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 			dash:     qmDash,
 			eth:      qmEth,
 		},
-		zm:     models.NewZoneManager(dbm.DB),
-		rm:     models.NewRecordManager(dbm.DB),
-		nm:     models.NewHostedIPFSNetworkManager(dbm.DB),
-		stripe: sc,
+		zm: models.NewZoneManager(dbm.DB),
+		rm: models.NewRecordManager(dbm.DB),
+		nm: models.NewHostedIPFSNetworkManager(dbm.DB),
 	}, nil
 }
 

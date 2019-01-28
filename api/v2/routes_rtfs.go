@@ -2,7 +2,6 @@ package v2
 
 import (
 	"bytes"
-	"errors"
 	"html"
 	"io"
 	"net/http"
@@ -214,11 +213,8 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 		return
 	}
 	// validate they can submit pubsub message calls
-	if canUpload, err := api.usage.CanPublishPubSub(username); err != nil {
-		api.LogError(c, err, "an error occurred looking up pubsub counts in database")(http.StatusBadRequest)
-		return
-	} else if !canUpload {
-		Fail(c, errors.New("sending a pubsub message will go over your monthly limit"))
+	if err := api.usage.CanPublishPubSub(username); err != nil {
+		api.LogError(c, err, "sending a pubsub message will go over your monthly limit")(http.StatusBadRequest)
 		return
 	}
 	// publish the actual message

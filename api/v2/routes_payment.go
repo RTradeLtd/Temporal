@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"path/filepath"
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/eh"
@@ -313,17 +312,20 @@ func (api *API) getUSDValue(paymentType string) (float64, error) {
 	return 0, errors.New(eh.InvalidPaymentTypeError)
 }
 
-// stripe based calls
-
+// StripeDisplay is used to display, and render a stripe checkout button
 func (api *API) stripeDisplay(w http.ResponseWriter, req *http.Request) {
-	tmpls, _ := template.ParseFiles(filepath.Join("templates", "stripe.html"))
+	tmpls, _ := template.New("stripe.html").Parse(stripeTemplate)
 	tmpl := tmpls.Lookup("stripe.html")
-	tmpl.Execute(w, map[string]string{"Key": api.cfg.Stripe.PublishableKey})
+	tmpl.Execute(w, map[string]string{
+		"Key":         api.cfg.Stripe.PublishableKey,
+		"title":       "Temporal Credit Purchase",
+		"description": "Purchase Temporal credits using stripe!"})
 }
 
+// StripeCharge is used to initiate a charge transaction
 func (api *API) stripeCharge(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
-
+	stripe.Key = api.cfg.Stripe.SecretKey
 	customerParams := &stripe.CustomerParams{
 		Email: stripe.String(req.Form.Get("stripeEmail")),
 	}
@@ -333,11 +335,16 @@ func (api *API) stripeCharge(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	creditValueCentsString := req.Form.Get("credit_value_in_cents")
+	creditValueCentsInt, err := strconv.ParseInt(creditValueCentsString, 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	chargeParams := &stripe.ChargeParams{
-		Amount:      stripe.Int64(500),
+		Amount:      stripe.Int64(creditValueCentsInt), // this is the amount of cents to charge
 		Currency:    stripe.String(string(stripe.CurrencyUSD)),
-		Description: stripe.String("Sample Charge"),
+		Description: stripe.String("Temporal Credit Purchase"),
 		Customer:    stripe.String(newCustomer.ID),
 	}
 
@@ -345,6 +352,5 @@ func (api *API) stripeCharge(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	fmt.Fprintf(w, "Charge completed successfully!")
 }

@@ -4,12 +4,6 @@
 </head>
 <body>
 <form action="/v2/stripe/charge" method="post" class="payment">
-  <article>
-    <label class="amount">
-      <span>Amount: $5.00</span>
-    </label>
-  </article>
-
   <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
     data-key="{{ .Key }}"
     data-description="{{ .description }}"

@@ -51,7 +51,7 @@
 
 [[projects]]
   branch = "release/prod-prep"
-  digest = "1:0373743aa6d34af2ba7973ed41accc5de58c5a83279838564834bb096d501436"
+  digest = "1:f6c1a62465fb8d5ebb41b527f5e99834d1fe280c42773446d0721ebf7efdb578"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "52c69dd53fa0a464639639c1458d57a3c1e45b44"
+  revision = "e25675959e2190a6c7a15bf7fd286169450b6abb"
 
 [[projects]]
   branch = "master"
@@ -1077,69 +1077,13 @@
   revision = "a314942b2fd9dde7a3f70ba3f1062848ce6eb392"
 
 [[projects]]
-  digest = "1:e6965566abdf0e3d20cb7d2ec1f15420a5b1378d951a62e75dbc158c1c7b60c6"
+  digest = "1:059e49a42b5fb03ebc0ecc5cc6ae8bbd83c2e0bdfc6142d3937f71241eb37060"
   name = "github.com/stripe/stripe-go"
   packages = [
     ".",
-    "account",
-    "applepaydomain",
-    "balance",
-    "bankaccount",
-    "bitcoinreceiver",
-    "bitcointransaction",
-    "card",
     "charge",
-    "client",
-    "countryspec",
-    "coupon",
     "customer",
-    "discount",
-    "dispute",
-    "ephemeralkey",
-    "event",
-    "exchangerate",
-    "fee",
-    "feerefund",
-    "file",
-    "filelink",
     "form",
-    "invoice",
-    "invoiceitem",
-    "issuerfraudrecord",
-    "issuing/authorization",
-    "issuing/card",
-    "issuing/cardholder",
-    "issuing/dispute",
-    "issuing/transaction",
-    "loginlink",
-    "order",
-    "orderreturn",
-    "paymentintent",
-    "paymentsource",
-    "payout",
-    "plan",
-    "product",
-    "radar/valuelist",
-    "radar/valuelistitem",
-    "recipient",
-    "refund",
-    "reporting/reportrun",
-    "reporting/reporttype",
-    "reversal",
-    "sigma/scheduledqueryrun",
-    "sku",
-    "source",
-    "sourcetransaction",
-    "sub",
-    "subitem",
-    "terminal/connectiontoken",
-    "terminal/location",
-    "terminal/reader",
-    "token",
-    "topup",
-    "transfer",
-    "usagerecord",
-    "webhookendpoint",
   ]
   pruneopts = "UT"
   revision = "f8b095462d541c43d981d28de52b7464b25f3ee1"
@@ -1304,7 +1248,7 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "057139ce5d2bdbe6fe73c53679e24e9cf007f637"
+  revision = "c7b33c32a30bae9ba07d37eb4d86f1f8b0f644fb"
 
 [[projects]]
   branch = "master"
@@ -1381,7 +1325,7 @@
     "googleapis/rpc/status",
   ]
   pruneopts = "UT"
-  revision = "aa24cbd621fe1e2867110ea8c673d99a1a92efdc"
+  revision = "8ac453e89fca495c0d17f98932642f392e2a11f3"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
@@ -1498,7 +1442,7 @@
     "github.com/sendgrid/sendgrid-go/helpers/mail",
     "github.com/streadway/amqp",
     "github.com/stripe/stripe-go",
-    "github.com/stripe/stripe-go/client",
+    "github.com/stripe/stripe-go/charge",
     "github.com/stripe/stripe-go/customer",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",

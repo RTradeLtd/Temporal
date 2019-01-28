@@ -85,8 +85,16 @@ type Usage struct {
 	CurrentDataUsedGB uint64 `gorm:"type:numeric;default:0"`
 	// keeps track of how many IPNS records the user has published
 	IPNSRecordsPublished int64 `gorm:"type:integer;default:0"`
+	// keeps track of how many ipns records the user is allowed to publish
+	IPNSRecordsAllowed int64 `gorm:"type:integer;default:0"`
 	// keeps track of how many messages the user has sent
 	PubSubMessagesSent int64 `gorm:"type:integer;default:0"`
+	// keeps track of the number of pubsub messages a user is allowed to send
+	PubSubMessagesAllowed int64 `gorm:"type:integer;default:0"`
+	// keeps track of how many keys the user has created
+	KeysCreated int64 `gorm:"type:integer;default:0"`
+	// keeps track of how many keys the user is allowed to create
+	KeysAllowed int64 `gorm:"type:integer:default;0"`
 	// Used to indicate whether or not the user
 	// has consumed their free private network trial
 	PrivateNetworkTrialUsed bool `gorm:"type:boolean;default:false"`
@@ -122,8 +130,14 @@ func (bm *UsageManager) NewUsageEntry(username string, tier DataUsageTier) (*Usa
 	}
 	if tier == Free {
 		usage.MonthlyDataLimitGB = FreeUploadLimit
+		usage.KeysAllowed = 5
+		usage.PubSubMessagesAllowed = 100
+		usage.IPNSRecordsAllowed = 5
 	} else {
 		usage.MonthlyDataLimitGB = NonFreeUploadLimit
+		usage.KeysAllowed = 100
+		usage.PubSubMessagesAllowed = 10000
+		usage.IPNSRecordsAllowed = 100
 	}
 	if err := bm.DB.Create(usage).Error; err != nil {
 		return nil, err
@@ -151,16 +165,15 @@ func (bm *UsageManager) GetUploadPricePerGB(username string) (float64, error) {
 }
 
 // CanPublishIPNS is used to check if a user can publish IPNS records
-func (bm *UsageManager) CanPublishIPNS(username string) (bool, error) {
+func (bm *UsageManager) CanPublishIPNS(username string) error {
 	b, err := bm.FindByUserName(username)
 	if err != nil {
-		return false, err
+		return err
 	}
-	// if they are free, make sure they aren't at the limit
-	if b.Tier == Free && b.IPNSRecordsPublished > 5 {
-		return false, nil
+	if b.IPNSRecordsPublished >= b.IPNSRecordsPublished {
+		return errors.New("too many records published")
 	}
-	return true, nil
+	return nil
 }
 
 // CanUpload is used to check if a user can upload an object with the given data size
@@ -176,15 +189,27 @@ func (bm *UsageManager) CanUpload(username string, dataSizeBytes uint64) error {
 }
 
 // CanPublishPubSub is used to check if a user can publish pubsub messages
-func (bm *UsageManager) CanPublishPubSub(username string) (bool, error) {
+func (bm *UsageManager) CanPublishPubSub(username string) error {
 	b, err := bm.FindByUserName(username)
 	if err != nil {
-		return false, err
+		return err
 	}
-	if b.Tier == Free && b.IPNSRecordsPublished > 10000 {
-		return false, nil
+	if b.PubSubMessagesSent >= b.PubSubMessagesAllowed {
+		return errors.New("too many pubsub messages sent, please wait until next billing cycle")
 	}
-	return true, nil
+	return nil
+}
+
+// CanCreateKey is used to check if a user can create an ipfs key
+func (bm *UsageManager) CanCreateKey(username string) error {
+	b, err := bm.FindByUserName(username)
+	if err != nil {
+		return err
+	}
+	if b.KeysCreated >= b.KeysAllowed {
+		return errors.New("too many keys created, please wait until next billing cycle")
+	}
+	return nil
 }
 
 // HasStartedPrivateNetworkTrial is used to check if the user has started their private network trial
@@ -300,6 +325,16 @@ func (bm *UsageManager) IncrementIPNSUsage(username string, count int64) error {
 	}
 	b.IPNSRecordsPublished = b.IPNSRecordsPublished + count
 	return bm.DB.Model(b).Update("ip_ns_records_published", b.IPNSRecordsPublished).Error
+}
+
+// IncrementKeyCount is used to increment the key created counter
+func (bm *UsageManager) IncrementKeyCount(username string, count int64) error {
+	b, err := bm.FindByUserName(username)
+	if err != nil {
+		return err
+	}
+	b.KeysCreated = b.KeysCreated + count
+	return bm.DB.Model(b).Update("keys_created", b.KeysCreated).Error
 }
 
 // StartPrivateNetworkTrial is used to start a users private network trial
