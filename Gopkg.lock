@@ -1312,7 +1312,7 @@
     "googleapis/rpc/status",
   ]
   pruneopts = "UT"
-  revision = "7cdc0b958d7541690c155bb01fa9a219bbf35296"
+  revision = "aa24cbd621fe1e2867110ea8c673d99a1a92efdc"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
