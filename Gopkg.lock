@@ -35,11 +35,11 @@
 
 [[projects]]
   branch = "signer/tls"
-  digest = "1:e0ca7ad0f62bd1edf0e156908ed2df073851e121ea6399341fef4eb20413e441"
+  digest = "1:4f63f761fd67bbf96335ba4aa6e2ce61dc2d32c39080a28b58f9f29c5e270a78"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cc85dc26a4d1a4a3ed4c528a49c26d52430bd981"
+  revision = "7b1da4f23ca32b330b04a077fdc4209799e9d350"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -108,15 +108,15 @@
     "pay/response",
   ]
   pruneopts = "UT"
-  revision = "a519739e3fc405ee5804cb102e1b929fadefa720"
+  revision = "22a34604e313f170d5f7ac7cd669d735ed477f3f"
 
 [[projects]]
   branch = "prod-prep"
-  digest = "1:83c2210fc43ab3072e1290a6e9b5a8bfcb63ad70b612d016c14b4c8475dcc092"
+  digest = "1:780a23f9bf6cecc34290477379fd4477581c37bcff768e1f49c0ad6f3d5ddaab"
   name = "github.com/RTradeLtd/kaas"
   packages = ["."]
   pruneopts = "UT"
-  revision = "44665f02bf8560d04cb56477a2536eaedd43246c"
+  revision = "08777d860a29d103e52c4e45add4d343d89d2ca8"
 
 [[projects]]
   branch = "authorization"
@@ -277,7 +277,8 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:fa5e9e1af8a8645086811ec5ab003806026babc57c8bb3a6f7e1ab34b80e2ff1"
+  branch = "master"
+  digest = "1:99186569be6cdcc0d15fb5c9094d15b9e551f8d0e967ed7a09692ab05c6b263b"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
@@ -290,8 +291,7 @@
     "ptypes/timestamp",
   ]
   pruneopts = "UT"
-  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
-  version = "v1.2.0"
+  revision = "347cf4a86c1cb8d262994d8ef5924d4576c5b331"
 
 [[projects]]
   digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
@@ -321,7 +321,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:3cbc83a159e161c6cf3e64590ae19da29069ecd8d92f9400ab6fda15e93cbc5f"
+  digest = "1:6a06217fc753e65aea71446b777393009ef6797dadc0086c4f75bd16590be04d"
   name = "github.com/grpc-ecosystem/grpc-gateway"
   packages = [
     "runtime",
@@ -329,8 +329,8 @@
     "utilities",
   ]
   pruneopts = "UT"
-  revision = "aeab1d96e0f1368d243e2e5f526aa29d495517bb"
-  version = "v1.5.1"
+  revision = "92583770e3f01b09a0d3e9bdf64321d8bebd48f2"
+  version = "v1.4.1"
 
 [[projects]]
   branch = "master"
@@ -1077,6 +1077,75 @@
   revision = "a314942b2fd9dde7a3f70ba3f1062848ce6eb392"
 
 [[projects]]
+  digest = "1:e6965566abdf0e3d20cb7d2ec1f15420a5b1378d951a62e75dbc158c1c7b60c6"
+  name = "github.com/stripe/stripe-go"
+  packages = [
+    ".",
+    "account",
+    "applepaydomain",
+    "balance",
+    "bankaccount",
+    "bitcoinreceiver",
+    "bitcointransaction",
+    "card",
+    "charge",
+    "client",
+    "countryspec",
+    "coupon",
+    "customer",
+    "discount",
+    "dispute",
+    "ephemeralkey",
+    "event",
+    "exchangerate",
+    "fee",
+    "feerefund",
+    "file",
+    "filelink",
+    "form",
+    "invoice",
+    "invoiceitem",
+    "issuerfraudrecord",
+    "issuing/authorization",
+    "issuing/card",
+    "issuing/cardholder",
+    "issuing/dispute",
+    "issuing/transaction",
+    "loginlink",
+    "order",
+    "orderreturn",
+    "paymentintent",
+    "paymentsource",
+    "payout",
+    "plan",
+    "product",
+    "radar/valuelist",
+    "radar/valuelistitem",
+    "recipient",
+    "refund",
+    "reporting/reportrun",
+    "reporting/reporttype",
+    "reversal",
+    "sigma/scheduledqueryrun",
+    "sku",
+    "source",
+    "sourcetransaction",
+    "sub",
+    "subitem",
+    "terminal/connectiontoken",
+    "terminal/location",
+    "terminal/reader",
+    "token",
+    "topup",
+    "transfer",
+    "usagerecord",
+    "webhookendpoint",
+  ]
+  pruneopts = "UT"
+  revision = "f8b095462d541c43d981d28de52b7464b25f3ee1"
+  version = "v55.14.0"
+
+[[projects]]
   digest = "1:4887e9e89c80299aa520d718239809fdd2a47a9aa394909b169959bfbc424ddf"
   name = "github.com/ugorji/go"
   packages = ["codec"]
@@ -1428,6 +1497,9 @@
     "github.com/sendgrid/sendgrid-go",
     "github.com/sendgrid/sendgrid-go/helpers/mail",
     "github.com/streadway/amqp",
+    "github.com/stripe/stripe-go",
+    "github.com/stripe/stripe-go/client",
+    "github.com/stripe/stripe-go/customer",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",
     "go.uber.org/zap/zaptest/observer",

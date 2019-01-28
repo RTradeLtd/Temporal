@@ -3,8 +3,10 @@ package v2
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -34,6 +36,7 @@ import (
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/gin-gonic/gin"
+	"github.com/stripe/stripe-go/client"
 )
 
 var (
@@ -64,6 +67,7 @@ type API struct {
 	lens        pbLens.IndexerAPIClient
 	dc          *dash.Client
 	queues      queues
+	stripe      *client.API
 	service     string
 
 	version string
@@ -198,6 +202,25 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 	if err != nil {
 		return nil, err
 	}
+	// initialize stripe client
+	sc := &client.API{}
+	if cfg.Stripe.SecretKey != "" {
+		sc.Init(cfg.Stripe.SecretKey, nil)
+	} else {
+		stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
+		if stripeSecretKey == "" {
+			return nil, errors.New("failed to initialize stripe client due to missing api key")
+		}
+		sc.Init(stripeSecretKey, nil)
+	}
+	if cfg.Stripe.PublishableKey == "" {
+		stripePublishableKey := os.Getenv("STRIPE_PUBLISHABLE_KEY")
+		if stripePublishableKey == "" {
+			return nil, errors.New("no stripe publishable key found")
+		}
+		cfg.Stripe.PublishableKey = stripePublishableKey
+	}
+	// return
 	return &API{
 		ipfs:        ipfs,
 		ipfsCluster: ipfsCluster,
@@ -227,9 +250,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 			dash:     qmDash,
 			eth:      qmEth,
 		},
-		zm: models.NewZoneManager(dbm.DB),
-		rm: models.NewRecordManager(dbm.DB),
-		nm: models.NewHostedIPFSNetworkManager(dbm.DB),
+		zm:     models.NewZoneManager(dbm.DB),
+		rm:     models.NewRecordManager(dbm.DB),
+		nm:     models.NewHostedIPFSNetworkManager(dbm.DB),
+		stripe: sc,
 	}, nil
 }
 
@@ -445,6 +469,11 @@ func (api *API) setupRoutes() error {
 		}
 	}
 
+	stripeRoutes := v2.Group("/stripe")
+	{
+		stripeRoutes.GET("/", gin.WrapF(api.stripeDisplay))
+		stripeRoutes.POST("/charge", gin.WrapF(api.stripeCharge))
+	}
 	// accounts
 	account := v2.Group("/account", authware...)
 	{

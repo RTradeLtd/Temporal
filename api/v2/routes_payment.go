@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/RTradeLtd/Temporal/eh"
@@ -15,6 +17,9 @@ import (
 	"github.com/RTradeLtd/Temporal/utils"
 	greq "github.com/RTradeLtd/grpc/pay/request"
 	"github.com/gin-gonic/gin"
+	"github.com/stripe/stripe-go"
+	"github.com/stripe/stripe-go/charge"
+	"github.com/stripe/stripe-go/customer"
 )
 
 // ConfirmPayment is used to confirm a payment after sending it.
@@ -306,4 +311,40 @@ func (api *API) getUSDValue(paymentType string) (float64, error) {
 		return RtcCostUsd, nil
 	}
 	return 0, errors.New(eh.InvalidPaymentTypeError)
+}
+
+// stripe based calls
+
+func (api *API) stripeDisplay(w http.ResponseWriter, req *http.Request) {
+	tmpls, _ := template.ParseFiles(filepath.Join("templates", "stripe.html"))
+	tmpl := tmpls.Lookup("stripe.html")
+	tmpl.Execute(w, map[string]string{"Key": api.cfg.Stripe.PublishableKey})
+}
+
+func (api *API) stripeCharge(w http.ResponseWriter, req *http.Request) {
+	req.ParseForm()
+
+	customerParams := &stripe.CustomerParams{
+		Email: stripe.String(req.Form.Get("stripeEmail")),
+	}
+	customerParams.SetSource(req.Form.Get("stripeToken"))
+	newCustomer, err := customer.New(customerParams)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	chargeParams := &stripe.ChargeParams{
+		Amount:      stripe.Int64(500),
+		Currency:    stripe.String(string(stripe.CurrencyUSD)),
+		Description: stripe.String("Sample Charge"),
+		Customer:    stripe.String(newCustomer.ID),
+	}
+
+	if _, err := charge.New(chargeParams); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintf(w, "Charge completed successfully!")
 }

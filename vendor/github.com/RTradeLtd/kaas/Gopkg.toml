@@ -14,14 +14,6 @@
   name = "github.com/RTradeLtd/rtfs"
   branch = "master"
 
-[[constraint]]
-  name = "github.com/grpc-ecosystem/go-grpc-middleware"
-  version = "1.0.0"
-
-[[constraint]]
-  name = "google.golang.org/grpc"
-  version = "1.16.0"
-
 [prune]
   go-tests = true
   unused-packages = true

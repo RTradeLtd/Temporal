@@ -1,6 +1,8 @@
 package v2
 
-import "github.com/RTradeLtd/Temporal/queue"
+import (
+	"github.com/RTradeLtd/Temporal/queue"
+)
 
 // CreditRefund is a data object to contain refund information
 type CreditRefund struct {
