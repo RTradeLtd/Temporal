@@ -43,7 +43,7 @@ func TestUtils_CalculatePinCost(t *testing.T) {
 		wantErr bool
 	}{
 		{"Pass", args{"testuser", testHash, int64(10)}, false},
-		{"Fail", args{"thisusertotallydoesnotexist", testHash, int64(10)}, false},
+		{"Fail", args{"thisusertotallydoesnotexist", testHash, int64(10)}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
