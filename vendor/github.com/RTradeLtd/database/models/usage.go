@@ -171,7 +171,7 @@ func (bm *UsageManager) CanPublishIPNS(username string) error {
 	if err != nil {
 		return err
 	}
-	if b.IPNSRecordsPublished >= b.IPNSRecordsPublished {
+	if b.IPNSRecordsPublished >= b.IPNSRecordsAllowed {
 		return errors.New("too many records published")
 	}
 	return nil
