@@ -12,10 +12,16 @@ var stripeTemplate = `<html>
 </head>
 <body>
 <form action="/v2/stripe/charge" method="post" class="payment">
+  <input type="hidden" value="{{ .amount }}" name="provided_amount">
   <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-    data-key="{{ .Key }}"
+	data-key="{{ .Key }}"
+	data-name="Temporal"
     data-description="{{ .description }}"
-    data-amount="{{ .amount }}"
+	data-amount="{{ .amount }}"
+	data-email="{{ .email }}"
+	data-zip-code="true"
+	data-billing-address="true"
+	data-allow-remember-me="false"
     data-locale="auto"></script>
 </form>
 </body>

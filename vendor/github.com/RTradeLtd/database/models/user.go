@@ -321,6 +321,9 @@ func (um *UserManager) AddCredits(username string, credits float64) (*User, erro
 	if err != nil {
 		return nil, err
 	}
+	// update new credit balance in memory
+	u.Credits = u.Credits + credits
+	// save updated credit balance to database
 	if check := um.DB.Model(u).Update("credits", u.Credits); check.Error != nil {
 		return nil, check.Error
 	}

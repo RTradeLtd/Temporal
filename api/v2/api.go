@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"strconv"
@@ -397,6 +398,14 @@ func (api *API) setupRoutes() error {
 		// stats middleware
 		stats.RequestStats())
 
+	// set stripe html template
+	tmpls, err := template.New("stripe.html").Parse(stripeTemplate)
+	if err != nil {
+		return err
+	}
+	// load the html template
+	api.r.SetHTMLTemplate(tmpls)
+
 	// set up middleware
 	ginjwt := middleware.JwtConfigGenerate(api.cfg.JWT.Key, api.cfg.JWT.Realm, api.dbm.DB, api.l)
 	authware := []gin.HandlerFunc{ginjwt.MiddlewareFunc()}
@@ -453,13 +462,13 @@ func (api *API) setupRoutes() error {
 		{
 			deposit.GET("/address/:type", api.GetDepositAddress)
 		}
+		stripe := payments.Group("/stripe")
+		{
+			stripe.GET("/:cents", api.stripeDisplay)
+			stripe.POST("/charge", api.stripeCharge)
+		}
 	}
 
-	stripeRoutes := v2.Group("/stripe")
-	{
-		stripeRoutes.GET("/", gin.WrapF(api.stripeDisplay))
-		stripeRoutes.POST("/charge", gin.WrapF(api.stripeCharge))
-	}
 	// accounts
 	account := v2.Group("/account", authware...)
 	{

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -312,45 +311,75 @@ func (api *API) getUSDValue(paymentType string) (float64, error) {
 	return 0, errors.New(eh.InvalidPaymentTypeError)
 }
 
-// StripeDisplay is used to display, and render a stripe checkout button
-func (api *API) stripeDisplay(w http.ResponseWriter, req *http.Request) {
-	tmpls, _ := template.New("stripe.html").Parse(stripeTemplate)
-	tmpl := tmpls.Lookup("stripe.html")
-	tmpl.Execute(w, map[string]string{
+// stripeDisplay is used to display the strip checkout page
+func (api *API) stripeDisplay(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, "no api token provided")(http.StatusBadRequest)
+		return
+	}
+	// find email related to user
+	user, err := api.um.FindByUserName(username)
+	if err != nil {
+		Fail(c, err, http.StatusBadRequest)
+		return
+	}
+	// render the actuall checkout box
+	c.HTML(http.StatusOK, "stripe.html", gin.H{
 		"Key":         api.cfg.Stripe.PublishableKey,
 		"title":       "Temporal Credit Purchase",
-		"description": "Purchase Temporal credits using stripe!"})
+		"description": "Purchase credits using stripe",
+		"amount":      c.Param("cents"),
+		"email":       user.EmailAddress,
+	})
 }
 
-// StripeCharge is used to initiate a charge transaction
-func (api *API) stripeCharge(w http.ResponseWriter, req *http.Request) {
-	req.ParseForm()
-	stripe.Key = api.cfg.Stripe.SecretKey
-	customerParams := &stripe.CustomerParams{
-		Email: stripe.String(req.Form.Get("stripeEmail")),
+// stripeCharge is used to place the actual credit card charge
+func (api *API) stripeCharge(c *gin.Context) {
+	// get the user account associated with the email
+	user, err := api.um.FindByEmail(c.PostForm("stripeEmail"))
+	if err != nil {
+		api.LogError(c, err, "provided email account does not exist, use temporal email")(http.StatusBadRequest)
+		return
 	}
-	customerParams.SetSource(req.Form.Get("stripeToken"))
+	// setup stripe instance
+	stripe.Key = api.cfg.Stripe.SecretKey
+	// setup customer objecter
+	customerParams := &stripe.CustomerParams{
+		Email: stripe.String(c.PostForm("stripeEmail")),
+	}
+	// update customer object
+	customerParams.SetSource(c.PostForm("stripeToken"))
+	// instantiate customer
 	newCustomer, err := customer.New(customerParams)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
-	creditValueCentsString := req.Form.Get("credit_value_in_cents")
+	// extract the amount of cents to charge them
+	creditValueCentsString := c.PostForm("provided_amount")
+	// format amount of cents from string to int
 	creditValueCentsInt, err := strconv.ParseInt(creditValueCentsString, 10, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
+	// instantiate charge parameters
 	chargeParams := &stripe.ChargeParams{
 		Amount:      stripe.Int64(creditValueCentsInt), // this is the amount of cents to charge
 		Currency:    stripe.String(string(stripe.CurrencyUSD)),
 		Description: stripe.String("Temporal Credit Purchase"),
 		Customer:    stripe.String(newCustomer.ID),
 	}
-
+	// place the actual charge
 	if _, err := charge.New(chargeParams); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
-	fmt.Fprintf(w, "Charge completed successfully!")
+	// add the credits
+	if _, err := api.um.AddCredits(user.UserName, float64(creditValueCentsInt)/100); err != nil {
+		api.LogError(c, err, "failed to grant credits")(http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "charge successfully placed"})
 }
