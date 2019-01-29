@@ -9,7 +9,7 @@ import (
 // uuid as a value to a X-Request-ID header
 func RequestID() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Header("X-Request-ID", uuid.New().String())
+		c.Header("X-Request-Id", uuid.New().String())
 		c.Next()
 	}
 }

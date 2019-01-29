@@ -14,7 +14,9 @@ import (
 // with the given request to make it easier to debug user-submitted erros.
 func (api *API) LogError(c *gin.Context, err error, message string, fields ...interface{}) func(code ...int) {
 	// create base entry with the associated request id
-	var logger = api.l.With("request-id", c.GetHeader("X-Request-ID"))
+	// for some reason this is being set as `X-Request-Id` despite initially
+	// setting the header to `X-Request-ID`
+	var logger = api.l.With("request-id", c.GetHeader("X-Request-Id"))
 
 	// write log
 	if fields != nil && len(fields)%2 == 0 {

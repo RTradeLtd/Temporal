@@ -122,10 +122,10 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	if err != nil {
 		switch err.Error() {
 		case eh.DuplicateEmailError:
-			api.LogError(c, err, eh.DuplicateEmailError)(http.StatusBadRequest)
+			api.LogError(c, err, eh.DuplicateEmailError, "email", forms["email_address"])(http.StatusBadRequest)
 			return
 		case eh.DuplicateUserNameError:
-			api.LogError(c, err, eh.DuplicateUserNameError)(http.StatusBadRequest)
+			api.LogError(c, err, eh.DuplicateUserNameError, "username", forms["username"])(http.StatusBadRequest)
 			return
 		default:
 			api.LogError(c, err, eh.UserAccountCreationError)(http.StatusBadRequest)
