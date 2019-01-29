@@ -3,7 +3,6 @@ package v2
 import (
 	"context"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -200,16 +199,14 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 	if err != nil {
 		return nil, err
 	}
-	stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
-	if stripeSecretKey == "" {
-		return nil, errors.New("failed to initialize stripe client due to missing api key")
+	if cfg.Stripe.SecretKey == "" {
+		stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
+		cfg.Stripe.SecretKey = stripeSecretKey
 	}
-	cfg.Stripe.SecretKey = stripeSecretKey
-	stripePublishableKey := os.Getenv("STRIPE_PUBLISHABLE_KEY")
-	if stripePublishableKey == "" {
-		return nil, errors.New("no stripe publishable key found")
+	if cfg.Stripe.PublishableKey == "" {
+		stripePublishableKey := os.Getenv("STRIPE_PUBLISHABLE_KEY")
+		cfg.Stripe.PublishableKey = stripePublishableKey
 	}
-	cfg.Stripe.PublishableKey = stripePublishableKey
 	// return
 	return &API{
 		ipfs:        ipfs,
