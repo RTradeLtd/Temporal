@@ -13,15 +13,12 @@ import (
 )
 
 const (
-	testHash       = "QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ"
+	testHash       = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 	nodeOneAPIAddr = "192.168.1.101:5001"
 	testSize       = int64(132520817)
 )
 
 func TestUtils_CalculatePinCost(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration tests")
-	}
 	manager, err := rtfs.NewManager(nodeOneAPIAddr, "", time.Minute*10, false)
 	if err != nil {
 		t.Fatal(err)
