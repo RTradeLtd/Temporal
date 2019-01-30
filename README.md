@@ -118,7 +118,7 @@ Refer to the `temporal.yml` documentation for more details.
 
 ### API Documentation
 
-Our API documentation is through [postman](https://documenter.getpostman.com/view/4295780/RWEcQM6W#intro)
+Our API documentation has been redesigned to use slate, hosted through IPFS. The main way to view it is through our [gateway](https://gateway.temporal.cloud/ipns/docs.api.temporal.cloud/). However, in theory it is viewable across any gateway by navigating to `/ipns/docs.api.temporal.cloud`
 
 ### Features
 
