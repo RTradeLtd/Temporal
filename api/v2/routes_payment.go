@@ -39,13 +39,19 @@ func (api *API) ConfirmETHPayment(c *gin.Context) {
 		return
 	}
 	// check to see if this payment is already registered
-	if _, err := api.pm.FindPaymentByNumber(username, paymentNumberInt); err != nil {
+	payment, err := api.pm.FindPaymentByNumber(username, paymentNumberInt)
+	if err != nil {
 		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
+	// this is used to prevent people from abusing the payment system, and getting
+	// a single payment to be processed multiple times without having to send additional funds
+	if payment.TxHash[0:2] == "0x" {
+		Fail(c, errors.New("payment is already being processed, if your payment hasn't been confirmed after 90 minutes please contact support@rtradetechnologies.com"))
+		return
+	}
 	// update payment with the new tx hash
-	payment, err := api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt)
-	if err != nil {
+	if _, err = api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt); err != nil {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
