@@ -20,10 +20,8 @@ import (
 	"github.com/stripe/stripe-go/customer"
 )
 
-// ConfirmPayment is used to confirm a payment after sending it.
-// By giving Temporal the TxHash, we can then validate that hte payment
-// was made, and validated by the appropriate blockchain.
-func (api *API) ConfirmPayment(c *gin.Context) {
+// ConfirmETHPayment is used to confirm an ethereum based payment
+func (api *API) ConfirmETHPayment(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)

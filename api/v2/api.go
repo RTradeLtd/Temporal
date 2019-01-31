@@ -452,12 +452,15 @@ func (api *API) setupRoutes() error {
 	// payments
 	payments := v2.Group("/payments", authware...)
 	{
-		dash := payments.Group("/create")
+		dash := payments.Group("/dash")
 		{
-			dash.POST("/dash", api.CreateDashPayment)
+			dash.POST("/create", api.CreateDashPayment)
 		}
-		payments.POST("/request", api.RequestSignedPaymentMessage)
-		payments.POST("/confirm", api.ConfirmPayment)
+		eth := payments.Group("/eth")
+		{
+			eth.POST("/request", api.RequestSignedPaymentMessage)
+			eth.POST("/confirm", api.ConfirmETHPayment)
+		}
 		deposit := payments.Group("/deposit")
 		{
 			deposit.GET("/address/:type", api.GetDepositAddress)
