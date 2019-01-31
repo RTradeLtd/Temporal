@@ -62,23 +62,6 @@ func (api *API) FileSizeCheck(size int64) error {
 	return nil
 }
 
-func (api *API) getDepositAddress(paymentType string) (string, error) {
-	/* #nosec */
-	switch paymentType {
-	case "eth", "rtc":
-		return "0xc7459562777DDf3A1A7afefBE515E8479Bd3FDBD", nil
-	case "btc":
-		return "", nil
-	case "ltc":
-		return "", nil
-	case "xmr":
-		return "", nil
-	case "dash":
-		return "yfLFuyfSNHNtwKbfaGXh17maGKAAgd2A4z", nil
-	}
-	return "", errors.New(eh.InvalidPaymentTypeError)
-}
-
 func (api *API) validateBlockchain(blockchain string) bool {
 	switch blockchain {
 	case "ethereum", "bitcoin", "litecoin", "monero", "dash":

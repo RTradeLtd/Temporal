@@ -74,20 +74,4 @@ func Test_API_Routes_Payments(t *testing.T) {
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 
-	// test valid deposit address
-	args := []string{"eth", "rtc", "btc", "ltc", "xmr", "dash"}
-	for _, v := range args {
-		if err := sendRequest(
-			api, "GET", "/v2/payments/deposit/address/"+v, 200, nil, nil, nil,
-		); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	// test invalid deposit address
-	if err := sendRequest(
-		api, "GET", "/v2/payments/deposit/address/invalidType", 400, nil, nil, nil,
-	); err != nil {
-		t.Fatal(err)
-	}
 }

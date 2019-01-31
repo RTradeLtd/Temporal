@@ -44,6 +44,7 @@ func (api *API) ConfirmETHPayment(c *gin.Context) {
 		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
+	// validate that the payment is for the appropriate blockchain
 	if payment.Blockchain != "ethereum" {
 		Fail(c, errors.New("payment you are trying to confirm is not for the ethereum blockchain"))
 		return
@@ -287,17 +288,6 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		PaymentForwardID: response.PaymentForwardID,
 	}
 	Respond(c, http.StatusOK, gin.H{"response": p})
-}
-
-// GetDepositAddress is used to get a deposit address for a user
-func (api *API) GetDepositAddress(c *gin.Context) {
-	paymentType := c.Param("type")
-	address, err := api.getDepositAddress(paymentType)
-	if err != nil {
-		api.LogError(c, err, eh.InvalidPaymentTypeError)(http.StatusBadRequest)
-		return
-	}
-	Respond(c, http.StatusOK, gin.H{"response": address})
 }
 
 // GetUSDValue is used to retrieve the usd value of a given payment type

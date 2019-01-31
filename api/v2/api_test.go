@@ -347,10 +347,6 @@ func Test_Utils(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := api.getDepositAddress(tt.args.paymentType); (err != nil) != tt.wantErr {
-				t.Errorf("getDepositAddress() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 			if valid := api.validateBlockchain(tt.args.blockchain); !valid != tt.wantErr {
 				t.Errorf("validateBlockchain() error = %v, wantErr %v", valid, tt.wantErr)
 			}
