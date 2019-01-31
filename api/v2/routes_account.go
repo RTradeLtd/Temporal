@@ -6,6 +6,7 @@ import (
 	"html"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -112,6 +113,14 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	// extract post forms
 	forms := api.extractPostForms(c, "username", "password", "email_address")
 	if len(forms) == 0 {
+		return
+	}
+	// parse emails to prevent exploit of catch-all routing
+	// where people sign up with an email like myuser+test@example.org
+	// by having the +test they are effectively signing up under a new email
+	// granting them another free account.
+	if strings.ContainsRune(forms["email_address"], '+') {
+		Fail(c, errors.New("emails must not contain + signs, this is to prevent abuse of catch all routing"))
 		return
 	}
 	// parse html encoded strings
