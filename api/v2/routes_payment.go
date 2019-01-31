@@ -230,7 +230,7 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		return
 	}
 	if response.Error != "" {
-		api.LogError(c, errors.New(response.Error), eh.ChainRiderAPICallError)(http.StatusBadRequest)
+		api.LogError(c, errors.New(response.Error), eh.ChainRiderAPICallError, "wallet_address", api.cfg.Wallets.DASH)(http.StatusBadRequest)
 		return
 	}
 	if _, err = api.pm.NewPayment(
