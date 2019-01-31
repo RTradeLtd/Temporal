@@ -44,6 +44,10 @@ func (api *API) ConfirmETHPayment(c *gin.Context) {
 		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
+	if payment.Blockchain != "ethereum" {
+		Fail(c, errors.New("payment you are trying to confirm is not for the ethereum blockchain"))
+		return
+	}
 	// this is used to prevent people from abusing the payment system, and getting
 	// a single payment to be processed multiple times without having to send additional funds
 	if payment.TxHash[0:2] == "0x" {
