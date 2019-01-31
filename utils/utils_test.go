@@ -19,7 +19,7 @@ const (
 )
 
 func TestUtils_CalculatePinCost(t *testing.T) {
-	manager, err := rtfs.NewManager(nodeOneAPIAddr, "", time.Minute*10, false)
+	manager, err := rtfs.NewManager(nodeOneAPIAddr, "", time.Minute*60)
 	if err != nil {
 		t.Fatal(err)
 	}

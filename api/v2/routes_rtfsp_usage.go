@@ -125,7 +125,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	// format a url to connect to for private network
 	apiURL := api.GetIPFSEndpoint(forms["network_name"])
 	// connect to private ifps network
-	ipfsManager, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*10, true)
+	ipfsManager, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*60)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
@@ -176,7 +176,7 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	// format a url to connect too
 	apiURL := api.GetIPFSEndpoint(forms["network_name"])
 	// connect to private ipfs network
-	manager, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*10, true)
+	manager, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*60)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
@@ -214,7 +214,7 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 	// format a url to connect to
 	apiURL := api.GetIPFSEndpoint(networkName)
 	// connect to private ipfs network
-	manager, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*10, true)
+	manager, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*60)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
@@ -254,7 +254,7 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 	// format a url to connect to
 	apiURL := api.GetIPFSEndpoint(networkName)
 	// connect to the actual private network
-	manager, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*10, true)
+	manager, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*60)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return
@@ -294,7 +294,7 @@ func (api *API) getDagObjectForHostedIPFSNetwork(c *gin.Context) {
 	// format a url to connect to
 	apiURL := api.GetIPFSEndpoint(networkName)
 	// connect to the private ipfs network
-	im, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*10, true)
+	im, err := rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*60)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 		return

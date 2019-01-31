@@ -226,7 +226,7 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		api.LogError(c, err, eh.ChainRiderAPICallError)(http.StatusBadRequest)
+		api.LogError(c, err, eh.ChainRiderAPICallError, "wallet_address", api.cfg.Wallets.DASH)(http.StatusBadRequest)
 		return
 	}
 	if response.Error != "" {

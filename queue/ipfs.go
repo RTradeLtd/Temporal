@@ -65,7 +65,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 		qm.l.Errorw("failed to intialize cluster pin queue connection", "error", err.Error())
 		return err
 	}
-	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, "", time.Minute*60, false)
+	ipfsManager, err := rtfs.NewManager(qm.cfg.IPFS.APIConnection.Host+":"+qm.cfg.IPFS.APIConnection.Port, "", time.Minute*60)
 	if err != nil {
 		qm.l.Errorw("failed to initialize connection to ipfs", "error", err.Error())
 		return err
@@ -121,7 +121,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 		}
 		apiURL = fmt.Sprintf("%s/network/%s/api", qm.cfg.Nexus.Host+":"+qm.cfg.Nexus.Delegator.Port, pin.NetworkName)
 		// connect to ipfs
-		ipfsManager, err = rtfs.NewManager(apiURL, pin.JWT, time.Minute*10, true)
+		ipfsManager, err = rtfs.NewManager(apiURL, pin.JWT, time.Minute*60)
 		if err != nil {
 			qm.l.Infow(
 				"failed to initialize connection to ipfs",

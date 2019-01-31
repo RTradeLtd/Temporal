@@ -34,12 +34,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  branch = "signer/tls"
+  branch = "master"
   digest = "1:4f63f761fd67bbf96335ba4aa6e2ce61dc2d32c39080a28b58f9f29c5e270a78"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7b1da4f23ca32b330b04a077fdc4209799e9d350"
+  revision = "298756b78a02a41ce35ad39321c213e358a0c61c"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -120,7 +120,7 @@
 
 [[projects]]
   branch = "authorization"
-  digest = "1:065685ef4bd5d6088a87b04ac3688cde4d1c121d737cd66ad601035e7e779410"
+  digest = "1:da4852e6cc1fc15303482fbf16d7c5cc81299ef71566d2897c7f260ec849e447"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -128,7 +128,7 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "887ada717a3d55e000c93d435e6c6e45cb6a44c6"
+  revision = "47ebe50defe9b2415c9ae4ad1fa18d51a74a8f20"
 
 [[projects]]
   branch = "master"
@@ -445,11 +445,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:cb6b4d78f943c11a9b4a96e7335cf239bb868f4b6c6d8f9d0e1ceb3176e62e27"
+  digest = "1:9f355cab3caa2b4413f5b9638d313429b3d34513c0deb13ef41c22a075b48b25"
   name = "github.com/ipfs/go-ipfs-files"
   packages = ["."]
   pruneopts = "UT"
-  revision = "86b2cb84da8644dab2bd08797731cf12150fedf7"
+  revision = "267cdfe2e27a621acf3567cc072e5bf4ecf168ee"
 
 [[projects]]
   digest = "1:aae82c244bd91107575a0244a29e82e34ba23e06b6892557e33728de48deba96"
@@ -1248,7 +1248,7 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "c7b33c32a30bae9ba07d37eb4d86f1f8b0f644fb"
+  revision = "b01c7a72566457eb1420261cdafef86638fc3861"
 
 [[projects]]
   branch = "master"
@@ -1271,7 +1271,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:228842f171c5aae9f0f795ff083e4c8b5d28865cdd11bb15784072f0b411c7d3"
+  digest = "1:f07f131873b0dfc4943d653179dcd007b391e9f7ef43dd728feaafc7b266f984"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1279,7 +1279,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "b90733256f2e882e81d52f9126de08df5615afd9"
+  revision = "aca44879d5644da7c5b8ec6a1115e9b6ea6c40d9"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"

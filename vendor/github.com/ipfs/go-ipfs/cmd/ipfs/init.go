@@ -16,14 +16,17 @@ import (
 	namesys "github.com/ipfs/go-ipfs/namesys"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 
-	"gx/ipfs/QmWGm4AbZEbnmdgVTza52MSNpEmBdFVqzmAysRbjrRyGbH/go-ipfs-cmds"
-	"gx/ipfs/QmXWZCd8jfaHmt4UDSnjKmGcrQMw95bDGWqEeVLVJjoANX/go-ipfs-files"
+	"gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
+	"gx/ipfs/QmaXvvAVAQ5ABqM5xtjYmV85xmN5MkWAZsX9H9Fwo4FVXp/go-ipfs-files"
 	"gx/ipfs/QmcRKBUqc2p3L1ZraoJjbXfs9E6xzvEuyK9iypb5RGwfsr/go-ipfs-config"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 const (
 	nBitsForKeypairDefault = 2048
+	bitsOptionName         = "bits"
+	emptyRepoOptionName    = "empty-repo"
+	profileOptionName      = "profile"
 )
 
 var initCmd = &cmds.Command{
@@ -48,9 +51,9 @@ environment variable:
 		cmdkit.FileArg("default-config", false, false, "Initialize with the given configuration.").EnableStdin(),
 	},
 	Options: []cmdkit.Option{
-		cmdkit.IntOption("bits", "b", "Number of bits to use in the generated RSA private key.").WithDefault(nBitsForKeypairDefault),
-		cmdkit.BoolOption("empty-repo", "e", "Don't add and pin help files to the local storage."),
-		cmdkit.StringOption("profile", "p", "Apply profile settings to config. Multiple profiles can be separated by ','"),
+		cmdkit.IntOption(bitsOptionName, "b", "Number of bits to use in the generated RSA private key.").WithDefault(nBitsForKeypairDefault),
+		cmdkit.BoolOption(emptyRepoOptionName, "e", "Don't add and pin help files to the local storage."),
+		cmdkit.StringOption(profileOptionName, "p", "Apply profile settings to config. Multiple profiles can be separated by ','"),
 
 		// TODO need to decide whether to expose the override as a file or a
 		// directory. That is: should we allow the user to also specify the
@@ -79,8 +82,8 @@ environment variable:
 			return cmdkit.Error{Message: "init must be run offline only"}
 		}
 
-		empty, _ := req.Options["empty-repo"].(bool)
-		nBitsForKeypair, _ := req.Options["bits"].(int)
+		empty, _ := req.Options[emptyRepoOptionName].(bool)
+		nBitsForKeypair, _ := req.Options[bitsOptionName].(int)
 
 		var conf *config.Config
 
@@ -104,7 +107,7 @@ environment variable:
 			}
 		}
 
-		profile, _ := req.Options["profile"].(string)
+		profile, _ := req.Options[profileOptionName].(string)
 
 		var profiles []string
 		if profile != "" {
