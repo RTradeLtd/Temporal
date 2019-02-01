@@ -84,8 +84,9 @@ type IPFSCluster struct {
 type RabbitMQ struct {
 	URL       string `json:"url"`
 	TLSConfig struct {
-		CertFile string `json:"cert_file"`
-		KeyFile  string `json:"key_file"`
+		CertFile   string `json:"cert_file"`
+		KeyFile    string `json:"key_file"`
+		CACertFile string `json:"ca_cert_file"`
 	} `json:"tls_config"`
 }
 

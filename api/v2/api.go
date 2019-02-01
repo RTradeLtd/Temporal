@@ -168,35 +168,35 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		return nil, err
 	}
 	// setup our queues
-	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, logger)
+	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, logger)
+	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmDatabase, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, true, logger)
+	qmDatabase, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, logger)
+	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, logger)
+	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, logger)
+	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, logger)
+	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmEth, err := queue.New(queue.EthPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, logger)
+	qmEth, err := queue.New(queue.EthPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -631,7 +631,7 @@ func (api *API) handleQueueError(amqpErr *amqp.Error, rabbitMQURL string, queueT
 		"a protocol connection error stopping rabbitmq was received",
 		"queue", queueType.String(),
 		"error", amqpErr.Error())
-	qManager, err := queue.New(queueType, rabbitMQURL, publish, api.l)
+	qManager, err := queue.New(queueType, rabbitMQURL, publish, api.cfg, api.l)
 	if err != nil {
 		api.l.Errorw(
 			"failed to re-establish queue process, exiting",

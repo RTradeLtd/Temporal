@@ -25,8 +25,8 @@ func NewManager(ipfsURL, token string, timeout time.Duration) (*IpfsManager, err
 		err error
 	)
 	if token != "" {
-		sh = ipfsapi.NewDirectShell(ipfsURL)
-		_, err = sh.WithAuthorization(token).ID()
+		sh = ipfsapi.NewDirectShell(ipfsURL).WithAuthorization(token)
+		_, err = sh.ID()
 	} else {
 		sh = ipfsapi.NewShell(ipfsURL)
 		_, err = sh.ID()
@@ -42,15 +42,6 @@ func NewManager(ipfsURL, token string, timeout time.Duration) (*IpfsManager, err
 		shell:       sh,
 		nodeAPIAddr: ipfsURL,
 	}, nil
-}
-
-// WithAuthorization is a wrapper around ipfsapi.WithAuthorization
-// to make handling of direct requests easier
-func (im *IpfsManager) WithAuthorization(token string) *IpfsManager {
-	return &IpfsManager{
-		shell:       im.shell.WithAuthorization(token),
-		nodeAPIAddr: im.nodeAPIAddr,
-	}
 }
 
 // NodeAddress returns the node the manager is connected to

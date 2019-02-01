@@ -2,8 +2,11 @@ package queue
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"sync"
 
 	"github.com/RTradeLtd/gorm"
@@ -14,8 +17,8 @@ import (
 )
 
 // New is used to instantiate a new connection to rabbitmq as a publisher or consumer
-func New(queue Queue, url string, publish bool, logger *zap.SugaredLogger) (*Manager, error) {
-	conn, err := setupConnection(url)
+func New(queue Queue, url string, publish bool, cfg *config.TemporalConfig, logger *zap.SugaredLogger) (*Manager, error) {
+	conn, err := setupConnection(url, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +54,29 @@ func New(queue Queue, url string, publish bool, logger *zap.SugaredLogger) (*Man
 	return &qm, nil
 }
 
-func setupConnection(connectionURL string) (*amqp.Connection, error) {
-	conn, err := amqp.Dial(connectionURL)
+func setupConnection(connectionURL string, cfg *config.TemporalConfig) (*amqp.Connection, error) {
+	var (
+		conn *amqp.Connection
+		err  error
+	)
+	if cfg.RabbitMQ.TLSConfig.CACertFile == "" {
+		conn, err = amqp.Dial(connectionURL)
+	} else {
+		// see https://godoc.org/github.com/streadway/amqp#DialTLS for more information
+		tlsConfig := new(tls.Config)
+		tlsConfig.RootCAs = x509.NewCertPool()
+		if ca, err := ioutil.ReadFile(cfg.RabbitMQ.TLSConfig.CACertFile); err != nil {
+			return nil, err
+		} else {
+			tlsConfig.RootCAs.AppendCertsFromPEM(ca)
+		}
+		if cert, err := tls.LoadX509KeyPair(cfg.RabbitMQ.TLSConfig.CertFile, cfg.RabbitMQ.TLSConfig.KeyFile); err != nil {
+			return nil, err
+		} else {
+			tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
+		}
+		conn, err = amqp.DialTLS(connectionURL, tlsConfig)
+	}
 	if err != nil {
 		return nil, err
 	}

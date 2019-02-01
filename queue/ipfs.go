@@ -60,7 +60,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 		return err
 	}
 	// initialize a connection to the cluster pin queue so we can trigger pinning of this content to our cluster
-	qmCluster, err := New(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true, logger)
+	qmCluster, err := New(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true, qm.cfg, logger)
 	if err != nil {
 		qm.l.Errorw("failed to intialize cluster pin queue connection", "error", err.Error())
 		return err

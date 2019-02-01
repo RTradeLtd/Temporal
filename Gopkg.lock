@@ -34,12 +34,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4f63f761fd67bbf96335ba4aa6e2ce61dc2d32c39080a28b58f9f29c5e270a78"
+  branch = "rabbitmq/tls"
+  digest = "1:fbe96a39123db63f923805164f4738ea6ff9359396bfac9ed48930d4fdd0a347"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "298756b78a02a41ce35ad39321c213e358a0c61c"
+  revision = "ec7bd369e31ca9e6912d3786f4f3b056c04b1d05"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -120,7 +120,7 @@
 
 [[projects]]
   branch = "authorization"
-  digest = "1:da4852e6cc1fc15303482fbf16d7c5cc81299ef71566d2897c7f260ec849e447"
+  digest = "1:fca36fbaa40533a14146f3ce9ba2aa0db701dca0ef3ac200e412e4cdf8ecf06b"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -128,7 +128,7 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "47ebe50defe9b2415c9ae4ad1fa18d51a74a8f20"
+  revision = "356c5d62592249b084ead78586fce55a22a0b3b1"
 
 [[projects]]
   branch = "master"
@@ -557,12 +557,12 @@
   version = "v2.0.7"
 
 [[projects]]
-  digest = "1:f2ffb104978341aadea72e33f375d42c5e1954f3f6f489f2950b18a4a494cff3"
+  digest = "1:f60d00a46be49953208695b271223ec206817a27e0fbf7f854d9345237451052"
   name = "github.com/libp2p/go-buffer-pool"
   packages = ["."]
   pruneopts = "UT"
-  revision = "1d28ab5fdb424e5b3523d357553082e68df9b068"
-  version = "v0.1.1"
+  revision = "058210c5a0d042677367d923eb8a6dc072a15f7f"
+  version = "v0.1.3"
 
 [[projects]]
   digest = "1:ff4faed648dab1c024de14c7b6165fe0aa3961eccfe0885dde7eb74cf4f58b95"
@@ -901,11 +901,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ccf646ee8a07f460c43e994bb9a79e594dc3636dca1b607c294b7df5b1624868"
+  digest = "1:eea9588ebf4cf89c7da8360e8d19627b74b78eec74df6df9e0c5defcee4f3617"
   name = "github.com/minio/sha256-simd"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cc1980cb03383b1d46f518232672584432d7532d"
+  revision = "2d45a736cd16732fe6a57563cc20d8b035193e58"
 
 [[projects]]
   digest = "1:5d231480e1c64a726869bc4142d270184c419749d34f167646baa21008eb0a79"
@@ -1248,7 +1248,7 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "b01c7a72566457eb1420261cdafef86638fc3861"
+  revision = "b8fe1690c61389d7d2a8074a507d1d40c5d30448"
 
 [[projects]]
   branch = "master"
@@ -1454,6 +1454,7 @@
     "google.golang.org/grpc/credentials",
     "google.golang.org/grpc/grpclog",
     "google.golang.org/grpc/status",
+    "gopkg.in/dgrijalva/jwt-go.v3",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

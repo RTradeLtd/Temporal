@@ -12,9 +12,6 @@ import (
 
 // Manager provides functions for interacting with IPFS
 type Manager interface {
-	// WithAuthorization is a wrapper around ipfsapi.WithAuthorization
-	// to make handling of direct requests easier
-	WithAuthorization(token string) *IpfsManager
 	// NodeAddress returns the node the manager is connected to
 	NodeAddress() string
 	// Add is a wrapper used to add a file to IPFS
