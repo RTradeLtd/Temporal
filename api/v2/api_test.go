@@ -179,13 +179,16 @@ func Test_API_Setup(t *testing.T) {
 
 	// register calls
 	tests := []struct {
-		name string
-		args args
+		name     string
+		args     args
+		wantCode int
 	}{
-		{"Register-testuser2", args{"POST", "/v2/auth/register", "testuser2", "password123!@#$%^&&**(!@#!", "testuser@example.org"}},
+		{"Register-testuser2", args{"POST", "/v2/auth/register", "testuser2", "password123!@#$%^&&**(!@#!", "testuser@example.org"}, 200},
+		{"Register-Email-Fail", args{"POST", "/v2/auth/register", "testuer3", "password123", "testuser+test22@example.org"}, 400},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			testRecorder = httptest.NewRecorder()
 			// register user account
 			// /v2/auth/register
 			var interfaceAPIResp interfaceAPIResponse
@@ -194,15 +197,12 @@ func Test_API_Setup(t *testing.T) {
 			urlValues.Add("password", tt.args.password)
 			urlValues.Add("email_address", tt.args.email)
 			if err := sendRequest(
-				api, "POST", "/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
+				api, "POST", "/v2/auth/register", tt.wantCode, nil, urlValues, &interfaceAPIResp,
 			); err != nil {
 				t.Fatal(err)
 			}
-			if testRecorder.Code != 200 {
-				t.Fatalf("bad http status code from %s", tt.args.call)
-			}
 			// validate the response code
-			if interfaceAPIResp.Code != 200 {
+			if interfaceAPIResp.Code != tt.wantCode {
 				t.Fatalf("bad api status code from %s", tt.args.call)
 			}
 		})
@@ -210,11 +210,12 @@ func Test_API_Setup(t *testing.T) {
 
 	// login calls
 	tests = []struct {
-		name string
-		args args
+		name     string
+		args     args
+		wantCode int
 	}{
-		{"Login-testuser2", args{"POST", "/v2/auth/login", "testuser2", "password123!@#$%^&&**(!@#!", ""}},
-		{"Login-testuser", args{"POST", "/v2/auth/login", "testuser", "admin", ""}},
+		{"Login-testuser2", args{"POST", "/v2/auth/login", "testuser2", "password123!@#$%^&&**(!@#!", ""}, 200},
+		{"Login-testuser", args{"POST", "/v2/auth/login", "testuser", "admin", ""}, 200},
 	}
 
 	for _, tt := range tests {
@@ -226,7 +227,7 @@ func Test_API_Setup(t *testing.T) {
 				strings.NewReader(fmt.Sprintf("{\n  \"username\": \"%s\",\n  \"password\": \"%s\"\n}", tt.args.username, tt.args.password)),
 			)
 			api.r.ServeHTTP(testRecorder, req)
-			if testRecorder.Code != 200 {
+			if testRecorder.Code != tt.wantCode {
 				t.Fatalf("bad http status code from %s", tt.args.call)
 			}
 			bodBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
