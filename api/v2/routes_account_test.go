@@ -46,53 +46,9 @@ func Test_API_Routes_Account(t *testing.T) {
 		t.Fatal("bad username recovered from token")
 	}
 
-	// get an email verification token
-	// /v2/account/email/token/get
-	apiResp = apiResponse{}
-	if err := sendRequest(
-		api, "GET", "/v2/account/email/token/get", 200, nil, nil, &apiResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /v2/account/email/token/get")
-	}
-	// since we dont have email lets get the token from the database
-	um := models.NewUserManager(db)
-	user, err := um.FindByUserName("testuser")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if user.EmailVerificationToken == "" {
-		t.Fatal("failed to set email verification token")
-	}
-
-	// verify the email verification token
-	// /v2/account/email/token/verify
-	urlValues := url.Values{}
-	urlValues.Add("token", user.EmailVerificationToken)
-	apiResp = apiResponse{}
-	if err := sendRequest(
-		api, "POST", "/v2/account/email/token/verify", 200, nil, urlValues, &apiResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /v2/account/email/token/verify")
-	}
-	user, err = um.FindByUserName("testuser")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !user.EmailEnabled {
-		t.Fatal("failed to enable email address")
-	}
-
 	// verify account password change
 	// /v2/account/password/change
-	urlValues = url.Values{}
+	urlValues := url.Values{}
 	urlValues.Add("old_password", "admin")
 	urlValues.Add("new_password", "admin1234@")
 	apiResp = apiResponse{}
@@ -140,10 +96,10 @@ func Test_API_Routes_Account(t *testing.T) {
 		t.Fatal("bad api status code from /v2/account/key/ipfs/new")
 	}
 	// manually create the keys since we arent using queues
-	if err = um.AddIPFSKeyForUser("testuser", "key1", "muchwow"); err != nil {
+	if err := models.NewUserManager(db).AddIPFSKeyForUser("testuser", "key1", "muchwow"); err != nil {
 		t.Fatal(err)
 	}
-	if err = um.AddIPFSKeyForUser("testuser", "key2", "suchkey"); err != nil {
+	if err := models.NewUserManager(db).AddIPFSKeyForUser("testuser", "key2", "suchkey"); err != nil {
 		t.Fatal(err)
 	}
 
