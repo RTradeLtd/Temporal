@@ -49,6 +49,7 @@ var (
 // command-line flags
 var (
 	devMode    *bool
+	debug      *bool
 	configPath *string
 	dbNoSSL    *bool
 	dbMigrate  *bool
@@ -65,6 +66,8 @@ func baseFlagSet() *flag.FlagSet {
 	// basic flags
 	devMode = f.Bool("dev", false,
 		"toggle dev mode")
+	debug = f.Bool("debug", false,
+		"toggle debug mode")
 	configPath = f.String("config", os.Getenv("CONFIG_DAG"),
 		"path to Temporal configuration")
 
@@ -156,7 +159,7 @@ var commands = map[string]cmd.Cmd{
 			}
 
 			// init api service
-			service, err := v2.Initialize(&cfg, args["version"], *devMode, logger, lens, orch, signer)
+			service, err := v2.Initialize(&cfg, args["version"], *debug, *devMode, logger, lens, orch, signer)
 			if err != nil {
 				logger.Fatal(err)
 			}

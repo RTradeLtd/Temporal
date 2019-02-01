@@ -78,8 +78,7 @@ func Initialize(
 	// configuration
 	cfg *config.TemporalConfig,
 	version string,
-	debug bool,
-
+	debug, devMode bool,
 	// API dependencies
 	l *zap.SugaredLogger,
 	lens pbLens.IndexerAPIClient,
@@ -91,7 +90,8 @@ func Initialize(
 		err    error
 		router = gin.Default()
 	)
-
+	// update dev mode
+	dev = devMode
 	l = l.Named("api")
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
