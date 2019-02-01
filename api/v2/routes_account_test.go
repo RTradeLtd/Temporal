@@ -128,15 +128,27 @@ func Test_API_Routes_Account(t *testing.T) {
 	if floatAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /v2/account/credits/available")
 	}
-	// mark email as activated for testing
-	//TODO: add email verification testing
-	userModel, err := api.um.GenerateEmailVerificationToken("testuser")
+
+	// test email activation
+	// /v2/account/email/verify/:user/:token
+	if _, err := api.um.NewUserAccount("verificationtestuser", "password123", "verificationtestuser@example.org"); err != nil {
+		t.Fatal(err)
+	}
+	userModel, err := api.um.GenerateEmailVerificationToken("verificationtestuser")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := api.um.ValidateEmailVerificationToken("testuser", userModel.EmailVerificationToken); err != nil {
+	token, err := api.generateEmailJWTToken("verificationtestuser", userModel.EmailVerificationToken)
+	if err != nil {
 		t.Fatal(err)
 	}
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "GET", "/v2/account/email/verify/"+userModel.UserName+"/"+token, 200, nil, nil, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+
 	// forgot email
 	// /v2/account/email/forgot
 	apiResp = apiResponse{}
