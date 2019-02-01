@@ -98,7 +98,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
 	}
 
-	// test pinning - failure
+	// test pinning - failure (bad hash)
 	// /v2/ipfs/public/pin
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
@@ -113,7 +113,22 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
 	}
 
-	// test pubsub publish
+	// test pinning - failure (bad hold_time)
+	// /v2/ipfs/public/pin
+	apiResp = apiResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "notanumber")
+	if err := sendRequest(
+		api, "POST", "/v2/ipfs/public/pin/"+hash, 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 400 {
+		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
+	}
+
+	// test pubsub publish (success)
 	// /v2/ipfs/pubsub/publish/topic
 	urlValues = url.Values{}
 	urlValues.Add("message", "bar")
@@ -134,7 +149,21 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 		t.Fatal("bad response")
 	}
 
-	// test object stat
+	// test pubsub publish (fail)
+	// /v2/ipfs/pubsub/publish/topic
+	urlValues = url.Values{}
+	urlValues.Add("message", "")
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "POST", "/v2/ipfs/public/pubsub/publish/foo", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if apiResp.Code != 400 {
+		t.Fatal("bad response status code from /v2/ipfs/public/pubsub/publish")
+	}
+
+	// test object stat (success)
 	// /v2/ipfs/stat
 	var interfaceAPIResp interfaceAPIResponse
 	if err := sendRequest(
@@ -146,7 +175,19 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 		t.Fatal("bad response status code from /v2/ipfs/public/stat")
 	}
 
-	// test get dag
+	// test object stat (fail)
+	// /v2/ipfs/stat
+	interfaceAPIResp = interfaceAPIResponse{}
+	if err := sendRequest(
+		api, "GET", "/v2/ipfs/public/stat/notarealhash", 400, nil, nil, &interfaceAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if interfaceAPIResp.Code != 400 {
+		t.Fatal("bad response status code from /v2/ipfs/public/stat")
+	}
+
+	// test get dag (success)
 	// /v2/ipfs/public/dag
 	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
@@ -155,6 +196,18 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 		t.Fatal(err)
 	}
 	if interfaceAPIResp.Code != 200 {
+		t.Fatal("bad response status code from /v2/ipfs/public/dag/")
+	}
+
+	// test get dag (fail)
+	// /v2/ipfs/public/dag
+	interfaceAPIResp = interfaceAPIResponse{}
+	if err := sendRequest(
+		api, "GET", "/v2/ipfs/public/dag/notarealhash", 400, nil, nil, &interfaceAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if interfaceAPIResp.Code != 400 {
 		t.Fatal("bad response status code from /v2/ipfs/public/dag/")
 	}
 
