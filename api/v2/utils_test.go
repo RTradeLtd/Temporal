@@ -44,11 +44,7 @@ func TestEmailJWT(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	valid, err := api.verifyEmailJWTToken(tkn, randUser)
-	if err != nil {
+	if err := api.verifyEmailJWTToken(tkn, randUser); err != nil {
 		t.Fatal(err)
-	}
-	if !valid {
-		t.Fatal("failed to verify the jwt")
 	}
 }
