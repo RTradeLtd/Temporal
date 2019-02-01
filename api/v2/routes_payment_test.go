@@ -32,7 +32,7 @@ func Test_API_Routes_Payments(t *testing.T) {
 	// test basic dash payment
 	// /v2/payments/create/dash
 	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/v2/payments/create/dash", nil)
+	req := httptest.NewRequest("POST", "/v2/payments/dash/create", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues := url.Values{}
 	urlValues.Add("credit_value", "10")
@@ -42,7 +42,7 @@ func Test_API_Routes_Payments(t *testing.T) {
 	// test request signed payment message - rtc
 	// /v2/payments/request
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/v2/payments/request", nil)
+	req = httptest.NewRequest("POST", "/v2/payments/eth/request", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("payment_type", "rtc")
@@ -54,7 +54,7 @@ func Test_API_Routes_Payments(t *testing.T) {
 	// test request signed payment message - eth
 	// /v2/payments/request
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/v2/payments/request", nil)
+	req = httptest.NewRequest("POST", "/v2/payments/eth/request", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("payment_type", "eth")
@@ -66,7 +66,7 @@ func Test_API_Routes_Payments(t *testing.T) {
 	// test payment confirmation
 	// /v2/payments/confirm
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/v2/payments/confirm", nil)
+	req = httptest.NewRequest("POST", "/v2/payments/eth/confirm", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("payment_number", "10")
