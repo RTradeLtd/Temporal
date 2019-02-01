@@ -494,13 +494,16 @@ func (api *API) setupRoutes() error {
 		}
 		email := account.Group("/email")
 		{
-			// auth-less account routes
+			// auth-less account email routes
 			token := email.Group("/verify")
 			{
 				token.GET("/:user/:token", api.verifyEmailAddress)
 			}
-			// this needs to go last as for some reason its applying authware globally
-			email.POST("/forgot", api.forgotEmail).Use(authware...)
+			// authenticatoin email routes
+			auth := email.Use(authware...)
+			{
+				auth.POST("/forgot", api.forgotEmail)
+			}
 		}
 	}
 
