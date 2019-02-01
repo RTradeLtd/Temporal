@@ -128,7 +128,15 @@ func Test_API_Routes_Account(t *testing.T) {
 	if floatAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /v2/account/credits/available")
 	}
-
+	// mark email as activated for testing
+	//TODO: add email verification testing
+	userModel, err := api.um.GenerateEmailVerificationToken("testuser")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := api.um.ValidateEmailVerificationToken("testuser", userModel.EmailVerificationToken); err != nil {
+		t.Fatal(err)
+	}
 	// forgot email
 	// /v2/account/email/forgot
 	apiResp = apiResponse{}
