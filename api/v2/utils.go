@@ -2,6 +2,7 @@ package v2
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/RTradeLtd/gorm"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
+	jwt "gopkg.in/dgrijalva/jwt-go.v3"
 )
 
 var nilTime time.Time
@@ -68,6 +70,81 @@ func (api *API) validateBlockchain(blockchain string) bool {
 		return true
 	}
 	return false
+}
+
+// generateEmailJWTToken is used to generate a jwt token used to validate emails
+func (api *API) generateEmailJWTToken(username, verificationString string) (string, error) {
+	// generate a jwt with claims to verify email
+	verificationJWT := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+		"user":                    username,
+		"emailVerificationString": verificationString,
+		"expire":                  time.Now().Add(time.Hour * 24).UTC().String(),
+	})
+	// return a signed version of the jwt
+	return verificationJWT.SignedString([]byte(api.cfg.API.JWT.Key))
+}
+
+func (api *API) verifyEmailJWTToken(jwtString, username string) error {
+	// parse the jwt for a token
+	token, err := jwt.Parse(jwtString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unable to validate signing method: %v", token.Header["alg"])
+		} else if method != jwt.SigningMethodHS512 {
+			return nil, errors.New("expect hs512 signing method")
+		}
+		// return byte version of signing key
+		return []byte(api.cfg.JWT.Key), nil
+	})
+	// verify jwt was parsed properly
+	if err != nil {
+		return err
+	}
+	// verify that the token is valid
+	if !token.Valid {
+		return errors.New("failed to validate token")
+	}
+	// extract claims from token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return errors.New("failed to parse claims")
+	}
+	// verify the username matches what we are expected
+	if claims["user"] != username {
+		return fmt.Errorf("username from claim does not match expected user of %s", username)
+	}
+	// get user model so we can validate the email verification string
+	user, err := api.um.FindByUserName(username)
+	if err != nil {
+		return errors.New(eh.UserSearchError)
+	}
+	emailVerificationString, ok := claims["emailVerificationString"].(string)
+	if !ok {
+		return errors.New("failed to convert verification token to string")
+	}
+	// validate email verification string
+	if claims["emailVerificationString"] != user.EmailVerificationToken {
+		return errors.New("failed to validate email verification token")
+	}
+	// ensure we can cast claims["expire"] to string type
+	expireString, ok := claims["expire"].(string)
+	if !ok {
+		return errors.New("failed to convert expire value to string")
+	}
+	// parse expire string into time.Time
+	expireTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", expireString)
+	if err != nil {
+		return err
+	}
+	// validate that the token hasn't expired
+	if time.Now().UTC().Unix() > expireTime.Unix() {
+		return errors.New("token is expired")
+	}
+	// enable email activity
+	if _, err := api.um.ValidateEmailVerificationToken(username, emailVerificationString); err != nil {
+		return err
+	}
+	return nil
 }
 
 // validateUserCredits is used to validate whether or not a user has enough credits to pay for an action

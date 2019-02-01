@@ -469,17 +469,17 @@ func (api *API) setupRoutes() error {
 	}
 
 	// accounts
-	account := v2.Group("/account", authware...)
+	account := v2.Group("/account")
 	{
-		token := account.Group("/token")
+		token := account.Group("/token", authware...)
 		{
 			token.GET("/username", api.getUserFromToken)
 		}
-		password := account.Group("/password")
+		password := account.Group("/password", authware...)
 		{
 			password.POST("/change", api.changeAccountPassword)
 		}
-		key := account.Group("/key")
+		key := account.Group("/key", authware...)
 		{
 			key.GET("/export/:name", api.exportKey)
 			ipfs := key.Group("/ipfs")
@@ -488,17 +488,17 @@ func (api *API) setupRoutes() error {
 				ipfs.POST("/new", api.createIPFSKey)
 			}
 		}
-		credits := account.Group("/credits")
+		credits := account.Group("/credits", authware...)
 		{
 			credits.GET("/available", api.getCredits)
 		}
 		email := account.Group("/email")
 		{
-			email.POST("/forgot", api.forgotEmail)
-			token := email.Group("/token")
+			email.POST("/forgot", api.forgotEmail).Use(authware...)
+			// auth-less account routes
+			token := email.Group("/verify")
 			{
-				token.GET("/get", api.getEmailVerificationToken)
-				token.POST("/verify", api.verifyEmailAddress)
+				token.POST("/:user/:token", api.verifyEmailAddress)
 			}
 		}
 	}

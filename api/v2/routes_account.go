@@ -26,55 +26,19 @@ func (api *API) getUserFromToken(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": username})
 }
 
-// verifyEmailAddress is used to verify a users email address
+// verifyEmailAddress is used to verify a users email
+// without requiring authentication
 func (api *API) verifyEmailAddress(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
-		return
-	}
-	// extract the token used to verify email
-	forms := api.extractPostForms(c, "token")
-	if len(forms) == 0 {
-		return
-	}
-	// attempt email validation
-	if _, err := api.um.ValidateEmailVerificationToken(username, forms["token"]); err != nil {
-		api.LogError(c, err, eh.EmailVerificationError)(http.StatusBadRequest)
+	// get username
+	user := c.Param("user")
+	// get the token
+	token := c.Param("token")
+	if err := api.verifyEmailJWTToken(token, user); err != nil {
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
 	// log and return
 	Respond(c, http.StatusOK, gin.H{"response": "email verified"})
-}
-
-// getEmailVerificationToken is used to generate a token which can be used to validate an email address
-func (api *API) getEmailVerificationToken(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
-		return
-	}
-	// generate a random token to validate email
-	user, err := api.um.GenerateEmailVerificationToken(username)
-	if err != nil {
-		api.LogError(c, err, eh.EmailTokenGenerationError)(http.StatusBadRequest)
-		return
-	}
-	// build email message
-	es := queue.EmailSend{
-		Subject:     "TEMPORAL Email Verification",
-		Content:     fmt.Sprintf("Please submit the following email verification token: %s\n", user.EmailVerificationToken),
-		ContentType: "text/html",
-		UserNames:   []string{user.UserName},
-		Emails:      []string{user.EmailAddress},
-	}
-	// send email message to queue for processing
-	if err = api.queues.email.PublishMessage(es); err != nil {
-		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
-		return
-	}
-	// log and return
-	Respond(c, http.StatusOK, gin.H{"response": "Email verification token sent to email. Please check and follow instructions"})
 }
 
 // ChangeAccountPassword is used to change a users password
@@ -147,10 +111,22 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		api.LogError(c, err, eh.EmailTokenGenerationError)(http.StatusBadRequest)
 		return
 	}
+	// generate a jwt used to trigger email validation
+	token, err := api.generateEmailJWTToken(user.UserName, user.EmailVerificationToken)
+	if err != nil {
+		api.LogError(c, err, "failed to generate email verification jwt")
+	}
+	var url string
+	if dev {
+		url = fmt.Sprintf("https://dev.api.temporal.cloud/v2/account/email/verify/%s/%s", user.UserName, token)
+	} else {
+		url = fmt.Sprintf("https://api.temporal.cloud/v2/account/email/verify/%s/%s", user.UserName, token)
+
+	}
 	// build email message
 	es := queue.EmailSend{
 		Subject:     "TEMPORAL Email Verification",
-		Content:     fmt.Sprintf("Please submit the following email verification token: %s\n", user.EmailVerificationToken),
+		Content:     fmt.Sprintf("please click the following link to activate your temporal email notifications\n<a>%s</a>\n", url),
 		ContentType: "text/html",
 		UserNames:   []string{user.UserName},
 		Emails:      []string{user.EmailAddress},
