@@ -47,14 +47,14 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal("bad http status code from /v2/ipns/records")
 	}
 
-	// test ipns publishing (public) - bad hash
+	// test ipns publishing (public) - does not own key
 	// /v2/ipns/public/publish/details
 	var apiResp apiResponse
 	urlValues := url.Values{}
-	urlValues.Add("hash", "notavalidipfshash")
+	urlValues.Add("hash", hash)
 	urlValues.Add("life_time", "24h")
 	urlValues.Add("ttl", "1h")
-	urlValues.Add("key", "mytestkey")
+	urlValues.Add("key", "mytestkeywhichthisuserdoesnotown")
 	urlValues.Add("resolve", "true")
 	if err := sendRequest(
 		api, "POST", "/v2/ipns/public/publish/details", 400, nil, urlValues, &apiResp,
@@ -62,8 +62,8 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// test ipns publishing (private) - bad hash
-	// /v2/ipns/private/publish/details
+	// test ipns publishing (public) - bad hash
+	// /v2/ipns/public/publish/details
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("hash", "notavalidipfshash")
@@ -71,9 +71,8 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	urlValues.Add("ttl", "1h")
 	urlValues.Add("key", "mytestkey")
 	urlValues.Add("resolve", "true")
-	urlValues.Add("network_name", "testnetwork")
 	if err := sendRequest(
-		api, "POST", "/v2/ipns/private/publish/details", 400, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipns/public/publish/details", 400, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -95,34 +94,6 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	// validate the response code
 	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from /v2/ipns/public/publish/details")
-	}
-
-	// test ipns publishing (private)
-	// api/v2/ipns/private/publish/details
-	// create a fake private network
-	apiResp = apiResponse{}
-	nm := models.NewHostedIPFSNetworkManager(db)
-	if _, err := nm.CreateHostedPrivateNetwork("testnetwork", "fakeswarmkey", nil, models.NetworkAccessOptions{Users: []string{"testuser"}}); err != nil {
-		t.Fatal(err)
-	}
-	if err := um.AddIPFSNetworkForUser("testuser", "testnetwork"); err != nil {
-		t.Fatal(err)
-	}
-	urlValues = url.Values{}
-	urlValues.Add("hash", hash)
-	urlValues.Add("life_time", "24h")
-	urlValues.Add("ttl", "1h")
-	urlValues.Add("key", "mytestkey")
-	urlValues.Add("resolve", "true")
-	urlValues.Add("network_name", "testnetwork")
-	if err := sendRequest(
-		api, "POST", "/v2/ipns/private/publish/details", 200, nil, urlValues, &apiResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /v2/ipns/private/publish/details")
 	}
 
 	// test get ipns records

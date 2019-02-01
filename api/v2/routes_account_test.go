@@ -78,6 +78,19 @@ func Test_API_Routes_Account(t *testing.T) {
 		t.Fatal("bad api status code from /v2/account/password/change")
 	}
 
+	// get ipfs keys - no keys created
+	// /v2/account/key/ipfs/get
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "GET", "/v2/account/key/ipfs/get", 404, nil, nil, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 404 {
+		t.Fatal("bad api status code from /v2/account/key/ipfs/get")
+	}
+
 	// create ipfs keys
 	// /v2/account/key/ipfs/new
 	urlValues = url.Values{}
@@ -117,6 +130,23 @@ func Test_API_Routes_Account(t *testing.T) {
 	}
 	if err := models.NewUserManager(db).AddIPFSKeyForUser("testuser", "key2", "suchkey"); err != nil {
 		t.Fatal(err)
+	}
+
+	// create ipfs key - bad key bit
+	// /v2/account/key/ipfs/new
+	urlValues = url.Values{}
+	urlValues.Add("key_type", "ed25519")
+	urlValues.Add("key_bits", "notanumber")
+	urlValues.Add("key_name", "key1")
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "POST", "/v2/account/key/ipfs/new", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 400 {
+		t.Fatal("bad api status code from /v2/account/key/ipfs/new")
 	}
 
 	// get ipfs keys

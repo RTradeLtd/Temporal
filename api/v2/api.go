@@ -592,11 +592,6 @@ func (api *API) setupRoutes() error {
 			// and extracting the hash to pin
 			public.POST("/pin", api.pinIPNSHash)
 		}
-		// private ipns routes
-		private := ipns.Group("/private")
-		{
-			private.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
-		}
 		// general routes
 		ipns.GET("/records", api.getIPNSRecordsPublishedByUser)
 	}
