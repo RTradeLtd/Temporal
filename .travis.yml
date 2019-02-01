@@ -5,7 +5,11 @@ services:
 - docker
 sudo: required
 env:
-- SSL_MODE_DISABLE=true
+  matrix:
+  - SSL_MODE_DISABLE=true
+  global:
+  # this decodes to env variable SENDGRID_API_KEY
+  - secure: IRWME2/mStuum2x6PG6EIlm8ijzAW9AfgHvUlZ4luD25gXCEwFjvOp5JiWazAJjsnDr7zxAoXfIbxq59lqa2V0Rvg1GNLcl+RKsJ0mXYcU1ZEHLUE50rK32mdqfARswYTkJsalcM+IA+5cXYfKcEVs5U1QO+X5DwUM4o/JS6ZK/BWIl07W2fSHZk4h5EiRIubYzIs9iZpukgoN1pawa3ZulF7QVmyoU1YFjfS0OWhZl4eO+8e9S2JXWemQ5SIXkpk7+s8F5aIkzCc8bX5RCKuz2hBJjuD7jmINzxqO6irDcDqGqj1KQwWDqlcy29ATyxv8tMhcQZds8AFo4DobsX2vJoSutpbVJBBgB2jVxiNWH1uVGiH5KNl2M+VEab0JhAawKwvKDGeAoTbDBYwKoXSIuP/Xr3N73ge4uG9AqaD1N8qtIhj5rZSCLHlx9yAnG4zZXqSWwGFfxctnEtsfUhh5/iwk1/6F3EKrP1MBIcnkGXC4w5NqVlOZRdCnG5C76h++Btr0r6z1bmqzqINkz0S02wBc1fN4yrhQj3S0G5aumogd7mSJLSVFdX/3MyEbmq2U30wfmUAhsQdc6LEu8LA7XygZgW755c674k0g7eUbFlxiWzy8zOhz9hIxGuZMVzQnTq2sLqvmb7pU87O0OwdXtBLj25zHmK0awr2GqppeE=
 
 install:
 - go get -u golang.org/x/lint/golint
