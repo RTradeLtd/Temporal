@@ -83,7 +83,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 	hash = apiResp.Response
 
-	// test pinning
+	// test pinning - success
 	// /v2/ipfs/public/pin
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
@@ -95,6 +95,21 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
+	}
+
+	// test pinning - failure
+	// /v2/ipfs/public/pin
+	apiResp = apiResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "5")
+	if err := sendRequest(
+		api, "POST", "/v2/ipfs/public/pin/notarealhash", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 400 {
 		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
 	}
 
