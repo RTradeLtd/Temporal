@@ -13,6 +13,7 @@ func init() {
 	dbNoSSL = &t
 	dbMigrate = &t
 	devMode = &t
+	debug = &t
 	grpcNoSSL = &t
 	var blank string
 	configPath = &blank
