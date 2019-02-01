@@ -34,7 +34,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "krab/delete"
+  branch = "master"
   digest = "1:d07d1c0b0d209c037c91898d3e185823b19a30356f5229661f79711d5d8fe839"
   name = "github.com/RTradeLtd/grpc"
   packages = [
@@ -43,7 +43,7 @@
     "middleware",
   ]
   pruneopts = "UT"
-  revision = "a519739e3fc405ee5804cb102e1b929fadefa720"
+  revision = "e2b45f49049f7dc8c0de056f54fc07c198e409a7"
 
 [[projects]]
   branch = "master"
@@ -105,7 +105,8 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:4c0989ca0bcd10799064318923b9bc2db6b4d6338dd75f3f2d86c3511aaaf5cf"
+  branch = "master"
+  digest = "1:3638dd58eb7a77bb1ed3f57e81f46ce636f0325f68e0900bb9170f71df93b9bc"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -115,8 +116,7 @@
     "ptypes/timestamp",
   ]
   pruneopts = "UT"
-  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
-  version = "v1.2.0"
+  revision = "347cf4a86c1cb8d262994d8ef5924d4576c5b331"
 
 [[projects]]
   digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"

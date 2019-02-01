@@ -92,7 +92,7 @@
   revision = "d2072fe8bb4a46e42fe4f8097f8c015cac19b08c"
 
 [[projects]]
-  branch = "krab/delete"
+  branch = "master"
   digest = "1:4934f5c9707bc29a7b6d2f6b4eb69d5a87badb445695a5bb43945a551601b79c"
   name = "github.com/RTradeLtd/grpc"
   packages = [
@@ -108,15 +108,15 @@
     "pay/response",
   ]
   pruneopts = "UT"
-  revision = "22a34604e313f170d5f7ac7cd669d735ed477f3f"
+  revision = "e2b45f49049f7dc8c0de056f54fc07c198e409a7"
 
 [[projects]]
   branch = "prod-prep"
-  digest = "1:780a23f9bf6cecc34290477379fd4477581c37bcff768e1f49c0ad6f3d5ddaab"
+  digest = "1:36bd7d3ddb68bc7d4fec56b4e337246b9ce6b6b26ae2649f45d278e76b2b0b1e"
   name = "github.com/RTradeLtd/kaas"
   packages = ["."]
   pruneopts = "UT"
-  revision = "08777d860a29d103e52c4e45add4d343d89d2ca8"
+  revision = "edfc019508b785d89fedf8942efc0f9fe41ac91e"
 
 [[projects]]
   branch = "authorization"

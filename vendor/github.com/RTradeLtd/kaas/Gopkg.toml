@@ -4,7 +4,7 @@
 
 [[constraint]]
   name = "github.com/RTradeLtd/grpc"
-  branch = "krab/delete"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/RTrade/krab"
