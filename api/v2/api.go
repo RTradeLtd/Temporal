@@ -498,7 +498,7 @@ func (api *API) setupRoutes() error {
 			// auth-less account routes
 			token := email.Group("/verify")
 			{
-				token.POST("/:user/:token", api.verifyEmailAddress)
+				token.GET("/:user/:token", api.verifyEmailAddress)
 			}
 		}
 	}
