@@ -115,7 +115,7 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal("no records discovered")
 	}
 
-	// /v2/ipfs/public/pin
+	// /v2/ipfs/public/pin (success)
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("hold_time", "5")
@@ -129,6 +129,22 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
 	}
+
+	// /v2/ipfs/public/pin (bad hold time)
+	apiResp = apiResponse{}
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "notanumber")
+	urlValues.Add("ipns_path", "/ipns/docs.api.temporal.cloud")
+	if err := sendRequest(
+		api, "POST", "/v2/ipns/public/pin", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 400 {
+		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
+	}
+
 	// /v2/ipfs/public/pin - bad path
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
