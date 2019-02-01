@@ -14,6 +14,10 @@ case "$1" in
 
     api)
         INIT_DB=true
+        if [[ "$TEMPORAL_PRODUCTION" == "yes" ]]; then
+            GIN_MODE=release
+            export GIN_MODE
+        fi
         export INIT_DB
         temporal api
         ;;
