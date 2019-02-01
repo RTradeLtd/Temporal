@@ -6,8 +6,6 @@ import (
 	"testing"
 	"time"
 
-	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
-
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
@@ -117,18 +115,11 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal("no records discovered")
 	}
 
-	// test pinning of an ipns hash
-	// for this we need to create a temporary ipns record
-	ipfsapi := ipfsapi.NewShell(api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port)
-	resp, err := ipfsapi.PublishWithDetails(hash, "self", time.Hour*24, time.Hour*24, true)
-	if err != nil {
-		t.Fatal(err)
-	}
 	// /v2/ipfs/public/pin
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("hold_time", "5")
-	urlValues.Add("ipns_path", "/ipns/"+resp.Name)
+	urlValues.Add("ipns_path", "/ipns/docs.api.temporal.cloud")
 	if err := sendRequest(
 		api, "POST", "/v2/ipns/public/pin", 200, nil, urlValues, &apiResp,
 	); err != nil {
