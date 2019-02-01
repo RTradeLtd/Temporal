@@ -117,16 +117,19 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		api.LogError(c, err, "failed to generate email verification jwt")
 	}
 	var url string
+	// format the url the user clicks to activate email
 	if dev {
 		url = fmt.Sprintf("https://dev.api.temporal.cloud/v2/account/email/verify/%s/%s", user.UserName, token)
 	} else {
 		url = fmt.Sprintf("https://api.temporal.cloud/v2/account/email/verify/%s/%s", user.UserName, token)
 
 	}
+	// format a link tag
+	link := fmt.Sprintf("<a href=\"%s\">link</a>", url)
 	// build email message
 	es := queue.EmailSend{
 		Subject:     "TEMPORAL Email Verification",
-		Content:     fmt.Sprintf("please click the following link to activate your temporal email notifications\n<a>%s</a>\n", url),
+		Content:     fmt.Sprintf("please click this %s to activate temporal email functionality", link),
 		ContentType: "text/html",
 		UserNames:   []string{user.UserName},
 		Emails:      []string{user.EmailAddress},
