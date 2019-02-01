@@ -74,4 +74,9 @@ func Test_API_Routes_Payments(t *testing.T) {
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 
+	// test stripe display
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/v2/payments/stripe/500", nil)
+	req.Header.Add("Authorization", authHeader)
+	api.r.ServeHTTP(testRecorder, req)
 }

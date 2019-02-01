@@ -335,6 +335,8 @@ func Test_Utils(t *testing.T) {
 	}{
 		{"ETHFail", args{"ETH", "ETH"}, true},
 		{"ETHPass", args{"eth", "ethereum"}, false},
+		{"RTCFail", args{"RTC", "bitcoinz"}, true},
+		{"RTCPass", args{"rtc", "ethereum"}, false},
 		{"BTCFail", args{"BTC", "BTC"}, true},
 		{"BTCPass", args{"btc", "bitcoin"}, false},
 		{"LTCFail", args{"LTC", "LTC"}, true},
