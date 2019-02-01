@@ -509,14 +509,27 @@ var commands = map[string]cmd.Cmd{
 				fmt.Println("failed to initialize database connection", err)
 				os.Exit(1)
 			}
+			// create user account
 			if _, err := models.NewUserManager(d.DB).NewUserAccount(
 				args["user"], args["pass"], args["email"],
 			); err != nil {
 				fmt.Println("failed to create user account", err)
 				os.Exit(1)
 			}
+			// add credits
 			if _, err := models.NewUserManager(d.DB).AddCredits(args["user"], 99999999); err != nil {
 				fmt.Println("failed to grant credits to user account", err)
+				os.Exit(1)
+			}
+			// generate email activation token
+			userModel, err := models.NewUserManager(d.DB).GenerateEmailVerificationToken(args["user"])
+			if err != nil {
+				fmt.Println("failed to generate email verification token", err)
+				os.Exit(1)
+			}
+			// activate email
+			if _, err := models.NewUserManager(d.DB).ValidateEmailVerificationToken(args["user"], userModel.EmailVerificationToken); err != nil {
+				fmt.Println("failed to activate email", err)
 				os.Exit(1)
 			}
 		},
