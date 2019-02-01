@@ -65,16 +65,16 @@ func setupConnection(connectionURL string, cfg *config.TemporalConfig) (*amqp.Co
 		// see https://godoc.org/github.com/streadway/amqp#DialTLS for more information
 		tlsConfig := new(tls.Config)
 		tlsConfig.RootCAs = x509.NewCertPool()
-		if ca, err := ioutil.ReadFile(cfg.RabbitMQ.TLSConfig.CACertFile); err != nil {
+		ca, err := ioutil.ReadFile(cfg.RabbitMQ.TLSConfig.CACertFile)
+		if err != nil {
 			return nil, err
-		} else {
-			tlsConfig.RootCAs.AppendCertsFromPEM(ca)
 		}
-		if cert, err := tls.LoadX509KeyPair(cfg.RabbitMQ.TLSConfig.CertFile, cfg.RabbitMQ.TLSConfig.KeyFile); err != nil {
+		tlsConfig.RootCAs.AppendCertsFromPEM(ca)
+		cert, err := tls.LoadX509KeyPair(cfg.RabbitMQ.TLSConfig.CertFile, cfg.RabbitMQ.TLSConfig.KeyFile)
+		if err != nil {
 			return nil, err
-		} else {
-			tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
 		}
+		tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
 		conn, err = amqp.DialTLS(connectionURL, tlsConfig)
 	}
 	if err != nil {
