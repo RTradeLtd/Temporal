@@ -46,7 +46,7 @@ func Test_API_Routes_Account(t *testing.T) {
 		t.Fatal("bad username recovered from token")
 	}
 
-	// verify account password change
+	// verify account password change - success
 	// /v2/account/password/change
 	urlValues := url.Values{}
 	urlValues.Add("old_password", "admin")
@@ -59,6 +59,22 @@ func Test_API_Routes_Account(t *testing.T) {
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /v2/account/password/change")
+	}
+
+	// verify account password change - failure
+	// /v2/account/password/change
+	urlValues = url.Values{}
+	urlValues.Add("old_password", "admin")
+	urlValues.Add("new_password", "admin1234@")
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "POST", "/v2/account/password/change", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 400 {
 		t.Fatal("bad api status code from /v2/account/password/change")
 	}
 
