@@ -51,7 +51,7 @@
 
 [[projects]]
   branch = "release/prod-prep"
-  digest = "1:0e275695300e7fd2b9ce7ade31ab1784c1dbc0a18781f27dd903e4093640c390"
+  digest = "1:34a109e58b504afea51c7ae9d5855454d1705e1b21576c9a5ec75fd4a5370b72"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "f2c32b999916340bd5cfd7e9a36531edc78ad13a"
+  revision = "be4617acef342e445ef65bc7f8cb81dbc8f149ee"
 
 [[projects]]
   branch = "master"

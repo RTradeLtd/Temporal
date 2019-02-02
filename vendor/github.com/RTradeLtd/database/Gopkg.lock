@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  branch = "master"
-  digest = "1:f10cf72d0da5fe82c6a7f45933f41d37996c18de31f49a49bc79bb322d3602d2"
+  digest = "1:d914e7b89490aab7ff3dafd9e79f6b431328803f5e25b59428d62531fa6c2ec0"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "858050bd60710361598cd4da2d8b316677fe6374"
+  revision = "c973c5b0c01ab295f86502599286dbee04a6f1d4"
+  version = "v2.0.0-rc1"
 
 [[projects]]
   branch = "versioned"
@@ -84,14 +84,6 @@
   pruneopts = "UT"
   revision = "14e95105cbafcda64fdc36197fe6a30b23c693dc"
   version = "v1.5.7"
-
-[[projects]]
-  digest = "1:d4e6e8584d0a94ce567d237e19192dae44d57d2767ac7e1d7fbf5626d176381a"
-  name = "github.com/jinzhu/gorm"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "472c70caa40267cb89fd8facb07fe6454b578626"
-  version = "v1.9.2"
 
 [[projects]]
   branch = "master"
@@ -257,7 +249,6 @@
     "github.com/RTradeLtd/gorm/dialects/postgres",
     "github.com/c2h5oh/datasize",
     "github.com/ipfs/go-ipfs-addr",
-    "github.com/jinzhu/gorm",
     "github.com/lib/pq",
     "github.com/multiformats/go-multiaddr",
     "golang.org/x/crypto/bcrypt",
