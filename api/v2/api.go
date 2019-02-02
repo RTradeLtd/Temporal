@@ -159,7 +159,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		Blockchain: networkVersion,
 		Token:      cfg.APIKeys.ChainRider,
 	})
-	keys, err := kaas.NewClient(cfg.Endpoints)
+	keys, err := kaas.NewClient(cfg.Services)
 	if err != nil {
 		return nil, err
 	}

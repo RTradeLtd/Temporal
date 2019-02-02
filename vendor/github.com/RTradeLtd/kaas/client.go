@@ -21,7 +21,7 @@ type Client struct {
 }
 
 // NewClient is used to generate our lens client
-func NewClient(opts config.Endpoints) (*Client, error) {
+func NewClient(opts config.Services) (*Client, error) {
 	dialOpts := make([]grpc.DialOption, 0)
 	if opts.Krab.TLS.CertPath != "" {
 		creds, err := credentials.NewClientTLSFromFile(opts.Krab.TLS.CertPath, "")

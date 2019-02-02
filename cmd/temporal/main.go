@@ -110,7 +110,7 @@ func newDB(cfg config.TemporalConfig, noSSL bool) (*gorm.DB, error) {
 func initClients(l *zap.SugaredLogger, cfg *config.TemporalConfig) (closers []func()) {
 	closers = make([]func(), 0)
 	if lens == nil {
-		client, err := clients.NewLensClient(cfg.Endpoints)
+		client, err := clients.NewLensClient(cfg.Services)
 		if err != nil {
 			l.Fatal(err)
 		}
@@ -479,7 +479,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "runs the krab service",
 		Description: "Runs the krab grpc server, allowing for secure private key management",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if err := kaas.NewServer(cfg.Endpoints.Krab.URL, "tcp", &cfg); err != nil {
+			if err := kaas.NewServer(cfg.Services.Krab.URL, "tcp", &cfg); err != nil {
 				fmt.Println("failed to start krab server", err)
 				os.Exit(1)
 			}

@@ -710,7 +710,7 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
-	cfg.Endpoints.Krab.TLS.CertPath = "/root"
+	cfg.Services.Krab.TLS.CertPath = "/root"
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
@@ -790,7 +790,7 @@ func TestQueue_IPNSEntry_Failure_Krab(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.Endpoints.Krab.TLS.CertPath = "/root/toor"
+	cfg.Services.Krab.TLS.CertPath = "/root/toor"
 	// we don't need time-out since this test will automatically fail
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

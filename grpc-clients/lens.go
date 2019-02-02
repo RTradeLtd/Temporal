@@ -32,7 +32,7 @@ type IndexerAPIClient interface {
 }
 
 // NewLensClient is used to generate our lens client
-func NewLensClient(opts config.Endpoints) (*LensClient, error) {
+func NewLensClient(opts config.Services) (*LensClient, error) {
 	dialOpts := make([]grpc.DialOption, 0)
 	if opts.Lens.TLS.CertPath != "" {
 		creds, err := credentials.NewClientTLSFromFile(opts.Lens.TLS.CertPath, "")

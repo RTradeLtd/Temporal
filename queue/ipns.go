@@ -28,7 +28,7 @@ const (
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	kb, err := kaas.NewClient(qm.cfg.Endpoints)
+	kb, err := kaas.NewClient(qm.cfg.Services)
 	if err != nil {
 		return err
 	}

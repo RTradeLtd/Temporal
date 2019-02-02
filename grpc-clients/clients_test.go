@@ -16,8 +16,8 @@ func TestLensClient_Fail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.Endpoints.Lens.TLS.CertPath = "fakepath"
-	if _, err = clients.NewLensClient(cfg.Endpoints); err == nil {
+	cfg.Services.Lens.TLS.CertPath = "fakepath"
+	if _, err = clients.NewLensClient(cfg.Services); err == nil {
 		t.Fatal("error expected")
 	}
 }
@@ -26,7 +26,7 @@ func TestLensClient_Pass(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = clients.NewLensClient(cfg.Endpoints); err != nil {
+	if _, err = clients.NewLensClient(cfg.Services); err != nil {
 		t.Fatal(err)
 	}
 }

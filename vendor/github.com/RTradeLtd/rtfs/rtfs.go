@@ -18,21 +18,20 @@ type IpfsManager struct {
 	nodeAPIAddr string
 }
 
-// NewManager is used to initialize our Ipfs manager struct
+// NewManager is used to instantiate IpfsManager with a connection to an ipfs api.
+// if token is provided, we use it to establish an authentication, direct connection
+// to an ipfs node api, which involves skipping multiaddr parsing. This is useful
+// in situations such as interacting with Nexus' delegator to talk with private ipfs
+// networks which use non-standard connection methods.
 func NewManager(ipfsURL, token string, timeout time.Duration) (*IpfsManager, error) {
-	var (
-		sh  *ipfsapi.Shell
-		err error
-	)
+	var sh *ipfsapi.Shell
 	if token != "" {
 		sh = ipfsapi.NewDirectShell(ipfsURL).WithAuthorization(token)
-		_, err = sh.ID()
 	} else {
 		sh = ipfsapi.NewShell(ipfsURL)
-		_, err = sh.ID()
 	}
 	// validate we have an active connection
-	if err != nil {
+	if _, err := sh.ID(); err != nil {
 		return nil, fmt.Errorf("failed to connect to ipfs node at '%s': %s", ipfsURL, err.Error())
 	}
 	// set timeout

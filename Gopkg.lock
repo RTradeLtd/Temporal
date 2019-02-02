@@ -34,12 +34,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  branch = "rabbitmq/tls"
-  digest = "1:fbe96a39123db63f923805164f4738ea6ff9359396bfac9ed48930d4fdd0a347"
+  digest = "1:d914e7b89490aab7ff3dafd9e79f6b431328803f5e25b59428d62531fa6c2ec0"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ec7bd369e31ca9e6912d3786f4f3b056c04b1d05"
+  revision = "c973c5b0c01ab295f86502599286dbee04a6f1d4"
+  version = "v2.0.0-rc1"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -112,15 +112,14 @@
 
 [[projects]]
   branch = "prod-prep"
-  digest = "1:36bd7d3ddb68bc7d4fec56b4e337246b9ce6b6b26ae2649f45d278e76b2b0b1e"
+  digest = "1:7c4c0de424d77e83d79a1e29e6f296d7ad716d1a5a68c299697d83c9e651f197"
   name = "github.com/RTradeLtd/kaas"
   packages = ["."]
   pruneopts = "UT"
-  revision = "edfc019508b785d89fedf8942efc0f9fe41ac91e"
+  revision = "9845de0b0e95ab2e62f67cfbd2c2c6feff049a8f"
 
 [[projects]]
-  branch = "authorization"
-  digest = "1:fca36fbaa40533a14146f3ce9ba2aa0db701dca0ef3ac200e412e4cdf8ecf06b"
+  digest = "1:be3735d11cdb3b538772905e15b5cca6af4f35f71a9f67babd512aed116b8767"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -128,7 +127,8 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "356c5d62592249b084ead78586fce55a22a0b3b1"
+  revision = "ac1c6e92072ad9652c702d3d55d97ec938acff91"
+  version = "v2.0.0-rc1"
 
 [[projects]]
   branch = "master"
@@ -1194,12 +1194,12 @@
   revision = "cfcb2f1abfee846c430233aef0b630a946e0a5a6"
 
 [[projects]]
-  digest = "1:b7132f3506d2a5a9bd4e5bf80cb7efbea4f14ea1afe24a2461f4c73d90f7d62a"
+  digest = "1:1f186490a9ec1359604f041997996fb0caa98878bd53cdf0b89b6b6ec6803af9"
   name = "github.com/whyrusleeping/yamux"
   packages = ["."]
   pruneopts = "UT"
-  revision = "98c0f1efe02b69cd8d8d45452d83663fa25c81e0"
-  version = "v1.1.2"
+  revision = "5364a42fe4b5efa5967c11c8f9b0f049cac0c4a9"
+  version = "v1.1.5"
 
 [[projects]]
   digest = "1:3c1a69cdae3501bf75e76d0d86dc6f2b0a7421bc205c0cb7b96b19eed464a34d"
@@ -1271,7 +1271,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f07f131873b0dfc4943d653179dcd007b391e9f7ef43dd728feaafc7b266f984"
+  digest = "1:2e836dd558f9c456a809d8e2c3b9e5bee1fe5b8bcf75e42938a44d6277d2bd28"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1279,7 +1279,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "aca44879d5644da7c5b8ec6a1115e9b6ea6c40d9"
+  revision = "afcc84fd7533758f95a6e93ae710aa945a0b7e73"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1325,7 +1325,7 @@
     "googleapis/rpc/status",
   ]
   pruneopts = "UT"
-  revision = "8ac453e89fca495c0d17f98932642f392e2a11f3"
+  revision = "4b09977fb92221987e99d190c8f88f2c92727a29"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
@@ -1402,7 +1402,6 @@
     "github.com/RTradeLtd/database",
     "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/entropy-mnemonics",
-    "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/gorm",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/krab",

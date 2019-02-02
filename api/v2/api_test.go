@@ -477,7 +477,7 @@ func Test_API_Initialize_Kaas_Failure(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup an invalid connection limit
-	cfg.Endpoints.Krab.TLS.CertPath = "/root"
+	cfg.Services.Krab.TLS.CertPath = "/root"
 
 	// setup fake mock clients
 	fakeLens := &mocks.FakeIndexerAPIClient{}

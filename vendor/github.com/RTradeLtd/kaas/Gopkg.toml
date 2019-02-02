@@ -1,6 +1,6 @@
 [[constraint]]
   name = "github.com/RTradeLtd/config"
-  branch = "master"
+  version = "~v2.0.0-rc0"
 
 [[constraint]]
   name = "github.com/RTradeLtd/grpc"

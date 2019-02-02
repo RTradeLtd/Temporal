@@ -6,11 +6,10 @@ type TemporalConfig struct {
 	APIKeys     `json:"api_keys,omitempty"`
 	AWS         `json:"aws,omitempty"`
 	Database    `json:"database,omitempty"`
-	Endpoints   `json:"endpoints,omitempty"`
+	Services    `json:"services,omitempty"`
 	Ethereum    `json:"ethereum,omitempty"`
 	IPFSCluster `json:"ipfs_cluster,omitempty"`
 	IPFS        `json:"ipfs,omitempty"`
-	Nexus       `json:"nexus,omitempty"`
 	Pay         `json:"pay,omitempty"`
 	RabbitMQ    `json:"rabbitmq,omitempty"`
 	Sendgrid    `json:"sendgrid,omitempty"`
@@ -25,13 +24,13 @@ type API struct {
 		Certificates struct {
 			CertPath string `json:"cert_path"`
 			KeyPath  string `json:"key_path"`
-		}
+		} `json:"certificates"`
 		ListenAddress string `json:"listen_address"`
 		// defines parameters for prometheus metric collector
 		Prometheus struct {
 			IP   string `json:"ip"`
 			Port string `json:"port"`
-		}
+		} `json:"prometheus"`
 		// define the maximum number of people allowed to connect to the API
 		Limit string `json:"limit"`
 	} `json:"connection"`
@@ -143,19 +142,12 @@ type APIKeys struct {
 	ChainRider string `json:"chain_rider"`
 }
 
-// Endpoints are various endpoints we connect to
-type Endpoints struct {
+// Services are various endpoints we connect to
+type Services struct {
 	MoneroRPC string `json:"monero_rpc"`
-	Lens      struct {
-		URL string `json:"url"`
-		TLS struct {
-			CertPath string `json:"cert_path"`
-			KeyFile  string `json:"key_file"`
-		}
-		AuthKey string `json:"auth_key"`
-		LogFile string `json:"log_file"`
-	} `json:"lens"`
-	MongoDB struct {
+	Lens      `json:"lens"`
+	Nexus     `json:"nexus"`
+	MongoDB   struct {
 		URL              string `json:"url"`
 		DB               string `json:"db"`
 		UploadCollection string `json:"uploads"`
@@ -175,6 +167,16 @@ type Endpoints struct {
 		LogFile          string `json:"log_file"`
 		KeystorePassword string `json:"keystore_password"`
 	} `json:"krab"`
+}
+
+// Lens defines options for the Lens search engine
+type Lens struct {
+	URL string `json:"url"`
+	TLS struct {
+		CertPath string `json:"cert_path"`
+		KeyFile  string `json:"key_file"`
+	} `json:"tls"`
+	AuthKey string `json:"auth_key"`
 }
 
 // Nexus defines options for the Nexus, our private network

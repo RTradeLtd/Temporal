@@ -11,3 +11,7 @@ test:
 .PHONY: lint
 lint:
 	golint $(go list ./... | grep -v /vendor/)
+
+.PHONY: config
+config:
+	go run cmd/cfggen/main.go

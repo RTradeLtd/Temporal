@@ -24,7 +24,7 @@ import (
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
 func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	kb, err := kaas.NewClient(qm.cfg.Endpoints)
+	kb, err := kaas.NewClient(qm.cfg.Services)
 	if err != nil {
 		return err
 	}
