@@ -50,6 +50,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	// check to make sure they can upload an object of this size
 	if err := api.usage.CanUpload(username, uint64(stats.CumulativeSize)); err != nil {
 		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
+		return
 	}
 	// determine cost of upload
 	cost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)

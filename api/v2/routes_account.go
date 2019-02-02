@@ -115,6 +115,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	token, err := api.generateEmailJWTToken(user.UserName, user.EmailVerificationToken)
 	if err != nil {
 		api.LogError(c, err, "failed to generate email verification jwt")
+		return
 	}
 	var url string
 	// format the url the user clicks to activate email
@@ -190,6 +191,16 @@ func (api *API) createIPFSKey(c *gin.Context) {
 	bitsInt, err := strconv.Atoi(forms["key_bits"])
 	if err != nil {
 		Fail(c, err)
+		return
+	}
+	// verify the user can create keys
+	if err := api.usage.CanCreateKey(username); err != nil {
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
+		return
+	}
+	// increment their key count
+	if err := api.usage.IncrementKeyCount(username, 1); err != nil {
+		api.LogError(c, err, "failed to increment key count")(http.StatusBadRequest)
 		return
 	}
 	// create key creation message
