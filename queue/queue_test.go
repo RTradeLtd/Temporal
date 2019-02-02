@@ -799,6 +799,25 @@ func TestQueue_IPNSEntry_Failure_Krab(t *testing.T) {
 	}
 }
 
+func TestQueue_Bad_TLS_Config_CACertFile(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	logger, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.RabbitMQ.TLSConfig.CACertFile = "../README.md"
+	if _, err := New(IpnsEntryQueue, cfg.RabbitMQ.URL, false, cfg, logger); err == nil {
+		t.Fatal("expected error")
+	}
+	cfg.RabbitMQ.TLSConfig.CACertFile = "/root/toor"
+	if _, err := New(IpnsEntryQueue, cfg.RabbitMQ.URL, false, cfg, logger); err == nil {
+		t.Fatal("expected error")
+	}
+}
+
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
 	return database.OpenDBConnection(database.DBOptions{
 		User:           cfg.Database.Username,

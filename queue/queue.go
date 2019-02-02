@@ -69,7 +69,9 @@ func setupConnection(connectionURL string, cfg *config.TemporalConfig) (*amqp.Co
 		if err != nil {
 			return nil, err
 		}
-		tlsConfig.RootCAs.AppendCertsFromPEM(ca)
+		if ok := tlsConfig.RootCAs.AppendCertsFromPEM(ca); !ok {
+			return nil, errors.New("failed to successfully append cert file")
+		}
 		cert, err := tls.LoadX509KeyPair(cfg.RabbitMQ.TLSConfig.CertFile, cfg.RabbitMQ.TLSConfig.KeyFile)
 		if err != nil {
 			return nil, err
