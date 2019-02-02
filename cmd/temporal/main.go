@@ -159,7 +159,12 @@ var commands = map[string]cmd.Cmd{
 			}
 
 			// init api service
-			service, err := v2.Initialize(&cfg, args["version"], *debug, *devMode, logger, lens, orch, signer)
+			service, err := v2.Initialize(
+				&cfg,
+				args["version"],
+				v2.Options{DebugLogging: *debug, DevMode: *devMode},
+				logger,
+				lens, orch, signer)
 			if err != nil {
 				logger.Fatal(err)
 			}

@@ -71,6 +71,12 @@ type API struct {
 	version string
 }
 
+// Options is used to non-critical options
+type Options struct {
+	DebugLogging bool
+	DevMode      bool
+}
+
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
 func Initialize(
@@ -78,7 +84,7 @@ func Initialize(
 	// configuration
 	cfg *config.TemporalConfig,
 	version string,
-	debug, devMode bool,
+	opts Options,
 	// API dependencies
 	l *zap.SugaredLogger,
 	lens pbLens.IndexerAPIClient,
@@ -91,7 +97,7 @@ func Initialize(
 		router = gin.Default()
 	)
 	// update dev mode
-	dev = devMode
+	dev = opts.DevMode
 	l = l.Named("api")
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
@@ -109,7 +115,7 @@ func Initialize(
 	}
 
 	// set up API struct
-	api, err := new(cfg, router, l, lens, orch, signer, im, imCluster, debug)
+	api, err := new(cfg, router, l, lens, orch, signer, im, imCluster, opts.DebugLogging)
 	if err != nil {
 		return nil, err
 	}
