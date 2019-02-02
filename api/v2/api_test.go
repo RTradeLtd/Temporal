@@ -136,8 +136,12 @@ func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceC
 	if err != nil {
 		return nil, nil, err
 	}
-
-	api, err := new(cfg, engine, logger, fakeLens, fakeOrch, fakeSigner, im, imCluster, false)
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	api, err := new(cfg, engine, logger, clients, im, imCluster, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -314,7 +318,12 @@ func Test_Utils(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, logger, &mocks.FakeIndexerAPIClient{}, &mocks.FakeServiceClient{}, &mocks.FakeSignerClient{})
+	clients := Clients{
+		Lens:   &mocks.FakeIndexerAPIClient{},
+		Orch:   &mocks.FakeServiceClient{},
+		Signer: &mocks.FakeSignerClient{},
+	}
+	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -416,7 +425,12 @@ func Test_API_Initialize_Cluster_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -438,7 +452,12 @@ func Test_API_Initialize_IPFS_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -460,8 +479,12 @@ func Test_API_Initialize_Setup_Routes_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-
-	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -483,8 +506,12 @@ func Test_API_Initialize_Kaas_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-
-	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -504,8 +531,12 @@ func Test_API_Initialize_Queue_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-
-	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -526,8 +557,12 @@ func Test_API_Initialize_Main_Network(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-
-	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, logger, fakeLens, fakeOrch, fakeSigner)
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -563,7 +598,12 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 			fakeLens := &mocks.FakeIndexerAPIClient{}
 			fakeOrch := &mocks.FakeServiceClient{}
 			fakeSigner := &mocks.FakeSignerClient{}
-			api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, logger, fakeLens, fakeOrch, fakeSigner)
+			clients := Clients{
+				Lens:   fakeLens,
+				Orch:   fakeOrch,
+				Signer: fakeSigner,
+			}
+			api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -595,7 +635,12 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, logger, fakeLens, fakeOrch, fakeSigner)
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -664,7 +709,12 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, logger, fakeLens, fakeOrch, fakeSigner)
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}

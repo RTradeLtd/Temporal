@@ -77,6 +77,13 @@ type Options struct {
 	DevMode      bool
 }
 
+// Clients is used to configure service clients we use
+type Clients struct {
+	Lens   pbLens.IndexerAPIClient
+	Orch   pbOrch.ServiceClient
+	Signer pbSigner.SignerClient
+}
+
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
 func Initialize(
@@ -85,11 +92,9 @@ func Initialize(
 	cfg *config.TemporalConfig,
 	version string,
 	opts Options,
+	clients Clients,
 	// API dependencies
 	l *zap.SugaredLogger,
-	lens pbLens.IndexerAPIClient,
-	orch pbOrch.ServiceClient,
-	signer pbSigner.SignerClient,
 
 ) (*API, error) {
 	var (
@@ -115,7 +120,7 @@ func Initialize(
 	}
 
 	// set up API struct
-	api, err := new(cfg, router, l, lens, orch, signer, im, imCluster, opts.DebugLogging)
+	api, err := new(cfg, router, l, clients, im, imCluster, opts.DebugLogging)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +136,7 @@ func Initialize(
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, clients Clients, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool) (*API, error) {
 	var (
 		dbm *database.Manager
 		err error
@@ -230,9 +235,9 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		ue:          models.NewEncryptedUploadManager(dbm.DB),
 		upm:         models.NewUploadManager(dbm.DB),
 		usage:       models.NewUsageManager(dbm.DB),
-		lens:        lens,
-		signer:      signer,
-		orch:        orch,
+		lens:        clients.Lens,
+		signer:      clients.Signer,
+		orch:        clients.Orch,
 		dc:          dc,
 		queues: queues{
 			pin:      qmPin,
