@@ -170,8 +170,8 @@ var commands = map[string]cmd.Cmd{
 			go func() {
 				fmt.Println(closeMessage)
 				<-quitChannel
-				service.Close()
 				cancel()
+				service.Close()
 			}()
 
 			// go!
