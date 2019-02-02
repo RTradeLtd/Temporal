@@ -68,7 +68,6 @@ func GetAuthenticatedUserFromContext(c *gin.Context) (string, error) {
 // from an authenticated request
 func GetAuthToken(c *gin.Context) string {
 	token := strings.Split(c.GetHeader("Authorization"), " ")[1]
-	fmt.Println(token)
 	return token
 }
 
