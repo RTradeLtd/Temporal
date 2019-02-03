@@ -2,6 +2,7 @@ package v2
 
 import (
 	"bytes"
+	"errors"
 	"html"
 	"io"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/crypto"
+	"github.com/RTradeLtd/database/models"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -159,6 +161,24 @@ func (api *API) addFile(c *gin.Context) {
 	var reader io.Reader
 	// encrypt file is passphrase is given
 	if c.PostForm("passphrase") != "" {
+		userUsage, err := api.usage.FindByUserName(username)
+		if err != nil {
+			api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
+			return
+		}
+		// if the user is within the free tier, then we throttle on-demand encryption
+		// free accounts are limited to a file upload size of 275MB when performing
+		// on-demand encryption. Non free accounts do not have this limit
+		if userUsage.Tier == models.Free {
+			megabytesUint := datasize.MB.Bytes()
+			maxSize := megabytesUint * 275
+			if fileHandler.Size > int64(maxSize) {
+				Fail(c, errors.New("free accounts are limited to a max file size of 275MB when using on-demand encryption"))
+				api.refundUserCredits(username, "file", cost)
+				api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
+				return
+			}
+		}
 		// html decode strings
 		decodedPassPhrase := html.UnescapeString(c.PostForm("passphrase"))
 		encrypted, err := crypto.NewEncryptManager(decodedPassPhrase).Encrypt(openFile)
