@@ -1,9 +1,20 @@
 #! /bin/bash
 
 # Commonly used cluster management commands
+LOG_PATH="/var/log/ipfs"
 export IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
 case "$1" in
     daemon)
+        if [[ -f "$LOG_PATH/ipfs_cluster_daemon.log" ]]; then
+            echo "[INFO] old log file present, rotating"
+            TIMESTAMP=$(date +%s)
+            mv "$LOG_PATH/ipfs_cluster_daemon.log" "$LOG_PATH/ipfs_cluster_daemon-$TIMESTAMP.log"
+            if [[ $? -ne 0 ]]; then
+                echo "[ERROR] failed to rotate log file"
+                exit 1
+            fi
+            echo "[INFO] rotated log file"
+        fi
         ipfs-cluster-service daemon 2>&1 | tee --append /var/log/ipfs/ipfs_cluster_daemon.log
         ;;
     # used by a node to add itself to a cluster
