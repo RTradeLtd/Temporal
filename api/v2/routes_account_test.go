@@ -239,4 +239,30 @@ func Test_API_Routes_Account(t *testing.T) {
 	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from /v2/forgot/password")
 	}
+
+	// upgrade account
+	// /v2/account/upgrade
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "POST", "/v2/account/upgrade", 200, nil, nil, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /v2/account/upgrade")
+	}
+
+	// usage data
+	// /v2/account/upgrade
+	var interfaceAPIResp interfaceAPIResponse
+	if err := sendRequest(
+		api, "GET", "/v2/account/usage", 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if interfaceAPIResp.Code != 200 {
+		t.Fatal("bad api status code from /v2/account/usage")
+	}
 }
