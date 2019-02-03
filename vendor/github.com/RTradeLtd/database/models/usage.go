@@ -63,7 +63,7 @@ var (
 
 	// FreeUploadLimit is the maximum data usage for free accounts
 	// Currrently set to 3GB
-	FreeUploadLimit = datasize.GB.Bytes() * 3
+	FreeUploadLimit = 3 * datasize.GB.Bytes()
 
 	// NonFreeUploadLimit is the maximum data usage for non-free accounts
 	// Currently set to 1TB
@@ -72,7 +72,7 @@ var (
 	// PlusTierMinimumUpload is the current data usage
 	// needed to upgrade from Light -> Plus
 	// currently set to 100GB
-	PlusTierMinimumUpload = datasize.GB.Bytes() * 100
+	PlusTierMinimumUpload = 100 * datasize.GB.Bytes()
 )
 
 // Usage is used to handle Usage of Temporal accounts
@@ -80,9 +80,9 @@ type Usage struct {
 	gorm.Model
 	UserName string `gorm:"type:varchar(255);unique"`
 	// keeps track of the max monthly upload limit for the user
-	MonthlyDataLimitGB uint64 `gorm:"type:numeric;default:0"`
+	MonthlyDataLimitBytes uint64 `gorm:"type:numeric;default:0"`
 	// keeps track of the current monthyl upload limit used
-	CurrentDataUsedGB uint64 `gorm:"type:numeric;default:0"`
+	CurrentDataUsedBytes uint64 `gorm:"type:numeric;default:0"`
 	// keeps track of how many IPNS records the user has published
 	IPNSRecordsPublished int64 `gorm:"type:integer;default:0"`
 	// keeps track of how many ipns records the user is allowed to publish
@@ -114,33 +114,32 @@ func NewUsageManager(db *gorm.DB) *UsageManager {
 func (bm *UsageManager) NewUsageEntry(username string, tier DataUsageTier) (*Usage, error) {
 	usage := &Usage{
 		UserName:             username,
-		CurrentDataUsedGB:    0,
+		CurrentDataUsedBytes: 0,
 		IPNSRecordsPublished: 0,
 		PubSubMessagesSent:   0,
 		Tier:                 tier,
 	}
+	// set tier
+	usage.Tier = tier
+	// set tier based restrictions
 	switch tier {
 	case Free:
-		usage.Tier = Free
-		usage.MonthlyDataLimitGB = FreeUploadLimit
+		usage.MonthlyDataLimitBytes = FreeUploadLimit
 		usage.KeysAllowed = 5
 		usage.PubSubMessagesAllowed = 100
 		usage.IPNSRecordsAllowed = 5
 	case Partner:
-		usage.MonthlyDataLimitGB = NonFreeUploadLimit
-		usage.Tier = Partner
+		usage.MonthlyDataLimitBytes = NonFreeUploadLimit
 		usage.KeysAllowed = 200
 		usage.PubSubMessagesAllowed = 20000
 		usage.IPNSRecordsAllowed = 200
 	case Light:
-		usage.MonthlyDataLimitGB = NonFreeUploadLimit
-		usage.Tier = Light
+		usage.MonthlyDataLimitBytes = NonFreeUploadLimit
 		usage.KeysAllowed = 100
 		usage.PubSubMessagesAllowed = 10000
 		usage.IPNSRecordsAllowed = 100
 	case Plus:
-		usage.MonthlyDataLimitGB = NonFreeUploadLimit
-		usage.Tier = Plus
+		usage.MonthlyDataLimitBytes = NonFreeUploadLimit
 		usage.KeysAllowed = 150
 		usage.PubSubMessagesAllowed = 15000
 		usage.IPNSRecordsAllowed = 150
@@ -190,7 +189,7 @@ func (bm *UsageManager) CanUpload(username string, dataSizeBytes uint64) error {
 	if err != nil {
 		return err
 	}
-	if b.CurrentDataUsedGB+dataSizeBytes > b.MonthlyDataLimitGB {
+	if b.CurrentDataUsedBytes+dataSizeBytes > b.MonthlyDataLimitBytes {
 		return errors.New("upload will breach max monthly data usage, please upload a smaller file")
 	}
 	return nil
@@ -231,13 +230,13 @@ func (bm *UsageManager) UpdateDataUsage(username string, uploadSizeBytes uint64)
 		return err
 	}
 	// update total data used
-	b.CurrentDataUsedGB = b.CurrentDataUsedGB + uploadSizeBytes
+	b.CurrentDataUsedBytes = b.CurrentDataUsedBytes + uploadSizeBytes
 	// perform a tier check for light accounts
 	// if they use more than 100GB, upgrade them to Plus tier
 	if b.Tier == Light {
 		// if they are light plan, and this upload takes them over 100GB
 		// update their tier to plus, enabling cheaper data rates
-		if b.CurrentDataUsedGB >= PlusTierMinimumUpload {
+		if b.CurrentDataUsedBytes >= PlusTierMinimumUpload {
 			// update tier
 			b.Tier = Plus
 		}
@@ -245,19 +244,19 @@ func (bm *UsageManager) UpdateDataUsage(username string, uploadSizeBytes uint64)
 	// perform upload limit checks
 	if b.Tier == Free {
 		// if they are free, they will need to upgrade their plan
-		if b.CurrentDataUsedGB >= FreeUploadLimit {
+		if b.CurrentDataUsedBytes >= FreeUploadLimit {
 			return errors.New("upload limit will be reached, please upload smaller content or upgrade your plan")
 		}
 	} else {
 		// check for the max upload limit of 1TB
-		if b.CurrentDataUsedGB >= NonFreeUploadLimit {
+		if b.CurrentDataUsedBytes >= NonFreeUploadLimit {
 			return errors.New("max upload limit of 1TB reached, contact support")
 		}
 	}
 	// save updated columns and return
 	return bm.DB.Model(b).UpdateColumns(map[string]interface{}{
-		"tier":                 b.Tier,
-		"current_data_used_gb": b.CurrentDataUsedGB,
+		"tier":                    b.Tier,
+		"current_data_used_bytes": b.CurrentDataUsedBytes,
 	}).Error
 }
 
@@ -271,21 +270,21 @@ func (bm *UsageManager) ReduceDataUsage(username string, uploadSizeBytes uint64)
 	// reduce total data used
 	// if the current data used is smaller than the reduction size
 	// reset their data used to 0
-	if b.CurrentDataUsedGB < uploadSizeBytes {
-		b.CurrentDataUsedGB = 0
+	if b.CurrentDataUsedBytes < uploadSizeBytes {
+		b.CurrentDataUsedBytes = 0
 	} else {
-		b.CurrentDataUsedGB = b.CurrentDataUsedGB - uploadSizeBytes
+		b.CurrentDataUsedBytes = b.CurrentDataUsedBytes - uploadSizeBytes
 	}
 	// perform tier downgrade check
 	// accounts can never be downgraded below Light to free tier
 	if b.Tier == Plus {
-		if b.CurrentDataUsedGB < PlusTierMinimumUpload {
+		if b.CurrentDataUsedBytes < PlusTierMinimumUpload {
 			b.Tier = Light
 		}
 	}
 	return bm.DB.Model(b).UpdateColumns(map[string]interface{}{
-		"tier":                 b.Tier,
-		"current_data_used_gb": b.CurrentDataUsedGB,
+		"tier":                    b.Tier,
+		"current_data_used_Bytes": b.CurrentDataUsedBytes,
 	}).Error
 }
 
@@ -310,22 +309,22 @@ func (bm *UsageManager) UpdateTier(username string, tier DataUsageTier) error {
 	if err != nil {
 		return err
 	}
+	// set tier
+	b.Tier = tier
+	// set tier based restrictions
 	switch tier {
 	case Partner:
-		b.MonthlyDataLimitGB = NonFreeUploadLimit
-		b.Tier = Partner
+		b.MonthlyDataLimitBytes = NonFreeUploadLimit
 		b.KeysAllowed = 200
 		b.PubSubMessagesAllowed = 20000
 		b.IPNSRecordsAllowed = 200
 	case Light:
-		b.MonthlyDataLimitGB = NonFreeUploadLimit
-		b.Tier = Light
+		b.MonthlyDataLimitBytes = NonFreeUploadLimit
 		b.KeysAllowed = 100
 		b.PubSubMessagesAllowed = 10000
 		b.IPNSRecordsAllowed = 100
 	case Plus:
-		b.MonthlyDataLimitGB = NonFreeUploadLimit
-		b.Tier = Plus
+		b.MonthlyDataLimitBytes = NonFreeUploadLimit
 		b.KeysAllowed = 150
 		b.PubSubMessagesAllowed = 15000
 		b.IPNSRecordsAllowed = 150
@@ -373,11 +372,11 @@ func (bm *UsageManager) ResetCounts(username string) error {
 	if err != nil {
 		return err
 	}
-	b.CurrentDataUsedGB = 0
+	b.CurrentDataUsedBytes = 0
 	b.IPNSRecordsPublished = 0
 	b.PubSubMessagesSent = 0
 	return bm.DB.Model(b).UpdateColumns(map[string]interface{}{
-		"current_data_used_gb":    b.CurrentDataUsedGB,
+		"current_data_used_bytes": b.CurrentDataUsedBytes,
 		"ip_ns_records_published": b.IPNSRecordsPublished,
 		"pub_sub_messages_sent":   b.PubSubMessagesSent,
 	}).Error

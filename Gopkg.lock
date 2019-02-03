@@ -50,8 +50,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "release/prod-prep"
-  digest = "1:0fb073ac6f89a853459b2a8e9c6aa7a71e9e427df41fa2eb3d59bb9b03d131e1"
+  digest = "1:5e8e7d8fa87b6fe805d21fd61dfc4eb195d5bfd41118ad189c9a3472a0c9ee68"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +58,8 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "1cc0a023432e9fce13f15cf13b2f2be51de1a2a4"
+  revision = "3bb4f15407e899f5d8f08c8b9d91535684944378"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "master"
@@ -1077,19 +1077,6 @@
   revision = "a314942b2fd9dde7a3f70ba3f1062848ce6eb392"
 
 [[projects]]
-  digest = "1:059e49a42b5fb03ebc0ecc5cc6ae8bbd83c2e0bdfc6142d3937f71241eb37060"
-  name = "github.com/stripe/stripe-go"
-  packages = [
-    ".",
-    "charge",
-    "customer",
-    "form",
-  ]
-  pruneopts = "UT"
-  revision = "f8b095462d541c43d981d28de52b7464b25f3ee1"
-  version = "v55.14.0"
-
-[[projects]]
   digest = "1:4887e9e89c80299aa520d718239809fdd2a47a9aa394909b169959bfbc424ddf"
   name = "github.com/ugorji/go"
   packages = ["codec"]
@@ -1279,7 +1266,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "afcc84fd7533758f95a6e93ae710aa945a0b7e73"
+  revision = "7ae0202eb74c2b534255c71b5a15fa4115aabbcc"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1440,9 +1427,6 @@
     "github.com/sendgrid/sendgrid-go",
     "github.com/sendgrid/sendgrid-go/helpers/mail",
     "github.com/streadway/amqp",
-    "github.com/stripe/stripe-go",
-    "github.com/stripe/stripe-go/charge",
-    "github.com/stripe/stripe-go/customer",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",
     "go.uber.org/zap/zaptest/observer",
