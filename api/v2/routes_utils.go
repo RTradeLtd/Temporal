@@ -152,6 +152,11 @@ func (api *API) exportKey(c *gin.Context) {
 		api.LogError(c, err, "failed to remove key from database")(http.StatusBadRequest)
 		return
 	}
+	// decrease key count
+	if err := api.usage.ReduceKeyCount(username, 1); err != nil {
+		api.LogError(c, err, "failed to decrease key count")(http.StatusBadRequest)
+		return
+	}
 	// return
 	Respond(c, http.StatusOK, gin.H{"response": phrase})
 }
