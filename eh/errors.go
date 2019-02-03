@@ -33,12 +33,6 @@ const (
 	IPFSAddError = "failed to add file to ipfs"
 	// FileOpenError is an error used when failing to open a file
 	FileOpenError = "failed to open file"
-	// MinioPutError is an error used when storing a file in minio
-	MinioPutError = "failed to store object in minio"
-	// MinioConnectionError is an error used when connecting to minio
-	MinioConnectionError = "failed to connect to minio"
-	// MinioBucketCreationError is an error used when creating a minio bucket
-	MinioBucketCreationError = "failed to create minio bucket"
 	// IPFSMultiHashGenerationError is an error used when calculating an ipfs multihash
 	IPFSMultiHashGenerationError = "failed to generate ipfs multihash"
 	// IPFSClusterStatusError is a error used when getting the status of ipfs cluster
@@ -130,4 +124,6 @@ const (
 	TierUpgradeError = "an error occured upgrading your tier"
 	// EncryptionError is an error when a failure to encrypt data occurs
 	EncryptionError = "an error occured when trying to encrypt file"
+	// DatabaseUpdateError is an error message used when a failure to update the database happesn
+	DatabaseUpdateError = "en error occured wile updating the database"
 )

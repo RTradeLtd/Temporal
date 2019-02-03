@@ -182,6 +182,16 @@ func (api *API) addFile(c *gin.Context) {
 		api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
 		return
 	}
+	// if this was an encrypted upload we need to update the encrypted upload table
+	// ipfs cluster pin handles updating the regular uploads table
+	if c.PostForm("passphrase") != "" {
+		if _, err := api.ue.NewUpload(username, fileHandler.Filename, "public", resp); err != nil {
+			api.LogError(c, err, eh.DatabaseUpdateError)(http.StatusBadRequest)
+			api.refundUserCredits(username, "file", cost)
+			api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
+			return
+		}
+	}
 	api.l.Debug("file uploaded to ipfs")
 	qp := queue.IPFSClusterPin{
 		CID:              resp,
