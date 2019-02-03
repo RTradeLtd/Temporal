@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html"
 	"net/http"
 	"strconv"
 
@@ -328,7 +329,7 @@ func (api *API) stripeDisplay(c *gin.Context) {
 		"title":       "Temporal Credit Purchase",
 		"description": "Purchase credits using stripe",
 		"amount":      c.Param("cents"),
-		"email":       user.EmailAddress,
+		"email":       html.UnescapeString(user.EmailAddress),
 	})
 }
 

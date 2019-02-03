@@ -1,0 +1,108 @@
+{
+  "cluster": {
+    "id": "...",
+    "peername": "...",
+    "private_key": "...",
+    "secret": "...",
+    "leave_on_shutdown": false,
+    "listen_multiaddress": "/ip4/0.0.0.0/tcp/9096",
+    "state_sync_interval": "10m0s",
+    "ipfs_sync_interval": "2m10s",
+    "replication_factor_min": -1,
+    "replication_factor_max": -1,
+    "monitor_ping_interval": "15s",
+    "peer_watch_interval": "5s",
+    "disable_repinning": false
+  },
+  "consensus": {
+    "raft": {
+      "init_peerset": [],
+      "wait_for_leader_timeout": "30s",
+      "network_timeout": "30s",
+      "commit_retries": 1,
+      "commit_retry_delay": "200ms",
+      "backups_rotate": 6,
+      "heartbeat_timeout": "20s",
+      "election_timeout": "30s",
+      "commit_timeout": "50ms",
+      "max_append_entries": 64,
+      "trailing_logs": 10240,
+      "snapshot_interval": "2m0s",
+      "snapshot_threshold": 8192,
+      "leader_lease_timeout": "500ms"
+    }
+  },
+  "api": {
+    "ipfsproxy": {
+      "listen_multiaddress": "/ip4/127.0.0.1/tcp/9095",
+      "node_multiaddress": "/ip4/127.0.0.1/tcp/5001",
+      "read_timeout": "0s",
+      "read_header_timeout": "5s",
+      "write_timeout": "0s",
+      "idle_timeout": "1m0s",
+      "extract_headers_path": "/api/v0/version",
+      "extract_headers_ttl": "5m0s"
+    },
+    "restapi": {
+      "http_listen_multiaddress": "/ip4/127.0.0.1/tcp/9094",
+      "read_timeout": "0s",
+      "read_header_timeout": "5s",
+      "write_timeout": "0s",
+      "idle_timeout": "2m0s",
+      "basic_auth_credentials": null,
+      "headers": {},
+      "cors_allowed_origins": [
+        "*"
+      ],
+      "cors_allowed_methods": [
+        "GET"
+      ],
+      "cors_allowed_headers": [],
+      "cors_exposed_headers": [
+        "Content-Type",
+        "X-Stream-Output",
+        "X-Chunked-Output",
+        "X-Content-Length"
+      ],
+      "cors_allow_credentials": true,
+      "cors_max_age": "0s"
+    }
+  },
+  "ipfs_connector": {
+    "ipfshttp": {
+      "node_multiaddress": "/ip4/127.0.0.1/tcp/5001",
+      "connect_swarms_delay": "30s",
+      "pin_method": "refs",
+      "ipfs_request_timeout": "5m0s",
+      "pin_timeout": "24h0m0s",
+      "unpin_timeout": "3h0m0s"
+    }
+  },
+  "pin_tracker": {
+    "maptracker": {
+      "max_pin_queue_size": 50000,
+      "concurrent_pins": 10
+    },
+    "stateless": {
+      "max_pin_queue_size": 50000,
+      "concurrent_pins": 10
+    }
+  },
+  "monitor": {
+    "monbasic": {
+      "check_interval": "15s"
+    },
+    "pubsubmon": {
+      "check_interval": "15s"
+    }
+  },
+  "informer": {
+    "disk": {
+      "metric_ttl": "30s",
+      "metric_type": "freespace"
+    },
+    "numpin": {
+      "metric_ttl": "10s"
+    }
+  }
+}
