@@ -6,12 +6,7 @@ import (
 
 // stripeTemplate is used to render a checkout button
 // allowing purchasing of credits using credit cards
-var stripeTemplate = `<html>
-<head>
-  <title>{{ .title }}</title>
-</head>
-<body>
-<form action="/v2/stripe/charge" method="post" class="payment">
+var stripeTemplate = `<form action="/v2/stripe/charge" method="post" class="payment">
   <input type="hidden" value="{{ .amount }}" name="provided_amount">
   <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
 	data-key="{{ .Key }}"
@@ -23,9 +18,7 @@ var stripeTemplate = `<html>
 	data-billing-address="true"
 	data-allow-remember-me="false"
     data-locale="auto"></script>
-</form>
-</body>
-</html>`
+</form>`
 
 // CreditRefund is a data object to contain refund information
 type CreditRefund struct {
