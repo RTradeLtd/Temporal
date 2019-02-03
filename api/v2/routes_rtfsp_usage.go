@@ -2,6 +2,7 @@ package v2
 
 import (
 	"bytes"
+	"errors"
 	"html"
 	"io"
 	"net/http"
@@ -19,6 +20,10 @@ import (
 
 // PinToHostedIPFSNetwork is used to pin content to a private ipfs network
 func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -68,6 +73,10 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 
 // AddFileToHostedIPFSNetwork is used to add a file to a private IPFS network via the simple method
 func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -164,6 +173,10 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 
 // IpfsPubSubPublishToHostedIPFSNetwork is used to publish a pubsub message to a private ipfs network
 func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -201,6 +214,10 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 
 // GetObjectStatForIpfsForHostedIPFSNetwork is  used to get object stats from a private ipfs network
 func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -240,6 +257,10 @@ func (api *API) getObjectStatForIpfsForHostedIPFSNetwork(c *gin.Context) {
 
 // CheckLocalNodeForPinForHostedIPFSNetwork is used to check the serving node for a pin
 func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -280,6 +301,10 @@ func (api *API) checkLocalNodeForPinForHostedIPFSNetwork(c *gin.Context) {
 
 // GetDagObject is used to retrieve an IPLD object from ipfs
 func (api *API) getDagObjectForHostedIPFSNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)

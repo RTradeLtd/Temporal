@@ -15,6 +15,10 @@ import (
 
 // CreateIPFSNetwork is used to create an entry in the database for a private ipfs network
 func (api *API) createIPFSNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -82,6 +86,10 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 }
 
 func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -133,6 +141,10 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 }
 
 func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -184,6 +196,10 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 }
 
 func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -257,6 +273,10 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 
 // GetIPFSPrivateNetworkByName is used to private ipfs network information
 func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -315,6 +335,10 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 // GetAuthorizedPrivateNetworks is used to retrieve authorized private networks
 // an authorized private network is defined as a network a user has API access to
 func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
