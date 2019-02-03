@@ -506,6 +506,7 @@ func (api *API) setupRoutes() error {
 		{
 			// used to upgrade account to light tier
 			auth.POST("/upgrade", api.upgradeAccount)
+			auth.GET("/usage", api.usageData)
 		}
 	}
 

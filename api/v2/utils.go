@@ -184,6 +184,15 @@ func (api *API) validateAdminRequest(username string) error {
 	return nil
 }
 
+func (api *API) formatUploadErrorMessage(file string, currentDataUsedBytes, maxDataAllowedBytes uint64) string {
+	currentDataUsedGB := float64(currentDataUsedBytes) / float64(datasize.GB.Bytes())
+	maxDataAllowedGB := float64(maxDataAllowedBytes) / float64(datasize.GB.Bytes())
+	return fmt.Sprintf(
+		"uploading object %s would breach your current data limit of %vGB as you are currently using %vGB, please upload a smaller object",
+		file, maxDataAllowedGB, currentDataUsedGB,
+	)
+}
+
 func (api *API) extractPostForms(c *gin.Context, formNames ...string) map[string]string {
 	forms := make(map[string]string)
 	for _, name := range formNames {

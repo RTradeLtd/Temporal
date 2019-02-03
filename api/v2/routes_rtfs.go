@@ -51,7 +51,14 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	}
 	// check to make sure they can upload an object of this size
 	if err := api.usage.CanUpload(username, uint64(stats.CumulativeSize)); err != nil {
-		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
+		usages, err := api.usage.FindByUserName(username)
+		if err != nil {
+			api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
+			return
+		}
+		api.LogError(c, err,
+			api.formatUploadErrorMessage(hash, usages.CurrentDataUsedBytes, usages.MonthlyDataLimitBytes),
+		)
 		return
 	}
 	// determine cost of upload
@@ -126,7 +133,14 @@ func (api *API) addFile(c *gin.Context) {
 	api.l.Debug("user", username, "file_size_in_gb", fileSizeInGB)
 	// validate if they can upload an object of this size
 	if err := api.usage.CanUpload(username, fileSizeInGB); err != nil {
-		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
+		usages, err := api.usage.FindByUserName(username)
+		if err != nil {
+			api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
+			return
+		}
+		api.LogError(c, err,
+			api.formatUploadErrorMessage(fileHandler.Filename, usages.CurrentDataUsedBytes, usages.MonthlyDataLimitBytes),
+		)
 		return
 	}
 	// calculate code of upload

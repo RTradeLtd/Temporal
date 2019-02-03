@@ -393,3 +393,19 @@ func (api *API) upgradeAccount(c *gin.Context) {
 	// return
 	Respond(c, http.StatusOK, gin.H{"response": "account upgraded, enjoy 11.5 cents of free credit, enough to store 0.5gb for 1 month"})
 }
+
+func (api *API) usageData(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	// get usage data
+	usages, err := api.usage.FindByUserName(username)
+	if err != nil {
+		api.LogError(c, err, "failed to search for account usage data")(http.StatusBadRequest)
+		return
+	}
+	// return data
+	Respond(c, http.StatusOK, gin.H{"response": usages})
+}
