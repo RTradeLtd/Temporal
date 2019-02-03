@@ -516,6 +516,11 @@ func (api *API) setupRoutes() error {
 				auth.POST("/forgot", api.forgotEmail)
 			}
 		}
+		auth := account.Use(authware...)
+		{
+			// used to upgrade account to light tier
+			auth.POST("/upgrade", api.upgradeAccount)
+		}
 	}
 
 	// ipfs routes
