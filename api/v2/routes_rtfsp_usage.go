@@ -136,6 +136,14 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		return
 	}
+	// if this was an encrypted upload we need to update the encrypted upload table
+	// ipfs cluster pin handles updating the regular uploads table
+	if c.PostForm("passphrase") != "" {
+		if _, err := api.ue.NewUpload(username, fileHandler.Filename, "public", resp); err != nil {
+			api.LogError(c, err, eh.DatabaseUpdateError)(http.StatusBadRequest)
+			return
+		}
+	}
 	// create database update message
 	dfa := queue.DatabaseFileAdd{
 		Hash:             resp,

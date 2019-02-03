@@ -187,8 +187,7 @@ func (api *API) addFile(c *gin.Context) {
 	if c.PostForm("passphrase") != "" {
 		if _, err := api.ue.NewUpload(username, fileHandler.Filename, "public", resp); err != nil {
 			api.LogError(c, err, eh.DatabaseUpdateError)(http.StatusBadRequest)
-			api.refundUserCredits(username, "file", cost)
-			api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
+			// dont refund here as the data is already available on ipfs
 			return
 		}
 	}
