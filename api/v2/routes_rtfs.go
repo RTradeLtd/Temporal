@@ -142,9 +142,6 @@ func (api *API) addFile(c *gin.Context) {
 	}
 	// update their data usage
 	if err := api.usage.UpdateDataUsage(username, uint64(fileHandler.Size)); err != nil {
-		usage, _ := api.usage.FindByUserName(username)
-		api.l.Debug("monthly_usage", usage.MonthlyDataLimitGB)
-		api.l.Debug("current_usage", usage.CurrentDataUsedGB)
 		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
 		return
