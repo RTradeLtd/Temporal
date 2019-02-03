@@ -119,16 +119,33 @@ func (bm *UsageManager) NewUsageEntry(username string, tier DataUsageTier) (*Usa
 		PubSubMessagesSent:   0,
 		Tier:                 tier,
 	}
-	if tier == Free {
+	switch tier {
+	case Free:
+		usage.Tier = Free
 		usage.MonthlyDataLimitGB = FreeUploadLimit
 		usage.KeysAllowed = 5
 		usage.PubSubMessagesAllowed = 100
 		usage.IPNSRecordsAllowed = 5
-	} else {
+	case Partner:
 		usage.MonthlyDataLimitGB = NonFreeUploadLimit
+		usage.Tier = Partner
+		usage.KeysAllowed = 200
+		usage.PubSubMessagesAllowed = 20000
+		usage.IPNSRecordsAllowed = 200
+	case Light:
+		usage.MonthlyDataLimitGB = NonFreeUploadLimit
+		usage.Tier = Light
 		usage.KeysAllowed = 100
 		usage.PubSubMessagesAllowed = 10000
 		usage.IPNSRecordsAllowed = 100
+	case Plus:
+		usage.MonthlyDataLimitGB = NonFreeUploadLimit
+		usage.Tier = Plus
+		usage.KeysAllowed = 150
+		usage.PubSubMessagesAllowed = 15000
+		usage.IPNSRecordsAllowed = 150
+	default:
+		return nil, errors.New("unsupported tier provided")
 	}
 	if err := bm.DB.Create(usage).Error; err != nil {
 		return nil, err
@@ -287,6 +304,7 @@ func (bm *UsageManager) ReduceKeyCount(username string, count int64) error {
 }
 
 // UpdateTier is used to update the Usage tier associated with an account
+// accounts may never be downgraded back to Free
 func (bm *UsageManager) UpdateTier(username string, tier DataUsageTier) error {
 	b, err := bm.FindByUserName(username)
 	if err != nil {
@@ -294,12 +312,27 @@ func (bm *UsageManager) UpdateTier(username string, tier DataUsageTier) error {
 	}
 	switch tier {
 	case Partner:
+		b.MonthlyDataLimitGB = NonFreeUploadLimit
 		b.Tier = Partner
+		b.KeysAllowed = 200
+		b.PubSubMessagesAllowed = 20000
+		b.IPNSRecordsAllowed = 200
 	case Light:
+		b.MonthlyDataLimitGB = NonFreeUploadLimit
 		b.Tier = Light
+		b.KeysAllowed = 100
+		b.PubSubMessagesAllowed = 10000
+		b.IPNSRecordsAllowed = 100
 	case Plus:
+		b.MonthlyDataLimitGB = NonFreeUploadLimit
 		b.Tier = Plus
+		b.KeysAllowed = 150
+		b.PubSubMessagesAllowed = 15000
+		b.IPNSRecordsAllowed = 150
+	default:
+		return errors.New("unsupported tier provided")
 	}
+
 	return bm.DB.Model(b).Update("tier", b.Tier).Error
 }
 

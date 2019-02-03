@@ -39,7 +39,7 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "c973c5b0c01ab295f86502599286dbee04a6f1d4"
-  version = "v2.0.0-rc1"
+  version = "v2.0.0"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -51,7 +51,7 @@
 
 [[projects]]
   branch = "release/prod-prep"
-  digest = "1:34a109e58b504afea51c7ae9d5855454d1705e1b21576c9a5ec75fd4a5370b72"
+  digest = "1:0fb073ac6f89a853459b2a8e9c6aa7a71e9e427df41fa2eb3d59bb9b03d131e1"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "be4617acef342e445ef65bc7f8cb81dbc8f149ee"
+  revision = "1cc0a023432e9fce13f15cf13b2f2be51de1a2a4"
 
 [[projects]]
   branch = "master"
@@ -111,12 +111,12 @@
   revision = "e2b45f49049f7dc8c0de056f54fc07c198e409a7"
 
 [[projects]]
-  branch = "prod-prep"
-  digest = "1:7c4c0de424d77e83d79a1e29e6f296d7ad716d1a5a68c299697d83c9e651f197"
+  digest = "1:0529ba43b6ab97f92950ce3a7011307b9c3c675ff7dbf976fad59ada4b7baf9b"
   name = "github.com/RTradeLtd/kaas"
   packages = ["."]
   pruneopts = "UT"
-  revision = "9845de0b0e95ab2e62f67cfbd2c2c6feff049a8f"
+  revision = "fde4096ec325ecc159337d5d061fd51c15366c19"
+  version = "v2.0.0"
 
 [[projects]]
   digest = "1:be3735d11cdb3b538772905e15b5cca6af4f35f71a9f67babd512aed116b8767"
@@ -128,7 +128,7 @@
   ]
   pruneopts = "UT"
   revision = "ac1c6e92072ad9652c702d3d55d97ec938acff91"
-  version = "v2.0.0-rc1"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "master"

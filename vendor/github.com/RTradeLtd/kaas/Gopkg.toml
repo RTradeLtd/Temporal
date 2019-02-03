@@ -1,18 +1,14 @@
 [[constraint]]
   name = "github.com/RTradeLtd/config"
-  version = "~v2.0.0-rc0"
+  version = "~v2.0.0"
 
 [[constraint]]
   name = "github.com/RTradeLtd/grpc"
   branch = "master"
 
 [[constraint]]
-  name = "github.com/RTrade/krab"
-  branch = "prod-prep"
-
-[[constraint]]
   name = "github.com/RTradeLtd/rtfs"
-  branch = "master"
+  version = "~v2.0.0"
 
 [prune]
   go-tests = true

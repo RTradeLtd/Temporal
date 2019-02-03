@@ -7,7 +7,7 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "c973c5b0c01ab295f86502599286dbee04a6f1d4"
-  version = "v2.0.0-rc1"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "versioned"

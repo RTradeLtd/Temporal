@@ -22,11 +22,11 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/rtfs"
-  version = "~v2.0.0-rc1"
+  version = "~v2.0.0"
 
 [[override]]
   name = "github.com/RTradeLtd/config"
-  version = "~v2.0.0-rc1"
+  version = "~v2.0.0"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"
@@ -41,12 +41,8 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   branch = "master"
 
 [[override]]
-  name = "github.com/RTradeLtd/krab"
-  branch = "prod-prep"
-
-[[override]]
   name = "github.com/RTradeLtd/kaas"
-  branch = "prod-prep"
+  version = "~v2.0.0"
 
 ###############
 #    IPFS     #
