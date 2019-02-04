@@ -73,6 +73,34 @@ var (
 	// needed to upgrade from Light -> Plus
 	// currently set to 100GB
 	PlusTierMinimumUpload = 100 * datasize.GB.Bytes()
+
+	// FreeKeyLimit defines how many keys free accounts can create
+	FreeKeyLimit int64 = 5
+	// FreePubSubLimit defines how many pubsub messages free accounts can send
+	FreePubSubLimit int64 = 100
+	// FreeIPNSLimit defines how many ipns records free accounts can publish
+	FreeIPNSLimit int64 = 5
+
+	// PartnerKeyLimit defines how many keys partner accounts can create
+	PartnerKeyLimit int64 = 200
+	// PartnerPubSubLimit defines how many pubsub messages partner accounts can send
+	PartnerPubSubLimit int64 = 20000
+	// PartnerIPNSLimit defines how many ipns records partner accounts can publish
+	PartnerIPNSLimit int64 = 200
+
+	// LightKeyLimit defines how many keys light accounts can create
+	LightKeyLimit int64 = 100
+	// LightPubSubLimit defines how many pubsub messages light accounts can send
+	LightPubSubLimit int64 = 10000
+	// LightIPNSLimit defines how many ipns records light accounts can publish
+	LightIPNSLimit int64 = 100
+
+	// PlusKeyLimit defines how many keys plus accounts can create
+	PlusKeyLimit int64 = 150
+	// PlusPubSubLimit defines how many pubsub messages plus accounts can send
+	PlusPubSubLimit int64 = 15000
+	// PlusIPNSRecordLimit defines how many ipns records plus accounts can publish
+	PlusIPNSRecordLimit int64 = 150
 )
 
 // Usage is used to handle Usage of Temporal accounts
@@ -125,24 +153,24 @@ func (bm *UsageManager) NewUsageEntry(username string, tier DataUsageTier) (*Usa
 	switch tier {
 	case Free:
 		usage.MonthlyDataLimitBytes = FreeUploadLimit
-		usage.KeysAllowed = 5
-		usage.PubSubMessagesAllowed = 100
-		usage.IPNSRecordsAllowed = 5
+		usage.KeysAllowed = FreeKeyLimit
+		usage.PubSubMessagesAllowed = FreePubSubLimit
+		usage.IPNSRecordsAllowed = FreeIPNSLimit
 	case Partner:
 		usage.MonthlyDataLimitBytes = NonFreeUploadLimit
-		usage.KeysAllowed = 200
-		usage.PubSubMessagesAllowed = 20000
-		usage.IPNSRecordsAllowed = 200
+		usage.KeysAllowed = PartnerKeyLimit
+		usage.PubSubMessagesAllowed = PartnerPubSubLimit
+		usage.IPNSRecordsAllowed = PartnerIPNSLimit
 	case Light:
 		usage.MonthlyDataLimitBytes = NonFreeUploadLimit
-		usage.KeysAllowed = 100
-		usage.PubSubMessagesAllowed = 10000
-		usage.IPNSRecordsAllowed = 100
+		usage.KeysAllowed = LightKeyLimit
+		usage.PubSubMessagesAllowed = LightPubSubLimit
+		usage.IPNSRecordsAllowed = LightIPNSLimit
 	case Plus:
 		usage.MonthlyDataLimitBytes = NonFreeUploadLimit
-		usage.KeysAllowed = 150
-		usage.PubSubMessagesAllowed = 15000
-		usage.IPNSRecordsAllowed = 150
+		usage.KeysAllowed = PlusKeyLimit
+		usage.PubSubMessagesAllowed = PlusPubSubLimit
+		usage.IPNSRecordsAllowed = PlusIPNSRecordLimit
 	default:
 		return nil, errors.New("unsupported tier provided")
 	}
@@ -239,9 +267,9 @@ func (bm *UsageManager) UpdateDataUsage(username string, uploadSizeBytes uint64)
 		if b.CurrentDataUsedBytes >= PlusTierMinimumUpload {
 			// update tier
 			b.Tier = Plus
-			b.KeysAllowed = 150
-			b.PubSubMessagesAllowed = 15000
-			b.IPNSRecordsAllowed = 150
+			b.KeysAllowed = PlusKeyLimit
+			b.PubSubMessagesAllowed = PlusPubSubLimit
+			b.IPNSRecordsAllowed = PlusIPNSRecordLimit
 		}
 	}
 	// perform upload limit checks
@@ -262,7 +290,7 @@ func (bm *UsageManager) UpdateDataUsage(username string, uploadSizeBytes uint64)
 		"current_data_used_bytes":  b.CurrentDataUsedBytes,
 		"keys_allowed":             b.KeysAllowed,
 		"ip_ns_records_allowed":    b.IPNSRecordsAllowed,
-		"pub_sub_messages_allowed": b.IPNSRecordsAllowed,
+		"pub_sub_messages_allowed": b.PubSubMessagesAllowed,
 	}).Error
 }
 
@@ -286,6 +314,9 @@ func (bm *UsageManager) ReduceDataUsage(username string, uploadSizeBytes uint64)
 	if b.Tier == Plus {
 		if b.CurrentDataUsedBytes < PlusTierMinimumUpload {
 			b.Tier = Light
+			b.KeysAllowed = LightKeyLimit
+			b.IPNSRecordsAllowed = LightIPNSLimit
+			b.PubSubMessagesAllowed = LightPubSubLimit
 		}
 	}
 	return bm.DB.Model(b).UpdateColumns(map[string]interface{}{
@@ -321,19 +352,19 @@ func (bm *UsageManager) UpdateTier(username string, tier DataUsageTier) error {
 	switch tier {
 	case Partner:
 		b.MonthlyDataLimitBytes = NonFreeUploadLimit
-		b.KeysAllowed = 200
-		b.PubSubMessagesAllowed = 20000
-		b.IPNSRecordsAllowed = 200
+		b.KeysAllowed = PartnerKeyLimit
+		b.PubSubMessagesAllowed = PartnerPubSubLimit
+		b.IPNSRecordsAllowed = PartnerIPNSLimit
 	case Light:
 		b.MonthlyDataLimitBytes = NonFreeUploadLimit
-		b.KeysAllowed = 100
-		b.PubSubMessagesAllowed = 10000
-		b.IPNSRecordsAllowed = 100
+		b.KeysAllowed = LightKeyLimit
+		b.PubSubMessagesAllowed = LightPubSubLimit
+		b.IPNSRecordsAllowed = LightIPNSLimit
 	case Plus:
 		b.MonthlyDataLimitBytes = NonFreeUploadLimit
-		b.KeysAllowed = 150
-		b.PubSubMessagesAllowed = 15000
-		b.IPNSRecordsAllowed = 150
+		b.KeysAllowed = PlusKeyLimit
+		b.PubSubMessagesAllowed = PlusPubSubLimit
+		b.IPNSRecordsAllowed = PlusIPNSRecordLimit
 	default:
 		return errors.New("unsupported tier provided")
 	}
