@@ -361,6 +361,16 @@ func (api *API) upgradeAccount(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	usages, err := api.usage.FindByUserName(username)
+	if err != nil {
+		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
+		return
+	}
+	// prevent people from repeatedly calling this granting perpetual credits
+	if usages.Tier != models.Free {
+		Fail(c, errors.New("user account is already upgrade"))
+		return
+	}
 	// update tier
 	if err := api.usage.UpdateTier(username, models.Light); err != nil {
 		api.LogError(c, err, eh.TierUpgradeError)(http.StatusBadRequest)
