@@ -280,11 +280,31 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		Blockchain:    "dash",
 		Status:        "please send exactly the charge amount. The mining fee required by the chainrider payment forward api call is incldued in the charge amount",
 		//TODO: change to main before production release
-		Network:          "testnet",
+		Network:          "main",
 		DepositAddress:   response.PaymentAddress,
 		PaymentForwardID: response.PaymentForwardID,
 	}
 	Respond(c, http.StatusOK, gin.H{"response": p})
+}
+
+// GetPaymentStatus is used to retrieve whether or not a payment is confirmed
+func (api *API) getPaymentStatus(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	number, err := strconv.ParseInt(c.Param("number"), 10, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	payment, err := api.pm.FindPaymentByNumber(username, number)
+	if err != nil {
+		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": payment.Confirmed})
 }
 
 // GetUSDValue is used to retrieve the usd value of a given payment type

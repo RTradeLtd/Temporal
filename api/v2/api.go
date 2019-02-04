@@ -463,6 +463,7 @@ func (api *API) setupRoutes() error {
 			eth.POST("/request", api.RequestSignedPaymentMessage)
 			eth.POST("/confirm", api.ConfirmETHPayment)
 		}
+		payments.GET("/status/:number", api.getPaymentStatus)
 	}
 
 	// accounts
