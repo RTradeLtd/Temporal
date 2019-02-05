@@ -3,9 +3,11 @@ package tests
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -15,11 +17,12 @@ import (
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
 	"github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 
-	"gx/ipfs/QmQXze9tG878pa4Euya4rrDpyTNX3kQe4dhCaBzBozGgpe/go-unixfs"
+	"gx/ipfs/QmQ1JnYpnzkaurjW1yxkQxC2w3K1PorNE1nv1vaP5Le7sq/go-unixfs"
+	"gx/ipfs/QmQ1JnYpnzkaurjW1yxkQxC2w3K1PorNE1nv1vaP5Le7sq/go-unixfs/importer/helpers"
 	"gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	cbor "gx/ipfs/QmRoARq3nkUb13HSKZGepCZSWe5GrVPwx7xURJGZ7KWv9V/go-ipld-cbor"
-	mdag "gx/ipfs/QmTQdH4848iTVCJmKXYyRiK72HufWTLYQQ8iN3JaQ8K1Hq/go-merkledag"
-	"gx/ipfs/QmXWZCd8jfaHmt4UDSnjKmGcrQMw95bDGWqEeVLVJjoANX/go-ipfs-files"
+	cbor "gx/ipfs/QmRZxJ7oybgnnwriuRub9JXp5YdFM9wiGSyRq38QC7swpS/go-ipld-cbor"
+	"gx/ipfs/QmaXvvAVAQ5ABqM5xtjYmV85xmN5MkWAZsX9H9Fwo4FVXp/go-ipfs-files"
+	mdag "gx/ipfs/Qmb2UEG2TAeVrEJSjqsZF7Y2he7wRDkrdt6c3bECxwZf4k/go-merkledag"
 	mh "gx/ipfs/QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW/go-multihash"
 )
 
@@ -42,6 +45,7 @@ func (tp *provider) TestUnixfs(t *testing.T) {
 	t.Run("TestLsEmptyDir", tp.TestLsEmptyDir)
 	t.Run("TestLsNonUnixfs", tp.TestLsNonUnixfs)
 	t.Run("TestAddCloses", tp.TestAddCloses)
+	t.Run("TestGetSeek", tp.TestGetSeek)
 }
 
 // `echo -n 'hello, world!' | ipfs add`
@@ -99,6 +103,34 @@ func (tp *provider) TestAdd(t *testing.T) {
 			t.Fatal(err)
 		}
 		return coreiface.IpfsPath(c)
+	}
+
+	rf, err := ioutil.TempFile(os.TempDir(), "unixfs-add-real")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rfp := rf.Name()
+
+	if _, err := rf.Write([]byte(helloStr)); err != nil {
+		t.Fatal(err)
+	}
+
+	stat, err := rf.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := rf.Close(); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(rfp)
+
+	realFile := func() files.Node {
+		n, err := files.NewReaderPathFile(rfp, ioutil.NopCloser(strings.NewReader(helloStr)), stat)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return n
 	}
 
 	cases := []struct {
@@ -322,6 +354,27 @@ func (tp *provider) TestAdd(t *testing.T) {
 			wrap: "t",
 			path: "/ipfs/QmRKGpFfR32FVXdvJiHfo4WJ5TDYBsM1P9raAp1p6APWSp",
 			opts: []options.UnixfsAddOption{options.Unixfs.Hidden(false)},
+		},
+		// NoCopy
+		{
+			name: "simpleNoCopy",
+			data: realFile,
+			path: "/ipfs/zb2rhdhmJjJZs9qkhQCpCQ7VREFkqWw3h1r8utjVvQugwHPFd",
+			opts: []options.UnixfsAddOption{options.Unixfs.Nocopy(true)},
+		},
+		{
+			name: "noCopyNoRaw",
+			data: realFile,
+			path: "/ipfs/zb2rhdhmJjJZs9qkhQCpCQ7VREFkqWw3h1r8utjVvQugwHPFd",
+			opts: []options.UnixfsAddOption{options.Unixfs.Nocopy(true), options.Unixfs.RawLeaves(false)},
+			err:  "nocopy option requires '--raw-leaves' to be enabled as well",
+		},
+		{
+			name: "noCopyNoPath",
+			data: strFile(helloStr),
+			path: "/ipfs/zb2rhdhmJjJZs9qkhQCpCQ7VREFkqWw3h1r8utjVvQugwHPFd",
+			opts: []options.UnixfsAddOption{options.Unixfs.Nocopy(true)},
+			err:  helpers.ErrMissingFsRef.Error(),
 		},
 		// Events / Progress
 		{
@@ -587,7 +640,7 @@ func (tp *provider) TestAddHashOnly(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected an error")
 	}
-	if err.Error() != "blockservice: key not found" {
+	if !strings.Contains(err.Error(), "blockservice: key not found") {
 		t.Errorf("unxepected error: %s", err.Error())
 	}
 }
@@ -633,7 +686,7 @@ func (tp *provider) TestGetDir(t *testing.T) {
 		t.Error(err)
 	}
 	edir := unixfs.EmptyDirNode()
-	_, err = api.Dag().Put(ctx, bytes.NewReader(edir.RawData()), options.Dag.Codec(cid.DagProtobuf), options.Dag.InputEnc("raw"))
+	err = api.Dag().Add(ctx, edir)
 	if err != nil {
 		t.Error(err)
 	}
@@ -667,7 +720,7 @@ func (tp *provider) TestGetNonUnixfs(t *testing.T) {
 	}
 
 	nd := new(mdag.ProtoNode)
-	_, err = api.Dag().Put(ctx, bytes.NewReader(nd.RawData()), options.Dag.Codec(nd.CidBuilder().GetCodec()), options.Dag.InputEnc("raw"))
+	err = api.Dag().Add(ctx, nd)
 	if err != nil {
 		t.Error(err)
 	}
@@ -701,17 +754,18 @@ func (tp *provider) TestLs(t *testing.T) {
 		t.Error(err)
 	}
 
-	if len(links) != 1 {
-		t.Fatalf("expected 1 link, got %d", len(links))
+	link := (<-links).Link
+	if link.Size != 23 {
+		t.Fatalf("expected size = 23, got %d", link.Size)
 	}
-	if links[0].Size != 23 {
-		t.Fatalf("expected size = 23, got %d", links[0].Size)
+	if link.Name != "name-of-file" {
+		t.Fatalf("expected name = name-of-file, got %s", link.Name)
 	}
-	if links[0].Name != "name-of-file" {
-		t.Fatalf("expected name = name-of-file, got %s", links[0].Name)
+	if link.Cid.String() != "QmX3qQVKxDGz3URVC3861Z3CKtQKGBn6ffXRBBWGMFz9Lr" {
+		t.Fatalf("expected cid = QmX3qQVKxDGz3URVC3861Z3CKtQKGBn6ffXRBBWGMFz9Lr, got %s", link.Cid)
 	}
-	if links[0].Cid.String() != "QmX3qQVKxDGz3URVC3861Z3CKtQKGBn6ffXRBBWGMFz9Lr" {
-		t.Fatalf("expected cid = QmX3qQVKxDGz3URVC3861Z3CKtQKGBn6ffXRBBWGMFz9Lr, got %s", links[0].Cid)
+	if _, ok := <-links; ok {
+		t.Errorf("didn't expect a second link")
 	}
 }
 
@@ -801,7 +855,7 @@ func (tp *provider) TestLsNonUnixfs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = api.Dag().Put(ctx, bytes.NewReader(nd.RawData()), options.Dag.Codec(cid.DagCBOR), options.Dag.InputEnc("raw"))
+	err = api.Dag().Add(ctx, nd)
 	if err != nil {
 		t.Error(err)
 	}
@@ -884,5 +938,107 @@ func (tp *provider) TestAddCloses(t *testing.T) {
 			t.Errorf("dir %d not closed!", i)
 		}
 	}
+}
 
+func (tp *provider) TestGetSeek(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	api, err := tp.makeAPI(ctx)
+	if err != nil {
+		t.Error(err)
+	}
+
+	dataSize := int64(100000)
+	tf := files.NewReaderFile(io.LimitReader(rand.New(rand.NewSource(1403768328)), dataSize))
+
+	p, err := api.Unixfs().Add(ctx, tf, options.Unixfs.Chunker("size-100"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	r, err := api.Unixfs().Get(ctx, p)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	f := files.ToFile(r)
+	if f == nil {
+		t.Fatal("not a file")
+	}
+
+	orig := make([]byte, dataSize)
+	if _, err := f.Read(orig); err != nil {
+		t.Fatal(err)
+	}
+	f.Close()
+
+	origR := bytes.NewReader(orig)
+
+	r, err = api.Unixfs().Get(ctx, p)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	f = files.ToFile(r)
+	if f == nil {
+		t.Fatal("not a file")
+	}
+
+	test := func(offset int64, whence int, read int, expect int64, shouldEof bool) {
+		t.Run(fmt.Sprintf("seek%d+%d-r%d-%d", whence, offset, read, expect), func(t *testing.T) {
+			n, err := f.Seek(offset, whence)
+			if err != nil {
+				t.Fatal(err)
+			}
+			origN, err := origR.Seek(offset, whence)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if n != origN {
+				t.Fatalf("offsets didn't match, expected %d, got %d", origN, n)
+			}
+
+			buf := make([]byte, read)
+			origBuf := make([]byte, read)
+			origRead, err := origR.Read(origBuf)
+			if err != nil {
+				t.Fatalf("orig: %s", err)
+			}
+			r, err := f.Read(buf)
+			switch {
+			case shouldEof && err != nil && err != io.EOF:
+				fallthrough
+			case !shouldEof && err != nil:
+				t.Fatalf("f: %s", err)
+			case shouldEof:
+				_, err := f.Read([]byte{0})
+				if err != io.EOF {
+					t.Fatal("expected EOF")
+				}
+				_, err = origR.Read([]byte{0})
+				if err != io.EOF {
+					t.Fatal("expected EOF (orig)")
+				}
+			}
+
+			if int64(r) != expect {
+				t.Fatal("read wrong amount of data")
+			}
+			if r != origRead {
+				t.Fatal("read different amount of data than bytes.Reader")
+			}
+			if !bytes.Equal(buf, origBuf) {
+				t.Fatal("data didn't match")
+			}
+		})
+	}
+
+	test(3, io.SeekCurrent, 10, 10, false)
+	test(3, io.SeekCurrent, 10, 10, false)
+	test(500, io.SeekCurrent, 10, 10, false)
+	test(350, io.SeekStart, 100, 100, false)
+	test(-123, io.SeekCurrent, 100, 100, false)
+	test(dataSize-50, io.SeekStart, 100, 50, true)
+	test(-5, io.SeekEnd, 100, 5, true)
 }

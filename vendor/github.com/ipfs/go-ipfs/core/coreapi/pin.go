@@ -6,9 +6,8 @@ import (
 
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
 	caopts "github.com/ipfs/go-ipfs/core/coreapi/interface/options"
-	corerepo "github.com/ipfs/go-ipfs/core/corerepo"
-	merkledag "gx/ipfs/QmTQdH4848iTVCJmKXYyRiK72HufWTLYQQ8iN3JaQ8K1Hq/go-merkledag"
-	bserv "gx/ipfs/QmYPZzd9VqmJDwxUnThfeSbV1Y5o53aVPDijTB7j7rS9Ep/go-blockservice"
+	bserv "gx/ipfs/QmVKQHuzni68SWByzJgBUCwHvvr4TWiXfutNWWwpZpp4rE/go-blockservice"
+	merkledag "gx/ipfs/Qmb2UEG2TAeVrEJSjqsZF7Y2he7wRDkrdt6c3bECxwZf4k/go-merkledag"
 
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
 	offline "gx/ipfs/QmYZwey1thDTynSrvd6qQkX24UpTka6TFhQ2v569UpoqxD/go-ipfs-exchange-offline"
@@ -17,21 +16,21 @@ import (
 type PinAPI CoreAPI
 
 func (api *PinAPI) Add(ctx context.Context, p coreiface.Path, opts ...caopts.PinAddOption) error {
-	settings, err := caopts.PinAddOptions(opts...)
+	dagNode, err := api.core().ResolveNode(ctx, p)
 	if err != nil {
-		return err
+		return fmt.Errorf("pin: %s", err)
 	}
 
-	rp, err := api.core().ResolvePath(ctx, p)
+	settings, err := caopts.PinAddOptions(opts...)
 	if err != nil {
 		return err
 	}
 
 	defer api.blockstore.PinLock().Unlock()
 
-	_, err = corerepo.Pin(api.pinning, api.core(), ctx, []string{rp.Cid().String()}, settings.Recursive)
+	err = api.pinning.Pin(ctx, dagNode, settings.Recursive)
 	if err != nil {
-		return err
+		return fmt.Errorf("pin: %s", err)
 	}
 
 	return api.pinning.Flush()
@@ -52,9 +51,19 @@ func (api *PinAPI) Ls(ctx context.Context, opts ...caopts.PinLsOption) ([]coreif
 	return api.pinLsAll(settings.Type, ctx)
 }
 
-func (api *PinAPI) Rm(ctx context.Context, p coreiface.Path) error {
-	_, err := corerepo.Unpin(api.pinning, api.core(), ctx, []string{p.String()}, true)
+// Rm pin rm api
+func (api *PinAPI) Rm(ctx context.Context, p coreiface.Path, opts ...caopts.PinRmOption) error {
+	rp, err := api.core().ResolvePath(ctx, p)
 	if err != nil {
+		return err
+	}
+
+	settings, err := caopts.PinRmOptions(opts...)
+	if err != nil {
+		return err
+	}
+
+	if err = api.pinning.Unpin(ctx, rp.Cid(), settings.Recursive); err != nil {
 		return err
 	}
 

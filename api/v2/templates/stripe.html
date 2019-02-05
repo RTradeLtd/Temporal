@@ -1,0 +1,14 @@
+<html>
+<head>
+  <title>{{ .title }}</title>
+</head>
+<body>
+<form action="/v2/stripe/charge" method="post" class="payment">
+  <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+    data-key="{{ .Key }}"
+    data-description="{{ .description }}"
+    data-amount="{{ .amount }}"
+    data-locale="auto"></script>
+</form>
+</body>
+</html>

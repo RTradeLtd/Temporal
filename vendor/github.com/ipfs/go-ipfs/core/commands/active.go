@@ -9,12 +9,12 @@ import (
 
 	oldcmds "github.com/ipfs/go-ipfs/commands"
 
-	cmds "gx/ipfs/QmWGm4AbZEbnmdgVTza52MSNpEmBdFVqzmAysRbjrRyGbH/go-ipfs-cmds"
+	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
 	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 const (
-	verboseOptionName = "v"
+	verboseOptionName = "verbose"
 )
 
 var ActiveReqsCmd = &cmds.Command{
@@ -29,7 +29,7 @@ Lists running and recently run commands.
 		return cmds.EmitOnce(res, ctx.ReqLog.Report())
 	},
 	Options: []cmdkit.Option{
-		cmdkit.BoolOption("verbose", verboseOptionName, "Print extra information."),
+		cmdkit.BoolOption(verboseOptionName, "v", "Print extra information."),
 	},
 	Subcommands: map[string]*cmds.Command{
 		"clear":    clearInactiveCmd,

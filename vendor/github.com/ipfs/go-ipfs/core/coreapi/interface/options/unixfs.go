@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	dag "gx/ipfs/QmTQdH4848iTVCJmKXYyRiK72HufWTLYQQ8iN3JaQ8K1Hq/go-merkledag"
+	dag "gx/ipfs/Qmb2UEG2TAeVrEJSjqsZF7Y2he7wRDkrdt6c3bECxwZf4k/go-merkledag"
 	mh "gx/ipfs/QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW/go-multihash"
 )
 
@@ -42,7 +42,12 @@ type UnixfsAddSettings struct {
 	Progress bool
 }
 
+type UnixfsLsSettings struct {
+	ResolveChildren bool
+}
+
 type UnixfsAddOption func(*UnixfsAddSettings) error
+type UnixfsLsOption func(*UnixfsLsSettings) error
 
 func UnixfsAddOptions(opts ...UnixfsAddOption) (*UnixfsAddSettings, cid.Prefix, error) {
 	options := &UnixfsAddSettings{
@@ -120,6 +125,21 @@ func UnixfsAddOptions(opts ...UnixfsAddOption) (*UnixfsAddSettings, cid.Prefix, 
 	prefix.MhLength = -1
 
 	return options, prefix, nil
+}
+
+func UnixfsLsOptions(opts ...UnixfsLsOption) (*UnixfsLsSettings, error) {
+	options := &UnixfsLsSettings{
+		ResolveChildren: true,
+	}
+
+	for _, opt := range opts {
+		err := opt(options)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return options, nil
 }
 
 type unixfsOpts struct{}
@@ -287,6 +307,13 @@ func (unixfsOpts) FsCache(enable bool) UnixfsAddOption {
 func (unixfsOpts) Nocopy(enable bool) UnixfsAddOption {
 	return func(settings *UnixfsAddSettings) error {
 		settings.NoCopy = enable
+		return nil
+	}
+}
+
+func (unixfsOpts) ResolveChildren(resolve bool) UnixfsLsOption {
+	return func(settings *UnixfsLsSettings) error {
+		settings.ResolveChildren = resolve
 		return nil
 	}
 }

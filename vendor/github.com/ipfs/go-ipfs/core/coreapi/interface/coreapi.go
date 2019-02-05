@@ -7,7 +7,7 @@ import (
 
 	"github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 
-	ipld "gx/ipfs/QmcKKBwfz6FyQdHR2jsXrrF6XeSBXYL86anmWNewpFpoF5/go-ipld-format"
+	ipld "gx/ipfs/QmRL22E4paat7ky7vx9MLpR97JHHbFPrg3ytFQw6qp1y1s/go-ipld-format"
 )
 
 // CoreAPI defines an unified interface to IPFS for Go programs
@@ -19,7 +19,7 @@ type CoreAPI interface {
 	Block() BlockAPI
 
 	// Dag returns an implementation of Dag API
-	Dag() DagAPI
+	Dag() APIDagService
 
 	// Name returns an implementation of Name API
 	Name() NameAPI

@@ -2,12 +2,12 @@ package v2
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	ipfs_orchestrator "github.com/RTradeLtd/grpc/ipfs-orchestrator"
+	"github.com/RTradeLtd/database/models"
+	nexus "github.com/RTradeLtd/grpc/nexus"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,22 +15,25 @@ import (
 
 // CreateIPFSNetwork is used to create an entry in the database for a private ipfs network
 func (api *API) createIPFSNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract network name
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithMissingField(c, "network_name")
 		return
 	}
+	// make sure the name is something other than public
 	if strings.ToLower(networkName) == "public" {
 		Fail(c, errors.New("network name can't be public, or PUBLIC"))
 	}
-	logger := api.l.With("user", username, "network_name", networkName)
-	logger.Info("network creation request received")
-
 	// retrieve parameters - thse are all optional
 	swarmKey, _ := c.GetPostForm("swarm_key")
 	bPeers, _ := c.GetPostFormArray("bootstrap_peers")
@@ -40,13 +43,26 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 	} else {
 		users = append(users, username)
 	}
-
-	network, err := api.nm.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, users)
+	// request orchestrator to start up network and create it
+	resp, err := api.orch.StartNetwork(c, &nexus.NetworkRequest{
+		Network: networkName,
+	})
+	if err != nil {
+		api.LogError(c, err, "failed to start private network",
+			"network_name", networkName,
+		)(http.StatusBadRequest)
+		return
+	}
+	logger := api.l.With("user", username, "network_name", networkName)
+	logger.Info("network creation request received")
+	// create the network in our database after having successfully created the network
+	network, err := api.nm.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, models.NetworkAccessOptions{Users: users})
 	if err != nil {
 		api.LogError(c, err, eh.NetworkCreationError)(http.StatusBadRequest)
 		return
 	}
 	logger.With("db_id", network.ID).Info("database entry created")
+	// update allows users who can access the network
 	if len(users) > 0 {
 		for _, v := range users {
 			if err := api.um.AddIPFSNetworkForUser(v, networkName); err != nil && err.Error() != "network already configured for user" {
@@ -56,25 +72,13 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 			api.l.With("user", v).Info("network added to user)")
 		}
 	}
-
-	// request orchestrator to start up network
-	resp, err := api.orch.StartNetwork(c, &ipfs_orchestrator.NetworkRequest{
-		Network: networkName,
-	})
-	if err != nil {
-		api.LogError(c, err, "failed to start private network",
-			"network_name", networkName,
-		)(http.StatusBadRequest)
-		return
-	}
 	api.l.With("response", resp).Info("network node started")
-
 	// respond with network details
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
 			"id":           network.ID,
+			"peer_id":      resp.GetPeerId(),
 			"network_name": networkName,
-			"api_url":      resp.GetApi(),
 			"swarm_key":    resp.GetSwarmKey(),
 			"users":        network.Users,
 		},
@@ -82,11 +86,16 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 }
 
 func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// get network name
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithMissingField(c, "network_name")
@@ -94,13 +103,13 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 	}
 	logger := api.l.With("user", username, "network_name", networkName)
 	logger.Info("private ipfs network start requested")
-
-	// verify access to the requested network
+	// get all networks user has access too
 	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
 	if err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
+	// examine networks to ensure they can access it
 	var found bool
 	for _, network := range networks {
 		if network == networkName {
@@ -115,11 +124,13 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 		})
 		return
 	}
-	if _, err := api.orch.StartNetwork(c, &ipfs_orchestrator.NetworkRequest{
+	// send start network call
+	if _, err := api.orch.StartNetwork(c, &nexus.NetworkRequest{
 		Network: networkName}); err != nil {
 		api.LogError(c, err, "failed to start network")(http.StatusBadRequest)
 		return
 	}
+	// log and return
 	logger.Info("network started")
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
@@ -130,11 +141,16 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 }
 
 func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// get network name
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithMissingField(c, "network_name")
@@ -142,13 +158,13 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 	}
 	logger := api.l.With("user", username, "network_name", networkName)
 	logger.Info("private ipfs network shutdown requested")
-
-	// retrieve authorized networks to check if person has access
+	// retrieve all networks user has access to
 	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
 	if err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
+	// examine all networks to ensure they have access to this one
 	var found bool
 	for _, n := range networks {
 		if n == networkName {
@@ -163,12 +179,13 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println(1)
-	if _, err := api.orch.StopNetwork(c, &ipfs_orchestrator.NetworkRequest{
+	// send a stop network request
+	if _, err := api.orch.StopNetwork(c, &nexus.NetworkRequest{
 		Network: networkName}); err != nil {
 		api.LogError(c, err, "failed to stop network")(http.StatusBadRequest)
 		return
 	}
+	// log and return
 	logger.Info("network stopped")
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
@@ -179,11 +196,16 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 }
 
 func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// get the network name
 	networkName, exists := c.GetPostForm("network_name")
 	if !exists {
 		FailWithMissingField(c, "network_name")
@@ -191,12 +213,13 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 	}
 	logger := api.l.With("user", username, "network_name", networkName)
 	logger.Info("private ipfs network shutdown requested")
-	// retrieve authorized networks to check if person has access
+	// retrieve all networks the user has access to
 	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
 	if err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
+	// examine networks to make sure the user can access it
 	var found bool
 	for _, n := range networks {
 		if n == networkName {
@@ -212,8 +235,9 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 		})
 		return
 	}
-	// tell orchestrator to remove the network, and all of its data
-	if _, err = api.orch.RemoveNetwork(c, &ipfs_orchestrator.NetworkRequest{
+	// send node removal request, removing all data stored
+	// this is a DESTRUCTIVE action
+	if _, err = api.orch.RemoveNetwork(c, &nexus.NetworkRequest{
 		Network: networkName}); err != nil {
 		api.LogError(c, err, "failed to remove network assets")(http.StatusBadRequest)
 		return
@@ -237,6 +261,7 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 			return
 		}
 	}
+	// log and return
 	logger.Info("network removed")
 	Respond(c, http.StatusOK, gin.H{
 		"response": gin.H{
@@ -246,19 +271,26 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 	})
 }
 
-// GetIPFSPrivateNetworkByName is used to get connection information for a private ipfs network
+// GetIPFSPrivateNetworkByName is used to private ipfs network information
 func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// get the network name
 	netName := c.Param("name")
+	// get all networks user has access to
 	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
 	if err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
+	// ensure they can access this network
 	var found bool
 	for _, v := range networks {
 		if v == netName {
@@ -272,26 +304,28 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 	}
 	logger := api.l.With("user", username, "network_name", netName)
 	logger.Info("private ipfs network by name requested")
+	// get network details from database
 	net, err := api.nm.GetNetworkByName(netName)
 	if err != nil {
 		api.LogError(c, err, eh.NetworkSearchError)(http.StatusBadRequest)
 		return
 	}
-
 	// retrieve additional stats if requested
+	// otherwise send generic information from the database directly
 	if c.Param("stats") == "true" {
 		logger.Info("retrieving additional stats from orchestrator")
-		stats, err := api.orch.NetworkStats(c, &ipfs_orchestrator.NetworkRequest{Network: netName})
+		stats, err := api.orch.NetworkStats(c, &nexus.NetworkRequest{Network: netName})
 		if err != nil {
 			api.LogError(c, err, eh.NetworkSearchError)(http.StatusBadRequest)
 			return
 		}
-
+		// return
 		Respond(c, http.StatusOK, gin.H{"response": gin.H{
 			"database":      net,
 			"network_stats": stats,
 		}})
 	} else {
+		// return
 		Respond(c, http.StatusOK, gin.H{"response": gin.H{
 			"database": net,
 		}})
@@ -301,17 +335,22 @@ func (api *API) getIPFSPrivateNetworkByName(c *gin.Context) {
 // GetAuthorizedPrivateNetworks is used to retrieve authorized private networks
 // an authorized private network is defined as a network a user has API access to
 func (api *API) getAuthorizedPrivateNetworks(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// get all networks the user has access too
 	networks, err := api.um.GetPrivateIPFSNetworksForUser(username)
 	if err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
-
+	// log and return
 	api.l.Infow("authorized private ipfs network listing requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": networks})
 }

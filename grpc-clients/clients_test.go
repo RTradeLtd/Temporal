@@ -16,8 +16,8 @@ func TestLensClient_Fail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.Endpoints.Lens.TLS.CertPath = "fakepath"
-	if _, err = clients.NewLensClient(cfg.Endpoints); err == nil {
+	cfg.Services.Lens.TLS.CertPath = "fakepath"
+	if _, err = clients.NewLensClient(cfg.Services); err == nil {
 		t.Fatal("error expected")
 	}
 }
@@ -26,7 +26,7 @@ func TestLensClient_Pass(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = clients.NewLensClient(cfg.Endpoints); err != nil {
+	if _, err = clients.NewLensClient(cfg.Services); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -36,7 +36,7 @@ func TestSignerClient_Pass(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = clients.NewSignerClient(cfg, true); err != nil {
+	if _, err = clients.NewSignerClient(cfg); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -46,8 +46,8 @@ func TestOrchestratorClient_Fail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.Orchestrator.TLS.CertPath = "fakepath"
-	if _, err = clients.NewOcrhestratorClient(cfg.Orchestrator); err == nil {
+	cfg.Nexus.TLS.CertPath = "fakepath"
+	if _, err = clients.NewOcrhestratorClient(cfg.Nexus); err == nil {
 		t.Fatal("error expected")
 	}
 }
@@ -56,7 +56,7 @@ func TestOrchestratorClient_Pass(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = clients.NewOcrhestratorClient(cfg.Orchestrator); err != nil {
+	if _, err = clients.NewOcrhestratorClient(cfg.Nexus); err != nil {
 		t.Fatal(err)
 	}
 }

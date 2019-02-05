@@ -18,12 +18,12 @@
   revision = "3d3fc2fb493d8d889dddd5a4524283ac2faa4732"
 
 [[projects]]
-  branch = "master"
-  digest = "1:f10cf72d0da5fe82c6a7f45933f41d37996c18de31f49a49bc79bb322d3602d2"
+  digest = "1:d914e7b89490aab7ff3dafd9e79f6b431328803f5e25b59428d62531fa6c2ec0"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "858050bd60710361598cd4da2d8b316677fe6374"
+  revision = "c973c5b0c01ab295f86502599286dbee04a6f1d4"
+  version = "v2.0.0"
 
 [[projects]]
   digest = "1:74776aa7694040c8af4c20a59e654c8c685d64cb361eb1386632664cdcfecaa2"
@@ -34,7 +34,8 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:22730dac2d90b04cf4ac163dc06ab90a8e75cead57bcd3e4c80f8fac7ad8461f"
+  branch = "master"
+  digest = "1:d07d1c0b0d209c037c91898d3e185823b19a30356f5229661f79711d5d8fe839"
   name = "github.com/RTradeLtd/grpc"
   packages = [
     "dialer",
@@ -42,16 +43,15 @@
     "middleware",
   ]
   pruneopts = "UT"
-  revision = "f3d3b84b0af8d646d68b11043f77599b0fbf785b"
-  version = "v1.0.6"
+  revision = "e2b45f49049f7dc8c0de056f54fc07c198e409a7"
 
 [[projects]]
   digest = "1:c6a71244d012bfe0b0d383c62bde6679aa7dc26e62f548dfc6bee11a9bd2575c"
   name = "github.com/RTradeLtd/rtfs"
   packages = ["krab"]
   pruneopts = "UT"
-  revision = "94f0159b7478db1207109fe8e0ca9cd4322b62a7"
-  version = "v0.3.5"
+  revision = "ac1c6e92072ad9652c702d3d55d97ec938acff91"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "master"
@@ -105,7 +105,8 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:4c0989ca0bcd10799064318923b9bc2db6b4d6338dd75f3f2d86c3511aaaf5cf"
+  branch = "master"
+  digest = "1:3638dd58eb7a77bb1ed3f57e81f46ce636f0325f68e0900bb9170f71df93b9bc"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -115,8 +116,7 @@
     "ptypes/timestamp",
   ]
   pruneopts = "UT"
-  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
-  version = "v1.2.0"
+  revision = "347cf4a86c1cb8d262994d8ef5924d4576c5b331"
 
 [[projects]]
   digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"

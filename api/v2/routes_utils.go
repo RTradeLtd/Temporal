@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/RTradeLtd/crypto"
 	mnemonics "github.com/RTradeLtd/entropy-mnemonics"
 	pb "github.com/RTradeLtd/grpc/krab"
 	"github.com/RTradeLtd/rtfs"
@@ -31,48 +32,48 @@ func (api *API) beamContent(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "source_network", "destination_network", "content_hash")
 	if len(forms) == 0 {
 		return
 	}
-	var source, dest string
-
+	var (
+		source, dest string
+		net1Conn     *rtfs.IpfsManager
+	)
+	// validate the network to connect to
 	if forms["source_network"] == "public" {
 		source = api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
+		net1Conn, err = rtfs.NewManager(source, "", time.Minute*60)
 	} else {
+		// if non public network, validate user has access
 		if err := CheckAccessForPrivateNetwork(username, forms["source_network"], api.dbm.DB); err != nil {
 			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
-		url, err := api.nm.GetAPIURLByName(forms["source_network"])
-		if err != nil {
-			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
-			return
-		}
-		source = url
+		// format a url to connect to
+		source = api.GetIPFSEndpoint(forms["source_network"])
+		// connect to the actual network
+		net1Conn, err = rtfs.NewManager(source, GetAuthToken(c), time.Minute*60)
 	}
-
+	// ensure connection was successful
+	if err != nil {
+		api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
+		return
+	}
+	// validate the network to connect to
 	if forms["destination_network"] == "public" {
 		dest = api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
 	} else {
+		// non public network, validate user has access
 		if err := CheckAccessForPrivateNetwork(username, forms["destination_network"], api.dbm.DB); err != nil {
 			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 			return
 		}
-		url, err := api.nm.GetAPIURLByName(forms["destination_network"])
-		if err != nil {
-			api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
-			return
-		}
-		dest = url
+		dest = api.GetIPFSEndpoint(forms["destination_network"])
 	}
+	// perform optional encryption of content
 	if passphrase := c.PostForm("passphrase"); passphrase != "" {
-		// connect to the source network
-		net1Conn, err := rtfs.NewManager(source, time.Minute*10)
-		if err != nil {
-			api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
-			return
-		}
 		// encrypt the file file
 		data, err := net1Conn.Cat(forms["content_hash"])
 		if err != nil {
@@ -89,7 +90,7 @@ func (api *API) beamContent(c *gin.Context) {
 		forms["content_hash"] = newCid
 	}
 	// create our dual network connection
-	laserBeam, err := beam.NewLaser(source, dest)
+	laserBeam, err := beam.NewLaser(source, dest, GetAuthToken(c))
 	if err != nil {
 		api.LogError(c, err, "failed to initialize laser beam")(http.StatusBadRequest)
 		return
@@ -99,6 +100,7 @@ func (api *API) beamContent(c *gin.Context) {
 		api.LogError(c, err, "failed to tranfer content")(http.StatusBadRequest)
 		return
 	}
+	// return
 	Respond(c, http.StatusOK, gin.H{"response": gin.H{"status": "content transferred", "content_hash": forms["content_hash"]}})
 }
 
@@ -109,27 +111,53 @@ func (api *API) exportKey(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// get the key name
 	keyName := c.Param("name")
-	owns, err := api.um.CheckIfKeyOwnedByUser(username, keyName)
-	if err != nil {
+	// validate user owns key name
+	if owns, err := api.um.CheckIfKeyOwnedByUser(username, keyName); err != nil {
 		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
 		return
-	}
-	if !owns {
+	} else if !owns {
 		api.LogError(c, errors.New(eh.KeyUseError), eh.KeyUseError)(http.StatusBadRequest)
 		return
 	}
-
+	// get private key from krab keystore
 	resp, err := api.keys.GetPrivateKey(context.Background(), &pb.KeyGet{Name: keyName})
 	if err != nil {
 		api.LogError(c, err, eh.KeyExportError)(http.StatusBadRequest)
 		return
 	}
+	// convert private key to mnemonic phrase
 	phrase, err := mnemonics.ToPhrase(resp.PrivateKey, mnemonics.English)
 	if err != nil {
 		api.LogError(c, err, eh.KeyExportError)(http.StatusBadRequest)
 		return
 	}
+	// after successful parsing delete key from krab
+	if resp, err := api.keys.DeletePrivateKey(context.Background(), &pb.KeyDelete{Name: keyName}); err != nil {
+		api.LogError(c, err, "failed to delete key")(http.StatusBadRequest)
+		return
+	} else if resp.Status != "private key deleted" {
+		Fail(c, errors.New("failed to delete private key"))
+		return
+	}
+	// get key id from database
+	keyID, err := api.um.GetKeyIDByName(username, keyName)
+	if err != nil {
+		api.LogError(c, err, eh.KeySearchError)(http.StatusBadRequest)
+		return
+	}
+	// remove key id from database
+	if err := api.um.RemoveIPFSKeyForUser(username, keyName, keyID); err != nil {
+		api.LogError(c, err, "failed to remove key from database")(http.StatusBadRequest)
+		return
+	}
+	// decrease key count
+	if err := api.usage.ReduceKeyCount(username, 1); err != nil {
+		api.LogError(c, err, "failed to decrease key count")(http.StatusBadRequest)
+		return
+	}
+	// return
 	Respond(c, http.StatusOK, gin.H{"response": phrase})
 }
 
@@ -160,13 +188,9 @@ func (api *API) downloadContentHash(c *gin.Context) {
 			return
 		}
 		// retrieve api url
-		apiURL, err := api.nm.GetAPIURLByName(networkName)
-		if err != nil {
-			api.LogError(c, err, eh.APIURLCheckError)(http.StatusBadRequest)
-			return
-		}
+		apiURL := api.GetIPFSEndpoint(networkName)
 		// initialize our connection to IPFS
-		manager, err = rtfs.NewManager(apiURL, time.Minute*10)
+		manager, err = rtfs.NewManager(apiURL, GetAuthToken(c), time.Minute*60)
 		if err != nil {
 			api.LogError(c, err, eh.IPFSConnectionError)(http.StatusBadRequest)
 			return
@@ -195,6 +219,18 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		api.LogError(c, err, eh.IPFSObjectStatError)(http.StatusBadRequest)
 		return
 	}
+	size := stats.CumulativeSize
+	// decrypt Temporal-encrypted content if key is provided
+	decryptKey := c.PostForm("decrypt_key")
+	if decryptKey != "" {
+		decrypted, err := crypto.NewEncryptManager(decryptKey).Decrypt(reader)
+		if err != nil {
+			Fail(c, err)
+			return
+		}
+		size = len(decrypted)
+		reader = bytes.NewReader(decrypted)
+	}
 
 	// parse extra headers if there are any
 	extraHeaders := make(map[string]string)
@@ -217,5 +253,5 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	}
 
 	api.l.Infow("private ipfs content download served", "user", username)
-	c.DataFromReader(200, int64(stats.CumulativeSize), contentType, reader, extraHeaders)
+	c.DataFromReader(200, int64(size), contentType, reader, extraHeaders)
 }

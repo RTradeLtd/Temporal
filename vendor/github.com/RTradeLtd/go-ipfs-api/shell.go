@@ -72,6 +72,25 @@ func NewShell(url string) *Shell {
 	return NewShellWithClient(url, c)
 }
 
+// NewDirectShell creates a new shell that directly uses the provided URL,
+// instead of attempting to parse it into a multiaddr.
+//
+// For Nexus-hosted IPFS nodes, for example, use:
+//
+//     shell := NewDirectShell(fmt.Sprintf("nexus.temporal.cloud/network/%s", networkName))
+//
+func NewDirectShell(url string) *Shell {
+	return &Shell{
+		url: url,
+		httpcli: &gohttp.Client{
+			Transport: &gohttp.Transport{
+				Proxy:             gohttp.ProxyFromEnvironment,
+				DisableKeepAlives: true,
+			},
+		},
+	}
+}
+
 func NewShellWithClient(url string, c *gohttp.Client) *Shell {
 	if a, err := ma.NewMultiaddr(url); err == nil {
 		_, host, err := manet.DialArgs(a)
@@ -83,6 +102,22 @@ func NewShellWithClient(url string, c *gohttp.Client) *Shell {
 	return &Shell{
 		url:     url,
 		httpcli: c,
+	}
+}
+
+// WithAuthorization returns a Shell that sets the provided token to be used as
+// an Authorization header in API requests. For example:
+//
+//    resp, err := NewDirectShell(addr).
+//        WithAuthorization(token).
+//        Cat(hash)
+//
+func (s *Shell) WithAuthorization(token string) *Shell {
+	return &Shell{
+		url: s.url,
+		httpcli: &gohttp.Client{
+			Transport: newAuthenticatedTransport(s.httpcli.Transport, token),
+		},
 	}
 }
 
@@ -187,6 +222,15 @@ func (s *Shell) Pin(path string) error {
 		Exec(context.Background(), nil)
 }
 
+// PinUpdate is used to update one pin path to another followed by unpinning
+func (s *Shell) PinUpdate(fromPath, toPath string) (map[string][]string, error) {
+	var out map[string][]string
+	if err := s.Request("pin/update", fromPath, toPath).Exec(context.Background(), &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Unpin the given path
 func (s *Shell) Unpin(path string) error {
 	return s.Request("pin/rm", path).
@@ -231,21 +275,23 @@ func (s *Shell) FindPeer(peer string) (*PeerInfo, error) {
 	return &peers.Responses[0], nil
 }
 
-func (s *Shell) Refs(hash string, recursive bool) (<-chan string, error) {
+func (s *Shell) Refs(hash string, recursive, unique bool) (<-chan string, error) {
 	resp, err := s.Request("refs", hash).
 		Option("recursive", recursive).
+		Option("unique", unique).
 		Send(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	defer resp.Close()
 	if resp.Error != nil {
+		resp.Close()
 		return nil, resp.Error
 	}
 
 	out := make(chan string)
 	go func() {
+		defer resp.Close()
 		var ref struct {
 			Ref string
 		}

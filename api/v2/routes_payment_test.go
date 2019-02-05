@@ -32,7 +32,7 @@ func Test_API_Routes_Payments(t *testing.T) {
 	// test basic dash payment
 	// /v2/payments/create/dash
 	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("POST", "/v2/payments/create/dash", nil)
+	req := httptest.NewRequest("POST", "/v2/payments/dash/create", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues := url.Values{}
 	urlValues.Add("credit_value", "10")
@@ -42,7 +42,7 @@ func Test_API_Routes_Payments(t *testing.T) {
 	// test request signed payment message - rtc
 	// /v2/payments/request
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/v2/payments/request", nil)
+	req = httptest.NewRequest("POST", "/v2/payments/eth/request", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("payment_type", "rtc")
@@ -54,7 +54,7 @@ func Test_API_Routes_Payments(t *testing.T) {
 	// test request signed payment message - eth
 	// /v2/payments/request
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/v2/payments/request", nil)
+	req = httptest.NewRequest("POST", "/v2/payments/eth/request", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("payment_type", "eth")
@@ -66,28 +66,11 @@ func Test_API_Routes_Payments(t *testing.T) {
 	// test payment confirmation
 	// /v2/payments/confirm
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/v2/payments/confirm", nil)
+	req = httptest.NewRequest("POST", "/v2/payments/eth/confirm", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("payment_number", "10")
 	urlValues.Add("tx_hash", "0x1")
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
-
-	// test valid deposit address
-	args := []string{"eth", "rtc", "btc", "ltc", "xmr", "dash"}
-	for _, v := range args {
-		if err := sendRequest(
-			api, "GET", "/v2/payments/deposit/address/"+v, 200, nil, nil, nil,
-		); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	// test invalid deposit address
-	if err := sendRequest(
-		api, "GET", "/v2/payments/deposit/address/invalidType", 400, nil, nil, nil,
-	); err != nil {
-		t.Fatal(err)
-	}
 }

@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -30,9 +31,9 @@ import (
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
 
-	pbOrch "github.com/RTradeLtd/grpc/ipfs-orchestrator"
 	pbLens "github.com/RTradeLtd/grpc/lens"
-	pbSigner "github.com/RTradeLtd/grpc/temporal"
+	pbOrch "github.com/RTradeLtd/grpc/nexus"
+	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/gin-gonic/gin"
 )
 
@@ -57,6 +58,7 @@ type API struct {
 	zm          *models.ZoneManager
 	rm          *models.RecordManager
 	nm          *models.IPFSNetworkManager
+	usage       *models.UsageManager
 	l           *zap.SugaredLogger
 	signer      pbSigner.SignerClient
 	orch        pbOrch.ServiceClient
@@ -68,6 +70,19 @@ type API struct {
 	version string
 }
 
+// Options is used to non-critical options
+type Options struct {
+	DebugLogging bool
+	DevMode      bool
+}
+
+// Clients is used to configure service clients we use
+type Clients struct {
+	Lens   pbLens.IndexerAPIClient
+	Orch   pbOrch.ServiceClient
+	Signer pbSigner.SignerClient
+}
+
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
 func Initialize(
@@ -75,24 +90,22 @@ func Initialize(
 	// configuration
 	cfg *config.TemporalConfig,
 	version string,
-	debug bool,
-
+	opts Options,
+	clients Clients,
 	// API dependencies
 	l *zap.SugaredLogger,
-	lens pbLens.IndexerAPIClient,
-	orch pbOrch.ServiceClient,
-	signer pbSigner.SignerClient,
 
 ) (*API, error) {
 	var (
 		err    error
 		router = gin.Default()
 	)
-
+	// update dev mode
+	dev = opts.DevMode
 	l = l.Named("api")
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		time.Minute*10,
+		"", time.Minute*60,
 	)
 	if err != nil {
 		return nil, err
@@ -106,7 +119,7 @@ func Initialize(
 	}
 
 	// set up API struct
-	api, err := new(cfg, router, l, lens, orch, signer, im, imCluster, debug)
+	api, err := new(cfg, router, l, clients, im, imCluster, opts.DebugLogging)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +135,7 @@ func Initialize(
 	return api, nil
 }
 
-func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, lens pbLens.IndexerAPIClient, orch pbOrch.ServiceClient, signer pbSigner.SignerClient, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool) (*API, error) {
+func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, clients Clients, ipfs rtfs.Manager, ipfsCluster *rtfscluster.ClusterManager, debug bool) (*API, error) {
 	var (
 		dbm *database.Manager
 		err error
@@ -156,7 +169,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		Blockchain: networkVersion,
 		Token:      cfg.APIKeys.ChainRider,
 	})
-	keys, err := kaas.NewClient(cfg.Endpoints)
+	keys, err := kaas.NewClient(cfg.Services)
 	if err != nil {
 		return nil, err
 	}
@@ -165,42 +178,43 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		return nil, err
 	}
 	// setup our queues
-	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, logger)
+	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, logger)
+	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmDatabase, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, true, logger)
+	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmFile, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, true, logger)
+	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, logger)
+	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, logger)
+	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, logger)
+	qmEth, err := queue.New(queue.EthPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, logger)
-	if err != nil {
-		return nil, err
+	if cfg.Stripe.SecretKey == "" {
+		stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
+		cfg.Stripe.SecretKey = stripeSecretKey
 	}
-	qmPayConfirm, err := queue.New(queue.PaymentConfirmationQueue, cfg.RabbitMQ.URL, true, logger)
-	if err != nil {
-		return nil, err
+	if cfg.Stripe.PublishableKey == "" {
+		stripePublishableKey := os.Getenv("STRIPE_PUBLISHABLE_KEY")
+		cfg.Stripe.PublishableKey = stripePublishableKey
 	}
+	// return
 	return &API{
 		ipfs:        ipfs,
 		ipfsCluster: ipfsCluster,
@@ -215,20 +229,19 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, l
 		pm:          models.NewPaymentManager(dbm.DB),
 		ue:          models.NewEncryptedUploadManager(dbm.DB),
 		upm:         models.NewUploadManager(dbm.DB),
-		lens:        lens,
-		signer:      signer,
-		orch:        orch,
+		usage:       models.NewUsageManager(dbm.DB),
+		lens:        clients.Lens,
+		signer:      clients.Signer,
+		orch:        clients.Orch,
 		dc:          dc,
 		queues: queues{
-			pin:        qmPin,
-			file:       qmFile,
-			cluster:    qmCluster,
-			email:      qmEmail,
-			ipns:       qmIpns,
-			key:        qmKey,
-			database:   qmDatabase,
-			dash:       qmDash,
-			payConfirm: qmPayConfirm,
+			pin:     qmPin,
+			cluster: qmCluster,
+			email:   qmEmail,
+			ipns:    qmIpns,
+			key:     qmKey,
+			dash:    qmDash,
+			eth:     qmEth,
 		},
 		zm: models.NewZoneManager(dbm.DB),
 		rm: models.NewRecordManager(dbm.DB),
@@ -242,14 +255,8 @@ func (api *API) Close() {
 	if err := api.queues.cluster.Close(); err != nil {
 		api.l.Error(err, "failed to properly close cluster queue connection")
 	}
-	if err := api.queues.database.Close(); err != nil {
-		api.l.Error(err, "failed to properly close database queue connection")
-	}
 	if err := api.queues.email.Close(); err != nil {
 		api.l.Error(err, "failed to properly close email queue connection")
-	}
-	if err := api.queues.file.Close(); err != nil {
-		api.l.Error(err, "failed to properly close file queue connection")
 	}
 	if err := api.queues.ipns.Close(); err != nil {
 		api.l.Error(err, "failed to properly close ipns queue connection")
@@ -322,24 +329,12 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 				return server.Close()
 			}
 			api.queues.dash = qmDash
-		case msg := <-api.queues.database.ErrCh:
-			qmDatabase, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.DatabaseFileAddQueue, true)
-			if err != nil {
-				return server.Close()
-			}
-			api.queues.database = qmDatabase
 		case msg := <-api.queues.email.ErrCh:
 			qmEmail, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.EmailSendQueue, true)
 			if err != nil {
 				return server.Close()
 			}
 			api.queues.email = qmEmail
-		case msg := <-api.queues.file.ErrCh:
-			qmFile, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpfsFileQueue, true)
-			if err != nil {
-				return server.Close()
-			}
-			api.queues.file = qmFile
 		case msg := <-api.queues.ipns.ErrCh:
 			qmIpns, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpnsEntryQueue, true)
 			if err != nil {
@@ -352,12 +347,12 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 				return server.Close()
 			}
 			api.queues.key = qmKey
-		case msg := <-api.queues.payConfirm.ErrCh:
-			qmPay, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.PaymentConfirmationQueue, true)
+		case msg := <-api.queues.eth.ErrCh:
+			qmEth, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.EthPaymentConfirmationQueue, true)
 			if err != nil {
 				return server.Close()
 			}
-			api.queues.payConfirm = qmPay
+			api.queues.eth = qmEth
 		case msg := <-api.queues.pin.ErrCh:
 			qmPin, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.IpfsPinQueue, true)
 			if err != nil {
@@ -445,30 +440,30 @@ func (api *API) setupRoutes() error {
 	// payments
 	payments := v2.Group("/payments", authware...)
 	{
-		dash := payments.Group("/create")
+		dash := payments.Group("/dash")
 		{
-			dash.POST("/dash", api.CreateDashPayment)
+			dash.POST("/create", api.CreateDashPayment)
 		}
-		payments.POST("/request", api.RequestSignedPaymentMessage)
-		payments.POST("/confirm", api.ConfirmPayment)
-		deposit := payments.Group("/deposit")
+		eth := payments.Group("/eth")
 		{
-			deposit.GET("/address/:type", api.GetDepositAddress)
+			eth.POST("/request", api.RequestSignedPaymentMessage)
+			eth.POST("/confirm", api.ConfirmETHPayment)
 		}
+		payments.GET("/status/:number", api.getPaymentStatus)
 	}
 
 	// accounts
-	account := v2.Group("/account", authware...)
+	account := v2.Group("/account")
 	{
-		token := account.Group("/token")
+		token := account.Group("/token", authware...)
 		{
 			token.GET("/username", api.getUserFromToken)
 		}
-		password := account.Group("/password")
+		password := account.Group("/password", authware...)
 		{
 			password.POST("/change", api.changeAccountPassword)
 		}
-		key := account.Group("/key")
+		key := account.Group("/key", authware...)
 		{
 			key.GET("/export/:name", api.exportKey)
 			ipfs := key.Group("/ipfs")
@@ -477,18 +472,28 @@ func (api *API) setupRoutes() error {
 				ipfs.POST("/new", api.createIPFSKey)
 			}
 		}
-		credits := account.Group("/credits")
+		credits := account.Group("/credits", authware...)
 		{
 			credits.GET("/available", api.getCredits)
 		}
 		email := account.Group("/email")
 		{
-			email.POST("/forgot", api.forgotEmail)
-			token := email.Group("/token")
+			// auth-less account email routes
+			token := email.Group("/verify")
 			{
-				token.GET("/get", api.getEmailVerificationToken)
-				token.POST("/verify", api.verifyEmailAddress)
+				token.GET("/:user/:token", api.verifyEmailAddress)
 			}
+			// authenticatoin email routes
+			auth := email.Use(authware...)
+			{
+				auth.POST("/forgot", api.forgotEmail)
+			}
+		}
+		auth := account.Use(authware...)
+		{
+			// used to upgrade account to light tier
+			auth.POST("/upgrade", api.upgradeAccount)
+			auth.GET("/usage", api.usageData)
 		}
 	}
 
@@ -506,8 +511,7 @@ func (api *API) setupRoutes() error {
 			// file upload routes
 			file := public.Group("/file")
 			{
-				file.POST("/add", api.addFileLocally)
-				file.POST("/add/advanced", api.addFileLocallyAdvanced)
+				file.POST("/add", api.addFile)
 			}
 			// pubsub routes
 			pubsub := public.Group("/pubsub")
@@ -515,7 +519,7 @@ func (api *API) setupRoutes() error {
 				pubsub.POST("/publish/:topic", api.ipfsPubSubPublish)
 			}
 			// general routes
-			public.GET("/stat/:key", api.getObjectStatForIpfs)
+			public.GET("/stat/:hash", api.getObjectStatForIpfs)
 			public.GET("/dag/:hash", api.getDagObject)
 		}
 
@@ -542,7 +546,6 @@ func (api *API) setupRoutes() error {
 			file := private.Group("/file")
 			{
 				file.POST("/add", api.addFileToHostedIPFSNetwork)
-				file.POST("/add/advanced", api.addFileToHostedIPFSNetworkAdvanced)
 			}
 			// pubsub routes
 			pubsub := private.Group("/pubsub")
@@ -565,12 +568,6 @@ func (api *API) setupRoutes() error {
 				laser.POST("/beam", api.beamContent)
 			}
 		}
-		// ipfs cluster routes
-		cluster := ipfs.Group("/cluster")
-		{
-			// general routes
-			cluster.POST("/pin/:hash", api.pinHashToCluster)
-		}
 	}
 
 	// ipns
@@ -584,11 +581,6 @@ func (api *API) setupRoutes() error {
 			// this involves first resolving the record, parsing it
 			// and extracting the hash to pin
 			public.POST("/pin", api.pinIPNSHash)
-		}
-		// private ipns routes
-		private := ipns.Group("/private")
-		{
-			private.POST("/publish/details", api.publishDetailedIPNSToHostedIPFSNetwork)
 		}
 		// general routes
 		ipns.GET("/records", api.getIPNSRecordsPublishedByUser)
@@ -608,7 +600,7 @@ func (api *API) setupRoutes() error {
 		{
 			calculate := cost.Group("/calculate")
 			{
-				calculate.GET("/:hash/:holdtime", api.calculatePinCost)
+				calculate.GET("/:hash/:hold_time", api.calculatePinCost)
 				calculate.POST("/file", api.calculateFileCost)
 			}
 		}
@@ -624,7 +616,7 @@ func (api *API) handleQueueError(amqpErr *amqp.Error, rabbitMQURL string, queueT
 		"a protocol connection error stopping rabbitmq was received",
 		"queue", queueType.String(),
 		"error", amqpErr.Error())
-	qManager, err := queue.New(queueType, rabbitMQURL, publish, api.l)
+	qManager, err := queue.New(queueType, rabbitMQURL, publish, api.cfg, api.l)
 	if err != nil {
 		api.l.Errorw(
 			"failed to re-establish queue process, exiting",

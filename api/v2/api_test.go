@@ -117,7 +117,7 @@ func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceC
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
 		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
-		time.Minute*10,
+		"", time.Minute*60,
 	)
 	if err != nil {
 		return nil, nil, err
@@ -136,8 +136,12 @@ func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceC
 	if err != nil {
 		return nil, nil, err
 	}
-
-	api, err := new(cfg, engine, logger, fakeLens, fakeOrch, fakeSigner, im, imCluster, false)
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	api, err := new(cfg, engine, logger, clients, im, imCluster, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -179,13 +183,18 @@ func Test_API_Setup(t *testing.T) {
 
 	// register calls
 	tests := []struct {
-		name string
-		args args
+		name     string
+		args     args
+		wantCode int
 	}{
-		{"Register-testuser2", args{"POST", "/v2/auth/register", "testuser2", "password123!@#$%^&&**(!@#!", "testuser@example.org"}},
+		{"Register-testuser2", args{"POST", "/v2/auth/register", "testuser2", "password123!@#$%^&&**(!@#!", "testuser@example.org"}, 200},
+		{"Register-Email-Fail", args{"POST", "/v2/auth/register", "testuer3", "password123", "testuser+test22@example.org"}, 400},
+		{"Register-DuplicateUser", args{"POST", "/v2/auth/register", "testuser2", "password123", "testuser+user22example.org"}, 400},
+		{"Register-DuplicateEmail", args{"POST", "/v2/auth/register", "testuser333", "password123", "testuser@example.org"}, 400},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			testRecorder = httptest.NewRecorder()
 			// register user account
 			// /v2/auth/register
 			var interfaceAPIResp interfaceAPIResponse
@@ -194,15 +203,12 @@ func Test_API_Setup(t *testing.T) {
 			urlValues.Add("password", tt.args.password)
 			urlValues.Add("email_address", tt.args.email)
 			if err := sendRequest(
-				api, "POST", "/v2/auth/register", 200, nil, urlValues, &interfaceAPIResp,
+				api, "POST", "/v2/auth/register", tt.wantCode, nil, urlValues, &interfaceAPIResp,
 			); err != nil {
 				t.Fatal(err)
 			}
-			if testRecorder.Code != 200 {
-				t.Fatalf("bad http status code from %s", tt.args.call)
-			}
 			// validate the response code
-			if interfaceAPIResp.Code != 200 {
+			if interfaceAPIResp.Code != tt.wantCode {
 				t.Fatalf("bad api status code from %s", tt.args.call)
 			}
 		})
@@ -210,11 +216,12 @@ func Test_API_Setup(t *testing.T) {
 
 	// login calls
 	tests = []struct {
-		name string
-		args args
+		name     string
+		args     args
+		wantCode int
 	}{
-		{"Login-testuser2", args{"POST", "/v2/auth/login", "testuser2", "password123!@#$%^&&**(!@#!", ""}},
-		{"Login-testuser", args{"POST", "/v2/auth/login", "testuser", "admin", ""}},
+		{"Login-testuser2", args{"POST", "/v2/auth/login", "testuser2", "password123!@#$%^&&**(!@#!", ""}, 200},
+		{"Login-testuser", args{"POST", "/v2/auth/login", "testuser", "admin", ""}, 200},
 	}
 
 	for _, tt := range tests {
@@ -226,7 +233,7 @@ func Test_API_Setup(t *testing.T) {
 				strings.NewReader(fmt.Sprintf("{\n  \"username\": \"%s\",\n  \"password\": \"%s\"\n}", tt.args.username, tt.args.password)),
 			)
 			api.r.ServeHTTP(testRecorder, req)
-			if testRecorder.Code != 200 {
+			if testRecorder.Code != tt.wantCode {
 				t.Fatalf("bad http status code from %s", tt.args.call)
 			}
 			bodBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
@@ -242,6 +249,9 @@ func Test_API_Setup(t *testing.T) {
 				authHeader = "Bearer " + loginResp.Token
 			}
 		})
+	}
+	if str := api.GetIPFSEndpoint("networkName"); str == "" {
+		t.Fatal("failed to construct api endpoint")
 	}
 }
 
@@ -308,7 +318,12 @@ func Test_Utils(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	api, err := Initialize(cfg, "", true, logger, &mocks.FakeIndexerAPIClient{}, &mocks.FakeServiceClient{}, &mocks.FakeSignerClient{})
+	clients := Clients{
+		Lens:   &mocks.FakeIndexerAPIClient{},
+		Orch:   &mocks.FakeServiceClient{},
+		Signer: &mocks.FakeSignerClient{},
+	}
+	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -332,6 +347,8 @@ func Test_Utils(t *testing.T) {
 	}{
 		{"ETHFail", args{"ETH", "ETH"}, true},
 		{"ETHPass", args{"eth", "ethereum"}, false},
+		{"RTCFail", args{"RTC", "bitcoinz"}, true},
+		{"RTCPass", args{"rtc", "ethereum"}, false},
 		{"BTCFail", args{"BTC", "BTC"}, true},
 		{"BTCPass", args{"btc", "bitcoin"}, false},
 		{"LTCFail", args{"LTC", "LTC"}, true},
@@ -344,10 +361,6 @@ func Test_Utils(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := api.getDepositAddress(tt.args.paymentType); (err != nil) != tt.wantErr {
-				t.Errorf("getDepositAddress() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 			if valid := api.validateBlockchain(tt.args.blockchain); !valid != tt.wantErr {
 				t.Errorf("validateBlockchain() error = %v, wantErr %v", valid, tt.wantErr)
 			}
@@ -412,7 +425,12 @@ func Test_API_Initialize_Cluster_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	if _, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -434,7 +452,12 @@ func Test_API_Initialize_IPFS_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	if _, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -456,8 +479,12 @@ func Test_API_Initialize_Setup_Routes_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-
-	if _, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -473,14 +500,18 @@ func Test_API_Initialize_Kaas_Failure(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup an invalid connection limit
-	cfg.Endpoints.Krab.TLS.CertPath = "/root"
+	cfg.Services.Krab.TLS.CertPath = "/root"
 
 	// setup fake mock clients
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-
-	if _, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -500,8 +531,12 @@ func Test_API_Initialize_Queue_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-
-	if _, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner); err == nil {
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -522,8 +557,12 @@ func Test_API_Initialize_Main_Network(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-
-	api, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner)
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -559,7 +598,12 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 			fakeLens := &mocks.FakeIndexerAPIClient{}
 			fakeOrch := &mocks.FakeServiceClient{}
 			fakeSigner := &mocks.FakeSignerClient{}
-			api, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner)
+			clients := Clients{
+				Lens:   fakeLens,
+				Orch:   fakeOrch,
+				Signer: fakeSigner,
+			}
+			api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -591,7 +635,12 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	api, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner)
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -607,15 +656,13 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 		name string
 		args args
 	}{
-		{queue.DatabaseFileAddQueue.String(), args{queue.DatabaseFileAddQueue}},
-		{queue.IpfsFileQueue.String(), args{queue.IpfsFileQueue}},
 		{queue.IpfsClusterPinQueue.String(), args{queue.IpfsClusterPinQueue}},
 		{queue.EmailSendQueue.String(), args{queue.EmailSendQueue}},
 		{queue.IpnsEntryQueue.String(), args{queue.IpnsEntryQueue}},
 		{queue.IpfsPinQueue.String(), args{queue.IpfsPinQueue}},
 		{queue.IpfsKeyCreationQueue.String(), args{queue.IpfsKeyCreationQueue}},
 		{queue.DashPaymentConfirmationQueue.String(), args{queue.DashPaymentConfirmationQueue}},
-		{queue.PaymentConfirmationQueue.String(), args{queue.PaymentConfirmationQueue}},
+		{queue.EthPaymentConfirmationQueue.String(), args{queue.EthPaymentConfirmationQueue}},
 	}
 	// declare an error to use for testing
 	amqpErr := &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
@@ -623,10 +670,6 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// test ListenAndServe queue function handling
 			switch tt.args.queueType {
-			case queue.DatabaseFileAddQueue:
-				api.queues.database.ErrCh <- amqpErr
-			case queue.IpfsFileQueue:
-				api.queues.file.ErrCh <- amqpErr
 			case queue.IpfsClusterPinQueue:
 				api.queues.cluster.ErrCh <- amqpErr
 			case queue.EmailSendQueue:
@@ -639,8 +682,8 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 				api.queues.key.ErrCh <- amqpErr
 			case queue.DashPaymentConfirmationQueue:
 				api.queues.dash.ErrCh <- amqpErr
-			case queue.PaymentConfirmationQueue:
-				api.queues.payConfirm.ErrCh <- amqpErr
+			case queue.EthPaymentConfirmationQueue:
+				api.queues.eth.ErrCh <- amqpErr
 			}
 			// test handleQueueError function directly
 			if _, err := api.handleQueueError(amqpErr, api.cfg.RabbitMQ.URL, tt.args.queueType, true); err != nil {
@@ -663,7 +706,12 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 	fakeLens := &mocks.FakeIndexerAPIClient{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
-	api, err := Initialize(cfg, "", true, logger, fakeLens, fakeOrch, fakeSigner)
+	clients := Clients{
+		Lens:   fakeLens,
+		Orch:   fakeOrch,
+		Signer: fakeSigner,
+	}
+	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -674,15 +722,13 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 		name string
 		args args
 	}{
-		{queue.DatabaseFileAddQueue.String(), args{queue.DatabaseFileAddQueue}},
-		{queue.IpfsFileQueue.String(), args{queue.IpfsFileQueue}},
 		{queue.IpfsClusterPinQueue.String(), args{queue.IpfsClusterPinQueue}},
 		{queue.EmailSendQueue.String(), args{queue.EmailSendQueue}},
 		{queue.IpnsEntryQueue.String(), args{queue.IpnsEntryQueue}},
 		{queue.IpfsPinQueue.String(), args{queue.IpfsPinQueue}},
 		{queue.IpfsKeyCreationQueue.String(), args{queue.IpfsKeyCreationQueue}},
 		{queue.DashPaymentConfirmationQueue.String(), args{queue.DashPaymentConfirmationQueue}},
-		{queue.PaymentConfirmationQueue.String(), args{queue.PaymentConfirmationQueue}},
+		{queue.EthPaymentConfirmationQueue.String(), args{queue.EthPaymentConfirmationQueue}},
 	}
 	// setup a bad rabbitmq url for testing connectivity failures
 	api.cfg.RabbitMQ.URL = "notarealprotocol://notarealurl"

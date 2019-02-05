@@ -28,7 +28,7 @@ const (
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	kb, err := kaas.NewClient(qm.cfg.Endpoints)
+	kb, err := kaas.NewClient(qm.cfg.Services)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,6 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 	}
 	// temporarily do not process ipns creation requests for non public networks
 	if ie.NetworkName != "public" {
-		qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
 		qm.l.Errorw(
 			"private networks not supported for ipns",
 			"user", ie.UserName)

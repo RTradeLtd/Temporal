@@ -52,7 +52,6 @@ func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm
 		return
 	}
 	if clusterAdd.NetworkName != "public" {
-		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
 		qm.l.Errorw(
 			"private clustered networks not yet supported",
 			"error", errors.New("private network clusters not supported").Error(),
@@ -64,6 +63,7 @@ func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm
 	encodedCid, err := cm.DecodeHashString(clusterAdd.CID)
 	if err != nil {
 		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
+		models.NewUsageManager(qm.db).ReduceDataUsage(clusterAdd.UserName, uint64(clusterAdd.Size))
 		qm.l.Errorw(
 			"bad cid format detected",
 			"error", err.Error(),
@@ -78,6 +78,7 @@ func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm
 		"user", clusterAdd.UserName)
 	if err = cm.Pin(encodedCid); err != nil {
 		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
+		models.NewUsageManager(qm.db).ReduceDataUsage(clusterAdd.UserName, uint64(clusterAdd.Size))
 		qm.l.Errorw(
 			"failed to pin hash to cluster",
 			"error", err.Error(),
@@ -86,7 +87,7 @@ func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm
 		d.Ack(false)
 		return
 	}
-	upload, err := um.FindUploadByHashAndNetwork(clusterAdd.CID, clusterAdd.NetworkName)
+	upload, err := um.FindUploadByHashAndUserAndNetwork(clusterAdd.UserName, clusterAdd.CID, clusterAdd.NetworkName)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		qm.l.Errorw(
 			"failed to check database for upload",

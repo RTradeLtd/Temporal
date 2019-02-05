@@ -14,12 +14,13 @@ func (api *API) getUploadsForUser(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
-	// fetch all uploads for that address
+	// fetch all uploads by the specified user
 	uploads, err := api.upm.GetUploadsForUser(username)
 	if err != nil {
 		api.LogError(c, err, eh.UploadSearchError)(http.StatusInternalServerError)
 		return
 	}
+	// log and return
 	api.l.Info("specific uploads from database requested")
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
@@ -31,17 +32,20 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// get network name to retrieve uploads from
 	networkName := c.Param("networkName")
+	// validate the user can access the network
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
 		return
 	}
+	// find uploads for the network
 	uploads, err := api.upm.FindUploadsByNetwork(networkName)
 	if err != nil {
 		api.LogError(c, err, eh.UploadSearchError)(http.StatusInternalServerError)
 		return
 	}
-
+	// log and return
 	api.l.Infow("uploads forprivate ifps network requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }

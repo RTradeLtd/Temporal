@@ -13,7 +13,6 @@ import (
 	"go.uber.org/zap"
 
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
-	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/gorm"
 
 	v2 "github.com/RTradeLtd/Temporal/api/v2"
@@ -24,9 +23,9 @@ import (
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
-	pbOrch "github.com/RTradeLtd/grpc/ipfs-orchestrator"
 	pbLens "github.com/RTradeLtd/grpc/lens"
-	pbSigner "github.com/RTradeLtd/grpc/temporal"
+	pbOrch "github.com/RTradeLtd/grpc/nexus"
+	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas"
 )
 
@@ -50,6 +49,7 @@ var (
 // command-line flags
 var (
 	devMode    *bool
+	debug      *bool
 	configPath *string
 	dbNoSSL    *bool
 	dbMigrate  *bool
@@ -66,6 +66,8 @@ func baseFlagSet() *flag.FlagSet {
 	// basic flags
 	devMode = f.Bool("dev", false,
 		"toggle dev mode")
+	debug = f.Bool("debug", false,
+		"toggle debug mode")
 	configPath = f.String("config", os.Getenv("CONFIG_DAG"),
 		"path to Temporal configuration")
 
@@ -86,20 +88,11 @@ func baseFlagSet() *flag.FlagSet {
 	return f
 }
 
-func bucketFlagSet() *flag.FlagSet {
-	var f = flag.NewFlagSet("", flag.ExitOnError)
-
-	bucketLocation = f.String("location", mini.DefaultBucketLocation,
-		"set location for bucket")
-
-	return f
-}
-
 func logPath(base, file string) (logPath string) {
 	if base == "" {
 		logPath = filepath.Join(base, file)
 	} else {
-		logPath = filepath.Join(base, "temporal.log")
+		logPath = filepath.Join(base, file)
 	}
 	return
 }
@@ -117,7 +110,7 @@ func newDB(cfg config.TemporalConfig, noSSL bool) (*gorm.DB, error) {
 func initClients(l *zap.SugaredLogger, cfg *config.TemporalConfig) (closers []func()) {
 	closers = make([]func(), 0)
 	if lens == nil {
-		client, err := clients.NewLensClient(cfg.Endpoints)
+		client, err := clients.NewLensClient(cfg.Services)
 		if err != nil {
 			l.Fatal(err)
 		}
@@ -125,16 +118,15 @@ func initClients(l *zap.SugaredLogger, cfg *config.TemporalConfig) (closers []fu
 		lens = client
 	}
 	if orch == nil {
-		client, err := clients.NewOcrhestratorClient(cfg.Orchestrator)
+		client, err := clients.NewOcrhestratorClient(cfg.Nexus)
 		if err != nil {
 			l.Fatal(err)
 		}
-		defer client.Close()
 		closers = append(closers, client.Close)
 		orch = client
 	}
 	if signer == nil {
-		client, err := clients.NewSignerClient(cfg, *grpcNoSSL)
+		client, err := clients.NewSignerClient(cfg)
 		if err != nil {
 			l.Fatal(err)
 		}
@@ -156,12 +148,6 @@ var commands = map[string]cmd.Cmd{
 			}
 			logger = logger.With("version", args["version"])
 
-			// init api service
-			service, err := v2.Initialize(&cfg, args["version"], *devMode, logger, lens, orch, signer)
-			if err != nil {
-				logger.Fatal(err)
-			}
-
 			// init clients and clean up if necessary
 			var closers = initClients(logger, &cfg)
 			if closers != nil {
@@ -171,6 +157,22 @@ var commands = map[string]cmd.Cmd{
 					}
 				}()
 			}
+			clients := v2.Clients{
+				Lens:   lens,
+				Orch:   orch,
+				Signer: signer,
+			}
+			// init api service
+			service, err := v2.Initialize(
+				&cfg,
+				args["version"],
+				v2.Options{DebugLogging: *debug, DevMode: *devMode},
+				clients,
+				logger,
+			)
+			if err != nil {
+				logger.Fatal(err)
+			}
 
 			// set up clean interrupt
 			quitChannel := make(chan os.Signal)
@@ -178,8 +180,8 @@ var commands = map[string]cmd.Cmd{
 			go func() {
 				fmt.Println(closeMessage)
 				<-quitChannel
-				service.Close()
 				cancel()
+				service.Close()
 			}()
 
 			// go!
@@ -233,7 +235,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, false, logger)
+								qm, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, false, &cfg, logger)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -278,52 +280,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, false, logger)
-								if err != nil {
-									fmt.Println("failed to start queue", err)
-									os.Exit(1)
-								}
-								waitGroup.Add(1)
-								err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
-								if err != nil && err.Error() != queue.ErrReconnect {
-									fmt.Println("failed to consume messages", err)
-									os.Exit(1)
-								} else if err != nil && err.Error() == queue.ErrReconnect {
-									continue
-								}
-								// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
-								if err == nil {
-									break
-								}
-							}
-							waitGroup.Wait()
-						},
-					},
-					"file": {
-						Blurb:       "File upload queue",
-						Description: "Listens to file upload requests. Only applies to advanced uploads",
-						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							logger, err := log.NewLogger(logPath(cfg.LogDir, "file_consumer.log"), *devMode)
-							if err != nil {
-								fmt.Println("failed to start logger ", err)
-								os.Exit(1)
-							}
-
-							db, err := newDB(cfg, *dbNoSSL)
-							if err != nil {
-								fmt.Println("failed to start db", err)
-								os.Exit(1)
-							}
-							quitChannel := make(chan os.Signal)
-							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-							waitGroup := &sync.WaitGroup{}
-							go func() {
-								fmt.Println(closeMessage)
-								<-quitChannel
-								cancel()
-							}()
-							for {
-								qm, err := queue.New(queue.IpfsFileQueue, cfg.RabbitMQ.URL, false, logger)
+								qm, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, false, &cfg, logger)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -368,7 +325,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, false, logger)
+								qm, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, false, &cfg, logger)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -413,7 +370,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, logger)
+								qm, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, &cfg, logger)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -434,51 +391,6 @@ var commands = map[string]cmd.Cmd{
 							waitGroup.Wait()
 						},
 					},
-				},
-			},
-			"dfa": {
-				Blurb:       "Database file add queue",
-				Description: "Listens to file uploads requests. Only applies to simple upload route",
-				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					logger, err := log.NewLogger(logPath(cfg.LogDir, "dfa_consumer.log"), *devMode)
-					if err != nil {
-						fmt.Println("failed to start logger ", err)
-						os.Exit(1)
-					}
-
-					db, err := newDB(cfg, *dbNoSSL)
-					if err != nil {
-						fmt.Println("failed to start db", err)
-						os.Exit(1)
-					}
-					quitChannel := make(chan os.Signal)
-					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-					waitGroup := &sync.WaitGroup{}
-					go func() {
-						fmt.Println(closeMessage)
-						<-quitChannel
-						cancel()
-					}()
-					for {
-						qm, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, false, logger)
-						if err != nil {
-							fmt.Println("failed to start queue", err)
-							os.Exit(1)
-						}
-						waitGroup.Add(1)
-						err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
-						if err != nil && err.Error() != queue.ErrReconnect {
-							fmt.Println("failed to consume messages", err)
-							os.Exit(1)
-						} else if err != nil && err.Error() == queue.ErrReconnect {
-							continue
-						}
-						// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
-						if err == nil {
-							break
-						}
-					}
-					waitGroup.Wait()
 				},
 			},
 			"email-send": {
@@ -505,7 +417,7 @@ var commands = map[string]cmd.Cmd{
 						cancel()
 					}()
 					for {
-						qm, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, false, logger)
+						qm, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, false, &cfg, logger)
 						if err != nil {
 							fmt.Println("failed to start queue", err)
 							os.Exit(1)
@@ -532,7 +444,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "runs the krab service",
 		Description: "Runs the krab grpc server, allowing for secure private key management",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if err := kaas.NewServer(cfg.Endpoints.Krab.URL, "tcp", &cfg); err != nil {
+			if err := kaas.NewServer(cfg.Services.Krab.URL, "tcp", &cfg); err != nil {
 				fmt.Println("failed to start krab server", err)
 				os.Exit(1)
 			}
@@ -565,10 +477,27 @@ var commands = map[string]cmd.Cmd{
 				fmt.Println("failed to initialize database connection", err)
 				os.Exit(1)
 			}
+			// create user account
 			if _, err := models.NewUserManager(d.DB).NewUserAccount(
 				args["user"], args["pass"], args["email"],
 			); err != nil {
 				fmt.Println("failed to create user account", err)
+				os.Exit(1)
+			}
+			// add credits
+			if _, err := models.NewUserManager(d.DB).AddCredits(args["user"], 99999999); err != nil {
+				fmt.Println("failed to grant credits to user account", err)
+				os.Exit(1)
+			}
+			// generate email activation token
+			userModel, err := models.NewUserManager(d.DB).GenerateEmailVerificationToken(args["user"])
+			if err != nil {
+				fmt.Println("failed to generate email verification token", err)
+				os.Exit(1)
+			}
+			// activate email
+			if _, err := models.NewUserManager(d.DB).ValidateEmailVerificationToken(args["user"], userModel.EmailVerificationToken); err != nil {
+				fmt.Println("failed to activate email", err)
 				os.Exit(1)
 			}
 		},
@@ -633,48 +562,6 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("error starting v3 API server", err)
 						os.Exit(1)
 					}
-				},
-			},
-		},
-	},
-	"bucket": {
-		Hidden:        true,
-		Blurb:         "manage Minio buckets",
-		ChildRequired: true,
-		Children: map[string]cmd.Cmd{
-			"new": {
-				Blurb:       "create a minio bucket - for use against localhost only",
-				Description: "Allows the creation of buckets with minio, useful for initial Temporal setup.",
-				Options:     bucketFlagSet(),
-				Args:        []string{"name"},
-				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					var name, location string
-					var ok bool
-					if name, ok = args["name"]; !ok {
-						println("name item is missing from args")
-						os.Exit(1)
-					}
-					location = *bucketLocation
-					fmt.Printf("preparing to create bucket '%s' at '%s'\n", name, location)
-					mm, err := mini.NewMinioManager(
-						cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
-						cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
-					if err != nil {
-						fmt.Println("failed to initialize minio manager")
-						os.Exit(1)
-					}
-					if exists, err := mm.CheckIfBucketExists(name); err != nil {
-						println(err.Error())
-						os.Exit(1)
-					} else if exists {
-						fmt.Printf("bucket '%s' exists", name)
-						os.Exit(1)
-					}
-					if err := mm.Client.MakeBucket(name, location); err != nil {
-						println(err.Error())
-						os.Exit(1)
-					}
-					println("bucket created")
 				},
 			},
 		},

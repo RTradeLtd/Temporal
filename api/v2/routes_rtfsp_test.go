@@ -14,7 +14,7 @@ import (
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
-	pbOrch "github.com/RTradeLtd/grpc/ipfs-orchestrator"
+	pbOrch "github.com/RTradeLtd/grpc/nexus"
 )
 
 func Test_API_Routes_IPFS_Private(t *testing.T) {
@@ -89,7 +89,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	var mapAPIResp mapAPIResponse
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
-	fakeOrch.StartNetworkReturnsOnCall(0, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5001", SwarmKey: testSwarmKey}, nil)
+	fakeOrch.StartNetworkReturnsOnCall(0, &pbOrch.StartNetworkResponse{PeerId: "hello", SwarmKey: testSwarmKey}, nil)
 	if err := sendRequest(
 		api, "POST", "/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
@@ -101,7 +101,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if mapAPIResp.Response["network_name"] != "abc123" {
 		t.Fatal("failed to retrieve correct network name")
 	}
-	if mapAPIResp.Response["api_url"] != "/ip4/127.0.0.1/tcp/5001" {
+	if mapAPIResp.Response["peer_id"] != "hello" {
 		t.Fatal("failed to retrieve correct api url")
 	}
 	if mapAPIResp.Response["swarm_key"] != testSwarmKey {
@@ -123,7 +123,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues.Add("bootstrap_peers", testBootstrapPeer2)
 	urlValues.Add("users", "testuser")
 	urlValues.Add("users", "testuser2")
-	fakeOrch.StartNetworkReturnsOnCall(1, &pbOrch.StartNetworkResponse{Api: "/ip4/127.0.0.1/tcp/5002", SwarmKey: "swarmStorm"}, nil)
+	fakeOrch.StartNetworkReturnsOnCall(1, &pbOrch.StartNetworkResponse{PeerId: "hello", SwarmKey: "swarmStorm"}, nil)
 	if err := sendRequest(
 		api, "POST", "/v2/ipfs/private/network/new", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
@@ -135,7 +135,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if mapAPIResp.Response["network_name"] != "xyz123" {
 		t.Fatal("failed to retrieve correct network name")
 	}
-	if mapAPIResp.Response["api_url"] != "/ip4/127.0.0.1/tcp/5002" {
+	if mapAPIResp.Response["peer_id"] != "hello" {
 		t.Fatal("failed to retrieve correct api url")
 	}
 	if mapAPIResp.Response["swarm_key"] != "swarmStorm" {
@@ -204,7 +204,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	mapAPIResp = mapAPIResponse{}
 	urlValues = url.Values{}
 	urlValues.Add("network_name", "abc123")
-	fakeOrch.StartNetworkReturnsOnCall(2, &pbOrch.StartNetworkResponse{Api: "test", SwarmKey: "test"}, nil)
+	fakeOrch.StartNetworkReturnsOnCall(2, &pbOrch.StartNetworkResponse{PeerId: "hello", SwarmKey: "test"}, nil)
 	if err := sendRequest(
 		api, "POST", "/v2/ipfs/private/network/start", 200, nil, urlValues, &mapAPIResp,
 	); err != nil {
@@ -260,50 +260,6 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 		t.Fatal("bad api status code from /v2/ipfs/private/file/add")
 	}
 	hash = apiResp.Response
-
-	// add a file advanced
-	// /v2/ipfs/private/file/add/advanced
-	bodyBuf = &bytes.Buffer{}
-	bodyWriter = multipart.NewWriter(bodyBuf)
-	fileWriter, err = bodyWriter.CreateFormFile("file", "../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	fh, err = os.Open("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer fh.Close()
-	if _, err = io.Copy(fileWriter, fh); err != nil {
-		t.Fatal(err)
-	}
-	bodyWriter.Close()
-	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("POST", "/v2/ipfs/private/file/add/advanced", bodyBuf)
-	req.Header.Add("Authorization", authHeader)
-	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
-	urlValues = url.Values{}
-	urlValues.Add("hold_time", "5")
-	urlValues.Add("passphrase", "password123")
-	urlValues.Add("network_name", "abc123")
-	req.PostForm = urlValues
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code recovered from /v2/ipfs/private/file/add/advanced")
-	}
-	apiResp = apiResponse{}
-	// unmarshal the response
-	bodyBytes, err = ioutil.ReadAll(testRecorder.Result().Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(bodyBytes, &apiResp); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /v2/ipfs/private/file/add/advanced")
-	}
 
 	// test pinning
 	// /v2/ipfs/private/pin

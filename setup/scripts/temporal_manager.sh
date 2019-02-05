@@ -14,23 +14,17 @@ case "$1" in
 
     api)
         INIT_DB=true
+        if [[ "$TEMPORAL_PRODUCTION" == "yes" ]]; then
+            GIN_MODE=release
+            export GIN_MODE
+        fi
         export INIT_DB
         temporal api
-        ;;
-    queue-dfa)
-        INIT_DB=true
-        export INIT_DB  
-        temporal queue dfa
         ;;
     ipfs-pin-queue)
         INIT_DB=true
         export INIT_DB
         temporal queue ipfs pin
-        ;;
-    ipfs-file-queue)
-        INIT_DB=true
-        export INIT_DB
-        temporal queue ipfs file
         ;;
     email-send-queue)
         INIT_DB=true

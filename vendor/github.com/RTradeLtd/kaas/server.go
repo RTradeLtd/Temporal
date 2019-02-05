@@ -31,7 +31,7 @@ func NewServer(listenAddr, protocol string, cfg *config.TemporalConfig) error {
 		return err
 	}
 	// setup authentication interceptor
-	unaryIntercept, streamInterceptor := middleware.NewServerInterceptors(cfg.Endpoints.Krab.AuthKey)
+	unaryIntercept, streamInterceptor := middleware.NewServerInterceptors(cfg.Services.Krab.AuthKey)
 	// setup server options
 	serverOpts := []grpc.ServerOption{
 		grpc_middleware.WithUnaryServerChain(
@@ -42,7 +42,7 @@ func NewServer(listenAddr, protocol string, cfg *config.TemporalConfig) error {
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor))),
 	}
 	// setup tls configuration if available
-	if cfg.Endpoints.Krab.TLS.CertPath != "" {
+	if cfg.Services.Krab.TLS.CertPath != "" {
 		creds, err := credentials.NewServerTLSFromFile(
 			cfg.Krab.TLS.CertPath,
 			cfg.Krab.TLS.KeyFile,
@@ -55,7 +55,11 @@ func NewServer(listenAddr, protocol string, cfg *config.TemporalConfig) error {
 	// create grpc server
 	gServer := grpc.NewServer(serverOpts...)
 	// setup krab backend
-	kb, err := krab.NewKrab(krab.Opts{Passphrase: cfg.Endpoints.Krab.KeystorePassword, DSPath: cfg.IPFS.KeystorePath, ReadOnly: false})
+	kb, err := krab.NewKrab(krab.Opts{
+		Passphrase: cfg.Services.Krab.KeystorePassword,
+		DSPath:     cfg.IPFS.KeystorePath,
+		ReadOnly:   false},
+	)
 	if err != nil {
 		return err
 	}
@@ -100,6 +104,16 @@ func (s *Server) PutPrivateKey(ctx context.Context, req *pb.KeyPut) (*pb.Respons
 	}
 	return &pb.Response{
 		Status: "private key stored",
+	}, nil
+}
+
+// DeletePrivateKey is used to remove a private key from the keystore
+func (s *Server) DeletePrivateKey(ctx context.Context, req *pb.KeyDelete) (*pb.Response, error) {
+	if err := s.krab.Delete(req.Name); err != nil {
+		return nil, err
+	}
+	return &pb.Response{
+		Status: "private key deleted",
 	}, nil
 }
 

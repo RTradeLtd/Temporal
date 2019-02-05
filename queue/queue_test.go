@@ -2,7 +2,6 @@ package queue
 
 import (
 	"context"
-	"os"
 	"sync"
 	"testing"
 	"time"
@@ -10,10 +9,8 @@ import (
 	"github.com/streadway/amqp"
 
 	"github.com/RTradeLtd/Temporal/log"
-	"github.com/RTradeLtd/Temporal/mini"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
-	"github.com/RTradeLtd/database/models"
 	"github.com/RTradeLtd/gorm"
 )
 
@@ -34,7 +31,7 @@ func TestQueue_Publish(t *testing.T) {
 		name string
 		args args
 	}{
-		{"PConfirmQ", args{PaymentConfirmationQueue, true}},
+		{"PConfirmQ", args{EthPaymentConfirmationQueue, true}},
 		{"DPCQ", args{DashPaymentConfirmationQueue, true}},
 	}
 	for _, tt := range tests {
@@ -43,14 +40,18 @@ func TestQueue_Publish(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			cfg, err := config.LoadConfig(testCfgPath)
+			if err != nil {
+				t.Fatal(err)
+			}
 			qm, err := New(tt.args.queueName,
-				testRabbitAddress, tt.args.publish, logger)
+				testRabbitAddress, tt.args.publish, cfg, logger)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if tt.name == "PConfirmQ" {
 				// test a successful publish
-				if err := qm.PublishMessage(PaymentConfirmation{
+				if err := qm.PublishMessage(EthPaymentConfirmation{
 					UserName:      "testuser",
 					PaymentNumber: 22,
 				}); err != nil {
@@ -88,7 +89,11 @@ func TestQueue_ExchangeFail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, logger)
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, cfg, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +107,11 @@ func TestRegisterChannelClosure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, logger)
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, cfg, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -143,7 +152,7 @@ func TestQueue_RefundCredits(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, logger)
+	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, cfg, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -191,8 +200,6 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 		name string
 		args args
 	}{
-		{DatabaseFileAddQueue.String(), args{DatabaseFileAddQueue}},
-		{IpfsFileQueue.String(), args{IpfsFileQueue}},
 		{IpfsClusterPinQueue.String(), args{IpfsClusterPinQueue}},
 		{EmailSendQueue.String(), args{EmailSendQueue}},
 		{IpnsEntryQueue.String(), args{IpnsEntryQueue}},
@@ -201,7 +208,7 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			qmPublisher, err := New(tt.args.queueName, testRabbitAddress, false, logger)
+			qmPublisher, err := New(tt.args.queueName, testRabbitAddress, false, cfg, logger)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -218,270 +225,6 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 			wg.Wait()
 		})
 	}
-}
-
-// Does not conduct validation of whether or not a message was successfully processed
-func TestQueue_DatabaseFileAdd(t *testing.T) {
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerPublisher, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	um := models.NewUploadManager(db)
-	// create a test upload in database
-	if _, err := um.NewUpload(testCID, "file", models.UploadOptions{
-		NetworkName:      "public",
-		Username:         "testuser",
-		HoldTimeInMonths: 10,
-		Encrypted:        false,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// setup our queue backend
-	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, loggerConsumer)
-	if err != nil {
-		t.Fatal(err)
-	}
-	qmPublisher, err := New(DatabaseFileAddQueue, testRabbitAddress, true, loggerPublisher)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := qmPublisher.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
-	// test a new add
-	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
-		Hash:             "weeeee",
-		HoldTimeInMonths: 10,
-		UserName:         "testuser",
-		NetworkName:      "public",
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test an update add
-	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
-		Hash:             testCID,
-		HoldTimeInMonths: 10,
-		UserName:         "testuser",
-		NetworkName:      "public",
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test a bad user
-	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
-		Hash:             "notarealhash",
-		HoldTimeInMonths: 10,
-		UserName:         "testuserthatdoesnotexist",
-		NetworkName:      "public",
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test a bad publish
-	if err := qmPublisher.PublishMessage(""); err != nil {
-		t.Fatal(err)
-	}
-	waitGroup := &sync.WaitGroup{}
-	waitGroup.Add(1)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
-	defer cancel()
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
-		t.Fatal(err)
-	}
-	waitGroup.Wait()
-}
-
-// Does not conduct validation of whether or not a message was successfully processed
-func TestQueue_IPFSFile(t *testing.T) {
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// create a fake private network
-	nm := models.NewHostedIPFSNetworkManager(db)
-	um := models.NewUserManager(db)
-	if _, err := nm.CreateHostedPrivateNetwork(
-		"myipfsfileprivatenetwork", "fakeswarm", nil, []string{"testuser"},
-	); err != nil {
-		t.Fatal(err)
-	}
-	if err := um.AddIPFSNetworkForUser("testuser", "myipfsfileprivatenetwork"); err != nil {
-		t.Fatal(err)
-	}
-	if err := nm.UpdateNetworkByName("myipfsfileprivatenetwork", map[string]interface{}{
-		"api_url": cfg.IPFS.APIConnection.Host + ":" + cfg.IPFS.APIConnection.Port,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// connect to minio so we can store fake data
-	mm, err := mini.NewMinioManager(
-		cfg.MINIO.Connection.IP+":"+cfg.MINIO.Connection.Port,
-		cfg.MINIO.AccessKey, cfg.MINIO.SecretKey, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	file, err := os.Open("../README.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-	stats, err := file.Stat()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := mm.PutObject(
-		"object1",
-		file,
-		stats.Size(),
-		mini.PutObjectOptions{
-			Bucket: "filesuploadbucket"},
-	); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := mm.PutObject(
-		"object2",
-		file,
-		stats.Size(),
-		mini.PutObjectOptions{
-			Bucket: "filesuploadbucket"},
-	); err != nil {
-		t.Fatal(err)
-	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerPublisher, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup our queue backend
-	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
-	if err != nil {
-		t.Fatal(err)
-	}
-	qmPublisher, err := New(IpfsFileQueue, testRabbitAddress, true, loggerPublisher)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := qmPublisher.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
-	// test public network
-	if err := qmPublisher.PublishMessage(IPFSFile{
-		MinioHostIP:      cfg.MINIO.Connection.IP,
-		FileName:         "testfile",
-		FileSize:         100,
-		BucketName:       "filesuploadbucket",
-		ObjectName:       "object1",
-		UserName:         "testuser",
-		NetworkName:      "public",
-		HoldTimeInMonths: "10",
-		CreditCost:       10,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test private network - exists
-	if err := qmPublisher.PublishMessage(IPFSFile{
-		MinioHostIP:      cfg.MINIO.Connection.IP,
-		FileName:         "testfile",
-		FileSize:         100,
-		BucketName:       "filesuploadbucket",
-		ObjectName:       "object2",
-		UserName:         "testuser",
-		NetworkName:      "myipfsfileprivatenetwork",
-		HoldTimeInMonths: "10",
-		CreditCost:       10,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test private network - does not exist
-	if err := qmPublisher.PublishMessage(IPFSFile{
-		MinioHostIP:      cfg.MINIO.Connection.IP,
-		FileName:         "testfile",
-		FileSize:         100,
-		BucketName:       "filesuploadbucket",
-		ObjectName:       "object2",
-		UserName:         "testuser",
-		NetworkName:      "myipfsfileprivatenetwork-doesnotexist",
-		HoldTimeInMonths: "10",
-		CreditCost:       10,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test non existing object
-	if err := qmPublisher.PublishMessage(IPFSFile{
-		MinioHostIP:      cfg.MINIO.Connection.IP,
-		FileName:         "testfile",
-		FileSize:         100,
-		BucketName:       "filesuploadbucket",
-		ObjectName:       "notarealobject",
-		UserName:         "testuser",
-		NetworkName:      "public",
-		HoldTimeInMonths: "10",
-		CreditCost:       10,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test non existing bucket
-	if err := qmPublisher.PublishMessage(IPFSFile{
-		MinioHostIP:      cfg.MINIO.Connection.IP,
-		FileName:         "testfile",
-		FileSize:         100,
-		BucketName:       "notarealbucket",
-		ObjectName:       "notarealobject",
-		UserName:         "testuser",
-		NetworkName:      "private",
-		HoldTimeInMonths: "10",
-		CreditCost:       10,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test bad minio ip
-	if err := qmPublisher.PublishMessage(IPFSFile{
-		MinioHostIP:      "notarealip",
-		FileName:         "testfile",
-		FileSize:         100,
-		BucketName:       "filesuploadbucket",
-		ObjectName:       "myobject",
-		UserName:         "testuser",
-		NetworkName:      "private",
-		HoldTimeInMonths: "10",
-		CreditCost:       10,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test a bad publish
-	if err := qmPublisher.PublishMessage(""); err != nil {
-		t.Fatal(err)
-	}
-	waitGroup := &sync.WaitGroup{}
-	waitGroup.Add(1)
-	// set temporary log dig
-	cfg.LogDir = "./tmp/"
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
-	defer cancel()
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
-		t.Fatal(err)
-	}
-	waitGroup.Wait()
 }
 
 // Does not conduct validation of whether or not a message was successfully processed
@@ -503,11 +246,11 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, loggerConsumer)
+	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpfsClusterPinQueue, testRabbitAddress, true, loggerPublisher)
+	qmPublisher, err := New(IpfsClusterPinQueue, testRabbitAddress, true, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -589,11 +332,11 @@ func TestQueue_EmailSend(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(EmailSendQueue, testRabbitAddress, false, loggerConsumer)
+	qmConsumer, err := New(EmailSendQueue, testRabbitAddress, false, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(EmailSendQueue, testRabbitAddress, true, loggerPublisher)
+	qmPublisher, err := New(EmailSendQueue, testRabbitAddress, true, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -645,11 +388,11 @@ func TestQueue_IPNSEntry(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, loggerConsumer)
+	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpnsEntryQueue, testRabbitAddress, true, loggerPublisher)
+	qmPublisher, err := New(IpnsEntryQueue, testRabbitAddress, true, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -717,19 +460,13 @@ func TestQueue_IPFSPin(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, loggerConsumer)
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if qmConsumer.ExchangeName != PinExchange {
-		t.Fatal("failed to properly set exchange name on consumer")
-	}
-	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, loggerPublisher)
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
-	}
-	if qmPublisher.ExchangeName != PinExchange {
-		t.Fatal("failed to properly set exchange name on publisher")
 	}
 	defer func() {
 		if err := qmPublisher.Close(); err != nil {
@@ -737,11 +474,10 @@ func TestQueue_IPFSPin(t *testing.T) {
 		}
 	}()
 	// test a valid pin
-	if err := qmPublisher.PublishMessageWithExchange(IPFSPin{
+	if err := qmPublisher.PublishMessage(IPFSPin{
 		CID:              testCID,
 		NetworkName:      "public",
 		HoldTimeInMonths: 10},
-		PinExchange,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -750,11 +486,10 @@ func TestQueue_IPFSPin(t *testing.T) {
 		t.Fatal(err)
 	}
 	// test a private network
-	if err := qmPublisher.PublishMessageWithExchange(IPFSPin{
+	if err := qmPublisher.PublishMessage(IPFSPin{
 		CID:              testCID,
 		NetworkName:      "myprivatenetwork",
 		HoldTimeInMonths: 10},
-		PinExchange,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -789,14 +524,14 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, loggerConsumer)
+	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if qmConsumer.ExchangeName != IpfsKeyExchange {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
-	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, loggerPublisher)
+	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -861,14 +596,14 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, loggerConsumer)
+	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if qmConsumer.ExchangeName != IpfsKeyExchange {
 		t.Fatal("failed to properly set exchange name on consumer")
 	}
-	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, loggerPublisher)
+	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -890,7 +625,7 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
-	cfg.Endpoints.Krab.TLS.CertPath = "/root"
+	cfg.Services.Krab.TLS.CertPath = "/root"
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
@@ -912,12 +647,9 @@ func TestQueue_IPFSPin_Failure_RabbitMQ(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, loggerConsumer)
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
-	}
-	if qmConsumer.ExchangeName != PinExchange {
-		t.Fatal("failed to properly set exchange name on consumer")
 	}
 	cfg.RabbitMQ.URL = "notarealurl"
 	// we don't need time-out since this test will automatically fail
@@ -942,95 +674,11 @@ func TestQueue_IPFSPin_Failure_LogFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, loggerConsumer)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if qmConsumer.ExchangeName != PinExchange {
-		t.Fatal("failed to properly set exchange name on consumer")
-	}
-	cfg.LogDir = "/root/toor"
-	// we don't need time-out since this test will automatically fail
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
-		t.Fatal("expected error")
-	}
-}
-
-func TestQueue_IPFSFile_Failure_RTFS(t *testing.T) {
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup our queue backend
-	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg.IPFS.APIConnection.Host = "notarealip"
-	// we don't need time-out since this test will automatically fail
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
-		t.Fatal("expected error")
-	}
-}
-
-func TestQueue_IPFSFile_Failure_LogDir(t *testing.T) {
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup our queue backend
-	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
 	cfg.LogDir = "/root/toor"
-	// we don't need time-out since this test will automatically fail
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
-		t.Fatal("expected error")
-	}
-}
-
-func TestQueue_IPFSFile_Failure_RabbitMQ(t *testing.T) {
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// setup our queue backend
-	qmConsumer, err := New(IpfsFileQueue, testRabbitAddress, false, loggerConsumer)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg.RabbitMQ.URL = "notarealip"
 	// we don't need time-out since this test will automatically fail
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -1053,16 +701,35 @@ func TestQueue_IPNSEntry_Failure_Krab(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, loggerConsumer)
+	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.Endpoints.Krab.TLS.CertPath = "/root/toor"
+	cfg.Services.Krab.TLS.CertPath = "/root/toor"
 	// we don't need time-out since this test will automatically fail
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	if err = qmConsumer.ConsumeMessages(ctx, &sync.WaitGroup{}, db, cfg); err == nil {
 		t.Fatal(err)
+	}
+}
+
+func TestQueue_Bad_TLS_Config_CACertFile(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	logger, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.RabbitMQ.TLSConfig.CACertFile = "../README.md"
+	if _, err := New(IpnsEntryQueue, cfg.RabbitMQ.URL, false, cfg, logger); err == nil {
+		t.Fatal("expected error")
+	}
+	cfg.RabbitMQ.TLSConfig.CACertFile = "/root/toor"
+	if _, err := New(IpnsEntryQueue, cfg.RabbitMQ.URL, false, cfg, logger); err == nil {
+		t.Fatal("expected error")
 	}
 }
 

@@ -5,9 +5,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/RTradeLtd/grpc/temporal"
-	"github.com/RTradeLtd/grpc/temporal/request"
-	"github.com/RTradeLtd/grpc/temporal/response"
+	"github.com/RTradeLtd/grpc/pay"
+	"github.com/RTradeLtd/grpc/pay/request"
+	"github.com/RTradeLtd/grpc/pay/response"
 	"google.golang.org/grpc"
 )
 
@@ -120,4 +120,4 @@ func (fake *FakeSignerClient) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ temporal.SignerClient = new(FakeSignerClient)
+var _ pay.SignerClient = new(FakeSignerClient)

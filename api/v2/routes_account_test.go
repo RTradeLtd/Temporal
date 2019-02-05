@@ -46,53 +46,9 @@ func Test_API_Routes_Account(t *testing.T) {
 		t.Fatal("bad username recovered from token")
 	}
 
-	// get an email verification token
-	// /v2/account/email/token/get
-	apiResp = apiResponse{}
-	if err := sendRequest(
-		api, "GET", "/v2/account/email/token/get", 200, nil, nil, &apiResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /v2/account/email/token/get")
-	}
-	// since we dont have email lets get the token from the database
-	um := models.NewUserManager(db)
-	user, err := um.FindByUserName("testuser")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if user.EmailVerificationToken == "" {
-		t.Fatal("failed to set email verification token")
-	}
-
-	// verify the email verification token
-	// /v2/account/email/token/verify
-	urlValues := url.Values{}
-	urlValues.Add("token", user.EmailVerificationToken)
-	apiResp = apiResponse{}
-	if err := sendRequest(
-		api, "POST", "/v2/account/email/token/verify", 200, nil, urlValues, &apiResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /v2/account/email/token/verify")
-	}
-	user, err = um.FindByUserName("testuser")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !user.EmailEnabled {
-		t.Fatal("failed to enable email address")
-	}
-
-	// verify account password change
+	// verify account password change - success
 	// /v2/account/password/change
-	urlValues = url.Values{}
+	urlValues := url.Values{}
 	urlValues.Add("old_password", "admin")
 	urlValues.Add("new_password", "admin1234@")
 	apiResp = apiResponse{}
@@ -104,6 +60,35 @@ func Test_API_Routes_Account(t *testing.T) {
 	// validate the response code
 	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from /v2/account/password/change")
+	}
+
+	// verify account password change - failure
+	// /v2/account/password/change
+	urlValues = url.Values{}
+	urlValues.Add("old_password", "admin")
+	urlValues.Add("new_password", "admin1234@")
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "POST", "/v2/account/password/change", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 400 {
+		t.Fatal("bad api status code from /v2/account/password/change")
+	}
+
+	// get ipfs keys - no keys created
+	// /v2/account/key/ipfs/get
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "GET", "/v2/account/key/ipfs/get", 404, nil, nil, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 404 {
+		t.Fatal("bad api status code from /v2/account/key/ipfs/get")
 	}
 
 	// create ipfs keys
@@ -140,11 +125,28 @@ func Test_API_Routes_Account(t *testing.T) {
 		t.Fatal("bad api status code from /v2/account/key/ipfs/new")
 	}
 	// manually create the keys since we arent using queues
-	if err = um.AddIPFSKeyForUser("testuser", "key1", "muchwow"); err != nil {
+	if err := models.NewUserManager(db).AddIPFSKeyForUser("testuser", "key1", "muchwow"); err != nil {
 		t.Fatal(err)
 	}
-	if err = um.AddIPFSKeyForUser("testuser", "key2", "suchkey"); err != nil {
+	if err := models.NewUserManager(db).AddIPFSKeyForUser("testuser", "key2", "suchkey"); err != nil {
 		t.Fatal(err)
+	}
+
+	// create ipfs key - bad key bit
+	// /v2/account/key/ipfs/new
+	urlValues = url.Values{}
+	urlValues.Add("key_type", "ed25519")
+	urlValues.Add("key_bits", "notanumber")
+	urlValues.Add("key_name", "key1")
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "POST", "/v2/account/key/ipfs/new", 400, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 400 {
+		t.Fatal("bad api status code from /v2/account/key/ipfs/new")
 	}
 
 	// get ipfs keys
@@ -171,6 +173,26 @@ func Test_API_Routes_Account(t *testing.T) {
 	// validate the response code
 	if floatAPIResp.Code != 200 {
 		t.Fatal("bad api status code from /v2/account/credits/available")
+	}
+
+	// test email activation
+	// /v2/account/email/verify/:user/:token
+	if _, err := api.um.NewUserAccount("verificationtestuser", "password123", "verificationtestuser@example.org"); err != nil {
+		t.Fatal(err)
+	}
+	userModel, err := api.um.GenerateEmailVerificationToken("verificationtestuser")
+	if err != nil {
+		t.Fatal(err)
+	}
+	token, err := api.generateEmailJWTToken("verificationtestuser", userModel.EmailVerificationToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "GET", "/v2/account/email/verify/"+userModel.UserName+"/"+token, 200, nil, nil, &apiResp,
+	); err != nil {
+		t.Fatal(err)
 	}
 
 	// forgot email
@@ -216,5 +238,31 @@ func Test_API_Routes_Account(t *testing.T) {
 	// validate the response code
 	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from /v2/forgot/password")
+	}
+
+	// upgrade account
+	// /v2/account/upgrade
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "POST", "/v2/account/upgrade", 200, nil, nil, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if apiResp.Code != 200 {
+		t.Fatal("bad api status code from /v2/account/upgrade")
+	}
+
+	// usage data
+	// /v2/account/upgrade
+	var interfaceAPIResp interfaceAPIResponse
+	if err := sendRequest(
+		api, "GET", "/v2/account/usage", 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// validate the response code
+	if interfaceAPIResp.Code != 200 {
+		t.Fatal("bad api status code from /v2/account/usage")
 	}
 }

@@ -2,6 +2,7 @@ package v2
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/RTradeLtd/gorm"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
+	jwt "gopkg.in/dgrijalva/jwt-go.v3"
 )
 
 var nilTime time.Time
@@ -35,6 +37,16 @@ func CheckAccessForPrivateNetwork(username, networkName string, db *gorm.DB) err
 	return nil
 }
 
+// GetIPFSEndpoint is used to construct the api url to connect to
+// for private ipfs networks. in the case of dev mode it returns
+// an default, non nexus based ipfs api address
+func (api *API) GetIPFSEndpoint(networkName string) string {
+	if dev {
+		return api.cfg.IPFS.APIConnection.Host + ":" + api.cfg.IPFS.APIConnection.Port
+	}
+	return api.cfg.Nexus.Host + ":" + api.cfg.Nexus.Delegator.Port + "/network/" + networkName
+}
+
 // FileSizeCheck is used to check and validate the size of the uploaded file
 func (api *API) FileSizeCheck(size int64) error {
 	sizeInt, err := strconv.ParseInt(
@@ -52,22 +64,6 @@ func (api *API) FileSizeCheck(size int64) error {
 	return nil
 }
 
-func (api *API) getDepositAddress(paymentType string) (string, error) {
-	switch paymentType {
-	case "eth", "rtc":
-		return "0xc7459562777DDf3A1A7afefBE515E8479Bd3FDBD", nil
-	case "btc":
-		return "", nil
-	case "ltc":
-		return "", nil
-	case "xmr":
-		return "", nil
-	case "dash":
-		return "yfLFuyfSNHNtwKbfaGXh17maGKAAgd2A4z", nil
-	}
-	return "", errors.New(eh.InvalidPaymentTypeError)
-}
-
 func (api *API) validateBlockchain(blockchain string) bool {
 	switch blockchain {
 	case "ethereum", "bitcoin", "litecoin", "monero", "dash":
@@ -76,7 +72,83 @@ func (api *API) validateBlockchain(blockchain string) bool {
 	return false
 }
 
+// generateEmailJWTToken is used to generate a jwt token used to validate emails
+func (api *API) generateEmailJWTToken(username, verificationString string) (string, error) {
+	// generate a jwt with claims to verify email
+	verificationJWT := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+		"user":                    username,
+		"emailVerificationString": verificationString,
+		"expire":                  time.Now().Add(time.Hour * 24).UTC().String(),
+	})
+	// return a signed version of the jwt
+	return verificationJWT.SignedString([]byte(api.cfg.API.JWT.Key))
+}
+
+func (api *API) verifyEmailJWTToken(jwtString, username string) error {
+	// parse the jwt for a token
+	token, err := jwt.Parse(jwtString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unable to validate signing method: %v", token.Header["alg"])
+		} else if method != jwt.SigningMethodHS512 {
+			return nil, errors.New("expect hs512 signing method")
+		}
+		// return byte version of signing key
+		return []byte(api.cfg.JWT.Key), nil
+	})
+	// verify jwt was parsed properly
+	if err != nil {
+		return err
+	}
+	// verify that the token is valid
+	if !token.Valid {
+		return errors.New("failed to validate token")
+	}
+	// extract claims from token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return errors.New("failed to parse claims")
+	}
+	// verify the username matches what we are expected
+	if claims["user"] != username {
+		return fmt.Errorf("username from claim does not match expected user of %s", username)
+	}
+	// get user model so we can validate the email verification string
+	user, err := api.um.FindByUserName(username)
+	if err != nil {
+		return errors.New(eh.UserSearchError)
+	}
+	emailVerificationString, ok := claims["emailVerificationString"].(string)
+	if !ok {
+		return errors.New("failed to convert verification token to string")
+	}
+	// validate email verification string
+	if claims["emailVerificationString"] != user.EmailVerificationToken {
+		return errors.New("failed to validate email verification token")
+	}
+	// ensure we can cast claims["expire"] to string type
+	expireString, ok := claims["expire"].(string)
+	if !ok {
+		return errors.New("failed to convert expire value to string")
+	}
+	// parse expire string into time.Time
+	expireTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", expireString)
+	if err != nil {
+		return err
+	}
+	// validate that the token hasn't expired
+	if time.Now().UTC().Unix() > expireTime.Unix() {
+		return errors.New("token is expired")
+	}
+	// enable email activity
+	if _, err := api.um.ValidateEmailVerificationToken(username, emailVerificationString); err != nil {
+		return err
+	}
+	return nil
+}
+
 // validateUserCredits is used to validate whether or not a user has enough credits to pay for an action
+// and if they do, it is deducted from their account
 func (api *API) validateUserCredits(username string, cost float64) error {
 	availableCredits, err := api.um.GetCreditsForUser(username)
 	if err != nil {
@@ -110,6 +182,15 @@ func (api *API) validateAdminRequest(username string) error {
 		return errors.New(eh.UnAuthorizedAdminAccess)
 	}
 	return nil
+}
+
+func (api *API) formatUploadErrorMessage(file string, currentDataUsedBytes, maxDataAllowedBytes uint64) string {
+	currentDataUsedGB := float64(currentDataUsedBytes) / float64(datasize.GB.Bytes())
+	maxDataAllowedGB := float64(maxDataAllowedBytes) / float64(datasize.GB.Bytes())
+	return fmt.Sprintf(
+		"uploading object %s would breach your current data limit of %vGB as you are currently using %vGB, please upload a smaller object",
+		file, maxDataAllowedGB, currentDataUsedGB,
+	)
 }
 
 func (api *API) extractPostForms(c *gin.Context, formNames ...string) map[string]string {

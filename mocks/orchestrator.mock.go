@@ -5,111 +5,191 @@ import (
 	"context"
 	"sync"
 
-	ipfs_orchestrator "github.com/RTradeLtd/grpc/ipfs-orchestrator"
+	"github.com/RTradeLtd/grpc/nexus"
 	"google.golang.org/grpc"
 )
 
 type FakeServiceClient struct {
-	NetworkStatsStub        func(context.Context, *ipfs_orchestrator.NetworkRequest, ...grpc.CallOption) (*ipfs_orchestrator.NetworkStatusReponse, error)
+	NetworkDiagnosticsStub        func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.NetworkDiagnosticsResponse, error)
+	networkDiagnosticsMutex       sync.RWMutex
+	networkDiagnosticsArgsForCall []struct {
+		arg1 context.Context
+		arg2 *nexus.NetworkRequest
+		arg3 []grpc.CallOption
+	}
+	networkDiagnosticsReturns struct {
+		result1 *nexus.NetworkDiagnosticsResponse
+		result2 error
+	}
+	networkDiagnosticsReturnsOnCall map[int]struct {
+		result1 *nexus.NetworkDiagnosticsResponse
+		result2 error
+	}
+	NetworkStatsStub        func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.NetworkStatusReponse, error)
 	networkStatsMutex       sync.RWMutex
 	networkStatsArgsForCall []struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.NetworkRequest
+		arg2 *nexus.NetworkRequest
 		arg3 []grpc.CallOption
 	}
 	networkStatsReturns struct {
-		result1 *ipfs_orchestrator.NetworkStatusReponse
+		result1 *nexus.NetworkStatusReponse
 		result2 error
 	}
 	networkStatsReturnsOnCall map[int]struct {
-		result1 *ipfs_orchestrator.NetworkStatusReponse
+		result1 *nexus.NetworkStatusReponse
 		result2 error
 	}
-	PingStub        func(context.Context, *ipfs_orchestrator.Empty, ...grpc.CallOption) (*ipfs_orchestrator.Empty, error)
+	PingStub        func(context.Context, *nexus.Empty, ...grpc.CallOption) (*nexus.Empty, error)
 	pingMutex       sync.RWMutex
 	pingArgsForCall []struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.Empty
+		arg2 *nexus.Empty
 		arg3 []grpc.CallOption
 	}
 	pingReturns struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}
 	pingReturnsOnCall map[int]struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}
-	RemoveNetworkStub        func(context.Context, *ipfs_orchestrator.NetworkRequest, ...grpc.CallOption) (*ipfs_orchestrator.Empty, error)
+	RemoveNetworkStub        func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.Empty, error)
 	removeNetworkMutex       sync.RWMutex
 	removeNetworkArgsForCall []struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.NetworkRequest
+		arg2 *nexus.NetworkRequest
 		arg3 []grpc.CallOption
 	}
 	removeNetworkReturns struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}
 	removeNetworkReturnsOnCall map[int]struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}
-	StartNetworkStub        func(context.Context, *ipfs_orchestrator.NetworkRequest, ...grpc.CallOption) (*ipfs_orchestrator.StartNetworkResponse, error)
+	StartNetworkStub        func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.StartNetworkResponse, error)
 	startNetworkMutex       sync.RWMutex
 	startNetworkArgsForCall []struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.NetworkRequest
+		arg2 *nexus.NetworkRequest
 		arg3 []grpc.CallOption
 	}
 	startNetworkReturns struct {
-		result1 *ipfs_orchestrator.StartNetworkResponse
+		result1 *nexus.StartNetworkResponse
 		result2 error
 	}
 	startNetworkReturnsOnCall map[int]struct {
-		result1 *ipfs_orchestrator.StartNetworkResponse
+		result1 *nexus.StartNetworkResponse
 		result2 error
 	}
-	StopNetworkStub        func(context.Context, *ipfs_orchestrator.NetworkRequest, ...grpc.CallOption) (*ipfs_orchestrator.Empty, error)
+	StopNetworkStub        func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.Empty, error)
 	stopNetworkMutex       sync.RWMutex
 	stopNetworkArgsForCall []struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.NetworkRequest
+		arg2 *nexus.NetworkRequest
 		arg3 []grpc.CallOption
 	}
 	stopNetworkReturns struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}
 	stopNetworkReturnsOnCall map[int]struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}
-	UpdateNetworkStub        func(context.Context, *ipfs_orchestrator.NetworkRequest, ...grpc.CallOption) (*ipfs_orchestrator.Empty, error)
+	UpdateNetworkStub        func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.Empty, error)
 	updateNetworkMutex       sync.RWMutex
 	updateNetworkArgsForCall []struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.NetworkRequest
+		arg2 *nexus.NetworkRequest
 		arg3 []grpc.CallOption
 	}
 	updateNetworkReturns struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}
 	updateNetworkReturnsOnCall map[int]struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeServiceClient) NetworkStats(arg1 context.Context, arg2 *ipfs_orchestrator.NetworkRequest, arg3 ...grpc.CallOption) (*ipfs_orchestrator.NetworkStatusReponse, error) {
+func (fake *FakeServiceClient) NetworkDiagnostics(arg1 context.Context, arg2 *nexus.NetworkRequest, arg3 ...grpc.CallOption) (*nexus.NetworkDiagnosticsResponse, error) {
+	fake.networkDiagnosticsMutex.Lock()
+	ret, specificReturn := fake.networkDiagnosticsReturnsOnCall[len(fake.networkDiagnosticsArgsForCall)]
+	fake.networkDiagnosticsArgsForCall = append(fake.networkDiagnosticsArgsForCall, struct {
+		arg1 context.Context
+		arg2 *nexus.NetworkRequest
+		arg3 []grpc.CallOption
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("NetworkDiagnostics", []interface{}{arg1, arg2, arg3})
+	fake.networkDiagnosticsMutex.Unlock()
+	if fake.NetworkDiagnosticsStub != nil {
+		return fake.NetworkDiagnosticsStub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.networkDiagnosticsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeServiceClient) NetworkDiagnosticsCallCount() int {
+	fake.networkDiagnosticsMutex.RLock()
+	defer fake.networkDiagnosticsMutex.RUnlock()
+	return len(fake.networkDiagnosticsArgsForCall)
+}
+
+func (fake *FakeServiceClient) NetworkDiagnosticsCalls(stub func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.NetworkDiagnosticsResponse, error)) {
+	fake.networkDiagnosticsMutex.Lock()
+	defer fake.networkDiagnosticsMutex.Unlock()
+	fake.NetworkDiagnosticsStub = stub
+}
+
+func (fake *FakeServiceClient) NetworkDiagnosticsArgsForCall(i int) (context.Context, *nexus.NetworkRequest, []grpc.CallOption) {
+	fake.networkDiagnosticsMutex.RLock()
+	defer fake.networkDiagnosticsMutex.RUnlock()
+	argsForCall := fake.networkDiagnosticsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeServiceClient) NetworkDiagnosticsReturns(result1 *nexus.NetworkDiagnosticsResponse, result2 error) {
+	fake.networkDiagnosticsMutex.Lock()
+	defer fake.networkDiagnosticsMutex.Unlock()
+	fake.NetworkDiagnosticsStub = nil
+	fake.networkDiagnosticsReturns = struct {
+		result1 *nexus.NetworkDiagnosticsResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceClient) NetworkDiagnosticsReturnsOnCall(i int, result1 *nexus.NetworkDiagnosticsResponse, result2 error) {
+	fake.networkDiagnosticsMutex.Lock()
+	defer fake.networkDiagnosticsMutex.Unlock()
+	fake.NetworkDiagnosticsStub = nil
+	if fake.networkDiagnosticsReturnsOnCall == nil {
+		fake.networkDiagnosticsReturnsOnCall = make(map[int]struct {
+			result1 *nexus.NetworkDiagnosticsResponse
+			result2 error
+		})
+	}
+	fake.networkDiagnosticsReturnsOnCall[i] = struct {
+		result1 *nexus.NetworkDiagnosticsResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceClient) NetworkStats(arg1 context.Context, arg2 *nexus.NetworkRequest, arg3 ...grpc.CallOption) (*nexus.NetworkStatusReponse, error) {
 	fake.networkStatsMutex.Lock()
 	ret, specificReturn := fake.networkStatsReturnsOnCall[len(fake.networkStatsArgsForCall)]
 	fake.networkStatsArgsForCall = append(fake.networkStatsArgsForCall, struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.NetworkRequest
+		arg2 *nexus.NetworkRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("NetworkStats", []interface{}{arg1, arg2, arg3})
@@ -130,51 +210,51 @@ func (fake *FakeServiceClient) NetworkStatsCallCount() int {
 	return len(fake.networkStatsArgsForCall)
 }
 
-func (fake *FakeServiceClient) NetworkStatsCalls(stub func(context.Context, *ipfs_orchestrator.NetworkRequest, ...grpc.CallOption) (*ipfs_orchestrator.NetworkStatusReponse, error)) {
+func (fake *FakeServiceClient) NetworkStatsCalls(stub func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.NetworkStatusReponse, error)) {
 	fake.networkStatsMutex.Lock()
 	defer fake.networkStatsMutex.Unlock()
 	fake.NetworkStatsStub = stub
 }
 
-func (fake *FakeServiceClient) NetworkStatsArgsForCall(i int) (context.Context, *ipfs_orchestrator.NetworkRequest, []grpc.CallOption) {
+func (fake *FakeServiceClient) NetworkStatsArgsForCall(i int) (context.Context, *nexus.NetworkRequest, []grpc.CallOption) {
 	fake.networkStatsMutex.RLock()
 	defer fake.networkStatsMutex.RUnlock()
 	argsForCall := fake.networkStatsArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeServiceClient) NetworkStatsReturns(result1 *ipfs_orchestrator.NetworkStatusReponse, result2 error) {
+func (fake *FakeServiceClient) NetworkStatsReturns(result1 *nexus.NetworkStatusReponse, result2 error) {
 	fake.networkStatsMutex.Lock()
 	defer fake.networkStatsMutex.Unlock()
 	fake.NetworkStatsStub = nil
 	fake.networkStatsReturns = struct {
-		result1 *ipfs_orchestrator.NetworkStatusReponse
+		result1 *nexus.NetworkStatusReponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) NetworkStatsReturnsOnCall(i int, result1 *ipfs_orchestrator.NetworkStatusReponse, result2 error) {
+func (fake *FakeServiceClient) NetworkStatsReturnsOnCall(i int, result1 *nexus.NetworkStatusReponse, result2 error) {
 	fake.networkStatsMutex.Lock()
 	defer fake.networkStatsMutex.Unlock()
 	fake.NetworkStatsStub = nil
 	if fake.networkStatsReturnsOnCall == nil {
 		fake.networkStatsReturnsOnCall = make(map[int]struct {
-			result1 *ipfs_orchestrator.NetworkStatusReponse
+			result1 *nexus.NetworkStatusReponse
 			result2 error
 		})
 	}
 	fake.networkStatsReturnsOnCall[i] = struct {
-		result1 *ipfs_orchestrator.NetworkStatusReponse
+		result1 *nexus.NetworkStatusReponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) Ping(arg1 context.Context, arg2 *ipfs_orchestrator.Empty, arg3 ...grpc.CallOption) (*ipfs_orchestrator.Empty, error) {
+func (fake *FakeServiceClient) Ping(arg1 context.Context, arg2 *nexus.Empty, arg3 ...grpc.CallOption) (*nexus.Empty, error) {
 	fake.pingMutex.Lock()
 	ret, specificReturn := fake.pingReturnsOnCall[len(fake.pingArgsForCall)]
 	fake.pingArgsForCall = append(fake.pingArgsForCall, struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.Empty
+		arg2 *nexus.Empty
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("Ping", []interface{}{arg1, arg2, arg3})
@@ -195,51 +275,51 @@ func (fake *FakeServiceClient) PingCallCount() int {
 	return len(fake.pingArgsForCall)
 }
 
-func (fake *FakeServiceClient) PingCalls(stub func(context.Context, *ipfs_orchestrator.Empty, ...grpc.CallOption) (*ipfs_orchestrator.Empty, error)) {
+func (fake *FakeServiceClient) PingCalls(stub func(context.Context, *nexus.Empty, ...grpc.CallOption) (*nexus.Empty, error)) {
 	fake.pingMutex.Lock()
 	defer fake.pingMutex.Unlock()
 	fake.PingStub = stub
 }
 
-func (fake *FakeServiceClient) PingArgsForCall(i int) (context.Context, *ipfs_orchestrator.Empty, []grpc.CallOption) {
+func (fake *FakeServiceClient) PingArgsForCall(i int) (context.Context, *nexus.Empty, []grpc.CallOption) {
 	fake.pingMutex.RLock()
 	defer fake.pingMutex.RUnlock()
 	argsForCall := fake.pingArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeServiceClient) PingReturns(result1 *ipfs_orchestrator.Empty, result2 error) {
+func (fake *FakeServiceClient) PingReturns(result1 *nexus.Empty, result2 error) {
 	fake.pingMutex.Lock()
 	defer fake.pingMutex.Unlock()
 	fake.PingStub = nil
 	fake.pingReturns = struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) PingReturnsOnCall(i int, result1 *ipfs_orchestrator.Empty, result2 error) {
+func (fake *FakeServiceClient) PingReturnsOnCall(i int, result1 *nexus.Empty, result2 error) {
 	fake.pingMutex.Lock()
 	defer fake.pingMutex.Unlock()
 	fake.PingStub = nil
 	if fake.pingReturnsOnCall == nil {
 		fake.pingReturnsOnCall = make(map[int]struct {
-			result1 *ipfs_orchestrator.Empty
+			result1 *nexus.Empty
 			result2 error
 		})
 	}
 	fake.pingReturnsOnCall[i] = struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) RemoveNetwork(arg1 context.Context, arg2 *ipfs_orchestrator.NetworkRequest, arg3 ...grpc.CallOption) (*ipfs_orchestrator.Empty, error) {
+func (fake *FakeServiceClient) RemoveNetwork(arg1 context.Context, arg2 *nexus.NetworkRequest, arg3 ...grpc.CallOption) (*nexus.Empty, error) {
 	fake.removeNetworkMutex.Lock()
 	ret, specificReturn := fake.removeNetworkReturnsOnCall[len(fake.removeNetworkArgsForCall)]
 	fake.removeNetworkArgsForCall = append(fake.removeNetworkArgsForCall, struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.NetworkRequest
+		arg2 *nexus.NetworkRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("RemoveNetwork", []interface{}{arg1, arg2, arg3})
@@ -260,51 +340,51 @@ func (fake *FakeServiceClient) RemoveNetworkCallCount() int {
 	return len(fake.removeNetworkArgsForCall)
 }
 
-func (fake *FakeServiceClient) RemoveNetworkCalls(stub func(context.Context, *ipfs_orchestrator.NetworkRequest, ...grpc.CallOption) (*ipfs_orchestrator.Empty, error)) {
+func (fake *FakeServiceClient) RemoveNetworkCalls(stub func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.Empty, error)) {
 	fake.removeNetworkMutex.Lock()
 	defer fake.removeNetworkMutex.Unlock()
 	fake.RemoveNetworkStub = stub
 }
 
-func (fake *FakeServiceClient) RemoveNetworkArgsForCall(i int) (context.Context, *ipfs_orchestrator.NetworkRequest, []grpc.CallOption) {
+func (fake *FakeServiceClient) RemoveNetworkArgsForCall(i int) (context.Context, *nexus.NetworkRequest, []grpc.CallOption) {
 	fake.removeNetworkMutex.RLock()
 	defer fake.removeNetworkMutex.RUnlock()
 	argsForCall := fake.removeNetworkArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeServiceClient) RemoveNetworkReturns(result1 *ipfs_orchestrator.Empty, result2 error) {
+func (fake *FakeServiceClient) RemoveNetworkReturns(result1 *nexus.Empty, result2 error) {
 	fake.removeNetworkMutex.Lock()
 	defer fake.removeNetworkMutex.Unlock()
 	fake.RemoveNetworkStub = nil
 	fake.removeNetworkReturns = struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) RemoveNetworkReturnsOnCall(i int, result1 *ipfs_orchestrator.Empty, result2 error) {
+func (fake *FakeServiceClient) RemoveNetworkReturnsOnCall(i int, result1 *nexus.Empty, result2 error) {
 	fake.removeNetworkMutex.Lock()
 	defer fake.removeNetworkMutex.Unlock()
 	fake.RemoveNetworkStub = nil
 	if fake.removeNetworkReturnsOnCall == nil {
 		fake.removeNetworkReturnsOnCall = make(map[int]struct {
-			result1 *ipfs_orchestrator.Empty
+			result1 *nexus.Empty
 			result2 error
 		})
 	}
 	fake.removeNetworkReturnsOnCall[i] = struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) StartNetwork(arg1 context.Context, arg2 *ipfs_orchestrator.NetworkRequest, arg3 ...grpc.CallOption) (*ipfs_orchestrator.StartNetworkResponse, error) {
+func (fake *FakeServiceClient) StartNetwork(arg1 context.Context, arg2 *nexus.NetworkRequest, arg3 ...grpc.CallOption) (*nexus.StartNetworkResponse, error) {
 	fake.startNetworkMutex.Lock()
 	ret, specificReturn := fake.startNetworkReturnsOnCall[len(fake.startNetworkArgsForCall)]
 	fake.startNetworkArgsForCall = append(fake.startNetworkArgsForCall, struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.NetworkRequest
+		arg2 *nexus.NetworkRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("StartNetwork", []interface{}{arg1, arg2, arg3})
@@ -325,51 +405,51 @@ func (fake *FakeServiceClient) StartNetworkCallCount() int {
 	return len(fake.startNetworkArgsForCall)
 }
 
-func (fake *FakeServiceClient) StartNetworkCalls(stub func(context.Context, *ipfs_orchestrator.NetworkRequest, ...grpc.CallOption) (*ipfs_orchestrator.StartNetworkResponse, error)) {
+func (fake *FakeServiceClient) StartNetworkCalls(stub func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.StartNetworkResponse, error)) {
 	fake.startNetworkMutex.Lock()
 	defer fake.startNetworkMutex.Unlock()
 	fake.StartNetworkStub = stub
 }
 
-func (fake *FakeServiceClient) StartNetworkArgsForCall(i int) (context.Context, *ipfs_orchestrator.NetworkRequest, []grpc.CallOption) {
+func (fake *FakeServiceClient) StartNetworkArgsForCall(i int) (context.Context, *nexus.NetworkRequest, []grpc.CallOption) {
 	fake.startNetworkMutex.RLock()
 	defer fake.startNetworkMutex.RUnlock()
 	argsForCall := fake.startNetworkArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeServiceClient) StartNetworkReturns(result1 *ipfs_orchestrator.StartNetworkResponse, result2 error) {
+func (fake *FakeServiceClient) StartNetworkReturns(result1 *nexus.StartNetworkResponse, result2 error) {
 	fake.startNetworkMutex.Lock()
 	defer fake.startNetworkMutex.Unlock()
 	fake.StartNetworkStub = nil
 	fake.startNetworkReturns = struct {
-		result1 *ipfs_orchestrator.StartNetworkResponse
+		result1 *nexus.StartNetworkResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) StartNetworkReturnsOnCall(i int, result1 *ipfs_orchestrator.StartNetworkResponse, result2 error) {
+func (fake *FakeServiceClient) StartNetworkReturnsOnCall(i int, result1 *nexus.StartNetworkResponse, result2 error) {
 	fake.startNetworkMutex.Lock()
 	defer fake.startNetworkMutex.Unlock()
 	fake.StartNetworkStub = nil
 	if fake.startNetworkReturnsOnCall == nil {
 		fake.startNetworkReturnsOnCall = make(map[int]struct {
-			result1 *ipfs_orchestrator.StartNetworkResponse
+			result1 *nexus.StartNetworkResponse
 			result2 error
 		})
 	}
 	fake.startNetworkReturnsOnCall[i] = struct {
-		result1 *ipfs_orchestrator.StartNetworkResponse
+		result1 *nexus.StartNetworkResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) StopNetwork(arg1 context.Context, arg2 *ipfs_orchestrator.NetworkRequest, arg3 ...grpc.CallOption) (*ipfs_orchestrator.Empty, error) {
+func (fake *FakeServiceClient) StopNetwork(arg1 context.Context, arg2 *nexus.NetworkRequest, arg3 ...grpc.CallOption) (*nexus.Empty, error) {
 	fake.stopNetworkMutex.Lock()
 	ret, specificReturn := fake.stopNetworkReturnsOnCall[len(fake.stopNetworkArgsForCall)]
 	fake.stopNetworkArgsForCall = append(fake.stopNetworkArgsForCall, struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.NetworkRequest
+		arg2 *nexus.NetworkRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("StopNetwork", []interface{}{arg1, arg2, arg3})
@@ -390,51 +470,51 @@ func (fake *FakeServiceClient) StopNetworkCallCount() int {
 	return len(fake.stopNetworkArgsForCall)
 }
 
-func (fake *FakeServiceClient) StopNetworkCalls(stub func(context.Context, *ipfs_orchestrator.NetworkRequest, ...grpc.CallOption) (*ipfs_orchestrator.Empty, error)) {
+func (fake *FakeServiceClient) StopNetworkCalls(stub func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.Empty, error)) {
 	fake.stopNetworkMutex.Lock()
 	defer fake.stopNetworkMutex.Unlock()
 	fake.StopNetworkStub = stub
 }
 
-func (fake *FakeServiceClient) StopNetworkArgsForCall(i int) (context.Context, *ipfs_orchestrator.NetworkRequest, []grpc.CallOption) {
+func (fake *FakeServiceClient) StopNetworkArgsForCall(i int) (context.Context, *nexus.NetworkRequest, []grpc.CallOption) {
 	fake.stopNetworkMutex.RLock()
 	defer fake.stopNetworkMutex.RUnlock()
 	argsForCall := fake.stopNetworkArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeServiceClient) StopNetworkReturns(result1 *ipfs_orchestrator.Empty, result2 error) {
+func (fake *FakeServiceClient) StopNetworkReturns(result1 *nexus.Empty, result2 error) {
 	fake.stopNetworkMutex.Lock()
 	defer fake.stopNetworkMutex.Unlock()
 	fake.StopNetworkStub = nil
 	fake.stopNetworkReturns = struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) StopNetworkReturnsOnCall(i int, result1 *ipfs_orchestrator.Empty, result2 error) {
+func (fake *FakeServiceClient) StopNetworkReturnsOnCall(i int, result1 *nexus.Empty, result2 error) {
 	fake.stopNetworkMutex.Lock()
 	defer fake.stopNetworkMutex.Unlock()
 	fake.StopNetworkStub = nil
 	if fake.stopNetworkReturnsOnCall == nil {
 		fake.stopNetworkReturnsOnCall = make(map[int]struct {
-			result1 *ipfs_orchestrator.Empty
+			result1 *nexus.Empty
 			result2 error
 		})
 	}
 	fake.stopNetworkReturnsOnCall[i] = struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) UpdateNetwork(arg1 context.Context, arg2 *ipfs_orchestrator.NetworkRequest, arg3 ...grpc.CallOption) (*ipfs_orchestrator.Empty, error) {
+func (fake *FakeServiceClient) UpdateNetwork(arg1 context.Context, arg2 *nexus.NetworkRequest, arg3 ...grpc.CallOption) (*nexus.Empty, error) {
 	fake.updateNetworkMutex.Lock()
 	ret, specificReturn := fake.updateNetworkReturnsOnCall[len(fake.updateNetworkArgsForCall)]
 	fake.updateNetworkArgsForCall = append(fake.updateNetworkArgsForCall, struct {
 		arg1 context.Context
-		arg2 *ipfs_orchestrator.NetworkRequest
+		arg2 *nexus.NetworkRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("UpdateNetwork", []interface{}{arg1, arg2, arg3})
@@ -455,41 +535,41 @@ func (fake *FakeServiceClient) UpdateNetworkCallCount() int {
 	return len(fake.updateNetworkArgsForCall)
 }
 
-func (fake *FakeServiceClient) UpdateNetworkCalls(stub func(context.Context, *ipfs_orchestrator.NetworkRequest, ...grpc.CallOption) (*ipfs_orchestrator.Empty, error)) {
+func (fake *FakeServiceClient) UpdateNetworkCalls(stub func(context.Context, *nexus.NetworkRequest, ...grpc.CallOption) (*nexus.Empty, error)) {
 	fake.updateNetworkMutex.Lock()
 	defer fake.updateNetworkMutex.Unlock()
 	fake.UpdateNetworkStub = stub
 }
 
-func (fake *FakeServiceClient) UpdateNetworkArgsForCall(i int) (context.Context, *ipfs_orchestrator.NetworkRequest, []grpc.CallOption) {
+func (fake *FakeServiceClient) UpdateNetworkArgsForCall(i int) (context.Context, *nexus.NetworkRequest, []grpc.CallOption) {
 	fake.updateNetworkMutex.RLock()
 	defer fake.updateNetworkMutex.RUnlock()
 	argsForCall := fake.updateNetworkArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeServiceClient) UpdateNetworkReturns(result1 *ipfs_orchestrator.Empty, result2 error) {
+func (fake *FakeServiceClient) UpdateNetworkReturns(result1 *nexus.Empty, result2 error) {
 	fake.updateNetworkMutex.Lock()
 	defer fake.updateNetworkMutex.Unlock()
 	fake.UpdateNetworkStub = nil
 	fake.updateNetworkReturns = struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceClient) UpdateNetworkReturnsOnCall(i int, result1 *ipfs_orchestrator.Empty, result2 error) {
+func (fake *FakeServiceClient) UpdateNetworkReturnsOnCall(i int, result1 *nexus.Empty, result2 error) {
 	fake.updateNetworkMutex.Lock()
 	defer fake.updateNetworkMutex.Unlock()
 	fake.UpdateNetworkStub = nil
 	if fake.updateNetworkReturnsOnCall == nil {
 		fake.updateNetworkReturnsOnCall = make(map[int]struct {
-			result1 *ipfs_orchestrator.Empty
+			result1 *nexus.Empty
 			result2 error
 		})
 	}
 	fake.updateNetworkReturnsOnCall[i] = struct {
-		result1 *ipfs_orchestrator.Empty
+		result1 *nexus.Empty
 		result2 error
 	}{result1, result2}
 }
@@ -497,6 +577,8 @@ func (fake *FakeServiceClient) UpdateNetworkReturnsOnCall(i int, result1 *ipfs_o
 func (fake *FakeServiceClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.networkDiagnosticsMutex.RLock()
+	defer fake.networkDiagnosticsMutex.RUnlock()
 	fake.networkStatsMutex.RLock()
 	defer fake.networkStatsMutex.RUnlock()
 	fake.pingMutex.RLock()
@@ -528,4 +610,4 @@ func (fake *FakeServiceClient) recordInvocation(key string, args []interface{}) 
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ ipfs_orchestrator.ServiceClient = new(FakeServiceClient)
+var _ nexus.ServiceClient = new(FakeServiceClient)

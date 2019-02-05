@@ -1,15 +1,12 @@
 package rtfs
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os/exec"
-	"strings"
 	"time"
 
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
@@ -21,16 +18,25 @@ type IpfsManager struct {
 	nodeAPIAddr string
 }
 
-// NewManager is used to initialize our Ipfs manager struct
-func NewManager(ipfsURL string, timeout time.Duration) (*IpfsManager, error) {
-	// set up shell
-	sh := newShell(ipfsURL)
-	sh.SetTimeout(time.Minute * 5)
+// NewManager is used to instantiate IpfsManager with a connection to an ipfs api.
+// if token is provided, we use it to establish an authentication, direct connection
+// to an ipfs node api, which involves skipping multiaddr parsing. This is useful
+// in situations such as interacting with Nexus' delegator to talk with private ipfs
+// networks which use non-standard connection methods.
+func NewManager(ipfsURL, token string, timeout time.Duration) (*IpfsManager, error) {
+	var sh *ipfsapi.Shell
+	if token != "" {
+		sh = ipfsapi.NewDirectShell(ipfsURL).WithAuthorization(token)
+	} else {
+		sh = ipfsapi.NewShell(ipfsURL)
+	}
+	// validate we have an active connection
 	if _, err := sh.ID(); err != nil {
 		return nil, fmt.Errorf("failed to connect to ipfs node at '%s': %s", ipfsURL, err.Error())
 	}
-
-	// instantiate manager
+	// set timeout
+	sh.SetTimeout(timeout)
+	// instantiate and return manager
 	return &IpfsManager{
 		shell:       sh,
 		nodeAPIAddr: ipfsURL,
@@ -41,8 +47,8 @@ func NewManager(ipfsURL string, timeout time.Duration) (*IpfsManager, error) {
 func (im *IpfsManager) NodeAddress() string { return im.nodeAPIAddr }
 
 // Add is a wrapper used to add a file to IPFS
-func (im *IpfsManager) Add(r io.Reader) (string, error) {
-	return im.shell.Add(r)
+func (im *IpfsManager) Add(r io.Reader, options ...ipfsapi.AddOpts) (string, error) {
+	return im.shell.Add(r, options...)
 }
 
 // DagPut is used to store data as an ipld object
@@ -57,7 +63,11 @@ func (im *IpfsManager) DagGet(cid string, out interface{}) error {
 
 // Cat is used to get cat an ipfs object
 func (im *IpfsManager) Cat(cid string) ([]byte, error) {
-	r, err := im.shell.Cat(cid)
+	var (
+		r   io.ReadCloser
+		err error
+	)
+	r, err = im.shell.Cat(cid)
 	if err != nil {
 		return nil, err
 	}
@@ -96,10 +106,25 @@ func (im *IpfsManager) NewObject(template string) (string, error) {
 // Pin is a wrapper method to pin a hash.
 // pinning prevents GC and persistently stores on disk
 func (im *IpfsManager) Pin(hash string) error {
-	if err := im.shell.Pin(hash); err != nil {
-		return fmt.Errorf("failed to pin '%s': %s", hash, err.Error())
+	return im.shell.Pin(hash)
+}
+
+// PinUpdate is used to update one pin to another, while making sure all objects
+// in the new pin are local, followed by removing the old pin.
+//
+// This is an optimized version of pinning the new content, and then removing the
+// old content.
+//
+// returns the new pin path
+func (im *IpfsManager) PinUpdate(from, to string) (string, error) {
+	out, err := im.shell.PinUpdate(from, to)
+	if err != nil {
+		return "", err
 	}
-	return nil
+	if len(out) == 0 || len(out["Pins"]) == 0 {
+		return "", errors.New("failed to retrieve new pin paths")
+	}
+	return out["Pins"][1], nil
 }
 
 // CheckPin checks whether or not a pin is present
@@ -159,39 +184,15 @@ func (im *IpfsManager) SwarmConnect(ctx context.Context, addrs ...string) error 
 	return im.shell.SwarmConnect(ctx, addrs...)
 }
 
-// DedupAndCalculatePinSize is used to remove duplicate refers to objects for a more accurate pin size cost
-// it returns the size of all refs, as well as all unique references
-func (im *IpfsManager) DedupAndCalculatePinSize(hash string) (int64, []string, error) {
-	// format a multiaddr api to connect to
-	parsedIP := strings.Split(im.nodeAPIAddr, ":")
-	multiAddrIP := fmt.Sprintf("/ip4/%s/tcp/%s", parsedIP[0], parsedIP[1])
-	// Shell::Refs doesn't seem to return more than 1 hash, and doesn't allow usage of flags like `--unique`
-	// will open up a PR with main `go-ipfs-api` to address this, but in the mean time this is a good monkey-patch
-	outBytes, err := exec.Command("ipfs", fmt.Sprintf("--api=%s", multiAddrIP), "refs", "--recursive", "--unique", hash).Output()
+// Refs is used to retrieve references of a hash
+func (im *IpfsManager) Refs(hash string, recursive, unique bool) ([]string, error) {
+	refs, err := im.shell.Refs(hash, recursive, unique)
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
-	// convert exec output to scanner
-	scanner := bufio.NewScanner(strings.NewReader(string(outBytes)))
-	var refsArray []string
-	// iterate over output grabbing hashes
-	for scanner.Scan() {
-		refsArray = append(refsArray, scanner.Text())
+	var references []string
+	for ref := range refs {
+		references = append(references, ref)
 	}
-	if scanner.Err() != nil {
-		return 0, nil, scanner.Err()
-	}
-	// the total size of all data in all references
-	var totalDataSize int
-	// parse through all references
-	for _, ref := range refsArray {
-		// grab object stats for the reference
-		refStats, err := im.Stat(ref)
-		if err != nil {
-			return 0, nil, err
-		}
-		// update totalDataSize
-		totalDataSize = totalDataSize + refStats.DataSize
-	}
-	return int64(totalDataSize), refsArray, nil
+	return references, nil
 }

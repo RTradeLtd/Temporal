@@ -13,55 +13,73 @@ import (
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
-	greq "github.com/RTradeLtd/grpc/temporal/request"
+	greq "github.com/RTradeLtd/grpc/pay/request"
 	"github.com/gin-gonic/gin"
 )
 
-// ConfirmPayment is used to confirm a payment after sending it.
-// By giving Temporal the TxHash, we can then validate that hte payment
-// was made, and validated by the appropriate blockchain.
-func (api *API) ConfirmPayment(c *gin.Context) {
+// ConfirmETHPayment is used to confirm an ethereum based payment
+func (api *API) ConfirmETHPayment(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "payment_number", "tx_hash")
 	if len(forms) == 0 {
 		return
 	}
+	// parse payment number
 	paymentNumberInt, err := strconv.ParseInt(forms["payment_number"], 10, 64)
 	if err != nil {
 		Fail(c, err)
 		return
 	}
-	if _, err := api.pm.FindPaymentByNumber(username, paymentNumberInt); err != nil {
+	// check to see if this payment is already registered
+	payment, err := api.pm.FindPaymentByNumber(username, paymentNumberInt)
+	if err != nil {
 		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
-	payment, err := api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt)
-	if err != nil {
+	// validate that the payment is for the appropriate blockchain
+	if payment.Blockchain != "ethereum" {
+		Fail(c, errors.New("payment you are trying to confirm is not for the ethereum blockchain"))
+		return
+	}
+	// this is used to prevent people from abusing the payment system, and getting
+	// a single payment to be processed multiple times without having to send additional funds
+	if payment.TxHash[0:2] == "0x" {
+		Fail(c, errors.New("payment is already being processed, if your payment hasn't been confirmed after 90 minutes please contact support@rtradetechnologies.com"))
+		return
+	}
+	// update payment with the new tx hash
+	if _, err = api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt); err != nil {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
-	paymentConfirmation := queue.PaymentConfirmation{
+	// create payment confirmation message
+	paymentConfirmation := queue.EthPaymentConfirmation{
 		UserName:      username,
 		PaymentNumber: paymentNumberInt,
 	}
-	if err = api.queues.payConfirm.PublishMessage(paymentConfirmation); err != nil {
+	// send message for processing
+	if err = api.queues.eth.PublishMessage(paymentConfirmation); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}
+	// return
 	Respond(c, http.StatusOK, gin.H{"response": payment})
 }
 
 // RequestSignedPaymentMessage is used to get a signed message from the GRPC API Payments Server
+// this is currently used for ETH+RTC smart-contract facilitated payments
 func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// extract post forms
 	forms := api.extractPostForms(c, "payment_type", "sender_address", "credit_value")
 	if len(forms) == 0 {
 		return
@@ -70,6 +88,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		paymentType string
 		method      uint64
 	)
+	// ensure it is a valid payment type
 	switch forms["payment_type"] {
 	case "0":
 		paymentType = "rtc"
@@ -129,13 +148,14 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
+	// format a unique payment number to take the place of deposit address and tx hash temporarily
 	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
 	if _, err = api.pm.NewPayment(
 		paymentNumber,
 		paymentNumberString,
 		paymentNumberString,
-		chargeAmountFloat,
 		creditValueFloat,
+		chargeAmountFloat,
 		"ethereum",
 		paymentType,
 		username,
@@ -143,11 +163,14 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
+	// parse the v parameter into uint type
 	vUint, err := strconv.ParseUint(resp.GetV(), 10, 64)
 	if err != nil {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
+	// format signed message components to send to be used
+	// for submission to contracts
 	formattedH := fmt.Sprintf("0x%s", resp.GetH())
 	formattedR := fmt.Sprintf("0x%s", resp.GetR())
 	formattedS := fmt.Sprintf("0x%s", resp.GetS())
@@ -163,6 +186,7 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 			"s": formattedS,
 		},
 	}
+	// return
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
 
@@ -208,11 +232,11 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		api.LogError(c, err, eh.ChainRiderAPICallError)(http.StatusBadRequest)
+		api.LogError(c, err, eh.ChainRiderAPICallError, "wallet_address", api.cfg.Wallets.DASH)(http.StatusBadRequest)
 		return
 	}
 	if response.Error != "" {
-		api.LogError(c, errors.New(response.Error), eh.ChainRiderAPICallError)(http.StatusBadRequest)
+		api.LogError(c, errors.New(response.Error), eh.ChainRiderAPICallError, "wallet_address", api.cfg.Wallets.DASH)(http.StatusBadRequest)
 		return
 	}
 	if _, err = api.pm.NewPayment(
@@ -256,22 +280,31 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		Blockchain:    "dash",
 		Status:        "please send exactly the charge amount. The mining fee required by the chainrider payment forward api call is incldued in the charge amount",
 		//TODO: change to main before production release
-		Network:          "testnet",
+		Network:          "main",
 		DepositAddress:   response.PaymentAddress,
 		PaymentForwardID: response.PaymentForwardID,
 	}
 	Respond(c, http.StatusOK, gin.H{"response": p})
 }
 
-// GetDepositAddress is used to get a deposit address for a user
-func (api *API) GetDepositAddress(c *gin.Context) {
-	paymentType := c.Param("type")
-	address, err := api.getDepositAddress(paymentType)
+// GetPaymentStatus is used to retrieve whether or not a payment is confirmed
+func (api *API) getPaymentStatus(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.InvalidPaymentTypeError)(http.StatusBadRequest)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
-	Respond(c, http.StatusOK, gin.H{"response": address})
+	number, err := strconv.ParseInt(c.Param("number"), 10, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	payment, err := api.pm.FindPaymentByNumber(username, number)
+	if err != nil {
+		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": payment.Confirmed})
 }
 
 // GetUSDValue is used to retrieve the usd value of a given payment type

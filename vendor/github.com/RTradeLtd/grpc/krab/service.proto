@@ -5,6 +5,7 @@ package krab;
 service Service {
     rpc GetPrivateKey(KeyGet) returns (Response) {}
     rpc PutPrivateKey(KeyPut) returns (Response) {}
+    rpc DeletePrivateKey(KeyDelete) returns (Response) {}
 }
 
 message Empty{}
@@ -16,6 +17,10 @@ message KeyGet {
 message KeyPut {
     string name = 1;
     bytes privateKey = 2;
+}
+
+message KeyDelete {
+    string name = 1;
 }
 
 message Response {

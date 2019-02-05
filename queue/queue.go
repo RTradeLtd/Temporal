@@ -2,8 +2,11 @@ package queue
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"sync"
 
 	"github.com/RTradeLtd/gorm"
@@ -14,8 +17,8 @@ import (
 )
 
 // New is used to instantiate a new connection to rabbitmq as a publisher or consumer
-func New(queue Queue, url string, publish bool, logger *zap.SugaredLogger) (*Manager, error) {
-	conn, err := setupConnection(url)
+func New(queue Queue, url string, publish bool, cfg *config.TemporalConfig, logger *zap.SugaredLogger) (*Manager, error) {
+	conn, err := setupConnection(url, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +44,7 @@ func New(queue Queue, url string, publish bool, logger *zap.SugaredLogger) (*Man
 	}
 	// Declare Non Default exchanges for matching queues
 	switch queue {
-	case IpfsPinQueue, IpfsKeyCreationQueue:
+	case IpfsKeyCreationQueue:
 		if err = qm.setupExchange(queue); err != nil {
 			return nil, err
 		}
@@ -51,8 +54,31 @@ func New(queue Queue, url string, publish bool, logger *zap.SugaredLogger) (*Man
 	return &qm, nil
 }
 
-func setupConnection(connectionURL string) (*amqp.Connection, error) {
-	conn, err := amqp.Dial(connectionURL)
+func setupConnection(connectionURL string, cfg *config.TemporalConfig) (*amqp.Connection, error) {
+	var (
+		conn *amqp.Connection
+		err  error
+	)
+	if cfg.RabbitMQ.TLSConfig.CACertFile == "" {
+		conn, err = amqp.Dial(connectionURL)
+	} else {
+		// see https://godoc.org/github.com/streadway/amqp#DialTLS for more information
+		tlsConfig := new(tls.Config)
+		tlsConfig.RootCAs = x509.NewCertPool()
+		ca, err := ioutil.ReadFile(cfg.RabbitMQ.TLSConfig.CACertFile)
+		if err != nil {
+			return nil, err
+		}
+		if ok := tlsConfig.RootCAs.AppendCertsFromPEM(ca); !ok {
+			return nil, errors.New("failed to successfully append cert file")
+		}
+		cert, err := tls.LoadX509KeyPair(cfg.RabbitMQ.TLSConfig.CertFile, cfg.RabbitMQ.TLSConfig.KeyFile)
+		if err != nil {
+			return nil, err
+		}
+		tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
+		conn, err = amqp.DialTLS(connectionURL, tlsConfig)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +131,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 	// a single key creation request, will be sent to all of our consumers ensuring that all of our nodes
 	// will have the same key in their keystore
 	switch qm.ExchangeName {
-	case PinExchange, IpfsKeyExchange:
+	case IpfsKeyExchange:
 		if err := qm.channel.QueueBind(
 			qm.QueueName.String(), // name of the queue
 			"",                    // routing key
@@ -136,13 +162,8 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 
 	// check the queue name
 	switch qm.QueueName {
-	// only parse database file requests
-	case DatabaseFileAddQueue:
-		return qm.ProcessDatabaseFileAdds(ctx, wg, msgs)
 	case IpfsPinQueue:
 		return qm.ProccessIPFSPins(ctx, wg, msgs)
-	case IpfsFileQueue:
-		return qm.ProccessIPFSFiles(ctx, wg, msgs)
 	case EmailSendQueue:
 		return qm.ProcessMailSends(ctx, wg, db, msgs)
 	case IpnsEntryQueue:
@@ -159,7 +180,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 //PublishMessageWithExchange is used to publish a message to a given exchange
 func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
 	switch exchangeName {
-	case PinExchange, IpfsKeyExchange:
+	case IpfsKeyExchange:
 		break
 	default:
 		return errors.New("invalid exchange name provided")

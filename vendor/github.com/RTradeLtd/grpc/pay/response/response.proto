@@ -1,0 +1,14 @@
+syntax = 'proto3';
+
+package response;
+option go_package = "github.com/RTradeLtd/grpc/pay/response";
+
+message SignResponse {
+    string h = 1;
+    string r = 2;
+    string s = 3;
+    string v = 4;
+    string address = 5;
+    string hash = 6;
+    string sig = 7;
+}

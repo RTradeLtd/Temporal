@@ -14,19 +14,19 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/grpc"
-  version = "=v1.2.0"
-
-[[override]]
-  name = "github.com/RTradeLtd/database"
-  version = "=v1.2.0"
-
-[[override]]
-  name = "github.com/RTradeLtd/rtfs"
   branch = "master"
 
 [[override]]
+  name = "github.com/RTradeLtd/database"
+  version = "~v2.0.0"
+
+[[override]]
+  name = "github.com/RTradeLtd/rtfs"
+  version = "~v2.0.0"
+
+[[override]]
   name = "github.com/RTradeLtd/config"
-  version = "=v1.1.2"
+  version = "~v2.0.0"
 
 [[constraint]]
   name = "github.com/RTradeLtd/cmd"
@@ -38,11 +38,11 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/RTradeLtd/go-ipfs-api"
-  version = "v2.0.4"
+  branch = "master"
 
 [[override]]
   name = "github.com/RTradeLtd/kaas"
-  version = "=v1.0.2"
+  version = "~v2.0.0"
 
 ###############
 #    IPFS     #
@@ -62,7 +62,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[constraint]]
   name = "github.com/ipfs/ipfs-cluster"
-  branch = "master"
+  version = "0.8.0"
 
 [[constraint]]
   name = "github.com/libp2p/go-libp2p-crypto"
@@ -83,10 +83,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 ###############
 # THIRD PARTY #
 ###############
-
-[[constraint]]
-  name = "github.com/minio/minio-go"
-  version = "6.0.5"
 
 [[constraint]]
   branch = "master"

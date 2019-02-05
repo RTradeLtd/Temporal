@@ -55,9 +55,6 @@ testenv:
 	go run cmd/temporal/main.go -config ./testenv/config.json --db.no_ssl migrate
 	make api-user
 	make api-admin
-	# create minio bucket
-	make bucket
-	make bucket BUCKET=test
 	@echo "===================          done           ==================="
 
 # Shut down testenv
@@ -152,7 +149,6 @@ api:
 USER=testuser
 PASSWORD=admin
 EMAIL=test@email.com
-BUCKET=filesuploadbucket
 
 .PHONY: api-user
 api-user:
@@ -161,7 +157,3 @@ api-user:
 .PHONY: api-admin
 api-admin:
 	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) admin $(USER)
-
-.PHONY: bucket
-bucket:
-	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) bucket new $(BUCKET)

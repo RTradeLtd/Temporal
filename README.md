@@ -118,7 +118,7 @@ Refer to the `temporal.yml` documentation for more details.
 
 ### API Documentation
 
-Our API documentation is through [postman](https://documenter.getpostman.com/view/4295780/RWEcQM6W#intro)
+Our API documentation has been redesigned to use slate, hosted through IPFS. The main way to view it is through our [gateway](https://gateway.temporal.cloud/ipns/docs.api.temporal.cloud/). However, in theory it is viewable across any gateway by navigating to `/ipns/docs.api.temporal.cloud`
 
 ### Features
 
@@ -142,7 +142,7 @@ Temporal is designed to be monitored witha combination of Zabbix, and Grafana+Pr
 
 ## License
 
-Temporal is licensed under Apache-2, with the bulk of our sub-projects also licensed under Apache-2. However certain subprojects, particularly those which act as convenient wrappers, like our [rfts](https://github.com/RTradeLtd/rtfs) are licensed under MIT.
+In order to better align with the same open-source values that originally inspired this project, Temporal has been changed to an MIT license for its production release. Originally I ([postables](https://github.com/postables)) intended to release under Apache 2.0, however I think to truly help the open-source, and IPFS movement launching under the MIT license is needed.
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_large)
 

@@ -1,0 +1,1 @@
+{"mounts":[{"mountpoint":"/blocks","path":"/ipfs-data/blocks","shardFunc":"/repo/flatfs/shard/v1/next-to-last/2","type":"flatfs"},{"mountpoint":"/","path":"/ipfs-data/datastore","type":"levelds"}],"type":"mount"}

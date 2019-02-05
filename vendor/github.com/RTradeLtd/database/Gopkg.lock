@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  branch = "master"
-  digest = "1:f10cf72d0da5fe82c6a7f45933f41d37996c18de31f49a49bc79bb322d3602d2"
+  digest = "1:d914e7b89490aab7ff3dafd9e79f6b431328803f5e25b59428d62531fa6c2ec0"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "858050bd60710361598cd4da2d8b316677fe6374"
+  revision = "c973c5b0c01ab295f86502599286dbee04a6f1d4"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "versioned"
@@ -39,6 +39,14 @@
   packages = ["btcec"]
   pruneopts = "UT"
   revision = "67e573d211ace594f1366b4ce9d39726c4b19bd0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:e8891cd354f2af940345f895d5698ab1ed439196d4f69eb44817fc91e80354c1"
+  name = "github.com/c2h5oh/datasize"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "4eba002a5eaea69cf8d235a388fc6b65ae68d2dd"
 
 [[projects]]
   digest = "1:bbadccf3d3317ea03c0dac0b45b673b4b397c8f91a1d2eff550a3c51c4ad770e"
@@ -239,6 +247,7 @@
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/gorm",
     "github.com/RTradeLtd/gorm/dialects/postgres",
+    "github.com/c2h5oh/datasize",
     "github.com/ipfs/go-ipfs-addr",
     "github.com/lib/pq",
     "github.com/multiformats/go-multiaddr",

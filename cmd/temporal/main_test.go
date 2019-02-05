@@ -13,6 +13,7 @@ func init() {
 	dbNoSSL = &t
 	dbMigrate = &t
 	devMode = &t
+	debug = &t
 	grpcNoSSL = &t
 	var blank string
 	configPath = &blank
@@ -75,8 +76,6 @@ func TestQueuesIPFS(t *testing.T) {
 		{"IPNSEntry-LogDir", args{"ipfs", "ipns-entry", "./tmp/"}},
 		{"IPFSPin-NoLogDir", args{"ipfs", "pin", ""}},
 		{"IPFSPin-LogDir", args{"ipfs", "pin", "./tmp/"}},
-		{"IPFSFile-NoLogDir", args{"ipfs", "file", ""}},
-		{"IPFSFile-LogDir", args{"ipfs", "file", "./tmp/"}},
 		{"IPFSKey-NoLogDir", args{"ipfs", "key-creation", ""}},
 		{"IPFSKey-LogDir", args{"ipfs", "key-creation", "./tmp/"}},
 		{"IPFSCluster-NoLogDir", args{"ipfs", "cluster", ""}},
@@ -89,31 +88,6 @@ func TestQueuesIPFS(t *testing.T) {
 			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
 			defer cancel()
 			queueCmds.Children[tt.args.parentCmd].Children[tt.args.childCmd].Action(*cfg, nil)
-		})
-	}
-}
-
-func TestQueuesDFA(t *testing.T) {
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	type args struct {
-		logDir string
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{"NoLogDir", args{""}},
-		{"LogDir", args{"./tmp"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cfg.LogDir = tt.args.logDir
-			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
-			defer cancel()
-			commands["queue"].Children["dfa"].Action(*cfg, nil)
 		})
 	}
 }
@@ -180,14 +154,4 @@ func TestUser(t *testing.T) {
 		"email": "myuser+test@example.org",
 	}
 	commands["user"].Action(*cfg, flags)
-}
-
-func TestBucket(t *testing.T) {
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	flags := map[string]string{
-		"name": "mytestbucket"}
-	commands["bucket"].Children["new"].Action(*cfg, flags)
 }

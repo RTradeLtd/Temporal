@@ -45,6 +45,15 @@ func (im *IpnsManager) FindByUserName(username string) (*[]IPNS, error) {
 	return &entries, nil
 }
 
+// FindAll is used to find all IPNS records
+func (im *IpnsManager) FindAll() ([]IPNS, error) {
+	entries := []IPNS{}
+	if err := im.DB.Model(&IPNS{}).Find(&entries).Error; err != nil {
+		return nil, err
+	}
+	return entries, nil
+}
+
 // FindByIPNSHash is used to find an IPNS record from our database searching for
 // the public key hash of the key that was used to pulish a record
 func (im *IpnsManager) FindByIPNSHash(ipnsHash string) (*IPNS, error) {

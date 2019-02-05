@@ -33,12 +33,6 @@ const (
 	IPFSAddError = "failed to add file to ipfs"
 	// FileOpenError is an error used when failing to open a file
 	FileOpenError = "failed to open file"
-	// MinioPutError is an error used when storing a file in minio
-	MinioPutError = "failed to store object in minio"
-	// MinioConnectionError is an error used when connecting to minio
-	MinioConnectionError = "failed to connect to minio"
-	// MinioBucketCreationError is an error used when creating a minio bucket
-	MinioBucketCreationError = "failed to create minio bucket"
 	// IPFSMultiHashGenerationError is an error used when calculating an ipfs multihash
 	IPFSMultiHashGenerationError = "failed to generate ipfs multihash"
 	// IPFSClusterStatusError is a error used when getting the status of ipfs cluster
@@ -53,8 +47,8 @@ const (
 	DNSLinkEntryError = "failed to create dns link entry"
 	// PaymentCreationError is an error used when creating payments
 	PaymentCreationError = "failed to create payment"
-	// PinCostCalculationError is an error message used when calculating pin costs
-	PinCostCalculationError = "failed to calculate pin cost"
+	// CostCalculationError is an error message emitted when we are unable to calculate the cost of something
+	CostCalculationError = "failed to calculate cost"
 	// PaymentSearchError is an error used when searching for payment
 	PaymentSearchError = "failed to search for payment"
 	// DuplicateKeyCreationError is an error used when creating a key of the same name
@@ -81,8 +75,6 @@ const (
 	DepositAddressCheckError = "failed to get deposit address"
 	// UserSearchError is an error message given to a user when a username cant be found
 	UserSearchError = "unable to find username"
-	// CallCostCalculationError is an error message given to a user when we are unable to calculate the cost of their api call
-	CallCostCalculationError = "unable to calculate api call cost"
 	// CreditRefundError is an error message used when we are unable to refund a users credits
 	CreditRefundError = "failed to refund credits for user"
 	// IpnsRecordSearchError is an error message given to users when we can't search for any records
@@ -123,4 +115,15 @@ const (
 	PasswordResetError = "failed to reset password"
 	// NoAPITokenError is an error when we can't properly validate the jwt token
 	NoAPITokenError = "invalid token provided"
+	// CantUploadError is an error when a user tries to upload more data than their monthly limit
+	CantUploadError = "uploading would breach monthly data limit, please upload a smaller object"
+	// DataUsageUpdateError is an error when a failure occurs while trying to update a users
+	// current data usage
+	DataUsageUpdateError = "an error occured while updating your account data usage"
+	// TierUpgradeError is an error when a failure to upgrade a user tier occurs
+	TierUpgradeError = "an error occured upgrading your tier"
+	// EncryptionError is an error when a failure to encrypt data occurs
+	EncryptionError = "an error occured when trying to encrypt file"
+	// DatabaseUpdateError is an error message used when a failure to update the database happesn
+	DatabaseUpdateError = "en error occured wile updating the database"
 )

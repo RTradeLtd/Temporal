@@ -10,8 +10,8 @@ import (
 	e "github.com/ipfs/go-ipfs/core/commands/e"
 	filestore "github.com/ipfs/go-ipfs/filestore"
 
+	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	cmds "gx/ipfs/QmWGm4AbZEbnmdgVTza52MSNpEmBdFVqzmAysRbjrRyGbH/go-ipfs-cmds"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
@@ -79,14 +79,20 @@ The output is:
 		return nil
 	},
 	PostRun: cmds.PostRunMap{
-		cmds.CLI: streamResult(func(v interface{}, out io.Writer) nonFatalError {
-			r := v.(*filestore.ListRes)
-			if r.ErrorMsg != "" {
-				return nonFatalError(r.ErrorMsg)
+		cmds.CLI: func(res cmds.Response, re cmds.ResponseEmitter) error {
+			enc, err := cmdenv.GetCidEncoder(res.Request())
+			if err != nil {
+				return err
 			}
-			fmt.Fprintf(out, "%s\n", r.FormatLong())
-			return ""
-		}),
+			return streamResult(func(v interface{}, out io.Writer) nonFatalError {
+				r := v.(*filestore.ListRes)
+				if r.ErrorMsg != "" {
+					return nonFatalError(r.ErrorMsg)
+				}
+				fmt.Fprintf(out, "%s\n", r.FormatLong(enc.Encode))
+				return ""
+			})(res, re)
+		},
 	},
 	Type: filestore.ListRes{},
 }
@@ -151,6 +157,11 @@ For ERROR entries the error will also be printed to stderr.
 	},
 	PostRun: cmds.PostRunMap{
 		cmds.CLI: func(res cmds.Response, re cmds.ResponseEmitter) error {
+			enc, err := cmdenv.GetCidEncoder(res.Request())
+			if err != nil {
+				return err
+			}
+
 			for {
 				v, err := res.Next()
 				if err != nil {
@@ -168,7 +179,7 @@ For ERROR entries the error will also be printed to stderr.
 				if list.Status == filestore.StatusOtherError {
 					fmt.Fprintf(os.Stderr, "%s\n", list.ErrorMsg)
 				}
-				fmt.Fprintf(os.Stdout, "%s %s\n", list.Status.Format(), list.FormatLong())
+				fmt.Fprintf(os.Stdout, "%s %s\n", list.Status.Format(), list.FormatLong(enc.Encode))
 			}
 		},
 	},
@@ -184,6 +195,12 @@ var dupsFileStore = &cmds.Command{
 		if err != nil {
 			return err
 		}
+
+		enc, err := cmdenv.GetCidEncoder(req)
+		if err != nil {
+			return err
+		}
+
 		ch, err := fs.FileManager().AllKeysChan(req.Context)
 		if err != nil {
 			return err
@@ -195,7 +212,7 @@ var dupsFileStore = &cmds.Command{
 				return res.Emit(&RefWrapper{Err: err.Error()})
 			}
 			if have {
-				if err := res.Emit(&RefWrapper{Ref: cid.String()}); err != nil {
+				if err := res.Emit(&RefWrapper{Ref: enc.Encode(cid)}); err != nil {
 					return err
 				}
 			}

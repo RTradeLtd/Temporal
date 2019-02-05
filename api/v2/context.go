@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
@@ -61,6 +62,16 @@ func GetAuthenticatedUserFromContext(c *gin.Context) (string, error) {
 	}
 	// this is their eth address
 	return strID, nil
+}
+
+// GetAuthToken is used to retrieve the jwt token
+// from an authenticated request
+func GetAuthToken(c *gin.Context) string {
+	token := strings.Split(c.GetHeader("Authorization"), " ")
+	if len(token) < 2 {
+		return ""
+	}
+	return token[1]
 }
 
 // Respond is a wrapper used to handle API responses
