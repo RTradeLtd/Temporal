@@ -18,7 +18,7 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 
 [[override]]
   name = "github.com/RTradeLtd/database"
-  version = "~v2.0.0"
+  branch = "fix/file-uploads"
 
 [[override]]
   name = "github.com/RTradeLtd/rtfs"

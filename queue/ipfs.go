@@ -160,7 +160,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 		"successfully process pin request",
 		"user", pin.UserName,
 		"network", pin.NetworkName)
-	upload, err := upldm.FindUploadByHashAndNetwork(pin.CID, pin.NetworkName)
+	upload, err := upldm.FindUploadByHashAndUserAndNetwork(pin.UserName, pin.CID, pin.NetworkName)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		qm.l.Errorw(
 			"fail to check database for upload",

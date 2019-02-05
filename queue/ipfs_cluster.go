@@ -87,7 +87,7 @@ func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm
 		d.Ack(false)
 		return
 	}
-	upload, err := um.FindUploadByHashAndNetwork(clusterAdd.CID, clusterAdd.NetworkName)
+	upload, err := um.FindUploadByHashAndUserAndNetwork(clusterAdd.UserName, clusterAdd.CID, clusterAdd.NetworkName)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		qm.l.Errorw(
 			"failed to check database for upload",
