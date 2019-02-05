@@ -92,31 +92,6 @@ func TestQueuesIPFS(t *testing.T) {
 	}
 }
 
-func TestQueuesDFA(t *testing.T) {
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	type args struct {
-		logDir string
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{"NoLogDir", args{""}},
-		{"LogDir", args{"./tmp"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cfg.LogDir = tt.args.logDir
-			ctx, cancel = context.WithTimeout(context.Background(), time.Second*5)
-			defer cancel()
-			commands["queue"].Children["dfa"].Action(*cfg, nil)
-		})
-	}
-}
-
 func TestQueuesEmailSend(t *testing.T) {
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
