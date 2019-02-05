@@ -50,7 +50,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "fix/file-uploads"
   digest = "1:5c3fe898838beddd697991b6d0129b47531a13d80cd357a15d36ea004c9dfb0d"
   name = "github.com/RTradeLtd/database"
   packages = [
@@ -59,7 +58,8 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "7afabb01fe0738afbba580c94afbea06529b4933"
+  revision = "d579a64da5da3ffd1729d2f2a707c83fc616f5fb"
+  version = "v2.0.2"
 
 [[projects]]
   branch = "master"
@@ -278,7 +278,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:99186569be6cdcc0d15fb5c9094d15b9e551f8d0e967ed7a09692ab05c6b263b"
+  digest = "1:cbf31997868639533ea9234c2c8ee5802c0eeb807fcf608c29320c58c379a182"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
@@ -291,7 +291,7 @@
     "ptypes/timestamp",
   ]
   pruneopts = "UT"
-  revision = "347cf4a86c1cb8d262994d8ef5924d4576c5b331"
+  revision = "c823c79ea1570fb5ff454033735a8e68575d1d0f"
 
 [[projects]]
   digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
