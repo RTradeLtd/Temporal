@@ -22,7 +22,7 @@
   </a>
 
   <a href="https://github.com/RTradeLtd/Temporal/releases">
-    <img src="https://img.shields.io/github/release-pre/RTradeLtd/Temporal.svg?label=preview"
+    <img src="https://img.shields.io/github/release-pre/RTradeLtd/Temporal.svg"
       alt="Release" />
   </a>
 
