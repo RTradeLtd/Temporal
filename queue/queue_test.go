@@ -11,7 +11,6 @@ import (
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
-	"github.com/RTradeLtd/database/models"
 	"github.com/RTradeLtd/gorm"
 )
 
@@ -153,7 +152,7 @@ func TestQueue_RefundCredits(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, cfg, logger)
+	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, cfg, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -201,7 +200,6 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 		name string
 		args args
 	}{
-		{DatabaseFileAddQueue.String(), args{DatabaseFileAddQueue}},
 		{IpfsClusterPinQueue.String(), args{IpfsClusterPinQueue}},
 		{EmailSendQueue.String(), args{EmailSendQueue}},
 		{IpnsEntryQueue.String(), args{IpnsEntryQueue}},
@@ -227,89 +225,6 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 			wg.Wait()
 		})
 	}
-}
-
-// Does not conduct validation of whether or not a message was successfully processed
-func TestQueue_DatabaseFileAdd(t *testing.T) {
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerPublisher, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	um := models.NewUploadManager(db)
-	// create a test upload in database
-	if _, err := um.NewUpload(testCID, "file", models.UploadOptions{
-		NetworkName:      "public",
-		Username:         "testuser",
-		HoldTimeInMonths: 10,
-		Encrypted:        false,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// setup our queue backend
-	qmConsumer, err := New(DatabaseFileAddQueue, testRabbitAddress, false, cfg, loggerConsumer)
-	if err != nil {
-		t.Fatal(err)
-	}
-	qmPublisher, err := New(DatabaseFileAddQueue, testRabbitAddress, true, cfg, loggerPublisher)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := qmPublisher.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
-	// test a new add
-	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
-		Hash:             "weeeee",
-		HoldTimeInMonths: 10,
-		UserName:         "testuser",
-		NetworkName:      "public",
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test an update add
-	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
-		Hash:             testCID,
-		HoldTimeInMonths: 10,
-		UserName:         "testuser",
-		NetworkName:      "public",
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test a bad user
-	if err := qmPublisher.PublishMessage(DatabaseFileAdd{
-		Hash:             "notarealhash",
-		HoldTimeInMonths: 10,
-		UserName:         "testuserthatdoesnotexist",
-		NetworkName:      "public",
-	}); err != nil {
-		t.Fatal(err)
-	}
-	// test a bad publish
-	if err := qmPublisher.PublishMessage(""); err != nil {
-		t.Fatal(err)
-	}
-	waitGroup := &sync.WaitGroup{}
-	waitGroup.Add(1)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
-	defer cancel()
-	if err = qmConsumer.ConsumeMessages(ctx, waitGroup, db, cfg); err != nil {
-		t.Fatal(err)
-	}
-	waitGroup.Wait()
 }
 
 // Does not conduct validation of whether or not a message was successfully processed

@@ -21,11 +21,6 @@ case "$1" in
         export INIT_DB
         temporal api
         ;;
-    queue-dfa)
-        INIT_DB=true
-        export INIT_DB  
-        temporal queue dfa
-        ;;
     ipfs-pin-queue)
         INIT_DB=true
         export INIT_DB

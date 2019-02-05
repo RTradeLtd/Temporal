@@ -11,14 +11,6 @@ case "$1" in
             echo 1
         fi
         ;;
-    queue-dfa)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue dfa" | grep -iv grep | awk '{print $2}')
-        if [[ "$PID" == "" ]]; then
-            echo 0
-        else
-            echo 1
-        fi
-        ;;
     ipfs-pin-queue)
         PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue ipfs pin" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then

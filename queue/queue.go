@@ -162,9 +162,6 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 
 	// check the queue name
 	switch qm.QueueName {
-	// only parse database file requests
-	case DatabaseFileAddQueue:
-		return qm.ProcessDatabaseFileAdds(ctx, wg, msgs)
 	case IpfsPinQueue:
 		return qm.ProccessIPFSPins(ctx, wg, msgs)
 	case EmailSendQueue:

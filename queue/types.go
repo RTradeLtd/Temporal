@@ -21,8 +21,6 @@ func (qt Queue) String() string {
 
 var (
 	nilTime time.Time
-	// DatabaseFileAddQueue is a queue used for simple file adds
-	DatabaseFileAddQueue Queue = "dfa-queue"
 	// IpfsPinQueue is a queue used for ipfs pins
 	IpfsPinQueue Queue = "ipfs-pin-queue"
 	// IpfsClusterPinQueue is a queue used for ipfs cluster pins
@@ -108,15 +106,6 @@ type IPFSClusterPin struct {
 	UserName         string  `json:"user_name"`
 	HoldTimeInMonths int64   `json:"hold_time_in_months"`
 	Size             int64   `json:"size"`
-	CreditCost       float64 `json:"credit_cost"`
-}
-
-// DatabaseFileAdd is a struct used when sending data to rabbitmq
-type DatabaseFileAdd struct {
-	Hash             string  `json:"hash"`
-	HoldTimeInMonths int64   `json:"hold_time_in_months"`
-	UserName         string  `json:"user_name"`
-	NetworkName      string  `json:"network_name"`
 	CreditCost       float64 `json:"credit_cost"`
 }
 

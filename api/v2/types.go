@@ -12,12 +12,11 @@ type CreditRefund struct {
 }
 
 type queues struct {
-	pin      *queue.Manager
-	cluster  *queue.Manager
-	email    *queue.Manager
-	ipns     *queue.Manager
-	key      *queue.Manager
-	database *queue.Manager
-	dash     *queue.Manager
-	eth      *queue.Manager
+	pin     *queue.Manager
+	cluster *queue.Manager
+	email   *queue.Manager
+	ipns    *queue.Manager
+	key     *queue.Manager
+	dash    *queue.Manager
+	eth     *queue.Manager
 }

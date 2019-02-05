@@ -656,7 +656,6 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 		name string
 		args args
 	}{
-		{queue.DatabaseFileAddQueue.String(), args{queue.DatabaseFileAddQueue}},
 		{queue.IpfsClusterPinQueue.String(), args{queue.IpfsClusterPinQueue}},
 		{queue.EmailSendQueue.String(), args{queue.EmailSendQueue}},
 		{queue.IpnsEntryQueue.String(), args{queue.IpnsEntryQueue}},
@@ -671,8 +670,6 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// test ListenAndServe queue function handling
 			switch tt.args.queueType {
-			case queue.DatabaseFileAddQueue:
-				api.queues.database.ErrCh <- amqpErr
 			case queue.IpfsClusterPinQueue:
 				api.queues.cluster.ErrCh <- amqpErr
 			case queue.EmailSendQueue:
@@ -725,7 +722,6 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 		name string
 		args args
 	}{
-		{queue.DatabaseFileAddQueue.String(), args{queue.DatabaseFileAddQueue}},
 		{queue.IpfsClusterPinQueue.String(), args{queue.IpfsClusterPinQueue}},
 		{queue.EmailSendQueue.String(), args{queue.EmailSendQueue}},
 		{queue.IpnsEntryQueue.String(), args{queue.IpnsEntryQueue}},

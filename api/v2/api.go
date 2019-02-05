@@ -186,10 +186,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 	if err != nil {
 		return nil, err
 	}
-	qmDatabase, err := queue.New(queue.DatabaseFileAddQueue, cfg.RabbitMQ.URL, true, cfg, logger)
-	if err != nil {
-		return nil, err
-	}
 	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, cfg, logger)
 	if err != nil {
 		return nil, err
@@ -239,14 +235,13 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 		orch:        clients.Orch,
 		dc:          dc,
 		queues: queues{
-			pin:      qmPin,
-			cluster:  qmCluster,
-			email:    qmEmail,
-			ipns:     qmIpns,
-			key:      qmKey,
-			database: qmDatabase,
-			dash:     qmDash,
-			eth:      qmEth,
+			pin:     qmPin,
+			cluster: qmCluster,
+			email:   qmEmail,
+			ipns:    qmIpns,
+			key:     qmKey,
+			dash:    qmDash,
+			eth:     qmEth,
 		},
 		zm: models.NewZoneManager(dbm.DB),
 		rm: models.NewRecordManager(dbm.DB),
@@ -259,9 +254,6 @@ func (api *API) Close() {
 	// close queue resources
 	if err := api.queues.cluster.Close(); err != nil {
 		api.l.Error(err, "failed to properly close cluster queue connection")
-	}
-	if err := api.queues.database.Close(); err != nil {
-		api.l.Error(err, "failed to properly close database queue connection")
 	}
 	if err := api.queues.email.Close(); err != nil {
 		api.l.Error(err, "failed to properly close email queue connection")
@@ -337,12 +329,6 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 				return server.Close()
 			}
 			api.queues.dash = qmDash
-		case msg := <-api.queues.database.ErrCh:
-			qmDatabase, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.DatabaseFileAddQueue, true)
-			if err != nil {
-				return server.Close()
-			}
-			api.queues.database = qmDatabase
 		case msg := <-api.queues.email.ErrCh:
 			qmEmail, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.EmailSendQueue, true)
 			if err != nil {

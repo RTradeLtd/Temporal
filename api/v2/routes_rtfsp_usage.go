@@ -12,6 +12,8 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/crypto"
+	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/gorm"
 	"github.com/RTradeLtd/rtfs"
 	gocid "github.com/ipfs/go-cid"
 
@@ -153,17 +155,26 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 			return
 		}
 	}
-	// create database update message
-	dfa := queue.DatabaseFileAdd{
-		Hash:             resp,
-		HoldTimeInMonths: holdTimeInt,
-		UserName:         username,
-		NetworkName:      forms["network_name"],
-		CreditCost:       0,
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(
+		username,
+		resp,
+		forms["network_name"],
+	)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
+		return
 	}
-	// send message for processing
-	if err = api.queues.database.PublishMessage(dfa); err != nil {
-		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
+	if upload == nil {
+		_, err = api.upm.NewUpload(resp, "file", models.UploadOptions{
+			NetworkName:      forms["network_name"],
+			Username:         username,
+			HoldTimeInMonths: holdTimeInt,
+		})
+	} else {
+		_, err = api.upm.UpdateUpload(holdTimeInt, username, resp, forms["network_name"])
+	}
+	if err != nil {
+		api.LogError(c, err, eh.DatabaseUpdateError)(http.StatusBadRequest)
 		return
 	}
 	// log and return
