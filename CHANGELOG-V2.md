@@ -3,6 +3,10 @@
 This document tracks changes to Temporal and its related projects for all `v2.x.x`
 releases. See our [versioning policy](/VERSIONING.md) for more details.
 
+## v2.0.2
+
+* queue: fix key creation queue not having all consumers process the same message ([#303](https://github.com/RTradeLtd/Temporal/pull/303))
+
 ## v2.0.1
 
 * docs: update README for V2-specific things ([#301](https://github.com/RTradeLtd/Temporal/pull/301))
