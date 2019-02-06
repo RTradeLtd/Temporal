@@ -6,7 +6,7 @@
   <a href="#usage-and-features"><strong>Usage and Features</strong></a> · 
   <a href="/CONTRIBUTING.md"><strong>Contributing</strong></a> · 
   <a href="#license"><strong>License</strong></a> · 
-  <a href="#thanks"><strong>Thanks</strong></a> ·
+  <a href="#thanks"><strong>Thanks</strong></a>
 
 </p>
 
