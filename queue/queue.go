@@ -7,14 +7,29 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"os"
 	"sync"
 
+	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/gorm"
 	"go.uber.org/zap"
 
 	"github.com/RTradeLtd/config"
 	"github.com/streadway/amqp"
 )
+
+func (qm *Manager) parseQueueName(queue Queue) error {
+	host, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+	// the following is to account for running multiple queue workers
+	// on a single host.
+	rand := utils.GenerateRandomUtils()
+	s := rand.GenerateString(5, utils.LetterBytes)
+	qm.QueueName = queue + Queue(host+s)
+	return nil
+}
 
 // New is used to instantiate a new connection to rabbitmq as a publisher or consumer
 func New(queue Queue, url string, publish bool, cfg *config.TemporalConfig, logger *zap.SugaredLogger) (*Manager, error) {
@@ -34,18 +49,22 @@ func New(queue Queue, url string, publish bool, cfg *config.TemporalConfig, logg
 	if err := qm.openChannel(); err != nil {
 		return nil, err
 	}
-
+	// Declare Non Default exchanges for matching queues
+	switch queue {
+	case IpfsKeyCreationQueue:
+		// as this is an exchange based queue we need a unique queue name
+		if err := qm.parseQueueName(queue); err != nil {
+			return nil, err
+		}
+		// setup the actual exchange
+		if err = qm.setupExchange(queue); err != nil {
+			return nil, err
+		}
+	}
 	// if we aren't publishing, and are consuming
 	// setup a queue to receive messages on
 	if !publish {
 		if err = qm.declareQueue(); err != nil {
-			return nil, err
-		}
-	}
-	// Declare Non Default exchanges for matching queues
-	switch queue {
-	case IpfsKeyCreationQueue:
-		if err = qm.setupExchange(queue); err != nil {
 			return nil, err
 		}
 	}
@@ -160,6 +179,11 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 		return err
 	}
 
+	// exchange need special handling
+	switch qm.ExchangeName {
+	case IpfsKeyExchange:
+		return qm.ProcessIPFSKeyCreation(ctx, wg, msgs)
+	}
 	// check the queue name
 	switch qm.QueueName {
 	case IpfsPinQueue:
@@ -168,8 +192,6 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 		return qm.ProcessMailSends(ctx, wg, db, msgs)
 	case IpnsEntryQueue:
 		return qm.ProcessIPNSEntryCreationRequests(ctx, wg, msgs)
-	case IpfsKeyCreationQueue:
-		return qm.ProcessIPFSKeyCreation(ctx, wg, msgs)
 	case IpfsClusterPinQueue:
 		return qm.ProcessIPFSClusterPins(ctx, wg, msgs)
 	default:
