@@ -13,20 +13,18 @@ import (
 
 	version "github.com/ipfs/go-ipfs"
 	core "github.com/ipfs/go-ipfs/core"
-	"github.com/ipfs/go-ipfs/core/coreapi"
-	"github.com/ipfs/go-ipfs/core/coreapi/interface"
-	"github.com/ipfs/go-ipfs/core/coreapi/interface/options"
+	coreunix "github.com/ipfs/go-ipfs/core/coreunix"
 	namesys "github.com/ipfs/go-ipfs/namesys"
 	nsopts "github.com/ipfs/go-ipfs/namesys/opts"
 	repo "github.com/ipfs/go-ipfs/repo"
 
-	ci "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
-	path "gx/ipfs/QmWqh9oob7ZHQRwU5CdTqpnC8ip8BEkFNrwXRxeNo5Y7vA/go-path"
-	id "gx/ipfs/QmYxivS34F2M2n44WQQnRHGAKS8aoRUxwGpi9wk4Cdn4Jf/go-libp2p/p2p/protocol/identify"
-	files "gx/ipfs/QmaXvvAVAQ5ABqM5xtjYmV85xmN5MkWAZsX9H9Fwo4FVXp/go-ipfs-files"
-	config "gx/ipfs/QmcRKBUqc2p3L1ZraoJjbXfs9E6xzvEuyK9iypb5RGwfsr/go-ipfs-config"
-	datastore "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
-	syncds "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore/sync"
+	config "gx/ipfs/QmPEpj17FDRpc7K1aArKZp3RsHtzRMKykeK9GVgn4WQGPR/go-ipfs-config"
+	ci "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	dag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
+	path "gx/ipfs/QmT3rzed1ppXefourpmoZ7tyVQfsGPQZ1pHDngLmCvXxd3/go-path"
+	id "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/protocol/identify"
+	datastore "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
+	syncds "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore/sync"
 )
 
 // `ipfs object new unixfs-dir`
@@ -119,7 +117,7 @@ func doWithoutRedirect(req *http.Request) (*http.Response, error) {
 	return res, nil
 }
 
-func newTestServerAndNode(t *testing.T, ns mockNamesys) (*httptest.Server, iface.CoreAPI, context.Context) {
+func newTestServerAndNode(t *testing.T, ns mockNamesys) (*httptest.Server, *core.IpfsNode) {
 	n, err := newNodeWithMockNamesys(ns)
 	if err != nil {
 		t.Fatal(err)
@@ -146,28 +144,23 @@ func newTestServerAndNode(t *testing.T, ns mockNamesys) (*httptest.Server, iface
 		t.Fatal(err)
 	}
 
-	api, err := coreapi.NewCoreAPI(n)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return ts, api, n.Context()
+	return ts, n
 }
 
 func TestGatewayGet(t *testing.T) {
 	ns := mockNamesys{}
-	ts, api, ctx := newTestServerAndNode(t, ns)
+	ts, n := newTestServerAndNode(t, ns)
 	defer ts.Close()
 
-	k, err := api.Unixfs().Add(ctx, files.NewBytesFile([]byte("fnord")))
+	k, err := coreunix.Add(n, strings.NewReader("fnord"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	ns["/ipns/example.com"] = path.FromString(k.String())
-	ns["/ipns/working.example.com"] = path.FromString(k.String())
+	ns["/ipns/example.com"] = path.FromString("/ipfs/" + k)
+	ns["/ipns/working.example.com"] = path.FromString("/ipfs/" + k)
 	ns["/ipns/double.example.com"] = path.FromString("/ipns/working.example.com")
 	ns["/ipns/triple.example.com"] = path.FromString("/ipns/double.example.com")
-	ns["/ipns/broken.example.com"] = path.FromString("/ipns/" + k.Cid().String())
+	ns["/ipns/broken.example.com"] = path.FromString("/ipns/" + k)
 	// We picked .man because:
 	// 1. It's a valid TLD.
 	// 2. Go treats it as the file extension for "man" files (even though
@@ -175,18 +168,18 @@ func TestGatewayGet(t *testing.T) {
 	//
 	// Unfortunately, this may not work on all platforms as file type
 	// detection is platform dependent.
-	ns["/ipns/example.man"] = path.FromString(k.String())
+	ns["/ipns/example.man"] = path.FromString("/ipfs/" + k)
 
 	t.Log(ts.URL)
-	for i, test := range []struct {
+	for _, test := range []struct {
 		host   string
 		path   string
 		status int
 		text   string
 	}{
 		{"localhost:5001", "/", http.StatusNotFound, "404 page not found\n"},
-		{"localhost:5001", "/" + k.Cid().String(), http.StatusNotFound, "404 page not found\n"},
-		{"localhost:5001", k.String(), http.StatusOK, "fnord"},
+		{"localhost:5001", "/" + k, http.StatusNotFound, "404 page not found\n"},
+		{"localhost:5001", "/ipfs/" + k, http.StatusOK, "fnord"},
 		{"localhost:5001", "/ipns/nxdomain.example.com", http.StatusNotFound, "ipfs resolve -r /ipns/nxdomain.example.com: " + namesys.ErrResolveFailed.Error() + "\n"},
 		{"localhost:5001", "/ipns/%0D%0A%0D%0Ahello", http.StatusNotFound, "ipfs resolve -r /ipns/%0D%0A%0D%0Ahello: " + namesys.ErrResolveFailed.Error() + "\n"},
 		{"localhost:5001", "/ipns/example.com", http.StatusOK, "fnord"},
@@ -195,9 +188,9 @@ func TestGatewayGet(t *testing.T) {
 		{"working.example.com", "/", http.StatusOK, "fnord"},
 		{"double.example.com", "/", http.StatusOK, "fnord"},
 		{"triple.example.com", "/", http.StatusOK, "fnord"},
-		{"working.example.com", k.String(), http.StatusNotFound, "ipfs resolve -r /ipns/working.example.com" + k.String() + ": no link named \"ipfs\" under " + k.Cid().String() + "\n"},
+		{"working.example.com", "/ipfs/" + k, http.StatusNotFound, "ipfs resolve -r /ipns/working.example.com/ipfs/" + k + ": no link named \"ipfs\" under " + k + "\n"},
 		{"broken.example.com", "/", http.StatusNotFound, "ipfs resolve -r /ipns/broken.example.com/: " + namesys.ErrResolveFailed.Error() + "\n"},
-		{"broken.example.com", k.String(), http.StatusNotFound, "ipfs resolve -r /ipns/broken.example.com" + k.String() + ": " + namesys.ErrResolveFailed.Error() + "\n"},
+		{"broken.example.com", "/ipfs/" + k, http.StatusNotFound, "ipfs resolve -r /ipns/broken.example.com/ipfs/" + k + ": " + namesys.ErrResolveFailed.Error() + "\n"},
 		// This test case ensures we don't treat the TLD as a file extension.
 		{"example.man", "/", http.StatusOK, "fnord"},
 	} {
@@ -220,7 +213,7 @@ func TestGatewayGet(t *testing.T) {
 			t.Errorf("expected content type to be text/plain, got %s", contentType)
 		}
 		if resp.StatusCode != test.status {
-			t.Errorf("(%d) got %d, expected %d from %s", i, resp.StatusCode, test.status, urlstr)
+			t.Errorf("got %d, expected %d from %s", resp.StatusCode, test.status, urlstr)
 			continue
 		}
 		body, err := ioutil.ReadAll(resp.Body)
@@ -239,26 +232,39 @@ func TestIPNSHostnameRedirect(t *testing.T) {
 	defer cancel()
 
 	ns := mockNamesys{}
-	ts, api, ctx := newTestServerAndNode(t, ns)
+	ts, n := newTestServerAndNode(t, ns)
 	t.Logf("test server url: %s", ts.URL)
 	defer ts.Close()
 
 	// create /ipns/example.net/foo/index.html
-
-	f1 := files.NewMapDirectory(map[string]files.Node{
-		"_": files.NewBytesFile([]byte("_")),
-		"foo": files.NewMapDirectory(map[string]files.Node{
-			"index.html": files.NewBytesFile([]byte("_")),
-		}),
-	})
-
-	k, err := api.Unixfs().Add(ctx, f1, options.Unixfs.Wrap(true))
+	_, dagn1, err := coreunix.AddWrapped(n, strings.NewReader("_"), "_")
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	_, dagn2, err := coreunix.AddWrapped(n, strings.NewReader("_"), "index.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dagn1.(*dag.ProtoNode).AddNodeLink("foo", dagn2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = n.DAG.Add(ctx, dagn2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = n.DAG.Add(ctx, dagn1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	k := dagn1.Cid()
 	t.Logf("k: %s\n", k)
-	ns["/ipns/example.net"] = path.FromString(k.String())
+	ns["/ipns/example.net"] = path.FromString("/ipfs/" + k.String())
 
 	// make request to directory containing index.html
 	req, err := http.NewRequest("GET", ts.URL+"/foo", nil)
@@ -330,38 +336,45 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	defer cancel()
 
 	ns := mockNamesys{}
-	ts, api, ctx := newTestServerAndNode(t, ns)
+	ts, n := newTestServerAndNode(t, ns)
 	t.Logf("test server url: %s", ts.URL)
 	defer ts.Close()
 
-	f1 := files.NewMapDirectory(map[string]files.Node{
-		"file.txt": files.NewBytesFile([]byte("1")),
-		"foo? #<'": files.NewMapDirectory(map[string]files.Node{
-			"file.txt": files.NewBytesFile([]byte("2")),
-			"bar": files.NewMapDirectory(map[string]files.Node{
-				"file.txt": files.NewBytesFile([]byte("3")),
-			}),
-		}),
-	})
-
 	// create /ipns/example.net/foo/
-	k, err := api.Unixfs().Add(ctx, f1, options.Unixfs.Wrap(true))
+	_, dagn1, err := coreunix.AddWrapped(n, strings.NewReader("1"), "file.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, dagn2, err := coreunix.AddWrapped(n, strings.NewReader("2"), "file.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, dagn3, err := coreunix.AddWrapped(n, strings.NewReader("3"), "file.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dagn2.(*dag.ProtoNode).AddNodeLink("bar", dagn3)
+	dagn1.(*dag.ProtoNode).AddNodeLink("foo? #<'", dagn2)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	k2, err := api.ResolvePath(ctx, iface.Join(k, "foo? #<'"))
+	err = n.DAG.Add(ctx, dagn3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = n.DAG.Add(ctx, dagn2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = n.DAG.Add(ctx, dagn1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	k3, err := api.ResolvePath(ctx, iface.Join(k, "foo? #<'/bar"))
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	k := dagn1.Cid()
 	t.Logf("k: %s\n", k)
-	ns["/ipns/example.net"] = path.FromString(k.String())
+	ns["/ipns/example.net"] = path.FromString("/ipfs/" + k.String())
 
 	// make request to directory listing
 	req, err := http.NewRequest("GET", ts.URL+"/foo%3F%20%23%3C%27/", nil)
@@ -391,9 +404,6 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	}
 	if !strings.Contains(s, "<a href=\"/foo%3F%20%23%3C%27/file.txt\">") {
 		t.Fatalf("expected file in directory listing")
-	}
-	if !strings.Contains(s, k2.Cid().String()) {
-		t.Fatalf("expected hash in directory listing")
 	}
 
 	// make request to directory listing at root
@@ -425,9 +435,6 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	if !strings.Contains(s, "<a href=\"/file.txt\">") {
 		t.Fatalf("expected file in directory listing")
 	}
-	if !strings.Contains(s, k.Cid().String()) {
-		t.Fatalf("expected hash in directory listing")
-	}
 
 	// make request to directory listing
 	req, err = http.NewRequest("GET", ts.URL+"/foo%3F%20%23%3C%27/bar/", nil)
@@ -457,9 +464,6 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	}
 	if !strings.Contains(s, "<a href=\"/foo%3F%20%23%3C%27/bar/file.txt\">") {
 		t.Fatalf("expected file in directory listing")
-	}
-	if !strings.Contains(s, k3.Cid().String()) {
-		t.Fatalf("expected hash in directory listing")
 	}
 
 	// make request to directory listing with prefix
@@ -491,9 +495,6 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	}
 	if !strings.Contains(s, "<a href=\"/good-prefix/file.txt\">") {
 		t.Fatalf("expected file in directory listing")
-	}
-	if !strings.Contains(s, k.Cid().String()) {
-		t.Fatalf("expected hash in directory listing")
 	}
 
 	// make request to directory listing with illegal prefix
@@ -534,13 +535,10 @@ func TestIPNSHostnameBacklinks(t *testing.T) {
 	if !strings.Contains(s, "<a href=\"/file.txt\">") {
 		t.Fatalf("expected file in directory listing")
 	}
-	if !strings.Contains(s, k.Cid().String()) {
-		t.Fatalf("expected hash in directory listing")
-	}
 }
 
 func TestCacheControlImmutable(t *testing.T) {
-	ts, _, _ := newTestServerAndNode(t, nil)
+	ts, _ := newTestServerAndNode(t, nil)
 	t.Logf("test server url: %s", ts.URL)
 	defer ts.Close()
 
@@ -566,7 +564,7 @@ func TestCacheControlImmutable(t *testing.T) {
 }
 
 func TestGoGetSupport(t *testing.T) {
-	ts, _, _ := newTestServerAndNode(t, nil)
+	ts, _ := newTestServerAndNode(t, nil)
 	t.Logf("test server url: %s", ts.URL)
 	defer ts.Close()
 
@@ -590,7 +588,7 @@ func TestVersion(t *testing.T) {
 	version.CurrentCommit = "theshortcommithash"
 
 	ns := mockNamesys{}
-	ts, _, _ := newTestServerAndNode(t, ns)
+	ts, _ := newTestServerAndNode(t, ns)
 	t.Logf("test server url: %s", ts.URL)
 	defer ts.Close()
 

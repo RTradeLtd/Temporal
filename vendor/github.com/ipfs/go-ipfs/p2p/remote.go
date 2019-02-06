@@ -2,12 +2,11 @@ package p2p
 
 import (
 	"context"
-	"fmt"
 
-	ma "gx/ipfs/QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc/go-multiaddr"
-	net "gx/ipfs/QmNgLg1NTw37iWbYPKcyK85YJ9Whs1MkPtJwhfqbNYAyKg/go-libp2p-net"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	net "gx/ipfs/QmXuRkCR7BNQa9uqfpTiFWsTQLzmTWYg91Ja1w95gnqb6u/go-libp2p-net"
 	protocol "gx/ipfs/QmZNkThpqfVXs9GNbexPrfBbXSLNYeKrE7jwFM2oqHbyqN/go-libp2p-protocol"
-	manet "gx/ipfs/QmZcLBXKaFe8ND5YHPkJRAwmhJGrVsi1JqDZNyJ4nRK5Mj/go-multiaddr-net"
+	manet "gx/ipfs/Qmaabb1tJZ2CX5cp6MuuiGgns71NYoxdgQP6Xdid1dVceC/go-multiaddr-net"
 )
 
 var maPrefix = "/" + ma.ProtocolWithCode(ma.P_IPFS).Name + "/"
@@ -21,21 +20,15 @@ type remoteListener struct {
 
 	// Address to proxy the incoming connections to
 	addr ma.Multiaddr
-
-	// reportRemote if set to true makes the handler send '<base58 remote peerid>\n'
-	// to target before any data is forwarded
-	reportRemote bool
 }
 
 // ForwardRemote creates new p2p listener
-func (p2p *P2P) ForwardRemote(ctx context.Context, proto protocol.ID, addr ma.Multiaddr, reportRemote bool) (Listener, error) {
+func (p2p *P2P) ForwardRemote(ctx context.Context, proto protocol.ID, addr ma.Multiaddr) (Listener, error) {
 	listener := &remoteListener{
 		p2p: p2p,
 
 		proto: proto,
 		addr:  addr,
-
-		reportRemote: reportRemote,
 	}
 
 	if err := p2p.ListenersP2P.Register(listener); err != nil {
@@ -53,13 +46,6 @@ func (l *remoteListener) handleStream(remote net.Stream) {
 	}
 
 	peer := remote.Conn().RemotePeer()
-
-	if l.reportRemote {
-		if _, err := fmt.Fprintf(local, "%s\n", peer.Pretty()); err != nil {
-			remote.Reset()
-			return
-		}
-	}
 
 	peerMa, err := ma.NewMultiaddr(maPrefix + peer.Pretty())
 	if err != nil {

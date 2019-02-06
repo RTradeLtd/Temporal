@@ -5,7 +5,6 @@ GO_MIN_VERSION = 1.11
 # pre-definitions
 GOCC ?= go
 GOTAGS ?=
-unexport GOFLAGS
 GOFLAGS ?=
 GOTFLAGS ?=
 

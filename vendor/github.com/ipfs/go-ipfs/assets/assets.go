@@ -1,23 +1,21 @@
-//go:generate go-bindata -pkg=assets -prefix=$GOPATH/src/gx/ipfs/QmT1jwrqzSMjSjLG5oBd9w4P9vXPKQksWuf5ghsE3Q88ZV init-doc $GOPATH/src/gx/ipfs/QmT1jwrqzSMjSjLG5oBd9w4P9vXPKQksWuf5ghsE3Q88ZV/dir-index-html
+//go:generate go-bindata -pkg=assets -prefix=$GOPATH/src/gx/ipfs/QmdZ4PvPHFQVLLEve7DgoKDcSY19wwpGBB1GKjjKi2rEL1 init-doc $GOPATH/src/gx/ipfs/QmdZ4PvPHFQVLLEve7DgoKDcSY19wwpGBB1GKjjKi2rEL1/dir-index-html
 //go:generate gofmt -w bindata.go
 
 package assets
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/ipfs/go-ipfs/core"
-	"github.com/ipfs/go-ipfs/core/coreapi"
-	"github.com/ipfs/go-ipfs/core/coreapi/interface"
-	"github.com/ipfs/go-ipfs/core/coreapi/interface/options"
-
-	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	files "gx/ipfs/QmaXvvAVAQ5ABqM5xtjYmV85xmN5MkWAZsX9H9Fwo4FVXp/go-ipfs-files"
+	"github.com/ipfs/go-ipfs/core/coreunix"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	uio "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/io"
 
 	// this import keeps gx from thinking the dep isn't used
-	_ "gx/ipfs/QmT1jwrqzSMjSjLG5oBd9w4P9vXPKQksWuf5ghsE3Q88ZV/dir-index-html"
+	_ "gx/ipfs/QmdZ4PvPHFQVLLEve7DgoKDcSY19wwpGBB1GKjjKi2rEL1/dir-index-html"
 )
 
 // initDocPaths lists the paths for the docs we want to seed during --init
@@ -36,7 +34,7 @@ func SeedInitDocs(nd *core.IpfsNode) (cid.Cid, error) {
 	return addAssetList(nd, initDocPaths)
 }
 
-var initDirPath = filepath.Join(os.Getenv("GOPATH"), "gx", "ipfs", "QmT1jwrqzSMjSjLG5oBd9w4P9vXPKQksWuf5ghsE3Q88ZV", "dir-index-html")
+var initDirPath = filepath.Join(os.Getenv("GOPATH"), "gx", "ipfs", "QmdZ4PvPHFQVLLEve7DgoKDcSY19wwpGBB1GKjjKi2rEL1", "dir-index-html")
 var initDirIndex = []string{
 	filepath.Join(initDirPath, "knownIcons.txt"),
 	filepath.Join(initDirPath, "dir-index.html"),
@@ -47,17 +45,7 @@ func SeedInitDirIndex(nd *core.IpfsNode) (cid.Cid, error) {
 }
 
 func addAssetList(nd *core.IpfsNode, l []string) (cid.Cid, error) {
-	api, err := coreapi.NewCoreAPI(nd)
-	if err != nil {
-		return cid.Cid{}, err
-	}
-
-	dirb, err := api.Object().New(nd.Context(), options.Object.Type("unixfs-dir"))
-	if err != nil {
-		return cid.Cid{}, err
-	}
-
-	basePath := iface.IpfsPath(dirb.Cid())
+	dirb := uio.NewDirectory(nd.DAG)
 
 	for _, p := range l {
 		d, err := Asset(p)
@@ -65,22 +53,40 @@ func addAssetList(nd *core.IpfsNode, l []string) (cid.Cid, error) {
 			return cid.Cid{}, fmt.Errorf("assets: could load Asset '%s': %s", p, err)
 		}
 
-		fp, err := api.Unixfs().Add(nd.Context(), files.NewBytesFile(d))
+		s, err := coreunix.Add(nd, bytes.NewBuffer(d))
 		if err != nil {
-			return cid.Cid{}, err
+			return cid.Cid{}, fmt.Errorf("assets: could not Add '%s': %s", p, err)
 		}
 
 		fname := filepath.Base(p)
 
-		basePath, err = api.Object().AddLink(nd.Context(), basePath, fname, fp)
+		c, err := cid.Decode(s)
 		if err != nil {
 			return cid.Cid{}, err
 		}
+
+		node, err := nd.DAG.Get(nd.Context(), c)
+		if err != nil {
+			return cid.Cid{}, err
+		}
+
+		if err := dirb.AddChild(nd.Context(), fname, node); err != nil {
+			return cid.Cid{}, fmt.Errorf("assets: could not add '%s' as a child: %s", fname, err)
+		}
 	}
 
-	if err := api.Pin().Add(nd.Context(), basePath); err != nil {
+	dir, err := dirb.GetNode()
+	if err != nil {
 		return cid.Cid{}, err
 	}
 
-	return basePath.Cid(), nil
+	if err := nd.Pinning.Pin(nd.Context(), dir, true); err != nil {
+		return cid.Cid{}, fmt.Errorf("assets: Pinning on init-docu failed: %s", err)
+	}
+
+	if err := nd.Pinning.Flush(); err != nil {
+		return cid.Cid{}, fmt.Errorf("assets: Pinning flush failed: %s", err)
+	}
+
+	return dir.Cid(), nil
 }

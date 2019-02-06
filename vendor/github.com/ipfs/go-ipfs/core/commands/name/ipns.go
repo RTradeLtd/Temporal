@@ -8,13 +8,14 @@ import (
 	"time"
 
 	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
+	e "github.com/ipfs/go-ipfs/core/commands/e"
 	options "github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 	nsopts "github.com/ipfs/go-ipfs/namesys/opts"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	path "gx/ipfs/QmWqh9oob7ZHQRwU5CdTqpnC8ip8BEkFNrwXRxeNo5Y7vA/go-path"
-	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
-	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	cmds "gx/ipfs/QmSXUokcP4TJpFfqozT69AVAYRtzXVMUjzQVkYX41R9Svs/go-ipfs-cmds"
+	path "gx/ipfs/QmT3rzed1ppXefourpmoZ7tyVQfsGPQZ1pHDngLmCvXxd3/go-path"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 var log = logging.Logger("core/commands/ipns")
@@ -80,12 +81,13 @@ Resolve the value of a dnslink:
 		cmdkit.BoolOption(streamOptionName, "s", "Stream entries as they are found."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
 
 		nocache, _ := req.Options["nocache"].(bool)
+		local, _ := req.Options["local"].(bool)
 
 		var name string
 		if len(req.Arguments) == 0 {
@@ -104,6 +106,7 @@ Resolve the value of a dnslink:
 		stream, _ := req.Options[streamOptionName].(bool)
 
 		opts := []options.NameResolveOption{
+			options.Name.Local(local),
 			options.Name.Cache(!nocache),
 		}
 
@@ -155,8 +158,12 @@ Resolve the value of a dnslink:
 		return nil
 	},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, rp *ResolvedPath) error {
-			_, err := fmt.Fprintln(w, rp.Path)
+		cmds.Text: cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			output, ok := v.(*ResolvedPath)
+			if !ok {
+				return e.TypeErr(output, v)
+			}
+			_, err := fmt.Fprintln(w, output.Path)
 			return err
 		}),
 	},

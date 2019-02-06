@@ -7,12 +7,12 @@ test_description="Test circuit relay"
 # start iptb + wait for peering
 NUM_NODES=3
 test_expect_success 'init iptb' '
-  iptb testbed create -type localipfs -count $NUM_NODES -init
+  iptb init -n $NUM_NODES --bootstrap=none --port=0
 '
 
 # Network toplogy: A <-> Relay <-> B
 test_expect_success 'start up nodes for configuration' '
-  iptb start -wait -- --routing=none
+  iptb start --args --routing=none
 '
 
 test_expect_success 'configure EnableRelayHop in relay node' '
@@ -22,7 +22,7 @@ test_expect_success 'configure EnableRelayHop in relay node' '
 test_expect_success 'restart nodes' '
   iptb stop &&
   iptb_wait_stop &&
-  iptb start -wait -- --routing=none
+  iptb start --args --routing=none
 '
 
 test_expect_success 'connect A <-> Relay' '
@@ -38,9 +38,9 @@ test_expect_success 'wait until relay is ready to do work' '
 '
 
 test_expect_success 'peer ids' '
-  PEERID_0=$(iptb attr get 0 id) &&
-  PEERID_1=$(iptb attr get 1 id) &&
-  PEERID_2=$(iptb attr get 2 id)
+  PEERID_0=$(iptb get id 0) &&
+  PEERID_1=$(iptb get id 1) &&
+  PEERID_2=$(iptb get id 2)
 '
 
 test_expect_success 'connect A <-Relay-> B' '

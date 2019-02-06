@@ -6,8 +6,8 @@ import (
 	filestore "github.com/ipfs/go-ipfs/filestore"
 	keystore "github.com/ipfs/go-ipfs/keystore"
 
-	ma "gx/ipfs/QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc/go-multiaddr"
-	config "gx/ipfs/QmcRKBUqc2p3L1ZraoJjbXfs9E6xzvEuyK9iypb5RGwfsr/go-ipfs-config"
+	config "gx/ipfs/QmPEpj17FDRpc7K1aArKZp3RsHtzRMKykeK9GVgn4WQGPR/go-ipfs-config"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
 )
 
 var errTODO = errors.New("TODO: mock repo")
@@ -17,7 +17,6 @@ type Mock struct {
 	C config.Config
 	D Datastore
 	K keystore.Keystore
-	F *filestore.FileManager
 }
 
 func (m *Mock) Config() (*config.Config, error) {
@@ -55,4 +54,4 @@ func (m *Mock) SwarmKey() ([]byte, error) {
 	return nil, nil
 }
 
-func (m *Mock) FileManager() *filestore.FileManager { return m.F }
+func (m *Mock) FileManager() *filestore.FileManager { return nil }

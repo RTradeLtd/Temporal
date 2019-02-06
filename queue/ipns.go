@@ -7,17 +7,15 @@ import (
 	"sync"
 	"time"
 
-	peer "gx/ipfs/QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY/go-libp2p-peer"
-
-	"github.com/RTradeLtd/Temporal/rtns"
-	pb "github.com/RTradeLtd/grpc/krab"
-
-	"github.com/RTradeLtd/database/models"
-	"github.com/RTradeLtd/kaas"
-
-	ci "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
+	ci "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
 
 	"github.com/streadway/amqp"
+
+	"github.com/RTradeLtd/Temporal/rtns"
+	"github.com/RTradeLtd/database/models"
+	pb "github.com/RTradeLtd/grpc/krab"
+	"github.com/RTradeLtd/kaas"
 )
 
 type contextKey string

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -10,17 +11,16 @@ import (
 	"text/tabwriter"
 	"time"
 
+	cmds "github.com/ipfs/go-ipfs/commands"
 	core "github.com/ipfs/go-ipfs/core"
-	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
 	p2p "github.com/ipfs/go-ipfs/p2p"
 
-	ma "gx/ipfs/QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc/go-multiaddr"
-	pstore "gx/ipfs/QmPiemjiKBC9VA7vZF82m4x1oygtg2c2YVqag8PX7dN1BD/go-libp2p-peerstore"
-	madns "gx/ipfs/QmQc7jbDUsxUJZyFJzxVrnrWeECCct6fErEpMqtjyWvCX8/go-multiaddr-dns"
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	ipfsaddr "gx/ipfs/QmYDzHj9xwKN8gCXVJYxYBKxCwCwJURNkwgkvuPP69p3bX/go-ipfs-addr"
-	protocol "gx/ipfs/QmZNkThpqfVXs9GNbexPrfBbXSLNYeKrE7jwFM2oqHbyqN/go-libp2p-protocol"
-	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	"gx/ipfs/QmZNkThpqfVXs9GNbexPrfBbXSLNYeKrE7jwFM2oqHbyqN/go-libp2p-protocol"
+	"gx/ipfs/QmZc5PLgxW61uTPG24TroxHDF6xzgbhZZQf5i53ciQC47Y/go-ipfs-addr"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	madns "gx/ipfs/QmeHJXPqCNzSFbVkYM1uQLuM2L5FyJB9zukQ7EeqRP8ZC9/go-multiaddr-dns"
 )
 
 // P2PProtoPrefix is the default required prefix for protocol names
@@ -53,7 +53,6 @@ type P2PStreamsOutput struct {
 
 const (
 	allowCustomProtocolOptionName = "allow-custom-protocol"
-	reportPeerIDOptionName        = "report-peer-id"
 )
 
 var resolveTimeout = 10 * time.Second
@@ -70,7 +69,8 @@ are refined`,
 	},
 
 	Subcommands: map[string]*cmds.Command{
-		"stream":  p2pStreamCmd,
+		"stream": p2pStreamCmd,
+
 		"forward": p2pForwardCmd,
 		"listen":  p2pListenCmd,
 		"close":   p2pCloseCmd,
@@ -101,35 +101,47 @@ Example:
 	Options: []cmdkit.Option{
 		cmdkit.BoolOption(allowCustomProtocolOptionName, "Don't require /x/ prefix"),
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		n, err := p2pGetNode(env)
+	Run: func(req cmds.Request, res cmds.Response) {
+		n, err := p2pGetNode(req)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		protoOpt := req.Arguments[0]
-		listenOpt := req.Arguments[1]
-		targetOpt := req.Arguments[2]
+		protoOpt := req.Arguments()[0]
+		listenOpt := req.Arguments()[1]
+		targetOpt := req.Arguments()[2]
 
 		proto := protocol.ID(protoOpt)
 
 		listen, err := ma.NewMultiaddr(listenOpt)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		targets, err := parseIpfsAddr(targetOpt)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		allowCustom, _ := req.Options[allowCustomProtocolOptionName].(bool)
+		allowCustom, _, err := req.Option(allowCustomProtocolOptionName).Bool()
+		if err != nil {
+			res.SetError(err, cmdkit.ErrNormal)
+			return
+		}
 
 		if !allowCustom && !strings.HasPrefix(string(proto), P2PProtoPrefix) {
-			return errors.New("protocol name must be within '" + P2PProtoPrefix + "' namespace")
+			res.SetError(errors.New("protocol name must be within '"+P2PProtoPrefix+"' namespace"), cmdkit.ErrNormal)
+			return
 		}
 
-		return forwardLocal(n.Context(), n.P2P, n.Peerstore, proto, listen, targets)
+		if err := forwardLocal(n.Context(), n.P2P, n.Peerstore, proto, listen, targets); err != nil {
+			res.SetError(err, cmdkit.ErrNormal)
+			return
+		}
+		res.SetOutput(nil)
 	},
 }
 
@@ -184,38 +196,48 @@ Example:
 	},
 	Options: []cmdkit.Option{
 		cmdkit.BoolOption(allowCustomProtocolOptionName, "Don't require /x/ prefix"),
-		cmdkit.BoolOption(reportPeerIDOptionName, "r", "Send remote base58 peerid to target when a new connection is established"),
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		n, err := p2pGetNode(env)
+	Run: func(req cmds.Request, res cmds.Response) {
+		n, err := p2pGetNode(req)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		protoOpt := req.Arguments[0]
-		targetOpt := req.Arguments[1]
+		protoOpt := req.Arguments()[0]
+		targetOpt := req.Arguments()[1]
 
 		proto := protocol.ID(protoOpt)
 
 		target, err := ma.NewMultiaddr(targetOpt)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		// port can't be 0
 		if err := checkPort(target); err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		allowCustom, _ := req.Options[allowCustomProtocolOptionName].(bool)
-		reportPeerID, _ := req.Options[reportPeerIDOptionName].(bool)
+		allowCustom, _, err := req.Option(allowCustomProtocolOptionName).Bool()
+		if err != nil {
+			res.SetError(err, cmdkit.ErrNormal)
+			return
+		}
 
 		if !allowCustom && !strings.HasPrefix(string(proto), P2PProtoPrefix) {
-			return errors.New("protocol name must be within '" + P2PProtoPrefix + "' namespace")
+			res.SetError(errors.New("protocol name must be within '"+P2PProtoPrefix+"' namespace"), cmdkit.ErrNormal)
+			return
 		}
 
-		_, err = n.P2P.ForwardRemote(n.Context(), proto, target, reportPeerID)
-		return err
+		if err := forwardRemote(n.Context(), n.P2P, proto, target); err != nil {
+			res.SetError(err, cmdkit.ErrNormal)
+			return
+		}
+
+		res.SetOutput(nil)
 	},
 }
 
@@ -253,6 +275,13 @@ func checkPort(target ma.Multiaddr) error {
 	return nil
 }
 
+// forwardRemote forwards libp2p service connections to a manet address
+func forwardRemote(ctx context.Context, p *p2p.P2P, proto protocol.ID, target ma.Multiaddr) error {
+	// TODO: return some info
+	_, err := p.ForwardRemote(ctx, proto, target)
+	return err
+}
+
 // forwardLocal forwards local connections to a libp2p service
 func forwardLocal(ctx context.Context, p *p2p.P2P, ps pstore.Peerstore, proto protocol.ID, bindAddr ma.Multiaddr, addrs []ipfsaddr.IPFSAddr) error {
 	for _, addr := range addrs {
@@ -276,10 +305,11 @@ var p2pLsCmd = &cmds.Command{
 	Options: []cmdkit.Option{
 		cmdkit.BoolOption(p2pHeadersOptionName, "v", "Print table headers (Protocol, Listen, Target)."),
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		n, err := p2pGetNode(env)
+	Run: func(req cmds.Request, res cmds.Response) {
+		n, err := p2pGetNode(req)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		output := &P2PLsOutput{}
@@ -304,24 +334,31 @@ var p2pLsCmd = &cmds.Command{
 		}
 		n.P2P.ListenersP2P.Unlock()
 
-		return cmds.EmitOnce(res, output)
+		res.SetOutput(output)
 	},
 	Type: P2PLsOutput{},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *P2PLsOutput) error {
-			headers, _ := req.Options[p2pHeadersOptionName].(bool)
-			tw := tabwriter.NewWriter(w, 1, 2, 1, ' ', 0)
-			for _, listener := range out.Listeners {
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: func(res cmds.Response) (io.Reader, error) {
+			v, err := unwrapOutput(res.Output())
+			if err != nil {
+				return nil, err
+			}
+
+			headers, _, _ := res.Request().Option(p2pHeadersOptionName).Bool()
+			list := v.(*P2PLsOutput)
+			buf := new(bytes.Buffer)
+			w := tabwriter.NewWriter(buf, 1, 2, 1, ' ', 0)
+			for _, listener := range list.Listeners {
 				if headers {
-					fmt.Fprintln(tw, "Protocol\tListen Address\tTarget Address")
+					fmt.Fprintln(w, "Protocol\tListen Address\tTarget Address")
 				}
 
-				fmt.Fprintf(tw, "%s\t%s\t%s\n", listener.Protocol, listener.ListenAddress, listener.TargetAddress)
+				fmt.Fprintf(w, "%s\t%s\t%s\n", listener.Protocol, listener.ListenAddress, listener.TargetAddress)
 			}
-			tw.Flush()
+			w.Flush()
 
-			return nil
-		}),
+			return buf, nil
+		},
 	},
 }
 
@@ -342,35 +379,40 @@ var p2pCloseCmd = &cmds.Command{
 		cmdkit.StringOption(p2pListenAddressOptionName, "l", "Match listen address"),
 		cmdkit.StringOption(p2pTargetAddressOptionName, "t", "Match target address"),
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		n, err := p2pGetNode(env)
+	Run: func(req cmds.Request, res cmds.Response) {
+		n, err := p2pGetNode(req)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		closeAll, _ := req.Options[p2pAllOptionName].(bool)
-		protoOpt, p := req.Options[p2pProtocolOptionName].(string)
-		listenOpt, l := req.Options[p2pListenAddressOptionName].(string)
-		targetOpt, t := req.Options[p2pTargetAddressOptionName].(string)
+		closeAll, _, _ := req.Option(p2pAllOptionName).Bool()
+		protoOpt, p, _ := req.Option(p2pProtocolOptionName).String()
+		listenOpt, l, _ := req.Option(p2pListenAddressOptionName).String()
+		targetOpt, t, _ := req.Option(p2pTargetAddressOptionName).String()
 
 		proto := protocol.ID(protoOpt)
 
 		listen, err := ma.NewMultiaddr(listenOpt)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		target, err := ma.NewMultiaddr(targetOpt)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		if !(closeAll || p || l || t) {
-			return errors.New("no matching options given")
+			res.SetError(errors.New("no matching options given"), cmdkit.ErrNormal)
+			return
 		}
 
 		if closeAll && (p || l || t) {
-			return errors.New("can't combine --all with other matching options")
+			res.SetError(errors.New("can't combine --all with other matching options"), cmdkit.ErrNormal)
+			return
 		}
 
 		match := func(listener p2p.Listener) bool {
@@ -392,14 +434,22 @@ var p2pCloseCmd = &cmds.Command{
 		done := n.P2P.ListenersLocal.Close(match)
 		done += n.P2P.ListenersP2P.Close(match)
 
-		return cmds.EmitOnce(res, done)
+		res.SetOutput(done)
 	},
 	Type: int(0),
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out int) error {
-			fmt.Fprintf(w, "Closed %d stream(s)\n", out)
-			return nil
-		}),
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: func(res cmds.Response) (io.Reader, error) {
+			v, err := unwrapOutput(res.Output())
+			if err != nil {
+				return nil, err
+			}
+
+			closed := v.(int)
+			buf := new(bytes.Buffer)
+			fmt.Fprintf(buf, "Closed %d stream(s)\n", closed)
+
+			return buf, nil
+		},
 	},
 }
 
@@ -427,10 +477,11 @@ var p2pStreamLsCmd = &cmds.Command{
 	Options: []cmdkit.Option{
 		cmdkit.BoolOption(p2pHeadersOptionName, "v", "Print table headers (ID, Protocol, Local, Remote)."),
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		n, err := p2pGetNode(env)
+	Run: func(req cmds.Request, res cmds.Response) {
+		n, err := p2pGetNode(req)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		output := &P2PStreamsOutput{}
@@ -448,24 +499,31 @@ var p2pStreamLsCmd = &cmds.Command{
 		}
 		n.P2P.Streams.Unlock()
 
-		return cmds.EmitOnce(res, output)
+		res.SetOutput(output)
 	},
 	Type: P2PStreamsOutput{},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *P2PStreamsOutput) error {
-			headers, _ := req.Options[p2pHeadersOptionName].(bool)
-			tw := tabwriter.NewWriter(w, 1, 2, 1, ' ', 0)
-			for _, stream := range out.Streams {
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: func(res cmds.Response) (io.Reader, error) {
+			v, err := unwrapOutput(res.Output())
+			if err != nil {
+				return nil, err
+			}
+
+			headers, _, _ := res.Request().Option(p2pHeadersOptionName).Bool()
+			list := v.(*P2PStreamsOutput)
+			buf := new(bytes.Buffer)
+			w := tabwriter.NewWriter(buf, 1, 2, 1, ' ', 0)
+			for _, stream := range list.Streams {
 				if headers {
-					fmt.Fprintln(tw, "ID\tProtocol\tOrigin\tTarget")
+					fmt.Fprintln(w, "ID\tProtocol\tOrigin\tTarget")
 				}
 
-				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", stream.HandlerID, stream.Protocol, stream.OriginAddress, stream.TargetAddress)
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", stream.HandlerID, stream.Protocol, stream.OriginAddress, stream.TargetAddress)
 			}
-			tw.Flush()
+			w.Flush()
 
-			return nil
-		}),
+			return buf, nil
+		},
 	},
 }
 
@@ -479,23 +537,28 @@ var p2pStreamCloseCmd = &cmds.Command{
 	Options: []cmdkit.Option{
 		cmdkit.BoolOption(p2pAllOptionName, "a", "Close all streams."),
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		n, err := p2pGetNode(env)
+	Run: func(req cmds.Request, res cmds.Response) {
+		res.SetOutput(nil)
+
+		n, err := p2pGetNode(req)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		closeAll, _ := req.Options[p2pAllOptionName].(bool)
+		closeAll, _, _ := req.Option(p2pAllOptionName).Bool()
 		var handlerID uint64
 
 		if !closeAll {
-			if len(req.Arguments) == 0 {
-				return errors.New("no id specified")
+			if len(req.Arguments()) == 0 {
+				res.SetError(errors.New("no id specified"), cmdkit.ErrNormal)
+				return
 			}
 
-			handlerID, err = strconv.ParseUint(req.Arguments[0], 10, 64)
+			handlerID, err = strconv.ParseUint(req.Arguments()[0], 10, 64)
 			if err != nil {
-				return err
+				res.SetError(err, cmdkit.ErrNormal)
+				return
 			}
 		}
 
@@ -515,18 +578,16 @@ var p2pStreamCloseCmd = &cmds.Command{
 		for _, s := range toClose {
 			n.P2P.Streams.Reset(s)
 		}
-
-		return nil
 	},
 }
 
-func p2pGetNode(env cmds.Environment) (*core.IpfsNode, error) {
-	nd, err := cmdenv.GetNode(env)
+func p2pGetNode(req cmds.Request) (*core.IpfsNode, error) {
+	n, err := req.InvocContext().GetNode()
 	if err != nil {
 		return nil, err
 	}
 
-	config, err := nd.Repo.Config()
+	config, err := n.Repo.Config()
 	if err != nil {
 		return nil, err
 	}
@@ -535,9 +596,9 @@ func p2pGetNode(env cmds.Environment) (*core.IpfsNode, error) {
 		return nil, errors.New("libp2p stream mounting not enabled")
 	}
 
-	if !nd.OnlineMode() {
+	if !n.OnlineMode() {
 		return nil, ErrNotOnline
 	}
 
-	return nd, nil
+	return n, nil
 }

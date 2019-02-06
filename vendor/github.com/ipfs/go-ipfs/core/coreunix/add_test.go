@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -16,19 +15,39 @@ import (
 	"github.com/ipfs/go-ipfs/pin/gc"
 	"github.com/ipfs/go-ipfs/repo"
 
-	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	blockstore "gx/ipfs/QmS2aqUZLJp8kF1ihE5rvDGE5LvmKDPnx32w9Z1BW9xLV5/go-ipfs-blockstore"
-	pi "gx/ipfs/QmUhHBdzfNb9FQPDtKwhghVoR3zwkbXzFJ1uJyEMYUpFSd/go-ipfs-posinfo"
-	"gx/ipfs/QmVKQHuzni68SWByzJgBUCwHvvr4TWiXfutNWWwpZpp4rE/go-blockservice"
-	blocks "gx/ipfs/QmWoXtvgC8inqFkAATB7cp2Dax7XBi9VDvSg9RCCZufmRk/go-block-format"
-	files "gx/ipfs/QmaXvvAVAQ5ABqM5xtjYmV85xmN5MkWAZsX9H9Fwo4FVXp/go-ipfs-files"
-	dag "gx/ipfs/Qmb2UEG2TAeVrEJSjqsZF7Y2he7wRDkrdt6c3bECxwZf4k/go-merkledag"
-	config "gx/ipfs/QmcRKBUqc2p3L1ZraoJjbXfs9E6xzvEuyK9iypb5RGwfsr/go-ipfs-config"
-	datastore "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
-	syncds "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore/sync"
+	config "gx/ipfs/QmPEpj17FDRpc7K1aArKZp3RsHtzRMKykeK9GVgn4WQGPR/go-ipfs-config"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	pi "gx/ipfs/QmQyUyYcpKG1u53V7N25qRTGw5XwaAxTMKXbduqHotQztg/go-ipfs-posinfo"
+	blocks "gx/ipfs/QmRcHuYzAyswytBuMF78rj3LTChYszomRFXNg4685ZN1WM/go-block-format"
+	dag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
+	"gx/ipfs/QmWfhv1D18DRSiSm73r4QGcByspzPtxxRTcmHW3axFXZo8/go-blockservice"
+	files "gx/ipfs/QmZMWMvWMVKCbHetJ4RgndbuEF1io2UpUxwQwtNjtYPzSC/go-ipfs-files"
+	datastore "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
+	syncds "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore/sync"
+	blockstore "gx/ipfs/QmcDDgAXDbpDUpadCJKLr49KYR4HuL7T8Z1dZTHt6ixsoR/go-ipfs-blockstore"
 )
 
 const testPeerID = "QmTFauExutTsy4XP6JbMFcw2Wa9645HJt2bTqL6qYDCKfe"
+
+func TestAddRecursive(t *testing.T) {
+	r := &repo.Mock{
+		C: config.Config{
+			Identity: config.Identity{
+				PeerID: testPeerID, // required by offline node
+			},
+		},
+		D: syncds.MutexWrap(datastore.NewMapDatastore()),
+	}
+	node, err := core.NewNode(context.Background(), &core.BuildCfg{Repo: r})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if k, err := AddR(node, "test/data"); err != nil {
+		t.Fatal(err)
+	} else if k != "QmWCCga8AbTyfAQ7pTnGT6JgmRMAB3Qp8ZmTEFi5q5o8jC" {
+		t.Fatal("keys do not match: ", k)
+	}
+}
 
 func TestAddGCLive(t *testing.T) {
 	r := &repo.Mock{
@@ -51,19 +70,17 @@ func TestAddGCLive(t *testing.T) {
 	}
 	adder.Out = out
 
-	rfa := files.NewBytesFile([]byte("testfileA"))
+	dataa := ioutil.NopCloser(bytes.NewBufferString("testfileA"))
+	rfa := files.NewReaderFile("a", "a", dataa, nil)
 
 	// make two files with pipes so we can 'pause' the add for timing of the test
 	piper, pipew := io.Pipe()
-	hangfile := files.NewReaderFile(piper)
+	hangfile := files.NewReaderFile("b", "b", piper, nil)
 
-	rfd := files.NewBytesFile([]byte("testfileD"))
+	datad := ioutil.NopCloser(bytes.NewBufferString("testfileD"))
+	rfd := files.NewReaderFile("d", "d", datad, nil)
 
-	slf := files.NewMapDirectory(map[string]files.Node{
-		"a": rfa,
-		"b": hangfile,
-		"d": rfd,
-	})
+	slf := files.NewSliceFile("files", "files", []files.File{rfa, hangfile, rfd})
 
 	addDone := make(chan struct{})
 	go func() {
@@ -80,7 +97,7 @@ func TestAddGCLive(t *testing.T) {
 	addedHashes := make(map[string]struct{})
 	select {
 	case o := <-out:
-		addedHashes[o.(*coreiface.AddEvent).Path.Cid().String()] = struct{}{}
+		addedHashes[o.(*coreiface.AddEvent).Hash] = struct{}{}
 	case <-addDone:
 		t.Fatal("add shouldnt complete yet")
 	}
@@ -108,7 +125,7 @@ func TestAddGCLive(t *testing.T) {
 
 	// receive next object from adder
 	o := <-out
-	addedHashes[o.(*coreiface.AddEvent).Path.Cid().String()] = struct{}{}
+	addedHashes[o.(*coreiface.AddEvent).Hash] = struct{}{}
 
 	<-gcstarted
 
@@ -124,7 +141,7 @@ func TestAddGCLive(t *testing.T) {
 	var last cid.Cid
 	for a := range out {
 		// wait for it to finish
-		c, err := cid.Decode(a.(*coreiface.AddEvent).Path.Cid().String())
+		c, err := cid.Decode(a.(*coreiface.AddEvent).Hash)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -155,7 +172,7 @@ func testAddWPosInfo(t *testing.T, rawLeaves bool) {
 		t.Fatal(err)
 	}
 
-	bs := &testBlockstore{GCBlockstore: node.Blockstore, expectedPath: filepath.Join(os.TempDir(), "foo.txt"), t: t}
+	bs := &testBlockstore{GCBlockstore: node.Blockstore, expectedPath: "/tmp/foo.txt", t: t}
 	bserv := blockservice.New(bs, node.Exchange)
 	dserv := dag.NewDAGService(bserv)
 	adder, err := NewAdder(context.Background(), node.Pinning, bs, dserv)
@@ -172,7 +189,7 @@ func testAddWPosInfo(t *testing.T, rawLeaves bool) {
 	rand.New(rand.NewSource(2)).Read(data) // Rand.Read never returns an error
 	fileData := ioutil.NopCloser(bytes.NewBuffer(data))
 	fileInfo := dummyFileInfo{"foo.txt", int64(len(data)), time.Now()}
-	file, _ := files.NewReaderPathFile(filepath.Join(os.TempDir(), "foo.txt"), fileData, &fileInfo)
+	file := files.NewReaderFile("foo.txt", "/tmp/foo.txt", fileData, &fileInfo)
 
 	go func() {
 		defer close(adder.Out)
@@ -191,7 +208,7 @@ func testAddWPosInfo(t *testing.T, rawLeaves bool) {
 		nonOffZero = 19
 	}
 	if bs.countAtOffsetZero != exp {
-		t.Fatalf("expected %d blocks with an offset at zero (one root and one leaf), got %d", exp, bs.countAtOffsetZero)
+		t.Fatalf("expected %d blocks with an offset at zero (one root and one leafh), got %d", exp, bs.countAtOffsetZero)
 	}
 	if bs.countAtOffsetNonZero != nonOffZero {
 		// note: the exact number will depend on the size and the sharding algo. used

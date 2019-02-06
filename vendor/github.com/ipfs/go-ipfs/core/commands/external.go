@@ -8,10 +8,9 @@ import (
 	"os/exec"
 	"strings"
 
-	commands "github.com/ipfs/go-ipfs/commands"
+	cmds "github.com/ipfs/go-ipfs/commands"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 func ExternalBinary() *cmds.Command {
@@ -20,27 +19,29 @@ func ExternalBinary() *cmds.Command {
 			cmdkit.StringArg("args", false, true, "Arguments for subcommand."),
 		},
 		External: true,
-		Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-			binname := strings.Join(append([]string{"ipfs"}, req.Path...), "-")
+		Run: func(req cmds.Request, res cmds.Response) {
+			binname := strings.Join(append([]string{"ipfs"}, req.Path()...), "-")
 			_, err := exec.LookPath(binname)
 			if err != nil {
 				// special case for '--help' on uninstalled binaries.
-				for _, arg := range req.Arguments {
+				for _, arg := range req.Arguments() {
 					if arg == "--help" || arg == "-h" {
 						buf := new(bytes.Buffer)
 						fmt.Fprintf(buf, "%s is an 'external' command.\n", binname)
 						fmt.Fprintf(buf, "It does not currently appear to be installed.\n")
 						fmt.Fprintf(buf, "Please refer to the ipfs documentation for instructions.\n")
-						return res.Emit(buf)
+						res.SetOutput(buf)
+						return
 					}
 				}
 
-				return fmt.Errorf("%s not installed", binname)
+				res.SetError(fmt.Errorf("%s not installed", binname), cmdkit.ErrNormal)
+				return
 			}
 
 			r, w := io.Pipe()
 
-			cmd := exec.Command(binname, req.Arguments...)
+			cmd := exec.Command(binname, req.Arguments()...)
 
 			// TODO: make commands lib be able to pass stdin through daemon
 			//cmd.Stdin = req.Stdin()
@@ -49,39 +50,39 @@ func ExternalBinary() *cmds.Command {
 			cmd.Stderr = w
 
 			// setup env of child program
-			osenv := os.Environ()
+			env := os.Environ()
 
 			// Get the node iff already defined.
-			if cctx, ok := env.(*commands.Context); ok && cctx.Online {
-				nd, err := cctx.GetNode()
+			if req.InvocContext().Online {
+				nd, err := req.InvocContext().GetNode()
 				if err != nil {
-					return fmt.Errorf("failed to start ipfs node: %s", err)
+					res.SetError(fmt.Errorf(
+						"failed to start ipfs node: %s",
+						err,
+					), cmdkit.ErrFatal)
+					return
 				}
-				osenv = append(osenv, fmt.Sprintf("IPFS_ONLINE=%t", nd.OnlineMode()))
+				env = append(env, fmt.Sprintf("IPFS_ONLINE=%t", nd.OnlineMode()))
 			}
 
-			cmd.Env = osenv
+			cmd.Env = env
 
 			err = cmd.Start()
 			if err != nil {
-				return fmt.Errorf("failed to start subcommand: %s", err)
+				res.SetError(fmt.Errorf("failed to start subcommand: %s", err), cmdkit.ErrNormal)
+				return
 			}
 
-			errC := make(chan error)
+			res.SetOutput(r)
 
 			go func() {
-				var err error
-				defer func() { errC <- err }()
 				err = cmd.Wait()
+				if err != nil {
+					res.SetError(err, cmdkit.ErrNormal)
+				}
+
 				w.Close()
 			}()
-
-			err = res.Emit(r)
-			if err != nil {
-				return err
-			}
-
-			return <-errC
 		},
 	}
 }

@@ -1,19 +1,16 @@
 package objectcmd
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 
-	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
+	cmds "github.com/ipfs/go-ipfs/commands"
+	e "github.com/ipfs/go-ipfs/core/commands/e"
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
 	"github.com/ipfs/go-ipfs/dagutils"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
 	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
-)
-
-const (
-	verboseOptionName = "verbose"
 )
 
 type Changes struct {
@@ -52,30 +49,34 @@ Example:
 		cmdkit.StringArg("obj_b", true, false, "Object to diff."),
 	},
 	Options: []cmdkit.Option{
-		cmdkit.BoolOption(verboseOptionName, "v", "Print extra information."),
+		cmdkit.BoolOption("verbose", "v", "Print extra information."),
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+	Run: func(req cmds.Request, res cmds.Response) {
+		api, err := req.InvocContext().GetApi()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		a := req.Arguments[0]
-		b := req.Arguments[1]
+		a := req.Arguments()[0]
+		b := req.Arguments()[1]
 
 		pa, err := coreiface.ParsePath(a)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		pb, err := coreiface.ParsePath(b)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		changes, err := api.Object().Diff(req.Context, pa, pb)
+		changes, err := api.Object().Diff(req.Context(), pa, pb)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		out := make([]*dagutils.Change, len(changes))
@@ -94,36 +95,45 @@ Example:
 			}
 		}
 
-		return cmds.EmitOnce(res, &Changes{out})
+		res.SetOutput(&Changes{out})
 	},
 	Type: Changes{},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *Changes) error {
-			verbose, _ := req.Options[verboseOptionName].(bool)
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: func(res cmds.Response) (io.Reader, error) {
+			v, err := unwrapOutput(res.Output())
+			if err != nil {
+				return nil, err
+			}
 
-			for _, change := range out.Changes {
+			verbose, _, _ := res.Request().Option("v").Bool()
+			changes, ok := v.(*Changes)
+			if !ok {
+				return nil, e.TypeErr(changes, v)
+			}
+
+			buf := new(bytes.Buffer)
+			for _, change := range changes.Changes {
 				if verbose {
 					switch change.Type {
 					case dagutils.Add:
-						fmt.Fprintf(w, "Added new link %q pointing to %s.\n", change.Path, change.After)
+						fmt.Fprintf(buf, "Added new link %q pointing to %s.\n", change.Path, change.After)
 					case dagutils.Mod:
-						fmt.Fprintf(w, "Changed %q from %s to %s.\n", change.Path, change.Before, change.After)
+						fmt.Fprintf(buf, "Changed %q from %s to %s.\n", change.Path, change.Before, change.After)
 					case dagutils.Remove:
-						fmt.Fprintf(w, "Removed link %q (was %s).\n", change.Path, change.Before)
+						fmt.Fprintf(buf, "Removed link %q (was %s).\n", change.Path, change.Before)
 					}
 				} else {
 					switch change.Type {
 					case dagutils.Add:
-						fmt.Fprintf(w, "+ %s %q\n", change.After, change.Path)
+						fmt.Fprintf(buf, "+ %s %q\n", change.After, change.Path)
 					case dagutils.Mod:
-						fmt.Fprintf(w, "~ %s %s %q\n", change.Before, change.After, change.Path)
+						fmt.Fprintf(buf, "~ %s %s %q\n", change.Before, change.After, change.Path)
 					case dagutils.Remove:
-						fmt.Fprintf(w, "- %s %q\n", change.Before, change.Path)
+						fmt.Fprintf(buf, "- %s %q\n", change.Before, change.Path)
 					}
 				}
 			}
-
-			return nil
-		}),
+			return buf, nil
+		},
 	},
 }

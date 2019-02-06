@@ -1,31 +1,24 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
-	"github.com/ipfs/go-ipfs/core/commands/cmdenv"
+	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
-	"github.com/ipfs/go-ipfs/core/coreapi/interface/options"
+	options "github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	pb "gx/ipfs/QmYWB8oH6o7qftxoyqTTZhzLrhKCVT7NYahECQTwTtqbgj/pb"
+	mh "gx/ipfs/QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8/go-multihash"
+	pb "gx/ipfs/QmPtj12fdwuAqj9sBSTNUxBNu8kCGNp8b3o8yUzMm5GHpq/pb"
+	cmds "gx/ipfs/QmSXUokcP4TJpFfqozT69AVAYRtzXVMUjzQVkYX41R9Svs/go-ipfs-cmds"
+	files "gx/ipfs/QmZMWMvWMVKCbHetJ4RgndbuEF1io2UpUxwQwtNjtYPzSC/go-ipfs-files"
 	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
-	mh "gx/ipfs/QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW/go-multihash"
 )
 
 // ErrDepthLimitExceeded indicates that the max depth has been exceeded.
 var ErrDepthLimitExceeded = fmt.Errorf("depth limit exceeded")
-
-type AddEvent struct {
-	Name  string
-	Hash  string `json:",omitempty"`
-	Bytes int64  `json:",omitempty"`
-	Size  string `json:",omitempty"`
-}
 
 const (
 	quietOptionName       = "quiet"
@@ -78,16 +71,12 @@ You can now refer to the added file in a gateway, like so:
 
 The chunker option, '-s', specifies the chunking strategy that dictates
 how to break files into blocks. Blocks with same content can
-be deduplicated. Different chunking strategies will produce different
-hashes for the same file. The default is a fixed block size of
+be deduplicated. The default is a fixed block size of
 256 * 1024 bytes, 'size-262144'. Alternatively, you can use the
-Rabin fingerprint chunker for content defined chunking by specifying
-rabin-[min]-[avg]-[max] (where min/avg/max refer to the desired
-chunk sizes in bytes), e.g. 'rabin-262144-524288-1048576'.
-
-The following examples use very small byte sizes to demonstrate the
-properties of the different chunkers on a small file. You'll likely
-want to use a 1024 times larger chunk sizes for most files.
+rabin chunker for content defined chunking by specifying
+rabin-[min]-[avg]-[max] (where min/avg/max refer to the resulting
+chunk sizes). Using other chunking strategies will produce
+different hashes for the same file.
 
   > ipfs add --chunker=size-2048 ipfs-logo.svg
   added QmafrLBfzRLV4XSH1XcaMMeaXEUhDJjmtDfsYU95TrWG87 ipfs-logo.svg
@@ -111,7 +100,6 @@ You can now check what blocks have been created by:
 	},
 	Options: []cmdkit.Option{
 		cmds.OptionRecursivePath, // a builtin option that allows recursive paths (-r, --recursive)
-		cmds.OptionDerefArgs,     // a builtin option that resolves passed in filesystem links (--dereference-args)
 		cmdkit.BoolOption(quietOptionName, "q", "Write minimal output."),
 		cmdkit.BoolOption(quieterOptionName, "Q", "Write only final hash."),
 		cmdkit.BoolOption(silentOptionName, "Write no output."),
@@ -151,7 +139,7 @@ You can now check what blocks have been created by:
 		return nil
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -172,15 +160,11 @@ You can now check what blocks have been created by:
 		inline, _ := req.Options[inlineOptionName].(bool)
 		inlineLimit, _ := req.Options[inlineLimitOptionName].(int)
 		pathName, _ := req.Options[stdinPathName].(string)
+		local, _ := req.Options["local"].(bool)
 
 		hashFunCode, ok := mh.Names[strings.ToLower(hashFunStr)]
 		if !ok {
 			return fmt.Errorf("unrecognized hash function: %s", strings.ToLower(hashFunStr))
-		}
-
-		enc, err := cmdenv.GetCidEncoder(req)
-		if err != nil {
-			return err
 		}
 
 		events := make(chan interface{}, adderOutChanSize)
@@ -195,6 +179,7 @@ You can now check what blocks have been created by:
 
 			options.Unixfs.Pin(dopin),
 			options.Unixfs.HashOnly(hash),
+			options.Unixfs.Local(local),
 			options.Unixfs.FsCache(fscache),
 			options.Unixfs.Nocopy(nocopy),
 
@@ -227,23 +212,9 @@ You can now check what blocks have been created by:
 			_, err = api.Unixfs().Add(req.Context, req.Files, opts...)
 		}()
 
-		for event := range events {
-			output, ok := event.(*coreiface.AddEvent)
-			if !ok {
-				return errors.New("unknown event type")
-			}
-
-			h := ""
-			if output.Path != nil {
-				h = enc.Encode(output.Path.Cid())
-			}
-
-			res.Emit(&AddEvent{
-				Name:  output.Name,
-				Hash:  h,
-				Bytes: output.Bytes,
-				Size:  output.Size,
-			})
+		err = res.Emit(events)
+		if err != nil {
+			return err
 		}
 
 		return <-errCh
@@ -254,17 +225,24 @@ You can now check what blocks have been created by:
 			outChan := make(chan interface{})
 			req := res.Request()
 
-			// Could be slow.
-			go func() {
-				size, err := req.Files.Size()
-				if err != nil {
-					log.Warningf("error getting files size: %s", err)
-					// see comment above
-					return
-				}
+			sizeFile, ok := req.Files.(files.SizeFile)
+			if ok {
+				// Could be slow.
+				go func() {
+					size, err := sizeFile.Size()
+					if err != nil {
+						log.Warningf("error getting files size: %s", err)
+						// see comment above
+						return
+					}
 
-				sizeChan <- size
-			}()
+					sizeChan <- size
+				}()
+			} else {
+				// we don't need to error, the progress bar just
+				// won't know how big the files are
+				log.Warning("cannot determine size of input file")
+			}
 
 			progressBar := func(wait chan struct{}) {
 				defer close(wait)
@@ -300,7 +278,7 @@ You can now check what blocks have been created by:
 
 							break LOOP
 						}
-						output := out.(*AddEvent)
+						output := out.(*coreiface.AddEvent)
 						if len(output.Hash) > 0 {
 							lastHash = output.Hash
 							if quieter {
@@ -349,14 +327,6 @@ You can now check what blocks have been created by:
 						return
 					}
 				}
-
-				if progress && bar.Total == 0 && bar.Get() != 0 {
-					bar.Total = bar.Get()
-					bar.ShowPercent = true
-					bar.ShowBar = true
-					bar.ShowTimeLeft = true
-					bar.Update()
-				}
 			}
 
 			if e := res.Error(); e != nil {
@@ -388,5 +358,5 @@ You can now check what blocks have been created by:
 			}
 		},
 	},
-	Type: AddEvent{},
+	Type: coreiface.AddEvent{},
 }

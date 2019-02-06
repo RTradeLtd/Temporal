@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"syscall"
 
-	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
 )
 
 var log = logging.Logger("ulimit")
@@ -22,7 +22,7 @@ var (
 )
 
 // maxFds is the maximum number of file descriptors that go-ipfs
-// can use. The default value is 2048. This can be overwritten by the
+// can use. The default value is 1024. This can be overwritten by the
 // IPFS_FD_MAX env variable
 var maxFds = uint64(2048)
 

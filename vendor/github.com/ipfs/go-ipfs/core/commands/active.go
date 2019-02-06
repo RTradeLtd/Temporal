@@ -1,20 +1,21 @@
 package commands
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"sort"
 	"text/tabwriter"
 	"time"
 
-	oldcmds "github.com/ipfs/go-ipfs/commands"
+	cmds "github.com/ipfs/go-ipfs/commands"
+	e "github.com/ipfs/go-ipfs/core/commands/e"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 const (
-	verboseOptionName = "verbose"
+	verboseOptionName = "v"
 )
 
 var ActiveReqsCmd = &cmds.Command{
@@ -24,38 +25,48 @@ var ActiveReqsCmd = &cmds.Command{
 Lists running and recently run commands.
 `,
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		ctx := env.(*oldcmds.Context)
-		return cmds.EmitOnce(res, ctx.ReqLog.Report())
+	Run: func(req cmds.Request, res cmds.Response) {
+		res.SetOutput(req.InvocContext().ReqLog.Report())
 	},
 	Options: []cmdkit.Option{
-		cmdkit.BoolOption(verboseOptionName, "v", "Print extra information."),
+		cmdkit.BoolOption("verbose", verboseOptionName, "Print extra information."),
 	},
 	Subcommands: map[string]*cmds.Command{
 		"clear":    clearInactiveCmd,
 		"set-time": setRequestClearCmd,
 	},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *[]*cmds.ReqLogEntry) error {
-			verbose, _ := req.Options[verboseOptionName].(bool)
+	Marshalers: map[cmds.EncodingType]cmds.Marshaler{
+		cmds.Text: func(res cmds.Response) (io.Reader, error) {
+			v, err := unwrapOutput(res.Output())
+			if err != nil {
+				return nil, err
+			}
 
-			tw := tabwriter.NewWriter(w, 4, 4, 2, ' ', 0)
-			if verbose {
-				fmt.Fprint(tw, "ID\t")
+			out, ok := v.(*[]*cmds.ReqLogEntry)
+			if !ok {
+				return nil, e.TypeErr(out, v)
 			}
-			fmt.Fprint(tw, "Command\t")
+			buf := new(bytes.Buffer)
+
+			verbose, _, _ := res.Request().Option(verboseOptionName).Bool()
+
+			w := tabwriter.NewWriter(buf, 4, 4, 2, ' ', 0)
 			if verbose {
-				fmt.Fprint(tw, "Arguments\tOptions\t")
+				fmt.Fprint(w, "ID\t")
 			}
-			fmt.Fprintln(tw, "Active\tStartTime\tRunTime")
+			fmt.Fprint(w, "Command\t")
+			if verbose {
+				fmt.Fprint(w, "Arguments\tOptions\t")
+			}
+			fmt.Fprintln(w, "Active\tStartTime\tRunTime")
 
 			for _, req := range *out {
 				if verbose {
-					fmt.Fprintf(tw, "%d\t", req.ID)
+					fmt.Fprintf(w, "%d\t", req.ID)
 				}
-				fmt.Fprintf(tw, "%s\t", req.Command)
+				fmt.Fprintf(w, "%s\t", req.Command)
 				if verbose {
-					fmt.Fprintf(tw, "%v\t[", req.Args)
+					fmt.Fprintf(w, "%v\t[", req.Args)
 					var keys []string
 					for k := range req.Options {
 						keys = append(keys, k)
@@ -63,9 +74,9 @@ Lists running and recently run commands.
 					sort.Strings(keys)
 
 					for _, k := range keys {
-						fmt.Fprintf(tw, "%s=%v,", k, req.Options[k])
+						fmt.Fprintf(w, "%s=%v,", k, req.Options[k])
 					}
-					fmt.Fprintf(tw, "]\t")
+					fmt.Fprintf(w, "]\t")
 				}
 
 				var live time.Duration
@@ -75,12 +86,12 @@ Lists running and recently run commands.
 					live = req.EndTime.Sub(req.StartTime)
 				}
 				t := req.StartTime.Format(time.Stamp)
-				fmt.Fprintf(tw, "%t\t%s\t%s\n", req.Active, t, live)
+				fmt.Fprintf(w, "%t\t%s\t%s\n", req.Active, t, live)
 			}
-			tw.Flush()
+			w.Flush()
 
-			return nil
-		}),
+			return buf, nil
+		},
 	},
 	Type: []*cmds.ReqLogEntry{},
 }
@@ -89,10 +100,8 @@ var clearInactiveCmd = &cmds.Command{
 	Helptext: cmdkit.HelpText{
 		Tagline: "Clear inactive requests from the log.",
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		ctx := env.(*oldcmds.Context)
-		ctx.ReqLog.ClearInactive()
-		return nil
+	Run: func(req cmds.Request, res cmds.Response) {
+		req.InvocContext().ReqLog.ClearInactive()
 	},
 }
 
@@ -103,14 +112,13 @@ var setRequestClearCmd = &cmds.Command{
 	Arguments: []cmdkit.Argument{
 		cmdkit.StringArg("time", true, false, "Time to keep inactive requests in log."),
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		tval, err := time.ParseDuration(req.Arguments[0])
+	Run: func(req cmds.Request, res cmds.Response) {
+		tval, err := time.ParseDuration(req.Arguments()[0])
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
-		ctx := env.(*oldcmds.Context)
-		ctx.ReqLog.SetKeepTime(tval)
 
-		return nil
+		req.InvocContext().ReqLog.SetKeepTime(tval)
 	},
 }

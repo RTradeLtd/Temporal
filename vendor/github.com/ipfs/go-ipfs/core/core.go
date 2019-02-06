@@ -30,59 +30,58 @@ import (
 	pin "github.com/ipfs/go-ipfs/pin"
 	repo "github.com/ipfs/go-ipfs/repo"
 
-	ma "gx/ipfs/QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc/go-multiaddr"
-	ic "gx/ipfs/QmNiJiXwWE3kRhZrC5ej3kSjWHm337pYfhjLGSCDNKJP2s/go-libp2p-crypto"
-	dht "gx/ipfs/QmNoNExMdWrYSPZDiJJTVmxSh6uKLN26xYVzbLzBLedRcv/go-libp2p-kad-dht"
-	dhtopts "gx/ipfs/QmNoNExMdWrYSPZDiJJTVmxSh6uKLN26xYVzbLzBLedRcv/go-libp2p-kad-dht/opts"
-	u "gx/ipfs/QmNohiVssaPw3KVLZik59DBVGTSm2dGvYT9eoXt5DQ36Yz/go-ipfs-util"
-	exchange "gx/ipfs/QmP2g3VxmC7g7fyRJDj1VJ72KHZbJ9UW24YjSWEj1XTb4H/go-ipfs-exchange-interface"
-	pstore "gx/ipfs/QmPiemjiKBC9VA7vZF82m4x1oygtg2c2YVqag8PX7dN1BD/go-libp2p-peerstore"
-	ft "gx/ipfs/QmQ1JnYpnzkaurjW1yxkQxC2w3K1PorNE1nv1vaP5Le7sq/go-unixfs"
-	mafilter "gx/ipfs/QmQgSnRC74nHoXrN9CShvfWUUSrgAMJ4unjbnuBVsxk2mw/go-maddr-filter"
-	quic "gx/ipfs/QmR1g19UeP13BrVPCeEJm6R1J1E5yCdueiKpQJfPdnWC9z/go-libp2p-quic-transport"
-	mfs "gx/ipfs/QmR66iEqVtNMbbZxTHPY3F6W5QLFqZEDbFD7gzbE9HpYXU/go-mfs"
-	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	ipld "gx/ipfs/QmRL22E4paat7ky7vx9MLpR97JHHbFPrg3ytFQw6qp1y1s/go-ipld-format"
-	psrouter "gx/ipfs/QmReFccdPXitZc73LpfC299f9uQzMYnooAGsHJBGS5Mc4h/go-libp2p-pubsub-router"
-	autonat "gx/ipfs/QmRmMbeY5QC5iMsuW16wchtFt8wmYTv2suWb8t9MV8dsxm/go-libp2p-autonat-svc"
-	bstore "gx/ipfs/QmS2aqUZLJp8kF1ihE5rvDGE5LvmKDPnx32w9Z1BW9xLV5/go-ipfs-blockstore"
+	bitswap "gx/ipfs/QmNkxFCmPtr2RQxjZNRCNryLud4L9wMEiBJsLgF14MqTHj/go-bitswap"
+	bsnet "gx/ipfs/QmNkxFCmPtr2RQxjZNRCNryLud4L9wMEiBJsLgF14MqTHj/go-bitswap/network"
+	config "gx/ipfs/QmPEpj17FDRpc7K1aArKZp3RsHtzRMKykeK9GVgn4WQGPR/go-ipfs-config"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	u "gx/ipfs/QmPdKqUcHGFdeSpvjVoaTRPPstGif9GBZb5Q56RVw9o69A/go-ipfs-util"
+	ic "gx/ipfs/QmPvyPwuCgJ7pDmrKDxRtsScJgBaM5h4EpRL2qQJsmXf4n/go-libp2p-crypto"
+	dht "gx/ipfs/QmQHnqaNULV8WeUGgh97o9K3KAW6kWQmDyNf9UuikgnPTe/go-libp2p-kad-dht"
+	dhtopts "gx/ipfs/QmQHnqaNULV8WeUGgh97o9K3KAW6kWQmDyNf9UuikgnPTe/go-libp2p-kad-dht/opts"
+	exchange "gx/ipfs/QmR1nncPsZR14A4hWr39mq8Lm7BGgS68bHVT9nop8NpWEM/go-ipfs-exchange-interface"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
 	goprocess "gx/ipfs/QmSF8fPo3jgVBAy8fpdjjYqgG87dkJgUprRBHRd2tmfgpP/goprocess"
-	ifconnmgr "gx/ipfs/QmSFo2QrMF4M1mKdB291ZqNtsie4NfwXCRdWgDU3inw4Ff/go-libp2p-interface-connmgr"
 	mamask "gx/ipfs/QmSMZwvs3n4GBikZ7hKzT17c3bk65FmyZo2JqtJ16swqCv/multiaddr-filter"
-	routing "gx/ipfs/QmTiRqrF5zkdZyrdsL5qndG1UbeWi8k8N2pYxCtXWrahR2/go-libp2p-routing"
-	bserv "gx/ipfs/QmVKQHuzni68SWByzJgBUCwHvvr4TWiXfutNWWwpZpp4rE/go-blockservice"
-	pubsub "gx/ipfs/QmVRxA4J3UPQpw74dLrQ6NJkfysCA1H4GU28gVpXQt9zMU/go-libp2p-pubsub"
-	nilrouting "gx/ipfs/QmVZ6cQXHoTQja4oo9GhhHZi7dThi4x98mRKgGtKnTy37u/go-ipfs-routing/none"
-	resolver "gx/ipfs/QmWqh9oob7ZHQRwU5CdTqpnC8ip8BEkFNrwXRxeNo5Y7vA/go-path/resolver"
-	circuit "gx/ipfs/QmWuMW6UKZMJo9bFFDwnjg8tW3AtKisMHHrXEutQdmJ19N/go-libp2p-circuit"
+	merkledag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
+	resolver "gx/ipfs/QmT3rzed1ppXefourpmoZ7tyVQfsGPQZ1pHDngLmCvXxd3/go-path/resolver"
+	ma "gx/ipfs/QmT4U94DnD8FRfqr21obWY32HLM5VExccPKMjQHofeYqr9/go-multiaddr"
+	peer "gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	connmgr "gx/ipfs/QmTSih5JrkhMH62dp1oGjEwcaC38dxXBgRwTbeQEL4mPcU/go-libp2p-connmgr"
+	pstore "gx/ipfs/QmTTJcDL3gsnGDALjh2fDGg1onGRUdVgNL2hU2WEZcVrMX/go-libp2p-peerstore"
+	libp2p "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p"
+	discovery "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/discovery"
+	p2pbhost "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/host/basic"
+	rhost "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/host/routed"
+	identify "gx/ipfs/QmUDTcnDp2WssbmiDLC6aYurUeyt7QeRakHUQMxA2mZ5iB/go-libp2p/p2p/protocol/identify"
+	psrouter "gx/ipfs/QmUhJjacEW7gDGsvxzn8NqyfCWRksgTtYeaGvQmgYvrmWH/go-libp2p-pubsub-router"
+	mfs "gx/ipfs/QmUwXQs8aZ472DmXZ8uJNf7HJNKoMJQVa7RaCz7ujZ3ua9/go-mfs"
+	quic "gx/ipfs/QmVX7uSFmFLZRFsN9QNPDJf7Pmhuv4GdedrKYrt2xXm5ag/go-libp2p-quic-transport"
+	circuit "gx/ipfs/QmVYDvJjiKb9iFEyHxx4i1TJSRBLkQhGb5Fc8XpmDuNCEA/go-libp2p-circuit"
+	ifconnmgr "gx/ipfs/QmWRvjn5BHMLCGkf48Hk1LDc4W72RPA9H59AAVCXmn9esJ/go-libp2p-interface-connmgr"
+	bserv "gx/ipfs/QmWfhv1D18DRSiSm73r4QGcByspzPtxxRTcmHW3axFXZo8/go-blockservice"
+	rhelpers "gx/ipfs/QmX3syBjwRd12qJGaKbFBWFfrBinKsaTC43ry3PsgiXCLK/go-libp2p-routing-helpers"
 	pnet "gx/ipfs/QmY4Q5JC4vxLEi8EpVxJM4rcRryEVtH1zRKVTAm6BKV1pg/go-libp2p-pnet"
-	peer "gx/ipfs/QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY/go-libp2p-peer"
+	pubsub "gx/ipfs/QmY4dowpPFCBsbaoaJc9mNWso64eDJsm32LJznwPNaAiJG/go-libp2p-pubsub"
 	smux "gx/ipfs/QmY9JXR3FupnYAYJWK9aMr9bCpqWKcToQ1tz8DVGTrHpHw/go-stream-muxer"
-	connmgr "gx/ipfs/QmYB44VSn76PMvefjvcKxdhnHtZxB36zrToCSh6u4H9U7M/go-libp2p-connmgr"
-	bitswap "gx/ipfs/QmYokQouMdEuZjNQop75Bwm6ZV9CxJDcxvZHeSy4Ttzrtp/go-bitswap"
-	bsnet "gx/ipfs/QmYokQouMdEuZjNQop75Bwm6ZV9CxJDcxvZHeSy4Ttzrtp/go-bitswap/network"
-	libp2p "gx/ipfs/QmYxivS34F2M2n44WQQnRHGAKS8aoRUxwGpi9wk4Cdn4Jf/go-libp2p"
-	discovery "gx/ipfs/QmYxivS34F2M2n44WQQnRHGAKS8aoRUxwGpi9wk4Cdn4Jf/go-libp2p/p2p/discovery"
-	p2pbhost "gx/ipfs/QmYxivS34F2M2n44WQQnRHGAKS8aoRUxwGpi9wk4Cdn4Jf/go-libp2p/p2p/host/basic"
-	rhost "gx/ipfs/QmYxivS34F2M2n44WQQnRHGAKS8aoRUxwGpi9wk4Cdn4Jf/go-libp2p/p2p/host/routed"
-	identify "gx/ipfs/QmYxivS34F2M2n44WQQnRHGAKS8aoRUxwGpi9wk4Cdn4Jf/go-libp2p/p2p/protocol/identify"
-	mplex "gx/ipfs/QmZsejKNkeFSQe5TcmYXJ8iq6qPL1FpsP4eAA8j7RfE7xg/go-smux-multiplex"
-	p2phost "gx/ipfs/QmaoXrM4Z41PD48JY36YqQGKQpLGjyLA2cKcLsES7YddAq/go-libp2p-host"
-	merkledag "gx/ipfs/Qmb2UEG2TAeVrEJSjqsZF7Y2he7wRDkrdt6c3bECxwZf4k/go-merkledag"
-	metrics "gx/ipfs/QmbYN6UmTJn5UUQdi5CTsU86TXVBSrTcRk5UmyA36Qx2J6/go-libp2p-metrics"
-	rhelpers "gx/ipfs/QmbYV2PXQVQnqerMBfuoNtzvBYnfzTRn9FZMGw6r3MHLDE/go-libp2p-routing-helpers"
-	config "gx/ipfs/QmcRKBUqc2p3L1ZraoJjbXfs9E6xzvEuyK9iypb5RGwfsr/go-ipfs-config"
-	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	record "gx/ipfs/Qma9Eqp16mNHDX1EL73pcxhFfzbyXVcAYtaDd1xdmDRDtL/go-libp2p-record"
+	ds "gx/ipfs/QmaRb5yNXKonhbkpNxNawoydk4N6es6b4fPj19sjEKsh5D/go-datastore"
+	mplex "gx/ipfs/QmaveCPGVaKJU57tBErGCDjzLaqEMZkFygoiv4BhYwWUGc/go-smux-multiplex"
+	mafilter "gx/ipfs/QmbuCmYjYK5GQo4zKrK2h3NVsyBYf81ZQXgiE69CLLGHgB/go-maddr-filter"
+	bstore "gx/ipfs/QmcDDgAXDbpDUpadCJKLr49KYR4HuL7T8Z1dZTHt6ixsoR/go-ipfs-blockstore"
+	routing "gx/ipfs/QmcQ81jSyWCp1jpkQ8CMbtpXT3jK7Wg6ZtYmoyWFgBoF9c/go-libp2p-routing"
+	nilrouting "gx/ipfs/QmcjvUP25nLSwELgUeqWe854S3XVbtsntTr7kZxG63yKhe/go-ipfs-routing/none"
+	offroute "gx/ipfs/QmcjvUP25nLSwELgUeqWe854S3XVbtsntTr7kZxG63yKhe/go-ipfs-routing/offline"
+	p2phost "gx/ipfs/QmdJfsSbKSZnMkfZ1kpopiyB9i3Hd6cp8VKWZmtWPa7Moc/go-libp2p-host"
 	yamux "gx/ipfs/Qmdps3CYh5htGQSrPvzg5PHouVexLmtpbuLCqc4vuej8PC/go-smux-yamux"
-	ds "gx/ipfs/Qmf4xQhNomPNhrtZc67qSnfJSjxjXs9LWvknJtSXwimPrM/go-datastore"
-	record "gx/ipfs/QmfARXVCzpwFXQdepAJZuqyNDgV9doEsMnVCo1ssmuSe1U/go-libp2p-record"
+	metrics "gx/ipfs/QmeaTjsfPf6vQ3WU2BUdjakgvKUHpuv3Fjxvb75N5iksMx/go-libp2p-metrics"
+	ft "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs"
 )
 
 const IpnsValidatorTag = "ipns"
 
 const kReprovideFrequency = time.Hour * 12
 const discoveryConnTimeout = time.Second * 30
-const DefaultIpnsCacheSize = 128
 
 var log = logging.Logger("core")
 
@@ -136,7 +135,6 @@ type IpfsNode struct {
 	Reprovider   *rp.Reprovider      // the value reprovider system
 	IpnsRepub    *ipnsrp.Republisher
 
-	AutoNAT  *autonat.AutoNATService
 	PubSub   *pubsub.PubSub
 	PSRouter *psrouter.PubsubValueStore
 	DHT      *dht.IpfsDHT
@@ -162,8 +160,9 @@ func (n *IpfsNode) startOnlineServices(ctx context.Context, routingOption Routin
 		return errors.New("node already online")
 	}
 
-	if n.PrivateKey == nil {
-		return fmt.Errorf("private key not available")
+	// load private key
+	if err := n.LoadPrivateKey(); err != nil {
+		return err
 	}
 
 	// get undialable addrs from config
@@ -262,27 +261,13 @@ func (n *IpfsNode) startOnlineServices(ctx context.Context, routingOption Routin
 		libp2pOpts = append(libp2pOpts, libp2p.Transport(quic.NewTransport))
 	}
 
-	// enable routing
-	libp2pOpts = append(libp2pOpts, libp2p.Routing(func(h p2phost.Host) (routing.PeerRouting, error) {
-		r, err := routingOption(ctx, h, n.Repo.Datastore(), n.RecordValidator)
-		n.Routing = r
-		return r, err
-	}))
-
-	// enable autorelay
-	if cfg.Swarm.EnableAutoRelay {
-		libp2pOpts = append(libp2pOpts, libp2p.EnableAutoRelay())
-	}
-
 	peerhost, err := hostOption(ctx, n.Identity, n.Peerstore, libp2pOpts...)
 
 	if err != nil {
 		return err
 	}
 
-	n.PeerHost = peerhost
-
-	if err := n.startOnlineServicesWithHost(ctx, routingOption, pubsub, ipnsps); err != nil {
+	if err := n.startOnlineServicesWithHost(ctx, peerhost, routingOption, pubsub, ipnsps); err != nil {
 		return err
 	}
 
@@ -476,26 +461,13 @@ func (n *IpfsNode) HandlePeerFound(p pstore.PeerInfo) {
 
 // startOnlineServicesWithHost  is the set of services which need to be
 // initialized with the host and _before_ we start listening.
-func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOption RoutingOption, enablePubsub bool, enableIpnsps bool) error {
-	cfg, err := n.Repo.Config()
-	if err != nil {
-		return err
-	}
-
-	if cfg.Swarm.EnableAutoNATService {
-		var opts []libp2p.Option
-		if cfg.Experimental.QUIC {
-			opts = append(opts, libp2p.DefaultTransports, libp2p.Transport(quic.NewTransport))
-		}
-
-		svc, err := autonat.NewAutoNATService(ctx, n.PeerHost, opts...)
+func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, host p2phost.Host, routingOption RoutingOption, enablePubsub bool, enableIpnsps bool) error {
+	if enablePubsub || enableIpnsps {
+		cfg, err := n.Repo.Config()
 		if err != nil {
 			return err
 		}
-		n.AutoNAT = svc
-	}
 
-	if enablePubsub || enableIpnsps {
 		var service *pubsub.PubSub
 
 		var pubsubOptions []pubsub.Option
@@ -511,10 +483,10 @@ func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOptio
 		case "":
 			fallthrough
 		case "floodsub":
-			service, err = pubsub.NewFloodSub(ctx, n.PeerHost, pubsubOptions...)
+			service, err = pubsub.NewFloodSub(ctx, host, pubsubOptions...)
 
 		case "gossipsub":
-			service, err = pubsub.NewGossipSub(ctx, n.PeerHost, pubsubOptions...)
+			service, err = pubsub.NewGossipSub(ctx, host, pubsubOptions...)
 
 		default:
 			err = fmt.Errorf("Unknown pubsub router %s", cfg.Pubsub.Router)
@@ -526,16 +498,12 @@ func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOptio
 		n.PubSub = service
 	}
 
-	// this code is necessary just for tests: mock network constructions
-	// ignore the libp2p constructor options that actually construct the routing!
-	if n.Routing == nil {
-		r, err := routingOption(ctx, n.PeerHost, n.Repo.Datastore(), n.RecordValidator)
-		if err != nil {
-			return err
-		}
-		n.Routing = r
-		n.PeerHost = rhost.Wrap(n.PeerHost, n.Routing)
+	// setup routing service
+	r, err := routingOption(ctx, host, n.Repo.Datastore(), n.RecordValidator)
+	if err != nil {
+		return err
 	}
+	n.Routing = r
 
 	// TODO: I'm not a fan of type assertions like this but the
 	// `RoutingOption` system doesn't currently provide access to the
@@ -550,14 +518,14 @@ func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOptio
 	//    PSRouter case below.
 	// 3. Introduce some kind of service manager? (my personal favorite but
 	//    that requires a fair amount of work).
-	if dht, ok := n.Routing.(*dht.IpfsDHT); ok {
+	if dht, ok := r.(*dht.IpfsDHT); ok {
 		n.DHT = dht
 	}
 
 	if enableIpnsps {
 		n.PSRouter = psrouter.NewPubsubValueStore(
 			ctx,
-			n.PeerHost,
+			host,
 			n.Routing,
 			n.PubSub,
 			n.RecordValidator,
@@ -576,6 +544,9 @@ func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOptio
 			Validator: n.RecordValidator,
 		}
 	}
+
+	// Wrap standard peer host with routing system to allow unknown peer lookups
+	n.PeerHost = rhost.Wrap(host, n.Routing)
 
 	// setup exchange service
 	bitswapNetwork := bsnet.NewFromIpfsHost(n.PeerHost, n.Routing)
@@ -602,7 +573,7 @@ func (n *IpfsNode) getCacheSize() (int, error) {
 
 	cs := cfg.Ipns.ResolveCacheSize
 	if cs == 0 {
-		cs = DefaultIpnsCacheSize
+		cs = 128
 	}
 	if cs < 0 {
 		return 0, fmt.Errorf("cannot specify negative resolve cache size")
@@ -802,17 +773,13 @@ func (n *IpfsNode) loadID() error {
 // GetKey will return a key from the Keystore with name `name`.
 func (n *IpfsNode) GetKey(name string) (ic.PrivKey, error) {
 	if name == "self" {
-		if n.PrivateKey == nil {
-			return nil, fmt.Errorf("private key not available")
-		}
 		return n.PrivateKey, nil
 	} else {
 		return n.Repo.Keystore().Get(name)
 	}
 }
 
-// loadPrivateKey loads the private key *if* available
-func (n *IpfsNode) loadPrivateKey() error {
+func (n *IpfsNode) LoadPrivateKey() error {
 	if n.Identity == "" || n.Peerstore == nil {
 		return errors.New("loaded private key out of order")
 	}
@@ -825,10 +792,6 @@ func (n *IpfsNode) loadPrivateKey() error {
 	cfg, err := n.Repo.Config()
 	if err != nil {
 		return err
-	}
-
-	if cfg.Identity.PrivKey == "" {
-		return nil
 	}
 
 	sk, err := loadPrivateKey(&cfg.Identity, n.Identity)
@@ -898,6 +861,32 @@ func (n *IpfsNode) loadFilesRoot() error {
 	}
 
 	n.FilesRoot = mr
+	return nil
+}
+
+// SetupOfflineRouting instantiates a routing system in offline mode. This is
+// primarily used for offline ipns modifications.
+func (n *IpfsNode) SetupOfflineRouting() error {
+	if n.Routing != nil {
+		// Routing was already set up
+		return nil
+	}
+
+	// TODO: move this somewhere else.
+	err := n.LoadPrivateKey()
+	if err != nil {
+		return err
+	}
+
+	n.Routing = offroute.NewOfflineRouter(n.Repo.Datastore(), n.RecordValidator)
+
+	size, err := n.getCacheSize()
+	if err != nil {
+		return err
+	}
+
+	n.Namesys = namesys.NewNameSystem(n.Routing, n.Repo.Datastore(), size)
+
 	return nil
 }
 

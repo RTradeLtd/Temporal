@@ -7,13 +7,13 @@ test_description="Test IPNS pubsub"
 # start iptb + wait for peering
 NUM_NODES=5
 test_expect_success 'init iptb' '
-    iptb testbed create -type localipfs -count $NUM_NODES -init
+    iptb init -n $NUM_NODES --bootstrap=none --port=0
 '
 
 startup_cluster $NUM_NODES --enable-namesys-pubsub
 
 test_expect_success 'peer ids' '
-    PEERID_0=$(iptb attr get 0 id)
+    PEERID_0=$(iptb get id 0)
 '
 
 test_expect_success 'check namesys pubsub state' '

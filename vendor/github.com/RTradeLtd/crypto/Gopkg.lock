@@ -2,20 +2,20 @@
 
 
 [[projects]]
-  digest = "1:4c9f0df01e3c32aa2a34633730208751a8b348666be4c0049fc913fc7576be06"
+  digest = "1:f0ddcc93863663609316065cd0bf866691ea6c1872ec6ea45935ce64825df0b7"
   name = "github.com/RTradeLtd/cmd"
   packages = ["."]
   pruneopts = "UT"
-  revision = "8ba31e4bae28bd058ad2c537aff61fd4b88fceb5"
-  version = "v1.0.0"
+  revision = "19cbd2e20bc29339ac4e27a8c4b8eb3e3592536c"
+  version = "v1.0.4"
 
 [[projects]]
-  digest = "1:aecd62b4e43d521045eb357f73cd125382c3941420491fe5c85c801617aee035"
+  digest = "1:8e3fb2f520f9dc842a894c28b893c8bf5250e1bf8c7c88589d69026687b6c44c"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "6ebeb7c19f1b87844fc86263b83bebe55d7125e2"
-  version = "v1.0.1"
+  revision = "ed6bea444ae3a52e0f95c5d4f6d4f227cb091698"
+  version = "v1.0.15"
 
 [[projects]]
   branch = "master"
@@ -23,7 +23,7 @@
   name = "golang.org/x/crypto"
   packages = ["pbkdf2"]
   pruneopts = "UT"
-  revision = "e3636079e1a4c1f337f212cc5cd2aca108f6c900"
+  revision = "505ab145d0a99da450461ae2c1a9f6cd10d1f447"
 
 [solve-meta]
   analyzer-name = "dep"

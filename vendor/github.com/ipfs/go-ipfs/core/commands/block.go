@@ -8,12 +8,13 @@ import (
 
 	util "github.com/ipfs/go-ipfs/blocks/blockstoreutil"
 	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
+	e "github.com/ipfs/go-ipfs/core/commands/e"
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
 	"github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
+	mh "gx/ipfs/QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8/go-multihash"
+	cmds "gx/ipfs/QmSXUokcP4TJpFfqozT69AVAYRtzXVMUjzQVkYX41R9Svs/go-ipfs-cmds"
 	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
-	mh "gx/ipfs/QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW/go-multihash"
 )
 
 type BlockStat struct {
@@ -60,7 +61,7 @@ on raw IPFS blocks. It outputs the following to stdout:
 		cmdkit.StringArg("key", true, false, "The base58 multihash of an existing block to stat.").EnableStdin(),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -82,7 +83,11 @@ on raw IPFS blocks. It outputs the following to stdout:
 	},
 	Type: BlockStat{},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, bs *BlockStat) error {
+		cmds.Text: cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			bs, ok := v.(*BlockStat)
+			if !ok {
+				return e.TypeErr(bs, v)
+			}
 			_, err := fmt.Fprintf(w, "%s", bs)
 			return err
 		}),
@@ -102,7 +107,7 @@ It outputs to stdout, and <key> is a base58 encoded multihash.
 		cmdkit.StringArg("key", true, false, "The base58 multihash of an existing block to get.").EnableStdin(),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -148,12 +153,12 @@ than 'sha2-256' or format to anything other than 'v0' will result in CIDv1.
 		cmdkit.IntOption(mhlenOptionName, "multihash hash length").WithDefault(-1),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
 
-		file, err := cmdenv.GetFileArg(req.Files.Entries())
+		file, err := req.Files.NextFile()
 		if err != nil {
 			return err
 		}
@@ -189,7 +194,11 @@ than 'sha2-256' or format to anything other than 'v0' will result in CIDv1.
 		})
 	},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, bs *BlockStat) error {
+		cmds.Text: cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			bs, ok := v.(*BlockStat)
+			if !ok {
+				return e.TypeErr(bs, v)
+			}
 			_, err := fmt.Fprintf(w, "%s\n", bs.Key)
 			return err
 		}),
@@ -218,7 +227,7 @@ It takes a list of base58 encoded multihashes to remove.
 		cmdkit.BoolOption(blockQuietOptionName, "q", "Write minimal output."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -240,13 +249,13 @@ It takes a list of base58 encoded multihashes to remove.
 
 			err = api.Block().Rm(req.Context, rp, options.Block.Force(force))
 			if err != nil {
-				if err := res.Emit(&util.RemovedBlock{
+				err := res.Emit(&util.RemovedBlock{
 					Hash:  rp.Cid().String(),
 					Error: err.Error(),
-				}); err != nil {
+				})
+				if err != nil {
 					return err
 				}
-				continue
 			}
 
 			if !quiet {

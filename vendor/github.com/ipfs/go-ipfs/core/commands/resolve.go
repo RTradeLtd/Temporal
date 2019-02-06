@@ -8,16 +8,16 @@ import (
 	"time"
 
 	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
+	e "github.com/ipfs/go-ipfs/core/commands/e"
 	ncmd "github.com/ipfs/go-ipfs/core/commands/name"
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
 	options "github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 	ns "github.com/ipfs/go-ipfs/namesys"
 	nsopts "github.com/ipfs/go-ipfs/namesys/opts"
-	path "gx/ipfs/QmWqh9oob7ZHQRwU5CdTqpnC8ip8BEkFNrwXRxeNo5Y7vA/go-path"
+	path "gx/ipfs/QmT3rzed1ppXefourpmoZ7tyVQfsGPQZ1pHDngLmCvXxd3/go-path"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	cidenc "gx/ipfs/QmdPQx9fvN5ExVwMhRmh7YpCQJzJrFhd1AjVBwJmRMFJeX/go-cidutil/cidenc"
-	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	"gx/ipfs/QmSXUokcP4TJpFfqozT69AVAYRtzXVMUjzQVkYX41R9Svs/go-ipfs-cmds"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 const (
@@ -75,30 +75,25 @@ Resolve the value of an IPFS DAG path:
 		cmdkit.StringOption(resolveDhtTimeoutOptionName, "dhtt", "Max time to collect values during DHT resolution eg \"30s\". Pass 0 for no timeout."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
 
-		name := req.Arguments[0]
-		recursive, _ := req.Options[resolveRecursiveOptionName].(bool)
+		n, err := cmdenv.GetNode(env)
+		if err != nil {
+			return err
+		}
 
-		var enc cidenc.Encoder
-		switch {
-		case !cmdenv.CidBaseDefined(req):
-			// Not specified, check the path.
-			enc, err = cmdenv.CidEncoderFromPath(name)
-			if err == nil {
-				break
-			}
-			// Nope, fallback on the default.
-			fallthrough
-		default:
-			enc, err = cmdenv.GetCidEncoder(req)
+		if !n.OnlineMode() {
+			err := n.SetupOfflineRouting()
 			if err != nil {
 				return err
 			}
 		}
+
+		name := req.Arguments[0]
+		recursive, _ := req.Options[resolveRecursiveOptionName].(bool)
 
 		// the case when ipns is resolved step by step
 		if strings.HasPrefix(name, "/ipns/") && !recursive {
@@ -146,11 +141,16 @@ Resolve the value of an IPFS DAG path:
 			return fmt.Errorf("found non-link at given path")
 		}
 
-		return cmds.EmitOnce(res, &ncmd.ResolvedPath{Path: path.Path("/" + rp.Namespace() + "/" + enc.Encode(rp.Cid()))})
+		return cmds.EmitOnce(res, &ncmd.ResolvedPath{Path: path.Path("/" + rp.Namespace() + "/" + rp.Cid().String())})
 	},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, rp *ncmd.ResolvedPath) error {
-			fmt.Fprintln(w, rp.Path.String())
+		cmds.Text: cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			output, ok := v.(*ncmd.ResolvedPath)
+			if !ok {
+				return e.TypeErr(output, v)
+			}
+
+			fmt.Fprintln(w, output.Path.String())
 			return nil
 		}),
 	},

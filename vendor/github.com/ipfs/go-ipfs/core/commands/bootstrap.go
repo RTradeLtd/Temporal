@@ -1,17 +1,18 @@
 package commands
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"sort"
 
-	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
+	cmds "github.com/ipfs/go-ipfs/commands"
+	e "github.com/ipfs/go-ipfs/core/commands/e"
 	repo "github.com/ipfs/go-ipfs/repo"
-	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
+	"github.com/ipfs/go-ipfs/repo/fsrepo"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	config "gx/ipfs/QmcRKBUqc2p3L1ZraoJjbXfs9E6xzvEuyK9iypb5RGwfsr/go-ipfs-config"
-	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	config "gx/ipfs/QmPEpj17FDRpc7K1aArKZp3RsHtzRMKykeK9GVgn4WQGPR/go-ipfs-config"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 type BootstrapOutput struct {
@@ -28,9 +29,9 @@ Running 'ipfs bootstrap' with no arguments will run 'ipfs bootstrap list'.
 ` + bootstrapSecurityWarning,
 	},
 
-	Run:      bootstrapListCmd.Run,
-	Encoders: bootstrapListCmd.Encoders,
-	Type:     bootstrapListCmd.Type,
+	Run:        bootstrapListCmd.Run,
+	Marshalers: bootstrapListCmd.Marshalers,
+	Type:       bootstrapListCmd.Type,
 
 	Subcommands: map[string]*cmds.Command{
 		"list": bootstrapListCmd,
@@ -62,62 +63,78 @@ in the bootstrap list).
 		"default": bootstrapAddDefaultCmd,
 	},
 
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		deflt, _ := req.Options[defaultOptionName].(bool)
+	Run: func(req cmds.Request, res cmds.Response) {
+		deflt, _, err := req.Option(defaultOptionName).Bool()
+		if err != nil {
+			res.SetError(err, cmdkit.ErrNormal)
+			return
+		}
 
 		var inputPeers []config.BootstrapPeer
 		if deflt {
 			// parse separately for meaningful, correct error.
 			defltPeers, err := config.DefaultBootstrapPeers()
 			if err != nil {
-				return err
+				res.SetError(err, cmdkit.ErrNormal)
+				return
 			}
 
 			inputPeers = defltPeers
 		} else {
-			if err := req.ParseBodyArgs(); err != nil {
-				return err
-			}
-
-			parsedPeers, err := config.ParseBootstrapPeers(req.Arguments)
+			parsedPeers, err := config.ParseBootstrapPeers(req.Arguments())
 			if err != nil {
-				return err
+				res.SetError(err, cmdkit.ErrNormal)
+				return
 			}
 
 			inputPeers = parsedPeers
 		}
 
 		if len(inputPeers) == 0 {
-			return errors.New("no bootstrap peers to add")
+			res.SetError(errors.New("no bootstrap peers to add"), cmdkit.ErrClient)
+			return
 		}
 
-		cfgRoot, err := cmdenv.GetConfigRoot(env)
+		r, err := fsrepo.Open(req.InvocContext().ConfigRoot)
 		if err != nil {
-			return err
-		}
-
-		r, err := fsrepo.Open(cfgRoot)
-		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 		defer r.Close()
 		cfg, err := r.Config()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		added, err := bootstrapAdd(r, cfg, inputPeers)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		return cmds.EmitOnce(res, &BootstrapOutput{config.BootstrapPeerStrings(added)})
+		res.SetOutput(&BootstrapOutput{config.BootstrapPeerStrings(added)})
 	},
 	Type: BootstrapOutput{},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *BootstrapOutput) error {
-			return bootstrapWritePeers(w, "added ", out.Peers)
-		}),
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: func(res cmds.Response) (io.Reader, error) {
+			v, err := unwrapOutput(res.Output())
+			if err != nil {
+				return nil, err
+			}
+
+			out, ok := v.(*BootstrapOutput)
+			if !ok {
+				return nil, e.TypeErr(out, v)
+			}
+
+			buf := new(bytes.Buffer)
+			if err := bootstrapWritePeers(buf, "added ", out.Peers); err != nil {
+				return nil, err
+			}
+
+			return buf, nil
+		},
 	},
 }
 
@@ -127,40 +144,54 @@ var bootstrapAddDefaultCmd = &cmds.Command{
 		ShortDescription: `Outputs a list of peers that were added (that weren't already
 in the bootstrap list).`,
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
+	Run: func(req cmds.Request, res cmds.Response) {
 		defltPeers, err := config.DefaultBootstrapPeers()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		cfgRoot, err := cmdenv.GetConfigRoot(env)
+		r, err := fsrepo.Open(req.InvocContext().ConfigRoot)
 		if err != nil {
-			return err
-		}
-
-		r, err := fsrepo.Open(cfgRoot)
-		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		defer r.Close()
 		cfg, err := r.Config()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		added, err := bootstrapAdd(r, cfg, defltPeers)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		return cmds.EmitOnce(res, &BootstrapOutput{config.BootstrapPeerStrings(added)})
+		res.SetOutput(&BootstrapOutput{config.BootstrapPeerStrings(added)})
 	},
 	Type: BootstrapOutput{},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *BootstrapOutput) error {
-			return bootstrapWritePeers(w, "added ", out.Peers)
-		}),
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: func(res cmds.Response) (io.Reader, error) {
+			v, err := unwrapOutput(res.Output())
+			if err != nil {
+				return nil, err
+			}
+
+			out, ok := v.(*BootstrapOutput)
+			if !ok {
+				return nil, e.TypeErr(out, v)
+			}
+
+			buf := new(bytes.Buffer)
+			if err := bootstrapWritePeers(buf, "added ", out.Peers); err != nil {
+				return nil, err
+			}
+
+			return buf, nil
+		},
 	},
 }
 
@@ -184,50 +215,61 @@ var bootstrapRemoveCmd = &cmds.Command{
 	Subcommands: map[string]*cmds.Command{
 		"all": bootstrapRemoveAllCmd,
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		all, _ := req.Options[bootstrapAllOptionName].(bool)
-
-		cfgRoot, err := cmdenv.GetConfigRoot(env)
+	Run: func(req cmds.Request, res cmds.Response) {
+		all, _, err := req.Option(bootstrapAllOptionName).Bool()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		r, err := fsrepo.Open(cfgRoot)
+		r, err := fsrepo.Open(req.InvocContext().ConfigRoot)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 		defer r.Close()
 		cfg, err := r.Config()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		var removed []config.BootstrapPeer
 		if all {
 			removed, err = bootstrapRemoveAll(r, cfg)
 		} else {
-			if err := req.ParseBodyArgs(); err != nil {
-				return err
-			}
-
-			input, perr := config.ParseBootstrapPeers(req.Arguments)
+			input, perr := config.ParseBootstrapPeers(req.Arguments())
 			if perr != nil {
-				return err
+				res.SetError(perr, cmdkit.ErrNormal)
+				return
 			}
 
 			removed, err = bootstrapRemove(r, cfg, input)
 		}
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		return cmds.EmitOnce(res, &BootstrapOutput{config.BootstrapPeerStrings(removed)})
+		res.SetOutput(&BootstrapOutput{config.BootstrapPeerStrings(removed)})
 	},
 	Type: BootstrapOutput{},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *BootstrapOutput) error {
-			return bootstrapWritePeers(w, "removed ", out.Peers)
-		}),
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: func(res cmds.Response) (io.Reader, error) {
+			v, err := unwrapOutput(res.Output())
+			if err != nil {
+				return nil, err
+			}
+
+			out, ok := v.(*BootstrapOutput)
+			if !ok {
+				return nil, e.TypeErr(out, v)
+			}
+
+			buf := new(bytes.Buffer)
+			err = bootstrapWritePeers(buf, "removed ", out.Peers)
+			return buf, err
+		},
 	},
 }
 
@@ -237,34 +279,44 @@ var bootstrapRemoveAllCmd = &cmds.Command{
 		ShortDescription: `Outputs the list of peers that were removed.`,
 	},
 
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		cfgRoot, err := cmdenv.GetConfigRoot(env)
+	Run: func(req cmds.Request, res cmds.Response) {
+		r, err := fsrepo.Open(req.InvocContext().ConfigRoot)
 		if err != nil {
-			return err
-		}
-
-		r, err := fsrepo.Open(cfgRoot)
-		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 		defer r.Close()
 		cfg, err := r.Config()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		removed, err := bootstrapRemoveAll(r, cfg)
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		return cmds.EmitOnce(res, &BootstrapOutput{config.BootstrapPeerStrings(removed)})
+		res.SetOutput(&BootstrapOutput{config.BootstrapPeerStrings(removed)})
 	},
 	Type: BootstrapOutput{},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *BootstrapOutput) error {
-			return bootstrapWritePeers(w, "removed ", out.Peers)
-		}),
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: func(res cmds.Response) (io.Reader, error) {
+			v, err := unwrapOutput(res.Output())
+			if err != nil {
+				return nil, err
+			}
+
+			out, ok := v.(*BootstrapOutput)
+			if !ok {
+				return nil, e.TypeErr(out, v)
+			}
+
+			buf := new(bytes.Buffer)
+			err = bootstrapWritePeers(buf, "removed ", out.Peers)
+			return buf, err
+		},
 	},
 }
 
@@ -274,38 +326,50 @@ var bootstrapListCmd = &cmds.Command{
 		ShortDescription: "Peers are output in the format '<multiaddr>/<peerID>'.",
 	},
 
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		cfgRoot, err := cmdenv.GetConfigRoot(env)
+	Run: func(req cmds.Request, res cmds.Response) {
+		r, err := fsrepo.Open(req.InvocContext().ConfigRoot)
 		if err != nil {
-			return err
-		}
-
-		r, err := fsrepo.Open(cfgRoot)
-		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 		defer r.Close()
 		cfg, err := r.Config()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		peers, err := cfg.BootstrapPeers()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
-
-		return cmds.EmitOnce(res, &BootstrapOutput{config.BootstrapPeerStrings(peers)})
+		res.SetOutput(&BootstrapOutput{config.BootstrapPeerStrings(peers)})
 	},
 	Type: BootstrapOutput{},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *BootstrapOutput) error {
-			return bootstrapWritePeers(w, "", out.Peers)
-		}),
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: bootstrapMarshaler,
 	},
 }
 
+func bootstrapMarshaler(res cmds.Response) (io.Reader, error) {
+	v, err := unwrapOutput(res.Output())
+	if err != nil {
+		return nil, err
+	}
+
+	out, ok := v.(*BootstrapOutput)
+	if !ok {
+		return nil, e.TypeErr(out, v)
+	}
+
+	buf := new(bytes.Buffer)
+	err = bootstrapWritePeers(buf, "", out.Peers)
+	return buf, err
+}
+
 func bootstrapWritePeers(w io.Writer, prefix string, peers []string) error {
+
 	sort.Stable(sort.StringSlice(peers))
 	for _, peer := range peers {
 		_, err := w.Write([]byte(prefix + peer + "\n"))

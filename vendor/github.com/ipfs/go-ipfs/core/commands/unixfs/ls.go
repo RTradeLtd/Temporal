@@ -1,18 +1,19 @@
 package unixfs
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"sort"
 	"text/tabwriter"
 
-	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
+	cmds "github.com/ipfs/go-ipfs/commands"
+	e "github.com/ipfs/go-ipfs/core/commands/e"
 	iface "github.com/ipfs/go-ipfs/core/coreapi/interface"
 
-	unixfs "gx/ipfs/QmQ1JnYpnzkaurjW1yxkQxC2w3K1PorNE1nv1vaP5Le7sq/go-unixfs"
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	merkledag "gx/ipfs/Qmb2UEG2TAeVrEJSjqsZF7Y2he7wRDkrdt6c3bECxwZf4k/go-merkledag"
+	merkledag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
 	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	unixfs "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs"
 )
 
 type LsLink struct {
@@ -71,22 +72,20 @@ possible, please use 'ipfs ls' instead.
 	Arguments: []cmdkit.Argument{
 		cmdkit.StringArg("ipfs-path", true, true, "The path to the IPFS object(s) to list links from.").EnableStdin(),
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		nd, err := cmdenv.GetNode(env)
+	Run: func(req cmds.Request, res cmds.Response) {
+		node, err := req.InvocContext().GetNode()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		api, err := cmdenv.GetApi(env, req)
+		api, err := req.InvocContext().GetApi()
 		if err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
-		if err := req.ParseBodyArgs(); err != nil {
-			return err
-		}
-
-		paths := req.Arguments
+		paths := req.Arguments()
 
 		output := LsOutput{
 			Arguments: map[string]string{},
@@ -94,16 +93,18 @@ possible, please use 'ipfs ls' instead.
 		}
 
 		for _, p := range paths {
-			ctx := req.Context
+			ctx := req.Context()
 
 			fpath, err := iface.ParsePath(p)
 			if err != nil {
-				return err
+				res.SetError(err, cmdkit.ErrNormal)
+				return
 			}
 
 			merkleNode, err := api.ResolveNode(ctx, fpath)
 			if err != nil {
-				return err
+				res.SetError(err, cmdkit.ErrNormal)
+				return
 			}
 
 			c := merkleNode.Cid()
@@ -118,12 +119,14 @@ possible, please use 'ipfs ls' instead.
 
 			ndpb, ok := merkleNode.(*merkledag.ProtoNode)
 			if !ok {
-				return merkledag.ErrNotProtobuf
+				res.SetError(merkledag.ErrNotProtobuf, cmdkit.ErrNormal)
+				return
 			}
 
 			unixFSNode, err := unixfs.FSNodeFromBytes(ndpb.Data())
 			if err != nil {
-				return err
+				res.SetError(err, cmdkit.ErrNormal)
+				return
 			}
 
 			t := unixFSNode.Type()
@@ -139,23 +142,27 @@ possible, please use 'ipfs ls' instead.
 				break
 			case unixfs.THAMTShard:
 				// We need a streaming ls API for this.
-				return fmt.Errorf("cannot list large directories yet")
+				res.SetError(fmt.Errorf("cannot list large directories yet"), cmdkit.ErrNormal)
+				return
 			case unixfs.TDirectory:
 				links := make([]LsLink, len(merkleNode.Links()))
 				output.Objects[hash].Links = links
 				for i, link := range merkleNode.Links() {
-					linkNode, err := link.GetNode(ctx, nd.DAG)
+					linkNode, err := link.GetNode(ctx, node.DAG)
 					if err != nil {
-						return err
+						res.SetError(err, cmdkit.ErrNormal)
+						return
 					}
 					lnpb, ok := linkNode.(*merkledag.ProtoNode)
 					if !ok {
-						return merkledag.ErrNotProtobuf
+						res.SetError(merkledag.ErrNotProtobuf, cmdkit.ErrNormal)
+						return
 					}
 
 					d, err := unixfs.FSNodeFromBytes(lnpb.Data())
 					if err != nil {
-						return err
+						res.SetError(err, cmdkit.ErrNormal)
+						return
 					}
 					t := d.Type()
 					lsLink := LsLink{
@@ -171,24 +178,36 @@ possible, please use 'ipfs ls' instead.
 					links[i] = lsLink
 				}
 			case unixfs.TSymlink:
-				return fmt.Errorf("cannot list symlinks yet")
+				res.SetError(fmt.Errorf("cannot list symlinks yet"), cmdkit.ErrNormal)
+				return
 			default:
-				return fmt.Errorf("unrecognized type: %s", t)
+				res.SetError(fmt.Errorf("unrecognized type: %s", t), cmdkit.ErrImplementation)
+				return
 			}
 		}
 
-		return cmds.EmitOnce(res, &output)
+		res.SetOutput(&output)
 	},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *LsOutput) error {
-			tw := tabwriter.NewWriter(w, 1, 2, 1, ' ', 0)
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: func(res cmds.Response) (io.Reader, error) {
+			v, err := unwrapOutput(res.Output())
+			if err != nil {
+				return nil, err
+			}
+
+			output, ok := v.(*LsOutput)
+			if !ok {
+				return nil, e.TypeErr(output, v)
+			}
+			buf := new(bytes.Buffer)
+			w := tabwriter.NewWriter(buf, 1, 2, 1, ' ', 0)
 
 			nonDirectories := []string{}
 			directories := []string{}
-			for argument, hash := range out.Arguments {
-				object, ok := out.Objects[hash]
+			for argument, hash := range output.Arguments {
+				object, ok := output.Objects[hash]
 				if !ok {
-					return fmt.Errorf("unresolved hash: %s", hash)
+					return nil, fmt.Errorf("unresolved hash: %s", hash)
 				}
 
 				if object.Type == "Directory" {
@@ -201,36 +220,36 @@ possible, please use 'ipfs ls' instead.
 			sort.Strings(directories)
 
 			for _, argument := range nonDirectories {
-				fmt.Fprintf(tw, "%s\n", argument)
+				fmt.Fprintf(w, "%s\n", argument)
 			}
 
 			seen := map[string]bool{}
 			for i, argument := range directories {
-				hash := out.Arguments[argument]
+				hash := output.Arguments[argument]
 				if _, ok := seen[hash]; ok {
 					continue
 				}
 				seen[hash] = true
 
-				object := out.Objects[hash]
+				object := output.Objects[hash]
 				if i > 0 || len(nonDirectories) > 0 {
-					fmt.Fprintln(tw)
+					fmt.Fprintln(w)
 				}
-				if len(out.Arguments) > 1 {
+				if len(output.Arguments) > 1 {
 					for _, arg := range directories[i:] {
-						if out.Arguments[arg] == hash {
-							fmt.Fprintf(tw, "%s:\n", arg)
+						if output.Arguments[arg] == hash {
+							fmt.Fprintf(w, "%s:\n", arg)
 						}
 					}
 				}
 				for _, link := range object.Links {
-					fmt.Fprintf(tw, "%s\n", link.Name)
+					fmt.Fprintf(w, "%s\n", link.Name)
 				}
 			}
-			tw.Flush()
+			w.Flush()
 
-			return nil
-		}),
+			return buf, nil
+		},
 	},
 	Type: LsOutput{},
 }

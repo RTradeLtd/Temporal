@@ -14,7 +14,6 @@ type listingTemplateData struct {
 	Listing  []directoryItem
 	Path     string
 	BackLink string
-	Hash     string
 }
 
 type directoryItem struct {

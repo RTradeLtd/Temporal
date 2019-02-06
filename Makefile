@@ -1,5 +1,6 @@
 TEMPORALVERSION=`git describe --tags`
 TEMPORALDEVFLAGS=-config ./testenv/config.json -db.no_ssl
+IPFSVERSION=v0.4.18
 
 all: check cli
 

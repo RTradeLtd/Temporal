@@ -86,7 +86,7 @@ run_advanced_test() {
 }
 
 test_expect_success "set up tcp testbed" '
-  iptb testbed create -type localipfs -count 2 -force -init
+  iptb init -n 2 -p 0 -f --bootstrap=none
 '
 
 # Enable quic but don't use it yet.
