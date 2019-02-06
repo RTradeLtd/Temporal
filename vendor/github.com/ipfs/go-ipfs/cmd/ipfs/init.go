@@ -16,17 +16,13 @@ import (
 	namesys "github.com/ipfs/go-ipfs/namesys"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 
-	"gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	"gx/ipfs/QmaXvvAVAQ5ABqM5xtjYmV85xmN5MkWAZsX9H9Fwo4FVXp/go-ipfs-files"
-	"gx/ipfs/QmcRKBUqc2p3L1ZraoJjbXfs9E6xzvEuyK9iypb5RGwfsr/go-ipfs-config"
+	"gx/ipfs/QmPEpj17FDRpc7K1aArKZp3RsHtzRMKykeK9GVgn4WQGPR/go-ipfs-config"
+	"gx/ipfs/QmSXUokcP4TJpFfqozT69AVAYRtzXVMUjzQVkYX41R9Svs/go-ipfs-cmds"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 const (
 	nBitsForKeypairDefault = 2048
-	bitsOptionName         = "bits"
-	emptyRepoOptionName    = "empty-repo"
-	profileOptionName      = "profile"
 )
 
 var initCmd = &cmds.Command{
@@ -51,9 +47,9 @@ environment variable:
 		cmdkit.FileArg("default-config", false, false, "Initialize with the given configuration.").EnableStdin(),
 	},
 	Options: []cmdkit.Option{
-		cmdkit.IntOption(bitsOptionName, "b", "Number of bits to use in the generated RSA private key.").WithDefault(nBitsForKeypairDefault),
-		cmdkit.BoolOption(emptyRepoOptionName, "e", "Don't add and pin help files to the local storage."),
-		cmdkit.StringOption(profileOptionName, "p", "Apply profile settings to config. Multiple profiles can be separated by ','"),
+		cmdkit.IntOption("bits", "b", "Number of bits to use in the generated RSA private key.").WithDefault(nBitsForKeypairDefault),
+		cmdkit.BoolOption("empty-repo", "e", "Don't add and pin help files to the local storage."),
+		cmdkit.StringOption("profile", "p", "Apply profile settings to config. Multiple profiles can be separated by ','"),
 
 		// TODO need to decide whether to expose the override as a file or a
 		// directory. That is: should we allow the user to also specify the
@@ -82,32 +78,25 @@ environment variable:
 			return cmdkit.Error{Message: "init must be run offline only"}
 		}
 
-		empty, _ := req.Options[emptyRepoOptionName].(bool)
-		nBitsForKeypair, _ := req.Options[bitsOptionName].(int)
+		empty, _ := req.Options["empty-repo"].(bool)
+		nBitsForKeypair, _ := req.Options["bits"].(int)
 
 		var conf *config.Config
 
 		f := req.Files
 		if f != nil {
-			it := req.Files.Entries()
-			if !it.Next() {
-				if it.Err() != nil {
-					return it.Err()
-				}
-				return fmt.Errorf("file argument was nil")
-			}
-			file := files.FileFromEntry(it)
-			if file == nil {
-				return fmt.Errorf("expected a regular file")
+			confFile, err := f.NextFile()
+			if err != nil {
+				return err
 			}
 
 			conf = &config.Config{}
-			if err := json.NewDecoder(file).Decode(conf); err != nil {
+			if err := json.NewDecoder(confFile).Decode(conf); err != nil {
 				return err
 			}
 		}
 
-		profile, _ := req.Options[profileOptionName].(string)
+		profile, _ := req.Options["profile"].(string)
 
 		var profiles []string
 		if profile != "" {
@@ -247,6 +236,11 @@ func initializeIpnsKeyspace(repoRoot string) error {
 		return err
 	}
 	defer nd.Close()
+
+	err = nd.SetupOfflineRouting()
+	if err != nil {
+		return err
+	}
 
 	return namesys.InitializeKeyspace(ctx, nd.Namesys, nd.Pinning, nd.PrivateKey)
 }

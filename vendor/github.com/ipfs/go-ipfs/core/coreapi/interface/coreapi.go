@@ -5,9 +5,7 @@ package iface
 import (
 	"context"
 
-	"github.com/ipfs/go-ipfs/core/coreapi/interface/options"
-
-	ipld "gx/ipfs/QmRL22E4paat7ky7vx9MLpR97JHHbFPrg3ytFQw6qp1y1s/go-ipld-format"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
 )
 
 // CoreAPI defines an unified interface to IPFS for Go programs
@@ -19,7 +17,7 @@ type CoreAPI interface {
 	Block() BlockAPI
 
 	// Dag returns an implementation of Dag API
-	Dag() APIDagService
+	Dag() DagAPI
 
 	// Name returns an implementation of Name API
 	Name() NameAPI
@@ -48,8 +46,4 @@ type CoreAPI interface {
 	// ResolveNode resolves the path (if not resolved already) using Unixfs
 	// resolver, gets and returns the resolved Node
 	ResolveNode(context.Context, Path) (ipld.Node, error)
-
-	// WithOptions creates new instance of CoreAPI based on this instance with
-	// a set of options applied
-	WithOptions(...options.ApiOption) (CoreAPI, error)
 }

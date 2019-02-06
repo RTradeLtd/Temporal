@@ -6,10 +6,12 @@ import (
 	"strings"
 
 	"github.com/ipfs/go-ipfs/core/commands/cmdenv"
-	"gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	"gx/ipfs/QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY/go-libp2p-peer"
+	"github.com/ipfs/go-ipfs/core/commands/e"
+
+	"gx/ipfs/QmSXUokcP4TJpFfqozT69AVAYRtzXVMUjzQVkYX41R9Svs/go-ipfs-cmds"
+	"gx/ipfs/QmTRhk7cgjUf2gfQ3p2M9KPECNZEW9XUrmHcFCgog4cPgB/go-libp2p-peer"
+	"gx/ipfs/Qma9Eqp16mNHDX1EL73pcxhFfzbyXVcAYtaDd1xdmDRDtL/go-libp2p-record"
 	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
-	"gx/ipfs/QmfARXVCzpwFXQdepAJZuqyNDgV9doEsMnVCo1ssmuSe1U/go-libp2p-record"
 )
 
 type ipnsPubsubState struct {
@@ -55,9 +57,14 @@ var ipnspsStateCmd = &cmds.Command{
 	},
 	Type: ipnsPubsubState{},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, ips *ipnsPubsubState) error {
+		cmds.Text: cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			output, ok := v.(*ipnsPubsubState)
+			if !ok {
+				return e.TypeErr(output, v)
+			}
+
 			var state string
-			if ips.Enabled {
+			if output.Enabled {
 				state = "enabled"
 			} else {
 				state = "disabled"
@@ -101,7 +108,7 @@ var ipnspsSubsCmd = &cmds.Command{
 	},
 	Type: stringList{},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: stringListEncoder(),
+		cmds.Text: stringListMarshaler(),
 	},
 }
 
@@ -137,9 +144,14 @@ var ipnspsCancelCmd = &cmds.Command{
 	},
 	Type: ipnsPubsubCancel{},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, ipc *ipnsPubsubCancel) error {
+		cmds.Text: cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			output, ok := v.(*ipnsPubsubCancel)
+			if !ok {
+				return e.TypeErr(output, v)
+			}
+
 			var state string
-			if ipc.Canceled {
+			if output.Canceled {
 				state = "canceled"
 			} else {
 				state = "no subscription"
@@ -151,8 +163,13 @@ var ipnspsCancelCmd = &cmds.Command{
 	},
 }
 
-func stringListEncoder() cmds.EncoderFunc {
-	return cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, list *stringList) error {
+func stringListMarshaler() cmds.EncoderFunc {
+	return cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+		list, ok := v.(*stringList)
+		if !ok {
+			return e.TypeErr(list, v)
+		}
+
 		for _, s := range list.Strings {
 			_, err := fmt.Fprintln(w, s)
 			if err != nil {

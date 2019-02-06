@@ -1,13 +1,17 @@
 package commands
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
-	lwriter "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log/writer"
-	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	cmds "github.com/ipfs/go-ipfs/commands"
+	e "github.com/ipfs/go-ipfs/core/commands/e"
+
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	lwriter "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log/writer"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 // Golang os.Args overrides * and replaces the character argument with
@@ -49,8 +53,9 @@ the event log.
 			One of: debug, info, warning, error, critical.
 		`),
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		args := req.Arguments
+	Run: func(req cmds.Request, res cmds.Response) {
+
+		args := req.Arguments()
 		subsystem, level := args[0], args[1]
 
 		if subsystem == logAllKeyword {
@@ -58,19 +63,16 @@ the event log.
 		}
 
 		if err := logging.SetLogLevel(subsystem, level); err != nil {
-			return err
+			res.SetError(err, cmdkit.ErrNormal)
+			return
 		}
 
 		s := fmt.Sprintf("Changed log level of '%s' to '%s'\n", subsystem, level)
 		log.Info(s)
-
-		return cmds.EmitOnce(res, &MessageOutput{s})
+		res.SetOutput(&MessageOutput{s})
 	},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *MessageOutput) error {
-			fmt.Fprint(w, out.Message)
-			return nil
-		}),
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: MessageTextMarshaler,
 	},
 	Type: MessageOutput{},
 }
@@ -83,16 +85,11 @@ var logLsCmd = &cmds.Command{
 subsystems of a running daemon.
 `,
 	},
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		return cmds.EmitOnce(res, &stringList{logging.GetSubsystems()})
+	Run: func(req cmds.Request, res cmds.Response) {
+		res.SetOutput(&stringList{logging.GetSubsystems()})
 	},
-	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, list *stringList) error {
-			for _, s := range list.Strings {
-				fmt.Fprintln(w, s)
-			}
-			return nil
-		}),
+	Marshalers: cmds.MarshalerMap{
+		cmds.Text: stringListMarshaler,
 	},
 	Type: stringList{},
 }
@@ -105,14 +102,49 @@ Outputs event log messages (not other log messages) as they are generated.
 `,
 	},
 
-	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		ctx := req.Context
-		r, w := io.Pipe()
+	Run: func(req cmds.Request, res cmds.Response) {
+		ctx := req.Context()
+		r1, w1 := io.Pipe()
+		r2, w2 := io.Pipe()
 		go func() {
-			defer w.Close()
+			defer w1.Close()
 			<-ctx.Done()
 		}()
-		lwriter.WriterGroup.AddWriter(w)
-		return res.Emit(r)
+		// Reformat the logs as ndjson
+		// TODO: remove this: #5709
+		go func() {
+			defer w2.Close()
+			decoder := json.NewDecoder(r1)
+			encoder := json.NewEncoder(w2)
+			for {
+				var obj interface{}
+				if decoder.Decode(&obj) != nil || encoder.Encode(obj) != nil {
+					return
+				}
+			}
+		}()
+
+		lwriter.WriterGroup.AddWriter(w1)
+		res.SetOutput(r2)
 	},
+}
+
+func stringListMarshaler(res cmds.Response) (io.Reader, error) {
+	v, err := unwrapOutput(res.Output())
+	if err != nil {
+		return nil, err
+	}
+
+	list, ok := v.(*stringList)
+	if !ok {
+		return nil, e.TypeErr(list, v)
+	}
+
+	buf := new(bytes.Buffer)
+	for _, s := range list.Strings {
+		buf.WriteString(s)
+		buf.WriteString("\n")
+	}
+
+	return buf, nil
 }

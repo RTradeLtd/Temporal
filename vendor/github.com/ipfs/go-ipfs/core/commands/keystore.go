@@ -6,10 +6,11 @@ import (
 	"text/tabwriter"
 
 	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
-	options "github.com/ipfs/go-ipfs/core/coreapi/interface/options"
+	"github.com/ipfs/go-ipfs/core/commands/e"
+	"github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	"gx/ipfs/QmSXUokcP4TJpFfqozT69AVAYRtzXVMUjzQVkYX41R9Svs/go-ipfs-cmds"
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 var KeyCmd = &cmds.Command{
@@ -71,7 +72,7 @@ var keyGenCmd = &cmds.Command{
 		cmdkit.StringArg("name", true, false, "name of key to create"),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -105,8 +106,13 @@ var keyGenCmd = &cmds.Command{
 		})
 	},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, ko *KeyOutput) error {
-			_, err := w.Write([]byte(ko.Id + "\n"))
+		cmds.Text: cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			k, ok := v.(*KeyOutput)
+			if !ok {
+				return e.TypeErr(k, v)
+			}
+
+			_, err := w.Write([]byte(k.Id + "\n"))
 			return err
 		}),
 	},
@@ -121,7 +127,7 @@ var keyListCmd = &cmds.Command{
 		cmdkit.BoolOption("l", "Show extra information about keys."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -140,7 +146,7 @@ var keyListCmd = &cmds.Command{
 		return cmds.EmitOnce(res, &KeyOutputList{list})
 	},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: keyOutputListEncoders(),
+		cmds.Text: keyOutputListMarshaler(),
 	},
 	Type: KeyOutputList{},
 }
@@ -161,7 +167,7 @@ var keyRenameCmd = &cmds.Command{
 		cmdkit.BoolOption(keyStoreForceOptionName, "f", "Allow to overwrite an existing key."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -183,11 +189,16 @@ var keyRenameCmd = &cmds.Command{
 		})
 	},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, kro *KeyRenameOutput) error {
-			if kro.Overwrite {
-				fmt.Fprintf(w, "Key %s renamed to %s with overwriting\n", kro.Id, kro.Now)
+		cmds.Text: cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			k, ok := v.(*KeyRenameOutput)
+			if !ok {
+				return fmt.Errorf("expected a KeyRenameOutput as command result")
+			}
+
+			if k.Overwrite {
+				fmt.Fprintf(w, "Key %s renamed to %s with overwriting\n", k.Id, k.Now)
 			} else {
-				fmt.Fprintf(w, "Key %s renamed to %s\n", kro.Id, kro.Now)
+				fmt.Fprintf(w, "Key %s renamed to %s\n", k.Id, k.Now)
 			}
 			return nil
 		}),
@@ -206,7 +217,7 @@ var keyRmCmd = &cmds.Command{
 		cmdkit.BoolOption("l", "Show extra information about keys."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -226,14 +237,19 @@ var keyRmCmd = &cmds.Command{
 		return cmds.EmitOnce(res, &KeyOutputList{list})
 	},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: keyOutputListEncoders(),
+		cmds.Text: keyOutputListMarshaler(),
 	},
 	Type: KeyOutputList{},
 }
 
-func keyOutputListEncoders() cmds.EncoderFunc {
-	return cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, list *KeyOutputList) error {
+func keyOutputListMarshaler() cmds.EncoderFunc {
+	return cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
 		withID, _ := req.Options["l"].(bool)
+
+		list, ok := v.(*KeyOutputList)
+		if !ok {
+			return e.TypeErr(list, v)
+		}
 
 		tw := tabwriter.NewWriter(w, 1, 2, 1, ' ', 0)
 		for _, s := range list.Keys {

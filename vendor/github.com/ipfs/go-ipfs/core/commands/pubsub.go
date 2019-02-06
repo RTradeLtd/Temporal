@@ -9,9 +9,10 @@ import (
 	"sort"
 
 	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
+	e "github.com/ipfs/go-ipfs/core/commands/e"
 	options "github.com/ipfs/go-ipfs/core/coreapi/interface/options"
 
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
+	cmds "gx/ipfs/QmSXUokcP4TJpFfqozT69AVAYRtzXVMUjzQVkYX41R9Svs/go-ipfs-cmds"
 	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
@@ -78,7 +79,7 @@ This command outputs data in the following encodings:
 		cmdkit.BoolOption(pubsubDiscoverOptionName, "try to discover other peers subscribed to the same topic"),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -115,20 +116,35 @@ This command outputs data in the following encodings:
 		}
 	},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, psm *pubsubMessage) error {
-			_, err := w.Write(psm.Data)
-			return err
-		}),
-		"ndpayload": cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, psm *pubsubMessage) error {
-			psm.Data = append(psm.Data, '\n')
-			_, err := w.Write(psm.Data)
-			return err
-		}),
-		"lenpayload": cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, psm *pubsubMessage) error {
-			buf := make([]byte, 8, len(psm.Data)+8)
+		cmds.Text: cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			m, ok := v.(*pubsubMessage)
+			if !ok {
+				return fmt.Errorf("unexpected type: %T", v)
+			}
 
-			n := binary.PutUvarint(buf, uint64(len(psm.Data)))
-			buf = append(buf[:n], psm.Data...)
+			_, err := w.Write(m.Data)
+			return err
+		}),
+		"ndpayload": cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			m, ok := v.(*pubsubMessage)
+			if !ok {
+				return fmt.Errorf("unexpected type: %T", v)
+			}
+
+			m.Data = append(m.Data, '\n')
+			_, err := w.Write(m.Data)
+			return err
+		}),
+		"lenpayload": cmds.MakeEncoder(func(req *cmds.Request, w io.Writer, v interface{}) error {
+			m, ok := v.(*pubsubMessage)
+			if !ok {
+				return fmt.Errorf("unexpected type: %T", v)
+			}
+
+			buf := make([]byte, 8, len(m.Data)+8)
+
+			n := binary.PutUvarint(buf, uint64(len(m.Data)))
+			buf = append(buf[:n], m.Data...)
 			_, err := w.Write(buf)
 			return err
 		}),
@@ -153,7 +169,7 @@ To use, the daemon must be run with '--enable-pubsub-experiment'.
 		cmdkit.StringArg("data", true, true, "Payload of message to publish.").EnableStdin(),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -188,7 +204,7 @@ To use, the daemon must be run with '--enable-pubsub-experiment'.
 `,
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -202,11 +218,15 @@ To use, the daemon must be run with '--enable-pubsub-experiment'.
 	},
 	Type: stringList{},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(stringListEncoder),
+		cmds.Text: cmds.MakeEncoder(stringListEncoder),
 	},
 }
 
-func stringListEncoder(req *cmds.Request, w io.Writer, list *stringList) error {
+func stringListEncoder(req *cmds.Request, w io.Writer, v interface{}) error {
+	list, ok := v.(*stringList)
+	if !ok {
+		return e.TypeErr(list, v)
+	}
 	for _, str := range list.Strings {
 		_, err := fmt.Fprintf(w, "%s\n", str)
 		if err != nil {
@@ -234,7 +254,7 @@ To use, the daemon must be run with '--enable-pubsub-experiment'.
 		cmdkit.StringArg("topic", false, false, "topic to list connected peers of"),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
-		api, err := cmdenv.GetApi(env, req)
+		api, err := cmdenv.GetApi(env)
 		if err != nil {
 			return err
 		}
@@ -259,6 +279,6 @@ To use, the daemon must be run with '--enable-pubsub-experiment'.
 	},
 	Type: stringList{},
 	Encoders: cmds.EncoderMap{
-		cmds.Text: cmds.MakeTypedEncoder(stringListEncoder),
+		cmds.Text: cmds.MakeEncoder(stringListEncoder),
 	},
 }

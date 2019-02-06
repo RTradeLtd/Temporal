@@ -2,29 +2,31 @@ package coreunix
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	gopath "path"
+	"path/filepath"
 	"strconv"
 
+	core "github.com/ipfs/go-ipfs/core"
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
 	"github.com/ipfs/go-ipfs/pin"
 
-	"gx/ipfs/QmQ1JnYpnzkaurjW1yxkQxC2w3K1PorNE1nv1vaP5Le7sq/go-unixfs"
-	"gx/ipfs/QmQ1JnYpnzkaurjW1yxkQxC2w3K1PorNE1nv1vaP5Le7sq/go-unixfs/importer/balanced"
-	ihelper "gx/ipfs/QmQ1JnYpnzkaurjW1yxkQxC2w3K1PorNE1nv1vaP5Le7sq/go-unixfs/importer/helpers"
-	"gx/ipfs/QmQ1JnYpnzkaurjW1yxkQxC2w3K1PorNE1nv1vaP5Le7sq/go-unixfs/importer/trickle"
-	chunker "gx/ipfs/QmR4QQVkBZsZENRjYFVi8dEtPL3daZRNKk24m4r6WKJHNm/go-ipfs-chunker"
-	"gx/ipfs/QmR66iEqVtNMbbZxTHPY3F6W5QLFqZEDbFD7gzbE9HpYXU/go-mfs"
-	"gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	ipld "gx/ipfs/QmRL22E4paat7ky7vx9MLpR97JHHbFPrg3ytFQw6qp1y1s/go-ipld-format"
-	bstore "gx/ipfs/QmS2aqUZLJp8kF1ihE5rvDGE5LvmKDPnx32w9Z1BW9xLV5/go-ipfs-blockstore"
-	"gx/ipfs/QmUhHBdzfNb9FQPDtKwhghVoR3zwkbXzFJ1uJyEMYUpFSd/go-ipfs-posinfo"
-	"gx/ipfs/QmaXvvAVAQ5ABqM5xtjYmV85xmN5MkWAZsX9H9Fwo4FVXp/go-ipfs-files"
-	dag "gx/ipfs/Qmb2UEG2TAeVrEJSjqsZF7Y2he7wRDkrdt6c3bECxwZf4k/go-merkledag"
-	logging "gx/ipfs/QmcuXC5cxs79ro2cUuHs4HQ2bkDLJUYokwL8aivcX6HW3C/go-log"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	posinfo "gx/ipfs/QmQyUyYcpKG1u53V7N25qRTGw5XwaAxTMKXbduqHotQztg/go-ipfs-posinfo"
+	ipld "gx/ipfs/QmR7TcHkR9nxkUorfi8XMTAMLUK7GiP64TWWBzY3aacc1o/go-ipld-format"
+	dag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
+	chunker "gx/ipfs/QmTUTG9Jg9ZRA1EzTPGTDvnwfcfKhDMnqANnP9fe4rSjMR/go-ipfs-chunker"
+	mfs "gx/ipfs/QmUwXQs8aZ472DmXZ8uJNf7HJNKoMJQVa7RaCz7ujZ3ua9/go-mfs"
+	logging "gx/ipfs/QmZChCsSt8DctjceaL56Eibc29CVQq4dGKRXC5JRZ6Ppae/go-log"
+	files "gx/ipfs/QmZMWMvWMVKCbHetJ4RgndbuEF1io2UpUxwQwtNjtYPzSC/go-ipfs-files"
+	bstore "gx/ipfs/QmcDDgAXDbpDUpadCJKLr49KYR4HuL7T8Z1dZTHt6ixsoR/go-ipfs-blockstore"
+	unixfs "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs"
+	balanced "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/importer/balanced"
+	ihelper "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/importer/helpers"
+	trickle "gx/ipfs/QmfB3oNXGGq9S4B2a9YeCajoATms3Zw2VvDm8fK7VeLSV8/go-unixfs/importer/trickle"
 )
 
 var log = logging.Logger("coreunix")
@@ -39,14 +41,20 @@ type Link struct {
 	Size       uint64
 }
 
+type Object struct {
+	Hash  string
+	Links []Link
+	Size  string
+}
+
 // NewAdder Returns a new Adder used for a file add operation.
-func NewAdder(ctx context.Context, p pin.Pinner, bs bstore.GCLocker, ds ipld.DAGService) (*Adder, error) {
+func NewAdder(ctx context.Context, p pin.Pinner, bs bstore.GCBlockstore, ds ipld.DAGService) (*Adder, error) {
 	bufferedDS := ipld.NewBufferedDAG(ctx, ds)
 
 	return &Adder{
 		ctx:        ctx,
 		pinning:    p,
-		gcLocker:   bs,
+		blockstore: bs,
 		dagService: ds,
 		bufferedDS: bufferedDS,
 		Progress:   false,
@@ -62,7 +70,7 @@ func NewAdder(ctx context.Context, p pin.Pinner, bs bstore.GCLocker, ds ipld.DAG
 type Adder struct {
 	ctx        context.Context
 	pinning    pin.Pinner
-	gcLocker   bstore.GCLocker
+	blockstore bstore.GCBlockstore
 	dagService ipld.DAGService
 	bufferedDS *ipld.BufferedDAG
 	Out        chan<- interface{}
@@ -121,15 +129,11 @@ func (adder *Adder) add(reader io.Reader) (ipld.Node, error) {
 		CidBuilder: adder.CidBuilder,
 	}
 
-	db, err := params.New(chnk)
-	if err != nil {
-		return nil, err
-	}
 	if adder.Trickle {
-		return trickle.Layout(db)
+		return trickle.Layout(params.New(chnk))
 	}
 
-	return balanced.Layout(db)
+	return balanced.Layout(params.New(chnk))
 }
 
 // RootNode returns the root node of the Added.
@@ -274,6 +278,91 @@ func (adder *Adder) outputDirs(path string, fsn mfs.FSNode) error {
 	}
 }
 
+// Add builds a merkledag node from a reader, adds it to the blockstore,
+// and returns the key representing that node.
+// If you want to pin it, use NewAdder() and Adder.PinRoot().
+func Add(n *core.IpfsNode, r io.Reader) (string, error) {
+	return AddWithContext(n.Context(), n, r)
+}
+
+// AddWithContext does the same as Add, but with a custom context.
+func AddWithContext(ctx context.Context, n *core.IpfsNode, r io.Reader) (string, error) {
+	defer n.Blockstore.PinLock().Unlock()
+
+	fileAdder, err := NewAdder(ctx, n.Pinning, n.Blockstore, n.DAG)
+	if err != nil {
+		return "", err
+	}
+
+	node, err := fileAdder.add(r)
+	if err != nil {
+		return "", err
+	}
+
+	return node.Cid().String(), nil
+}
+
+// AddR recursively adds files in |path|.
+func AddR(n *core.IpfsNode, root string) (key string, err error) {
+	defer n.Blockstore.PinLock().Unlock()
+
+	stat, err := os.Lstat(root)
+	if err != nil {
+		return "", err
+	}
+
+	f, err := files.NewSerialFile(filepath.Base(root), root, false, stat)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	fileAdder, err := NewAdder(n.Context(), n.Pinning, n.Blockstore, n.DAG)
+	if err != nil {
+		return "", err
+	}
+
+	err = fileAdder.addFile(f)
+	if err != nil {
+		return "", err
+	}
+
+	nd, err := fileAdder.Finalize()
+	if err != nil {
+		return "", err
+	}
+
+	return nd.String(), nil
+}
+
+// AddWrapped adds data from a reader, and wraps it with a directory object
+// to preserve the filename.
+// Returns the path of the added file ("<dir hash>/filename"), the DAG node of
+// the directory, and and error if any.
+func AddWrapped(n *core.IpfsNode, r io.Reader, filename string) (string, ipld.Node, error) {
+	file := files.NewReaderFile(filename, filename, ioutil.NopCloser(r), nil)
+	fileAdder, err := NewAdder(n.Context(), n.Pinning, n.Blockstore, n.DAG)
+	if err != nil {
+		return "", nil, err
+	}
+	fileAdder.Wrap = true
+
+	defer n.Blockstore.PinLock().Unlock()
+
+	err = fileAdder.addFile(file)
+	if err != nil {
+		return "", nil, err
+	}
+
+	dagnode, err := fileAdder.Finalize()
+	if err != nil {
+		return "", nil, err
+	}
+
+	c := dagnode.Cid()
+	return gopath.Join(c.String(), filename), dagnode, nil
+}
+
 func (adder *Adder) addNode(node ipld.Node, path string) error {
 	// patch it into the root
 	if path == "" {
@@ -311,9 +400,9 @@ func (adder *Adder) addNode(node ipld.Node, path string) error {
 }
 
 // AddAllAndPin adds the given request's files and pin them.
-func (adder *Adder) AddAllAndPin(file files.Node) (ipld.Node, error) {
+func (adder *Adder) AddAllAndPin(file files.File) (ipld.Node, error) {
 	if adder.Pin {
-		adder.unlocker = adder.gcLocker.PinLock()
+		adder.unlocker = adder.blockstore.PinLock()
 	}
 	defer func() {
 		if adder.unlocker != nil {
@@ -321,23 +410,26 @@ func (adder *Adder) AddAllAndPin(file files.Node) (ipld.Node, error) {
 		}
 	}()
 
-	switch tf := file.(type) {
-	case files.Directory:
+	switch {
+	case file.IsDirectory():
 		// Iterate over each top-level file and add individually. Otherwise the
 		// single files.File f is treated as a directory, affecting hidden file
 		// semantics.
-		it := tf.Entries()
-		for it.Next() {
-			if err := adder.addFileNode(it.Name(), it.Node()); err != nil {
+		for {
+			f, err := file.NextFile()
+			if err == io.EOF {
+				// Finished the list of files.
+				break
+			} else if err != nil {
+				return nil, err
+			}
+			if err := adder.addFile(f); err != nil {
 				return nil, err
 			}
 		}
-		if it.Err() != nil {
-			return nil, it.Err()
-		}
 		break
 	default:
-		if err := adder.addFileNode("", file); err != nil {
+		if err := adder.addFile(file); err != nil {
 			return nil, err
 		}
 		break
@@ -355,8 +447,7 @@ func (adder *Adder) AddAllAndPin(file files.Node) (ipld.Node, error) {
 	return nd, adder.PinRoot()
 }
 
-func (adder *Adder) addFileNode(path string, file files.Node) error {
-	defer file.Close()
+func (adder *Adder) addFile(file files.File) error {
 	err := adder.maybePauseForGC()
 	if err != nil {
 		return err
@@ -376,40 +467,33 @@ func (adder *Adder) addFileNode(path string, file files.Node) error {
 	}
 	adder.liveNodes++
 
-	switch f := file.(type) {
-	case files.Directory:
-		return adder.addDir(path, f)
-	case *files.Symlink:
-		return adder.addSymlink(path, f)
-	case files.File:
-		return adder.addFile(path, f)
-	default:
-		return errors.New("unknown file type")
-	}
-}
-
-func (adder *Adder) addSymlink(path string, l *files.Symlink) error {
-	sdata, err := unixfs.SymlinkData(l.Target)
-	if err != nil {
-		return err
+	if file.IsDirectory() {
+		return adder.addDir(file)
 	}
 
-	dagnode := dag.NodeWithData(sdata)
-	dagnode.SetCidBuilder(adder.CidBuilder)
-	err = adder.dagService.Add(adder.ctx, dagnode)
-	if err != nil {
-		return err
+	// case for symlink
+	if s, ok := file.(*files.Symlink); ok {
+		sdata, err := unixfs.SymlinkData(s.Target)
+		if err != nil {
+			return err
+		}
+
+		dagnode := dag.NodeWithData(sdata)
+		dagnode.SetCidBuilder(adder.CidBuilder)
+		err = adder.dagService.Add(adder.ctx, dagnode)
+		if err != nil {
+			return err
+		}
+
+		return adder.addNode(dagnode, s.FileName())
 	}
 
-	return adder.addNode(dagnode, path)
-}
-
-func (adder *Adder) addFile(path string, file files.File) error {
+	// case for regular file
 	// if the progress flag was specified, wrap the file so that we can send
 	// progress updates to the client (over the output channel)
 	var reader io.Reader = file
 	if adder.Progress {
-		rdr := &progressReader{file: reader, path: path, out: adder.Out}
+		rdr := &progressReader{file: file, out: adder.Out}
 		if fi, ok := file.(files.FileInfo); ok {
 			reader = &progressReader2{rdr, fi}
 		} else {
@@ -422,25 +506,26 @@ func (adder *Adder) addFile(path string, file files.File) error {
 		return err
 	}
 
+	addFileName := file.FileName()
 	addFileInfo, ok := file.(files.FileInfo)
 	if ok {
 		if addFileInfo.AbsPath() == os.Stdin.Name() && adder.Name != "" {
-			path = adder.Name
+			addFileName = adder.Name
 			adder.Name = ""
 		}
 	}
 	// patch it into the root
-	return adder.addNode(dagnode, path)
+	return adder.addNode(dagnode, addFileName)
 }
 
-func (adder *Adder) addDir(path string, dir files.Directory) error {
-	log.Infof("adding directory: %s", path)
+func (adder *Adder) addDir(dir files.File) error {
+	log.Infof("adding directory: %s", dir.FileName())
 
 	mr, err := adder.mfsRoot()
 	if err != nil {
 		return err
 	}
-	err = mfs.Mkdir(mr, path, mfs.MkdirOpts{
+	err = mfs.Mkdir(mr, dir.FileName(), mfs.MkdirOpts{
 		Mkparents:  true,
 		Flush:      false,
 		CidBuilder: adder.CidBuilder,
@@ -449,33 +534,38 @@ func (adder *Adder) addDir(path string, dir files.Directory) error {
 		return err
 	}
 
-	it := dir.Entries()
-	for it.Next() {
-		fpath := gopath.Join(path, it.Name())
+	for {
+		file, err := dir.NextFile()
+		if err != nil && err != io.EOF {
+			return err
+		}
+		if file == nil {
+			break
+		}
 
 		// Skip hidden files when adding recursively, unless Hidden is enabled.
-		if files.IsHidden(fpath, it.Node()) && !adder.Hidden {
-			log.Infof("%s is hidden, skipping", fpath)
+		if files.IsHidden(file) && !adder.Hidden {
+			log.Infof("%s is hidden, skipping", file.FileName())
 			continue
 		}
-		err = adder.addFileNode(fpath, it.Node())
+		err = adder.addFile(file)
 		if err != nil {
 			return err
 		}
 	}
 
-	return it.Err()
+	return nil
 }
 
 func (adder *Adder) maybePauseForGC() error {
-	if adder.unlocker != nil && adder.gcLocker.GCRequested() {
+	if adder.unlocker != nil && adder.blockstore.GCRequested() {
 		err := adder.PinRoot()
 		if err != nil {
 			return err
 		}
 
 		adder.unlocker.Unlock()
-		adder.unlocker = adder.gcLocker.PinLock()
+		adder.unlocker = adder.blockstore.PinLock()
 	}
 	return nil
 }
@@ -492,7 +582,7 @@ func outputDagnode(out chan<- interface{}, name string, dn ipld.Node) error {
 	}
 
 	out <- &coreiface.AddEvent{
-		Path: o.Path,
+		Hash: o.Hash,
 		Name: name,
 		Size: o.Size,
 	}
@@ -501,24 +591,31 @@ func outputDagnode(out chan<- interface{}, name string, dn ipld.Node) error {
 }
 
 // from core/commands/object.go
-func getOutput(dagnode ipld.Node) (*coreiface.AddEvent, error) {
+func getOutput(dagnode ipld.Node) (*Object, error) {
 	c := dagnode.Cid()
 	s, err := dagnode.Size()
 	if err != nil {
 		return nil, err
 	}
 
-	output := &coreiface.AddEvent{
-		Path: coreiface.IpfsPath(c),
-		Size: strconv.FormatUint(s, 10),
+	output := &Object{
+		Hash:  c.String(),
+		Size:  strconv.FormatUint(s, 10),
+		Links: make([]Link, len(dagnode.Links())),
+	}
+
+	for i, link := range dagnode.Links() {
+		output.Links[i] = Link{
+			Name: link.Name,
+			Size: link.Size,
+		}
 	}
 
 	return output, nil
 }
 
 type progressReader struct {
-	file         io.Reader
-	path         string
+	file         files.File
 	out          chan<- interface{}
 	bytes        int64
 	lastProgress int64
@@ -531,7 +628,7 @@ func (i *progressReader) Read(p []byte) (int, error) {
 	if i.bytes-i.lastProgress >= progressReaderIncrement || err == io.EOF {
 		i.lastProgress = i.bytes
 		i.out <- &coreiface.AddEvent{
-			Name:  i.path,
+			Name:  i.file.FileName(),
 			Bytes: i.bytes,
 		}
 	}
@@ -542,8 +639,4 @@ func (i *progressReader) Read(p []byte) (int, error) {
 type progressReader2 struct {
 	*progressReader
 	files.FileInfo
-}
-
-func (i *progressReader2) Read(p []byte) (int, error) {
-	return i.progressReader.Read(p)
 }

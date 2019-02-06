@@ -1,8 +1,10 @@
 package unixfs
 
 import (
-	cmds "gx/ipfs/QmR77mMvvh8mJBBWQmBfQBu8oD38NUN4KE9SL2gDgAQNc6/go-ipfs-cmds"
-	cmdkit "gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
+	cmds "github.com/ipfs/go-ipfs/commands"
+	e "github.com/ipfs/go-ipfs/core/commands/e"
+
+	"gx/ipfs/Qmde5VP1qUkyQXKCfmEUA7bP64V2HAptbJ7phuPp7jXWwg/go-ipfs-cmdkit"
 )
 
 var UnixFSCmd = &cmds.Command{
@@ -23,4 +25,18 @@ objects (e.g. fanout and chunking).
 	Subcommands: map[string]*cmds.Command{
 		"ls": LsCmd,
 	},
+}
+
+// copy+pasted from ../commands.go
+func unwrapOutput(i interface{}) (interface{}, error) {
+	var (
+		ch <-chan interface{}
+		ok bool
+	)
+
+	if ch, ok = i.(<-chan interface{}); !ok {
+		return nil, e.TypeErr(ch, i)
+	}
+
+	return <-ch, nil
 }

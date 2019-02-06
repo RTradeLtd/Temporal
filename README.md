@@ -22,7 +22,7 @@
   </a>
 
   <a href="https://github.com/RTradeLtd/Temporal/releases">
-    <img src="https://img.shields.io/github/release-pre/RTradeLtd/Temporal.svg?label=preview"
+    <img src="https://img.shields.io/github/release-pre/RTradeLtd/Temporal.svg"
       alt="Release" />
   </a>
 
@@ -113,6 +113,8 @@ Once you have a `config.json` set up (a template can be generated using `tempora
 $> curl https://raw.githubusercontent.com/RTradeLtd/Temporal/V2/temporal.yml --output temporal.yml
 $> docker-compose -f temporal.yml up
 ```
+
+The standalone Temporal Docker image is available on [Docker Hub](https://cloud.docker.com/u/rtradetech/repository/docker/rtradetech/temporal).
 
 Refer to the `temporal.yml` documentation for more details.
 

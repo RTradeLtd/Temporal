@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	dag "gx/ipfs/Qmb2UEG2TAeVrEJSjqsZF7Y2he7wRDkrdt6c3bECxwZf4k/go-merkledag"
-	mh "gx/ipfs/QmerPMzPk1mJVowm8KgmoknWa4yCYvvugMPsgWmDNUvDLW/go-multihash"
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
+	mh "gx/ipfs/QmPnFwZ2JXKnXgMw8CdBPxn7FWh6LLdjUjxV1fKHuJnkr8/go-multihash"
+	dag "gx/ipfs/QmSei8kFMfqdJq7Q68d2LMnHbTWKKg2daA29ezUYFAUNgc/go-merkledag"
 )
 
 type Layout int
@@ -30,6 +30,7 @@ type UnixfsAddSettings struct {
 
 	Pin      bool
 	OnlyHash bool
+	Local    bool
 	FsCache  bool
 	NoCopy   bool
 
@@ -42,12 +43,7 @@ type UnixfsAddSettings struct {
 	Progress bool
 }
 
-type UnixfsLsSettings struct {
-	ResolveChildren bool
-}
-
 type UnixfsAddOption func(*UnixfsAddSettings) error
-type UnixfsLsOption func(*UnixfsLsSettings) error
 
 func UnixfsAddOptions(opts ...UnixfsAddOption) (*UnixfsAddSettings, cid.Prefix, error) {
 	options := &UnixfsAddSettings{
@@ -64,6 +60,7 @@ func UnixfsAddOptions(opts ...UnixfsAddOption) (*UnixfsAddSettings, cid.Prefix, 
 
 		Pin:      false,
 		OnlyHash: false,
+		Local:    false,
 		FsCache:  false,
 		NoCopy:   false,
 
@@ -125,21 +122,6 @@ func UnixfsAddOptions(opts ...UnixfsAddOption) (*UnixfsAddSettings, cid.Prefix, 
 	prefix.MhLength = -1
 
 	return options, prefix, nil
-}
-
-func UnixfsLsOptions(opts ...UnixfsLsOption) (*UnixfsLsSettings, error) {
-	options := &UnixfsLsSettings{
-		ResolveChildren: true,
-	}
-
-	for _, opt := range opts {
-		err := opt(options)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return options, nil
 }
 
 type unixfsOpts struct{}
@@ -238,6 +220,16 @@ func (unixfsOpts) HashOnly(hashOnly bool) UnixfsAddOption {
 	}
 }
 
+// Local will add the data to blockstore without announcing it to the network
+//
+// Note that this doesn't prevent other nodes from getting this data
+func (unixfsOpts) Local(local bool) UnixfsAddOption {
+	return func(settings *UnixfsAddSettings) error {
+		settings.Local = local
+		return nil
+	}
+}
+
 // Wrap tells the adder to wrap the added file structure with an additional
 // directory.
 func (unixfsOpts) Wrap(wrap bool) UnixfsAddOption {
@@ -307,13 +299,6 @@ func (unixfsOpts) FsCache(enable bool) UnixfsAddOption {
 func (unixfsOpts) Nocopy(enable bool) UnixfsAddOption {
 	return func(settings *UnixfsAddSettings) error {
 		settings.NoCopy = enable
-		return nil
-	}
-}
-
-func (unixfsOpts) ResolveChildren(resolve bool) UnixfsLsOption {
-	return func(settings *UnixfsLsSettings) error {
-		settings.ResolveChildren = resolve
 		return nil
 	}
 }

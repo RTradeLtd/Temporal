@@ -1,8 +1,9 @@
 package iface
 
 import (
-	"gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
-	ipfspath "gx/ipfs/QmWqh9oob7ZHQRwU5CdTqpnC8ip8BEkFNrwXRxeNo5Y7vA/go-path"
+	ipfspath "gx/ipfs/QmT3rzed1ppXefourpmoZ7tyVQfsGPQZ1pHDngLmCvXxd3/go-path"
+
+	cid "gx/ipfs/QmPSQnBKM9g7BaUcZCvswUJVscQ1ipjmwxN5PXCjkp9EQ7/go-cid"
 )
 
 //TODO: merge with ipfspath so we don't depend on it
@@ -45,7 +46,6 @@ type ResolvedPath interface {
 	// cidRoot := {"A": {"/": cidA }}
 	//
 	// And resolve paths:
-	//
 	// * "/ipfs/${cidRoot}"
 	//   * Calling Cid() will return `cidRoot`
 	//   * Calling Root() will return `cidRoot`
@@ -103,12 +103,6 @@ type resolvedPath struct {
 	cid       cid.Cid
 	root      cid.Cid
 	remainder string
-}
-
-// Join appends provided segments to the base path
-func Join(base Path, a ...string) Path {
-	s := ipfspath.Join(append([]string{base.String()}, a...))
-	return &path{path: ipfspath.FromString(s)}
 }
 
 // IpfsPath creates new /ipfs path from the provided CID

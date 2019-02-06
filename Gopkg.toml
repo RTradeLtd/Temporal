@@ -4,17 +4,13 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   go-tests = true
   unused-packages = true
 
-###############
-#   RTRADE    #
-###############
-
-[[constraint]]
-  name = "github.com/RTradeLtd/ChainRider-Go"
-  version = "=v1.0.7"
+###########################
+# RTRADE CORE SUBPROJECTS #
+###########################
 
 [[override]]
   name = "github.com/RTradeLtd/grpc"
-  branch = "master"
+  version = "~v2.0.0"
 
 [[override]]
   name = "github.com/RTradeLtd/database"
@@ -28,21 +24,25 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/RTradeLtd/config"
   version = "~v2.0.0"
 
-[[constraint]]
-  name = "github.com/RTradeLtd/cmd"
+[[override]]
+  name = "github.com/RTradeLtd/kaas"
   version = "~v2.0.0"
 
 [[constraint]]
   name = "github.com/RTradeLtd/crypto"
-  version = "=v1.0.0"
+  version = "~v2.0.0"
 
 [[constraint]]
-  name = "github.com/RTradeLtd/go-ipfs-api"
-  branch = "master"
-
-[[override]]
-  name = "github.com/RTradeLtd/kaas"
+  name = "github.com/RTradeLtd/cmd"
   version = "~v2.0.0"
+
+####################
+# RTRADE LIBRARIES #
+####################
+
+[[constraint]]
+  name = "github.com/RTradeLtd/ChainRider-Go"
+  version = "=v1.0.7"
 
 ###############
 #    IPFS     #
@@ -80,17 +80,21 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   name = "github.com/ipfs/go-ipfs-cmdkit"
   branch = "master"
 
+[[override]]
+  name = "github.com/libp2p/go-reuseport-transport"
+  branch = "master"
+
 ###############
 # THIRD PARTY #
 ###############
 
 [[constraint]]
-  branch = "master"
   name = "github.com/aviddiviner/gin-limit"
+  branch = "master"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/c2h5oh/datasize"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/dvwright/xss-mw"
@@ -101,12 +105,12 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
   branch = "master"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/semihalev/gin-stats"
+  branch = "master"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/streadway/amqp"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/gin-contrib/cors"
@@ -119,7 +123,3 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 [[constraint]]
   name = "github.com/appleboy/gin-jwt"
   revision = "f7347d7c16fc8297bf5b7215b9e4847a5ca05d90"
-
-[[override]]
-  name = "github.com/libp2p/go-reuseport-transport"
-  branch = "master"

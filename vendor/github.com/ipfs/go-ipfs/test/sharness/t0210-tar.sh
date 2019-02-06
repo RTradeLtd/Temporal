@@ -46,13 +46,4 @@ test_expect_success "files look right" '
   [ -x foo/script ]
 '
 
-test_expect_success "'ipfs tar add --cid-base=base32' succeeds" '
-  ipfs tar add --cid-base=base32 files.tar > actual
-'
-
-test_expect_success "'ipfs tar add --cid-base=base32' has correct hash" '
-  ipfs cid base32 $TAR_HASH > expected &&
-  test_cmp expected actual
-'
-
 test_done

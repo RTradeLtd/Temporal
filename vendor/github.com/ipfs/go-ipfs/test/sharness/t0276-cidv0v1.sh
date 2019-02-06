@@ -95,31 +95,30 @@ test_expect_success "check that we can access the file when converted to CIDv1" 
 #
 
 test_expect_success "set up iptb testbed" '
-  iptb testbed create -type localipfs -count 2 -init
+  iptb init -n 2 -p 0 -f --bootstrap=none
 '
 
 test_expect_success "start nodes" '
-  iptb start -wait &&
+  iptb start &&
   iptb connect 0 1
 '
 
 test_expect_success "add afile using CIDv0 to node 0" '
-  iptb run 0 -- ipfs add -q --cid-version=0 afile
+  iptb run 0 ipfs add -q --cid-version=0 afile
 '
 
 test_expect_success "get afile using CIDv1 via node 1" '
-  iptb -quiet run 1 -- ipfs --timeout=2s cat $AHASHv1 > thefile &&
+  iptb run 1 ipfs --timeout=2s cat $AHASHv1 > thefile &&
   test_cmp afile thefile
 '
 
 test_expect_success "add bfile using CIDv1 to node 0" '
-  BHASHv1=$(iptb -quiet run 0 -- ipfs add -q --cid-version=1 --raw-leaves=false bfile)
+  BHASHv1=$(iptb run 0 ipfs add -q --cid-version=1 --raw-leaves=false bfile)
 '
 
 test_expect_success "get bfile using CIDv0 via node 1" '
   BHASHv0=$(cid-fmt -v 0 %s $BHASHv1)
-  echo $BHASHv1 &&
-  iptb -quiet run 1 -- ipfs --timeout=2s cat $BHASHv0 > thefile &&
+  iptb run 1 ipfs --timeout=2s cat $BHASHv0 > thefile &&
   test_cmp bfile thefile
 '
 
