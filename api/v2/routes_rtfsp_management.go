@@ -43,7 +43,13 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 	} else {
 		users = append(users, username)
 	}
-	// request orchestrator to start up network and create it
+	// create the network in our database
+	network, err := api.nm.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, models.NetworkAccessOptions{Users: users})
+	if err != nil {
+		api.LogError(c, err, eh.NetworkCreationError)(http.StatusBadRequest)
+		return
+	}
+	// request orchestrator to start up network and create it after registering it in the database
 	resp, err := api.orch.StartNetwork(c, &nexus.NetworkRequest{
 		Network: networkName,
 	})
@@ -55,12 +61,6 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 	}
 	logger := api.l.With("user", username, "network_name", networkName)
 	logger.Info("network creation request received")
-	// create the network in our database after having successfully created the network
-	network, err := api.nm.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, models.NetworkAccessOptions{Users: users})
-	if err != nil {
-		api.LogError(c, err, eh.NetworkCreationError)(http.StatusBadRequest)
-		return
-	}
 	logger.With("db_id", network.ID).Info("database entry created")
 	// update allows users who can access the network
 	if len(users) > 0 {
