@@ -3,6 +3,14 @@
 
 case "$1" in
 
+    krab)
+        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal krab" | grep -iv grep | awk '{print $2}')
+        if [[ "$PID" == "" ]]; then
+            echo 0
+        else   
+            echo 1
+        fi
+        ;;
     api)
         PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal api" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
@@ -13,14 +21,6 @@ case "$1" in
         ;;
     ipfs-pin-queue)
         PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue ipfs pin" | grep -iv grep | awk '{print $2}')
-        if [[ "$PID" == "" ]]; then
-            echo 0
-        else
-            echo 1
-        fi
-        ;;
-    ipfs-file-queue)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue ipfs file" | grep -iv grep | awk '{print $2}')
         if [[ "$PID" == "" ]]; then
             echo 0
         else
