@@ -5,6 +5,12 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 
 ## v2.0.4
 
+* relevant PRs:
+  * [#305](https://github.com/RTradeLtd/Temporal/pull/305)
+  * [#306](https://github.com/RTradeLtd/Temporal/pull/306)
+  * [#307](https://github.com/RTradeLtd/Temporal/pull/307)
+  * [#308](https://github.com/RTradeLtd/Temporal/pull/308)
+  
 ### scripts
 
 * miscellaneus script cleanup
