@@ -49,18 +49,6 @@ func New(queue Queue, url string, publish bool, cfg *config.TemporalConfig, logg
 	if err := qm.openChannel(); err != nil {
 		return nil, err
 	}
-	// Declare Non Default exchanges for matching queues
-	switch queue {
-	case IpfsKeyCreationQueue:
-		// as this is an exchange based queue we need a unique queue name
-		if err := qm.parseQueueName(queue); err != nil {
-			return nil, err
-		}
-		// setup the actual exchange
-		if err = qm.setupExchange(queue); err != nil {
-			return nil, err
-		}
-	}
 	// if we aren't publishing, and are consuming
 	// setup a queue to receive messages on
 	if !publish {
@@ -143,27 +131,6 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 	qm.db = db
 	// embed config into queue manager
 	qm.cfg = cfg
-	// if we are using an exchange, we form a relationship between a queue and an exchange
-	// this process is known as binding, and allows consumers to receive messages sent to an exchange
-	// We are primarily doing this to allow for multiple consumers, to receive the same message
-	// For example using the IpfsKeyExchange, this will setup message distribution such that
-	// a single key creation request, will be sent to all of our consumers ensuring that all of our nodes
-	// will have the same key in their keystore
-	switch qm.ExchangeName {
-	case IpfsKeyExchange:
-		if err := qm.channel.QueueBind(
-			qm.QueueName.String(), // name of the queue
-			"",                    // routing key
-			qm.ExchangeName,       // exchange
-			false,                 // noWait
-			nil,                   // arguments
-		); err != nil {
-			return err
-		}
-	default:
-		break
-	}
-
 	// we do not auto-ack, as if a consumer dies we don't want the message to be lost
 	// not specifying the consumer name uses an automatically generated id
 	msgs, err := qm.channel.Consume(
@@ -179,13 +146,10 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 		return err
 	}
 
-	// exchange need special handling
-	switch qm.ExchangeName {
-	case IpfsKeyExchange:
-		return qm.ProcessIPFSKeyCreation(ctx, wg, msgs)
-	}
 	// check the queue name
 	switch qm.QueueName {
+	case IpfsKeyCreationQueue:
+		return qm.ProcessIPFSKeyCreation(ctx, wg, msgs)
 	case IpfsPinQueue:
 		return qm.ProccessIPFSPins(ctx, wg, msgs)
 	case EmailSendQueue:
@@ -197,34 +161,6 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 	default:
 		return errors.New("invalid queue name")
 	}
-}
-
-//PublishMessageWithExchange is used to publish a message to a given exchange
-func (qm *Manager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
-	switch exchangeName {
-	case IpfsKeyExchange:
-		break
-	default:
-		return errors.New("invalid exchange name provided")
-	}
-	bodyMarshaled, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-	if err = qm.channel.Publish(
-		exchangeName, // exchange - this determines which exchange will receive the message
-		"",           // routing key
-		false,        // mandatory
-		false,        // immediate
-		amqp.Publishing{
-			DeliveryMode: amqp.Persistent, // messages will persist through crashes, etc..
-			ContentType:  "text/plain",
-			Body:         bodyMarshaled,
-		},
-	); err != nil {
-		return err
-	}
-	return nil
 }
 
 // PublishMessage is used to produce messages that are sent to the queue, with a worker queue (one consumer)

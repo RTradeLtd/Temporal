@@ -121,25 +121,6 @@ func TestQueue_Publish(t *testing.T) {
 	}
 }
 
-// Covers the default case in `setupExchange`
-func TestQueue_ExchangeFail(t *testing.T) {
-	logger, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, cfg, logger)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = qmPublisher.setupExchange("bad-queue"); err == nil {
-		t.Fatal("error expected")
-	}
-}
-
 func TestRegisterChannelClosure(t *testing.T) {
 	logger, err := log.NewLogger("", true)
 	if err != nil {
@@ -566,15 +547,9 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if qmConsumer.ExchangeName != IpfsKeyExchange {
-		t.Fatal("failed to properly set exchange name on consumer")
-	}
 	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
-	}
-	if qmPublisher.ExchangeName != IpfsKeyExchange {
-		t.Fatal("failed to properly set exchange name on publisher")
 	}
 	defer func() {
 		if err := qmPublisher.Close(); err != nil {
@@ -582,23 +557,23 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 		}
 	}()
 	// test a normal publish
-	if err := qmPublisher.PublishMessageWithExchange(IPFSKeyCreation{
+	if err := qmPublisher.PublishMessage(IPFSKeyCreation{
 		UserName:    "testuser",
 		Name:        "testuser-mykey",
 		Type:        "rsa",
 		Size:        2048,
 		NetworkName: "public",
-		CreditCost:  0}, IpfsKeyExchange,
+		CreditCost:  0},
 	); err != nil {
 		t.Fatal(err)
 	}
-	if err := qmPublisher.PublishMessageWithExchange(IPFSKeyCreation{
+	if err := qmPublisher.PublishMessage(IPFSKeyCreation{
 		UserName:    "testuser",
 		Name:        "mykey",
 		Type:        "rsa",
 		Size:        2048,
 		NetworkName: "public",
-		CreditCost:  0}, IpfsKeyExchange,
+		CreditCost:  0},
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -638,28 +613,22 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if qmConsumer.ExchangeName != IpfsKeyExchange {
-		t.Fatal("failed to properly set exchange name on consumer")
-	}
 	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
-	}
-	if qmPublisher.ExchangeName != IpfsKeyExchange {
-		t.Fatal("failed to properly set exchange name on publisher")
 	}
 	defer func() {
 		if err := qmPublisher.Close(); err != nil {
 			t.Error(err)
 		}
 	}()
-	if err := qmPublisher.PublishMessageWithExchange(IPFSKeyCreation{
+	if err := qmPublisher.PublishMessage(IPFSKeyCreation{
 		UserName:    "testuser",
 		Name:        "mykey",
 		Type:        "rsa",
 		Size:        2048,
 		NetworkName: "public",
-		CreditCost:  0}, IpfsKeyExchange,
+		CreditCost:  0},
 	); err != nil {
 		t.Fatal(err)
 	}

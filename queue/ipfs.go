@@ -24,7 +24,17 @@ import (
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
 func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	kb, err := kaas.NewClient(qm.cfg.Services)
+	kb1, err := kaas.NewClient(qm.cfg.Services)
+	if err != nil {
+		return err
+	}
+	fallbackConfig := qm.cfg.Services
+	fallbackConfig.Krab.URL = qm.cfg.Services.Krab.Fallback.URL
+	fallbackConfig.Krab.TLS = qm.cfg.Services.Krab.Fallback.TLS
+	fallbackConfig.Krab.LogFile = qm.cfg.Services.Krab.Fallback.LogFile
+	fallbackConfig.Krab.KeystorePassword = qm.cfg.Services.KeystorePassword
+	fallbackConfig.Krab.AuthKey = qm.cfg.Services.Krab.Fallback.AuthKey
+	kb2, err := kaas.NewClient(fallbackConfig)
 	if err != nil {
 		return err
 	}
@@ -34,7 +44,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processIPFSKeyCreation(d, wg, kb, userManager)
+			go qm.processIPFSKeyCreation(d, wg, kb1, kb2, userManager)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -190,7 +200,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 	return // we must return here in order to trigger the wg.Done() defer
 }
 
-func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, kb *kaas.Client, um *models.UserManager) {
+func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, kb1 *kaas.Client, kb2 *kaas.Client, um *models.UserManager) {
 	defer wg.Done()
 	qm.l.Info("new key creation request detected")
 	key := IPFSKeyCreation{}
@@ -270,8 +280,8 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 		return
 	}
 
-	// store the key in krab
-	if _, err := kb.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {
+	// store the key in local krab
+	if _, err := kb1.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {
 		qm.l.Errorw(
 			"failed to store key in krab",
 			"error", err.Error(),
@@ -280,6 +290,17 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 		d.Ack(false)
 		return
 	}
+	// store the key in remote krab
+	if _, err := kb2.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {
+		qm.l.Errorw(
+			"failed to store key in krab",
+			"error", err.Error(),
+			"user", key.UserName,
+			"key_name", key.Name)
+		d.Ack(false)
+		return
+	}
+
 	// doesn't need a refund, key was generated and stored in our keystore, but information not saved to db
 	if err := um.AddIPFSKeyForUser(key.UserName, key.Name, id.Pretty()); err != nil {
 		qm.l.Errorw(
