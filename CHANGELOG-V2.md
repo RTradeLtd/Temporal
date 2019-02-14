@@ -3,6 +3,36 @@
 This document tracks changes to Temporal and its related projects for all `v2.x.x`
 releases. See our [versioning policy](/VERSIONING.md) for more details.
 
+## v2.0.4
+
+### scripts
+
+* miscellaneus script cleanup
+* add executable permissions to all scripts
+
+### configs
+
+* update zabbix monitoring template
+  * monitor all new services
+  * include graphs, and triggers for alerting
+
+### travis
+
+* fix personal access token for travis deployments
+
+### queue
+
+* fix key generation process
+
+### grpc clients
+
+* add client for kaas, and allow fallback mode
+
+### deps
+
+* general dependency update
+* update [RTradeLtd/config](https://github.com/RTradeLtd/config)
+
 ## v2.0.3
 
 * api/v2: fix private network creation ([#304](https://github.com/RTradeLtd/Temporal/pull/304))
