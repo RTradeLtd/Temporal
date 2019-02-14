@@ -24,20 +24,6 @@ const (
 	testCfgPath       = "../testenv/config.json"
 )
 
-func TestParseQueueName(t *testing.T) {
-	qm := Manager{}
-	if err := qm.parseQueueName(IpfsKeyCreationQueue); err != nil {
-		t.Fatal(err)
-	}
-	host, err := os.Hostname()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if ok := strings.Contains(qm.QueueName.String(), host); !ok {
-		t.Fatal("failed to properly parse queue name")
-	}
-}
-
 func TestParseQueueFull(t *testing.T) {
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {

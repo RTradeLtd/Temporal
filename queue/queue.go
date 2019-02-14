@@ -7,29 +7,14 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"os"
 	"sync"
 
-	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/gorm"
 	"go.uber.org/zap"
 
 	"github.com/RTradeLtd/config"
 	"github.com/streadway/amqp"
 )
-
-func (qm *Manager) parseQueueName(queue Queue) error {
-	host, err := os.Hostname()
-	if err != nil {
-		return err
-	}
-	// the following is to account for running multiple queue workers
-	// on a single host.
-	rand := utils.GenerateRandomUtils()
-	s := rand.GenerateString(5, utils.LetterBytes)
-	qm.QueueName = queue + Queue(host+s)
-	return nil
-}
 
 // New is used to instantiate a new connection to rabbitmq as a publisher or consumer
 func New(queue Queue, url string, publish bool, cfg *config.TemporalConfig, logger *zap.SugaredLogger) (*Manager, error) {
