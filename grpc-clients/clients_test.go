@@ -3,7 +3,7 @@ package clients_test
 import (
 	"testing"
 
-	"github.com/RTradeLtd/Temporal/grpc-clients"
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/config"
 )
 
@@ -58,5 +58,36 @@ func TestOrchestratorClient_Pass(t *testing.T) {
 	}
 	if _, err = clients.NewOcrhestratorClient(cfg.Nexus); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestKaasClient_Pass(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// test non fallback
+	if _, err := clients.NewKaasClient(cfg.Services, false); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clients.NewKaasClient(cfg.Services, true); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestKaasClient_Fail(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.Services.Krab.URL = "notarealurls"
+	cfg.Services.Krab.TLS.CertPath = "/root/toor"
+	cfg.Services.Krab.Fallback.URL = "notarealurls"
+	cfg.Services.Krab.Fallback.TLS.CertPath = "/root/toor"
+	if _, err := clients.NewKaasClient(cfg.Services, false); err == nil {
+		t.Fatal("expected error")
+	}
+	if _, err := clients.NewKaasClient(cfg.Services, true); err == nil {
+		t.Fatal("expected error")
 	}
 }

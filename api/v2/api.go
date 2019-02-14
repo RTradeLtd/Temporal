@@ -9,13 +9,14 @@ import (
 	"strconv"
 	"time"
 
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
+	gClients "github.com/RTradeLtd/Temporal/grpc-clients"
+
 	"github.com/streadway/amqp"
 
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"go.uber.org/zap"
-
-	"github.com/RTradeLtd/kaas"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -46,7 +47,7 @@ var (
 type API struct {
 	ipfs        rtfs.Manager
 	ipfsCluster *rtfscluster.ClusterManager
-	keys        *kaas.Client
+	keys        *clients.KaasClient
 	r           *gin.Engine
 	cfg         *config.TemporalConfig
 	dbm         *database.Manager
@@ -169,7 +170,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 		Blockchain: networkVersion,
 		Token:      cfg.APIKeys.ChainRider,
 	})
-	keys, err := kaas.NewClient(cfg.Services)
+	keys, err := gClients.NewKaasClient(cfg.Services, false)
 	if err != nil {
 		return nil, err
 	}

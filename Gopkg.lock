@@ -34,12 +34,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  branch = "krab"
   digest = "1:732853d5da265a4ca3d93c41ddd22bab85c3911c007977cc63809f6603791088"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "93bf09efc1db619360fcb2edc8aac177d37187a6"
+  revision = "9b56bec51eb15bd668ced11db549f0362a16e50a"
+  version = "v2.0.1"
 
 [[projects]]
   digest = "1:8859d83d94d112382fbdd97fc04c2ce196ea044f271ffe8e170826b25131a4f0"
@@ -131,18 +131,6 @@
   version = "v2.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4cf11742b199ab3aacf26b00187e72f7ff8ba2145f363b74f295d54f098f79e4"
-  name = "github.com/agl/ed25519"
-  packages = [
-    ".",
-    "edwards25519",
-    "extra25519",
-  ]
-  pruneopts = "UT"
-  revision = "5312a61534124124185d41f09206b9fef1d88403"
-
-[[projects]]
   digest = "1:a164e093eccfde4fb63dc94707f3570d112ff4549072a065a48813c37c0c76a9"
   name = "github.com/appleboy/gin-jwt"
   packages = ["."]
@@ -163,7 +151,7 @@
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
   pruneopts = "UT"
-  revision = "ed77733ec07dfc8a513741138419b8d9d3de9d2d"
+  revision = "306aecffea325e97f513b3ff0cf7895a5310651d"
 
 [[projects]]
   branch = "master"
@@ -342,19 +330,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ae72f80e79008e24bcde7de64d9cf1dac2704533a621ba9afc5d5eb011403510"
+  digest = "1:2af8c0ddc75d87d5df67d64ba17f8186ff196bb6b348e7963ddafc44cbf5fd2a"
   name = "github.com/hsanjuan/go-libp2p-gostream"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a644999a753d19a833611650865390b6da97c914"
+  revision = "1cbfc49c6f0e1866984e634f7603a9d6155825df"
 
 [[projects]]
   branch = "master"
-  digest = "1:11ad23f2c2d54e9a384c80c231c3f6d919d90845ed42c9cf87964a8790c05fa7"
+  digest = "1:91538d975fc542fe16926345e13d6fc77f4d34c9359d3df05f41001d5790cad9"
   name = "github.com/hsanjuan/go-libp2p-http"
   packages = ["."]
   pruneopts = "UT"
-  revision = "2a7d4fc2f66adb2bec60a3eb05e36d1379ede88b"
+  revision = "478765bd693f4712f765a4722a66337ffc1c9758"
 
 [[projects]]
   digest = "1:c00cc6d95a674b4b923ac069d364445043bc67836e9bd8aeff8440cfbe6a2cc7"
@@ -445,11 +433,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9f355cab3caa2b4413f5b9638d313429b3d34513c0deb13ef41c22a075b48b25"
+  digest = "1:f0cee7fa25319760e00912c6fd16499d3d2d81e086865e9a79701d0ebe45788b"
   name = "github.com/ipfs/go-ipfs-files"
   packages = ["."]
   pruneopts = "UT"
-  revision = "267cdfe2e27a621acf3567cc072e5bf4ecf168ee"
+  revision = "b9ab5987284914bf7c73b9c450b2ae6777051a3d"
 
 [[projects]]
   digest = "1:aae82c244bd91107575a0244a29e82e34ba23e06b6892557e33728de48deba96"
@@ -618,14 +606,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:181c737f32564a5ce23898a5d8957d13a89bf9ca2f562a853e2ce5521fb33c35"
+  digest = "1:dc82b2b6d75f7a2bdb64715ab3214bd141bcba5d298521dff8a16c949c195ab0"
   name = "github.com/libp2p/go-libp2p-autonat"
   packages = [
     ".",
     "pb",
   ]
   pruneopts = "UT"
-  revision = "93b1787f76de807b9ab3a7c7edd45cf906139bdb"
+  revision = "494f7fce997b6f5be4750dcc24350e06d3b4d67a"
 
 [[projects]]
   digest = "1:6f00253ed14e76cf0b0179ee83311d378388054b3fb3446b4607cab76f5b7297"
@@ -639,23 +627,23 @@
   version = "v2.3.2"
 
 [[projects]]
-  digest = "1:4ff86c6d6dd8df23a58e6b6060fea5f150d1a502cdfe8a3e9efd5d25339196c6"
+  digest = "1:43d92dca90cd6c7096383a0a8bf4b7af6cb0a8f97c44558a5bb2d386a626367d"
   name = "github.com/libp2p/go-libp2p-crypto"
   packages = [
     ".",
     "pb",
   ]
   pruneopts = "UT"
-  revision = "274de1bb6c27780863df6b230c91324ab481dab2"
-  version = "v2.0.1"
+  revision = "a3075f70fa87dfd2b8dae2c80c6908bb3aa1bc77"
+  version = "v2.0.5"
 
 [[projects]]
   branch = "master"
-  digest = "1:a607dfc95b409c84567c32cbd742e466e5864e1f3839cd2fa366990984ad0412"
+  digest = "1:2f5797fc7e01e14852b780180cc30dc35b9b236d5d0128b534b4b7cba5eb3b8f"
   name = "github.com/libp2p/go-libp2p-discovery"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cc4105e21706452e5b0f7e05390f987017188d31"
+  revision = "d4858e0322b6f8cd62ed33d6b5c846c3ebc0bb69"
 
 [[projects]]
   digest = "1:de92515b23a5c4cd04893e67cd9af1dfff7a2a5337f95c36de273ecf757628e7"
@@ -715,11 +703,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1509a6790d5fd554e6ef866f282a953ea9a089eb8e1f2d0b59f9d1adceedd208"
+  digest = "1:e86dee3bc2620a81ab6dc6dc34291192fcc7aca3defd0971fc53e5704440f24e"
   name = "github.com/libp2p/go-libp2p-peer"
   packages = ["."]
   pruneopts = "UT"
-  revision = "f5c52cebf45bb99d2b871cec48dd3ad6e2edaa11"
+  revision = "65cec58e2561156ae673bb685d183e0ef1bf1c6c"
 
 [[projects]]
   digest = "1:2063708efd5552590aeec525a47d0e9dcf981336c20af73f952fb8599ddc394d"
@@ -1222,12 +1210,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:89405c62c196dd1b0da798c5f03b1a65dc9dc3b980548b52a8e79a3063cc11ca"
+  digest = "1:2b98b3cf89303123bc72c8caebbcf221ff2de97a307647db125ce1012e55bee9"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
     "blake2s",
     "blowfish",
+    "ed25519",
+    "ed25519/internal/edwards25519",
     "internal/subtle",
     "pbkdf2",
     "salsa20",
@@ -1235,11 +1225,11 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "b8fe1690c61389d7d2a8074a507d1d40c5d30448"
+  revision = "74369b46fc6756741c016591724fd1cb8e26845f"
 
 [[projects]]
   branch = "master"
-  digest = "1:e4cb09624f31f9e33fce26702314da5a1383962d7e0861bfe39dfdc00a848fa3"
+  digest = "1:13d98d4a123176d59926946c44709a930054a7034d466cbbdbb92dd149790bcf"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -1254,11 +1244,11 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf"
+  revision = "3a22650c66bd7f4fb6d1e8072ffd7b75c8a27898"
 
 [[projects]]
   branch = "master"
-  digest = "1:8b38d0f580ac12385b9b7dc1a242441ff4d59a4889f20044f5c23cc47c2004bb"
+  digest = "1:30d83bf0a7e95fb9ca9b543349d407e44c94ca570e27405f401ffc3e085781ff"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1266,7 +1256,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "41f3e6584952bb034a481797859f6ab34b6803bd"
+  revision = "983097b1a8a340cd1cc7df17d735154d89e10b1a"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
