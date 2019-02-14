@@ -34,12 +34,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:d914e7b89490aab7ff3dafd9e79f6b431328803f5e25b59428d62531fa6c2ec0"
+  branch = "krab"
+  digest = "1:732853d5da265a4ca3d93c41ddd22bab85c3911c007977cc63809f6603791088"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "c973c5b0c01ab295f86502599286dbee04a6f1d4"
-  version = "v2.0.0"
+  revision = "93bf09efc1db619360fcb2edc8aac177d37187a6"
 
 [[projects]]
   digest = "1:8859d83d94d112382fbdd97fc04c2ce196ea044f271ffe8e170826b25131a4f0"
