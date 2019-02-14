@@ -2,8 +2,6 @@ package queue
 
 import (
 	"context"
-	"os"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -23,28 +21,6 @@ const (
 	testLogFilePath   = "../testenv/"
 	testCfgPath       = "../testenv/config.json"
 )
-
-func TestParseQueueFull(t *testing.T) {
-	cfg, err := config.LoadConfig(testCfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, cfg, loggerConsumer)
-	if err != nil {
-		t.Fatal(err)
-	}
-	host, err := os.Hostname()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if ok := strings.Contains(qmConsumer.QueueName.String(), host); !ok {
-		t.Fatal("failed to properly parse queue name")
-	}
-}
 
 func TestQueue_Publish(t *testing.T) {
 	type args struct {
