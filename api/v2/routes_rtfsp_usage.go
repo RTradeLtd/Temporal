@@ -6,7 +6,6 @@ import (
 	"html"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
@@ -49,7 +48,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	// parse hold time
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
 		return
@@ -96,7 +95,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	// parse hold time
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
 		return
