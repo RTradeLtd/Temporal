@@ -205,3 +205,28 @@ func (api *API) extractPostForms(c *gin.Context, formNames ...string) map[string
 	}
 	return forms
 }
+
+// ValidateHoldTime is used to perform parsing of requested hold times,
+// returning an int64 type of the provded hold time
+func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
+	var (
+		// 1 month
+		freeHoldTimeLimitInMonths int64 = 1
+		// two years
+		nonFreeHoldTimeLimitInMonths int64 = 24
+	)
+	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	usageTier, err := api.usage.FindByUserName(username)
+	if err != nil {
+		return 0, err
+	}
+	if usageTier.Tier == models.Free && holdTimeInt > freeHoldTimeLimitInMonths {
+		return 0, errors.New("free accounts are limited to maximum hold times of 1 month")
+	} else if usageTier.Tier != models.Free && holdTimeInt > nonFreeHoldTimeLimitInMonths {
+		return 0, errors.New("non free accounts are limited to a maximum hold time of 24 months")
+	}
+	return holdTimeInt, nil
+}
