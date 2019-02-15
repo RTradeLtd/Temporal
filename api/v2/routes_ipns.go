@@ -136,7 +136,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		return
 	}
 	// parse hold time
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
 		return
