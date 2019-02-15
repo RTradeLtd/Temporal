@@ -144,8 +144,21 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	api.l.With("user", forms["username"]).Info("user account registered")
 	// remove hashed password from output
 	userModel.HashedPassword = "scrubbed"
+	// format a custom response that includes the user model
+	// and an additional status field
+	type userRegisteredModel struct {
+		*models.User
+		Status string
+	}
+	var status string
+	if dev {
+		status = "by continuing to use this service you agree to be bound by the following api terms and service" + devTermsAndServiceURL
+	} else {
+		status = "by continuing to use this service you agree to be bound by the following api terms and service" + prodTermsAndServiceURL
+	}
+	urm := userRegisteredModel{userModel, status}
 	// return
-	Respond(c, http.StatusOK, gin.H{"response": userModel})
+	Respond(c, http.StatusOK, gin.H{"response": &urm})
 }
 
 // CreateIPFSKey is used to create an IPFS key

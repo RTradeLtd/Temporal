@@ -24,64 +24,14 @@ import (
 	limit "github.com/aviddiviner/gin-limit"
 
 	"github.com/RTradeLtd/config"
-	xss "github.com/dvwright/xss-mw"
 	stats "github.com/semihalev/gin-stats"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
 
-	pbLens "github.com/RTradeLtd/grpc/lens"
-	pbOrch "github.com/RTradeLtd/grpc/nexus"
-	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/gin-gonic/gin"
 )
-
-var (
-	xssMdlwr xss.XssMw
-	dev      = false
-)
-
-// API is our API service
-type API struct {
-	ipfs        rtfs.Manager
-	ipfsCluster *rtfscluster.ClusterManager
-	keys        *kaas.Client
-	r           *gin.Engine
-	cfg         *config.TemporalConfig
-	dbm         *database.Manager
-	um          *models.UserManager
-	im          *models.IpnsManager
-	pm          *models.PaymentManager
-	ue          *models.EncryptedUploadManager
-	upm         *models.UploadManager
-	zm          *models.ZoneManager
-	rm          *models.RecordManager
-	nm          *models.IPFSNetworkManager
-	usage       *models.UsageManager
-	l           *zap.SugaredLogger
-	signer      pbSigner.SignerClient
-	orch        pbOrch.ServiceClient
-	lens        pbLens.IndexerAPIClient
-	dc          *dash.Client
-	queues      queues
-	service     string
-
-	version string
-}
-
-// Options is used to non-critical options
-type Options struct {
-	DebugLogging bool
-	DevMode      bool
-}
-
-// Clients is used to configure service clients we use
-type Clients struct {
-	Lens   pbLens.IndexerAPIClient
-	Orch   pbOrch.ServiceClient
-	Signer pbSigner.SignerClient
-}
 
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
