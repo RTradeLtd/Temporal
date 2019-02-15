@@ -6,7 +6,6 @@ import (
 	"html"
 	"io"
 	"net/http"
-	"strconv"
 
 	"github.com/c2h5oh/datasize"
 
@@ -38,7 +37,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 	// parse hold time
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
 		return
@@ -112,7 +111,7 @@ func (api *API) addFile(c *gin.Context) {
 		return
 	}
 	// parse hold time
-	holdTimeinMonthsInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	holdTimeInMonthsInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
 		return
@@ -144,7 +143,7 @@ func (api *API) addFile(c *gin.Context) {
 		return
 	}
 	// calculate code of upload
-	cost, err := utils.CalculateFileCost(username, holdTimeinMonthsInt, fileHandler.Size, api.usage)
+	cost, err := utils.CalculateFileCost(username, holdTimeInMonthsInt, fileHandler.Size, api.usage)
 	if err != nil {
 		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
 		return
@@ -227,7 +226,7 @@ func (api *API) addFile(c *gin.Context) {
 		CID:              resp,
 		NetworkName:      "public",
 		UserName:         username,
-		HoldTimeInMonths: holdTimeinMonthsInt,
+		HoldTimeInMonths: holdTimeInMonthsInt,
 	}
 	// send message to rabbitmq
 	if err = api.queues.cluster.PublishMessage(qp); err != nil {
