@@ -92,7 +92,7 @@ const (
 	// EmailTokenGenerationError is an error messaged used when failing to generate a token
 	EmailTokenGenerationError = "failed to generate email verification token"
 	// ZoneSearchError is an error message used when failing to search for a zone
-	ZoneSearchError = "failed to search for zone"
+	temporal ZoneSearchError = "failed to search for zone"
 	// RecordSearchError is an error message used when failing to search for a record
 	RecordSearchError = "failed to search for record"
 	// IPFSDagGetError is an error message when failing to retrieve a dag from ipfs
@@ -126,4 +126,6 @@ const (
 	EncryptionError = "an error occured when trying to encrypt file"
 	// DatabaseUpdateError is an error message used when a failure to update the database happesn
 	DatabaseUpdateError = "en error occured wile updating the database"
+	// PinExtendError is an error message used when someone attempts to extend the pin for content they haven't uploaded
+	PinExtendError = "failed to extend pin duration, this likely means you haven't actually uploaded this content before"
 )
