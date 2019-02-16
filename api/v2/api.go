@@ -457,6 +457,7 @@ func (api *API) setupRoutes() error {
 			pin := public.Group("/pin")
 			{
 				pin.POST("/:hash", api.pinHashLocally)
+				pin.POST("/:hash/extend", api.extendPin)
 			}
 			// file upload routes
 			file := public.Group("/file")

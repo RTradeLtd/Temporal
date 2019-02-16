@@ -358,6 +358,12 @@ func (api *API) extendPin(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// hash to retrieve dag for
+	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		Fail(c, err)
+		return
+	}
 	usage, err := api.usage.FindByUserName(username)
 	if err != nil {
 		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
@@ -367,7 +373,7 @@ func (api *API) extendPin(c *gin.Context) {
 		Fail(c, errors.New("free accounts are not allowed to extend pin times"))
 		return
 	}
-	forms := api.extractPostForms(c, "hash", "hold_time")
+	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
 		return
 	}
@@ -376,7 +382,7 @@ func (api *API) extendPin(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	cost, err := utils.CalculatePinCost(username, forms["hash"], holdTimeInt, api.ipfs, api.usage)
+	cost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
 	if err != nil {
 		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
 		return
@@ -385,7 +391,7 @@ func (api *API) extendPin(c *gin.Context) {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
-	if err := api.upm.ExtendGarbageCollectionPeriod(username, forms["hash"], "public", int(holdTimeInt)); err != nil {
+	if err := api.upm.ExtendGarbageCollectionPeriod(username, hash, "public", int(holdTimeInt)); err != nil {
 		api.LogError(c, err, eh.PinExtendError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
 		return
