@@ -14,7 +14,6 @@ import (
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/crypto"
 	"github.com/RTradeLtd/database/models"
-	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -148,8 +147,13 @@ func (api *API) addFile(c *gin.Context) {
 		api.LogError(c, err, eh.FileOpenError)(http.StatusBadRequest)
 		return
 	}
+	/* THIS IS TEMPORARILY DISABLED FOR FILE ADDS AS USING ANY EXTRA OPTIONS
+	WILL RESULT IN A COMPLETELY DIFFERENT CONTENT HASH
 	// lets make sure the user hasn't actually uploaded this file
-	hash, err := api.ipfs.Add(openFile, ipfsapi.OnlyHash(true))
+	// unfortunately the OnlyHash option is resulting in a different hash than when we add the file
+	// since adding a file that's already been added wont actually store any extra data
+	// we should
+	hash, err := api.ipfs.Add(openFile, ipfsapi.Pin(false))
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		return
@@ -167,7 +171,7 @@ func (api *API) addFile(c *gin.Context) {
 			},
 		)
 		return
-	}
+	}*/
 	// format size of file into gigabytes
 	fileSizeInGB := uint64(fileHandler.Size) / datasize.GB.Bytes()
 	api.l.Debug("user", username, "file_size_in_gb", fileSizeInGB)
@@ -371,6 +375,10 @@ func (api *API) extendPin(c *gin.Context) {
 	}
 	if usage.Tier == models.Free {
 		Fail(c, errors.New("free accounts are not allowed to extend pin times"))
+		return
+	}
+	if _, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public"); err != nil {
+		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
 		return
 	}
 	forms := api.extractPostForms(c, "hold_time")
