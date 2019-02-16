@@ -6,6 +6,7 @@ import (
 	"html"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/c2h5oh/datasize"
 
@@ -299,6 +300,11 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 
 // GetDagObject is used to retrieve an IPLD object from ipfs
 func (api *API) getDagObject(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
 	// hash to retrieve dag for
 	hash := c.Param("hash")
 	if _, err := gocid.Decode(hash); err != nil {
@@ -310,5 +316,38 @@ func (api *API) getDagObject(c *gin.Context) {
 		api.LogError(c, err, eh.IPFSDagGetError)(http.StatusBadRequest)
 		return
 	}
+	api.l.Infow("ipfs dag get requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": out})
+}
+
+// extendPin is used to extend the lifetime of a pin by a certain number of months
+func (api *API) extendPin(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	usage, err := api.usage.FindByUserName(username)
+	if err != nil {
+		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
+		return
+	}
+	if usage.Tier == models.Free {
+		Fail(c, errors.New("free accounts are not allowed to extend pin times"))
+		return
+	}
+	forms := api.extractPostForms(c, "hash", "hold_time")
+	if len(forms) == 0 {
+		return
+	}
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	if err := api.upm.ExtendGarbageCollectionPeriod(username, forms["hash"], "public", holdTimeInt); err ! nil {
+		api.LogError(c, err, eh.PinExtendError)(http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "pin time successfully extended"})
 }
