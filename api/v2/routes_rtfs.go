@@ -14,6 +14,7 @@ import (
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/crypto"
 	"github.com/RTradeLtd/database/models"
+	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -40,7 +41,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 			c,
 			http.StatusOK,
 			gin.H{
-				"response": "it seems like you have uploaded content matching this hash already. Please use the extend pin api call if you want to increase the hold time, otherwise you do not need to re-upload",
+				"response": "it seems like you have uploaded content matching this hash already. To save your credits, no charge was placed and the call was gracefully aborted. Please contact support@rtradetechnologies.com if you believe this is an issue",
 			},
 		)
 		return
@@ -141,6 +142,32 @@ func (api *API) addFile(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	api.l.Debug("opening file")
+	openFile, err := fileHandler.Open()
+	if err != nil {
+		api.LogError(c, err, eh.FileOpenError)(http.StatusBadRequest)
+		return
+	}
+	// lets make sure the user hasn't actually uploaded this file
+	hash, err := api.ipfs.Add(openFile, ipfsapi.OnlyHash(true))
+	if err != nil {
+		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
+		return
+	}
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
+	// by this conditional if statement passing, it means the user has
+	// upload content matching this hash before, and we don't want to charge them
+	// so we should gracefully abort further processing
+	if err == nil || upload != nil {
+		Respond(
+			c,
+			http.StatusOK,
+			gin.H{
+				"response": "it seems like you have uploaded content matching this hash already. To save your credits, no charge was placed and the call was gracefully aborted. Please contact support@rtradetechnologies.com if you believe this is an issue",
+			},
+		)
+		return
+	}
 	// format size of file into gigabytes
 	fileSizeInGB := uint64(fileHandler.Size) / datasize.GB.Bytes()
 	api.l.Debug("user", username, "file_size_in_gb", fileSizeInGB)
@@ -171,15 +198,6 @@ func (api *API) addFile(c *gin.Context) {
 	if err := api.usage.UpdateDataUsage(username, uint64(fileHandler.Size)); err != nil {
 		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
-		return
-	}
-	api.l.Debug("opening file")
-	// open file into memory
-	openFile, err := fileHandler.Open()
-	if err != nil {
-		api.LogError(c, err, eh.FileOpenError)(http.StatusBadRequest)
-		api.refundUserCredits(username, "file", cost)
-		api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
 		return
 	}
 	var reader io.Reader
