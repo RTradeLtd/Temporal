@@ -6,7 +6,6 @@ import (
 	"html"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/c2h5oh/datasize"
 
@@ -30,6 +29,20 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	hash := c.Param("hash")
 	if _, err := gocid.Decode(hash); err != nil {
 		Fail(c, err)
+		return
+	}
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
+	// by this conditional if statement passing, it means the user has
+	// upload content matching this hash before, and we don't want to charge them
+	// so we should gracefully abort further processing
+	if err == nil || upload != nil {
+		Respond(
+			c,
+			http.StatusOK,
+			gin.H{
+				"response": "it seems like you have uploaded content matching this hash already. Please use the extend pin api call if you want to increase the hold time, otherwise you do not need to re-upload",
+			},
+		)
 		return
 	}
 	// extract post forms
@@ -345,8 +358,18 @@ func (api *API) extendPin(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	if err := api.upm.ExtendGarbageCollectionPeriod(username, forms["hash"], "public", holdTimeInt); err ! nil {
+	cost, err := utils.CalculatePinCost(username, forms["hash"], holdTimeInt, api.ipfs, api.usage)
+	if err != nil {
+		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
+		return
+	}
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
+		return
+	}
+	if err := api.upm.ExtendGarbageCollectionPeriod(username, forms["hash"], "public", int(holdTimeInt)); err != nil {
 		api.LogError(c, err, eh.PinExtendError)(http.StatusBadRequest)
+		api.refundUserCredits(username, "pin", cost)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "pin time successfully extended"})
