@@ -52,10 +52,7 @@ func Test_Customer_Empty_Object(t *testing.T) {
 	if resp != emptyObjHash {
 		t.Fatal("failed to get correct empty object hash")
 	}
-	manager := &Manager{
-		um:   models.NewUserManager(db),
-		ipfs: ipfs,
-	}
+	manager := NewManager(models.NewUserManager(db), ipfs)
 	// defer updating the customer object hash
 	// to the default for easy future testing
 	defer func() {
@@ -90,8 +87,8 @@ func Test_Customer_Empty_Object(t *testing.T) {
 		fmt.Println(size)
 		t.Fatal("failed to get size for empty customer object check")
 	}
-	if hash != testObjHash {
-		t.Fatal("failed to get correct object hash")
+	if hash != "" {
+		t.Fatal("hash should be empty")
 	}
 	// create a duplicated linked hash
 	unixFSObject, err := ipfs.NewObject("")
@@ -124,7 +121,7 @@ func Test_Customer_Empty_Object(t *testing.T) {
 	if size != 0 {
 		t.Fatal("failed to calculate correct size")
 	}
-	if newObjHash != "zdpuAnjTAEDkXQi2aXPkPtscmxRZZQcZr3rw7a2YLvg3pveU8" {
+	if newObjHash != "" {
 		t.Fatal("failed to properly construct new object hash")
 	}
 }

@@ -2,44 +2,19 @@ package customer
 
 import (
 	"encoding/json"
+	"sync"
 
 	"github.com/RTradeLtd/database/models"
 	"github.com/RTradeLtd/rtfs"
 )
 
-// Manager is used to handle managing customer objects
-type Manager struct {
-	um   *models.UserManager
-	ipfs rtfs.Manager
-}
-
-// Object represents a single customer
-type Object struct {
-	// UploadedRefs is a map used to check whether or not a particular link ref has been uploaded
-	// the only time this value is populated is when an ipld objecct (say a folder) is uploaded, all
-	// the links of the folder will fill this map
-	UploadedRefs map[string]bool `json:"uploaded_nodes"`
-	// UploadedRootNodes is a map used to check whether or not a particular entire root node has been uploaded.
-	// each upload will always count as an uploaded root node however only ipld objects that contain links will also go to uploaded refs
-	UploadedRootNodes map[string]bool `json:"uploaded_root_nodes"`
-}
-
-/* the overall process for deduplicated billing will look like:
-
-file uploads:
-1) add file to ipfs, record hash
-2) look up references of the hash, record if any
-3) check customer object root nodes for hash recorded in step 1
-3a) if match with no references skip processing
-3b) if match with references, check references
-3c) if no match, with no references charge
-3d) if mo match, with references, check references
-4) process references (search through a users `UploadedRefs` for anything that is false, they get charged)
-*/
-
-// Unmarshal is used to take an object hash, and unmarshal it into a typed object
-func (m *Manager) Unmarshal(hash string, out *Object) error {
-	return m.ipfs.DagGet(hash, out)
+// NewManager is used to instantiate our customer object manager
+func NewManager(um *models.UserManager, ipfs rtfs.Manager) *Manager {
+	return &Manager{
+		um:    um,
+		ipfs:  ipfs,
+		mutex: sync.Mutex{},
+	}
 }
 
 // GetDeduplicatedStorageSpaceInBytes is used to get the deduplicated storage space used
@@ -47,6 +22,10 @@ func (m *Manager) Unmarshal(hash string, out *Object) error {
 // the user has made, and does not consider upload from other users.
 // it returns the new customer object hash of the user, and updates it.
 func (m *Manager) GetDeduplicatedStorageSpaceInBytes(username, hash string) (string, int, error) {
+	// we use mutex locks so that if a single user account makes two calls to the API in a row
+	// we do not want a confused state of used roots and refs to occur.
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 	// find the user model
 	user, err := m.um.FindByUserName(username)
 	if err != nil {
@@ -54,8 +33,8 @@ func (m *Manager) GetDeduplicatedStorageSpaceInBytes(username, hash string) (str
 	}
 	// construct an empty object
 	var object Object
-	// unmarshal the customer object hash stored in user model into a typed object
-	if err := m.Unmarshal(user.CustomerObjectHash, &object); err != nil {
+	// unmarshal the customer object hash into our typed object
+	if err := m.ipfs.DagGet(user.CustomerObjectHash, &object); err != nil {
 		return "", 0, err
 	}
 	// if the customer object is empty, then we return full storage space
@@ -88,22 +67,9 @@ func (m *Manager) GetDeduplicatedStorageSpaceInBytes(username, hash string) (str
 		}
 		// mark the root node as being used
 		object.UploadedRootNodes[hash] = true
-		// marshal object
-		marshaled, err := json.Marshal(&object)
+		// update the customer object hash stored in our database
+		resp, err := m.put(username, &object)
 		if err != nil {
-			return "", 0, err
-		}
-		// store object
-		resp, err := m.ipfs.DagPut(marshaled, "json", "cbor")
-		if err != nil {
-			return "", 0, err
-		}
-		// pin the object so we have access to it long-term
-		if err := m.ipfs.Pin(resp); err != nil {
-			return "", 0, err
-		}
-		// update the customer object hash stored in database
-		if err := m.um.UpdateCustomerObjectHash(username, resp); err != nil {
 			return "", 0, err
 		}
 		return resp, int(size), nil
@@ -116,9 +82,15 @@ func (m *Manager) GetDeduplicatedStorageSpaceInBytes(username, hash string) (str
 	// refsToCalculate will hold all references that we need
 	// to calculate th estorage size for
 	var (
+		// will hold all references we need to update+charge for
 		refsToCalculate []string
-		size            int
+		// will hold the total datasize we need to charge
+		size int
+		// will determine if we have updated the root hash
+		rootUpdated bool
 	)
+	// iterate over all references for the requested hash
+	// and mark whether or not a reference hasn't been seen before
 	for _, ref := range refs {
 		if !object.UploadedRefs[ref] {
 			refsToCalculate = append(refsToCalculate, ref)
@@ -134,42 +106,67 @@ func (m *Manager) GetDeduplicatedStorageSpaceInBytes(username, hash string) (str
 		size = stats.DataSize
 		// update customer object with root
 		object.UploadedRootNodes[hash] = true
+		// mark as having updated the root
+		rootUpdated = true
 	}
 	// if we have no refs to calculate size for, it means this upload
 	// will consume no additional storage space, thus we can avoid charging them
 	// all but the datasize of the root (if at all)
 	if len(refsToCalculate) == 0 {
-		return user.CustomerObjectHash, size, nil
+		// if we have updated the used roots of the customer object
+		// this means we need to first update the customer object
+		// stored in database
+		if rootUpdated {
+			resp, err := m.put(username, &object)
+			if err != nil {
+				return "", 0, err
+			}
+			// return the new customer object hash and the datasize
+			return resp, size, nil
+		}
+		// since we haven't updated the root, and we have no refs to charge for
+		// we can return an empty string, and a 0 size
+		return "", 0, nil
 	}
 	// calculate size of all references
 	// also use this to update the refs of customer object
 	for _, ref := range refsToCalculate {
+		// get stats for the reference
 		stats, err := m.ipfs.Stat(ref)
 		if err != nil {
 			return "", 0, err
 		}
+		// update datasize to include size of reference
 		size = size + stats.DataSize
+		// add reference to object to prevent further charges
 		object.UploadedRefs[ref] = true
 	}
-	// marshal the updated customer object
-	marshaled, err := json.Marshal(&object)
+	// store new customer object in ipfs
+	// update database, and return hash of new object
+	resp, err := m.put(username, &object)
 	if err != nil {
-		return "", 0, err
-	}
-	// put the new object
-	resp, err := m.ipfs.DagPut(marshaled, "json", "cbor")
-	// pin the new object
-	if err := m.ipfs.Pin(resp); err != nil {
-		return "", 0, err
-	}
-	// update user model in database
-	if err := m.um.UpdateCustomerObjectHash(username, resp); err != nil {
 		return "", 0, err
 	}
 	return resp, size, nil
 }
 
-// UpdateObject is used to update the customer object for a user
-func (m *Manager) UpdateObject(username string, rootNodes, refs []string) error {
-	return nil
+// put is a wrapper for commonly used functionality.
+// it is responsible for putting the object to ipfs, and updating
+// the associated usermodel in database
+func (m *Manager) put(username string, obj *Object) (string, error) {
+	marshaled, err := json.Marshal(obj)
+	if err != nil {
+		return "", err
+	}
+	resp, err := m.ipfs.DagPut(marshaled, "json", "cbor")
+	if err != nil {
+		return "", err
+	}
+	if err := m.ipfs.Pin(resp); err != nil {
+		return "", err
+	}
+	if err := m.um.UpdateCustomerObjectHash(username, resp); err != nil {
+		return "", err
+	}
+	return resp, nil
 }
