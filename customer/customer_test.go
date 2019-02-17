@@ -67,7 +67,7 @@ func Test_Customer_Empty_Object(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if size != 6169 {
+	if size != 6171 {
 		t.Fatal("failed to get size for empty customer object check")
 	}
 	if hash != testObjHash {
@@ -92,6 +92,40 @@ func Test_Customer_Empty_Object(t *testing.T) {
 	}
 	if hash != testObjHash {
 		t.Fatal("failed to get correct object hash")
+	}
+	// create a duplicated linked hash
+	unixFSObject, err := ipfs.NewObject("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	newHash, err := ipfs.PatchLink(testHash, "hello", unixFSObject, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if newHash != "QmRYBsa1UiDXfdozyDhbzXhj7PivyjCsBJybYNQ5bBbTBg" {
+		t.Fatal("failed to create new hash")
+	}
+	newObjHash, size, err := manager.GetDeduplicatedStorageSpaceInBytes("testuser", newHash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if size != 2 {
+		t.Fatal("failed to calculate correct size")
+	}
+	if newObjHash != "zdpuAnjTAEDkXQi2aXPkPtscmxRZZQcZr3rw7a2YLvg3pveU8" {
+		t.Fatal("failed to properly construct new object hash")
+	}
+	// now repeat the same test ensuring we get a 0 for size used
+	// since we have already stored this hash
+	newObjHash, size, err = manager.GetDeduplicatedStorageSpaceInBytes("testuser", newHash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if size != 0 {
+		t.Fatal("failed to calculate correct size")
+	}
+	if newObjHash != "zdpuAnjTAEDkXQi2aXPkPtscmxRZZQcZr3rw7a2YLvg3pveU8" {
+		t.Fatal("failed to properly construct new object hash")
 	}
 }
 

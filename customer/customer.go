@@ -65,11 +65,18 @@ func (m *Manager) GetDeduplicatedStorageSpaceInBytes(username, hash string) (str
 			UploadedRefs:      make(map[string]bool),
 			UploadedRootNodes: make(map[string]bool),
 		}
-		// get the size
+		// get the size of references
 		size, _, err := rtfs.DedupAndCalculatePinSize(hash, m.ipfs)
 		if err != nil {
 			return "", 0, err
 		}
+		// get datasize of root node
+		stats, err := m.ipfs.Stat(hash)
+		if err != nil {
+			return "", 0, err
+		}
+		// update size to include data size of root node
+		size = size + int64(stats.DataSize)
 		// get references for the requested hash
 		refs, err := m.ipfs.Refs(hash, true, true)
 		if err != nil {
