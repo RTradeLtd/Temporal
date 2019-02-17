@@ -1,0 +1,106 @@
+package customer
+
+import (
+	"encoding/json"
+	"fmt"
+	"testing"
+	"time"
+
+	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/gorm"
+	"github.com/RTradeLtd/rtfs"
+)
+
+var (
+	// actual zdpuAnUGSDoNQoHQ2jpjhPePHEvg26mYLsAAGxr4jkzCWUpde
+	emptyObjHash = "zdpuAnUGSDoNQoHQ2jpjhPePHEvg26mYLsAAGxr4jkzCWUpde"
+	testHash     = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
+	testObjHash  = "zdpuAvGhHHFzp7hrs4p3nv4tncWQ4tMCNsaGez1BuZpZUYhpJ"
+	testIP       = "192.168.1.101:5001"
+)
+
+func Test_Customer_Empty_Object(t *testing.T) {
+	cfg, err := config.LoadConfig("../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ipfs, err := rtfs.NewManager(
+		cfg.IPFS.APIConnection.Host+":"+cfg.IPFS.APIConnection.Port,
+		"", 5*time.Minute,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	obj := Object{
+		UploadedRefs:      make(map[string]bool),
+		UploadedRootNodes: make(map[string]bool),
+	}
+	marshaled, err := json.Marshal(&obj)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, err := ipfs.DagPut(marshaled, "json", "cbor")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp != emptyObjHash {
+		t.Fatal("failed to get correct empty object hash")
+	}
+	manager := &Manager{
+		um:   models.NewUserManager(db),
+		ipfs: ipfs,
+	}
+	// defer updating the customer object hash
+	// to the default for easy future testing
+	defer func() {
+		if err := manager.um.UpdateCustomerObjectHash("testuser", emptyObjHash); err != nil {
+			t.Fatal(err)
+		}
+	}()
+	hash, size, err := manager.GetDeduplicatedStorageSpaceInBytes("testuser", testHash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if size != 6169 {
+		t.Fatal("failed to get size for empty customer object check")
+	}
+	if hash != testObjHash {
+		t.Fatal("failed to get correct object hash")
+	}
+	user, err := manager.um.FindByUserName("testuser")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if user.CustomerObjectHash != testObjHash {
+		t.Fatal("failed to set correct customer object hash")
+	}
+	// now test size calculation for the same test hash
+	// this should result in a size of 0 being returned
+	hash, size, err = manager.GetDeduplicatedStorageSpaceInBytes("testuser", testHash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if size != 0 {
+		fmt.Println(size)
+		t.Fatal("failed to get size for empty customer object check")
+	}
+	if hash != testObjHash {
+		t.Fatal("failed to get correct object hash")
+	}
+}
+
+func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
+	return database.OpenDBConnection(database.DBOptions{
+		User:           cfg.Database.Username,
+		Password:       cfg.Database.Password,
+		Address:        cfg.Database.URL,
+		Port:           cfg.Database.Port,
+		SSLModeDisable: true,
+	})
+}
