@@ -157,3 +157,15 @@ func (um *UploadManager) GetUploadsForUser(username string) ([]Upload, error) {
 	}
 	return uploads, nil
 }
+
+// ExtendGarbageCollectionPeriod is used to extend the garbage collection period for a particular upload
+func (um *UploadManager) ExtendGarbageCollectionPeriod(username, hash, network string, holdTimeInMonths int) error {
+	upload, err := um.FindUploadByHashAndUserAndNetwork(username, hash, network)
+	if err != nil {
+		return err
+	}
+	// update garbage collection period
+	upload.GarbageCollectDate = upload.GarbageCollectDate.AddDate(0, holdTimeInMonths, 0)
+	// save the updated model
+	return um.DB.Model(upload).Update("garbage_collect_date", upload.GarbageCollectDate).Error
+}
