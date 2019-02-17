@@ -5,6 +5,7 @@ import (
 	"errors"
 	"html"
 	"io"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/c2h5oh/datasize"
@@ -14,6 +15,7 @@ import (
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/crypto"
 	"github.com/RTradeLtd/database/models"
+	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -149,11 +151,17 @@ func (api *API) addFile(c *gin.Context) {
 	}
 	/* THIS IS TEMPORARILY DISABLED FOR FILE ADDS AS USING ANY EXTRA OPTIONS
 	WILL RESULT IN A COMPLETELY DIFFERENT CONTENT HASH
+	*/
 	// lets make sure the user hasn't actually uploaded this file
 	// unfortunately the OnlyHash option is resulting in a different hash than when we add the file
 	// since adding a file that's already been added wont actually store any extra data
 	// we should
-	hash, err := api.ipfs.Add(openFile, ipfsapi.Pin(false))
+	fileBytes, err := ioutil.ReadAll(openFile)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	hash, err := api.ipfs.Add(bytes.NewReader(fileBytes), ipfsapi.OnlyHash(true))
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		return
@@ -171,7 +179,7 @@ func (api *API) addFile(c *gin.Context) {
 			},
 		)
 		return
-	}*/
+	}
 	// format size of file into gigabytes
 	fileSizeInGB := uint64(fileHandler.Size) / datasize.GB.Bytes()
 	api.l.Debug("user", username, "file_size_in_gb", fileSizeInGB)
@@ -227,7 +235,7 @@ func (api *API) addFile(c *gin.Context) {
 		}
 		// html decode strings
 		decodedPassPhrase := html.UnescapeString(c.PostForm("passphrase"))
-		encrypted, err := crypto.NewEncryptManager(decodedPassPhrase).Encrypt(openFile)
+		encrypted, err := crypto.NewEncryptManager(decodedPassPhrase).Encrypt(bytes.NewReader(fileBytes))
 		if err != nil {
 			api.LogError(c, err, eh.EncryptionError)(http.StatusBadRequest)
 			api.refundUserCredits(username, "file", cost)
@@ -237,10 +245,9 @@ func (api *API) addFile(c *gin.Context) {
 		reader = bytes.NewReader(encrypted)
 		// generate an encryption manager and encrypt
 	} else {
-		reader = openFile
+		reader = bytes.NewReader(fileBytes)
 	}
 	api.l.Debug("adding file...")
-	// add file to ipfs
 	resp, err := api.ipfs.Add(reader)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
