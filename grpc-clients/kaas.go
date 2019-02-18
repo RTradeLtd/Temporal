@@ -19,41 +19,32 @@ type KaasClient struct {
 // NewKaasClient is used to instantiate our kaas client in primary or fallback mode
 func NewKaasClient(opts config.Services, fallback bool) (*KaasClient, error) {
 	var (
-		url      string
-		dialOpts []grpc.DialOption
+		dialOpts   []grpc.DialOption
+		krabConfig config.Krab
 	)
 	if fallback {
-		if opts.Krab.Fallback.TLS.CertPath != "" {
-			creds, err := credentials.NewClientTLSFromFile(opts.Krab.Fallback.TLS.CertPath, "")
-			if err != nil {
-				return nil, fmt.Errorf("could not load tls cert: %s", err)
-			}
-			dialOpts = append(dialOpts,
-				grpc.WithTransportCredentials(creds),
-				grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Krab.AuthKey, true)))
-		} else {
-			dialOpts = append(dialOpts,
-				grpc.WithInsecure(),
-				grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Krab.AuthKey, false)))
-		}
-		url = opts.Krab.Fallback.URL
+		krabConfig.AuthKey = opts.Krab.Fallback.AuthKey
+		krabConfig.KeystorePassword = opts.Krab.Fallback.KeystorePassword
+		krabConfig.LogFile = opts.Krab.Fallback.LogFile
+		krabConfig.TLS = opts.Krab.Fallback.TLS
+		krabConfig.URL = opts.Krab.Fallback.URL
 	} else {
-		if opts.Krab.TLS.CertPath != "" {
-			creds, err := credentials.NewClientTLSFromFile(opts.Krab.TLS.CertPath, "")
-			if err != nil {
-				return nil, fmt.Errorf("could not load tls cert: %s", err)
-			}
-			dialOpts = append(dialOpts,
-				grpc.WithTransportCredentials(creds),
-				grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Krab.AuthKey, true)))
-		} else {
-			dialOpts = append(dialOpts,
-				grpc.WithInsecure(),
-				grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Krab.AuthKey, false)))
-		}
-		url = opts.Krab.URL
+		krabConfig = opts.Krab
 	}
-	conn, err := grpc.Dial(url, dialOpts...)
+	if krabConfig.TLS.CertPath != "" {
+		creds, err := credentials.NewClientTLSFromFile(krabConfig.TLS.CertPath, "")
+		if err != nil {
+			return nil, fmt.Errorf("could not load tls cert: %s", err)
+		}
+		dialOpts = append(dialOpts,
+			grpc.WithTransportCredentials(creds),
+			grpc.WithPerRPCCredentials(dialer.NewCredentials(krabConfig.AuthKey, true)))
+	} else {
+		dialOpts = append(dialOpts,
+			grpc.WithInsecure(),
+			grpc.WithPerRPCCredentials(dialer.NewCredentials(krabConfig.AuthKey, false)))
+	}
+	conn, err := grpc.Dial(krabConfig.URL, dialOpts...)
 	if err != nil {
 		return nil, err
 	}
