@@ -120,26 +120,6 @@ vendor:
 	find . -name test-vectors -type d -exec rm -r {} +
 	@echo "===================          done           ==================="
 
-# Rebuild and update vendored dependencies
-.PHONY: vendor-update
-vendor-update:
-	@echo "=================== generating dependencies ==================="
-	# Nuke vendor directory
-	rm -rf vendor
-
-	# Update standard dependencies
-	dep ensure -v -update
-
-	# Generate IPFS dependencies
-	rm -rf vendor/github.com/ipfs/go-ipfs
-	git clone https://github.com/ipfs/go-ipfs.git vendor/github.com/ipfs/go-ipfs
-	( cd vendor/github.com/ipfs/go-ipfs ; git checkout $(IPFSVERSION) ; gx install --local --nofancy )
-	mv vendor/github.com/ipfs/go-ipfs/vendor/* vendor
-	
-	# Remove problematic dependencies
-	find . -name test-vectors -type d -exec rm -r {} +
-	@echo "===================          done           ==================="
-
 # Build CLI binary release
 .PHONY: release-cli
 release-cli:
