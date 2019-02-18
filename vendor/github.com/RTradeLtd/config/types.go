@@ -158,7 +158,7 @@ type Services struct {
 		Pass string `json:"pass"`
 	} `json:"raven"`
 	Krab         `json:"krab"`
-	KrabFallback `json:"krab_fallback"`
+	KrabFallback Krab `json:"krab_fallback"`
 }
 
 // Krab is used to for key management
