@@ -1,6 +1,7 @@
 package v2
 
 import (
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/queue"
 )
 
@@ -19,4 +20,10 @@ type queues struct {
 	key     *queue.Manager
 	dash    *queue.Manager
 	eth     *queue.Manager
+}
+
+// kaas key managers
+type keys struct {
+	kb1 *clients.KaasClient
+	kb2 *clients.KaasClient
 }
