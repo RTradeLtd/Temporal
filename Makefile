@@ -108,7 +108,7 @@ vendor:
 	rm -rf vendor
 
 	# rebuild dependencies
-	dep ensure -v
+	dep ensure -v $(DEPFLAGS)
 
 	# Generate IPFS dependencies
 	rm -rf vendor/github.com/ipfs/go-ipfs
