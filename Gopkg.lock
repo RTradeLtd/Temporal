@@ -50,7 +50,6 @@
   version = "v2.0.0"
 
 [[projects]]
-  branch = "upload/update"
   digest = "1:fffe5651bfebceb2383a2ea0940e88d74b00a733c5e78fc9c6ceff25065911fc"
   name = "github.com/RTradeLtd/database"
   packages = [
@@ -59,7 +58,8 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "11c5f8ae22e2fdbabb5832c32104132bfe93bce8"
+  revision = "4b656032faa6d6859dc0e0c45203ac55bcda76e5"
+  version = "v2.0.3"
 
 [[projects]]
   branch = "master"
@@ -242,7 +242,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8284c199bc9f5c75da71578c0c68481f465d075c4f2faf8fd2756eee0b4f2f6d"
+  digest = "1:f2df2de9ad26d31adfb64ea2b57ebf8834a7fef673032ecd4ea8e722e54161b9"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
@@ -251,7 +251,7 @@
     "render",
   ]
   pruneopts = "UT"
-  revision = "5acf6601170bb49a1958c055d66d54ba152dc34b"
+  revision = "31bbb10f34e4673815ab66099571bac95cf4113d"
 
 [[projects]]
   digest = "1:db75c3971e4fcaa251e4726f132fab3b17ad90beb7829d90ade140533b577861"
@@ -266,17 +266,21 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:cbf31997868639533ea9234c2c8ee5802c0eeb807fcf608c29320c58c379a182"
+  digest = "1:489a99067cd08971bd9c1ee0055119ba8febc1429f9200ab0bec68d35e8c4833"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
+    "protoc-gen-go/generator",
+    "protoc-gen-go/generator/internal/remap",
+    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
     "ptypes/struct",
     "ptypes/timestamp",
+    "ptypes/wrappers",
   ]
   pruneopts = "UT"
   revision = "c823c79ea1570fb5ff454033735a8e68575d1d0f"
@@ -1295,11 +1299,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:48cd63b152af9cc0010714d881a3d29a68c19a265fbb914d884dfde42fe9337a"
+  digest = "1:79f8bb1b9d02fa61546fecfc467884a564c77c8791ff9c28dfe16b5f2c76d02f"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
     "googleapis/rpc/status",
+    "protobuf/field_mask",
   ]
   pruneopts = "UT"
   revision = "bd968387e4aa590b3c6e4ba38ecac1ed314d43ad"
@@ -1379,6 +1384,7 @@
     "github.com/RTradeLtd/database",
     "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/entropy-mnemonics",
+    "github.com/RTradeLtd/go-ipfs-api",
     "github.com/RTradeLtd/gorm",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/krab",
