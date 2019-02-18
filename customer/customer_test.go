@@ -2,7 +2,6 @@ package customer
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 	"time"
 
@@ -60,13 +59,14 @@ func Test_Customer_Empty_Object(t *testing.T) {
 			t.Fatal(err)
 		}
 	}()
-	hash, size, err := manager.GetDeduplicatedStorageSpaceInBytes("testuser", testHash)
+	size, err := manager.GetDeduplicatedStorageSpaceInBytes("testuser", testHash)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if size != 6171 {
 		t.Fatal("failed to get size for empty customer object check")
 	}
+	hash, err := manager.Update("testuser", testHash)
 	if hash != testObjHash {
 		t.Fatal("failed to get correct object hash")
 	}
@@ -79,14 +79,14 @@ func Test_Customer_Empty_Object(t *testing.T) {
 	}
 	// now test size calculation for the same test hash
 	// this should result in a size of 0 being returned
-	hash, size, err = manager.GetDeduplicatedStorageSpaceInBytes("testuser", testHash)
+	size, err = manager.GetDeduplicatedStorageSpaceInBytes("testuser", testHash)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if size != 0 {
-		fmt.Println(size)
 		t.Fatal("failed to get size for empty customer object check")
 	}
+	hash, err = manager.Update("testuser", testHash)
 	if hash != "" {
 		t.Fatal("hash should be empty")
 	}
@@ -102,25 +102,27 @@ func Test_Customer_Empty_Object(t *testing.T) {
 	if newHash != "QmRYBsa1UiDXfdozyDhbzXhj7PivyjCsBJybYNQ5bBbTBg" {
 		t.Fatal("failed to create new hash")
 	}
-	newObjHash, size, err := manager.GetDeduplicatedStorageSpaceInBytes("testuser", newHash)
+	size, err = manager.GetDeduplicatedStorageSpaceInBytes("testuser", newHash)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if size != 2 {
 		t.Fatal("failed to calculate correct size")
 	}
+	newObjHash, err := manager.Update("testuser", newHash)
 	if newObjHash != "zdpuAnjTAEDkXQi2aXPkPtscmxRZZQcZr3rw7a2YLvg3pveU8" {
 		t.Fatal("failed to properly construct new object hash")
 	}
 	// now repeat the same test ensuring we get a 0 for size used
 	// since we have already stored this hash
-	newObjHash, size, err = manager.GetDeduplicatedStorageSpaceInBytes("testuser", newHash)
+	size, err = manager.GetDeduplicatedStorageSpaceInBytes("testuser", newHash)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if size != 0 {
 		t.Fatal("failed to calculate correct size")
 	}
+	newObjHash, err = manager.Update("testuser", newHash)
 	if newObjHash != "" {
 		t.Fatal("failed to properly construct new object hash")
 	}
