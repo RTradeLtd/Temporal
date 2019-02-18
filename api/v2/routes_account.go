@@ -212,7 +212,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		NetworkName: "public",
 	}
 	// send message for processing
-	if err = api.queues.key.PublishMessageWithExchange(key, queue.IpfsKeyExchange); err != nil {
+	if err = api.queues.key.PublishMessage(key); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		return
 	}

@@ -12,10 +12,10 @@ import (
 
 	"github.com/streadway/amqp"
 
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/rtns"
 	"github.com/RTradeLtd/database/models"
 	pb "github.com/RTradeLtd/grpc/krab"
-	"github.com/RTradeLtd/kaas"
 )
 
 type contextKey string
@@ -26,7 +26,7 @@ const (
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	kb, err := kaas.NewClient(qm.cfg.Services)
+	kbPrimary, err := clients.NewKaasClient(qm.cfg.Services, false)
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processIPNSEntryCreationRequest(d, wg, kb, publisher, ipnsManager)
+			go qm.processIPNSEntryCreationRequest(d, wg, kbPrimary, publisher, ipnsManager)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -62,7 +62,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	}
 }
 
-func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kb *kaas.Client, pub *rtns.Publisher, im *models.IpnsManager) {
+func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kb *clients.KaasClient, pub *rtns.Publisher, im *models.IpnsManager) {
 	defer wg.Done()
 	qm.l.Info("new ipns entry creation detected")
 	ie := IPNSEntry{}

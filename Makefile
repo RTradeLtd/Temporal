@@ -107,8 +107,8 @@ vendor:
 	# Nuke vendor directory
 	rm -rf vendor
 
-	# Update standard dependencies
-	dep ensure -v -update
+	# rebuild dependencies
+	dep ensure -v $(DEPFLAGS)
 
 	# Generate IPFS dependencies
 	rm -rf vendor/github.com/ipfs/go-ipfs

@@ -157,17 +157,25 @@ type Services struct {
 		User string `json:"user"`
 		Pass string `json:"pass"`
 	} `json:"raven"`
-	Krab struct {
-		URL string `json:"url"`
-		TLS struct {
-			CertPath string `json:"cert_path"`
-			KeyFile  string `json:"key_file"`
-		}
-		AuthKey          string `json:"auth_key"`
-		LogFile          string `json:"log_file"`
-		KeystorePassword string `json:"keystore_password"`
-	} `json:"krab"`
+	Krab         `json:"krab"`
+	KrabFallback Krab `json:"krab_fallback"`
 }
+
+// Krab is used to for key management
+type Krab struct {
+	URL string `json:"url"`
+	TLS struct {
+		CertPath string `json:"cert_path"`
+		KeyFile  string `json:"key_file"`
+	}
+	AuthKey          string `json:"auth_key"`
+	LogFile          string `json:"log_file"`
+	KeystorePassword string `json:"keystore_password"`
+}
+
+// KrabFallback is a fallback configuration for
+// connecting to a secondary krab server
+type KrabFallback Krab
 
 // Lens defines options for the Lens search engine
 type Lens struct {
