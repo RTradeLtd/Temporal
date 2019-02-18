@@ -23,11 +23,7 @@ func NewKaasClient(opts config.Services, fallback bool) (*KaasClient, error) {
 		krabConfig config.Krab
 	)
 	if fallback {
-		krabConfig.AuthKey = opts.Krab.Fallback.AuthKey
-		krabConfig.KeystorePassword = opts.Krab.Fallback.KeystorePassword
-		krabConfig.LogFile = opts.Krab.Fallback.LogFile
-		krabConfig.TLS = opts.Krab.Fallback.TLS
-		krabConfig.URL = opts.Krab.Fallback.URL
+		krabConfig = opts.KrabFallback
 	} else {
 		krabConfig = opts.Krab
 	}

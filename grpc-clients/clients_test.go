@@ -82,8 +82,8 @@ func TestKaasClient_Fail(t *testing.T) {
 	}
 	cfg.Services.Krab.URL = "notarealurls"
 	cfg.Services.Krab.TLS.CertPath = "/root/toor"
-	cfg.Services.Krab.Fallback.URL = "notarealurls"
-	cfg.Services.Krab.Fallback.TLS.CertPath = "/root/toor"
+	cfg.Services.KrabFallback.URL = "notarealurls"
+	cfg.Services.KrabFallback.TLS.CertPath = "/root/toor"
 	if _, err := clients.NewKaasClient(cfg.Services, false); err == nil {
 		t.Fatal("expected error")
 	}
