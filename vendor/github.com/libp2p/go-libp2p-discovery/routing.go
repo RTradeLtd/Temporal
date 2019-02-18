@@ -26,7 +26,13 @@ func (d *RoutingDiscovery) Advertise(ctx context.Context, ns string, opts ...Opt
 		return 0, err
 	}
 
-	err = d.Provide(ctx, cid, true)
+	// this context requires a timeout; it determines how long the DHT looks for
+	// closest peers to the key/CID before it goes on to provide the record to them.
+	// Not setting a timeout here will make the DHT wander forever.
+	pctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+
+	err = d.Provide(pctx, cid, true)
 	if err != nil {
 		return 0, err
 	}
@@ -56,7 +62,7 @@ func (d *RoutingDiscovery) FindPeers(ctx context.Context, ns string, opts ...Opt
 }
 
 func nsToCid(ns string) (cid.Cid, error) {
-	h, err := mh.Encode([]byte(ns), mh.SHA2_256)
+	h, err := mh.Sum([]byte(ns), mh.SHA2_256, -1)
 	if err != nil {
 		return cid.Undef, err
 	}

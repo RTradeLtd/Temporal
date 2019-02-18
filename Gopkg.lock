@@ -34,12 +34,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:732853d5da265a4ca3d93c41ddd22bab85c3911c007977cc63809f6603791088"
+  digest = "1:753677d10cf5ae7ae2a24cbe8ac4f5664e368bde721bff9f876c7a3ff2141e48"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "9b56bec51eb15bd668ced11db549f0362a16e50a"
-  version = "v2.0.1"
+  revision = "a42bf43c34eaf391cc37b3a648ea75e0b46aac31"
+  version = "v2.0.2"
 
 [[projects]]
   digest = "1:8859d83d94d112382fbdd97fc04c2ce196ea044f271ffe8e170826b25131a4f0"
@@ -50,7 +50,7 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:5c3fe898838beddd697991b6d0129b47531a13d80cd357a15d36ea004c9dfb0d"
+  digest = "1:fffe5651bfebceb2383a2ea0940e88d74b00a733c5e78fc9c6ceff25065911fc"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -58,8 +58,8 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "d579a64da5da3ffd1729d2f2a707c83fc616f5fb"
-  version = "v2.0.2"
+  revision = "4b656032faa6d6859dc0e0c45203ac55bcda76e5"
+  version = "v2.0.3"
 
 [[projects]]
   branch = "master"
@@ -242,7 +242,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8284c199bc9f5c75da71578c0c68481f465d075c4f2faf8fd2756eee0b4f2f6d"
+  digest = "1:f2df2de9ad26d31adfb64ea2b57ebf8834a7fef673032ecd4ea8e722e54161b9"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
@@ -251,18 +251,18 @@
     "render",
   ]
   pruneopts = "UT"
-  revision = "5acf6601170bb49a1958c055d66d54ba152dc34b"
+  revision = "31bbb10f34e4673815ab66099571bac95cf4113d"
 
 [[projects]]
-  digest = "1:db75c3971e4fcaa251e4726f132fab3b17ad90beb7829d90ade140533b577861"
+  digest = "1:760b2447d30444b6c2da7f77b677921f095fe19e6ed423b2edc1cd47a8507789"
   name = "github.com/gogo/protobuf"
   packages = [
     "io",
     "proto",
   ]
   pruneopts = "UT"
-  revision = "4cbf7e384e768b4e01799441fdf2a706a5635ae7"
-  version = "v1.2.0"
+  revision = "ba06b47c162d49f2af050fb4c75bcbc86a159d5c"
+  version = "v1.2.1"
 
 [[projects]]
   branch = "master"
@@ -330,19 +330,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2af8c0ddc75d87d5df67d64ba17f8186ff196bb6b348e7963ddafc44cbf5fd2a"
+  digest = "1:3afdc56b02a78be62fd27008d22902a002cc30a6bf99baffdb8756160f2b87ce"
   name = "github.com/hsanjuan/go-libp2p-gostream"
   packages = ["."]
   pruneopts = "UT"
-  revision = "1cbfc49c6f0e1866984e634f7603a9d6155825df"
+  revision = "27b5b1545d9e6c65d0dc64471885f161c825ade8"
 
 [[projects]]
   branch = "master"
-  digest = "1:91538d975fc542fe16926345e13d6fc77f4d34c9359d3df05f41001d5790cad9"
+  digest = "1:5b71bf83a2bc08c390fa9aea003f9a1839e88aac83eb46af6bd469cf1d5d1ed4"
   name = "github.com/hsanjuan/go-libp2p-http"
   packages = ["."]
   pruneopts = "UT"
-  revision = "478765bd693f4712f765a4722a66337ffc1c9758"
+  revision = "0bda6dc50529762a7556cfff6159ab947da4b5e4"
 
 [[projects]]
   digest = "1:c00cc6d95a674b4b923ac069d364445043bc67836e9bd8aeff8440cfbe6a2cc7"
@@ -606,14 +606,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dc82b2b6d75f7a2bdb64715ab3214bd141bcba5d298521dff8a16c949c195ab0"
+  digest = "1:8a4307cb902876329d37e7a414291b7cb7061224e837256eebcf6ceb7cef64ac"
   name = "github.com/libp2p/go-libp2p-autonat"
   packages = [
     ".",
     "pb",
   ]
   pruneopts = "UT"
-  revision = "494f7fce997b6f5be4750dcc24350e06d3b4d67a"
+  revision = "842b9c4919f5be0df3baee15b0f97e493f6d3fb2"
 
 [[projects]]
   digest = "1:6f00253ed14e76cf0b0179ee83311d378388054b3fb3446b4607cab76f5b7297"
@@ -639,11 +639,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2f5797fc7e01e14852b780180cc30dc35b9b236d5d0128b534b4b7cba5eb3b8f"
+  digest = "1:a8eeac3102118ab43ac13023da34002f615e66c18398a3e129d5a0ecc83bf2dc"
   name = "github.com/libp2p/go-libp2p-discovery"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d4858e0322b6f8cd62ed33d6b5c846c3ebc0bb69"
+  revision = "d369eed95f2d5748d1fa5688d97b6ae162658e1a"
 
 [[projects]]
   digest = "1:de92515b23a5c4cd04893e67cd9af1dfff7a2a5337f95c36de273ecf757628e7"
@@ -703,11 +703,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e86dee3bc2620a81ab6dc6dc34291192fcc7aca3defd0971fc53e5704440f24e"
+  digest = "1:762ccffe657ebf3d014c9c595cdc5a043a02f95123a1b917b9ad09e67e819652"
   name = "github.com/libp2p/go-libp2p-peer"
   packages = ["."]
   pruneopts = "UT"
-  revision = "65cec58e2561156ae673bb685d183e0ef1bf1c6c"
+  revision = "9a193a66da547245154976338737b11eac2d583e"
 
 [[projects]]
   digest = "1:2063708efd5552590aeec525a47d0e9dcf981336c20af73f952fb8599ddc394d"
@@ -825,11 +825,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2059c93108811c310c58f104f5ec806398a35213a5db058913013bb31f11ff81"
+  digest = "1:fa535cf250af638fa3d857de9855af86abba1654c89c3fbece6b3735d6479ed7"
   name = "github.com/libp2p/go-reuseport-transport"
   packages = ["."]
   pruneopts = "UT"
-  revision = "98b2c72d32537d3e48ca636e63e180a5b06384a0"
+  revision = "7c623f705b2b7639b091d045d7ea1f973e24c5c0"
 
 [[projects]]
   digest = "1:6dab34eae15e82d15c17cedabb7d641b62731cc5c7a3ed233dba226f8e5cb688"
@@ -1058,11 +1058,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:525ac3364813b4688df380594e562133e07830dfce0722effda64b37634c13d0"
+  digest = "1:dbd2b63224b02f9c7fd0631edaf6588dfb05fc20608f548fb603ef096fa87474"
   name = "github.com/streadway/amqp"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a314942b2fd9dde7a3f70ba3f1062848ce6eb392"
+  revision = "884228600bc96c993ab12fb81ba78bf0c280e88a"
 
 [[projects]]
   digest = "1:4887e9e89c80299aa520d718239809fdd2a47a9aa394909b169959bfbc424ddf"
@@ -1248,7 +1248,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:30d83bf0a7e95fb9ca9b543349d407e44c94ca570e27405f401ffc3e085781ff"
+  digest = "1:a6fbffb15d4bd8fcd16b26a557ce78820815320618b34d9101c502b4769674a1"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1256,7 +1256,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "983097b1a8a340cd1cc7df17d735154d89e10b1a"
+  revision = "d0b11bdaac8adb652bff00e49bcacf992835621a"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1295,14 +1295,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6c6b70cf6d2788d9f7dc6589bc88e0e1c7edc40612294431ebb7d09536d12240"
+  digest = "1:48cd63b152af9cc0010714d881a3d29a68c19a265fbb914d884dfde42fe9337a"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
     "googleapis/rpc/status",
   ]
   pruneopts = "UT"
-  revision = "4b09977fb92221987e99d190c8f88f2c92727a29"
+  revision = "bd968387e4aa590b3c6e4ba38ecac1ed314d43ad"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
