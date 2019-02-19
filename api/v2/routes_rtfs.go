@@ -33,6 +33,17 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	// extract post forms
+	forms := api.extractPostForms(c, "hold_time")
+	if len(forms) == 0 {
+		return
+	}
+	// parse hold time
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
 	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
 	// by this conditional if statement passing, it means the user has
 	// upload content matching this hash before, and we don't want to charge them
@@ -45,17 +56,6 @@ func (api *API) pinHashLocally(c *gin.Context) {
 				"response": "it seems like you have uploaded content matching this hash already. To save your credits, no charge was placed and the call was gracefully aborted. Please contact support@rtradetechnologies.com if you believe this is an issue",
 			},
 		)
-		return
-	}
-	// extract post forms
-	forms := api.extractPostForms(c, "hold_time")
-	if len(forms) == 0 {
-		return
-	}
-	// parse hold time
-	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
-	if err != nil {
-		Fail(c, err)
 		return
 	}
 	// get object size
@@ -149,13 +149,9 @@ func (api *API) addFile(c *gin.Context) {
 		api.LogError(c, err, eh.FileOpenError)(http.StatusBadRequest)
 		return
 	}
-	/* THIS IS TEMPORARILY DISABLED FOR FILE ADDS AS USING ANY EXTRA OPTIONS
-	WILL RESULT IN A COMPLETELY DIFFERENT CONTENT HASH
-	*/
-	// lets make sure the user hasn't actually uploaded this file
-	// unfortunately the OnlyHash option is resulting in a different hash than when we add the file
-	// since adding a file that's already been added wont actually store any extra data
-	// we should
+	// we need a small hack because reading from openFile once
+	// drains it's contents, by holding it in a temporary bytes object
+	// we can avoid any issues that may be caused
 	fileBytes, err := ioutil.ReadAll(openFile)
 	if err != nil {
 		Fail(c, err)
