@@ -1,7 +1,7 @@
 package v2
 
 import (
-	"github.com/RTradeLtd/ChainRider-Go/dash"
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/config"
@@ -41,43 +41,8 @@ type queues struct {
 	eth     *queue.Manager
 }
 
-// API is our API service
-type API struct {
-	ipfs        rtfs.Manager
-	ipfsCluster *rtfscluster.ClusterManager
-	keys        *kaas.Client
-	r           *gin.Engine
-	cfg         *config.TemporalConfig
-	dbm         *database.Manager
-	um          *models.UserManager
-	im          *models.IpnsManager
-	pm          *models.PaymentManager
-	ue          *models.EncryptedUploadManager
-	upm         *models.UploadManager
-	zm          *models.ZoneManager
-	rm          *models.RecordManager
-	nm          *models.IPFSNetworkManager
-	usage       *models.UsageManager
-	l           *zap.SugaredLogger
-	signer      pbSigner.SignerClient
-	orch        pbOrch.ServiceClient
-	lens        pbLens.IndexerAPIClient
-	dc          *dash.Client
-	queues      queues
-	service     string
-
-	version string
-}
-
-// Options is used to non-critical options
-type Options struct {
-	DebugLogging bool
-	DevMode      bool
-}
-
-// Clients is used to configure service clients we use
-type Clients struct {
-	Lens   pbLens.IndexerAPIClient
-	Orch   pbOrch.ServiceClient
-	Signer pbSigner.SignerClient
+// kaas key managers
+type keys struct {
+	kb1 *clients.KaasClient
+	kb2 *clients.KaasClient
 }

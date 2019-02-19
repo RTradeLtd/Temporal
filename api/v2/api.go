@@ -9,13 +9,13 @@ import (
 	"strconv"
 	"time"
 
+	gClients "github.com/RTradeLtd/Temporal/grpc-clients"
+
 	"github.com/streadway/amqp"
 
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"go.uber.org/zap"
-
-	"github.com/RTradeLtd/kaas"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -32,6 +32,52 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+var (
+	xssMdlwr xss.XssMw
+	dev      = false
+)
+
+// API is our API service
+type API struct {
+	ipfs        rtfs.Manager
+	ipfsCluster *rtfscluster.ClusterManager
+	keys        keys
+	r           *gin.Engine
+	cfg         *config.TemporalConfig
+	dbm         *database.Manager
+	um          *models.UserManager
+	im          *models.IpnsManager
+	pm          *models.PaymentManager
+	ue          *models.EncryptedUploadManager
+	upm         *models.UploadManager
+	zm          *models.ZoneManager
+	rm          *models.RecordManager
+	nm          *models.IPFSNetworkManager
+	usage       *models.UsageManager
+	l           *zap.SugaredLogger
+	signer      pbSigner.SignerClient
+	orch        pbOrch.ServiceClient
+	lens        pbLens.IndexerAPIClient
+	dc          *dash.Client
+	queues      queues
+	service     string
+
+	version string
+}
+
+// Options is used to non-critical options
+type Options struct {
+	DebugLogging bool
+	DevMode      bool
+}
+
+// Clients is used to configure service clients we use
+type Clients struct {
+	Lens   pbLens.IndexerAPIClient
+	Orch   pbOrch.ServiceClient
+	Signer pbSigner.SignerClient
+}
 
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
@@ -119,7 +165,11 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 		Blockchain: networkVersion,
 		Token:      cfg.APIKeys.ChainRider,
 	})
-	keys, err := kaas.NewClient(cfg.Services)
+	kb1, err := gClients.NewKaasClient(cfg.Services, false)
+	if err != nil {
+		return nil, err
+	}
+	kb2, err := gClients.NewKaasClient(cfg.Services, true)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +218,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 	return &API{
 		ipfs:        ipfs,
 		ipfsCluster: ipfsCluster,
-		keys:        keys,
+		keys:        keys{kb1: kb1, kb2: kb2},
 		cfg:         cfg,
 		service:     "api",
 		r:           router,

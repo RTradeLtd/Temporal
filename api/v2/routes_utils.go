@@ -122,7 +122,7 @@ func (api *API) exportKey(c *gin.Context) {
 		return
 	}
 	// get private key from krab keystore
-	resp, err := api.keys.GetPrivateKey(context.Background(), &pb.KeyGet{Name: keyName})
+	resp, err := api.keys.kb1.GetPrivateKey(context.Background(), &pb.KeyGet{Name: keyName})
 	if err != nil {
 		api.LogError(c, err, eh.KeyExportError)(http.StatusBadRequest)
 		return
@@ -133,8 +133,16 @@ func (api *API) exportKey(c *gin.Context) {
 		api.LogError(c, err, eh.KeyExportError)(http.StatusBadRequest)
 		return
 	}
-	// after successful parsing delete key from krab
-	if resp, err := api.keys.DeletePrivateKey(context.Background(), &pb.KeyDelete{Name: keyName}); err != nil {
+	// after successful parsing delete key from krab primary
+	if resp, err := api.keys.kb1.DeletePrivateKey(context.Background(), &pb.KeyDelete{Name: keyName}); err != nil {
+		api.LogError(c, err, "failed to delete key")(http.StatusBadRequest)
+		return
+	} else if resp.Status != "private key deleted" {
+		Fail(c, errors.New("failed to delete private key"))
+		return
+	}
+	// after successful parsing delete key from krab fallback
+	if resp, err := api.keys.kb2.DeletePrivateKey(context.Background(), &pb.KeyDelete{Name: keyName}); err != nil {
 		api.LogError(c, err, "failed to delete key")(http.StatusBadRequest)
 		return
 	} else if resp.Status != "private key deleted" {
