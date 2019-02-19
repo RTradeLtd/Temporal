@@ -3,6 +3,19 @@
 This document tracks changes to Temporal and its related projects for all `v2.x.x`
 releases. See our [versioning policy](/VERSIONING.md) for more details.
 
+## v2.0.5
+
+This release is focused around putting in account restrictions, enhanced pinning functionality, and the framework for deduplicated storage billing
+
+## api/v2
+
+* limit free accounts to 1 month pin times
+* limit non-free accounts to 2 year pin times
+* prevent uploads of the same content on a per-account which would result in duplicated billing
+  * instead, suggest that users extend their pin times
+* add api call to extend pin time
+
+
 ## v2.0.4
 
 * relevant PRs:
