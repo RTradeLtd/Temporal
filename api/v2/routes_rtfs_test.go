@@ -231,18 +231,6 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := api.upm.NewUpload(
-		hash,
-		"file",
-		models.UploadOptions{
-			Username:         "testuser",
-			NetworkName:      "public",
-			HoldTimeInMonths: 1,
-			Encrypted:        false,
-		},
-	); err != nil {
-		t.Fatal(err)
-	}
 	// test extend pin
 	// /v2/ipfs/public/pin/:hash/extend
 	urlValues = url.Values{}
