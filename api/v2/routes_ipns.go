@@ -153,6 +153,20 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	// IPFS Cluster doesn't, so to keep consistency with the rest of our endpoints
 	// we should only operate on a bare cidC
 	hash := strings.Split(hashToPin, "/")[len(strings.Split(hashToPin, "/"))-1]
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
+	// by this conditional if statement passing, it means the user has
+	// upload content matching this hash before, and we don't want to charge them
+	// so we should gracefully abort further processing
+	if err == nil || upload != nil {
+		Respond(
+			c,
+			http.StatusOK,
+			gin.H{
+				"response": "it seems like you have uploaded content matching this hash already. To save your credits, no charge was placed and the call was gracefully aborted. Please contact support@rtradetechnologies.com if you believe this is an issue",
+			},
+		)
+		return
+	}
 	// get size of object
 	stats, err := api.ipfs.Stat(hash)
 	if err != nil {

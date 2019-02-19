@@ -230,3 +230,15 @@ func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 	}
 	return holdTimeInt, nil
 }
+
+func (api *API) ensureTwoYearMax(upload *models.Upload, holdTime int64) error {
+	// get current time
+	now := time.Now()
+	// get future time while factoring for additional hold time
+	then := upload.GarbageCollectDate.AddDate(0, int(holdTime), 0)
+	// get the time difference and ensure its less than the 2 year limit
+	if then.Sub(now).Hours() > 8760 {
+		return errors.New(eh.MaxHoldTimeError)
+	}
+	return nil
+}

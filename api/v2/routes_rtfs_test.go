@@ -231,4 +231,15 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
+
+	// test extend pin
+	// /v2/ipfs/public/pin/:hash/extend
+	urlValues = url.Values{}
+	urlValues.Add("Hold_time", "5")
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "POST", "/v2/ipfs/public/pin/"+hash+"/extend", 200, nil, urlValues, &apiResp,
+	); err != nil {
+		t.Fatal(err)
+	}
 }

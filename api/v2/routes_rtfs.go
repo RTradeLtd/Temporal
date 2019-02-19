@@ -375,41 +375,56 @@ func (api *API) extendPin(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	usage, err := api.usage.FindByUserName(username)
-	if err != nil {
-		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
-		return
-	}
-	if usage.Tier == models.Free {
-		Fail(c, errors.New("free accounts are not allowed to extend pin times"))
-		return
-	}
-	if _, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public"); err != nil {
-		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
-		return
-	}
+	// extract needed post forms
 	forms := api.extractPostForms(c, "hold_time")
 	if len(forms) == 0 {
 		return
 	}
+	// validate the hold time
 	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
 		return
 	}
+	// find usage model
+	usage, err := api.usage.FindByUserName(username)
+	if err != nil {
+		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
+		return
+	}
+	// make sure they aren't a free account
+	if usage.Tier == models.Free {
+		Fail(c, errors.New("free accounts are not allowed to extend pin times"))
+		return
+	}
+	// find upload
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
+	if err != nil {
+		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
+		return
+	}
+	// ensure even with pin time extension, it wont breach two year limit
+	if err := api.ensureTwoYearMax(upload, holdTimeInt); err != nil {
+		Fail(c, err)
+		return
+	}
+	// calculate cost of hold time extension
 	cost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
 	if err != nil {
 		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
 		return
 	}
+	// validate they have enough credits
 	if err := api.validateUserCredits(username, cost); err != nil {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
+	// extend garbage collection period
 	if err := api.upm.ExtendGarbageCollectionPeriod(username, hash, "public", int(holdTimeInt)); err != nil {
 		api.LogError(c, err, eh.PinExtendError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}
+	// return
 	Respond(c, http.StatusOK, gin.H{"response": "pin time successfully extended"})
 }
