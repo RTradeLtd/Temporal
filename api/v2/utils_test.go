@@ -106,3 +106,64 @@ func Test_GetIPFSEndPoint(t *testing.T) {
 		t.Fatal("bad network url recovered")
 	}
 }
+
+func Test_Ensure_Two_Year_Max(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// setup fake mock clients
+	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeOrch := &mocks.FakeServiceClient{}
+	fakeSigner := &mocks.FakeSignerClient{}
+
+	api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	randUtils := utils.GenerateRandomUtils()
+	randString := randUtils.GenerateString(32, utils.LetterBytes)
+	um := models.NewUploadManager(db)
+	upload, err := um.NewUpload(
+		randString,
+		"file",
+		models.UploadOptions{
+			Username:         "testuser",
+			NetworkName:      "public",
+			HoldTimeInMonths: 1,
+			Encrypted:        false,
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type args struct {
+		holdTimeInMonths int64
+		upload           *models.Upload
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"12-Months", args{12, upload}, false},
+		{"22-Months", args{22, upload}, false},
+		{"25-Months", args{25, upload}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := api.ensureTwoYearMax(
+				tt.args.upload,
+				tt.args.holdTimeInMonths,
+			); (err != nil) != tt.wantErr {
+				t.Fatalf("ensureTwoYearMax err = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
