@@ -1,6 +1,7 @@
 package rtfscluster_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/rtfscluster"
@@ -18,11 +19,11 @@ const (
 )
 
 func TestInitialize(t *testing.T) {
-	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(context.Background(), nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
-	id, err := cm.Client.ID()
+	id, err := cm.Client.ID(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,13 +33,13 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestInitialize_Failure(t *testing.T) {
-	if _, err := rtfscluster.Initialize("10.255.255.255", "9094"); err == nil {
+	if _, err := rtfscluster.Initialize(context.Background(), "10.255.255.255", "9094"); err == nil {
 		t.Fatal("expected error")
 	}
 }
 
 func TestDecodeHashString(t *testing.T) {
-	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(context.Background(), nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +66,7 @@ func TestDecodeHashString(t *testing.T) {
 }
 
 func TestClusterPin(t *testing.T) {
-	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(context.Background(), nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +87,7 @@ func TestClusterPin(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := cm.Pin(tt.args.cid); (err != nil) != tt.wantErr {
+			if err := cm.Pin(context.Background(), tt.args.cid); (err != nil) != tt.wantErr {
 				t.Fatalf("Pin() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -94,11 +95,11 @@ func TestClusterPin(t *testing.T) {
 }
 
 func TestListPeers(t *testing.T) {
-	cm, err := rtfscluster.Initialize(nodeOneAPIAddr, nodePort)
+	cm, err := rtfscluster.Initialize(context.Background(), nodeOneAPIAddr, nodePort)
 	if err != nil {
 		t.Fatal(err)
 	}
-	peers, err := cm.ListPeers()
+	peers, err := cm.ListPeers(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

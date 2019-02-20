@@ -164,6 +164,7 @@ var commands = map[string]cmd.Cmd{
 			}
 			// init api service
 			service, err := v2.Initialize(
+				ctx,
 				&cfg,
 				args["version"],
 				v2.Options{DebugLogging: *debug, DevMode: *devMode},
