@@ -27,13 +27,6 @@ services:
     volumes:
       - ${BASE}/data/temporal:/data/temporal
 
-  queue-dfa:
-    image: rtradetech/temporal:${TEMPORAL}
-    network_mode: "host" # expose all
-    command: queue dfa
-    volumes:
-      - ${BASE}/data/temporal:/data/temporal
-
   queue-email-send:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
@@ -45,13 +38,6 @@ services:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue ipfs cluster
-    volumes:
-      - ${BASE}/data/temporal:/data/temporal
-
-  queue-ipfs-file:
-    image: rtradetech/temporal:${TEMPORAL}
-    network_mode: "host" # expose all
-    command: queue ipfs file
     volumes:
       - ${BASE}/data/temporal:/data/temporal
 
@@ -89,22 +75,10 @@ services:
   ipfs_cluster:
     depends_on: 
       - ipfs
-    image: ipfs/ipfs-cluster:v0.7.0
+    image: ipfs/ipfs-cluster:v0.8.0
     ports:
       - 9094:9094
       - 9095:9095
       - 9096:9096
     volumes:
       - ${BASE}/data/ipfs-cluster:/data/ipfs-cluster
-
-  minio:
-    image: minio/minio
-    ports:
-      - 9000:9000
-    command: ["server", "/data"]
-    environment:
-      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
-      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY}"
-    volumes:
-      - ${BASE}/data/minio:/data
-      - ${BASE}/minio/config:/root/.minio
