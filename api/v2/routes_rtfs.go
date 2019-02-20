@@ -3,9 +3,12 @@ package v2
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"html"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/c2h5oh/datasize"
@@ -237,6 +240,55 @@ func (api *API) addFile(c *gin.Context) {
 	// log and return
 	api.l.Infow("simple ipfs file upload processed", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": resp})
+}
+
+// uploadDirectory is used to upload a directory to IPFS
+func (api *API) uploadDirectory(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	fileHandler, err := c.FormFile("file")
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// remove paths from file name
+	_, fileNameSplit := filepath.Split(fileHandler.Filename)
+	randUtils := utils.GenerateRandomUtils()
+	randString := randUtils.GenerateString(5, utils.LetterBytes)
+	destPathZip := fmt.Sprintf("/tmp/%s_%s_%s", username, randString, fileNameSplit)
+	// save the zip file
+	if err := c.SaveUploadedFile(fileHandler, destPathZip); err != nil {
+		Fail(c, err)
+		return
+	}
+	randString = randUtils.GenerateString(5, utils.LetterBytes)
+	destPathUnzip := fmt.Sprintf("/tmp/unzipped_%s_%s", username, randString)
+	// unzip the file
+	if _, err := Unzip(destPathZip, destPathUnzip); err != nil {
+		Fail(c, err)
+		return
+	}
+	// add directory to ipfs
+	hash, err := api.ipfs.AddDir(destPathUnzip)
+	if err != nil {
+		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
+		return
+	}
+	// cleanup unzipped file
+	if err := os.RemoveAll(destPathUnzip); err != nil {
+		api.LogError(c, err, "failed to cleanup file(s)")(http.StatusBadRequest)
+		return
+	}
+	// cleanup zip file
+	if err := os.Remove(destPathZip); err != nil {
+		api.LogError(c, err, "failed to cleanup file(s)")(http.StatusBadRequest)
+		return
+	}
+	api.l.Infow("directory upload processed", "user", username)
+	Respond(c, http.StatusOK, gin.H{"response": hash})
 }
 
 // IpfsPubSubPublish is used to publish a pubsub msg
