@@ -247,9 +247,8 @@ func (api *API) addFile(c *gin.Context) {
 // uploadDirectory is used to upload a directory to IPFS
 // TODO: add virus scanning of zip file
 func (api *API) uploadDirectory(c *gin.Context) {
-	var permitted bool
-	if !permitted {
-		Fail(c, errors.New("this api call is not yet permitted"))
+	if !dev {
+		Fail(c, errors.New("this api call is only permitted in development environments"))
 		return
 	}
 	username, err := GetAuthenticatedUserFromContext(c)
