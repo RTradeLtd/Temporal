@@ -253,6 +253,7 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	}
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
+		api.l.Error(err)
 		Fail(c, err)
 		return
 	}
@@ -260,10 +261,12 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	_, filename := filepath.Split(fileHandler.Filename)
 	fileNameSplit := strings.Split(filename, ".")
 	if len(fileNameSplit) < 2 {
+		api.l.Error(err)
 		Fail(c, errors.New("failed to validate file type"))
 		return
 	}
 	if fileNameSplit[len(fileNameSplit)-1] != "zip" {
+		api.l.Error(err)
 		Fail(c, errors.New("only zip files are supported"))
 		return
 	}
@@ -272,6 +275,7 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	destPathZip := fmt.Sprintf("/tmp/%s_%s_%s", username, randString, filename)
 	// save the zip file
 	if err := c.SaveUploadedFile(fileHandler, destPathZip); err != nil {
+		api.l.Error(err)
 		Fail(c, err)
 		return
 	}
@@ -279,6 +283,7 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	destPathUnzip := fmt.Sprintf("/tmp/unzipped_%s_%s", username, randString)
 	// unzip the file
 	if _, err := Unzip(destPathZip, destPathUnzip); err != nil {
+		api.l.Error(err)
 		Fail(c, err)
 		return
 	}
