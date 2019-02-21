@@ -123,6 +123,7 @@ func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceC
 		return nil, nil, err
 	}
 	imCluster, err := rtfscluster.Initialize(
+		context.Background(),
 		cfg.IPFSCluster.APIConnection.Host,
 		cfg.IPFSCluster.APIConnection.Port,
 	)
@@ -323,7 +324,7 @@ func Test_Utils(t *testing.T) {
 		Orch:   &mocks.FakeServiceClient{},
 		Signer: &mocks.FakeSignerClient{},
 	}
-	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
+	api, err := Initialize(context.Background(), cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -430,7 +431,7 @@ func Test_API_Initialize_Cluster_Failure(t *testing.T) {
 		Orch:   fakeOrch,
 		Signer: fakeSigner,
 	}
-	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
+	if _, err := Initialize(context.Background(), cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -457,7 +458,7 @@ func Test_API_Initialize_IPFS_Failure(t *testing.T) {
 		Orch:   fakeOrch,
 		Signer: fakeSigner,
 	}
-	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
+	if _, err := Initialize(context.Background(), cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -484,7 +485,7 @@ func Test_API_Initialize_Setup_Routes_Failure(t *testing.T) {
 		Orch:   fakeOrch,
 		Signer: fakeSigner,
 	}
-	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
+	if _, err := Initialize(context.Background(), cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -511,7 +512,7 @@ func Test_API_Initialize_Kaas_Failure(t *testing.T) {
 		Orch:   fakeOrch,
 		Signer: fakeSigner,
 	}
-	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
+	if _, err := Initialize(context.Background(), cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -536,7 +537,7 @@ func Test_API_Initialize_Queue_Failure(t *testing.T) {
 		Orch:   fakeOrch,
 		Signer: fakeSigner,
 	}
-	if _, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
+	if _, err := Initialize(context.Background(), cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -562,7 +563,7 @@ func Test_API_Initialize_Main_Network(t *testing.T) {
 		Orch:   fakeOrch,
 		Signer: fakeSigner,
 	}
-	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
+	api, err := Initialize(context.Background(), cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -603,7 +604,7 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 				Orch:   fakeOrch,
 				Signer: fakeSigner,
 			}
-			api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
+			api, err := Initialize(context.Background(), cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -640,7 +641,7 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 		Orch:   fakeOrch,
 		Signer: fakeSigner,
 	}
-	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
+	api, err := Initialize(context.Background(), cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -711,7 +712,7 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 		Orch:   fakeOrch,
 		Signer: fakeSigner,
 	}
-	api, err := Initialize(cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
+	api, err := Initialize(context.Background(), cfg, "", Options{DevMode: true, DebugLogging: true}, clients, logger)
 	if err != nil {
 		t.Fatal(err)
 	}

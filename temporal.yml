@@ -75,7 +75,7 @@ services:
   ipfs_cluster:
     depends_on: 
       - ipfs
-    image: ipfs/ipfs-cluster:v0.8.0
+    image: ipfs/ipfs-cluster:v0.9.0
     ports:
       - 9094:9094
       - 9095:9095

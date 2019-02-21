@@ -1,7 +1,7 @@
 # go-libp2p-gostream
 
 [![Build Status](https://travis-ci.org/hsanjuan/go-libp2p-gostream.svg?branch=master)](https://travis-ci.org/hsanjuan/go-libp2p-gostream)
-[![Coverage Status](https://coveralls.io/repos/github/hsanjuan/go-libp2p-gostream/badge.svg?branch=master)](https://coveralls.io/github/hsanjuan/go-libp2p-gostream?branch=master)
+[![codecov](https://codecov.io/gh/hsanjuan/go-libp2p-gostream/branch/master/graph/badge.svg)](https://codecov.io/gh/hsanjuan/go-libp2p-gostream)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg)](https://github.com/RichardLitt/standard-readme)
 
 

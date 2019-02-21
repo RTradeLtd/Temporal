@@ -14,7 +14,7 @@ import (
 
 // ProcessIPFSClusterPins is used to process messages sent to rabbitmq requesting be pinned to our cluster
 func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	clusterManager, err := rtfscluster.Initialize(qm.cfg.IPFSCluster.APIConnection.Host, qm.cfg.IPFSCluster.APIConnection.Port)
+	clusterManager, err := rtfscluster.Initialize(ctx, qm.cfg.IPFSCluster.APIConnection.Host, qm.cfg.IPFSCluster.APIConnection.Port)
 	if err != nil {
 		return err
 	}
@@ -24,7 +24,7 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processIPFSClusterPin(d, wg, clusterManager, uploadManager)
+			go qm.processIPFSClusterPin(ctx, d, wg, clusterManager, uploadManager)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -40,7 +40,7 @@ func (qm *Manager) ProcessIPFSClusterPins(ctx context.Context, wg *sync.WaitGrou
 	}
 }
 
-func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm *rtfscluster.ClusterManager, um *models.UploadManager) {
+func (qm *Manager) processIPFSClusterPin(ctx context.Context, d amqp.Delivery, wg *sync.WaitGroup, cm *rtfscluster.ClusterManager, um *models.UploadManager) {
 	defer wg.Done()
 	qm.l.Info("new cluster pin request detected")
 	clusterAdd := IPFSClusterPin{}
@@ -76,7 +76,7 @@ func (qm *Manager) processIPFSClusterPin(d amqp.Delivery, wg *sync.WaitGroup, cm
 		"pinning has to cluster",
 		"cid", clusterAdd.CID,
 		"user", clusterAdd.UserName)
-	if err = cm.Pin(encodedCid); err != nil {
+	if err = cm.Pin(ctx, encodedCid); err != nil {
 		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
 		models.NewUsageManager(qm.db).ReduceDataUsage(clusterAdd.UserName, uint64(clusterAdd.Size))
 		qm.l.Errorw(
