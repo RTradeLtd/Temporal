@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"archive/zip"
 	"bytes"
 	"errors"
 	"fmt"
@@ -276,6 +277,29 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	// save the zip file
 	if err := c.SaveUploadedFile(fileHandler, destPathZip); err != nil {
 		api.l.Error(err)
+		Fail(c, err)
+		return
+	}
+	z, err := zip.OpenReader(destPathZip)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// protect against zip bombs
+	var uncompressedSize uint64
+	for _, f := range z.File {
+		uncompressedSize = uncompressedSize + f.UncompressedSize64
+		if uncompressedSize >= datasize.GB.Bytes() {
+			z.Close()
+			Fail(c, errors.New("uncompressed size of zip file is larger than 1gb max upload"))
+			return
+		} else if uncompressedSize < 0 {
+			z.Close()
+			Fail(c, errors.New("overflow detected"))
+			return
+		}
+	}
+	if err := z.Close(); err != nil {
 		Fail(c, err)
 		return
 	}
