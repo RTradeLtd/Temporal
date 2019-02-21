@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/c2h5oh/datasize"
 
@@ -243,6 +244,7 @@ func (api *API) addFile(c *gin.Context) {
 }
 
 // uploadDirectory is used to upload a directory to IPFS
+// TODO: add virus scanning of zip file
 func (api *API) uploadDirectory(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
@@ -255,10 +257,19 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		return
 	}
 	// remove paths from file name
-	_, fileNameSplit := filepath.Split(fileHandler.Filename)
+	_, filename := filepath.Split(fileHandler.Filename)
+	fileNameSplit := strings.Split(filename, ".")
+	if len(fileNameSplit) < 2 {
+		Fail(c, errors.New("failed to validate file type"))
+		return
+	}
+	if fileNameSplit[len(fileNameSplit)-1] != "zip" {
+		Fail(c, errors.New("only zip files are supported"))
+		return
+	}
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(5, utils.LetterBytes)
-	destPathZip := fmt.Sprintf("/tmp/%s_%s_%s", username, randString, fileNameSplit)
+	destPathZip := fmt.Sprintf("/tmp/%s_%s_%s", username, randString, filename)
 	// save the zip file
 	if err := c.SaveUploadedFile(fileHandler, destPathZip); err != nil {
 		Fail(c, err)
