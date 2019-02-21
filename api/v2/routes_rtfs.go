@@ -247,6 +247,11 @@ func (api *API) addFile(c *gin.Context) {
 // uploadDirectory is used to upload a directory to IPFS
 // TODO: add virus scanning of zip file
 func (api *API) uploadDirectory(c *gin.Context) {
+	var permitted bool
+	if !permitted {
+		Fail(c, errors.New("this api call is not yet permitted"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -254,7 +259,6 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	}
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
-		api.l.Error(err)
 		Fail(c, err)
 		return
 	}
@@ -262,12 +266,10 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	_, filename := filepath.Split(fileHandler.Filename)
 	fileNameSplit := strings.Split(filename, ".")
 	if len(fileNameSplit) < 2 {
-		api.l.Error(err)
 		Fail(c, errors.New("failed to validate file type"))
 		return
 	}
 	if fileNameSplit[len(fileNameSplit)-1] != "zip" {
-		api.l.Error(err)
 		Fail(c, errors.New("only zip files are supported"))
 		return
 	}
@@ -276,7 +278,6 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	destPathZip := fmt.Sprintf("/tmp/%s_%s_%s", username, randString, filename)
 	// save the zip file
 	if err := c.SaveUploadedFile(fileHandler, destPathZip); err != nil {
-		api.l.Error(err)
 		Fail(c, err)
 		return
 	}
@@ -286,10 +287,11 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		return
 	}
 	// protect against zip bombs
-	var uncompressedSize uint64
+	var uncompressedSize int64
 	for _, f := range z.File {
-		uncompressedSize = uncompressedSize + f.UncompressedSize64
-		if uncompressedSize >= datasize.GB.Bytes() {
+		uncompressedSize = uncompressedSize + int64(f.UncompressedSize64)
+		// protect against large uploads and overflows
+		if uncompressedSize >= int64(datasize.GB.Bytes()) {
 			z.Close()
 			Fail(c, errors.New("uncompressed size of zip file is larger than 1gb max upload"))
 			return
@@ -307,7 +309,6 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	destPathUnzip := fmt.Sprintf("/tmp/unzipped_%s_%s", username, randString)
 	// unzip the file
 	if _, err := Unzip(destPathZip, destPathUnzip); err != nil {
-		api.l.Error(err)
 		Fail(c, err)
 		return
 	}

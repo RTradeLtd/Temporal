@@ -85,7 +85,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	hash = apiResp.Response
 
 	// add a zip file (only do a partial test since this is being weird)
-	// /v2/ipfs/public/file/add
+	// /v2/ipfs/public/file/add/directory
 	bodyBuf = &bytes.Buffer{}
 	bodyWriter = multipart.NewWriter(bodyBuf)
 	fileWriter, err = bodyWriter.CreateFormFile("file", "../../testfiles/testenv.zip")
