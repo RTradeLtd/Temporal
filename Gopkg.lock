@@ -242,7 +242,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f2df2de9ad26d31adfb64ea2b57ebf8834a7fef673032ecd4ea8e722e54161b9"
+  digest = "1:ae36c7392721494beb379e74cc560827a923200d9a642cd65b96af58389f3573"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
@@ -251,7 +251,7 @@
     "render",
   ]
   pruneopts = "UT"
-  revision = "31bbb10f34e4673815ab66099571bac95cf4113d"
+  revision = "a58a2f9bf368a7976d26dba4c16c90fad4c1db6e"
 
 [[projects]]
   digest = "1:760b2447d30444b6c2da7f77b677921f095fe19e6ed423b2edc1cd47a8507789"
@@ -325,28 +325,28 @@
   version = "v1.4.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:e3ddd1f59d3c84917c99ecb1c3420aa6899f6df7495ba9414c13732b2e9568dd"
+  digest = "1:a63c88a91d8f616411de98ecf4c81148d1e2fee58069c09ffbe39953035ad9f0"
   name = "github.com/gxed/hashland"
   packages = ["keccakpg"]
   pruneopts = "UT"
-  revision = "d9f6b97f8db22dd1e090fd0bbbe98f09cc7dd0a8"
+  revision = "a72cc0875a1e95edd309d3134bc7c11bf2d7360b"
+  version = "v0.0.1"
 
 [[projects]]
   branch = "master"
-  digest = "1:3afdc56b02a78be62fd27008d22902a002cc30a6bf99baffdb8756160f2b87ce"
+  digest = "1:00511617691ac8e2c4687db537fbb4a5b987195702bf80e275ad8d03190da624"
   name = "github.com/hsanjuan/go-libp2p-gostream"
   packages = ["."]
   pruneopts = "UT"
-  revision = "27b5b1545d9e6c65d0dc64471885f161c825ade8"
+  revision = "0dc13f31f3ef523a136115fd374715aee49480e4"
 
 [[projects]]
   branch = "master"
-  digest = "1:5b71bf83a2bc08c390fa9aea003f9a1839e88aac83eb46af6bd469cf1d5d1ed4"
+  digest = "1:e787eba79a0d1854ba5190b35094de0137f8de489b835e835570c548fe6deb6a"
   name = "github.com/hsanjuan/go-libp2p-http"
   packages = ["."]
   pruneopts = "UT"
-  revision = "0bda6dc50529762a7556cfff6159ab947da4b5e4"
+  revision = "f753d1f0827e226be608ae835e21068844517f06"
 
 [[projects]]
   digest = "1:c00cc6d95a674b4b923ac069d364445043bc67836e9bd8aeff8440cfbe6a2cc7"
@@ -465,15 +465,15 @@
   version = "v1.5.7"
 
 [[projects]]
-  digest = "1:58e7ec37ff1cba7132124053de282357ff548d42659b1eccf7f00eb3a5ca7942"
+  digest = "1:2898c84782ebf5f4f11218bd32b08fc939039bc4de77f6f9fac3353027df6233"
   name = "github.com/ipfs/ipfs-cluster"
   packages = [
     "api",
     "api/rest/client",
   ]
   pruneopts = "UT"
-  revision = "c37beea1ae0236a7a97b5928f1ea5bc3b5b15e80"
-  version = "v0.8.0"
+  revision = "6509dfff56620bdd2a7ff25ab8179d0c824cd371"
+  version = "v0.9.0"
 
 [[projects]]
   digest = "1:b352ae8b1a77cc6b48fc8e314e34a522cfc76d6ca3a06c93b29c9cde5de6771e"
@@ -933,11 +933,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b2e02cbee843d6aa42a31f1ce7650ca143fb8ba639e759262dea65f456d0c1b6"
+  digest = "1:21b1237faaf677dae49811d5ca62045838c08a1ed64127f9dc2e39d1671bf95f"
   name = "github.com/multiformats/go-multiaddr"
   packages = ["."]
   pruneopts = "UT"
-  revision = "152990b98bf9dce961ca2aefb1002cd96cfff6cb"
+  revision = "19d7396df1055360753d180f17d498d20466716e"
 
 [[projects]]
   branch = "master"
@@ -1181,6 +1181,30 @@
   version = "v1.1.5"
 
 [[projects]]
+  digest = "1:59ca63cca2a6499b331303f95a38dd3973537f3d9222709adda79914a6fbe239"
+  name = "go.opencensus.io"
+  packages = [
+    ".",
+    "exemplar",
+    "internal",
+    "internal/tagencoding",
+    "plugin/ochttp",
+    "plugin/ochttp/propagation/b3",
+    "plugin/ochttp/propagation/tracecontext",
+    "stats",
+    "stats/internal",
+    "stats/view",
+    "tag",
+    "trace",
+    "trace/internal",
+    "trace/propagation",
+    "trace/tracestate",
+  ]
+  pruneopts = "UT"
+  revision = "2b5032d79456124f42db6b7eb19ac6c155449dc2"
+  version = "v0.19.0"
+
+[[projects]]
   digest = "1:3c1a69cdae3501bf75e76d0d86dc6f2b0a7421bc205c0cb7b96b19eed464a34d"
   name = "go.uber.org/atomic"
   packages = ["."]
@@ -1229,7 +1253,7 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "74369b46fc6756741c016591724fd1cb8e26845f"
+  revision = "a4c6cb3142f211c99e4bf4cd769535b29a9b616f"
 
 [[projects]]
   branch = "master"
@@ -1252,7 +1276,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a6fbffb15d4bd8fcd16b26a557ce78820815320618b34d9101c502b4769674a1"
+  digest = "1:0e9b440ab194fa38b5b23dffcf270d6294d45ae763b8d92438328d8bf6253d0d"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1260,7 +1284,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "d0b11bdaac8adb652bff00e49bcacf992835621a"
+  revision = "629670e5acc5b3e069375d323404911dc8fe1d19"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1307,7 +1331,7 @@
     "protobuf/field_mask",
   ]
   pruneopts = "UT"
-  revision = "bd968387e4aa590b3c6e4ba38ecac1ed314d43ad"
+  revision = "082222b4a5c572e33e82ee9162d1352c7cf38682"
 
 [[projects]]
   digest = "1:9ab5a33d8cb5c120602a34d2e985ce17956a4e8c2edce7e6961568f95e40c09a"
