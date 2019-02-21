@@ -86,7 +86,7 @@ type Clients struct {
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
 func Initialize(
-
+	ctx context.Context,
 	// configuration
 	cfg *config.TemporalConfig,
 	version string,
@@ -111,6 +111,7 @@ func Initialize(
 		return nil, err
 	}
 	imCluster, err := rtfscluster.Initialize(
+		ctx,
 		cfg.IPFSCluster.APIConnection.Host,
 		cfg.IPFSCluster.APIConnection.Port,
 	)
