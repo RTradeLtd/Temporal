@@ -1,6 +1,7 @@
 package rtfscluster
 
 import (
+	"context"
 	"fmt"
 
 	gocid "github.com/ipfs/go-cid"
@@ -15,7 +16,7 @@ type ClusterManager struct {
 }
 
 // Initialize is used to init, and return a cluster manager object
-func Initialize(hostAddress, hostPort string) (*ClusterManager, error) {
+func Initialize(ctx context.Context, hostAddress, hostPort string) (*ClusterManager, error) {
 	cm := ClusterManager{}
 	cm.GenRestAPIConfig()
 	if hostAddress != "" && hostPort != "" {
@@ -26,7 +27,7 @@ func Initialize(hostAddress, hostPort string) (*ClusterManager, error) {
 	if err := cm.GenClient(); err != nil {
 		return nil, err
 	}
-	if _, err := cm.ListPeers(); err != nil {
+	if _, err := cm.ListPeers(ctx); err != nil {
 		return nil, err
 	}
 	return &cm, nil
@@ -49,8 +50,8 @@ func (cm *ClusterManager) GenClient() error {
 }
 
 // ListPeers is used to list the known cluster peers
-func (cm *ClusterManager) ListPeers() ([]api.ID, error) {
-	peers, err := cm.Client.Peers()
+func (cm *ClusterManager) ListPeers(ctx context.Context) ([]api.ID, error) {
+	peers, err := cm.Client.Peers(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +68,12 @@ func (cm *ClusterManager) DecodeHashString(cidString string) (gocid.Cid, error) 
 }
 
 // Pin is used to add a pin to the cluster
-func (cm *ClusterManager) Pin(cid gocid.Cid) error {
-	err := cm.Client.Pin(cid, -1, -1, cid.String())
+func (cm *ClusterManager) Pin(ctx context.Context, cid gocid.Cid) error {
+	err := cm.Client.Pin(ctx, cid, -1, -1, cid.String())
 	if err != nil {
 		return err
 	}
-	status, err := cm.Client.Status(cid, true)
+	status, err := cm.Client.Status(ctx, cid, true)
 	if err != nil {
 		fmt.Println("error pinning hash to cluster")
 		return err
