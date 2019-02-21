@@ -25,8 +25,9 @@ func (api *API) ConfirmETHPayment(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "payment_number", "tx_hash")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "payment_number", "tx_hash")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// parse payment number
@@ -80,8 +81,9 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "payment_type", "sender_address", "credit_value")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "payment_type", "sender_address", "credit_value")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	var (
@@ -197,8 +199,9 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
-	forms := api.extractPostForms(c, "credit_value")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "credit_value")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	usdValueFloat, err := api.getUSDValue("dash")

@@ -25,8 +25,9 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "hash", "life_time", "ttl", "key", "resolve")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "hash", "life_time", "ttl", "key", "resolve")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// validate that the hash is an ipfs one
@@ -125,8 +126,9 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "hold_time", "ipns_path")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "hold_time", "ipns_path")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// validate the provided path is legit

@@ -15,8 +15,9 @@ import (
 // submitIndexRequest is used to submit an object to be indexed by Lens
 func (api *API) submitIndexRequest(c *gin.Context) {
 	// extract post forms
-	forms := api.extractPostForms(c, "object_type", "object_identifier")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "object_type", "object_identifier")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// ensure the type being requested is supported

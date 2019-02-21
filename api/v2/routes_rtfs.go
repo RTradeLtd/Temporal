@@ -34,8 +34,9 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "hold_time")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "hold_time")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// parse hold time
@@ -116,8 +117,9 @@ func (api *API) addFile(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "hold_time")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "hold_time")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// parse hold time
@@ -275,8 +277,9 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	// topic is the topic which the pubsub message will be addressed to
 	topic := c.Param("topic")
 	// extract post form
-	forms := api.extractPostForms(c, "message")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "message")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// validate they can submit pubsub message calls
@@ -360,8 +363,9 @@ func (api *API) extendPin(c *gin.Context) {
 		return
 	}
 	// extract needed post forms
-	forms := api.extractPostForms(c, "hold_time")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "hold_time")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// validate the hold time

@@ -193,17 +193,19 @@ func (api *API) formatUploadErrorMessage(file string, currentDataUsedBytes, maxD
 	)
 }
 
-func (api *API) extractPostForms(c *gin.Context, formNames ...string) map[string]string {
+// used to extract needed post forms that should be provided with api calls.
+// if the second return parameter, the string is non-empty, this is the name of the field which was missing
+// we then use this to fail with a meaningful message
+func (api *API) extractPostForms(c *gin.Context, formNames ...string) (map[string]string, string) {
 	forms := make(map[string]string)
 	for _, name := range formNames {
 		value, exists := c.GetPostForm(name)
 		if !exists {
-			FailWithMissingField(c, name)
-			return nil
+			return nil, name
 		}
 		forms[name] = value
 	}
-	return forms
+	return forms, ""
 }
 
 // ValidateHoldTime is used to perform parsing of requested hold times,
