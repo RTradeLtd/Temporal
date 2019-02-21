@@ -158,13 +158,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	// upload content matching this hash before, and we don't want to charge them
 	// so we should gracefully abort further processing
 	if err == nil || upload != nil {
-		Respond(
-			c,
-			http.StatusOK,
-			gin.H{
-				"response": "it seems like you have uploaded content matching this hash already. To save your credits, no charge was placed and the call was gracefully aborted. Please contact support@rtradetechnologies.com if you believe this is an issue",
-			},
-		)
+		Respond(c, http.StatusOK, gin.H{"response": alreadyUploadedMessage})
 		return
 	}
 	// get size of object
