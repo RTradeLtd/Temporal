@@ -46,6 +46,11 @@ lint:
 	# Shellcheck disabled for now - too much to fix
 	# shellcheck **/*.sh(e[' [[ ! `echo "$REPLY" | grep "vendor/" ` ]]'])
 
+.PHONY: postgres
+WAIT=3
+postgres:
+	( cd testenv ; make postgres )
+
 # Set up test environment
 .PHONY: testenv
 WAIT=3
@@ -141,6 +146,17 @@ release-docker: docker
 	@echo "===================  building docker image  ==================="
 	@docker push rtradetech/temporal:$(TEMPORALVERSION)
 	@echo "===================          done           ==================="
+
+# download and setup gvisor runtime
+.PHONY: gvisor
+gvisor:
+	wget https://storage.googleapis.com/gvisor/releases/nightly/latest/runsc
+	wget https://storage.googleapis.com/gvisor/releases/nightly/latest/runsc.sha512
+	sha512sum -c runsc.sha512
+	chmod a+x runsc
+	sudo mv runsc /usr/local/bin
+	sudo cp setup/configs/docker/daemon.json /etc/docker/daemon.json
+
 
 # Run development API
 .PHONY: api
