@@ -149,19 +149,22 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	user.EmailVerificationToken = "scrubbed"
 	// format a custom response that includes the user model
 	// and an additional status field
-	type userRegisteredModel struct {
-		*models.User
-		Status string
-	}
 	var status string
 	if dev {
 		status = "by continuing to use this service you agree to be bound by the following api terms and service" + devTermsAndServiceURL
 	} else {
 		status = "by continuing to use this service you agree to be bound by the following api terms and service" + prodTermsAndServiceURL
 	}
-	urm := userRegisteredModel{user, status}
+	u := gin.H{
+		"user": struct {
+			User   *models.User
+			Status string
+		}{
+			User: user, Status: status,
+		},
+	}
 	// return
-	Respond(c, http.StatusOK, gin.H{"response": &urm})
+	Respond(c, http.StatusOK, gin.H{"response": u})
 }
 
 // CreateIPFSKey is used to create an IPFS key
