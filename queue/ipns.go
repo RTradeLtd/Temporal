@@ -104,18 +104,20 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 			"key", ie.Key,
 			"cid", ie.CID,
 		)
-		var errCheck error
-		resp, errCheck = kbBackup.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
-		if errCheck != nil {
-			qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
-			qm.l.Errorw(
-				"failed to retrieve private key from backup krab",
-				"error", err.Error(),
-				"user", ie.UserName,
-				"key", ie.Key,
-				"cid", ie.CID)
-			d.Ack(false)
-			return
+		if !dev {
+			var errCheck error
+			resp, errCheck = kbBackup.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
+			if errCheck != nil {
+				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
+				qm.l.Errorw(
+					"failed to retrieve private key from backup krab",
+					"error", err.Error(),
+					"user", ie.UserName,
+					"key", ie.Key,
+					"cid", ie.CID)
+				d.Ack(false)
+				return
+			}
 		}
 	}
 	// unmarshal the key that was returned by krab

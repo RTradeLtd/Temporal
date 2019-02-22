@@ -17,7 +17,8 @@ import (
 )
 
 // New is used to instantiate a new connection to rabbitmq as a publisher or consumer
-func New(queue Queue, url string, publish bool, cfg *config.TemporalConfig, logger *zap.SugaredLogger) (*Manager, error) {
+func New(queue Queue, url string, publish, devMode bool, cfg *config.TemporalConfig, logger *zap.SugaredLogger) (*Manager, error) {
+	dev = devMode
 	conn, err := setupConnection(url, cfg)
 	if err != nil {
 		return nil, err

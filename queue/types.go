@@ -20,6 +20,7 @@ func (qt Queue) String() string {
 }
 
 var (
+	dev     = false
 	nilTime time.Time
 	// IpfsPinQueue is a queue used for ipfs pins
 	IpfsPinQueue Queue = "ipfs-pin-queue"
