@@ -155,8 +155,8 @@ gvisor:
 	sha512sum -c runsc.sha512
 	chmod a+x runsc
 	sudo mv runsc /usr/local/bin
-	sudo cp setup/configs/docker/daemon.json /etc/docker/daemon.json
-
+	sudo cp setup/configs/docker/daemon_passthrough.json /etc/docker/daemon.json
+	sudo systemctl restart docker
 
 # Run development API
 .PHONY: api
