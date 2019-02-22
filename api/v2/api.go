@@ -13,6 +13,9 @@ import (
 
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
+	pbLens "github.com/RTradeLtd/grpc/lens"
+	pbOrch "github.com/RTradeLtd/grpc/nexus"
+	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas"
 	"go.uber.org/zap"
 
