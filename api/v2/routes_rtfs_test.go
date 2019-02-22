@@ -84,7 +84,6 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 	hash = apiResp.Response
 
-
 	// temporary fix for a badly written this
 	// this will be solved in test refactoring
 	models.NewUploadManager(db).NewUpload(
@@ -119,7 +118,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	urlValues.Add("hold_time", "5")
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
-  
+
 	// test pinning - success
 	// /v2/ipfs/public/pin
 	apiResp = apiResponse{}
