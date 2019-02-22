@@ -1,7 +1,7 @@
 package v2
 
 import (
-	clients "github.com/RTradeLtd/Temporal/grpc-clients"
+  "github.com/RTradeLtd/kaas"
 	"github.com/RTradeLtd/Temporal/queue"
 	xss "github.com/dvwright/xss-mw"
 
@@ -50,6 +50,6 @@ type queues struct {
 
 // kaas key managers
 type keys struct {
-	kb1 *clients.KaasClient
-	kb2 *clients.KaasClient
+	kb1 *kaas.Client
+	kb2 *kaas.Client
 }

@@ -12,10 +12,10 @@ import (
 
 	"github.com/streadway/amqp"
 
-	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/rtns"
 	"github.com/RTradeLtd/database/models"
 	pb "github.com/RTradeLtd/grpc/krab"
+	kaas "github.com/RTradeLtd/kaas"
 )
 
 type contextKey string
@@ -26,7 +26,11 @@ const (
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	kbPrimary, err := clients.NewKaasClient(qm.cfg.Services, false)
+	kbPrimary, err := kaas.NewClient(qm.cfg.Services, false)
+	if err != nil {
+		return err
+	}
+	kbBackup, err := kaas.NewClient(qm.cfg.Services, true)
 	if err != nil {
 		return err
 	}
@@ -46,7 +50,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processIPNSEntryCreationRequest(d, wg, kbPrimary, publisher, ipnsManager)
+			go qm.processIPNSEntryCreationRequest(d, wg, kbPrimary, kbBackup, publisher, ipnsManager)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -62,7 +66,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	}
 }
 
-func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kb *clients.KaasClient, pub *rtns.Publisher, im *models.IpnsManager) {
+func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kbPrimary *kaas.Client, kbBackup *kaas.Client, pub *rtns.Publisher, im *models.IpnsManager) {
 	defer wg.Done()
 	qm.l.Info("new ipns entry creation detected")
 	ie := IPNSEntry{}
@@ -86,18 +90,44 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 		"user", ie.UserName,
 		"key", ie.Key,
 		"cid", ie.CID)
+	var (
+		resp *pb.Response
+		err  error
+	)
 	// get the private key from krab to use with publishing
-	resp, err := kb.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
+	resp, err = kbPrimary.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
 	if err != nil {
-		qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
-		qm.l.Errorw(
-			"failed to retrieve private key from krab",
+		qm.l.Warnw(
+			"failed to retrieve private key from priamry krab, attempting backup",
 			"error", err.Error(),
 			"user", ie.UserName,
 			"key", ie.Key,
-			"cid", ie.CID)
-		d.Ack(false)
-		return
+			"cid", ie.CID,
+		)
+		if !qm.dev {
+			var errCheck error
+			resp, errCheck = kbBackup.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
+			if errCheck != nil {
+				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
+				qm.l.Errorw(
+					"failed to retrieve private key from backup krab",
+					"error", err.Error(),
+					"user", ie.UserName,
+					"key", ie.Key,
+					"cid", ie.CID)
+				d.Ack(false)
+				return
+			}
+		} else {
+			qm.l.Errorw(
+				"primary krab key retrieval failure, with dev mode disabled, aborting",
+				"user", ie.UserName,
+				"key", ie.Key,
+				"cid", ie.CID,
+			)
+			d.Ack(false)
+			return
+		}
 	}
 	// unmarshal the key that was returned by krab
 	pk2, err := ci.UnmarshalPrivateKey(resp.PrivateKey)

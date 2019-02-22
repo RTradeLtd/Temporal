@@ -9,13 +9,14 @@ import (
 )
 
 func TestLog_Publisher(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	observer, out := observer.New(zap.InfoLevel)
 	logger := zap.New(observer).Sugar()
-	_, err = New(IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, cfg, logger)
+	_, err = New(IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,13 +26,14 @@ func TestLog_Publisher(t *testing.T) {
 }
 
 func TestLog_Consumer(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	observer, out := observer.New(zap.InfoLevel)
 	logger := zap.New(observer).Sugar()
-	qm, err := New(IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, cfg, logger)
+	qm, err := New(IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, dev, cfg, logger)
 	if err != nil {
 		t.Fatal(err)
 	}

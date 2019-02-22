@@ -10,41 +10,37 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-const (
-	defaultURL = "127.0.0.1:10000"
-)
-
-// Client is our connection to the grpc server
+// Client is how we interface with the kaas grpc key manager
 type Client struct {
-	conn *grpc.ClientConn
 	pb.ServiceClient
+	conn *grpc.ClientConn
 }
 
-// NewClient is used to generate our lens client
-func NewClient(opts config.Services) (*Client, error) {
-	dialOpts := make([]grpc.DialOption, 0)
-	if opts.Krab.TLS.CertPath != "" {
-		creds, err := credentials.NewClientTLSFromFile(opts.Krab.TLS.CertPath, "")
+// NewClient is used to instantiate our kaas client in primary or fallback mode
+func NewClient(opts config.Services, fallback bool) (*Client, error) {
+	var (
+		dialOpts   []grpc.DialOption
+		krabConfig config.Krab
+	)
+	if fallback {
+		krabConfig = opts.KrabFallback
+	} else {
+		krabConfig = opts.Krab
+	}
+	if krabConfig.TLS.CertPath != "" {
+		creds, err := credentials.NewClientTLSFromFile(krabConfig.TLS.CertPath, "")
 		if err != nil {
 			return nil, fmt.Errorf("could not load tls cert: %s", err)
 		}
 		dialOpts = append(dialOpts,
 			grpc.WithTransportCredentials(creds),
-			grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Krab.AuthKey, true)))
+			grpc.WithPerRPCCredentials(dialer.NewCredentials(krabConfig.AuthKey, true)))
 	} else {
 		dialOpts = append(dialOpts,
 			grpc.WithInsecure(),
-			grpc.WithPerRPCCredentials(dialer.NewCredentials(opts.Krab.AuthKey, false)))
+			grpc.WithPerRPCCredentials(dialer.NewCredentials(krabConfig.AuthKey, false)))
 	}
-	fmt.Println(opts.Krab.URL)
-	var url string
-	if opts.Krab.URL == "" {
-		url = defaultURL
-	} else {
-		url = opts.Krab.URL
-	}
-
-	conn, err := grpc.Dial(url, dialOpts...)
+	conn, err := grpc.Dial(krabConfig.URL, dialOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,4 +51,4 @@ func NewClient(opts config.Services) (*Client, error) {
 }
 
 // Close shuts down the client's gRPC connection
-func (c *Client) Close() error { return c.conn.Close() }
+func (kc *Client) Close() error { return kc.conn.Close() }

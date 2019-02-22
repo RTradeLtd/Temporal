@@ -1,8 +1,6 @@
 murmur3
 =======
 
-[![Build Status](https://travis-ci.org/spaolacci/murmur3.svg?branch=master)](https://travis-ci.org/spaolacci/murmur3)
-
 Native Go implementation of Austin Appleby's third MurmurHash revision (aka
 MurmurHash3).
 

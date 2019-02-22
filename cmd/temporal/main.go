@@ -236,7 +236,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, false, &cfg, logger)
+								qm, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, logger)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -281,7 +281,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, false, &cfg, logger)
+								qm, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, logger)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -326,7 +326,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, false, &cfg, logger)
+								qm, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, logger)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -371,7 +371,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, &cfg, logger)
+								qm, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, logger)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -418,7 +418,7 @@ var commands = map[string]cmd.Cmd{
 						cancel()
 					}()
 					for {
-						qm, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, false, &cfg, logger)
+						qm, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, logger)
 						if err != nil {
 							fmt.Println("failed to start queue", err)
 							os.Exit(1)
