@@ -40,6 +40,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	if err := api.usage.UpdateTier("testuser", models.Plus); err != nil {
 		t.Fatal(err)
 	}
+
 	// add a file normally
 	// /v2/ipfs/public/file/add
 	bodyBuf := &bytes.Buffer{}
@@ -82,6 +83,32 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 		t.Fatal("bad api status code from /v2/ipfs/public/file/add")
 	}
 	hash = apiResp.Response
+
+	// add a zip file (only do a partial test since this is being weird)
+	// /v2/ipfs/public/file/add/directory
+	bodyBuf = &bytes.Buffer{}
+	bodyWriter = multipart.NewWriter(bodyBuf)
+	fileWriter, err = bodyWriter.CreateFormFile("file", "../../testfiles/testenv.zip")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fh, err = os.Open("../../testfiles/testenv.zip")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fh.Close()
+	if _, err = io.Copy(fileWriter, fh); err != nil {
+		t.Fatal(err)
+	}
+	bodyWriter.Close()
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/v2/ipfs/public/file/add/directory", bodyBuf)
+	req.Header.Add("Authorization", authHeader)
+	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "5")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
 
 	// test pinning - success
 	// /v2/ipfs/public/pin
