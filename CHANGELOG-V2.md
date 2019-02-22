@@ -5,7 +5,7 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 
 ## v2.0.5
 
-### Docker Environment
+### docker
 
 * Updated makefile to include installation, and configuration of the gvisor sandboxed runtime environment [#312](https://github.com/RTradeLtd/Temporal/pull/312)
 * Update IPFS Cluster to 0.9.0 [#310](https://github.com/RTradeLtd/Temporal/pull/310)
