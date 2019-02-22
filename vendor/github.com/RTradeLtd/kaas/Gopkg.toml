@@ -4,7 +4,7 @@
 
 [[constraint]]
   name = "github.com/RTradeLtd/grpc"
-  branch = "master"
+  version = "~v2.0.0"
 
 [[constraint]]
   name = "github.com/RTradeLtd/rtfs"

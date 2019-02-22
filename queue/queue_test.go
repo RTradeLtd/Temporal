@@ -23,6 +23,7 @@ const (
 )
 
 func TestQueue_Publish(t *testing.T) {
+	dev = true
 	type args struct {
 		queueName Queue
 		publish   bool
@@ -45,7 +46,7 @@ func TestQueue_Publish(t *testing.T) {
 				t.Fatal(err)
 			}
 			qm, err := New(tt.args.queueName,
-				testRabbitAddress, tt.args.publish, cfg, logger)
+				testRabbitAddress, tt.args.publish, dev, cfg, logger)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -84,6 +85,7 @@ func TestQueue_Publish(t *testing.T) {
 }
 
 func TestRegisterChannelClosure(t *testing.T) {
+	dev = true
 	logger, err := log.NewLogger("", true)
 	if err != nil {
 		t.Fatal(err)
@@ -92,7 +94,7 @@ func TestRegisterChannelClosure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, cfg, logger)
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, dev, cfg, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,6 +122,7 @@ func TestRegisterChannelClosure(t *testing.T) {
 }
 
 func TestQueue_RefundCredits(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -133,7 +136,7 @@ func TestQueue_RefundCredits(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, cfg, logger)
+	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, dev, cfg, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -162,6 +165,7 @@ func TestQueue_RefundCredits(t *testing.T) {
 }
 
 func TestQueue_ConnectionClosure(t *testing.T) {
+	dev = true
 	logger, err := log.NewLogger("", true)
 	if err != nil {
 		t.Fatal(err)
@@ -189,7 +193,7 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			qmPublisher, err := New(tt.args.queueName, testRabbitAddress, false, cfg, logger)
+			qmPublisher, err := New(tt.args.queueName, testRabbitAddress, false, dev, cfg, logger)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -210,6 +214,7 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_IPFSClusterPin(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -227,11 +232,11 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, cfg, loggerConsumer)
+	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpfsClusterPinQueue, testRabbitAddress, true, cfg, loggerPublisher)
+	qmPublisher, err := New(IpfsClusterPinQueue, testRabbitAddress, true, dev, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -296,6 +301,7 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_EmailSend(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -313,11 +319,11 @@ func TestQueue_EmailSend(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(EmailSendQueue, testRabbitAddress, false, cfg, loggerConsumer)
+	qmConsumer, err := New(EmailSendQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(EmailSendQueue, testRabbitAddress, true, cfg, loggerPublisher)
+	qmPublisher, err := New(EmailSendQueue, testRabbitAddress, true, dev, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -352,6 +358,7 @@ func TestQueue_EmailSend(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_IPNSEntry(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -369,11 +376,11 @@ func TestQueue_IPNSEntry(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, cfg, loggerConsumer)
+	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpnsEntryQueue, testRabbitAddress, true, cfg, loggerPublisher)
+	qmPublisher, err := New(IpnsEntryQueue, testRabbitAddress, true, dev, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -424,6 +431,7 @@ func TestQueue_IPNSEntry(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_IPFSPin(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -441,11 +449,11 @@ func TestQueue_IPFSPin(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, cfg, loggerConsumer)
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, cfg, loggerPublisher)
+	qmPublisher, err := New(IpfsPinQueue, testRabbitAddress, true, dev, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -488,6 +496,7 @@ func TestQueue_IPFSPin(t *testing.T) {
 
 // Does not conduct validation of whether or not a message was successfully processed
 func TestQueue_IPFSKeyCreation(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -505,11 +514,11 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, cfg, loggerConsumer)
+	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, cfg, loggerPublisher)
+	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, dev, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -554,6 +563,7 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 }
 
 func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -571,11 +581,11 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, cfg, loggerConsumer)
+	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
-	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, cfg, loggerPublisher)
+	qmPublisher, err := New(IpfsKeyCreationQueue, testRabbitAddress, true, dev, cfg, loggerPublisher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -603,6 +613,7 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 }
 
 func TestQueue_IPFSPin_Failure_RabbitMQ(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -616,7 +627,7 @@ func TestQueue_IPFSPin_Failure_RabbitMQ(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, cfg, loggerConsumer)
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -630,6 +641,7 @@ func TestQueue_IPFSPin_Failure_RabbitMQ(t *testing.T) {
 }
 
 func TestQueue_IPFSPin_Failure_LogFile(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -643,7 +655,7 @@ func TestQueue_IPFSPin_Failure_LogFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, cfg, loggerConsumer)
+	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -657,6 +669,7 @@ func TestQueue_IPFSPin_Failure_LogFile(t *testing.T) {
 }
 
 func TestQueue_IPNSEntry_Failure_Krab(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -670,7 +683,7 @@ func TestQueue_IPNSEntry_Failure_Krab(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup our queue backend
-	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, cfg, loggerConsumer)
+	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -684,6 +697,7 @@ func TestQueue_IPNSEntry_Failure_Krab(t *testing.T) {
 }
 
 func TestQueue_Bad_TLS_Config_CACertFile(t *testing.T) {
+	dev = true
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -693,11 +707,11 @@ func TestQueue_Bad_TLS_Config_CACertFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg.RabbitMQ.TLSConfig.CACertFile = "../README.md"
-	if _, err := New(IpnsEntryQueue, cfg.RabbitMQ.URL, false, cfg, logger); err == nil {
+	if _, err := New(IpnsEntryQueue, cfg.RabbitMQ.URL, false, dev, cfg, logger); err == nil {
 		t.Fatal("expected error")
 	}
 	cfg.RabbitMQ.TLSConfig.CACertFile = "/root/toor"
-	if _, err := New(IpnsEntryQueue, cfg.RabbitMQ.URL, false, cfg, logger); err == nil {
+	if _, err := New(IpnsEntryQueue, cfg.RabbitMQ.URL, false, dev, cfg, logger); err == nil {
 		t.Fatal("expected error")
 	}
 }

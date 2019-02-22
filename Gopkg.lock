@@ -111,15 +111,14 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:0529ba43b6ab97f92950ce3a7011307b9c3c675ff7dbf976fad59ada4b7baf9b"
+  digest = "1:58533d448e4dc1be772c2b4b430ffd94a186d1c2d1857d197a15d11b221c73d7"
   name = "github.com/RTradeLtd/kaas"
   packages = ["."]
   pruneopts = "UT"
-  revision = "fde4096ec325ecc159337d5d061fd51c15366c19"
-  version = "v2.0.0"
+  revision = "1190f08024b78a80654f4a6218af2363857be7e3"
+  version = "v2.0.1"
 
 [[projects]]
-  branch = "add/dir"
   digest = "1:d3c50b99053c89e353bc7f5362c0e7b29d47afb40997171df7676d463413e249"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
@@ -128,7 +127,8 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "8d73da297e3f7d7143779bcb3b7013db524fae31"
+  revision = "616e741a37e440d760448331b8fc93fb87498a19"
+  version = "v2.0.1"
 
 [[projects]]
   digest = "1:a164e093eccfde4fb63dc94707f3570d112ff4549072a065a48813c37c0c76a9"
@@ -242,7 +242,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ae36c7392721494beb379e74cc560827a923200d9a642cd65b96af58389f3573"
+  digest = "1:15973d1a0ea498ca7a781326a436ca7587e6435563b3ffebc4a4e7f6a0769a88"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
@@ -251,7 +251,7 @@
     "render",
   ]
   pruneopts = "UT"
-  revision = "a58a2f9bf368a7976d26dba4c16c90fad4c1db6e"
+  revision = "184661cfa2f5ad6000c9893a0ffba8da8c1bd2ec"
 
 [[projects]]
   digest = "1:760b2447d30444b6c2da7f77b677921f095fe19e6ed423b2edc1cd47a8507789"
@@ -321,28 +321,31 @@
   version = "v1.4.1"
 
 [[projects]]
-  digest = "1:a63c88a91d8f616411de98ecf4c81148d1e2fee58069c09ffbe39953035ad9f0"
+  digest = "1:43c609cba7aa615eaae5aa8f2ddba65dc1b2d3af7bc434f738238df8d3797ddb"
   name = "github.com/gxed/hashland"
-  packages = ["keccakpg"]
+  packages = [
+    "keccakpg",
+    "murmur3",
+  ]
   pruneopts = "UT"
   revision = "a72cc0875a1e95edd309d3134bc7c11bf2d7360b"
   version = "v0.0.1"
 
 [[projects]]
   branch = "master"
-  digest = "1:00511617691ac8e2c4687db537fbb4a5b987195702bf80e275ad8d03190da624"
+  digest = "1:6b713490db674d19c2c81d6afb459c969eabe6d4bfe7f86a44383c4aa74644f9"
   name = "github.com/hsanjuan/go-libp2p-gostream"
   packages = ["."]
   pruneopts = "UT"
-  revision = "0dc13f31f3ef523a136115fd374715aee49480e4"
+  revision = "d4461f96290e122765b3bf408a88ad59deb09cca"
 
 [[projects]]
   branch = "master"
-  digest = "1:e787eba79a0d1854ba5190b35094de0137f8de489b835e835570c548fe6deb6a"
+  digest = "1:7487e98e01ec9219f073bef01f051aa2004d72fc089a0255bfeabd5efaafee1b"
   name = "github.com/hsanjuan/go-libp2p-http"
   packages = ["."]
   pruneopts = "UT"
-  revision = "f753d1f0827e226be608ae835e21068844517f06"
+  revision = "829c3b63173207de8f97687c9bb32ab788990d9e"
 
 [[projects]]
   digest = "1:c00cc6d95a674b4b923ac069d364445043bc67836e9bd8aeff8440cfbe6a2cc7"
@@ -639,11 +642,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a8eeac3102118ab43ac13023da34002f615e66c18398a3e129d5a0ecc83bf2dc"
+  digest = "1:22f8708102f4ef7f4e49fa496daf4b902d252672c08a8d3dab269af13cd54032"
   name = "github.com/libp2p/go-libp2p-discovery"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d369eed95f2d5748d1fa5688d97b6ae162658e1a"
+  revision = "5e0d40c7c8803e06c9eebe6dd3a0525a1d774a82"
 
 [[projects]]
   digest = "1:de92515b23a5c4cd04893e67cd9af1dfff7a2a5337f95c36de273ecf757628e7"
@@ -978,12 +981,12 @@
   version = "v0.1.6"
 
 [[projects]]
-  digest = "1:c0ea71365e7d0e63a2e8f48e6fc2ba92f2f2b739bbeb3cdabdcd719037e175c2"
+  digest = "1:f5768e1617d15c776111ba72645780a4f3e4395b00cd92aee08118a813681fa2"
   name = "github.com/multiformats/go-multihash"
   packages = ["."]
   pruneopts = "UT"
-  revision = "8be2a682ab9f254311de1375145a2f78a809b07d"
-  version = "v1.0.8"
+  revision = "6b439b7c6e3c44c112171540500be697ba235235"
+  version = "v1.0.10"
 
 [[projects]]
   digest = "1:58752a8ce91a3b26ec4ffeb94c9d9e8692b3b639f9ee3e5ca465bda1159b3a9c"
@@ -1047,14 +1050,6 @@
   pruneopts = "UT"
   revision = "8caf17aa96b4a98bae8bd216878dd50ff12897b5"
   version = "v3.4.1"
-
-[[projects]]
-  digest = "1:919bb3aa6d9d0b67648c219fa4925312bc3c2872da19e818fa769e9c97a2b643"
-  name = "github.com/spaolacci/murmur3"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9f5d223c60793748f04a9d5b4b4eacddfc1f755d"
-  version = "v1.1"
 
 [[projects]]
   branch = "master"
@@ -1272,7 +1267,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0e9b440ab194fa38b5b23dffcf270d6294d45ae763b8d92438328d8bf6253d0d"
+  digest = "1:01a52ac63a04071f99dd832a3eaa3cb4abcaebeef2f984f06f9f31c74aa03859"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1280,7 +1275,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "629670e5acc5b3e069375d323404911dc8fe1d19"
+  revision = "ec7b60b042fd2c54ad5ceaac0c891bd88843f4a2"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
