@@ -83,6 +83,15 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 	hash = apiResp.Response
 
+	// temporary fix for a badly written this
+	// this will be solved in test refactoring
+	models.NewUploadManager(db).NewUpload(
+		hash, "file", models.UploadOptions{
+			Username:    "testuser",
+			NetworkName: "public",
+			Encrypted:   false,
+		},
+	)
 	// test pinning - success
 	// /v2/ipfs/public/pin
 	apiResp = apiResponse{}
