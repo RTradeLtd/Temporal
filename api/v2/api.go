@@ -9,12 +9,11 @@ import (
 	"strconv"
 	"time"
 
-	gClients "github.com/RTradeLtd/Temporal/grpc-clients"
-
 	"github.com/streadway/amqp"
 
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
+	"github.com/RTradeLtd/kaas"
 	"go.uber.org/zap"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
@@ -170,11 +169,11 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 		Blockchain: networkVersion,
 		Token:      cfg.APIKeys.ChainRider,
 	})
-	kb1, err := gClients.NewKaasClient(cfg.Services, false)
+	kb1, err := kaas.NewClient(cfg.Services, false)
 	if err != nil {
 		return nil, err
 	}
-	kb2, err := gClients.NewKaasClient(cfg.Services, true)
+	kb2, err := kaas.NewClient(cfg.Services, true)
 	if err != nil {
 		return nil, err
 	}
@@ -183,31 +182,31 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 		return nil, err
 	}
 	// setup our queues
-	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, cfg, logger)
+	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, cfg, logger)
+	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, cfg, logger)
+	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, cfg, logger)
+	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, cfg, logger)
+	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, cfg, logger)
+	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
-	qmEth, err := queue.New(queue.EthPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, cfg, logger)
+	qmEth, err := queue.New(queue.EthPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -622,7 +621,7 @@ func (api *API) handleQueueError(amqpErr *amqp.Error, rabbitMQURL string, queueT
 		"a protocol connection error stopping rabbitmq was received",
 		"queue", queueType.String(),
 		"error", amqpErr.Error())
-	qManager, err := queue.New(queueType, rabbitMQURL, publish, api.cfg, api.l)
+	qManager, err := queue.New(queueType, rabbitMQURL, publish, dev, api.cfg, api.l)
 	if err != nil {
 		api.l.Errorw(
 			"failed to re-establish queue process, exiting",

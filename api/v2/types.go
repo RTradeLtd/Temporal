@@ -1,8 +1,8 @@
 package v2
 
 import (
-	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/RTradeLtd/kaas"
 )
 
 // CreditRefund is a data object to contain refund information
@@ -24,6 +24,6 @@ type queues struct {
 
 // kaas key managers
 type keys struct {
-	kb1 *clients.KaasClient
-	kb2 *clients.KaasClient
+	kb1 *kaas.Client
+	kb2 *kaas.Client
 }

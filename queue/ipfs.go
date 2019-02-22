@@ -9,9 +9,8 @@ import (
 	"sync"
 	"time"
 
-	clients "github.com/RTradeLtd/Temporal/grpc-clients"
-
 	"github.com/RTradeLtd/Temporal/log"
+	kaas "github.com/RTradeLtd/kaas"
 	"github.com/RTradeLtd/rtfs"
 
 	"github.com/RTradeLtd/database/models"
@@ -25,13 +24,16 @@ import (
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
 func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	kbPrimary, err := clients.NewKaasClient(qm.cfg.Services, false)
+	kbPrimary, err := kaas.NewClient(qm.cfg.Services, false)
 	if err != nil {
 		return err
 	}
-	kbBackup, err := clients.NewKaasClient(qm.cfg.Services, true)
-	if err != nil {
-		return err
+	var kbBackup *kaas.Client
+	if !qm.dev {
+		kbBackup, err = kaas.NewClient(qm.cfg.Services, true)
+		if err != nil {
+			return err
+		}
 	}
 	userManager := models.NewUserManager(qm.db)
 	qm.l.Info("processing ipfs key creation requests")
@@ -65,7 +67,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 		return err
 	}
 	// initialize a connection to the cluster pin queue so we can trigger pinning of this content to our cluster
-	qmCluster, err := New(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true, qm.cfg, logger)
+	qmCluster, err := New(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true, dev, qm.cfg, logger)
 	if err != nil {
 		qm.l.Errorw("failed to intialize cluster pin queue connection", "error", err.Error())
 		return err
@@ -195,7 +197,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 	return // we must return here in order to trigger the wg.Done() defer
 }
 
-func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, kbPrimary *clients.KaasClient, kbBackup *clients.KaasClient, um *models.UserManager) {
+func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, kbPrimary *kaas.Client, kbBackup *kaas.Client, um *models.UserManager) {
 	defer wg.Done()
 	qm.l.Info("new key creation request detected")
 	key := IPFSKeyCreation{}
@@ -278,24 +280,24 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 	// store the key in local krab
 	if _, err := kbPrimary.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {
 		qm.l.Errorw(
-			"failed to store key in krab",
+			"failed to store key in primary krab",
 			"error", err.Error(),
 			"user", key.UserName,
 			"key_name", key.Name)
 		d.Ack(false)
 		return
 	}
-	// store the key in remote krab
-	if _, err := kbBackup.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {
-		qm.l.Errorw(
-			"failed to store key in krab",
-			"error", err.Error(),
-			"user", key.UserName,
-			"key_name", key.Name)
-		d.Ack(false)
-		return
+	if !qm.dev {
+		// store the key in remote krab
+		// dont fail on fallback
+		if _, err := kbBackup.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {
+			qm.l.Warnw(
+				"failed to store key in krab",
+				"error", err.Error(),
+				"user", key.UserName,
+				"key_name", key.Name)
+		}
 	}
-
 	// doesn't need a refund, key was generated and stored in our keystore, but information not saved to db
 	if err := um.AddIPFSKeyForUser(key.UserName, key.Name, id.Pretty()); err != nil {
 		qm.l.Errorw(
