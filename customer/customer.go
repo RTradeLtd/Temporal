@@ -8,6 +8,13 @@ import (
 	"github.com/RTradeLtd/rtfs"
 )
 
+// Manager is used to handle managing customer objects
+type Manager struct {
+	um    *models.UserManager
+	ipfs  rtfs.Manager
+	mutex sync.Mutex
+}
+
 // NewManager is used to instantiate our customer object manager
 func NewManager(um *models.UserManager, ipfs rtfs.Manager) *Manager {
 	return &Manager{

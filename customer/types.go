@@ -1,19 +1,5 @@
 package customer
 
-import (
-	"sync"
-
-	"github.com/RTradeLtd/database/models"
-	"github.com/RTradeLtd/rtfs"
-)
-
-// Manager is used to handle managing customer objects
-type Manager struct {
-	um    *models.UserManager
-	ipfs  rtfs.Manager
-	mutex sync.Mutex
-}
-
 // Object represents a single customer
 type Object struct {
 	// UploadedRefs is a map used to check whether or not a particular link ref has been uploaded

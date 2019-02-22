@@ -10,6 +10,9 @@ import (
 	"time"
 
 	gClients "github.com/RTradeLtd/Temporal/grpc-clients"
+	pbLens "github.com/RTradeLtd/grpc/lens"
+	pbOrch "github.com/RTradeLtd/grpc/nexus"
+	pbSigner "github.com/RTradeLtd/grpc/pay"
 
 	"github.com/streadway/amqp"
 
@@ -32,6 +35,34 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+// API is our API service
+type API struct {
+	ipfs        rtfs.Manager
+	ipfsCluster *rtfscluster.ClusterManager
+	keys        keys
+	r           *gin.Engine
+	cfg         *config.TemporalConfig
+	dbm         *database.Manager
+	um          *models.UserManager
+	im          *models.IpnsManager
+	pm          *models.PaymentManager
+	ue          *models.EncryptedUploadManager
+	upm         *models.UploadManager
+	zm          *models.ZoneManager
+	rm          *models.RecordManager
+	nm          *models.IPFSNetworkManager
+	usage       *models.UsageManager
+	l           *zap.SugaredLogger
+	signer      pbSigner.SignerClient
+	orch        pbOrch.ServiceClient
+	lens        pbLens.IndexerAPIClient
+	dc          *dash.Client
+	queues      queues
+	service     string
+
+	version string
+}
 
 // Initialize is used ot initialize our API service. debug = true is useful
 // for debugging database issues.
