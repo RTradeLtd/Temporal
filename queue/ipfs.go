@@ -9,9 +9,8 @@ import (
 	"sync"
 	"time"
 
-	clients "github.com/RTradeLtd/Temporal/grpc-clients"
-
 	"github.com/RTradeLtd/Temporal/log"
+	kaas "github.com/RTradeLtd/kaas"
 	"github.com/RTradeLtd/rtfs"
 
 	"github.com/RTradeLtd/database/models"
@@ -25,11 +24,11 @@ import (
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
 func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	kbPrimary, err := clients.NewKaasClient(qm.cfg.Services, false)
+	kbPrimary, err := kaas.NewClient(qm.cfg.Services, false)
 	if err != nil {
 		return err
 	}
-	kbBackup, err := clients.NewKaasClient(qm.cfg.Services, true)
+	kbBackup, err := kaas.NewClient(qm.cfg.Services, true)
 	if err != nil {
 		return err
 	}
@@ -195,7 +194,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 	return // we must return here in order to trigger the wg.Done() defer
 }
 
-func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, kbPrimary *clients.KaasClient, kbBackup *clients.KaasClient, um *models.UserManager) {
+func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, kbPrimary *kaas.Client, kbBackup *kaas.Client, um *models.UserManager) {
 	defer wg.Done()
 	qm.l.Info("new key creation request detected")
 	key := IPFSKeyCreation{}
@@ -286,14 +285,13 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 		return
 	}
 	// store the key in remote krab
+	// dont fail on fallback
 	if _, err := kbBackup.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {
-		qm.l.Errorw(
+		qm.l.Warnw(
 			"failed to store key in krab",
 			"error", err.Error(),
 			"user", key.UserName,
 			"key_name", key.Name)
-		d.Ack(false)
-		return
 	}
 
 	// doesn't need a refund, key was generated and stored in our keystore, but information not saved to db
