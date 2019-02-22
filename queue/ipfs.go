@@ -29,7 +29,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 		return err
 	}
 	var kbBackup *kaas.Client
-	if !dev {
+	if !qm.dev {
 		kbBackup, err = kaas.NewClient(qm.cfg.Services, true)
 		if err != nil {
 			return err
@@ -280,14 +280,14 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 	// store the key in local krab
 	if _, err := kbPrimary.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {
 		qm.l.Errorw(
-			"failed to store key in krab",
+			"failed to store key in primary krab",
 			"error", err.Error(),
 			"user", key.UserName,
 			"key_name", key.Name)
 		d.Ack(false)
 		return
 	}
-	if !dev {
+	if !qm.dev {
 		// store the key in remote krab
 		// dont fail on fallback
 		if _, err := kbBackup.PutPrivateKey(context.Background(), &pb.KeyPut{Name: key.Name, PrivateKey: pkBytes}); err != nil {

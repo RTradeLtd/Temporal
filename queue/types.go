@@ -74,6 +74,7 @@ type Manager struct {
 	ErrCh        chan *amqp.Error
 	QueueName    Queue
 	ExchangeName string
+	dev          bool
 }
 
 // Queue Messages - These are used to format messages to send through rabbitmq

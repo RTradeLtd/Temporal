@@ -18,7 +18,6 @@ import (
 
 // New is used to instantiate a new connection to rabbitmq as a publisher or consumer
 func New(queue Queue, url string, publish, devMode bool, cfg *config.TemporalConfig, logger *zap.SugaredLogger) (*Manager, error) {
-	dev = devMode
 	conn, err := setupConnection(url, cfg)
 	if err != nil {
 		return nil, err
@@ -30,7 +29,7 @@ func New(queue Queue, url string, publish, devMode bool, cfg *config.TemporalCon
 		queueType = "consumer"
 	}
 	// create base queue manager
-	qm := Manager{connection: conn, QueueName: queue, l: logger.Named(queue.String() + "." + queueType)}
+	qm := Manager{connection: conn, QueueName: queue, l: logger.Named(queue.String() + "." + queueType), dev: devMode}
 	// open a channel
 	if err := qm.openChannel(); err != nil {
 		return nil, err

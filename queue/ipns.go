@@ -104,7 +104,7 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 			"key", ie.Key,
 			"cid", ie.CID,
 		)
-		if !dev {
+		if !qm.dev {
 			var errCheck error
 			resp, errCheck = kbBackup.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
 			if errCheck != nil {
@@ -118,6 +118,15 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 				d.Ack(false)
 				return
 			}
+		} else {
+			qm.l.Errorw(
+				"primary krab key retrieval failure, with dev mode disabled, aborting",
+				"user", ie.UserName,
+				"key", ie.Key,
+				"cid", ie.CID,
+			)
+			d.Ack(false)
+			return
 		}
 	}
 	// unmarshal the key that was returned by krab
