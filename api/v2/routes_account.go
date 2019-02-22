@@ -155,16 +155,15 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	} else {
 		status = "by continuing to use this service you agree to be bound by the following api terms and service" + prodTermsAndServiceURL
 	}
-	u := gin.H{
+	// return
+	Respond(c, http.StatusOK, gin.H{"response": gin.H{
 		"user": struct {
 			User   *models.User
 			Status string
 		}{
 			User: user, Status: status,
 		},
-	}
-	// return
-	Respond(c, http.StatusOK, gin.H{"response": u})
+	}})
 }
 
 // CreateIPFSKey is used to create an IPFS key
