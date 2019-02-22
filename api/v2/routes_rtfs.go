@@ -1,12 +1,17 @@
 package v2
 
 import (
+	"archive/zip"
 	"bytes"
 	"errors"
+	"fmt"
 	"html"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/c2h5oh/datasize"
 
@@ -237,6 +242,93 @@ func (api *API) addFile(c *gin.Context) {
 	// log and return
 	api.l.Infow("simple ipfs file upload processed", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": resp})
+}
+
+// uploadDirectory is used to upload a directory to IPFS
+// TODO: add virus scanning of zip file
+func (api *API) uploadDirectory(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("this api call is only permitted in development environments"))
+		return
+	}
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	fileHandler, err := c.FormFile("file")
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// remove paths from file name
+	_, filename := filepath.Split(fileHandler.Filename)
+	fileNameSplit := strings.Split(filename, ".")
+	if len(fileNameSplit) < 2 {
+		Fail(c, errors.New("failed to validate file type"))
+		return
+	}
+	if fileNameSplit[len(fileNameSplit)-1] != "zip" {
+		Fail(c, errors.New("only zip files are supported"))
+		return
+	}
+	randUtils := utils.GenerateRandomUtils()
+	randString := randUtils.GenerateString(5, utils.LetterBytes)
+	destPathZip := fmt.Sprintf("/tmp/%s_%s_%s", username, randString, filename)
+	// save the zip file
+	if err := c.SaveUploadedFile(fileHandler, destPathZip); err != nil {
+		Fail(c, err)
+		return
+	}
+	z, err := zip.OpenReader(destPathZip)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// protect against zip bombs
+	var uncompressedSize int64
+	for _, f := range z.File {
+		uncompressedSize = uncompressedSize + int64(f.UncompressedSize64)
+		// protect against large uploads and overflows
+		if uncompressedSize >= int64(datasize.GB.Bytes()) {
+			z.Close()
+			Fail(c, errors.New("uncompressed size of zip file is larger than 1gb max upload"))
+			return
+		} else if uncompressedSize < 0 {
+			z.Close()
+			Fail(c, errors.New("overflow detected"))
+			return
+		}
+	}
+	if err := z.Close(); err != nil {
+		Fail(c, err)
+		return
+	}
+	randString = randUtils.GenerateString(5, utils.LetterBytes)
+	destPathUnzip := fmt.Sprintf("/tmp/unzipped_%s_%s", username, randString)
+	// unzip the file
+	if _, err := Unzip(destPathZip, destPathUnzip); err != nil {
+		Fail(c, err)
+		return
+	}
+	// add directory to ipfs
+	hash, err := api.ipfs.AddDir(destPathUnzip)
+	if err != nil {
+		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
+		return
+	}
+	// cleanup unzipped file
+	if err := os.RemoveAll(destPathUnzip); err != nil {
+		api.LogError(c, err, "failed to cleanup file(s)")(http.StatusBadRequest)
+		return
+	}
+	// cleanup zip file
+	if err := os.Remove(destPathZip); err != nil {
+		api.LogError(c, err, "failed to cleanup file(s)")(http.StatusBadRequest)
+		return
+	}
+	api.l.Infow("directory upload processed", "user", username)
+	Respond(c, http.StatusOK, gin.H{"response": hash})
 }
 
 // IpfsPubSubPublish is used to publish a pubsub msg
