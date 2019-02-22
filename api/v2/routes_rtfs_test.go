@@ -84,6 +84,15 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 	hash = apiResp.Response
 
+	// temporary fix for a badly written this
+	// this will be solved in test refactoring
+	models.NewUploadManager(db).NewUpload(
+		hash, "file", models.UploadOptions{
+			Username:    "testuser",
+			NetworkName: "public",
+			Encrypted:   false,
+		},
+	)
 	// add a zip file (only do a partial test since this is being weird)
 	// /v2/ipfs/public/file/add/directory
 	bodyBuf = &bytes.Buffer{}
@@ -255,6 +264,16 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	urlValues.Add("passphrase", "password123")
 	if err := sendRequest(
 		api, "POST", "/v2/ipfs/utils/laser/beam", 200, nil, urlValues, nil,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// test extend pin
+	// /v2/ipfs/public/pin/:hash/extend
+	urlValues = url.Values{}
+	urlValues.Add("hold_time", "5")
+	apiResp = apiResponse{}
+	if err := sendRequest(
+		api, "POST", "/v2/ipfs/public/pin/"+hash+"/extend", 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}

@@ -64,8 +64,9 @@ func (api *API) calculateFileCost(c *gin.Context) {
 		return
 	}
 	// how many months to store file for
-	forms := api.extractPostForms(c, "hold_time")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "hold_time")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// parse hold time

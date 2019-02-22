@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/c2h5oh/datasize"
@@ -20,6 +20,7 @@ import (
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/crypto"
 	"github.com/RTradeLtd/database/models"
+	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -38,14 +39,23 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "hold_time")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "hold_time")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// parse hold time
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
+		return
+	}
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
+	// by this conditional if statement passing, it means the user has
+	// upload content matching this hash before, and we don't want to charge them
+	// so we should gracefully abort further processing
+	if err == nil || upload != nil {
+		Respond(c, http.StatusOK, gin.H{"response": alreadyUploadedMessage})
 		return
 	}
 	// get object size
@@ -112,12 +122,13 @@ func (api *API) addFile(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "hold_time")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "hold_time")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// parse hold time
-	holdTimeinMonthsInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	holdTimeInMonthsInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
 		return
@@ -131,6 +142,33 @@ func (api *API) addFile(c *gin.Context) {
 	// validate the size of upload is within limits
 	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
 		Fail(c, err)
+		return
+	}
+	api.l.Debug("opening file")
+	openFile, err := fileHandler.Open()
+	if err != nil {
+		api.LogError(c, err, eh.FileOpenError)(http.StatusBadRequest)
+		return
+	}
+	// we need a small hack because reading from openFile once
+	// drains it's contents, by holding it in a temporary bytes object
+	// we can avoid any issues that may be caused
+	fileBytes, err := ioutil.ReadAll(openFile)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	hash, err := api.ipfs.Add(bytes.NewReader(fileBytes), ipfsapi.OnlyHash(true))
+	if err != nil {
+		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
+		return
+	}
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
+	// by this conditional if statement passing, it means the user has
+	// upload content matching this hash before, and we don't want to charge them
+	// so we should gracefully abort further processing
+	if err == nil || upload != nil {
+		Respond(c, http.StatusOK, gin.H{"response": alreadyUploadedMessage})
 		return
 	}
 	// format size of file into gigabytes
@@ -149,7 +187,7 @@ func (api *API) addFile(c *gin.Context) {
 		return
 	}
 	// calculate code of upload
-	cost, err := utils.CalculateFileCost(username, holdTimeinMonthsInt, fileHandler.Size, api.usage)
+	cost, err := utils.CalculateFileCost(username, holdTimeInMonthsInt, fileHandler.Size, api.usage)
 	if err != nil {
 		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
 		return
@@ -163,15 +201,6 @@ func (api *API) addFile(c *gin.Context) {
 	if err := api.usage.UpdateDataUsage(username, uint64(fileHandler.Size)); err != nil {
 		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
-		return
-	}
-	api.l.Debug("opening file")
-	// open file into memory
-	openFile, err := fileHandler.Open()
-	if err != nil {
-		api.LogError(c, err, eh.FileOpenError)(http.StatusBadRequest)
-		api.refundUserCredits(username, "file", cost)
-		api.usage.ReduceDataUsage(username, uint64(fileHandler.Size))
 		return
 	}
 	var reader io.Reader
@@ -197,7 +226,7 @@ func (api *API) addFile(c *gin.Context) {
 		}
 		// html decode strings
 		decodedPassPhrase := html.UnescapeString(c.PostForm("passphrase"))
-		encrypted, err := crypto.NewEncryptManager(decodedPassPhrase).Encrypt(openFile)
+		encrypted, err := crypto.NewEncryptManager(decodedPassPhrase).Encrypt(bytes.NewReader(fileBytes))
 		if err != nil {
 			api.LogError(c, err, eh.EncryptionError)(http.StatusBadRequest)
 			api.refundUserCredits(username, "file", cost)
@@ -207,10 +236,9 @@ func (api *API) addFile(c *gin.Context) {
 		reader = bytes.NewReader(encrypted)
 		// generate an encryption manager and encrypt
 	} else {
-		reader = openFile
+		reader = bytes.NewReader(fileBytes)
 	}
 	api.l.Debug("adding file...")
-	// add file to ipfs
 	resp, err := api.ipfs.Add(reader)
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
@@ -232,7 +260,7 @@ func (api *API) addFile(c *gin.Context) {
 		CID:              resp,
 		NetworkName:      "public",
 		UserName:         username,
-		HoldTimeInMonths: holdTimeinMonthsInt,
+		HoldTimeInMonths: holdTimeInMonthsInt,
 	}
 	// send message to rabbitmq
 	if err = api.queues.cluster.PublishMessage(qp); err != nil {
@@ -341,8 +369,9 @@ func (api *API) ipfsPubSubPublish(c *gin.Context) {
 	// topic is the topic which the pubsub message will be addressed to
 	topic := c.Param("topic")
 	// extract post form
-	forms := api.extractPostForms(c, "message")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "message")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// validate they can submit pubsub message calls
@@ -392,6 +421,11 @@ func (api *API) getObjectStatForIpfs(c *gin.Context) {
 
 // GetDagObject is used to retrieve an IPLD object from ipfs
 func (api *API) getDagObject(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
 	// hash to retrieve dag for
 	hash := c.Param("hash")
 	if _, err := gocid.Decode(hash); err != nil {
@@ -403,5 +437,74 @@ func (api *API) getDagObject(c *gin.Context) {
 		api.LogError(c, err, eh.IPFSDagGetError)(http.StatusBadRequest)
 		return
 	}
+	api.l.Infow("ipfs dag get requested", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": out})
+}
+
+// extendPin is used to extend the lifetime of a pin by a certain number of months
+func (api *API) extendPin(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	// hash to retrieve dag for
+	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		Fail(c, err)
+		return
+	}
+	// extract needed post forms
+	forms, missingField := api.extractPostForms(c, "hold_time")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	// validate the hold time
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// find usage model
+	usage, err := api.usage.FindByUserName(username)
+	if err != nil {
+		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
+		return
+	}
+	// make sure they aren't a free account
+	if usage.Tier == models.Free {
+		Fail(c, errors.New("free accounts are not allowed to extend pin times"))
+		return
+	}
+	// find upload
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
+	if err != nil {
+		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
+		return
+	}
+	// ensure even with pin time extension, it wont breach two year limit
+	if err := api.ensureTwoYearMax(upload, holdTimeInt); err != nil {
+		Fail(c, err)
+		return
+	}
+	// calculate cost of hold time extension
+	cost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
+	if err != nil {
+		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
+		return
+	}
+	// validate they have enough credits
+	if err := api.validateUserCredits(username, cost); err != nil {
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
+		return
+	}
+	// extend garbage collection period
+	if err := api.upm.ExtendGarbageCollectionPeriod(username, hash, "public", int(holdTimeInt)); err != nil {
+		api.LogError(c, err, eh.PinExtendError)(http.StatusBadRequest)
+		api.refundUserCredits(username, "pin", cost)
+		return
+	}
+	// return
+	Respond(c, http.StatusOK, gin.H{"response": "pin time successfully extended"})
 }

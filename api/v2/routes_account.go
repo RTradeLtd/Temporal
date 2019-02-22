@@ -49,8 +49,9 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "old_password", "new_password")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "old_password", "new_password")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// parse html encoded strings
@@ -75,8 +76,9 @@ func (api *API) changeAccountPassword(c *gin.Context) {
 // RegisterUserAccount is used to sign up with temporal
 func (api *API) registerUserAccount(c *gin.Context) {
 	// extract post forms
-	forms := api.extractPostForms(c, "username", "password", "email_address")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "username", "password", "email_address")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// parse emails to prevent exploit of catch-all routing
@@ -91,8 +93,7 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	forms["password"] = html.UnescapeString(forms["password"])
 	api.l.Info("user account registration detected")
 	// create user model
-	userModel, err := api.um.NewUserAccount(forms["username"], forms["password"], forms["email_address"])
-	if err != nil {
+	if _, err := api.um.NewUserAccount(forms["username"], forms["password"], forms["email_address"]); err != nil {
 		switch err.Error() {
 		case eh.DuplicateEmailError:
 			api.LogError(c, err, eh.DuplicateEmailError, "email", forms["email_address"])(http.StatusBadRequest)
@@ -143,9 +144,25 @@ func (api *API) registerUserAccount(c *gin.Context) {
 	// log
 	api.l.With("user", forms["username"]).Info("user account registered")
 	// remove hashed password from output
-	userModel.HashedPassword = "scrubbed"
+	user.HashedPassword = "scrubbed"
+	// remove the verification token from output
+	user.EmailVerificationToken = "scrubbed"
+	// format a custom response that includes the user model
+	// and an additional status field
+	var status string
+	if dev {
+		status = "by continuing to use this service you agree to be bound by the following api terms and service" + devTermsAndServiceURL
+	} else {
+		status = "by continuing to use this service you agree to be bound by the following api terms and service" + prodTermsAndServiceURL
+	}
 	// return
-	Respond(c, http.StatusOK, gin.H{"response": userModel})
+	Respond(c, http.StatusOK, gin.H{"response": struct {
+		*models.User
+		Status string
+	}{
+		user, status,
+	},
+	})
 }
 
 // CreateIPFSKey is used to create an IPFS key
@@ -156,8 +173,9 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		return
 	}
 	// extract forms
-	forms := api.extractPostForms(c, "key_type", "key_bits", "key_name")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "key_type", "key_bits", "key_name")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// validate key type
@@ -281,8 +299,9 @@ func (api *API) forgotEmail(c *gin.Context) {
 
 // ForgotUserName is used to send a username reminder to the email associated with the account
 func (api *API) forgotUserName(c *gin.Context) {
-	forms := api.extractPostForms(c, "email_address")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "email_address")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// find email address associated with the user account
@@ -315,8 +334,9 @@ func (api *API) forgotUserName(c *gin.Context) {
 
 // ResetPassword is used to reset the password associated with a user account
 func (api *API) resetPassword(c *gin.Context) {
-	forms := api.extractPostForms(c, "email_address")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "email_address")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// find user account associated with the email

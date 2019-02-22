@@ -198,17 +198,56 @@ func (api *API) formatUploadErrorMessage(file string, currentDataUsedBytes, maxD
 	)
 }
 
-func (api *API) extractPostForms(c *gin.Context, formNames ...string) map[string]string {
+// used to extract needed post forms that should be provided with api calls.
+// if the second return parameter, the string is non-empty, this is the name of the field which was missing
+// we then use this to fail with a meaningful message
+func (api *API) extractPostForms(c *gin.Context, formNames ...string) (map[string]string, string) {
 	forms := make(map[string]string)
 	for _, name := range formNames {
 		value, exists := c.GetPostForm(name)
 		if !exists {
-			FailWithMissingField(c, name)
-			return nil
+			return nil, name
 		}
 		forms[name] = value
 	}
-	return forms
+	return forms, ""
+}
+
+// ValidateHoldTime is used to perform parsing of requested hold times,
+// returning an int64 type of the provded hold time
+func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
+	var (
+		// 1 month
+		freeHoldTimeLimitInMonths int64 = 1
+		// two years
+		nonFreeHoldTimeLimitInMonths int64 = 24
+	)
+	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	usageTier, err := api.usage.FindByUserName(username)
+	if err != nil {
+		return 0, err
+	}
+	if usageTier.Tier == models.Free && holdTimeInt > freeHoldTimeLimitInMonths {
+		return 0, errors.New("free accounts are limited to maximum hold times of 1 month")
+	} else if usageTier.Tier != models.Free && holdTimeInt > nonFreeHoldTimeLimitInMonths {
+		return 0, errors.New("non free accounts are limited to a maximum hold time of 24 months")
+	}
+	return holdTimeInt, nil
+}
+
+func (api *API) ensureTwoYearMax(upload *models.Upload, holdTime int64) error {
+	// get current time
+	now := time.Now()
+	// get future time while factoring for additional hold time
+	then := upload.GarbageCollectDate.AddDate(0, int(holdTime), 0)
+	// get the time difference and ensure its less than the 2 year limit
+	if then.Sub(now).Hours() > 17520 {
+		return errors.New(eh.MaxHoldTimeError)
+	}
+	return nil
 }
 
 // Unzip will decompress a zip archive, moving all files and folders

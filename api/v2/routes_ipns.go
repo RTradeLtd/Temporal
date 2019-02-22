@@ -25,8 +25,9 @@ func (api *API) publishToIPNSDetails(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "hash", "life_time", "ttl", "key", "resolve")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "hash", "life_time", "ttl", "key", "resolve")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// validate that the hash is an ipfs one
@@ -125,8 +126,9 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "hold_time", "ipns_path")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "hold_time", "ipns_path")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// validate the provided path is legit
@@ -136,7 +138,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		return
 	}
 	// parse hold time
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
 		return
@@ -153,6 +155,14 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	// IPFS Cluster doesn't, so to keep consistency with the rest of our endpoints
 	// we should only operate on a bare cidC
 	hash := strings.Split(hashToPin, "/")[len(strings.Split(hashToPin, "/"))-1]
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
+	// by this conditional if statement passing, it means the user has
+	// upload content matching this hash before, and we don't want to charge them
+	// so we should gracefully abort further processing
+	if err == nil || upload != nil {
+		Respond(c, http.StatusOK, gin.H{"response": alreadyUploadedMessage})
+		return
+	}
 	// get size of object
 	stats, err := api.ipfs.Stat(hash)
 	if err != nil {

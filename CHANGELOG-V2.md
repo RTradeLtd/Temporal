@@ -3,6 +3,28 @@
 This document tracks changes to Temporal and its related projects for all `v2.x.x`
 releases. See our [versioning policy](/VERSIONING.md) for more details.
 
+## v2.0.5
+
+### docker
+
+* Updated makefile to include installation, and configuration of the gvisor sandboxed runtime environment [#312](https://github.com/RTradeLtd/Temporal/pull/312)
+* Update IPFS Cluster to 0.9.0 [#310](https://github.com/RTradeLtd/Temporal/pull/310)
+* Remove unusded docker images [#309](https://github.com/RTradeLtd/Temporal/pull/309)
+
+### api/v2
+
+* Allow uploading directories, mainly to assist with adding websites to IPFS [#311](https://github.com/RTradeLtd/Temporal/pull/311)
+* limit free accounts to 1 month pin times
+* limit non-free accounts to 2 year pin times
+* prevent uploads of the same content on a per-account which would result in duplicated billing
+  * instead, suggest that users extend their pin times
+* add api call to extend pin time
+
+### queue
+
+* Fix usage of krab in development environments [#313](https://github.com/RTradeLtd/Temporal/pull/313)
+* When publishing IPNS records, if retrieving key from priamry krab fails, attempt fallback before failing [#313](https://github.com/RTradeLtd/Temporal/pull/313)
+
 ## v2.0.4
 
 * relevant PRs:

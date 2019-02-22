@@ -400,8 +400,8 @@ func Test_Utils(t *testing.T) {
 	urlValues := url.Values{}
 	urlValues.Add("suchkey", "muchvalue")
 	testCtx.Request = &http.Request{PostForm: urlValues}
-	forms := api.extractPostForms(testCtx, "suchkey")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(testCtx, "suchkey")
+	if missingField != "" {
 		t.Fatal("failed to extract post forms")
 	}
 	if forms["suchkey"] != "muchvalue" {

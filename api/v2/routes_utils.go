@@ -33,8 +33,9 @@ func (api *API) beamContent(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "source_network", "destination_network", "content_hash")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "source_network", "destination_network", "content_hash")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	var (

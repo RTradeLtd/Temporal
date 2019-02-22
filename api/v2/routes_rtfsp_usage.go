@@ -6,7 +6,6 @@ import (
 	"html"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
@@ -39,8 +38,9 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "network_name", "hold_time")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "network_name", "hold_time")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// ensure user has access to network
@@ -49,7 +49,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	// parse hold time
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
 		return
@@ -85,8 +85,9 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	// extract post forms
-	forms := api.extractPostForms(c, "network_name", "hold_time")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "network_name", "hold_time")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// verify user has access to private network
@@ -96,7 +97,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		return
 	}
 	// parse hold time
-	holdTimeInt, err := strconv.ParseInt(forms["hold_time"], 10, 64)
+	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
 		return
@@ -196,8 +197,9 @@ func (api *API) ipfsPubSubPublishToHostedIPFSNetwork(c *gin.Context) {
 	// get the topic to publish a message too
 	topic := c.Param("topic")
 	// extract post forms
-	forms := api.extractPostForms(c, "network_name", "message")
-	if len(forms) == 0 {
+	forms, missingField := api.extractPostForms(c, "network_name", "message")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
 		return
 	}
 	// validate access to private network

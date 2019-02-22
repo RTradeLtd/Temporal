@@ -126,4 +126,8 @@ const (
 	EncryptionError = "an error occured when trying to encrypt file"
 	// DatabaseUpdateError is an error message used when a failure to update the database happesn
 	DatabaseUpdateError = "en error occured wile updating the database"
+	// PinExtendError is an error message used when someone attempts to extend the pin for content they haven't uploaded
+	PinExtendError = "failed to extend pin duration, this likely means you haven't actually uploaded this content before"
+	// MaxHoldTimeError is an error message when the current hold time value would breach set pin time limits
+	MaxHoldTimeError = "a hold time of this long would result in a longer maximum pin time of 2 years, please reduce your hold time and try again"
 )

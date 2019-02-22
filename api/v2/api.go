@@ -13,6 +13,9 @@ import (
 
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
+	pbLens "github.com/RTradeLtd/grpc/lens"
+	pbOrch "github.com/RTradeLtd/grpc/nexus"
+	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas"
 	"go.uber.org/zap"
 
@@ -23,22 +26,13 @@ import (
 	limit "github.com/aviddiviner/gin-limit"
 
 	"github.com/RTradeLtd/config"
-	xss "github.com/dvwright/xss-mw"
 	stats "github.com/semihalev/gin-stats"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
 
-	pbLens "github.com/RTradeLtd/grpc/lens"
-	pbOrch "github.com/RTradeLtd/grpc/nexus"
-	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/gin-gonic/gin"
-)
-
-var (
-	xssMdlwr xss.XssMw
-	dev      = false
 )
 
 // API is our API service
@@ -67,19 +61,6 @@ type API struct {
 	service     string
 
 	version string
-}
-
-// Options is used to non-critical options
-type Options struct {
-	DebugLogging bool
-	DevMode      bool
-}
-
-// Clients is used to configure service clients we use
-type Clients struct {
-	Lens   pbLens.IndexerAPIClient
-	Orch   pbOrch.ServiceClient
-	Signer pbSigner.SignerClient
 }
 
 // Initialize is used ot initialize our API service. debug = true is useful
@@ -511,6 +492,7 @@ func (api *API) setupRoutes() error {
 			pin := public.Group("/pin")
 			{
 				pin.POST("/:hash", api.pinHashLocally)
+				pin.POST("/:hash/extend", api.extendPin)
 			}
 			// file upload routes
 			file := public.Group("/file")
