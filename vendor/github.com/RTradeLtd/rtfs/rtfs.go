@@ -51,6 +51,11 @@ func (im *IpfsManager) Add(r io.Reader, options ...ipfsapi.AddOpts) (string, err
 	return im.shell.Add(r, options...)
 }
 
+// AddDir is used to add a directory to ipfs
+func (im *IpfsManager) AddDir(dir string) (string, error) {
+	return im.shell.AddDir(dir)
+}
+
 // DagPut is used to store data as an ipld object
 func (im *IpfsManager) DagPut(data interface{}, encoding, kind string) (string, error) {
 	return im.shell.DagPut(data, encoding, kind)
