@@ -119,7 +119,8 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:be3735d11cdb3b538772905e15b5cca6af4f35f71a9f67babd512aed116b8767"
+  branch = "add/dir"
+  digest = "1:d3c50b99053c89e353bc7f5362c0e7b29d47afb40997171df7676d463413e249"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -127,8 +128,7 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "ac1c6e92072ad9652c702d3d55d97ec938acff91"
-  version = "v2.0.0"
+  revision = "8d73da297e3f7d7143779bcb3b7013db524fae31"
 
 [[projects]]
   digest = "1:a164e093eccfde4fb63dc94707f3570d112ff4549072a065a48813c37c0c76a9"
