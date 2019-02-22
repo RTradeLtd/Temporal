@@ -150,11 +150,11 @@ release-docker: docker
 # download and setup gvisor runtime
 .PHONY: gvisor
 gvisor:
-	wget https://storage.googleapis.com/gvisor/releases/nightly/latest/runsc
-	wget https://storage.googleapis.com/gvisor/releases/nightly/latest/runsc.sha512
-	sha512sum -c runsc.sha512
-	chmod a+x runsc
-	sudo mv runsc /usr/local/bin
+	wget https://storage.googleapis.com/gvisor/releases/nightly/latest/runsc -O /tmp/runsc
+	wget https://storage.googleapis.com/gvisor/releases/nightly/latest/runsc.sha512 -O /tmp/runsc.sha512
+	sha512sum -c /tmp/runsc.sha512
+	chmod a+x /tmp/runsc
+	sudo mv /tmp/runsc /usr/local/bin
 	sudo cp setup/configs/docker/daemon_passthrough.json /etc/docker/daemon.json
 	sudo systemctl restart docker
 
