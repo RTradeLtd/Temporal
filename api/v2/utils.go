@@ -259,8 +259,10 @@ func Unzip(src string, dest string) ([]string, error) {
 				return filenames, err
 			}
 
-			_, err = io.Copy(outFile, rc)
-
+			bytesWritten, err := io.Copy(outFile, rc)
+			if bytesWritten == 0 {
+				return nil, errors.New("an error occur during unzipping which resulted in 0 bytes being written")
+			}
 			// Close the file without defer to close before next iteration of loop
 			outFile.Close()
 
