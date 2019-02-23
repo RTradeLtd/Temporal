@@ -37,7 +37,7 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 		Type: indexType,
 		Hash: forms["object_identifier"],
 		Options: &pb.IndexReq_Options{
-			Reindex: c.PostForm("reindex") == "yes",
+			Reindex: c.PostForm("reindex") == "true",
 		},
 	})
 	if err != nil {
