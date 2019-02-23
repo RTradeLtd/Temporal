@@ -12,6 +12,7 @@ import (
 )
 
 func Test_API_Routes_IPNS(t *testing.T) {
+	t.Skip()
 	// load configuration
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
