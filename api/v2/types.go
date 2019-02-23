@@ -5,7 +5,7 @@ import (
 	"github.com/RTradeLtd/kaas"
 	xss "github.com/dvwright/xss-mw"
 
-	pbLens "github.com/RTradeLtd/grpc/lens"
+	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 )
@@ -26,7 +26,7 @@ type Options struct {
 
 // Clients is used to configure service clients we use
 type Clients struct {
-	Lens   pbLens.IndexerAPIClient
+	Lens   pbLens.LensV2Client
 	Orch   pbOrch.ServiceClient
 	Signer pbSigner.SignerClient
 }

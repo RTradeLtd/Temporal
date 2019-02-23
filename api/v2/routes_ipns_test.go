@@ -23,7 +23,7 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	}
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
