@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	pb "github.com/RTradeLtd/grpc/lensv2"
@@ -45,33 +44,40 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 		api.LogError(c, err, eh.FailedToIndexError)(http.StatusBadRequest)
 		return
 	}
-	Respond(c, http.StatusOK, gin.H{"response": resp})
+	Respond(c, http.StatusOK, gin.H{"response": resp.GetDoc().Category})
 }
 
 func (api *API) submitSearchRequest(c *gin.Context) {
 	// extract key words to search for
-	keywords, exists := c.GetPostFormArray("keywords")
+	keyword, exists := c.GetPostForm("keyword")
 	if !exists {
-		FailWithMissingField(c, "keywords")
+		FailWithMissingField(c, "keyword")
 		return
 	}
-	// for all keywords to lower-case
-	var keywordsLower []string
-	for _, word := range keywords {
-		keywordsLower = append(keywordsLower, strings.ToLower(word))
-	}
+
+	tags, _ := c.GetPostFormArray("tags")
+	categories, _ := c.GetPostFormArray("categories")
+	mimeTypes, _ := c.GetPostFormArray("mime_types")
+	hashes, _ := c.GetPostFormArray("hashes")
+	required, _ := c.GetPostFormArray("required")
+
 	resp, err := api.lens.Search(context.Background(), &pb.SearchReq{
+		Query: keyword,
 		Options: &pb.SearchReq_Options{
-			Tags: keywordsLower,
+			Tags:       tags,
+			Categories: categories,
+			MimeTypes:  mimeTypes,
+			Hashes:     hashes,
+			Required:   required,
 		},
 	})
+
 	if err != nil {
 		api.LogError(c, err, eh.FailedToSearchError)(http.StatusBadRequest)
 		return
 	}
 	// check to ensure some objects were found, otherwise log a warning
 	if len(resp.Results) == 0 {
-		api.l.Warnf("no search results found for keywords %s", keywordsLower)
 		Respond(c, http.StatusBadRequest, gin.H{"response": "no results found"})
 		return
 	}

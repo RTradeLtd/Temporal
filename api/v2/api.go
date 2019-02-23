@@ -413,14 +413,14 @@ func (api *API) setupRoutes() error {
 		statistics.GET("/stats", api.getStats)
 	}
 
-	/* lens search engine
+	// lens search engine
 	lens := v2.Group("/lens")
 	{
 		lens.POST("/index", api.submitIndexRequest)
 		// only allow registered users to search
 		lens.POST("/search", api.submitSearchRequest)
 	}
-	*/
+
 	// payments
 	payments := v2.Group("/payments", authware...)
 	{
