@@ -98,11 +98,11 @@ clean: stop-testenv
 gen:
 	@echo "===================    regenerating code    ==================="
 	counterfeiter -o ./mocks/orchestrator.mock.go \
-		./vendor/github.com/RTradeLtd/grpc/ipfs-orchestrator ServiceClient
+		./vendor/github.com/RTradeLtd/grpc/nexus ServiceClient
 	counterfeiter -o ./mocks/lens.mock.go \
-		./vendor/github.com/RTradeLtd/grpc/lens IndexerAPIClient
+		./vendor/github.com/RTradeLtd/grpc/lensv2 LensV2Client
 	counterfeiter -o ./mocks/eth.mock.go \
-		./vendor/github.com/RTradeLtd/grpc/temporal SignerClient
+		./vendor/github.com/RTradeLtd/grpc/pay SignerClient
 	@echo "===================          done           ==================="
 
 # Rebuild vendored dependencies
