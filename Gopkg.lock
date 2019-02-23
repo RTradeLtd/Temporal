@@ -92,14 +92,11 @@
   revision = "d2072fe8bb4a46e42fe4f8097f8c015cac19b08c"
 
 [[projects]]
-  digest = "1:6b582783c1e9557819a54673a26100a2fac32ac12ada339876df1d8a225a8329"
+  digest = "1:9422433029ba2d21db1b22a06942f8ab952593106a7e99087101374e1843d372"
   name = "github.com/RTradeLtd/grpc"
   packages = [
     "dialer",
     "krab",
-    "lens",
-    "lens/request",
-    "lens/response",
     "lensv2",
     "middleware",
     "nexus",
@@ -267,17 +264,21 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:cbf31997868639533ea9234c2c8ee5802c0eeb807fcf608c29320c58c379a182"
+  digest = "1:489a99067cd08971bd9c1ee0055119ba8febc1429f9200ab0bec68d35e8c4833"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
+    "protoc-gen-go/generator",
+    "protoc-gen-go/generator/internal/remap",
+    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
     "ptypes/struct",
     "ptypes/timestamp",
+    "ptypes/wrappers",
   ]
   pruneopts = "UT"
   revision = "c823c79ea1570fb5ff454033735a8e68575d1d0f"
@@ -310,16 +311,16 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:6a06217fc753e65aea71446b777393009ef6797dadc0086c4f75bd16590be04d"
+  branch = "master"
+  digest = "1:ec9b294ee624e9b87e31a8fa39a2a7724f90ce7af2055a9248100883d9956922"
   name = "github.com/grpc-ecosystem/grpc-gateway"
   packages = [
+    "internal",
     "runtime",
-    "runtime/internal",
     "utilities",
   ]
   pruneopts = "UT"
-  revision = "92583770e3f01b09a0d3e9bdf64321d8bebd48f2"
-  version = "v1.4.1"
+  revision = "121c47c68b25f96e75a602260cf28159ea156b65"
 
 [[projects]]
   digest = "1:43c609cba7aa615eaae5aa8f2ddba65dc1b2d3af7bc434f738238df8d3797ddb"
@@ -1315,11 +1316,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:48cd63b152af9cc0010714d881a3d29a68c19a265fbb914d884dfde42fe9337a"
+  digest = "1:79f8bb1b9d02fa61546fecfc467884a564c77c8791ff9c28dfe16b5f2c76d02f"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
     "googleapis/rpc/status",
+    "protobuf/field_mask",
   ]
   pruneopts = "UT"
   revision = "082222b4a5c572e33e82ee9162d1352c7cf38682"
@@ -1403,9 +1405,6 @@
     "github.com/RTradeLtd/gorm",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/krab",
-    "github.com/RTradeLtd/grpc/lens",
-    "github.com/RTradeLtd/grpc/lens/request",
-    "github.com/RTradeLtd/grpc/lens/response",
     "github.com/RTradeLtd/grpc/lensv2",
     "github.com/RTradeLtd/grpc/nexus",
     "github.com/RTradeLtd/grpc/pay",
