@@ -75,7 +75,7 @@ func Test_API_Routes_Lens_Index(t *testing.T) {
 func Test_API_Routes_Lens_Search(t *testing.T) {
 	// index tests
 	type args struct {
-		keyword   string
+		query     string
 		tag       string
 		category  string
 		mimeType  string
@@ -135,7 +135,7 @@ func Test_API_Routes_Lens_Search(t *testing.T) {
 			}
 			var interfaceAPIResp interfaceAPIResponse
 			urlValues := url.Values{}
-			urlValues.Add("keyword", tt.args.keyword)
+			urlValues.Add("query", tt.args.query)
 			urlValues.Add("tags", tt.args.tag)
 			urlValues.Add("categories", tt.args.category)
 			urlValues.Add("hashes", tt.args.hash)

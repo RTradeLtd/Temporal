@@ -48,10 +48,10 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 }
 
 func (api *API) submitSearchRequest(c *gin.Context) {
-	// extract key words to search for
-	keyword, exists := c.GetPostForm("keyword")
+	// query we will use to perform as the main search
+	query, exists := c.GetPostForm("query")
 	if !exists {
-		FailWithMissingField(c, "keyword")
+		FailWithMissingField(c, "query")
 		return
 	}
 
@@ -62,7 +62,7 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 	required, _ := c.GetPostFormArray("required")
 
 	resp, err := api.lens.Search(context.Background(), &pb.SearchReq{
-		Query: keyword,
+		Query: query,
 		Options: &pb.SearchReq_Options{
 			Tags:       tags,
 			Categories: categories,
