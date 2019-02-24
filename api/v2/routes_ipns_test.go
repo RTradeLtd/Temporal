@@ -12,7 +12,6 @@ import (
 )
 
 func Test_API_Routes_IPNS(t *testing.T) {
-	t.Skip()
 	// load configuration
 	cfg, err := config.LoadConfig("../../testenv/config.json")
 	if err != nil {
@@ -116,6 +115,8 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal("no records discovered")
 	}
 
+	// these tests are being weird and are disabled until further notice
+	t.Skip("skipping weird behaving tests until further notice")
 	// /v2/ipfs/public/pin (success)
 	apiResp = apiResponse{}
 	urlValues = url.Values{}
