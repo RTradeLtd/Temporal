@@ -9,6 +9,14 @@ import (
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database/models"
+	shell "github.com/RTradeLtd/go-ipfs-api"
+)
+
+var (
+	validIPNSTestPath   = "/ipns/docs.api.temporal.cloud"
+	invalidIPNSTestPath = "/snpi/docs.api.temporal.cloud"
+	badIPNSTestPath     = "/not/a/real/path"
+	validResolveResult  = "/ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 )
 
 func Test_API_Routes_IPNS(t *testing.T) {
@@ -115,56 +123,58 @@ func Test_API_Routes_IPNS(t *testing.T) {
 		t.Fatal("no records discovered")
 	}
 
-	// these tests are being weird and are disabled until further notice
-	t.Skip("skipping weird behaving tests until further notice")
-	// /v2/ipfs/public/pin (success)
-	apiResp = apiResponse{}
-	urlValues = url.Values{}
-	urlValues.Add("hold_time", "5")
-	urlValues.Add("ipns_path", "/ipns/docs.api.temporal.cloud")
-	if err := sendRequest(
-		api, "POST", "/v2/ipns/public/pin", 200, nil, urlValues, &apiResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
-	}
+}
 
-	// /v2/ipfs/public/pin (bad hold time)
-	apiResp = apiResponse{}
-	urlValues = url.Values{}
-	urlValues.Add("hold_time", "notanumber")
-	urlValues.Add("ipns_path", "/ipns/docs.api.temporal.cloud")
-	if err := sendRequest(
-		api, "POST", "/v2/ipns/public/pin", 400, nil, urlValues, &apiResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if apiResp.Code != 400 {
-		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
-	}
+func Test_API_Routes_IPNS_Pin(t *testing.T) {
 
-	// /v2/ipfs/public/pin - bad path
-	apiResp = apiResponse{}
-	urlValues = url.Values{}
-	urlValues.Add("hold_time", "5")
-	urlValues.Add("ipns_path", "/not/a/real/path")
-	if err := sendRequest(
-		api, "POST", "/v2/ipns/public/pin", 400, nil, urlValues, &apiResp,
-	); err != nil {
-		t.Fatal(err)
+	type args struct {
+		holdTime string
+		ipnsPath string
 	}
-	// /v2/ipfs/public/pin - bad ipfs path
-	apiResp = apiResponse{}
-	urlValues = url.Values{}
-	urlValues.Add("hold_time", "5")
-	urlValues.Add("ipns_path", "/ipfs/QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n/a/real/path")
-	if err := sendRequest(
-		api, "POST", "/v2/ipns/public/pin", 400, nil, urlValues, &apiResp,
-	); err != nil {
-		t.Fatal(err)
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+	}{
+		{"Success", args{"1", validIPNSTestPath}, 200},
+		{"Fail-Bad-Hold-Time", args{"notanumber", validIPNSTestPath}, 400},
+		{"Fail-Bad-IPNS-Path", args{"1", badIPNSTestPath}, 400},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// load configuration
+			cfg, err := config.LoadConfig("../../testenv/config.json")
+			if err != nil {
+				t.Fatal(err)
+			}
+			db, err := loadDatabase(cfg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// setup fake mock clients
+			fakeLens := &mocks.FakeLensV2Client{}
+			fakeOrch := &mocks.FakeServiceClient{}
+			fakeSigner := &mocks.FakeSignerClient{}
+
+			api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fakeManager := &mocks.FakeManager{}
+			api.ipfs = fakeManager
+			fakeManager.ResolveReturnsOnCall(0, validResolveResult, nil)
+			fakeManager.StatReturnsOnCall(0, &shell.ObjectStats{CumulativeSize: 5000000}, nil)
+			fakeManager.StatReturnsOnCall(1, &shell.ObjectStats{CumulativeSize: 5000000}, nil)
+			var apiResp apiResponse
+			urlValues := url.Values{}
+			urlValues.Add("hold_time", tt.args.holdTime)
+			urlValues.Add("ipns_path", tt.args.ipnsPath)
+			if err := sendRequest(
+				api, "POST", "/v2/ipns/public/pin", tt.wantStatus, nil, urlValues, &apiResp,
+			); err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
