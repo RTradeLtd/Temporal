@@ -34,10 +34,10 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 	}
 
 	resp, err := api.lens.Index(context.Background(), &pb.IndexReq{
-		Type: indexType,
-		Hash: forms["object_identifier"],
+		Type:    indexType,
+		Hash:    forms["object_identifier"],
 		Options: &pb.IndexReq_Options{
-			Reindex: c.PostForm("reindex") == "true",
+			//	Reindex: c.PostForm("reindex") == "true",
 		},
 	})
 	if err != nil {
