@@ -33,7 +33,7 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 		return
 	}
 
-	resp, err := api.lens.Index(context.Background(), &pb.IndexReq{
+	resp, err := api.lens.Index(c, &pb.IndexReq{
 		Type:    indexType,
 		Hash:    forms["object_identifier"],
 		Options: &pb.IndexReq_Options{
