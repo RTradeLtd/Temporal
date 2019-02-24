@@ -13,7 +13,7 @@ import (
 var (
 	xssMdlwr               xss.XssMw
 	dev                    = false
-	devTermsAndServiceURL  = "..."
+	devTermsAndServiceURL  = "https://gateway.temporal.cloud/ipns/docs.dev.ts.temporal.cloud"
 	prodTermsAndServiceURL = "..."
 	alreadyUploadedMessage = "it seems like you have uploaded content matching this hash already. To save your credits, no charge was placed and the call was gracefully aborted. Please contact support@rtradetechnologies.com if you believe this is an issue"
 )
