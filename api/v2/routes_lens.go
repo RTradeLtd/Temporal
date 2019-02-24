@@ -44,7 +44,7 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 		api.LogError(c, err, eh.FailedToIndexError)(http.StatusBadRequest)
 		return
 	}
-	Respond(c, http.StatusOK, gin.H{"response": resp.GetDoc().Category})
+	Respond(c, http.StatusOK, gin.H{"response": resp.GetDoc()})
 }
 
 func (api *API) submitSearchRequest(c *gin.Context) {
