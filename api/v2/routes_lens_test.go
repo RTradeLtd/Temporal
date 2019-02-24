@@ -125,7 +125,7 @@ func Test_API_Routes_Lens_Search(t *testing.T) {
 					tt.args.callCount,
 					&pb.SearchResp{
 						Results: []*pb.SearchResp_Result{
-							&pb.SearchResp_Result{
+							{
 								Score: 0.32,
 							},
 						},
