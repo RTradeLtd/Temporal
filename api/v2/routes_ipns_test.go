@@ -1,7 +1,6 @@
 package v2
 
 import (
-	"net/http/httptest"
 	"net/url"
 	"testing"
 	"time"
@@ -74,63 +73,66 @@ func Test_API_Routes_IPNS_Publish(t *testing.T) {
 	}
 }
 
-func Test_API_Routes_IPNS(t *testing.T) {
-	// load configuration
-	cfg, err := config.LoadConfig("../../testenv/config.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := loadDatabase(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// setup fake mock clients
-	fakeLens := &mocks.FakeLensV2Client{}
-	fakeOrch := &mocks.FakeServiceClient{}
-	fakeSigner := &mocks.FakeSignerClient{}
-
-	api, testRecorder, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
-	if err != nil {
-		t.Fatal(err)
+func Test_API_Routes_IPNS_GET(t *testing.T) {
+	type args struct {
+		keyID    string
+		keyName  string
+		hash     string
+		network  string
+		user     string
+		ttl      time.Duration
+		lifeTime time.Duration
 	}
 
-	um := models.NewUserManager(db)
-	um.AddIPFSKeyForUser("testuser", "mytestkey", "suchkeymuchwow")
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+	}{
+		{"Fail", args{"blah", "blah", "blah", "blah", "blah", time.Minute, time.Minute}, 200},
+		{"Success", args{"fakeyKeyID", "fakekeyName", "fakeHash", "public", "testuser", time.Minute, time.Minute}, 200},
+	}
+	for _, tt := range tests {
+		// load configuration
+		cfg, err := config.LoadConfig("../../testenv/config.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		db, err := loadDatabase(cfg)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	// test get ipns records
-	// /v2/ipns/records
-	testRecorder = httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/v2/ipns/records", nil)
-	req.Header.Add("Authorization", authHeader)
-	api.r.ServeHTTP(testRecorder, req)
-	if testRecorder.Code != 200 {
-		t.Fatal("bad http status code from /v2/ipns/records")
-	}
+		// setup fake mock clients
+		fakeLens := &mocks.FakeLensV2Client{}
+		fakeOrch := &mocks.FakeServiceClient{}
+		fakeSigner := &mocks.FakeSignerClient{}
 
-	// test get ipns records
-	// /v2/ipns/records
-	// spoof a fake record as we arent using the queues in this test
-	var ipnsAPIResp ipnsAPIResponse
-	im := models.NewIPNSManager(db)
-	if _, err := im.CreateEntry("fakekey", "fakehash", "fakekeyname", "public", "testuser", time.Minute, time.Minute); err != nil {
-		t.Fatal(err)
+		api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if tt.wantStatus == 200 {
+			if _, err := models.NewIPNSManager(db).CreateEntry(
+				tt.args.keyID,
+				tt.args.hash,
+				tt.args.keyName,
+				tt.args.network,
+				tt.args.user,
+				tt.args.lifeTime,
+				tt.args.ttl,
+			); err != nil {
+				t.Fatal(err)
+			}
+		}
+		var intAPIResp interfaceAPIResponse
+		if err := sendRequest(
+			api, "GET", "/v2/ipns/records", tt.wantStatus, nil, nil, &intAPIResp,
+		); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if err := sendRequest(
-		api, "GET", "/v2/ipns/records", 200, nil, nil, &ipnsAPIResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if ipnsAPIResp.Code != 200 {
-		t.Fatal("bad api status code from /v2/ipns/private/publish/details")
-	}
-	if len(*ipnsAPIResp.Response) == 0 {
-		t.Fatal("no records discovered")
-	}
-
 }
-
 func Test_API_Routes_IPNS_Pin(t *testing.T) {
 
 	type args struct {
