@@ -1,7 +1,6 @@
 package v2
 
 import (
-	"context"
 	"errors"
 	"net/http"
 
@@ -55,11 +54,13 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 		return
 	}
 
-	tags, _ := c.GetPostFormArray("tags")
-	categories, _ := c.GetPostFormArray("categories")
-	mimeTypes, _ := c.GetPostFormArray("mime_types")
-	hashes, _ := c.GetPostFormArray("hashes")
-	required, _ := c.GetPostFormArray("required")
+	var (
+		tags, _       = c.GetPostFormArray("tags")
+		categories, _ = c.GetPostFormArray("categories")
+		mimeTypes, _  = c.GetPostFormArray("mime_types")
+		hashes, _     = c.GetPostFormArray("hashes")
+		required, _   = c.GetPostFormArray("required")
+	)
 
 	resp, err := api.lens.Search(c, &pb.SearchReq{
 		Query: query,
