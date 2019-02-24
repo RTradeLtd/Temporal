@@ -32,7 +32,7 @@ func Test_API_Routes_Lens_Index(t *testing.T) {
 		{"Index-Request-Fail-Reindex", args{"ipld", lensTestHash, "true", 0, errors.New("bad")}, 400},
 		{"Index-Request-Fail-NoReindex", args{"ipld", lensTestHash, "false", 0, errors.New("bad")}, 400},
 		{"Index-Bad-Object-Type", args{"storj", lensTestHash, "false", 0, errors.New("bad")}, 400},
-		{"Index-Bad-Object-Identifier", args{"storj", "blah", "false", 0, errors.New("bad")}, 400},
+		{"Index-Bad-Object-Identifier", args{"ipld", "blah", "false", 0, errors.New("bad")}, 400},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
