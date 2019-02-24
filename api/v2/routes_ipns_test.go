@@ -19,6 +19,61 @@ var (
 	validResolveResult  = "/ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 )
 
+func Test_API_Routes_IPNS_Publish(t *testing.T) {
+	// load configuration
+	cfg, err := config.LoadConfig("../../testenv/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := loadDatabase(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// create a fake key for testing purposes
+	models.NewUserManager(db).AddIPFSKeyForUser("testuser", "mytestkey", "suchkeymuchwow")
+	type args struct {
+		hash     string
+		lifeTime string
+		ttl      string
+		key      string
+		resolve  string
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+	}{
+		{"Fail-Does-Not-Own-Key", args{hash, "24h", "1h", "notarealkeythisuserowns", "true"}, 400},
+		{"Fail-Bad-Hash", args{"notavalidipfshash", "24h", "1h", "mytestkey", "true"}, 400},
+		{"Success", args{hash, "24h", "1h", "mytestkey", "true"}, 200},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// setup fake mock clients
+			fakeLens := &mocks.FakeLensV2Client{}
+			fakeOrch := &mocks.FakeServiceClient{}
+			fakeSigner := &mocks.FakeSignerClient{}
+
+			api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var apiResp apiResponse
+			urlValues := url.Values{}
+			urlValues.Add("hash", tt.args.hash)
+			urlValues.Add("life_time", tt.args.lifeTime)
+			urlValues.Add("ttl", tt.args.ttl)
+			urlValues.Add("key", tt.args.key)
+			urlValues.Add("resolve", tt.args.resolve)
+			if err := sendRequest(
+				api, "POST", "/v2/ipns/public/publish/details", tt.wantStatus, nil, urlValues, &apiResp,
+			); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
 func Test_API_Routes_IPNS(t *testing.T) {
 	// load configuration
 	cfg, err := config.LoadConfig("../../testenv/config.json")
@@ -51,55 +106,6 @@ func Test_API_Routes_IPNS(t *testing.T) {
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code from /v2/ipns/records")
-	}
-
-	// test ipns publishing (public) - does not own key
-	// /v2/ipns/public/publish/details
-	var apiResp apiResponse
-	urlValues := url.Values{}
-	urlValues.Add("hash", hash)
-	urlValues.Add("life_time", "24h")
-	urlValues.Add("ttl", "1h")
-	urlValues.Add("key", "mytestkeywhichthisuserdoesnotown")
-	urlValues.Add("resolve", "true")
-	if err := sendRequest(
-		api, "POST", "/v2/ipns/public/publish/details", 400, nil, urlValues, &apiResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-
-	// test ipns publishing (public) - bad hash
-	// /v2/ipns/public/publish/details
-	apiResp = apiResponse{}
-	urlValues = url.Values{}
-	urlValues.Add("hash", "notavalidipfshash")
-	urlValues.Add("life_time", "24h")
-	urlValues.Add("ttl", "1h")
-	urlValues.Add("key", "mytestkey")
-	urlValues.Add("resolve", "true")
-	if err := sendRequest(
-		api, "POST", "/v2/ipns/public/publish/details", 400, nil, urlValues, &apiResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-
-	// test ipns publishing (public)
-	// api/v2/ipns/public/publish/details
-	apiResp = apiResponse{}
-	urlValues = url.Values{}
-	urlValues.Add("hash", hash)
-	urlValues.Add("life_time", "24h")
-	urlValues.Add("ttl", "1h")
-	urlValues.Add("key", "mytestkey")
-	urlValues.Add("resolve", "true")
-	if err := sendRequest(
-		api, "POST", "/v2/ipns/public/publish/details", 200, nil, urlValues, &apiResp,
-	); err != nil {
-		t.Fatal(err)
-	}
-	// validate the response code
-	if apiResp.Code != 200 {
-		t.Fatal("bad api status code from /v2/ipns/public/publish/details")
 	}
 
 	// test get ipns records
