@@ -34,12 +34,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:345cf7ecad29e982752447f3a23827f4eb84bda1595cea7d2ce358fa0db0ee2c"
+  digest = "1:26bd7fc13dbe68c8f3cb985d6a365d990fef7a2bfefc6cc4aa631bc51b1fedab"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "8a4af7437b526a027348bdbc2530f93bf5efd424"
-  version = "v2.0.2"
+  revision = "4140b3d6ec5751c110f0660a52b1b3209b95ddd6"
+  version = "v2.0.3"
 
 [[projects]]
   digest = "1:8859d83d94d112382fbdd97fc04c2ce196ea044f271ffe8e170826b25131a4f0"
@@ -311,16 +311,16 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:ec9b294ee624e9b87e31a8fa39a2a7724f90ce7af2055a9248100883d9956922"
+  digest = "1:6a06217fc753e65aea71446b777393009ef6797dadc0086c4f75bd16590be04d"
   name = "github.com/grpc-ecosystem/grpc-gateway"
   packages = [
-    "internal",
     "runtime",
+    "runtime/internal",
     "utilities",
   ]
   pruneopts = "UT"
-  revision = "121c47c68b25f96e75a602260cf28159ea156b65"
+  revision = "92583770e3f01b09a0d3e9bdf64321d8bebd48f2"
+  version = "v1.4.1"
 
 [[projects]]
   digest = "1:43c609cba7aa615eaae5aa8f2ddba65dc1b2d3af7bc434f738238df8d3797ddb"
