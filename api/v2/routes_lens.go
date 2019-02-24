@@ -61,7 +61,7 @@ func (api *API) submitSearchRequest(c *gin.Context) {
 	hashes, _ := c.GetPostFormArray("hashes")
 	required, _ := c.GetPostFormArray("required")
 
-	resp, err := api.lens.Search(context.Background(), &pb.SearchReq{
+	resp, err := api.lens.Search(c, &pb.SearchReq{
 		Query: query,
 		Options: &pb.SearchReq_Options{
 			Tags:       tags,
