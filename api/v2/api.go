@@ -434,6 +434,10 @@ func (api *API) setupRoutes() error {
 			eth.POST("/request", api.RequestSignedPaymentMessage)
 			eth.POST("/confirm", api.ConfirmETHPayment)
 		}
+		stripe := payments.Group("/stripe")
+		{
+			stripe.POST("/charge", api.stripeCharge)
+		}
 		payments.GET("/status/:number", api.getPaymentStatus)
 	}
 
