@@ -34,12 +34,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:345cf7ecad29e982752447f3a23827f4eb84bda1595cea7d2ce358fa0db0ee2c"
+  digest = "1:26bd7fc13dbe68c8f3cb985d6a365d990fef7a2bfefc6cc4aa631bc51b1fedab"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "8a4af7437b526a027348bdbc2530f93bf5efd424"
-  version = "v2.0.2"
+  revision = "4140b3d6ec5751c110f0660a52b1b3209b95ddd6"
+  version = "v2.0.3"
 
 [[projects]]
   digest = "1:8859d83d94d112382fbdd97fc04c2ce196ea044f271ffe8e170826b25131a4f0"
@@ -242,7 +242,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:15973d1a0ea498ca7a781326a436ca7587e6435563b3ffebc4a4e7f6a0769a88"
+  digest = "1:ec76dac2607a90b91d7451e3420e4839b243d289e15cb471b9f80cb8d16e2909"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
@@ -251,7 +251,7 @@
     "render",
   ]
   pruneopts = "UT"
-  revision = "184661cfa2f5ad6000c9893a0ffba8da8c1bd2ec"
+  revision = "e6288e90eb313122410bf1335d502a062c1ae610"
 
 [[projects]]
   digest = "1:760b2447d30444b6c2da7f77b677921f095fe19e6ed423b2edc1cd47a8507789"
@@ -266,21 +266,17 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:489a99067cd08971bd9c1ee0055119ba8febc1429f9200ab0bec68d35e8c4833"
+  digest = "1:cbf31997868639533ea9234c2c8ee5802c0eeb807fcf608c29320c58c379a182"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
-    "protoc-gen-go/generator",
-    "protoc-gen-go/generator/internal/remap",
-    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
     "ptypes/struct",
     "ptypes/timestamp",
-    "ptypes/wrappers",
   ]
   pruneopts = "UT"
   revision = "c823c79ea1570fb5ff454033735a8e68575d1d0f"
@@ -863,20 +859,20 @@
   version = "v2.0.15"
 
 [[projects]]
-  digest = "1:0f96ec4151a24d7bfd4298fc13cc320a000e31b4e5431cf88e3ffc961db846fd"
+  digest = "1:2fa7b0155cd54479a755c629de26f888a918e13f8857a2c442205d825368e084"
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   pruneopts = "UT"
-  revision = "efa589957cd060542a26d2dd7832fd6a6c6c3ade"
-  version = "v0.1.0"
+  revision = "3a70a971f94a22f2fa562ffcc7a0eb45f5daf045"
+  version = "v0.1.1"
 
 [[projects]]
-  digest = "1:0981502f9816113c9c8c4ac301583841855c8cf4da8c72f696b3ebedf6d0e4e5"
+  digest = "1:b5cf82c3199c040b82e2bb3fbcbcf6771c2759f9c6b839621b0714c822167581"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
   pruneopts = "UT"
-  revision = "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
-  version = "v0.0.4"
+  revision = "a6dda38a851a575e6799957cdd53ffe0b3fdd90f"
+  version = "v0.0.5"
 
 [[projects]]
   digest = "1:6ff1026b8d873d074ddec82ad60bb0eb537dc013f456ef26b63d30beba2f99e7"
@@ -1057,11 +1053,23 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dbd2b63224b02f9c7fd0631edaf6588dfb05fc20608f548fb603ef096fa87474"
+  digest = "1:e27831bb7cb7f1bade2e9de0ff16f8e4762e9d1f0ece866d982d2cb0fe195a13"
   name = "github.com/streadway/amqp"
   packages = ["."]
   pruneopts = "UT"
-  revision = "884228600bc96c993ab12fb81ba78bf0c280e88a"
+  revision = "f16568b23ee61c7d911a5b9d306b8fe2092c33b7"
+
+[[projects]]
+  digest = "1:0c97294ac2107ace89b4b3220f1c2e7cc2b8e7344905a2a99f9466c9c1e409f5"
+  name = "github.com/stripe/stripe-go"
+  packages = [
+    ".",
+    "charge",
+    "form",
+  ]
+  pruneopts = "UT"
+  revision = "83cf936493aad5a877d17ec39d552bd238664f68"
+  version = "v57.1.0"
 
 [[projects]]
   digest = "1:4887e9e89c80299aa520d718239809fdd2a47a9aa394909b169959bfbc424ddf"
@@ -1233,7 +1241,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2b98b3cf89303123bc72c8caebbcf221ff2de97a307647db125ce1012e55bee9"
+  digest = "1:d10cad78f27e636f17c020c021b70b87d887305f4c9afe0518c6b63704178bbb"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -1248,7 +1256,7 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "a4c6cb3142f211c99e4bf4cd769535b29a9b616f"
+  revision = "ffb98f73852f696ea2bb21a617a5c4b3e067a439"
 
 [[projects]]
   branch = "master"
@@ -1271,7 +1279,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:01a52ac63a04071f99dd832a3eaa3cb4abcaebeef2f984f06f9f31c74aa03859"
+  digest = "1:bdec0cac19c2981f8962586869eab879a5abb7adde65f71715a40a66edcf37d9"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1279,7 +1287,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "ec7b60b042fd2c54ad5ceaac0c891bd88843f4a2"
+  revision = "cd391775e71e684db52b63df9affd58269495083"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1323,7 +1331,6 @@
   packages = [
     "googleapis/api/annotations",
     "googleapis/rpc/status",
-    "protobuf/field_mask",
   ]
   pruneopts = "UT"
   revision = "082222b4a5c572e33e82ee9162d1352c7cf38682"
@@ -1442,6 +1449,8 @@
     "github.com/sendgrid/sendgrid-go",
     "github.com/sendgrid/sendgrid-go/helpers/mail",
     "github.com/streadway/amqp",
+    "github.com/stripe/stripe-go",
+    "github.com/stripe/stripe-go/charge",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",
     "go.uber.org/zap/zaptest/observer",
