@@ -65,3 +65,4 @@
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
   "version": "1.0.11"
 }
+

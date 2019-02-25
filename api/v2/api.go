@@ -13,7 +13,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
-	pbLens "github.com/RTradeLtd/grpc/lens"
+	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas"
@@ -55,7 +55,7 @@ type API struct {
 	l           *zap.SugaredLogger
 	signer      pbSigner.SignerClient
 	orch        pbOrch.ServiceClient
-	lens        pbLens.IndexerAPIClient
+	lens        pbLens.LensV2Client
 	dc          *dash.Client
 	queues      queues
 	service     string
@@ -416,7 +416,6 @@ func (api *API) setupRoutes() error {
 	// lens search engine
 	lens := v2.Group("/lens")
 	{
-		// allow anyone to index
 		lens.POST("/index", api.submitIndexRequest)
 		// only allow registered users to search
 		lens.POST("/search", api.submitSearchRequest)

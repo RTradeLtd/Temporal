@@ -21,7 +21,7 @@ func TestEmailJWT(t *testing.T) {
 	}
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
@@ -89,7 +89,7 @@ func Test_GetIPFSEndPoint(t *testing.T) {
 	}
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
@@ -119,7 +119,7 @@ func Test_Ensure_Two_Year_Max(t *testing.T) {
 	}
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 

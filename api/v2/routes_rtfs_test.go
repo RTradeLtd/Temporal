@@ -28,7 +28,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
