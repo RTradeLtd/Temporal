@@ -5,7 +5,7 @@ import (
 	"github.com/RTradeLtd/kaas"
 	xss "github.com/dvwright/xss-mw"
 
-	pbLens "github.com/RTradeLtd/grpc/lens"
+	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 )
@@ -13,7 +13,7 @@ import (
 var (
 	xssMdlwr               xss.XssMw
 	dev                    = false
-	devTermsAndServiceURL  = "..."
+	devTermsAndServiceURL  = "https://gateway.temporal.cloud/ipns/docs.dev.ts.temporal.cloud"
 	prodTermsAndServiceURL = "..."
 	alreadyUploadedMessage = "it seems like you have uploaded content matching this hash already. To save your credits, no charge was placed and the call was gracefully aborted. Please contact support@rtradetechnologies.com if you believe this is an issue"
 )
@@ -26,7 +26,7 @@ type Options struct {
 
 // Clients is used to configure service clients we use
 type Clients struct {
-	Lens   pbLens.IndexerAPIClient
+	Lens   pbLens.LensV2Client
 	Orch   pbOrch.ServiceClient
 	Signer pbSigner.SignerClient
 }

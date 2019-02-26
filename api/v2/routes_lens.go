@@ -1,18 +1,15 @@
 package v2
 
 import (
-	"context"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/grpc/lens/request"
+	pb "github.com/RTradeLtd/grpc/lensv2"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
 
-// submitIndexRequest is used to submit an object to be indexed by Lens
 func (api *API) submitIndexRequest(c *gin.Context) {
 	// extract post forms
 	forms, missingField := api.extractPostForms(c, "object_type", "object_identifier")
@@ -20,6 +17,7 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 		FailWithMissingField(c, missingField)
 		return
 	}
+	var indexType pb.IndexReq_Type
 	// ensure the type being requested is supported
 	switch forms["object_type"] {
 	case "ipld":
@@ -28,59 +26,61 @@ func (api *API) submitIndexRequest(c *gin.Context) {
 			Fail(c, err)
 			return
 		}
+		indexType = pb.IndexReq_IPLD
 	default:
 		Fail(c, errors.New(eh.InvalidObjectTypeError))
 		return
 	}
-	// send the index request
-	resp, err := api.lens.Index(context.Background(), &request.Index{
-		Type:       forms["object_type"],
-		Identifier: forms["object_identifier"],
-		// allow for optional reindexing
-		Reindex: c.PostForm("reindex") == "yes",
+
+	resp, err := api.lens.Index(c, &pb.IndexReq{
+		Type: indexType,
+		Hash: forms["object_identifier"],
+		Options: &pb.IndexReq_Options{
+			Reindex: c.PostForm("reindex") == "true",
+		},
 	})
 	if err != nil {
 		api.LogError(c, err, eh.FailedToIndexError)(http.StatusBadRequest)
 		return
 	}
-	// return
-	Respond(c, http.StatusOK, gin.H{
-		"response": gin.H{
-			"lens_id":  resp.GetId(),
-			"keywords": resp.GetKeywords(),
-		},
-	})
+	Respond(c, http.StatusOK, gin.H{"response": resp.GetDoc()})
 }
 
-// submitSearchRequest is used to send a search request to lens
 func (api *API) submitSearchRequest(c *gin.Context) {
-	// extract key words to search for
-	keywords, exists := c.GetPostFormArray("keywords")
+	// query we will use to perform as the main search
+	query, exists := c.GetPostForm("query")
 	if !exists {
-		FailWithMissingField(c, "keywords")
+		FailWithMissingField(c, "query")
 		return
 	}
-	// for all keywords to lower-case
-	var keywordsLower []string
-	for _, word := range keywords {
-		keywordsLower = append(keywordsLower, strings.ToLower(word))
-	}
-	// send search query
-	resp, err := api.lens.Search(context.Background(), &request.Search{
-		Keywords: keywordsLower,
+
+	var (
+		tags, _       = c.GetPostFormArray("tags")
+		categories, _ = c.GetPostFormArray("categories")
+		mimeTypes, _  = c.GetPostFormArray("mime_types")
+		hashes, _     = c.GetPostFormArray("hashes")
+		required, _   = c.GetPostFormArray("required")
+	)
+
+	resp, err := api.lens.Search(c, &pb.SearchReq{
+		Query: query,
+		Options: &pb.SearchReq_Options{
+			Tags:       tags,
+			Categories: categories,
+			MimeTypes:  mimeTypes,
+			Hashes:     hashes,
+			Required:   required,
+		},
 	})
+
 	if err != nil {
 		api.LogError(c, err, eh.FailedToSearchError)(http.StatusBadRequest)
 		return
 	}
 	// check to ensure some objects were found, otherwise log a warning
-	if len(resp.GetObjects()) == 0 {
-		api.l.Warnf("no search results found for keywords %s", keywordsLower)
+	if len(resp.Results) == 0 {
 		Respond(c, http.StatusBadRequest, gin.H{"response": "no results found"})
 		return
 	}
-	// return
-	Respond(c, http.StatusOK, gin.H{
-		"response": resp.GetObjects(),
-	})
+	Respond(c, http.StatusOK, gin.H{"response": resp})
 }

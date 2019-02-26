@@ -3,7 +3,7 @@
 This document tracks changes to Temporal and its related projects for all `v2.x.x`
 releases. See our [versioning policy](/VERSIONING.md) for more details.
 
-## v2.0.5
+## v2.0.5 (unreleased)
 
 ### docker
 
@@ -19,6 +19,7 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 * prevent uploads of the same content on a per-account which would result in duplicated billing
   * instead, suggest that users extend their pin times
 * add api call to extend pin time
+* re-add Lens functionality targetting the v2 refactor [#314](https://github.com/RTradeLtd/Temporal/pull/314)
 
 ### queue
 
