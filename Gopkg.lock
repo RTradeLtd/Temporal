@@ -264,21 +264,17 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:489a99067cd08971bd9c1ee0055119ba8febc1429f9200ab0bec68d35e8c4833"
+  digest = "1:cbf31997868639533ea9234c2c8ee5802c0eeb807fcf608c29320c58c379a182"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
-    "protoc-gen-go/generator",
-    "protoc-gen-go/generator/internal/remap",
-    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
     "ptypes/struct",
     "ptypes/timestamp",
-    "ptypes/wrappers",
   ]
   pruneopts = "UT"
   revision = "c823c79ea1570fb5ff454033735a8e68575d1d0f"
@@ -1062,6 +1058,18 @@
   revision = "884228600bc96c993ab12fb81ba78bf0c280e88a"
 
 [[projects]]
+  digest = "1:0c97294ac2107ace89b4b3220f1c2e7cc2b8e7344905a2a99f9466c9c1e409f5"
+  name = "github.com/stripe/stripe-go"
+  packages = [
+    ".",
+    "charge",
+    "form",
+  ]
+  pruneopts = "UT"
+  revision = "83cf936493aad5a877d17ec39d552bd238664f68"
+  version = "v57.1.0"
+
+[[projects]]
   digest = "1:4887e9e89c80299aa520d718239809fdd2a47a9aa394909b169959bfbc424ddf"
   name = "github.com/ugorji/go"
   packages = ["codec"]
@@ -1316,12 +1324,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:79f8bb1b9d02fa61546fecfc467884a564c77c8791ff9c28dfe16b5f2c76d02f"
+  digest = "1:48cd63b152af9cc0010714d881a3d29a68c19a265fbb914d884dfde42fe9337a"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
     "googleapis/rpc/status",
-    "protobuf/field_mask",
   ]
   pruneopts = "UT"
   revision = "082222b4a5c572e33e82ee9162d1352c7cf38682"
@@ -1438,6 +1445,8 @@
     "github.com/sendgrid/sendgrid-go",
     "github.com/sendgrid/sendgrid-go/helpers/mail",
     "github.com/streadway/amqp",
+    "github.com/stripe/stripe-go",
+    "github.com/stripe/stripe-go/charge",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",
     "go.uber.org/zap/zaptest/observer",
