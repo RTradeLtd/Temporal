@@ -112,7 +112,7 @@ func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, u
 	return json.Unmarshal(bodyBytes, out)
 }
 
-func setupAPI(fakeLens *mocks.FakeIndexerAPIClient, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
+func setupAPI(fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
 	dev = true
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
@@ -166,7 +166,7 @@ func Test_API_Setup(t *testing.T) {
 	}
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
@@ -268,7 +268,7 @@ func Test_API_Routes_Misc(t *testing.T) {
 	}
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
@@ -320,7 +320,7 @@ func Test_Utils(t *testing.T) {
 		t.Fatal(err)
 	}
 	clients := Clients{
-		Lens:   &mocks.FakeIndexerAPIClient{},
+		Lens:   &mocks.FakeLensV2Client{},
 		Orch:   &mocks.FakeServiceClient{},
 		Signer: &mocks.FakeSignerClient{},
 	}
@@ -423,7 +423,7 @@ func Test_API_Initialize_Cluster_Failure(t *testing.T) {
 	cfg.IPFSCluster.APIConnection.Host = "10.255.255.255"
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 	clients := Clients{
@@ -450,7 +450,7 @@ func Test_API_Initialize_IPFS_Failure(t *testing.T) {
 	cfg.IPFS.APIConnection.Host = "notarealip"
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 	clients := Clients{
@@ -477,7 +477,7 @@ func Test_API_Initialize_Setup_Routes_Failure(t *testing.T) {
 	cfg.API.Connection.Limit = "notanumber"
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 	clients := Clients{
@@ -504,7 +504,7 @@ func Test_API_Initialize_Kaas_Failure(t *testing.T) {
 	cfg.Services.Krab.TLS.CertPath = "/root"
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 	clients := Clients{
@@ -529,7 +529,7 @@ func Test_API_Initialize_Queue_Failure(t *testing.T) {
 	cfg.RabbitMQ.URL = "notarealip"
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 	clients := Clients{
@@ -555,7 +555,7 @@ func Test_API_Initialize_Main_Network(t *testing.T) {
 	dev = false
 
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 	clients := Clients{
@@ -596,7 +596,7 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fakeLens := &mocks.FakeIndexerAPIClient{}
+			fakeLens := &mocks.FakeLensV2Client{}
 			fakeOrch := &mocks.FakeServiceClient{}
 			fakeSigner := &mocks.FakeSignerClient{}
 			clients := Clients{
@@ -633,7 +633,7 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 	clients := Clients{
@@ -704,7 +704,7 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 		t.Fatal(err)
 	}
 	// setup fake mock clients
-	fakeLens := &mocks.FakeIndexerAPIClient{}
+	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 	clients := Clients{

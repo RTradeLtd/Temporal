@@ -23,7 +23,7 @@ import (
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
-	pbLens "github.com/RTradeLtd/grpc/lens"
+	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas"
@@ -42,7 +42,7 @@ var (
 	ctx    context.Context
 	cancel context.CancelFunc
 	orch   pbOrch.ServiceClient
-	lens   pbLens.IndexerAPIClient
+	lens   pbLens.LensV2Client
 	signer pbSigner.SignerClient
 )
 

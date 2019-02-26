@@ -92,14 +92,12 @@
   revision = "d2072fe8bb4a46e42fe4f8097f8c015cac19b08c"
 
 [[projects]]
-  digest = "1:4934f5c9707bc29a7b6d2f6b4eb69d5a87badb445695a5bb43945a551601b79c"
+  digest = "1:9422433029ba2d21db1b22a06942f8ab952593106a7e99087101374e1843d372"
   name = "github.com/RTradeLtd/grpc"
   packages = [
     "dialer",
     "krab",
-    "lens",
-    "lens/request",
-    "lens/response",
+    "lensv2",
     "middleware",
     "nexus",
     "pay",
@@ -1326,7 +1324,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:48cd63b152af9cc0010714d881a3d29a68c19a265fbb914d884dfde42fe9337a"
+  digest = "1:79f8bb1b9d02fa61546fecfc467884a564c77c8791ff9c28dfe16b5f2c76d02f"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
@@ -1414,9 +1412,7 @@
     "github.com/RTradeLtd/gorm",
     "github.com/RTradeLtd/grpc/dialer",
     "github.com/RTradeLtd/grpc/krab",
-    "github.com/RTradeLtd/grpc/lens",
-    "github.com/RTradeLtd/grpc/lens/request",
-    "github.com/RTradeLtd/grpc/lens/response",
+    "github.com/RTradeLtd/grpc/lensv2",
     "github.com/RTradeLtd/grpc/nexus",
     "github.com/RTradeLtd/grpc/pay",
     "github.com/RTradeLtd/grpc/pay/request",
