@@ -337,7 +337,7 @@ func (api *API) stripeCharge(c *gin.Context) {
 	api.l.Infow("payment complete", "payment.method", "stripe", "user", username, "charge", ch)
 	// add credits to use
 	if _, err := api.um.AddCredits(username, valueInCentsFloat/100); err != nil {
-		api.LogError(c, err, "failed to grant credits")(http.StatusBadRequest)
+		api.LogError(c, err, "failed to grant credits")(http.StatusInternalServerError)
 		return
 	}
 	api.l.Infow("credits granted", "payment.method", "stripe", "credit.amount", valueInCentsFloat/100)
