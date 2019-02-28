@@ -314,13 +314,15 @@ func (api *API) stripeCharge(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	// set the secret key after input validation
+	stripe.Key = api.cfg.Stripe.SecretKey
+	// set the source for the charge
+	// in this case it is a tokenized version of the credit card
 	source, err := stripe.SourceParamsFor(forms["stripe_token"])
 	if err != nil {
 		Fail(c, err)
 		return
 	}
-	// set the secret key after validation
-	stripe.Key = api.cfg.Stripe.SecretKey
 	// initialize credit card charge parameters
 	ch, err := charge.New(&stripe.ChargeParams{
 		Amount:      stripe.Int64(valueInCentsInt),
