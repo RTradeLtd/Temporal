@@ -312,6 +312,7 @@ func (api *API) stripeCharge(c *gin.Context) {
 	valueInCentsFloat, err := strconv.ParseFloat(forms["value_in_cents"], 64)
 	if err != nil {
 		Fail(c, err)
+		return
 	}
 	source, err := stripe.SourceParamsFor(forms["stripe_token"])
 	if err != nil {
