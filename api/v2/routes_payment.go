@@ -312,6 +312,7 @@ func (api *API) stripeCharge(c *gin.Context) {
 	valueInCentsFloat, err := strconv.ParseFloat(forms["value_in_cents"], 64)
 	if err != nil {
 		Fail(c, err)
+		return
 	}
 	// set the secret key after validation
 	stripe.Key = api.cfg.Stripe.SecretKey
