@@ -1,0 +1,24 @@
+{
+  "author": "magik6k",
+  "bugs": {
+    "url": "https://github.com/gxed/cobra"
+  },
+  "gx": {
+    "dvcsimport": "github.com/spf13/cobra"
+  },
+  "gxDependencies": [
+    {
+      "author": "magik6k",
+      "hash": "Qma8M4msP44FFbK2gFuNraR1GHym4mqrpYBJtnq9a7HHZN",
+      "name": "pflag",
+      "version": "0.0.1"
+    }
+  ],
+  "gxVersion": "0.14.0",
+  "language": "go",
+  "license": "",
+  "name": "cobra",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.0.1"
+}
+
