@@ -1,0 +1,16 @@
+{
+  "author": "magik6k",
+  "bugs": {
+    "url": "github.com/gxed/pflag"
+  },
+  "gx": {
+    "dvcsimport": "github.com/spf13/pflag"
+  },
+  "gxVersion": "0.14.0",
+  "language": "go",
+  "license": "",
+  "name": "pflag",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.0.1"
+}
+
