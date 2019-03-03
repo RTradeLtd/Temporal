@@ -7,8 +7,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/stripe/stripe-go/charge"
+
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/gorm"
+	"github.com/stripe/stripe-go"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -288,6 +291,66 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 		PaymentForwardID: response.PaymentForwardID,
 	}
 	Respond(c, http.StatusOK, gin.H{"response": p})
+}
+
+func (api *API) stripeCharge(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	forms, missingField := api.extractPostForms(c, "stripe_token", "stripe_email", "value_in_cents")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	valueInCentsInt, err := strconv.ParseInt(forms["value_in_cents"], 10, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	valueInCentsFloat, err := strconv.ParseFloat(forms["value_in_cents"], 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// set the secret key after input validation
+	stripe.Key = api.cfg.Stripe.SecretKey
+	// set the source for the charge
+	// in this case it is a tokenized version of the credit card
+	source, err := stripe.SourceParamsFor(forms["stripe_token"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// initialize credit card charge parameters
+	ch, err := charge.New(&stripe.ChargeParams{
+		Amount:      stripe.Int64(valueInCentsInt),
+		Currency:    stripe.String(string(stripe.CurrencyUSD)),
+		Description: stripe.String("temporal credit purchase"),
+		// StatementDescriptor is what appears in their credit card billing report
+		StatementDescriptor: stripe.String("credit purchase"),
+		// email the receipt goes to
+		ReceiptEmail: stripe.String(forms["stripe_email"]),
+		Source:       source,
+		Params: stripe.Params{
+			Metadata: map[string]string{
+				"order_type": "temporal.credits",
+			},
+		},
+	})
+	if err != nil {
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
+		return
+	}
+	api.l.Infow("payment complete", "payment.method", "stripe", "user", username, "charge", ch)
+	// add credits to use
+	if _, err := api.um.AddCredits(username, valueInCentsFloat/100); err != nil {
+		api.LogError(c, err, "failed to grant credits")(http.StatusInternalServerError)
+		return
+	}
+	api.l.Infow("credits granted", "payment.method", "stripe", "credit.amount", valueInCentsFloat/100)
+	Respond(c, http.StatusOK, gin.H{"response": "stripe credit purchase successful"})
 }
 
 // GetPaymentStatus is used to retrieve whether or not a payment is confirmed
