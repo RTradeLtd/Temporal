@@ -26,6 +26,11 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 * Fix usage of krab in development environments [#313](https://github.com/RTradeLtd/Temporal/pull/313)
 * When publishing IPNS records, if retrieving key from priamry krab fails, attempt fallback before failing [#313](https://github.com/RTradeLtd/Temporal/pull/313)
 
+### dependencies
+
+* Update go-ipfs to 0.4.19 [#317](https://github.com/RTradeLtd/Temporal/pull/317)
+* Update travis to use, and build with go1.12 [#317](https://github.com/RTradeLtd/Temporal/pull/317)
+
 ## v2.0.4
 
 * relevant PRs:
