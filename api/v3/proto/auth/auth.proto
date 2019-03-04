@@ -1,0 +1,17 @@
+syntax = "proto3";
+package auth;
+
+import "google/api/annotations.proto";
+
+// TemporalAuth implements Temporal's authentication and account management APIs
+service TemporalAuth {
+  rpc Status(Message) returns (Message) {
+    option (google.api.http) = {
+      get: "/v3/auth/status"
+    };
+  };
+}
+
+message Message {
+  string message = 1;
+}

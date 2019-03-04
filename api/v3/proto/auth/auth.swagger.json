@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "v3.proto",
+    "title": "auth/auth.proto",
     "version": "version not set"
   },
   "schemes": [
@@ -15,26 +15,39 @@
     "application/json"
   ],
   "paths": {
-    "/v3/status": {
+    "/v3/auth/status": {
       "get": {
         "operationId": "Status",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/temporalv3Message"
+              "$ref": "#/definitions/authMessage"
             }
           }
         },
+        "parameters": [
+          {
+            "name": "message",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
-          "Temporal"
+          "TemporalAuth"
         ]
       }
     }
   },
   "definitions": {
-    "temporalv3Message": {
-      "type": "object"
+    "authMessage": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
     }
   }
 }

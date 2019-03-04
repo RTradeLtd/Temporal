@@ -4,8 +4,9 @@ import (
 	"context"
 	"net"
 
-	temporalv3 "github.com/RTradeLtd/Temporal/api/v3/proto"
 	"google.golang.org/grpc"
+
+	"github.com/RTradeLtd/Temporal/api/v3/proto/core"
 )
 
 // API is the core Temporal V3 API
@@ -25,7 +26,7 @@ func (a *API) Run(ctx context.Context, address string) error {
 
 	// initialize server
 	server := grpc.NewServer()
-	temporalv3.RegisterTemporalServer(server, a)
+	core.RegisterTemporalCoreServer(server, a)
 
 	// interrupt server gracefully if context is cancelled
 	go func() {
@@ -43,8 +44,8 @@ func (a *API) Run(ctx context.Context, address string) error {
 }
 
 // Status returns the Temporal API status
-func (a *API) Status(context.Context, *temporalv3.Message) (*temporalv3.Message, error) {
-	return &temporalv3.Message{
+func (a *API) Status(context.Context, *core.Message) (*core.Message, error) {
+	return &core.Message{
 		Message: "hello world",
 	}, nil
 }

@@ -1,0 +1,18 @@
+syntax = "proto3";
+package core;
+
+import "google/api/annotations.proto";
+
+// TemporalCore implements non-specific Temporal APIs such systems checks,
+// statistics, etc.
+service TemporalCore {
+  rpc Status(Message) returns (Message) {
+    option (google.api.http) = {
+      get: "/v3/core/status"
+    };
+  };
+}
+
+message Message {
+  string message = 1;
+}
