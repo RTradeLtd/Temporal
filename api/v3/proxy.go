@@ -10,18 +10,25 @@ import (
 	"github.com/RTradeLtd/Temporal/api/v3/proto/core"
 )
 
-// REST runs the RESTful reverse proxy for the Temporal V3 gRPC API
-func REST(serviceAddress string) error {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+// RESTGatewayOptions denotes options for the RESTful gRPC gateway
+type RESTGatewayOptions struct {
+	Address string
 
-	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err := core.RegisterTemporalCoreHandlerFromEndpoint(ctx, mux, serviceAddress, opts)
-	if err != nil {
+	DialAddress string
+	DialOptions []grpc.DialOption
+}
+
+// REST runs the RESTful reverse proxy for the Temporal V3 gRPC API
+func REST(ctx context.Context, opts RESTGatewayOptions) error {
+	var mux = runtime.NewServeMux()
+
+	if err := core.RegisterTemporalCoreHandlerFromEndpoint(
+		ctx,
+		mux,
+		opts.DialAddress,
+		opts.DialOptions); err != nil {
 		return err
 	}
 
-	return http.ListenAndServe(":8080", mux)
+	return http.ListenAndServe(opts.Address, mux)
 }
