@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/gorm"
@@ -545,7 +546,11 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("no address provided")
 						os.Exit(1)
 					}
-					if err := v3.REST(os.Args[3]); err != nil {
+					if err := v3.REST(context.Background(), v3.RESTGatewayOptions{
+						Address:     ":8080",
+						DialAddress: os.Args[3],
+						DialOptions: []grpc.DialOption{grpc.WithInsecure()},
+					}); err != nil {
 						fmt.Println("error occurred during proxy initialization", err)
 						os.Exit(1)
 					}
@@ -558,7 +563,19 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("no address provided")
 						os.Exit(1)
 					}
-					s := v3.New()
+					l, err := log.NewLogger("", *devMode)
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+					}
+					s := v3.New(
+						l.Named("v3"),
+
+						// TODO
+						&v3.CoreService{},
+						&v3.AuthService{},
+						&v3.StoreService{},
+					)
 					if err := s.Run(context.Background(), os.Args[3]); err != nil {
 						fmt.Println("error starting v3 API server", err)
 						os.Exit(1)
