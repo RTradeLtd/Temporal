@@ -42,20 +42,24 @@ func New(
 func (v *V3) Run(ctx context.Context, address string) error {
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
+		v.l.Errorw("failed to listen on given address", "address", address)
 		return err
 	}
 
 	// initialize server
+	v.l.Debug("registering services")
 	var server = grpc.NewServer()
 	core.RegisterTemporalCoreServer(server, v.core)
 	auth.RegisterTemporalAuthServer(server, v.auth)
 	store.RegisterTemporalStoreServer(server, v.store)
+	v.l.Debug("services registered")
 
 	// interrupt server gracefully if context is cancelled
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
+				v.l.Info("shutting down server")
 				server.GracefulStop()
 				return
 			}
@@ -63,5 +67,6 @@ func (v *V3) Run(ctx context.Context, address string) error {
 	}()
 
 	// spin up server
+	v.l.Info("spinning up server")
 	return server.Serve(listener)
 }
