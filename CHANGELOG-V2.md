@@ -14,12 +14,9 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 ### api/v2
 
 * Allow uploading directories, mainly to assist with adding websites to IPFS [#311](https://github.com/RTradeLtd/Temporal/pull/311)
-* limit free accounts to 1 month pin times
-* limit non-free accounts to 2 year pin times
-* prevent uploads of the same content on a per-account which would result in duplicated billing
-  * instead, suggest that users extend their pin times
-* add api call to extend pin time
 * re-add Lens functionality targetting the v2 refactor [#314](https://github.com/RTradeLtd/Temporal/pull/314)
+* fix jwt logging from repeatedly appending the failed user to the included fields [#318](https://github.com/RTradeLtd/Temporal/pull/318)
+* add production terms and service [#318](https://github.com/RTradeLtd/Temporal/pull/318)
 
 ### queue
 
