@@ -34,12 +34,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:26bd7fc13dbe68c8f3cb985d6a365d990fef7a2bfefc6cc4aa631bc51b1fedab"
+  branch = "api/cors"
+  digest = "1:e8e74e2a66d69ca9afc4a74038a42d69be546d588154c3177b260550b8edcc31"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "4140b3d6ec5751c110f0660a52b1b3209b95ddd6"
-  version = "v2.0.3"
+  revision = "c3f48ca1b48fb2f4702f470407b0c385c3c94058"
 
 [[projects]]
   digest = "1:8859d83d94d112382fbdd97fc04c2ce196ea044f271ffe8e170826b25131a4f0"

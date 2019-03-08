@@ -44,4 +44,8 @@ func (t *TemporalConfig) setDefaults() {
 	if t.LogDir == "" {
 		t.LogDir = "/var/log/temporal/"
 	}
+	if len(t.API.Connection.CORS.AllowedOrigin) == 0 {
+		origins := []string{"temporal.cloud", "backup.temporal.cloud"}
+		t.API.Connection.CORS.AllowedOrigin = origins
+	}
 }
