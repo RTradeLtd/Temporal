@@ -176,14 +176,7 @@ func (api *API) addFile(c *gin.Context) {
 	api.l.Debug("user", username, "file_size_in_gb", fileSizeInGB)
 	// validate if they can upload an object of this size
 	if err := api.usage.CanUpload(username, fileSizeInGB); err != nil {
-		usages, err := api.usage.FindByUserName(username)
-		if err != nil {
-			api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
-			return
-		}
-		api.LogError(c, err,
-			api.formatUploadErrorMessage(fileHandler.Filename, usages.CurrentDataUsedBytes, usages.MonthlyDataLimitBytes),
-		)
+		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		return
 	}
 	// calculate code of upload
