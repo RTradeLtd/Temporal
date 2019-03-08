@@ -70,7 +70,6 @@
   revision = "7b01a644a63680b90de22bacfb11d832e944eaab"
 
 [[projects]]
-  branch = "master"
   digest = "1:c15c01dd989ccdcb924df08942887d46d70e75fe23639cd88e1730ec2f118827"
   name = "github.com/RTradeLtd/go-ipfs-api"
   packages = [
@@ -79,6 +78,7 @@
   ]
   pruneopts = "UT"
   revision = "211c01748c9ec9d7ab966f6694bbd2ef382fed55"
+  version = "v2.0.9"
 
 [[projects]]
   branch = "versioned"
@@ -110,15 +110,15 @@
 
 [[projects]]
   branch = "fix/deps"
-  digest = "1:057079b433babc5361e4f17188fc1d83547365a94023b104753d800d1d9786ed"
+  digest = "1:f34e4596e1ec3397c99cce6ce4d85cb8f8cacbd4c8c3c2ff6388f580576b9c5f"
   name = "github.com/RTradeLtd/kaas"
   packages = ["."]
   pruneopts = "UT"
-  revision = "99a0995076452ccc575388def570d0c61ff1611c"
+  revision = "1d467043e677f5d4e81be9b525ad747b0d3e2443"
 
 [[projects]]
   branch = "fix/deps"
-  digest = "1:8f275bda0b0c50d093969d3db992da5a795458d30e6b28ebaea07ec0e2a1dccd"
+  digest = "1:ad0253af403df2b464116e6f357b96fae0d404bc95818b8e5218b75db2577a8b"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
     ".",
@@ -126,7 +126,7 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "a892b9f4789b35acbedc7cd45ccc27584ac4e31d"
+  revision = "0dd5b93f511f3f48b019d7c8bec801b7ecf37e83"
 
 [[projects]]
   digest = "1:a164e093eccfde4fb63dc94707f3570d112ff4549072a065a48813c37c0c76a9"
@@ -177,7 +177,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6d9d4fa11a1fae02d97ae5ca7850d4257e928cd89a0d9bea280d1dd126e05973"
+  digest = "1:02047c136c0ccff3a4c52eaacf4f626aba33df9ee4d665099dd63d18ecc0e1da"
   name = "github.com/dgraph-io/badger"
   packages = [
     ".",
@@ -188,7 +188,7 @@
     "y",
   ]
   pruneopts = "UT"
-  revision = "75e07ee98a40edd5eba538ca6325a63973444b5d"
+  revision = "deee8c7ae70bab412e4f10cfa068e0be61a8d0eb"
 
 [[projects]]
   branch = "master"
