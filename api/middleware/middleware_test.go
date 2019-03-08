@@ -11,7 +11,6 @@ import (
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
-	"github.com/RTradeLtd/gorm"
 )
 
 func TestRequestIDMiddleware(t *testing.T) {
@@ -45,7 +44,7 @@ func TestJwtMiddleware(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	jwt := JwtConfigGenerate(cfg.JWT.Key, cfg.JWT.Realm, db, logger)
+	jwt := JwtConfigGenerate(cfg.JWT.Key, cfg.JWT.Realm, db.DB, logger)
 	if reflect.TypeOf(jwt).String() != "*jwt.GinJWTMiddleware" {
 		t.Fatal("failed to reflect correct middleware type")
 	}
@@ -109,12 +108,8 @@ func TestSecMiddleware(t *testing.T) {
 	}
 }
 
-func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
-	return database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
+func loadDatabase(cfg *config.TemporalConfig) (*database.Manager, error) {
+	return database.New(cfg, database.Options{
 		SSLModeDisable: true,
 	})
 }

@@ -65,12 +65,12 @@
   revision = "d9f6b97f8db22dd1e090fd0bbbe98f09cc7dd0a8"
 
 [[projects]]
-  digest = "1:5e59d6e02abee7ab8ef7f396f5d681054fbfae02ff159fe3d1e1a01e6ed2b034"
+  digest = "1:cfecb1f62c703a0b4651b4c98c2b9c7645f2f062038208ad25060a77c9ae7e5d"
   name = "github.com/ipfs/go-ipfs-addr"
   packages = ["."]
   pruneopts = "UT"
-  revision = "563b741b4726c35ffb6cd18eb053dab346df2684"
-  version = "v0.1.25"
+  revision = "ac4881d4db36effbbeebf93d9172fcb20ed04c15"
+  version = "v0.0.1"
 
 [[projects]]
   digest = "1:43248b562ac2508990699768e9e0c3d8073c2d0081a5f2dbdc5efd727d9ed426"
@@ -209,6 +209,37 @@
   revision = "0457bb6b88fc1973573aaf6b5145d8d3ae972390"
 
 [[projects]]
+  digest = "1:3c1a69cdae3501bf75e76d0d86dc6f2b0a7421bc205c0cb7b96b19eed464a34d"
+  name = "go.uber.org/atomic"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "1ea20fb1cbb1cc08cbd0d913a96dead89aa18289"
+  version = "v1.3.2"
+
+[[projects]]
+  digest = "1:60bf2a5e347af463c42ed31a493d817f8a72f102543060ed992754e689805d1a"
+  name = "go.uber.org/multierr"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3c4937480c32f4c13a875a1829af76c98ca3d40a"
+  version = "v1.1.0"
+
+[[projects]]
+  digest = "1:c52caf7bd44f92e54627a31b85baf06a68333a196b3d8d241480a774733dcf8b"
+  name = "go.uber.org/zap"
+  packages = [
+    ".",
+    "buffer",
+    "internal/bufferpool",
+    "internal/color",
+    "internal/exit",
+    "zapcore",
+  ]
+  pruneopts = "UT"
+  revision = "ff33455a0e382e8a81d14dd7c922020b6b5e7982"
+  version = "v1.9.1"
+
+[[projects]]
   branch = "master"
   digest = "1:675124c7ad3a709f0399d7d37948d927ae0e26b8c11640c9f367dd50bbc9f8cb"
   name = "golang.org/x/crypto"
@@ -251,6 +282,7 @@
     "github.com/ipfs/go-ipfs-addr",
     "github.com/lib/pq",
     "github.com/multiformats/go-multiaddr",
+    "go.uber.org/zap",
     "golang.org/x/crypto/bcrypt",
   ]
   solver-name = "gps-cdcl"

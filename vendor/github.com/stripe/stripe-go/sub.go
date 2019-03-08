@@ -38,11 +38,13 @@ type SubscriptionTransferDataParams struct {
 type SubscriptionParams struct {
 	Params                      `form:"*"`
 	ApplicationFeePercent       *float64                             `form:"application_fee_percent"`
+	BackdateStartDate           *int64                               `form:"backdate_start_date"`
 	Billing                     *string                              `form:"billing"`
 	BillingCycleAnchor          *int64                               `form:"billing_cycle_anchor"`
 	BillingCycleAnchorNow       *bool                                `form:"-"` // See custom AppendTo
 	BillingCycleAnchorUnchanged *bool                                `form:"-"` // See custom AppendTo
 	BillingThresholds           *SubscriptionBillingThresholdsParams `form:"billing_thresholds"`
+	CancelAt                    *int64                               `form:"cancel_at"`
 	CancelAtPeriodEnd           *bool                                `form:"cancel_at_period_end"`
 	Card                        *CardParams                          `form:"card"`
 	Coupon                      *string                              `form:"coupon"`
@@ -109,13 +111,17 @@ type SubscriptionItemsParams struct {
 // SubscriptionListParams is the set of parameters that can be used when listing active subscriptions.
 // For more details see https://stripe.com/docs/api#list_subscriptions.
 type SubscriptionListParams struct {
-	ListParams   `form:"*"`
-	Billing      string            `form:"billing"`
-	Created      int64             `form:"created"`
-	CreatedRange *RangeQueryParams `form:"created"`
-	Customer     string            `form:"customer"`
-	Plan         string            `form:"plan"`
-	Status       string            `form:"status"`
+	ListParams              `form:"*"`
+	Billing                 string            `form:"billing"`
+	Created                 int64             `form:"created"`
+	CreatedRange            *RangeQueryParams `form:"created"`
+	CurrentPeriodEnd        *int64            `form:"current_period_end"`
+	CurrentPeriodEndRange   *RangeQueryParams `form:"current_period_end"`
+	CurrentPeriodStart      *int64            `form:"current_period_start"`
+	CurrentPeriodStartRange *RangeQueryParams `form:"current_period_start"`
+	Customer                string            `form:"customer"`
+	Plan                    string            `form:"plan"`
+	Status                  string            `form:"status"`
 }
 
 // SubscriptionTransferData represents the information for the transfer_data associated with a subscription.
@@ -130,6 +136,8 @@ type Subscription struct {
 	Billing               SubscriptionBilling            `json:"billing"`
 	BillingCycleAnchor    int64                          `json:"billing_cycle_anchor"`
 	BillingThresholds     *SubscriptionBillingThresholds `json:"billing_thresholds"`
+	CancelAt              int64                          `json:"cancel_at"`
+	CancelAtPeriodEnd     bool                           `json:"cancel_at_period_end"`
 	CanceledAt            int64                          `json:"canceled_at"`
 	Created               int64                          `json:"created"`
 	CurrentPeriodEnd      int64                          `json:"current_period_end"`
@@ -138,10 +146,10 @@ type Subscription struct {
 	DaysUntilDue          int64                          `json:"days_until_due"`
 	DefaultSource         *PaymentSource                 `json:"default_source"`
 	Discount              *Discount                      `json:"discount"`
-	CancelAtPeriodEnd     bool                           `json:"cancel_at_period_end"`
 	EndedAt               int64                          `json:"ended_at"`
 	ID                    string                         `json:"id"`
 	Items                 *SubscriptionItemList          `json:"items"`
+	LatestInvoice         *Invoice                       `json:"latest_invoice"`
 	Livemode              bool                           `json:"livemode"`
 	Metadata              map[string]string              `json:"metadata"`
 	Object                string                         `json:"object"`

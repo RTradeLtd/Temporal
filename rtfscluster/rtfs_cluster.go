@@ -50,7 +50,7 @@ func (cm *ClusterManager) GenClient() error {
 }
 
 // ListPeers is used to list the known cluster peers
-func (cm *ClusterManager) ListPeers(ctx context.Context) ([]api.ID, error) {
+func (cm *ClusterManager) ListPeers(ctx context.Context) ([]*api.ID, error) {
 	peers, err := cm.Client.Peers(ctx)
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (cm *ClusterManager) DecodeHashString(cidString string) (gocid.Cid, error) 
 
 // Pin is used to add a pin to the cluster
 func (cm *ClusterManager) Pin(ctx context.Context, cid gocid.Cid) error {
-	err := cm.Client.Pin(ctx, cid, -1, -1, cid.String())
+	err := cm.Client.Pin(ctx, cid, api.PinOptions{ReplicationFactorMax: -1, ReplicationFactorMin: -1})
 	if err != nil {
 		return err
 	}

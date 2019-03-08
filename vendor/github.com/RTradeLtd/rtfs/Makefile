@@ -3,7 +3,7 @@ all: build
 .PHONY: deps
 deps:
 	go get -u github.com/vburenin/ifacemaker
-	dep ensure
+	dep ensure -v $(DEPFLAGS)
 	git submodule update --init
 
 .PHONY: build

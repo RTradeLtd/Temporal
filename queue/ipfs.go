@@ -60,7 +60,7 @@ func (qm *Manager) ProcessIPFSKeyCreation(ctx context.Context, wg *sync.WaitGrou
 // ProccessIPFSPins is used to process IPFS pin requests
 func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
 	userManager := models.NewUserManager(qm.db)
-	networkManager := models.NewHostedIPFSNetworkManager(qm.db)
+	networkManager := models.NewHostedNetworkManager(qm.db)
 	uploadManager := models.NewUploadManager(qm.db)
 	logger, err := log.NewLogger(qm.cfg.LogDir+"cluster_publisher.log", false)
 	if err != nil {
@@ -98,7 +98,7 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 	}
 }
 
-func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *models.UserManager, nm *models.IPFSNetworkManager, upldm *models.UploadManager, qmCluster *Manager, ipfsManager *rtfs.IpfsManager) {
+func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *models.UserManager, nm *models.HostedNetworkManager, upldm *models.UploadManager, qmCluster *Manager, ipfsManager *rtfs.IpfsManager) {
 	defer wg.Done()
 	qm.l.Info("new pin request detected")
 	pin := &IPFSPin{}

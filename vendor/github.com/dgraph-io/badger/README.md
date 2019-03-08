@@ -1,24 +1,24 @@
-# BadgerDB [![GoDoc](https://godoc.org/github.com/dgraph-io/badger?status.svg)](https://godoc.org/github.com/dgraph-io/badger) [![Go Report Card](https://goreportcard.com/badge/github.com/dgraph-io/badger)](https://goreportcard.com/report/github.com/dgraph-io/badger) [![Build Status](https://teamcity.dgraph.io/guestAuth/app/rest/builds/buildType:(id:Badger_UnitTests)/statusIcon.svg)](https://teamcity.dgraph.io/viewLog.html?buildTypeId=Badger_UnitTests&buildId=lastFinished&guest=1) ![Appveyor](https://ci.appveyor.com/api/projects/status/github/dgraph-io/badger?branch=master&svg=true) [![Coverage Status](https://coveralls.io/repos/github/dgraph-io/badger/badge.svg?branch=master)](https://coveralls.io/github/dgraph-io/badger?branch=master)
+# BadgerDB [![GoDoc](https://godoc.org/github.com/dgraph-io/badger?status.svg)](https://godoc.org/github.com/dgraph-io/badger) [![Go Report Card](https://goreportcard.com/badge/github.com/dgraph-io/badger)](https://goreportcard.com/report/github.com/dgraph-io/badger) [![Sourcegraph](https://sourcegraph.com/github.com/dgraph-io/badger/-/badge.svg)](https://sourcegraph.com/github.com/dgraph-io/badger?badge) [![Build Status](https://teamcity.dgraph.io/guestAuth/app/rest/builds/buildType:(id:Badger_UnitTests)/statusIcon.svg)](https://teamcity.dgraph.io/viewLog.html?buildTypeId=Badger_UnitTests&buildId=lastFinished&guest=1) ![Appveyor](https://ci.appveyor.com/api/projects/status/github/dgraph-io/badger?branch=master&svg=true) [![Coverage Status](https://coveralls.io/repos/github/dgraph-io/badger/badge.svg?branch=master)](https://coveralls.io/github/dgraph-io/badger?branch=master)
 
 ![Badger mascot](images/diggy-shadow.png)
 
-BadgerDB is an embeddable, persistent, simple and fast key-value (KV) database
+BadgerDB is an embeddable, persistent and fast key-value (KV) database
 written in pure Go. It's meant to be a performant alternative to non-Go-based
 key-value stores like [RocksDB](https://github.com/facebook/rocksdb).
 
-## Project Status
-Badger v1.0 was released in Nov 2017. Check the [Changelog] for the full details.
+## Project Status [Oct 27, 2018]
+
+Badger is stable and is being used to serve data sets worth hundreds of
+terabytes. Badger supports concurrent ACID transactions with serializable
+snapshot isolation (SSI) guarantees. A Jepsen-style bank test runs nightly for
+8h, with `--race` flag and ensures maintainance of transactional guarantees.
+Badger has also been tested to work with filesystem level anomalies, to ensure
+persistence and consistency.
+
+Badger v1.0 was released in Nov 2017, with a Badger v2.0 release coming up in a
+few months. The [Changelog] is kept fairly up-to-date.
 
 [Changelog]:https://github.com/dgraph-io/badger/blob/master/CHANGELOG.md
-
-We introduced transactions in [v0.9.0] which involved a major API change. If you have a Badger
-datastore prior to that, please use [v0.8.1], but we strongly urge you to upgrade. Upgrading from
-both v0.8 and v0.9 will require you to [take backups](#database-backup) and restore using the new
-version.
-
-[v1.0.1]: //github.com/dgraph-io/badger/tree/v1.0.1
-[v0.8.1]: //github.com/dgraph-io/badger/tree/v0.8.1
-[v0.9.0]: //github.com/dgraph-io/badger/tree/v0.9.0
 
 ## Table of Contents
  * [Getting Started](#getting-started)
@@ -35,6 +35,7 @@ version.
     + [Iterating over keys](#iterating-over-keys)
       - [Prefix scans](#prefix-scans)
       - [Key-only iteration](#key-only-iteration)
+    + [Stream](#stream)
     + [Garbage Collection](#garbage-collection)
     + [Database backup](#database-backup)
     + [Memory usage](#memory-usage)
@@ -57,7 +58,7 @@ To start using Badger, install Go 1.8 or above and run `go get`:
 $ go get github.com/dgraph-io/badger/...
 ```
 
-This will retrieve the library and install the `badger_info` command line
+This will retrieve the library and install the `badger` command line
 utility into your `$GOBIN` path.
 
 
@@ -181,7 +182,7 @@ if err != nil {
 }
 
 // Commit the transaction and check for error.
-if err := txn.Commit(nil); err != nil {
+if err := txn.Commit(); err != nil {
     return err
 }
 ```
@@ -214,14 +215,35 @@ value, we can use the `Txn.Get()` method:
 ```go
 err := db.View(func(txn *badger.Txn) error {
   item, err := txn.Get([]byte("answer"))
-  if err != nil {
-    return err
-  }
-  val, err := item.Value()
-  if err != nil {
-    return err
-  }
-  fmt.Printf("The answer is: %s\n", val)
+  handle(err)
+
+  var valNot, valCopy []byte
+  err := item.Value(func(val []byte) error {
+    // This func with val would only be called if item.Value encounters no error.
+
+    // Accessing val here is valid.
+    fmt.Printf("The answer is: %s\n", val)
+
+    // Copying or parsing val is valid.
+    valCopy = append([]byte{}, val...)
+
+    // Assigning val slice to another variable is NOT OK.
+    valNot = val // Do not do this.
+    return nil
+  })
+  handle(err)
+
+  // DO NOT access val here. It is the most common cause of bugs.
+  fmt.Printf("NEVER do this. %s\n", valNot)
+
+  // You must copy it to use it outside item.Value(...).
+  fmt.Printf("The answer is: %s\n", valCopy)
+
+  // Alternatively, you could also use item.ValueCopy().
+  valCopy, err = item.ValueCopy(nil)
+  handle(err)
+  fmt.Printf("The answer is: %s\n", valCopy)
+
   return nil
 })
 ```
@@ -263,7 +285,7 @@ operation. All values are specified in byte arrays. For e.g., here is a merge
 function (`add`) which adds a `uint64` value to an existing `uint64` value.
 
 ```Go
-uint64ToBytes(i uint64) []byte {
+func uint64ToBytes(i uint64) []byte {
   var buf [8]byte
   binary.BigEndian.PutUint64(buf[:], i)
   return buf[:]
@@ -329,11 +351,13 @@ err := db.View(func(txn *badger.Txn) error {
   for it.Rewind(); it.Valid(); it.Next() {
     item := it.Item()
     k := item.Key()
-    v, err := item.Value()
+    err := item.Value(func(v []byte) error {
+      fmt.Printf("key=%s, value=%s\n", k, v)
+      return nil
+    })
     if err != nil {
       return err
     }
-    fmt.Printf("key=%s, value=%s\n", k, v)
   }
   return nil
 })
@@ -359,11 +383,13 @@ db.View(func(txn *badger.Txn) error {
   for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
     item := it.Item()
     k := item.Key()
-    v, err := item.Value()
+    err := item.Value(func(v []byte) error {
+      fmt.Printf("key=%s, value=%s\n", k, v)
+      return nil
+    })
     if err != nil {
       return err
     }
-    fmt.Printf("key=%s, value=%s\n", k, v)
   }
   return nil
 })
@@ -392,6 +418,63 @@ err := db.View(func(txn *badger.Txn) error {
 })
 ```
 
+### Stream
+Badger provides a Stream framework, which concurrently iterates over all or a
+portion of the DB, converting data into custom key-values, and streams it out
+serially to be sent over network, written to disk, or even written back to
+Badger. This is a lot faster way to iterate over Badger than using a single
+Iterator. Stream supports Badger in both managed and normal mode.
+
+Stream uses the natural boundaries created by SSTables within the LSM tree, to
+quickly generate key ranges. Each goroutine then picks a range and runs an
+iterator to iterate over it. Each iterator iterates over all versions of values
+and is created from the same transaction, thus working over a snapshot of the
+DB. Every time a new key is encountered, it calls `ChooseKey(item)`, followed
+by `KeyToList(key, itr)`. This allows a user to select or reject that key, and
+if selected, convert the value versions into custom key-values. The goroutine
+batches up 4MB worth of key-values, before sending it over to a channel.
+Another goroutine further batches up data from this channel using *smart
+batching* algorithm and calls `Send` serially.
+
+This framework is designed for high throughput key-value iteration, spreading
+the work of iteration across many goroutines. `DB.Backup` uses this framework to
+provide full and incremental backups quickly.  Dgraph is a heavy user of this
+framework.  In fact, this framework was developed and used within Dgraph, before
+getting ported over to Badger.
+
+```go
+stream := db.NewStream()
+// db.NewStreamAt(readTs) for managed mode.
+
+// -- Optional settings
+stream.NumGo = 16                     // Set number of goroutines to use for iteration.
+stream.Prefix = []byte("some-prefix") // Leave nil for iteration over the whole DB.
+stream.LogPrefix = "Badger.Streaming" // For identifying stream logs. Outputs to Logger.
+
+// ChooseKey is called concurrently for every key. If left nil, assumes true by default.
+stream.ChooseKey = func(item *badger.Item) bool {
+  return bytes.HasSuffix(item.Key(), []byte("er"))
+}
+
+// KeyToList is called concurrently for chosen keys. This can be used to convert
+// Badger data into custom key-values. If nil, uses stream.ToList, a default
+// implementation, which picks all valid key-values.
+stream.KeyToList = nil
+
+// -- End of optional settings.
+
+// Send is called serially, while Stream.Orchestrate is running.
+stream.Send = func(list *pb.KVList) error {
+  return proto.MarshalText(w, list) // Write to w.
+}
+
+// Run the stream
+if err := stream.Orchestrate(context.Background()); err != nil {
+  return err
+}
+// Done.
+```
+
 ### Garbage Collection
 Badger values need to be garbage collected, because of two reasons:
 
@@ -404,30 +487,31 @@ are stored with different versions. These could accumulate, and take up unneeded
 time these older versions are needed.
 
 Badger relies on the client to perform garbage collection at a time of their choosing. It provides
-the following methods, which can be invoked at an appropriate time:
+the following method, which can be invoked at an appropriate time:
 
-* `DB.PurgeOlderVersions()`: Is no longer needed since v1.5.0. Badger's LSM tree automatically discards older/invalid versions of keys.
 * `DB.RunValueLogGC()`: This method is designed to do garbage collection while
   Badger is online. Along with randomly picking a file, it uses statistics generated by the
   LSM-tree compactions to pick files that are likely to lead to maximum space
-  reclamation.
+  reclamation. It is recommended to be called during periods of low activity in
+  your system, or periodically. One call would only result in removal of at max
+  one log file. As an optimization, you could also immediately re-run it whenever
+  it returns nil error (indicating a successful value log GC), as shown below.
 
-It is recommended that this method be called during periods of low activity in
-your system, or periodically. One call would only result in removal of at max
-one log file. As an optimization, you could also immediately re-run it whenever
-it returns nil error (indicating a successful value log GC).
+	```go
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for range ticker.C {
+	again:
+		err := db.RunValueLogGC(0.7)
+		if err == nil {
+			goto again
+		}
+	}
+	```
 
-```go
-ticker := time.NewTicker(5 * time.Minute)
-defer ticker.Stop()
-for range ticker.C {
-again:
-  err := db.RunValueLogGC(0.7)
-  if err == nil {
-    goto again
-  }
-}
-```
+* `DB.PurgeOlderVersions()`: This method is **DEPRECATED** since v1.5.0. Now, Badger's LSM tree automatically discards older/invalid versions of keys.
+
+**Note: The RunValueLogGC method would not garbage collect the latest value log.**
 
 ### Database backup
 There are two public API methods `DB.Backup()` and `DB.Load()` which can be
@@ -456,6 +540,22 @@ command above to upgrade your database to work with the latest version.
 
 ```
 badger_backup --dir <path/to/badgerdb> --backup-file badger.bak
+```
+
+We recommend all users to use the `Backup` and `Restore` APIs and tools. However,
+Badger is also rsync-friendly because all files are immutable, barring the
+latest value log which is append-only. So, rsync can be used as rudimentary way
+to perform a backup. In the following script, we repeat rsync to ensure that the
+LSM tree remains consistent with the MANIFEST file while doing a full backup.
+
+```
+#!/bin/bash
+set -o history
+set -o histexpand
+# Makes a complete copy of a Badger database directory.
+# Repeat rsync if the MANIFEST and SSTables are updated.
+rsync -avz --delete db/ dst
+while !! | grep -q "(MANIFEST\|\.sst)$"; do :; done
 ```
 
 ### Memory usage
@@ -514,18 +614,19 @@ Values in SSD-conscious Storage][wisckey]_.
 [wisckey]: https://www.usenix.org/system/files/conference/fast16/fast16-papers-lu.pdf
 
 ### Comparisons
-| Feature             | Badger                                       | RocksDB                       | BoltDB    |
-| -------             | ------                                       | -------                       | ------    |
-| Design              | LSM tree with value log                      | LSM tree only                 | B+ tree   |
-| High Read throughput | Yes                                          | No                           | Yes        |
-| High Write throughput | Yes                                          | Yes                           | No        |
-| Designed for SSDs   | Yes (with latest research <sup>1</sup>)      | Not specifically <sup>2</sup> | No        |
-| Embeddable          | Yes                                          | Yes                           | Yes       |
-| Sorted KV access    | Yes                                          | Yes                           | Yes       |
-| Pure Go (no Cgo)    | Yes                                          | No                            | Yes       |
-| Transactions        | Yes, ACID, concurrent with SSI<sup>3</sup> | Yes (but non-ACID)            | Yes, ACID |
-| Snapshots           | Yes                                           | Yes                           | Yes       |
-| TTL support         | Yes                                           | Yes                           | No       |
+| Feature                        | Badger                                     | RocksDB                       | BoltDB    |
+| -------                        | ------                                     | -------                       | ------    |
+| Design                         | LSM tree with value log                    | LSM tree only                 | B+ tree   |
+| High Read throughput           | Yes                                        | No                            | Yes       |
+| High Write throughput          | Yes                                        | Yes                           | No        |
+| Designed for SSDs              | Yes (with latest research <sup>1</sup>)    | Not specifically <sup>2</sup> | No        |
+| Embeddable                     | Yes                                        | Yes                           | Yes       |
+| Sorted KV access               | Yes                                        | Yes                           | Yes       |
+| Pure Go (no Cgo)               | Yes                                        | No                            | Yes       |
+| Transactions                   | Yes, ACID, concurrent with SSI<sup>3</sup> | Yes (but non-ACID)            | Yes, ACID |
+| Snapshots                      | Yes                                        | Yes                           | Yes       |
+| TTL support                    | Yes                                        | Yes                           | No        |
+| 3D access (key-value-version)  | Yes<sup>4</sup>                            | No                            | No        |
 
 <sup>1</sup> The [WISCKEY paper][wisckey] (on which Badger is based) saw big
 wins with separating values from keys, significantly reducing the write
@@ -535,6 +636,9 @@ amplification compared to a typical LSM tree.
 As such RocksDB's design isn't aimed at SSDs.
 
 <sup>3</sup> SSI: Serializable Snapshot Isolation. For more details, see the blog post [Concurrent ACID Transactions in Badger](https://blog.dgraph.io/post/badger-txn/)
+
+<sup>4</sup> Badger provides direct access to value versions via its Iterator API.
+Users can also specify how many versions to keep per key via Options.
 
 ### Benchmarks
 We have run comprehensive benchmarks against RocksDB, Bolt and LMDB. The
@@ -549,17 +653,38 @@ Below is a list of known projects that use Badger:
 
 * [0-stor](https://github.com/zero-os/0-stor) - Single device object store.
 * [Dgraph](https://github.com/dgraph-io/dgraph) - Distributed graph database.
+* [Dispatch Protocol](https://github.com/dispatchlabs/disgo) - Blockchain protocol for distributed application data analytics.
 * [Sandglass](https://github.com/celrenheit/sandglass) - distributed, horizontally scalable, persistent, time sorted message queue.
 * [Usenet Express](https://usenetexpress.com/) - Serving over 300TB of data with Badger.
 * [go-ipfs](https://github.com/ipfs/go-ipfs) - Go client for the InterPlanetary File System (IPFS), a new hypermedia distribution protocol.
 * [gorush](https://github.com/appleboy/gorush) - A push notification server written in Go.
 * [emitter](https://github.com/emitter-io/emitter) - Scalable, low latency, distributed pub/sub broker with message storage, uses MQTT, gossip and badger.
 * [GarageMQ](https://github.com/valinurovam/garagemq) - AMQP server written in Go.
+* [RedixDB](https://alash3al.github.io/redix/) - A real-time persistent key-value store with the same redis protocol.
+* [BBVA](https://github.com/BBVA/raft-badger) - Raft backend implementation using BadgerDB for Hashicorp raft.
+* [Riot](https://github.com/go-ego/riot) - An open-source, distributed search engine.
+* [Fantom](https://github.com/Fantom-foundation/go-lachesis) - aBFT Consensus platform for distributed applications.
+* [decred](https://github.com/decred/dcrdata) - An open, progressive, and self-funding cryptocurrency with a system of community-based governance integrated into its blockchain.
+* [OpenNetSys](https://github.com/opennetsys/c3-go) - Create useful dApps in any software language.
+* [HoneyTrap](https://github.com/honeytrap/honeytrap) - An extensible and opensource system for running, monitoring and managing honeypots.
+* [Insolar](https://github.com/insolar/insolar) - Enterprise-ready blockchain platform.
+* [IoTeX](https://github.com/iotexproject/iotex-core) - The next generation of the decentralized network for IoT powered by scalability- and privacy-centric blockchains.
+* [go-sessions](https://github.com/kataras/go-sessions) - The sessions manager for Go net/http and fasthttp.
+* [Babble](https://github.com/mosaicnetworks/babble) - BFT Consensus platform for distributed applications.
+* [Tormenta](https://github.com/jpincas/tormenta) - Embedded object-persistence layer / simple JSON database for Go projects.
+* [BadgerHold](https://github.com/timshannon/badgerhold) - An embeddable NoSQL store for querying Go types built on Badger
+* [Goblero](https://github.com/didil/goblero) - Pure Go embedded persistent job queue backed by BadgerDB
+* [Surfline](https://www.surfline.com) - Serving global wave and weather forecast data with Badger.
 
 If you are using Badger in a project please send a pull request to add it to the list.
 
 ## Frequently Asked Questions
 - **My writes are getting stuck. Why?**
+
+**Update: With the new `Value(func(v []byte))` API, this deadlock can no longer
+happen.**
+
+The following is true for users on Badger v1.x.
 
 This can happen if a long running iteration with `Prefetch` is set to false, but
 a `Item::Value` call is made internally in the loop. That causes Badger to
@@ -583,51 +708,26 @@ There are multiple workarounds during iteration:
 
 Are you creating a new transaction for every single key update, and waiting for
 it to `Commit` fully before creating a new one? This will lead to very low
-throughput. To get best write performance, batch up multiple writes inside a
-transaction using single `DB.Update()` call. You could also have multiple such
-`DB.Update()` calls being made concurrently from multiple goroutines.
+throughput.
 
-The way to achieve the highest write throughput via Badger, is to do serial
-writes and use callbacks in `txn.Commit`, like so:
+We have created `WriteBatch` API which provides a way to batch up
+many updates into a single transaction and `Commit` that transaction using
+callbacks to avoid blocking. This amortizes the cost of a transaction really
+well, and provides the most efficient way to do bulk writes.
 
 ```go
-che := make(chan error, 1)
-storeErr := func(err error) {
-  if err == nil {
-    return
-  }
-  select {
-    case che <- err:
-    default:
-  }
-}
+wb := db.NewWriteBatch()
+defer wb.Cancel()
 
-getErr := func() error {
-  select {
-    case err := <-che:
-      return err
-    default:
-      return nil
-  }
+for i := 0; i < N; i++ {
+  err := wb.Set(key(i), value(i), 0) // Will create txns as needed.
+  handle(err)
 }
-
-var wg sync.WaitGroup
-for _, kv := range kvs {
-  wg.Add(1)
-  txn := db.NewTransaction(true)
-  handle(txn.Set(kv.Key, kv.Value))
-  handle(txn.Commit(func(err error) {
-    storeErr(err)
-    wg.Done()
-  }))
-}
-wg.Wait()
-return getErr()
+handle(wb.Flush()) // Wait for all txns to finish.
 ```
 
-In this code, we passed a callback function to `txn.Commit`, which can pick up
-and return the first error encountered, if any. Callbacks can be made to do more
-things, like retrying commits etc.
+Note that `WriteBatch` API does not allow any reads. For read-modify-write
+workloads, you should be using the `Transaction` API.
 
 - **I don't see any disk write. Why?**
 

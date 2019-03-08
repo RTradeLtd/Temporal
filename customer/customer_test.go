@@ -8,7 +8,6 @@ import (
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"
-	"github.com/RTradeLtd/gorm"
 	"github.com/RTradeLtd/rtfs"
 )
 
@@ -51,7 +50,7 @@ func Test_Customer_Empty_Object(t *testing.T) {
 	if resp != emptyObjHash {
 		t.Fatal("failed to get correct empty object hash")
 	}
-	manager := NewManager(models.NewUserManager(db), ipfs)
+	manager := NewManager(models.NewUserManager(db.DB), ipfs)
 	// defer updating the customer object hash
 	// to the default for easy future testing
 	defer func() {
@@ -128,12 +127,6 @@ func Test_Customer_Empty_Object(t *testing.T) {
 	}
 }
 
-func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
-	return database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
-		SSLModeDisable: true,
-	})
+func loadDatabase(cfg *config.TemporalConfig) (*database.Manager, error) {
+	return database.New(cfg, database.Options{SSLModeDisable: true})
 }

@@ -3,7 +3,7 @@
 # Used to install, and configure IPFS Cluster
 
 NODE="initial_peer"
-VERSION="v0.8.0"
+VERSION="v0.10.0"
 IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
 export IPFS_CLUSTER_PATH=/ipfs/ipfs-cluster
 

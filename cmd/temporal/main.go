@@ -98,13 +98,11 @@ func logPath(base, file string) (logPath string) {
 }
 
 func newDB(cfg config.TemporalConfig, noSSL bool) (*gorm.DB, error) {
-	return database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
-		SSLModeDisable: noSSL,
-	})
+	dbm, err := database.New(&cfg, database.Options{SSLModeDisable: noSSL})
+	if err != nil {
+		return nil, err
+	}
+	return dbm.DB, nil
 }
 
 func initClients(l *zap.SugaredLogger, cfg *config.TemporalConfig) (closers []func()) {
@@ -470,7 +468,7 @@ var commands = map[string]cmd.Cmd{
 		Args:        []string{"user", "pass", "email"},
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
 			fmt.Printf("creating user '%s' (%s)...\n", args["user"], args["email"])
-			d, err := database.Initialize(&cfg, database.Options{
+			d, err := database.New(&cfg, database.Options{
 				SSLModeDisable: *dbNoSSL,
 				RunMigrations:  *dbMigrate,
 			})
@@ -513,7 +511,7 @@ var commands = map[string]cmd.Cmd{
 				fmt.Println("dbAdmin flag not provided")
 				os.Exit(1)
 			}
-			d, err := database.Initialize(&cfg, database.Options{
+			d, err := database.New(&cfg, database.Options{
 				SSLModeDisable: *dbNoSSL,
 				RunMigrations:  *dbMigrate,
 			})
@@ -571,7 +569,7 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "run database migrations",
 		Description: "Runs our initial database migrations, creating missing tables, etc. Not affected by --db.migrate",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if _, err := database.Initialize(&cfg, database.Options{
+			if _, err := database.New(&cfg, database.Options{
 				SSLModeDisable: *dbNoSSL,
 				RunMigrations:  true,
 			}); err != nil {
