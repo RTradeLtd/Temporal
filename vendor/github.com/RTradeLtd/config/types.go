@@ -31,6 +31,9 @@ type API struct {
 			IP   string `json:"ip"`
 			Port string `json:"port"`
 		} `json:"prometheus"`
+		CORS struct {
+			AllowedOrigin []string `json:"allowed_origins"`
+		} `json:"cords"`
 		// define the maximum number of people allowed to connect to the API
 		Limit string `json:"limit"`
 	} `json:"connection"`
