@@ -6,11 +6,13 @@ import (
 )
 
 var (
-	allowedOrigins = []string{"https://temporal.cloud"}
+	// DefaultAllowedOrigins are the default allowed origins for the api, allowing for access
+	// via both of our internet uplinks when using the web interface.
+	DefaultAllowedOrigins = []string{"https://temporal.cloud", "https://backup.temporal.cloud"}
 )
 
 // CORSMiddleware is used to load our CORS handling logic
-func CORSMiddleware(devMode bool) gin.HandlerFunc {
+func CORSMiddleware(devMode bool, allowedOrigins []string) gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
 	if devMode {
 		corsConfig.AllowAllOrigins = true
