@@ -160,7 +160,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 	// upload content matching this hash before, and we don't want to charge them
 	// so we should gracefully abort further processing
 	if err == nil || upload != nil {
-		Respond(c, http.StatusOK, gin.H{"response": alreadyUploadedMessage})
+		Respond(c, http.StatusBadRequest, gin.H{"response": alreadyUploadedMessage})
 		return
 	}
 	// get size of object

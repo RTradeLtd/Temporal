@@ -53,9 +53,9 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
 	// by this conditional if statement passing, it means the user has
 	// upload content matching this hash before, and we don't want to charge them
-	// so we should gracefully abort further processing
+	// so we should abort further processing
 	if err == nil || upload != nil {
-		Respond(c, http.StatusOK, gin.H{"response": alreadyUploadedMessage})
+		Respond(c, http.StatusBadRequest, gin.H{"response": alreadyUploadedMessage})
 		return
 	}
 	// get object size
@@ -168,7 +168,7 @@ func (api *API) addFile(c *gin.Context) {
 	// upload content matching this hash before, and we don't want to charge them
 	// so we should gracefully abort further processing
 	if err == nil || upload != nil {
-		Respond(c, http.StatusOK, gin.H{"response": alreadyUploadedMessage})
+		Respond(c, http.StatusBadRequest, gin.H{"response": alreadyUploadedMessage})
 		return
 	}
 	// format size of file into gigabytes
