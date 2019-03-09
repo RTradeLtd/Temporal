@@ -14,8 +14,11 @@ type CoreService struct {
 }
 
 // Status returns the Temporal API status
-func (c *CoreService) Status(context.Context, *core.Message) (*core.Message, error) {
-	return &core.Message{
-		Message: "hello world",
-	}, nil
+func (c *CoreService) Status(ctx context.Context, req *core.Empty) (*core.ServiceStatus, error) {
+	return nil, nil
+}
+
+// Statistics returns statistics about this Temporal instance
+func (c *CoreService) Statistics(ctx context.Context, req *core.Empty) (*core.ServiceStatistics, error) {
+	return nil, nil
 }

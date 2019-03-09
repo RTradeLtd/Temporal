@@ -24,46 +24,124 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-type Message struct {
-	Message              string   `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+type Empty struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Message) Reset()         { *m = Message{} }
-func (m *Message) String() string { return proto.CompactTextString(m) }
-func (*Message) ProtoMessage()    {}
-func (*Message) Descriptor() ([]byte, []int) {
-	return fileDescriptor_core_99b5b52fe6918107, []int{0}
+func (m *Empty) Reset()         { *m = Empty{} }
+func (m *Empty) String() string { return proto.CompactTextString(m) }
+func (*Empty) ProtoMessage()    {}
+func (*Empty) Descriptor() ([]byte, []int) {
+	return fileDescriptor_core_6432b2faf2288bd2, []int{0}
 }
-func (m *Message) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Message.Unmarshal(m, b)
+func (m *Empty) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Empty.Unmarshal(m, b)
 }
-func (m *Message) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Message.Marshal(b, m, deterministic)
+func (m *Empty) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Empty.Marshal(b, m, deterministic)
 }
-func (dst *Message) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Message.Merge(dst, src)
+func (dst *Empty) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Empty.Merge(dst, src)
 }
-func (m *Message) XXX_Size() int {
-	return xxx_messageInfo_Message.Size(m)
+func (m *Empty) XXX_Size() int {
+	return xxx_messageInfo_Empty.Size(m)
 }
-func (m *Message) XXX_DiscardUnknown() {
-	xxx_messageInfo_Message.DiscardUnknown(m)
+func (m *Empty) XXX_DiscardUnknown() {
+	xxx_messageInfo_Empty.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Message proto.InternalMessageInfo
+var xxx_messageInfo_Empty proto.InternalMessageInfo
 
-func (m *Message) GetMessage() string {
+type ServiceStatus struct {
+	Version              string   `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	Message              string   `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ServiceStatus) Reset()         { *m = ServiceStatus{} }
+func (m *ServiceStatus) String() string { return proto.CompactTextString(m) }
+func (*ServiceStatus) ProtoMessage()    {}
+func (*ServiceStatus) Descriptor() ([]byte, []int) {
+	return fileDescriptor_core_6432b2faf2288bd2, []int{1}
+}
+func (m *ServiceStatus) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ServiceStatus.Unmarshal(m, b)
+}
+func (m *ServiceStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ServiceStatus.Marshal(b, m, deterministic)
+}
+func (dst *ServiceStatus) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ServiceStatus.Merge(dst, src)
+}
+func (m *ServiceStatus) XXX_Size() int {
+	return xxx_messageInfo_ServiceStatus.Size(m)
+}
+func (m *ServiceStatus) XXX_DiscardUnknown() {
+	xxx_messageInfo_ServiceStatus.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ServiceStatus proto.InternalMessageInfo
+
+func (m *ServiceStatus) GetVersion() string {
+	if m != nil {
+		return m.Version
+	}
+	return ""
+}
+
+func (m *ServiceStatus) GetMessage() string {
 	if m != nil {
 		return m.Message
 	}
 	return ""
 }
 
+type ServiceStatistics struct {
+	Metrics              []byte   `protobuf:"bytes,1,opt,name=metrics,proto3" json:"metrics,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ServiceStatistics) Reset()         { *m = ServiceStatistics{} }
+func (m *ServiceStatistics) String() string { return proto.CompactTextString(m) }
+func (*ServiceStatistics) ProtoMessage()    {}
+func (*ServiceStatistics) Descriptor() ([]byte, []int) {
+	return fileDescriptor_core_6432b2faf2288bd2, []int{2}
+}
+func (m *ServiceStatistics) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ServiceStatistics.Unmarshal(m, b)
+}
+func (m *ServiceStatistics) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ServiceStatistics.Marshal(b, m, deterministic)
+}
+func (dst *ServiceStatistics) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ServiceStatistics.Merge(dst, src)
+}
+func (m *ServiceStatistics) XXX_Size() int {
+	return xxx_messageInfo_ServiceStatistics.Size(m)
+}
+func (m *ServiceStatistics) XXX_DiscardUnknown() {
+	xxx_messageInfo_ServiceStatistics.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ServiceStatistics proto.InternalMessageInfo
+
+func (m *ServiceStatistics) GetMetrics() []byte {
+	if m != nil {
+		return m.Metrics
+	}
+	return nil
+}
+
 func init() {
-	proto.RegisterType((*Message)(nil), "core.Message")
+	proto.RegisterType((*Empty)(nil), "core.Empty")
+	proto.RegisterType((*ServiceStatus)(nil), "core.ServiceStatus")
+	proto.RegisterType((*ServiceStatistics)(nil), "core.ServiceStatistics")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -78,7 +156,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type TemporalCoreClient interface {
-	Status(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
+	Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ServiceStatus, error)
+	Statistics(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ServiceStatistics, error)
 }
 
 type temporalCoreClient struct {
@@ -89,9 +168,18 @@ func NewTemporalCoreClient(cc *grpc.ClientConn) TemporalCoreClient {
 	return &temporalCoreClient{cc}
 }
 
-func (c *temporalCoreClient) Status(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error) {
-	out := new(Message)
+func (c *temporalCoreClient) Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ServiceStatus, error) {
+	out := new(ServiceStatus)
 	err := c.cc.Invoke(ctx, "/core.TemporalCore/Status", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *temporalCoreClient) Statistics(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ServiceStatistics, error) {
+	out := new(ServiceStatistics)
+	err := c.cc.Invoke(ctx, "/core.TemporalCore/Statistics", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +188,8 @@ func (c *temporalCoreClient) Status(ctx context.Context, in *Message, opts ...gr
 
 // TemporalCoreServer is the server API for TemporalCore service.
 type TemporalCoreServer interface {
-	Status(context.Context, *Message) (*Message, error)
+	Status(context.Context, *Empty) (*ServiceStatus, error)
+	Statistics(context.Context, *Empty) (*ServiceStatistics, error)
 }
 
 func RegisterTemporalCoreServer(s *grpc.Server, srv TemporalCoreServer) {
@@ -108,7 +197,7 @@ func RegisterTemporalCoreServer(s *grpc.Server, srv TemporalCoreServer) {
 }
 
 func _TemporalCore_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Message)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -120,7 +209,25 @@ func _TemporalCore_Status_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/core.TemporalCore/Status",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TemporalCoreServer).Status(ctx, req.(*Message))
+		return srv.(TemporalCoreServer).Status(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TemporalCore_Statistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TemporalCoreServer).Statistics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/core.TemporalCore/Statistics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TemporalCoreServer).Statistics(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -133,23 +240,32 @@ var _TemporalCore_serviceDesc = grpc.ServiceDesc{
 			MethodName: "Status",
 			Handler:    _TemporalCore_Status_Handler,
 		},
+		{
+			MethodName: "Statistics",
+			Handler:    _TemporalCore_Statistics_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "core/core.proto",
 }
 
-func init() { proto.RegisterFile("core/core.proto", fileDescriptor_core_99b5b52fe6918107) }
+func init() { proto.RegisterFile("core/core.proto", fileDescriptor_core_6432b2faf2288bd2) }
 
-var fileDescriptor_core_99b5b52fe6918107 = []byte{
-	// 156 bytes of a gzipped FileDescriptorProto
+var fileDescriptor_core_6432b2faf2288bd2 = []byte{
+	// 239 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4f, 0xce, 0x2f, 0x4a,
 	0xd5, 0x07, 0x11, 0x7a, 0x05, 0x45, 0xf9, 0x25, 0xf9, 0x42, 0x2c, 0x20, 0xb6, 0x94, 0x4c, 0x7a,
 	0x7e, 0x7e, 0x7a, 0x4e, 0xaa, 0x7e, 0x62, 0x41, 0xa6, 0x7e, 0x62, 0x5e, 0x5e, 0x7e, 0x49, 0x62,
-	0x49, 0x66, 0x7e, 0x5e, 0x31, 0x44, 0x8d, 0x92, 0x32, 0x17, 0xbb, 0x6f, 0x6a, 0x71, 0x71, 0x62,
-	0x7a, 0xaa, 0x90, 0x04, 0x17, 0x7b, 0x2e, 0x84, 0x29, 0xc1, 0xa8, 0xc0, 0xa8, 0xc1, 0x19, 0x04,
-	0xe3, 0x1a, 0xf9, 0x73, 0xf1, 0x84, 0xa4, 0xe6, 0x16, 0xe4, 0x17, 0x25, 0xe6, 0x38, 0xe7, 0x17,
-	0xa5, 0x0a, 0xd9, 0x73, 0xb1, 0x05, 0x97, 0x24, 0x96, 0x94, 0x16, 0x0b, 0xf1, 0xea, 0x81, 0xed,
-	0x83, 0x1a, 0x21, 0x85, 0xca, 0x55, 0x12, 0x6f, 0xba, 0xfc, 0x64, 0x32, 0x93, 0xa0, 0x10, 0xbf,
-	0x7e, 0x99, 0x31, 0xd8, 0x61, 0xfa, 0xc5, 0x60, 0x6d, 0x49, 0x6c, 0x60, 0xcb, 0x8d, 0x01, 0x01,
-	0x00, 0x00, 0xff, 0xff, 0xa5, 0x49, 0xd6, 0xba, 0xb3, 0x00, 0x00, 0x00,
+	0x49, 0x66, 0x7e, 0x5e, 0x31, 0x44, 0x8d, 0x12, 0x3b, 0x17, 0xab, 0x6b, 0x6e, 0x41, 0x49, 0xa5,
+	0x92, 0x33, 0x17, 0x6f, 0x70, 0x6a, 0x51, 0x59, 0x66, 0x72, 0x6a, 0x70, 0x49, 0x62, 0x49, 0x69,
+	0xb1, 0x90, 0x04, 0x17, 0x7b, 0x59, 0x6a, 0x51, 0x71, 0x66, 0x7e, 0x9e, 0x04, 0xa3, 0x02, 0xa3,
+	0x06, 0x67, 0x10, 0x8c, 0x0b, 0x92, 0xc9, 0x4d, 0x2d, 0x2e, 0x4e, 0x4c, 0x4f, 0x95, 0x60, 0x82,
+	0xc8, 0x40, 0xb9, 0x4a, 0xba, 0x5c, 0x82, 0x48, 0x86, 0x64, 0x16, 0x97, 0x64, 0x26, 0x17, 0x43,
+	0x94, 0x97, 0x14, 0x65, 0x26, 0x17, 0x83, 0x0d, 0xe2, 0x09, 0x82, 0x71, 0x8d, 0x96, 0x30, 0x72,
+	0xf1, 0x84, 0xa4, 0xe6, 0x16, 0xe4, 0x17, 0x25, 0xe6, 0x38, 0xe7, 0x17, 0xa5, 0x0a, 0x39, 0x73,
+	0xb1, 0x41, 0x6d, 0xe7, 0xd6, 0x03, 0x7b, 0x04, 0xec, 0x36, 0x29, 0x61, 0x08, 0x07, 0xc5, 0x7d,
+	0x4a, 0xe2, 0x4d, 0x97, 0x9f, 0x4c, 0x66, 0x12, 0x14, 0xe2, 0xd7, 0x2f, 0x33, 0x06, 0xfb, 0x5a,
+	0xbf, 0x18, 0xa2, 0xd5, 0x9f, 0x8b, 0x0b, 0xc9, 0x76, 0x14, 0x83, 0xc4, 0x31, 0x0c, 0x82, 0xa8,
+	0x52, 0x92, 0x06, 0x1b, 0x26, 0x2a, 0x24, 0x8c, 0x62, 0x18, 0x44, 0x32, 0x89, 0x0d, 0x1c, 0x54,
+	0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0xdd, 0x43, 0xf7, 0xc6, 0x61, 0x01, 0x00, 0x00,
 }
