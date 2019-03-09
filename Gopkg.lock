@@ -50,7 +50,6 @@
   version = "v2.0.0"
 
 [[projects]]
-  branch = "fix/deps"
   digest = "1:89d7eafad3af2485b99fb3e55b35cc9a8d777577378bd99b800d5b4fb0226a24"
   name = "github.com/RTradeLtd/database"
   packages = [
@@ -59,7 +58,8 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "4a62bb9c120fdfb99f5234a103b2dfd35fad9561"
+  revision = "1a91ec49118473ad454387ff12409f225b5612c7"
+  version = "v2.1.0"
 
 [[projects]]
   branch = "master"
@@ -109,15 +109,14 @@
   version = "v2.0.0"
 
 [[projects]]
-  branch = "fix/deps"
-  digest = "1:f34e4596e1ec3397c99cce6ce4d85cb8f8cacbd4c8c3c2ff6388f580576b9c5f"
+  digest = "1:3ee4aeaabcea8f5971bff20c07e32fd465fed95e6087febc374da50a4820b43f"
   name = "github.com/RTradeLtd/kaas"
   packages = ["."]
   pruneopts = "UT"
-  revision = "1d467043e677f5d4e81be9b525ad747b0d3e2443"
+  revision = "eaaa0822c9ff0d40a2e341ccb3976d9dfe2a8921"
+  version = "v2.0.2"
 
 [[projects]]
-  branch = "fix/deps"
   digest = "1:ad0253af403df2b464116e6f357b96fae0d404bc95818b8e5218b75db2577a8b"
   name = "github.com/RTradeLtd/rtfs"
   packages = [
@@ -126,7 +125,8 @@
     "krab",
   ]
   pruneopts = "UT"
-  revision = "0dd5b93f511f3f48b019d7c8bec801b7ecf37e83"
+  revision = "34be30036d3333d61e0d0527e4137d03c907ab36"
+  version = "v2.0.2"
 
 [[projects]]
   digest = "1:a164e093eccfde4fb63dc94707f3570d112ff4549072a065a48813c37c0c76a9"
