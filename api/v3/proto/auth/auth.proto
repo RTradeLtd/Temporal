@@ -23,7 +23,7 @@ service TemporalAuth {
 
   // Account returns the account associated with an authenticated request.
   rpc Account(Empty) returns (User) {
-    option (google.api.http) = { post: "/v3/auth/account" };
+    option (google.api.http) = { get: "/v3/auth/account" };
   };
 
   // Update facilitates modification of the account associated with an
