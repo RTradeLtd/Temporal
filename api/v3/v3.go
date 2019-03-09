@@ -4,6 +4,8 @@ import (
 	"context"
 	"net"
 
+	"github.com/RTradeLtd/Temporal/api/v3/proto/ipfs"
+
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
@@ -17,6 +19,7 @@ type V3 struct {
 	core  core.TemporalCoreServer
 	auth  auth.TemporalAuthServer
 	store store.TemporalStoreServer
+	ipfs  ipfs.TemporalIPFSServer
 
 	l *zap.SugaredLogger
 }
@@ -28,11 +31,13 @@ func New(
 	coreService *CoreService,
 	authService *AuthService,
 	storeService *StoreService,
+	ipfsService *IPFSService,
 ) *V3 {
 	return &V3{
 		core:  coreService,
 		auth:  authService,
 		store: storeService,
+		ipfs:  ipfsService,
 
 		l: l,
 	}
@@ -52,6 +57,7 @@ func (v *V3) Run(ctx context.Context, address string) error {
 	core.RegisterTemporalCoreServer(server, v.core)
 	auth.RegisterTemporalAuthServer(server, v.auth)
 	store.RegisterTemporalStoreServer(server, v.store)
+	ipfs.RegisterTemporalIPFSServer(server, v.ipfs)
 	v.l.Debug("services registered")
 
 	// interrupt server gracefully if context is cancelled
