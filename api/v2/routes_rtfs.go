@@ -309,20 +309,13 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		Fail(c, errors.New("only zip files are supported"))
 		return
 	}
-	// copy the contents
-	file, err := fileHandler.Open()
+	// perform an initial scan in memory before processing anymore
+	fh, err := fileHandler.Open()
 	if err != nil {
 		Fail(c, err)
 		return
 	}
-	// read into memory
-	fileBytes, err := ioutil.ReadAll(file)
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	// scan contents for a virus before doing any additional processing
-	if err := api.clam.Scan(bytes.NewReader(fileBytes)); err != nil {
+	if err := api.clam.Scan(fh); err != nil {
 		Fail(c, err)
 		return
 	}
@@ -403,6 +396,7 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		os.Remove(destPathZip)
 		os.RemoveAll(destPathUnzip)
 		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
+		api.l.Error(err)
 		Fail(c, err)
 		return
 	}
