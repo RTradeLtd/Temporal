@@ -293,6 +293,11 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	// ensure the zip file is below limits
+	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
+		Fail(c, err)
+		return
+	}
 	// remove paths from file name
 	_, filename := filepath.Split(fileHandler.Filename)
 	fileNameSplit := strings.Split(filename, ".")
@@ -302,6 +307,23 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	}
 	if fileNameSplit[len(fileNameSplit)-1] != "zip" {
 		Fail(c, errors.New("only zip files are supported"))
+		return
+	}
+	// copy the contents
+	file, err := fileHandler.Open()
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// read into memory
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// scan contents for a virus before doing any additional processing
+	if err := api.clam.Scan(bytes.NewReader(fileBytes)); err != nil {
+		Fail(c, err)
 		return
 	}
 	randUtils := utils.GenerateRandomUtils()

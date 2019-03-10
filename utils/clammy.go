@@ -14,6 +14,9 @@ type Shell struct {
 
 // NewShell is used to instantiate our connection to a clamav daemon
 func NewShell(address string) (*Shell, error) {
+	if address == "" {
+		address = "127.0.0.1:3310"
+	}
 	c, err := clamd.NewClient("tcp", address)
 	if err != nil {
 		return nil, err

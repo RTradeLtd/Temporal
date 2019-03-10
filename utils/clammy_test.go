@@ -11,7 +11,6 @@ const (
 )
 
 func TestClam(t *testing.T) {
-	t.Skip()
 	s, err := NewShell(defaultURL)
 	if err != nil {
 		t.Fatal(err)
@@ -24,8 +23,8 @@ func TestClam(t *testing.T) {
 	} else if err.Error() != "virus found" {
 		t.Fatal("failed to get correct error message")
 	}
-	if err := s.Scan(strings.NewReader("HELLO" + eicar + "WORLD")); err == nil {
-		t.Fatal(err)
+	if err := s.Scan(strings.NewReader(eicar + "WORLD")); err == nil {
+		t.Fatal("error expected")
 	} else if err.Error() != "virus found" {
 		t.Fatal("failed to get correct error message")
 	}
