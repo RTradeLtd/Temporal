@@ -379,6 +379,7 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	if _, err := Unzip(destPathZip, destPathUnzip); err != nil {
 		// remove file if this fails
 		os.Remove(destPathZip)
+		os.RemoveAll(destPathUnzip)
 		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
 		Fail(c, err)
 		return
@@ -388,12 +389,14 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	if err != nil {
 		// remove file if this fails
 		os.Remove(destPathZip)
+		os.RemoveAll(destPathUnzip)
 		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		return
 	}
 	// cleanup unzipped file
 	if err := os.RemoveAll(destPathUnzip); err != nil {
+		os.Remove(destPathZip)
 		api.LogError(c, err, "failed to cleanup file(s)")(http.StatusBadRequest)
 		return
 	}
