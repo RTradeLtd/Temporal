@@ -363,6 +363,13 @@ func (api *API) setupRoutes() error {
 			return err
 		}
 	}
+	// ensure we have valid cors configuration
+	var allowedOrigins []string
+	if len(api.cfg.API.Connection.CORS.AllowedOrigin) == 0 {
+		allowedOrigins = middleware.DefaultAllowedOrigins
+	} else {
+		allowedOrigins = api.cfg.API.Connection.CORS.AllowedOrigin
+	}
 	// set up defaults
 	api.r.Use(
 		// allows for automatic xss removal
@@ -373,7 +380,7 @@ func (api *API) setupRoutes() error {
 		// security middleware
 		middleware.NewSecWare(dev),
 		// cors middleware
-		middleware.CORSMiddleware(dev),
+		middleware.CORSMiddleware(dev, allowedOrigins),
 		// request id middleware
 		middleware.RequestID(),
 		// stats middleware
