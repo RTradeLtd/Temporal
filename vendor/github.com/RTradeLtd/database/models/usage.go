@@ -370,10 +370,11 @@ func (bm *UsageManager) UpdateTier(username string, tier DataUsageTier) error {
 	}
 
 	return bm.DB.Model(b).UpdateColumns(map[string]interface{}{
-		"tier":                     b.Tier,
-		"keys_allowed":             b.KeysAllowed,
-		"pub_sub_messages_allowed": b.PubSubMessagesAllowed,
-		"ip_ns_records_allowed":    b.IPNSRecordsAllowed},
+		"tier":                      b.Tier,
+		"keys_allowed":              b.KeysAllowed,
+		"pub_sub_messages_allowed":  b.PubSubMessagesAllowed,
+		"ip_ns_records_allowed":     b.IPNSRecordsAllowed,
+		"monthly_data_limit_ bytes": b.MonthlyDataLimitBytes},
 	).Error
 }
 

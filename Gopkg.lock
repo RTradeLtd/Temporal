@@ -50,7 +50,8 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:89d7eafad3af2485b99fb3e55b35cc9a8d777577378bd99b800d5b4fb0226a24"
+  branch = "fix/upgrade"
+  digest = "1:ba5e488cd49a91a25dc8aa95282740608df7764f5acfa1fcfa0e000d5dbbd629"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -58,8 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "1a91ec49118473ad454387ff12409f225b5612c7"
-  version = "v2.1.0"
+  revision = "63ef3aa8a83240515db5ca1ce2cb56c984bbb19e"
 
 [[projects]]
   branch = "master"
