@@ -51,7 +51,7 @@
 
 [[projects]]
   branch = "fix/upgrade"
-  digest = "1:ba5e488cd49a91a25dc8aa95282740608df7764f5acfa1fcfa0e000d5dbbd629"
+  digest = "1:23160898269087a3b78d374257f52ea47b22b13ac1058136c9255347090c8507"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "63ef3aa8a83240515db5ca1ce2cb56c984bbb19e"
+  revision = "15647e14a9f654f5c052cae3124792a9027e0edb"
 
 [[projects]]
   branch = "master"
@@ -70,15 +70,15 @@
   revision = "7b01a644a63680b90de22bacfb11d832e944eaab"
 
 [[projects]]
-  digest = "1:c15c01dd989ccdcb924df08942887d46d70e75fe23639cd88e1730ec2f118827"
+  digest = "1:075f52a137745391295ef81250e0215d995c4a3d70b495822939abcb9d5a68e5"
   name = "github.com/RTradeLtd/go-ipfs-api"
   packages = [
     ".",
     "options",
   ]
   pruneopts = "UT"
-  revision = "211c01748c9ec9d7ab966f6694bbd2ef382fed55"
-  version = "v2.0.9"
+  revision = "8b7099fd5e21d719585215aec47c50c5dc87dfa2"
+  version = "v2.1.0"
 
 [[projects]]
   branch = "versioned"
@@ -248,7 +248,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:21fcf13997a95e43f13ca665f7765329331dbf8d2803fb59a265981bccd0505c"
+  digest = "1:f96373f831c5d4c9922c4efd348967b51ca5a1784955e063e3eb8c71095d65a2"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
@@ -257,7 +257,7 @@
     "render",
   ]
   pruneopts = "UT"
-  revision = "3dc247893e9772d0b95c47f4b32dad3d28feb488"
+  revision = "70a0aba3e423246be37462cfdaedd510c26c566e"
 
 [[projects]]
   digest = "1:760b2447d30444b6c2da7f77b677921f095fe19e6ed423b2edc1cd47a8507789"
@@ -760,14 +760,6 @@
   version = "v0.0.1"
 
 [[projects]]
-  digest = "1:fedcd985451c09e18d2893cf3b255d86a7237a493a9641851c5521f1e68ec49c"
-  name = "github.com/libp2p/go-libp2p-pubsub"
-  packages = ["pb"]
-  pruneopts = "UT"
-  revision = "25cbf38777e869acb77e8079c3c76d6b430e66ad"
-  version = "v0.0.1"
-
-[[projects]]
   digest = "1:b8a054611838e93f9be110353e3bffd85edfc91b58acccdd8a1c9b5840fbf5b8"
   name = "github.com/libp2p/go-libp2p-routing"
   packages = [
@@ -1259,7 +1251,7 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "8dd112bcdc25174059e45e07517d9fc663123347"
+  revision = "c2843e01d9a2bc60bb26ad24e09734fdc2d9ec58"
 
 [[projects]]
   branch = "master"
@@ -1278,11 +1270,11 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "16b79f2e4e95ea23b2bf9903c9809ff7b013ce85"
+  revision = "b774fd8d5c0f43f4a07fc5c3dd6cba5c4dc21e77"
 
 [[projects]]
   branch = "master"
-  digest = "1:8f4b18a504b32c590d1aa027055e2605621b833125d534b992d63ebad8190943"
+  digest = "1:d0154f5b7da3f826b2d83975efd93b53e200e448248e7f18f3cac88357a24546"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1290,7 +1282,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "584f3b12f43e1e55248c90e84804777009eed0a4"
+  revision = "980fc434d28e11f0a5c1ae102a263b8c56641011"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
