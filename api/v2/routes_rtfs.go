@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/c2h5oh/datasize"
@@ -277,6 +278,16 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	holdTime, exists := c.GetPostForm("hold_time")
+	if !exists {
+		FailWithMissingField(c, "hold_time")
+		return
+	}
+	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		Fail(c, err)
@@ -346,6 +357,16 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	// cleanup zip file
 	if err := os.Remove(destPathZip); err != nil {
 		api.LogError(c, err, "failed to cleanup file(s)")(http.StatusBadRequest)
+		return
+	}
+	qp := queue.IPFSClusterPin{
+		CID:              hash,
+		NetworkName:      "public",
+		UserName:         username,
+		HoldTimeInMonths: holdTimeInt,
+	}
+	if err := api.queues.cluster.PublishMessage(qp); err != nil {
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusInternalServerError)
 		return
 	}
 	api.l.Infow("directory upload processed", "user", username)
