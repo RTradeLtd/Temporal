@@ -145,6 +145,17 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:41774d56624c6883ccb296a3ae47481c18c476b9b3251f7d6b5503c3e7914aee"
+  name = "github.com/baruwa-enterprise/clamd"
+  packages = [
+    ".",
+    "protocol",
+  ]
+  pruneopts = "UT"
+  revision = "7a42f6693422551e17a38db1ecdf51a1711ecc5e"
+
+[[projects]]
+  branch = "master"
   digest = "1:093bf93a65962e8191e3e8cd8fc6c363f83d43caca9739c906531ba7210a9904"
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
@@ -1420,6 +1431,7 @@
     "github.com/RTradeLtd/rtfs/beam",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
+    "github.com/baruwa-enterprise/clamd",
     "github.com/c2h5oh/datasize",
     "github.com/dvwright/xss-mw",
     "github.com/gin-contrib/cors",
