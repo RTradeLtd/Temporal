@@ -17,8 +17,6 @@
 package badger
 
 import (
-	"encoding/hex"
-
 	"github.com/pkg/errors"
 )
 
@@ -29,7 +27,7 @@ var (
 
 	// ErrValueThreshold is returned when ValueThreshold is set to a value close to or greater than
 	// uint16.
-	ErrValueThreshold = errors.New("Invalid ValueThreshold, must be lower than uint16.")
+	ErrValueThreshold = errors.New("Invalid ValueThreshold, must be lower than uint16")
 
 	// ErrKeyNotFound is returned when key isn't found on a txn.Get.
 	ErrKeyNotFound = errors.New("Key not found")
@@ -49,6 +47,10 @@ var (
 
 	// ErrEmptyKey is returned if an empty key is passed on an update function.
 	ErrEmptyKey = errors.New("Key cannot be empty")
+
+	// ErrInvalidKey is returned if the key has a special !badger! prefix,
+	// reserved for internal usage.
+	ErrInvalidKey = errors.New("Key is using a reserved !badger! prefix")
 
 	// ErrRetry is returned when a log file containing the value is not found.
 	// This usually indicates that it may have been garbage collected, and the
@@ -95,22 +97,9 @@ var (
 
 	// ErrTruncateNeeded is returned when the value log gets corrupt, and requires truncation of
 	// corrupt data to allow Badger to run properly.
-	ErrTruncateNeeded = errors.New("Value log truncate required to run DB. This might result in data loss.")
+	ErrTruncateNeeded = errors.New("Value log truncate required to run DB. This might result in data loss")
 
 	// ErrBlockedWrites is returned if the user called DropAll. During the process of dropping all
 	// data from Badger, we stop accepting new writes, by returning this error.
-	ErrBlockedWrites = errors.New("Writes are blocked possibly due to DropAll")
+	ErrBlockedWrites = errors.New("Writes are blocked, possibly due to DropAll or Close")
 )
-
-// Key length can't be more than uint16, as determined by table::header.
-const maxKeySize = 1<<16 - 8 // 8 bytes are for storing timestamp
-
-func exceedsMaxKeySizeError(key []byte) error {
-	return errors.Errorf("Key with size %d exceeded %d limit. Key:\n%s",
-		len(key), maxKeySize, hex.Dump(key[:1<<10]))
-}
-
-func exceedsMaxValueSizeError(value []byte, maxValueSize int64) error {
-	return errors.Errorf("Value with size %d exceeded ValueLogFileSize (%d). Key:\n%s",
-		len(value), maxValueSize, hex.Dump(value[:1<<10]))
-}

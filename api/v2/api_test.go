@@ -748,11 +748,9 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 }
 
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
-	return database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
-		SSLModeDisable: true,
-	})
+	dbm, err := database.New(cfg, database.Options{SSLModeDisable: true})
+	if err != nil {
+		return nil, err
+	}
+	return dbm.DB, nil
 }

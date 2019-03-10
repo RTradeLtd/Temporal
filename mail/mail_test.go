@@ -23,13 +23,7 @@ func TestMail(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db, err := database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
-		SSLModeDisable: true,
-	})
+	dbm, err := database.New(cfg, database.Options{SSLModeDisable: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +32,7 @@ func TestMail(t *testing.T) {
 		cfg.Sendgrid.EmailAddress = "temporal@rtradetechnologies.com"
 		cfg.Sendgrid.EmailName = "Temporal TravisCI Test"
 	}
-	mm, err := mail.NewManager(cfg, db)
+	mm, err := mail.NewManager(cfg, dbm.DB)
 	if err != nil {
 		t.Fatal(err)
 	}

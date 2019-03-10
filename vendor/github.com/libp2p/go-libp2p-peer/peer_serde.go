@@ -2,6 +2,7 @@
 package peer
 
 import (
+	"encoding"
 	"encoding/json"
 )
 
@@ -11,8 +12,18 @@ import (
 var _ json.Marshaler = (*ID)(nil)
 var _ json.Unmarshaler = (*ID)(nil)
 
+var _ encoding.BinaryMarshaler = (*ID)(nil)
+var _ encoding.BinaryUnmarshaler = (*ID)(nil)
+var _ encoding.TextMarshaler = (*ID)(nil)
+var _ encoding.TextUnmarshaler = (*ID)(nil)
+
 func (id ID) Marshal() ([]byte, error) {
 	return []byte(id), nil
+}
+
+// BinaryMarshal returns the byte representation of the peer ID.
+func (id ID) MarshalBinary() ([]byte, error) {
+	return id.Marshal()
 }
 
 func (id ID) MarshalTo(data []byte) (n int, err error) {
@@ -22,6 +33,11 @@ func (id ID) MarshalTo(data []byte) (n int, err error) {
 func (id *ID) Unmarshal(data []byte) (err error) {
 	*id, err = IDFromBytes(data)
 	return err
+}
+
+// BinaryUnmarshal sets the ID from its binary representation.
+func (id *ID) UnmarshalBinary(data []byte) error {
+	return id.Unmarshal(data)
 }
 
 // Implements Gogo's proto.Sizer, but we omit the compile-time assertion to avoid introducing a hard
@@ -41,4 +57,19 @@ func (id *ID) UnmarshalJSON(data []byte) (err error) {
 	}
 	*id, err = IDB58Decode(v)
 	return err
+}
+
+// TextMarshal returns the text encoding of the ID.
+func (id ID) MarshalText() ([]byte, error) {
+	return []byte(IDB58Encode(id)), nil
+}
+
+// TextUnmarshal restores the ID from its text encoding.
+func (id *ID) UnmarshalText(data []byte) error {
+	pid, err := IDB58Decode(string(data))
+	if err != nil {
+		return err
+	}
+	*id = pid
+	return nil
 }

@@ -1,5 +1,24 @@
 # Changelog
 
+## 57.6.0 - 2019-03-06
+* [#808](https://github.com/stripe/stripe-go/pull/808) Add support for `backdate_start_date` and `cancel_at` on `Subscription`.
+
+## 57.5.0 - 2019-03-05
+* [#807](https://github.com/stripe/stripe-go/pull/807) Add support for `current_period_end` and `current_period_start` filters when listing `Invoice`.
+
+## 57.4.0 - 2019-03-04
+* [#798](https://github.com/stripe/stripe-go/pull/798) Properly support serialization of `Event`.
+
+## 57.3.0 - 2019-02-28
+* [#803](https://github.com/stripe/stripe-go/pull/803) Add support for `api_version` on `WebhookEndpoint`.
+
+## 57.2.0 - 2019-02-27
+* [#795](https://github.com/stripe/stripe-go/pull/795) Add support for `created` and `status_transitions` on `Invoice`
+* [#802](https://github.com/stripe/stripe-go/pull/802) Add support for `latest_invoice` on `Subscription`
+
+## 57.1.1 - 2019-02-26
+* [#800](https://github.com/stripe/stripe-go/pull/800) Add `UsageRecordSummaries` to the list of clients.
+
 ## 57.1.0 - 2019-02-22
 * [#796](https://github.com/stripe/stripe-go/pull/796) Correct `InvoiceItems` in `InvoiceParams` to be a slice of structs instead of a struct (this is technically a breaking change, but the previous implementation was non-functional, so we're releasing it as a minor version)
 

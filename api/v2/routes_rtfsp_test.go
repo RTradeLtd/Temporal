@@ -38,7 +38,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	nm := models.NewHostedIPFSNetworkManager(db)
+	nm := models.NewHostedNetworkManager(db)
 
 	// create private network - failure missing name
 	// /v2/ipfs/private/new

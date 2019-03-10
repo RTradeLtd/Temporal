@@ -2,7 +2,7 @@
 
 IPFS_PATH="/ipfs"
 PRIVATE_NODE="no"
-VERSION="v0.4.18"
+VERSION="v0.4.19"
 export IPFS_PATH="/ipfs"
 
 cd ~ || exit

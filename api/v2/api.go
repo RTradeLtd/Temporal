@@ -50,7 +50,7 @@ type API struct {
 	upm         *models.UploadManager
 	zm          *models.ZoneManager
 	rm          *models.RecordManager
-	nm          *models.IPFSNetworkManager
+	nm          *models.HostedNetworkManager
 	usage       *models.UsageManager
 	l           *zap.SugaredLogger
 	signer      pbSigner.SignerClient
@@ -123,10 +123,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 	)
 
 	// set up database manager
-	dbm, err = database.Initialize(cfg, database.Options{LogMode: debug})
+	dbm, err = database.New(cfg, database.Options{LogMode: debug})
 	if err != nil {
 		l.Warnw("failed to connect to database with secure connection - attempting insecure", "error", err.Error())
-		dbm, err = database.Initialize(cfg, database.Options{
+		dbm, err = database.New(cfg, database.Options{
 			LogMode:        debug,
 			SSLModeDisable: true,
 		})
@@ -230,7 +230,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 		},
 		zm: models.NewZoneManager(dbm.DB),
 		rm: models.NewRecordManager(dbm.DB),
-		nm: models.NewHostedIPFSNetworkManager(dbm.DB),
+		nm: models.NewHostedNetworkManager(dbm.DB),
 	}, nil
 }
 

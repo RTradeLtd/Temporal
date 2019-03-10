@@ -1,14 +1,15 @@
 language: go
 go:
-  - "1.11"
+  - "1.12"
 services:
   - docker
 sudo: required
 
+env: GO111MODULE=on
+
 install:
   - go get -u golang.org/x/lint/golint
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-  - dep ensure -v
+  - go mod download
 
 before_script:
   - go vet ./...
