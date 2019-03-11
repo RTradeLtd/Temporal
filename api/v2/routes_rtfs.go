@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/c2h5oh/datasize"
@@ -277,8 +278,23 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	holdTime, exists := c.GetPostForm("hold_time")
+	if !exists {
+		FailWithMissingField(c, "hold_time")
+		return
+	}
+	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// ensure the zip file is below limits
+	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
 		Fail(c, err)
 		return
 	}
@@ -291,6 +307,16 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	}
 	if fileNameSplit[len(fileNameSplit)-1] != "zip" {
 		Fail(c, errors.New("only zip files are supported"))
+		return
+	}
+	// perform an initial scan in memory before processing anymore
+	fh, err := fileHandler.Open()
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	if err := api.clam.Scan(fh); err != nil {
+		Fail(c, err)
 		return
 	}
 	randUtils := utils.GenerateRandomUtils()
@@ -313,39 +339,96 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		// protect against large uploads and overflows
 		if uncompressedSize >= int64(datasize.GB.Bytes()) {
 			z.Close()
+			// remove file if this fails
+			os.Remove(destPathZip)
 			Fail(c, errors.New("uncompressed size of zip file is larger than 1gb max upload"))
 			return
 		} else if uncompressedSize < 0 {
 			z.Close()
+			// remove file if this fails
+			os.Remove(destPathZip)
 			Fail(c, errors.New("overflow detected"))
 			return
 		}
 	}
 	if err := z.Close(); err != nil {
+		// remove file if this fails
+		os.Remove(destPathZip)
 		Fail(c, err)
+		return
+	}
+	// ensure they have enough remaining data to cover upload
+	if err := api.usage.CanUpload(username, uint64(uncompressedSize)); err != nil {
+		// remove file if this fails
+		os.Remove(destPathZip)
+		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
+		return
+	}
+	// upgrade their data usage
+	if err := api.usage.UpdateDataUsage(username, uint64(uncompressedSize)); err != nil {
+		// remove file if this fails
+		os.Remove(destPathZip)
+		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
+		return
+	}
+	// calculate cost of file
+	cost, err := utils.CalculateFileCost(username, holdTimeInt, uncompressedSize, api.usage)
+	if err != nil {
+		// remove file if this fails
+		os.Remove(destPathZip)
+		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusBadRequest)
+		return
+	}
+	// validate user credits
+	if err := api.validateUserCredits(username, cost); err != nil {
+		// remove file if this fails
+		os.Remove(destPathZip)
+		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
 	randString = randUtils.GenerateString(5, utils.LetterBytes)
 	destPathUnzip := fmt.Sprintf("/tmp/unzipped_%s_%s", username, randString)
 	// unzip the file
 	if _, err := Unzip(destPathZip, destPathUnzip); err != nil {
+		// remove file if this fails
+		os.Remove(destPathZip)
+		os.RemoveAll(destPathUnzip)
+		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
+		api.l.Error(err)
 		Fail(c, err)
 		return
 	}
 	// add directory to ipfs
 	hash, err := api.ipfs.AddDir(destPathUnzip)
 	if err != nil {
+		// remove file if this fails
+		os.Remove(destPathZip)
+		os.RemoveAll(destPathUnzip)
+		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		return
 	}
 	// cleanup unzipped file
 	if err := os.RemoveAll(destPathUnzip); err != nil {
+		os.Remove(destPathZip)
 		api.LogError(c, err, "failed to cleanup file(s)")(http.StatusBadRequest)
 		return
 	}
 	// cleanup zip file
 	if err := os.Remove(destPathZip); err != nil {
 		api.LogError(c, err, "failed to cleanup file(s)")(http.StatusBadRequest)
+		return
+	}
+	qp := queue.IPFSClusterPin{
+		CID:              hash,
+		NetworkName:      "public",
+		UserName:         username,
+		HoldTimeInMonths: holdTimeInt,
+	}
+	if err := api.queues.cluster.PublishMessage(qp); err != nil {
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusInternalServerError)
 		return
 	}
 	api.l.Infow("directory upload processed", "user", username)
