@@ -575,6 +575,9 @@ var commands = map[string]cmd.Cmd{
 						&v3.CoreService{},
 						&v3.AuthService{},
 						&v3.StoreService{},
+						&v3.IPFSService{},
+
+						v3.Options{},
 					)
 					if err := s.Run(context.Background(), os.Args[3]); err != nil {
 						fmt.Println("error starting v3 API server", err)

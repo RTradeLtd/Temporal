@@ -129,6 +129,17 @@
   version = "v2.0.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:5972d312434e8624f7ad7af9d882d83295bb3e8b8e1f09464fa294a27428c38e"
+  name = "github.com/RTradeLtd/sdk"
+  packages = [
+    "go/temporal",
+    "go/temporal/store",
+  ]
+  pruneopts = "UT"
+  revision = "7c468d9aaf6c697e63671348650d1379dccb2c48"
+
+[[projects]]
   digest = "1:a164e093eccfde4fb63dc94707f3570d112ff4549072a065a48813c37c0c76a9"
   name = "github.com/appleboy/gin-jwt"
   packages = ["."]
@@ -296,11 +307,15 @@
   version = "v1.4.0"
 
 [[projects]]
-  digest = "1:c805a0558c867a671fc2dd1c6134b92a4d15c3fee5803abc70fdabdcb683ea0b"
+  digest = "1:6d9ec638c0f60d01a25e43940f20dff30cf8b468371ea4df54cbc5b73e07e223"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   packages = [
     ".",
+    "logging",
+    "logging/zap",
+    "logging/zap/ctxzap",
     "tags",
+    "tags/zap",
   ]
   pruneopts = "UT"
   revision = "c250d6563d4d4c20252cd865923440e829844f4e"
@@ -1420,6 +1435,8 @@
     "github.com/RTradeLtd/kaas",
     "github.com/RTradeLtd/rtfs",
     "github.com/RTradeLtd/rtfs/beam",
+    "github.com/RTradeLtd/sdk/go/temporal",
+    "github.com/RTradeLtd/sdk/go/temporal/store",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/c2h5oh/datasize",
@@ -1429,6 +1446,9 @@
     "github.com/gin-gonic/gin",
     "github.com/golang/protobuf/proto",
     "github.com/google/uuid",
+    "github.com/grpc-ecosystem/go-grpc-middleware",
+    "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap",
+    "github.com/grpc-ecosystem/go-grpc-middleware/tags",
     "github.com/grpc-ecosystem/grpc-gateway/runtime",
     "github.com/grpc-ecosystem/grpc-gateway/utilities",
     "github.com/ipfs/go-cid",
@@ -1456,6 +1476,7 @@
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/credentials",
     "google.golang.org/grpc/grpclog",
+    "google.golang.org/grpc/metadata",
     "google.golang.org/grpc/status",
     "gopkg.in/dgrijalva/jwt-go.v3",
   ]

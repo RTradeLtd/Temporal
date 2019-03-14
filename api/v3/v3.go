@@ -2,15 +2,22 @@ package v3
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
+	"time"
 
-	"github.com/RTradeLtd/Temporal/api/v3/proto/ipfs"
-
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"gopkg.in/dgrijalva/jwt-go.v3"
 
 	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
 	"github.com/RTradeLtd/Temporal/api/v3/proto/core"
+	"github.com/RTradeLtd/Temporal/api/v3/proto/ipfs"
 	"github.com/RTradeLtd/Temporal/api/v3/proto/store"
 )
 
@@ -21,23 +28,69 @@ type V3 struct {
 	store store.TemporalStoreServer
 	ipfs  ipfs.TemporalIPFSServer
 
+	options []grpc.ServerOption
+
 	l *zap.SugaredLogger
+}
+
+// Options denotes configuration for the V3 API
+type Options struct {
+	KeyLookup jwt.Keyfunc
+	TLS       *tls.Config
 }
 
 // New initializes a new V3 service from concrete implementations of the
 // V3 subservices
 func New(
 	l *zap.SugaredLogger,
+
 	coreService *CoreService,
 	authService *AuthService,
 	storeService *StoreService,
 	ipfsService *IPFSService,
+
+	opts Options,
 ) *V3 {
+	var grpcLogger = l.Desugar().Named("grpc")
+	grpc_zap.ReplaceGrpcLogger(grpcLogger)
+
+	// set up middleware chain
+	var (
+		unaryInterceptor, streamInterceptor = authService.newAuthInterceptors(opts.KeyLookup)
+
+		zapOpts = []grpc_zap.Option{
+			grpc_zap.WithDurationField(func(duration time.Duration) zapcore.Field {
+				return zap.Duration("grpc.duration", duration)
+			}),
+		}
+
+		serverOpts = []grpc.ServerOption{
+			grpc_middleware.WithUnaryServerChain(
+				unaryInterceptor,
+				grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+				grpc_zap.UnaryServerInterceptor(grpcLogger, zapOpts...)),
+			grpc_middleware.WithStreamServerChain(
+				streamInterceptor,
+				grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+				grpc_zap.StreamServerInterceptor(grpcLogger, zapOpts...)),
+		}
+	)
+
+	// set up TLS if configuration is provided for it
+	if opts.TLS != nil {
+		l.Infow("setting up TLS")
+		serverOpts = append(serverOpts, grpc.Creds(credentials.NewTLS(opts.TLS)))
+	} else {
+		l.Warn("no TLS configuration found")
+	}
+
 	return &V3{
 		core:  coreService,
 		auth:  authService,
 		store: storeService,
 		ipfs:  ipfsService,
+
+		options: serverOpts,
 
 		l: l,
 	}
@@ -53,7 +106,7 @@ func (v *V3) Run(ctx context.Context, address string) error {
 
 	// initialize server
 	v.l.Debug("registering services")
-	var server = grpc.NewServer()
+	var server = grpc.NewServer(v.options...)
 	core.RegisterTemporalCoreServer(server, v.core)
 	auth.RegisterTemporalAuthServer(server, v.auth)
 	store.RegisterTemporalStoreServer(server, v.store)
