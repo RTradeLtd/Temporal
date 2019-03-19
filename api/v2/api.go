@@ -500,7 +500,7 @@ func (api *API) setupRoutes() error {
 	// tmeporarily remove auth layers for testing
 	proxied := v2.Group("/proxy")
 	{
-		proxied.POST("/*ipfs", api.proxyIPFS)
+		proxied.Any("/*ipfs", api.proxyIPFS)
 	}
 	// ipfs routes
 	ipfs := v2.Group("/ipfs", authware...)
