@@ -8,6 +8,10 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/RTradeLtd/Temporal/eh"
+
+	"go.uber.org/zap"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,8 +20,14 @@ func (api *API) proxyIPFS(c *gin.Context) {
 		Fail(c, errors.New("reverse proxy ipfs api is not available in prod"))
 		return
 	}
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)
+		return
+	}
+	api.l.Info("reverse proxy request", "user", username)
 	if err := checkCall(c.Param("ipfs")); err != nil {
-		Fail(c, err)
+		api.LogError(c, err, err.Error())
 		return
 	}
 	var protocol string
@@ -32,16 +42,23 @@ func (api *API) proxyIPFS(c *gin.Context) {
 	)
 	remote, err := url.Parse(target)
 	if err != nil {
-		api.LogError(c, err, err.Error(), http.StatusInternalServerError)
+		api.LogError(c, err, err.Error())
 		return
 	}
 	// use remote.Query() to get the url values so we can parse calls
 	// in the case of pin/add, the hash being pinned is under "args"
-	proxy := newProxy(remote, false)
-	proxy.ServeHTTP(c.Writer, c.Request)
+	// todo: perform deeper validation of calls, ensuring we properly update
+	// the database, and handle stuff like credits, invalid balances, err..
+	newProxy(
+		remote,
+		api.l.With("user", username),
+		false,
+	).ServeHTTP(c.Writer, c.Request)
+	//proxy.ServeHTTP(c.Writer, c.Request)
+	api.l.Info("reverse proxy request served", "user", username)
 }
 
-func newProxy(target *url.URL, direct bool) *httputil.ReverseProxy {
+func newProxy(target *url.URL, l *zap.SugaredLogger, direct bool) *httputil.ReverseProxy {
 	return &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
 			// if set up as an indirect proxy, we need to remove delgator-specific
@@ -54,6 +71,11 @@ func newProxy(target *url.URL, direct bool) *httputil.ReverseProxy {
 			// set other URL properties
 			req.URL.Scheme = target.Scheme
 			req.URL.Host = target.Host
+			l.Named("proxy").Infow(
+				"forwarding request",
+				"url", req.URL.String(),
+				"path", req.URL.Path,
+			)
 		},
 	}
 }
