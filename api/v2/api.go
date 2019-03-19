@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/streadway/amqp"
-
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/Temporal/utils"
@@ -18,6 +16,7 @@ import (
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas"
+	"github.com/streadway/amqp"
 	"go.uber.org/zap"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
@@ -498,13 +497,14 @@ func (api *API) setupRoutes() error {
 			auth.GET("/usage", api.usageData)
 		}
 	}
-
 	// ipfs routes
 	ipfs := v2.Group("/ipfs", authware...)
 	{
 		// public ipfs routes
 		public := ipfs.Group("/public")
 		{
+			// proxy in direct api calls
+			public.Any("/*proxy", api.proxyIPFS)
 			// pinning routes
 			pin := public.Group("/pin")
 			{
