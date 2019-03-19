@@ -31,6 +31,7 @@ func (api *API) proxyIPFS(c *gin.Context) {
 		api.LogError(c, err, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	fmt.Println(remote.Query())
 	proxy := newProxy(remote, false)
 	proxy.ServeHTTP(c.Writer, c.Request)
 }
@@ -66,65 +67,52 @@ func stripLeadingSegments(path string) string {
 // to calls that involve removing data, listing pinned data
 // creating keys, publishing, etc...
 func checkCall(request string) error {
-	whiteListedCalls := []string{
-		// pin commands
-		"pin/add",
-		// need to consider security issues with pin/update
-		//"pin/update",
+	whiteListedCalls := map[string]bool{
+		// pin calls
+		"pin/add": true,
 
-		// add file
-		"add",
+		// file add
+		"add": true,
 
-		// resolve content
-		"resolve",
+		// ipns resolution
+		"resolve": true,
 
-		// dns comands
-		"dns",
+		// dns commands
+		"dns": true,
+
+		// name commands
+		"name/resolve": true,
 
 		// object commands
-		"object/data",
-		"object/diff",
-		"object/links",
-		"object/get",
-		// object/put
+		"object/data":  true,
+		"object/diff":  true,
+		"object/links": true,
+		"object/get":   true,
+		// object/put (this needs special handling)
 
 		// dag commands
-		"dag/get",
-		"dag/resolve",
-
-		"get",
-
-		"refs",
+		"dag/get":     true,
+		"dag/resolve": true,
+		// dag/put (this needs special handling)
 
 		// dht comands
-		"dht/query",
-		"dht/findpeer",
-		"dht/findprovs",
-		"dht/num-providers",
-		"dht/get",
-		// dht/put
-
-		// namesys commands
-		"name/resolve",
-
-		// block commands
-		"block/stat",
-		"block/get",
-		// "block/put"
+		"dht/query":         true,
+		"dht/findpeer":      true,
+		"dht/findprovs":     true,
+		"dht/num-providers": true,
+		"dht/get":           true,
+		// dht/put (this needs special handling)
 
 		// tar commands
-		"tar/cat",
-		// "tar/add"
+		"tar/cat": true,
+		// tar/add (this needs special handling)
+
+		// misc
+		"get":  true,
+		"refs": true,
 	}
 	trimmed := strings.TrimPrefix(request, "/api/v0/")
-	var isWhiteListed bool
-	for _, v := range whiteListedCalls {
-		if trimmed == v {
-			isWhiteListed = true
-			break
-		}
-	}
-	if !isWhiteListed {
+	if !whiteListedCalls[trimmed] {
 		return errors.New("sorry the API call you are using is not white listed for reverse proxying")
 	}
 	return nil
