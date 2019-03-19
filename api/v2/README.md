@@ -43,7 +43,7 @@ tClient.login(temporalUser, temporalPass)
 
 var ipfs = ipfsClient({
     host: 'dev.api.temporal.cloud',
-    port: '6768',
+    port: '443',
     'api-path': '/v2/proxy/api/v0/',
     protocol: 'https',
     headers: {
