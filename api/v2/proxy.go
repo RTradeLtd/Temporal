@@ -12,6 +12,10 @@ import (
 )
 
 func (api *API) proxyIPFS(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("reverse proxy ipfs api is not available in prod"))
+		return
+	}
 	if err := checkCall(c.Param("ipfs")); err != nil {
 		Fail(c, err)
 		return
@@ -31,7 +35,8 @@ func (api *API) proxyIPFS(c *gin.Context) {
 		api.LogError(c, err, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(remote.Query())
+	// use remote.Query() to get the url values so we can parse calls
+	// in the case of pin/add, the hash being pinned is under "args"
 	proxy := newProxy(remote, false)
 	proxy.ServeHTTP(c.Writer, c.Request)
 }
