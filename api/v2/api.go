@@ -497,7 +497,8 @@ func (api *API) setupRoutes() error {
 			auth.GET("/usage", api.usageData)
 		}
 	}
-	proxied := v2.Group("/proxy", authware...)
+	// tmeporarily remove auth layers for testing
+	proxied := v2.Group("/proxy")
 	{
 		proxied.POST("/*ipfs", api.proxyIPFS)
 	}
