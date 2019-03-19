@@ -12,7 +12,7 @@ import (
 )
 
 func (api *API) proxyIPFS(c *gin.Context) {
-	if err := checkCall(c.Param("proxy")); err != nil {
+	if err := checkCall(c.Param("ipfs")); err != nil {
 		Fail(c, err)
 		return
 	}

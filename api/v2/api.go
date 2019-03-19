@@ -497,14 +497,16 @@ func (api *API) setupRoutes() error {
 			auth.GET("/usage", api.usageData)
 		}
 	}
+	proxied := v2.Group("/proxy", authware...)
+	{
+		proxied.POST("/*ipfs", api.proxyIPFS)
+	}
 	// ipfs routes
 	ipfs := v2.Group("/ipfs", authware...)
 	{
 		// public ipfs routes
 		public := ipfs.Group("/public")
 		{
-			// proxy in direct api calls
-			public.Any("/*proxy", api.proxyIPFS)
 			// pinning routes
 			pin := public.Group("/pin")
 			{
