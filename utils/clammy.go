@@ -26,8 +26,10 @@ func NewShell(address string) (*Shell, error) {
 	c.SetConnRetries(3)
 	// sleep of 1.25 seconds
 	c.SetConnSleep(1250 * time.Millisecond)
-	// timeout of 2 minutes
-	c.SetConnTimeout(2 * time.Minute)
+	// timeout of 10 minutes
+	c.SetConnTimeout(10 * time.Minute)
+	c.SetCmdTimeout(10 * time.Minute)
+
 	return &Shell{
 		clam: c,
 	}, nil
