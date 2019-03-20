@@ -112,9 +112,6 @@ var (
 		// urlstore commands
 		// determine if we want ot do this
 		// "urlstore/add": true,
-
-		// misc
-		"refs": true,
 	}
 )
 
