@@ -94,52 +94,8 @@ func stripLeadingSegments(path string) string {
 // to calls that involve removing data, listing pinned data
 // creating keys, publishing, etc...
 func checkCall(request string) error {
-	whiteListedCalls := map[string]bool{
-		// pin calls
-		"pin/add": true,
-
-		// file add
-		"add": true,
-
-		// ipns resolution
-		"resolve": true,
-
-		// dns commands
-		"dns": true,
-
-		// name commands
-		"name/resolve": true,
-
-		// object commands
-		"object/data":  true,
-		"object/diff":  true,
-		"object/links": true,
-		"object/get":   true,
-		// object/put (this needs special handling)
-
-		// dag commands
-		"dag/get":     true,
-		"dag/resolve": true,
-		// dag/put (this needs special handling)
-
-		// dht comands
-		"dht/query":         true,
-		"dht/findpeer":      true,
-		"dht/findprovs":     true,
-		"dht/num-providers": true,
-		"dht/get":           true,
-		// dht/put (this needs special handling)
-
-		// tar commands
-		"tar/cat": true,
-		// tar/add (this needs special handling)
-
-		// misc
-		"get":  true,
-		"refs": true,
-	}
 	trimmed := strings.TrimPrefix(request, "/api/v0/")
-	if !whiteListedCalls[trimmed] {
+	if !whiteListedProxyCalls[trimmed] {
 		return errors.New("sorry the API call you are using is not white listed for reverse proxying")
 	}
 	return nil
