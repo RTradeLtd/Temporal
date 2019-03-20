@@ -22,12 +22,11 @@ func (api *API) proxyIPFS(c *gin.Context) {
 	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
-	api.l.Info("reverse proxy request", "user", username)
 	if err := checkCall(c.Param("ipfs")); err != nil {
-		api.LogError(c, err, err.Error())
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
 	}
 	var protocol string
@@ -42,16 +41,17 @@ func (api *API) proxyIPFS(c *gin.Context) {
 	)
 	remote, err := url.Parse(target)
 	if err != nil {
-		api.LogError(c, err, err.Error())
+		api.LogError(c, err, err.Error())(http.StatusInternalServerError)
 		return
 	}
+	logger := api.l.Named("proxy").With("user", username)
 	// use remote.Query() to get the url values so we can parse calls
 	// in the case of pin/add, the hash being pinned is under "args"
 	// todo: perform deeper validation of calls, ensuring we properly update
 	// the database, and handle stuff like credits, invalid balances, err..
 	newProxy(
 		remote,
-		api.l.With("user", username),
+		logger,
 		false,
 	).ServeHTTP(c.Writer, c.Request)
 	//proxy.ServeHTTP(c.Writer, c.Request)
@@ -71,7 +71,7 @@ func newProxy(target *url.URL, l *zap.SugaredLogger, direct bool) *httputil.Reve
 			// set other URL properties
 			req.URL.Scheme = target.Scheme
 			req.URL.Host = target.Host
-			l.Named("proxy").Infow(
+			l.Infow(
 				"forwarding request",
 				"url", req.URL.String(),
 				"path", req.URL.Path,
