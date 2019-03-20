@@ -5,6 +5,7 @@ import (
 	"errors"
 	"html"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/crypto"
 	"github.com/RTradeLtd/database/models"
+	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/RTradeLtd/gorm"
 	"github.com/RTradeLtd/rtfs"
 	gocid "github.com/ipfs/go-cid"
@@ -52,6 +54,11 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 	holdTimeInt, err := api.validateHoldTime(username, forms["hold_time"])
 	if err != nil {
 		Fail(c, err)
+		return
+	}
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, forms["network_name"])
+	if err == nil || upload != nil {
+		Respond(c, http.StatusBadRequest, gin.H{"response": alreadyUploadedMessage})
 		return
 	}
 	// create pin message
@@ -120,6 +127,21 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.FileOpenError)(http.StatusBadRequest)
 		return
 	}
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	hash, err := api.ipfs.Add(bytes.NewReader(fileBytes), ipfsapi.OnlyHash(true))
+	if err != nil {
+		api.LogError(c, err, eh.IPFSAddError)(http.StatusInternalServerError)
+		return
+	}
+	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, forms["network_name"])
+	if err == nil || upload != nil {
+		Respond(c, http.StatusBadRequest, gin.H{"response": alreadyUploadedMessage})
+		return
+	}
 	var reader io.Reader
 	// encrypt file if passphrase is given
 	if c.PostForm("passphrase") != "" {
@@ -132,7 +154,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		}
 		reader = bytes.NewReader(encrypted)
 	} else {
-		reader = file
+		reader = bytes.NewReader(fileBytes)
 	}
 	// format a url to connect to for private network
 	apiURL := api.GetIPFSEndpoint(forms["network_name"])
@@ -156,7 +178,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 			return
 		}
 	}
-	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(
+	upload, err = api.upm.FindUploadByHashAndUserAndNetwork(
 		username,
 		resp,
 		forms["network_name"],
