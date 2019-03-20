@@ -497,11 +497,13 @@ func (api *API) setupRoutes() error {
 			auth.GET("/usage", api.usageData)
 		}
 	}
-	// tmeporarily remove auth layers for testing
+
+	// needs to be under an isolated route group or the wildcard will conflict
 	proxied := v2.Group("/proxy", authware...)
 	{
 		proxied.Any("/*ipfs", api.proxyIPFS)
 	}
+
 	// ipfs routes
 	ipfs := v2.Group("/ipfs", authware...)
 	{
