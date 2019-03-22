@@ -316,7 +316,7 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		return
 	}
 	if err := api.clam.Scan(fh); err != nil {
-		Fail(c, err)
+		api.LogError(c, err, err.Error())(http.StatusInternalServerError)
 		return
 	}
 	randUtils := utils.GenerateRandomUtils()
@@ -324,12 +324,12 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	destPathZip := fmt.Sprintf("/tmp/%s_%s_%s", username, randString, filename)
 	// save the zip file
 	if err := c.SaveUploadedFile(fileHandler, destPathZip); err != nil {
-		Fail(c, err)
+		api.LogError(c, err, err.Error())(http.StatusInternalServerError)
 		return
 	}
 	z, err := zip.OpenReader(destPathZip)
 	if err != nil {
-		Fail(c, err)
+		api.LogError(c, err, err.Error())(http.StatusInternalServerError)
 		return
 	}
 	// protect against zip bombs
@@ -354,7 +354,7 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	if err := z.Close(); err != nil {
 		// remove file if this fails
 		os.Remove(destPathZip)
-		Fail(c, err)
+		api.LogError(c, err, "an error occurred while processing your request")(http.StatusInternalServerError)
 		return
 	}
 	// ensure they have enough remaining data to cover upload
