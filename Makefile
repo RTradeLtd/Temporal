@@ -179,8 +179,4 @@ api-admin:
 
 .PHONY: v3-proto
 v3-proto:
-	# TODO: when RTradeLTd/sdk is public, simply embed as submodule
-	mkdir -p build
-	rm -rf build/sdk
-	cd build && git clone git@github.com:RTradeLtd/sdk.git
-	$(MAKE) -C build/sdk proto-go-server OUT=../../api/v3/proto
+	$(MAKE) -C sdk proto-go-server OUT=../api/v3/proto

@@ -23,56 +23,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type Key_RSA_Size int32
-
-const (
-	Key_RSA_S_2048 Key_RSA_Size = 0
-	Key_RSA_S_3072 Key_RSA_Size = 1
-	Key_RSA_S_4096 Key_RSA_Size = 2
-)
-
-var Key_RSA_Size_name = map[int32]string{
-	0: "S_2048",
-	1: "S_3072",
-	2: "S_4096",
-}
-
-var Key_RSA_Size_value = map[string]int32{
-	"S_2048": 0,
-	"S_3072": 1,
-	"S_4096": 2,
-}
-
-func (x Key_RSA_Size) String() string {
-	return proto.EnumName(Key_RSA_Size_name, int32(x))
-}
-
-func (Key_RSA_Size) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_faea06b5b3eb1738, []int{2, 0, 0}
-}
-
-type Key_ED25519_Size int32
-
-const (
-	Key_ED25519_S_256 Key_ED25519_Size = 0
-)
-
-var Key_ED25519_Size_name = map[int32]string{
-	0: "S_256",
-}
-
-var Key_ED25519_Size_value = map[string]int32{
-	"S_256": 0,
-}
-
-func (x Key_ED25519_Size) String() string {
-	return proto.EnumName(Key_ED25519_Size_name, int32(x))
-}
-
-func (Key_ED25519_Size) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_faea06b5b3eb1738, []int{2, 1, 0}
-}
-
 type Empty struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -104,258 +54,287 @@ func (m *Empty) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Empty proto.InternalMessageInfo
 
-type KeysResp struct {
-	Keys                 []*Key   `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"`
+type CreateNetworkReq struct {
+	Network              *Network `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
+	SwarmKey             string   `protobuf:"bytes,2,opt,name=swarm_key,json=swarmKey,proto3" json:"swarm_key,omitempty"`
+	BootstrapPeers       []string `protobuf:"bytes,3,rep,name=bootstrap_peers,json=bootstrapPeers,proto3" json:"bootstrap_peers,omitempty"`
+	Users                []string `protobuf:"bytes,4,rep,name=users,proto3" json:"users,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *KeysResp) Reset()         { *m = KeysResp{} }
-func (m *KeysResp) String() string { return proto.CompactTextString(m) }
-func (*KeysResp) ProtoMessage()    {}
-func (*KeysResp) Descriptor() ([]byte, []int) {
+func (m *CreateNetworkReq) Reset()         { *m = CreateNetworkReq{} }
+func (m *CreateNetworkReq) String() string { return proto.CompactTextString(m) }
+func (*CreateNetworkReq) ProtoMessage()    {}
+func (*CreateNetworkReq) Descriptor() ([]byte, []int) {
 	return fileDescriptor_faea06b5b3eb1738, []int{1}
 }
 
-func (m *KeysResp) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_KeysResp.Unmarshal(m, b)
+func (m *CreateNetworkReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateNetworkReq.Unmarshal(m, b)
 }
-func (m *KeysResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_KeysResp.Marshal(b, m, deterministic)
+func (m *CreateNetworkReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateNetworkReq.Marshal(b, m, deterministic)
 }
-func (m *KeysResp) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_KeysResp.Merge(m, src)
+func (m *CreateNetworkReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateNetworkReq.Merge(m, src)
 }
-func (m *KeysResp) XXX_Size() int {
-	return xxx_messageInfo_KeysResp.Size(m)
+func (m *CreateNetworkReq) XXX_Size() int {
+	return xxx_messageInfo_CreateNetworkReq.Size(m)
 }
-func (m *KeysResp) XXX_DiscardUnknown() {
-	xxx_messageInfo_KeysResp.DiscardUnknown(m)
+func (m *CreateNetworkReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateNetworkReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_KeysResp proto.InternalMessageInfo
+var xxx_messageInfo_CreateNetworkReq proto.InternalMessageInfo
 
-func (m *KeysResp) GetKeys() []*Key {
+func (m *CreateNetworkReq) GetNetwork() *Network {
 	if m != nil {
-		return m.Keys
+		return m.Network
 	}
 	return nil
 }
 
-type Key struct {
-	// Types that are valid to be assigned to Type:
-	//	*Key_Rsa
-	//	*Key_Ed25519
-	Type                 isKey_Type `protobuf_oneof:"type"`
-	Name                 string     `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Id                   string     `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
-	XXX_unrecognized     []byte     `json:"-"`
-	XXX_sizecache        int32      `json:"-"`
+func (m *CreateNetworkReq) GetSwarmKey() string {
+	if m != nil {
+		return m.SwarmKey
+	}
+	return ""
 }
 
-func (m *Key) Reset()         { *m = Key{} }
-func (m *Key) String() string { return proto.CompactTextString(m) }
-func (*Key) ProtoMessage()    {}
-func (*Key) Descriptor() ([]byte, []int) {
+func (m *CreateNetworkReq) GetBootstrapPeers() []string {
+	if m != nil {
+		return m.BootstrapPeers
+	}
+	return nil
+}
+
+func (m *CreateNetworkReq) GetUsers() []string {
+	if m != nil {
+		return m.Users
+	}
+	return nil
+}
+
+type Network struct {
+	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Network) Reset()         { *m = Network{} }
+func (m *Network) String() string { return proto.CompactTextString(m) }
+func (*Network) ProtoMessage()    {}
+func (*Network) Descriptor() ([]byte, []int) {
 	return fileDescriptor_faea06b5b3eb1738, []int{2}
 }
 
-func (m *Key) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Key.Unmarshal(m, b)
+func (m *Network) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Network.Unmarshal(m, b)
 }
-func (m *Key) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Key.Marshal(b, m, deterministic)
+func (m *Network) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Network.Marshal(b, m, deterministic)
 }
-func (m *Key) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Key.Merge(m, src)
+func (m *Network) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Network.Merge(m, src)
 }
-func (m *Key) XXX_Size() int {
-	return xxx_messageInfo_Key.Size(m)
+func (m *Network) XXX_Size() int {
+	return xxx_messageInfo_Network.Size(m)
 }
-func (m *Key) XXX_DiscardUnknown() {
-	xxx_messageInfo_Key.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Key proto.InternalMessageInfo
-
-type isKey_Type interface {
-	isKey_Type()
+func (m *Network) XXX_DiscardUnknown() {
+	xxx_messageInfo_Network.DiscardUnknown(m)
 }
 
-type Key_Rsa struct {
-	Rsa *Key_RSA `protobuf:"bytes,1,opt,name=rsa,proto3,oneof"`
-}
+var xxx_messageInfo_Network proto.InternalMessageInfo
 
-type Key_Ed25519 struct {
-	Ed25519 *Key_ED25519 `protobuf:"bytes,2,opt,name=ed25519,proto3,oneof"`
-}
-
-func (*Key_Rsa) isKey_Type() {}
-
-func (*Key_Ed25519) isKey_Type() {}
-
-func (m *Key) GetType() isKey_Type {
-	if m != nil {
-		return m.Type
-	}
-	return nil
-}
-
-func (m *Key) GetRsa() *Key_RSA {
-	if x, ok := m.GetType().(*Key_Rsa); ok {
-		return x.Rsa
-	}
-	return nil
-}
-
-func (m *Key) GetEd25519() *Key_ED25519 {
-	if x, ok := m.GetType().(*Key_Ed25519); ok {
-		return x.Ed25519
-	}
-	return nil
-}
-
-func (m *Key) GetName() string {
+func (m *Network) GetName() string {
 	if m != nil {
 		return m.Name
 	}
 	return ""
 }
 
-func (m *Key) GetId() string {
+type NetworkList struct {
+	Networks             []*Network `protobuf:"bytes,1,rep,name=networks,proto3" json:"networks,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
+}
+
+func (m *NetworkList) Reset()         { *m = NetworkList{} }
+func (m *NetworkList) String() string { return proto.CompactTextString(m) }
+func (*NetworkList) ProtoMessage()    {}
+func (*NetworkList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_faea06b5b3eb1738, []int{3}
+}
+
+func (m *NetworkList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NetworkList.Unmarshal(m, b)
+}
+func (m *NetworkList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NetworkList.Marshal(b, m, deterministic)
+}
+func (m *NetworkList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NetworkList.Merge(m, src)
+}
+func (m *NetworkList) XXX_Size() int {
+	return xxx_messageInfo_NetworkList.Size(m)
+}
+func (m *NetworkList) XXX_DiscardUnknown() {
+	xxx_messageInfo_NetworkList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NetworkList proto.InternalMessageInfo
+
+func (m *NetworkList) GetNetworks() []*Network {
+	if m != nil {
+		return m.Networks
+	}
+	return nil
+}
+
+type NetworkDetails struct {
+	Id                   int32    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	CreatedAt            int64    `protobuf:"varint,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	DeletedAt            int64    `protobuf:"varint,3,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
+	Activated            int64    `protobuf:"varint,4,opt,name=activated,proto3" json:"activated,omitempty"`
+	Name                 string   `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	SwarmKey             string   `protobuf:"bytes,6,opt,name=swarm_key,json=swarmKey,proto3" json:"swarm_key,omitempty"`
+	Users                []string `protobuf:"bytes,7,rep,name=users,proto3" json:"users,omitempty"`
+	Peers                []string `protobuf:"bytes,8,rep,name=peers,proto3" json:"peers,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *NetworkDetails) Reset()         { *m = NetworkDetails{} }
+func (m *NetworkDetails) String() string { return proto.CompactTextString(m) }
+func (*NetworkDetails) ProtoMessage()    {}
+func (*NetworkDetails) Descriptor() ([]byte, []int) {
+	return fileDescriptor_faea06b5b3eb1738, []int{4}
+}
+
+func (m *NetworkDetails) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NetworkDetails.Unmarshal(m, b)
+}
+func (m *NetworkDetails) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NetworkDetails.Marshal(b, m, deterministic)
+}
+func (m *NetworkDetails) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NetworkDetails.Merge(m, src)
+}
+func (m *NetworkDetails) XXX_Size() int {
+	return xxx_messageInfo_NetworkDetails.Size(m)
+}
+func (m *NetworkDetails) XXX_DiscardUnknown() {
+	xxx_messageInfo_NetworkDetails.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NetworkDetails proto.InternalMessageInfo
+
+func (m *NetworkDetails) GetId() int32 {
 	if m != nil {
 		return m.Id
+	}
+	return 0
+}
+
+func (m *NetworkDetails) GetCreatedAt() int64 {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return 0
+}
+
+func (m *NetworkDetails) GetDeletedAt() int64 {
+	if m != nil {
+		return m.DeletedAt
+	}
+	return 0
+}
+
+func (m *NetworkDetails) GetActivated() int64 {
+	if m != nil {
+		return m.Activated
+	}
+	return 0
+}
+
+func (m *NetworkDetails) GetName() string {
+	if m != nil {
+		return m.Name
 	}
 	return ""
 }
 
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*Key) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*Key_Rsa)(nil),
-		(*Key_Ed25519)(nil),
-	}
-}
-
-type Key_RSA struct {
-	Size                 Key_RSA_Size `protobuf:"varint,1,opt,name=size,proto3,enum=ipfs.Key_RSA_Size" json:"size,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
-}
-
-func (m *Key_RSA) Reset()         { *m = Key_RSA{} }
-func (m *Key_RSA) String() string { return proto.CompactTextString(m) }
-func (*Key_RSA) ProtoMessage()    {}
-func (*Key_RSA) Descriptor() ([]byte, []int) {
-	return fileDescriptor_faea06b5b3eb1738, []int{2, 0}
-}
-
-func (m *Key_RSA) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Key_RSA.Unmarshal(m, b)
-}
-func (m *Key_RSA) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Key_RSA.Marshal(b, m, deterministic)
-}
-func (m *Key_RSA) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Key_RSA.Merge(m, src)
-}
-func (m *Key_RSA) XXX_Size() int {
-	return xxx_messageInfo_Key_RSA.Size(m)
-}
-func (m *Key_RSA) XXX_DiscardUnknown() {
-	xxx_messageInfo_Key_RSA.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Key_RSA proto.InternalMessageInfo
-
-func (m *Key_RSA) GetSize() Key_RSA_Size {
+func (m *NetworkDetails) GetSwarmKey() string {
 	if m != nil {
-		return m.Size
+		return m.SwarmKey
 	}
-	return Key_RSA_S_2048
+	return ""
 }
 
-type Key_ED25519 struct {
-	Size                 Key_ED25519_Size `protobuf:"varint,1,opt,name=size,proto3,enum=ipfs.Key_ED25519_Size" json:"size,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
-	XXX_unrecognized     []byte           `json:"-"`
-	XXX_sizecache        int32            `json:"-"`
-}
-
-func (m *Key_ED25519) Reset()         { *m = Key_ED25519{} }
-func (m *Key_ED25519) String() string { return proto.CompactTextString(m) }
-func (*Key_ED25519) ProtoMessage()    {}
-func (*Key_ED25519) Descriptor() ([]byte, []int) {
-	return fileDescriptor_faea06b5b3eb1738, []int{2, 1}
-}
-
-func (m *Key_ED25519) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Key_ED25519.Unmarshal(m, b)
-}
-func (m *Key_ED25519) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Key_ED25519.Marshal(b, m, deterministic)
-}
-func (m *Key_ED25519) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Key_ED25519.Merge(m, src)
-}
-func (m *Key_ED25519) XXX_Size() int {
-	return xxx_messageInfo_Key_ED25519.Size(m)
-}
-func (m *Key_ED25519) XXX_DiscardUnknown() {
-	xxx_messageInfo_Key_ED25519.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Key_ED25519 proto.InternalMessageInfo
-
-func (m *Key_ED25519) GetSize() Key_ED25519_Size {
+func (m *NetworkDetails) GetUsers() []string {
 	if m != nil {
-		return m.Size
+		return m.Users
 	}
-	return Key_ED25519_S_256
+	return nil
+}
+
+func (m *NetworkDetails) GetPeers() []string {
+	if m != nil {
+		return m.Peers
+	}
+	return nil
 }
 
 func init() {
-	proto.RegisterEnum("ipfs.Key_RSA_Size", Key_RSA_Size_name, Key_RSA_Size_value)
-	proto.RegisterEnum("ipfs.Key_ED25519_Size", Key_ED25519_Size_name, Key_ED25519_Size_value)
 	proto.RegisterType((*Empty)(nil), "ipfs.Empty")
-	proto.RegisterType((*KeysResp)(nil), "ipfs.KeysResp")
-	proto.RegisterType((*Key)(nil), "ipfs.Key")
-	proto.RegisterType((*Key_RSA)(nil), "ipfs.Key.RSA")
-	proto.RegisterType((*Key_ED25519)(nil), "ipfs.Key.ED25519")
+	proto.RegisterType((*CreateNetworkReq)(nil), "ipfs.CreateNetworkReq")
+	proto.RegisterType((*Network)(nil), "ipfs.Network")
+	proto.RegisterType((*NetworkList)(nil), "ipfs.NetworkList")
+	proto.RegisterType((*NetworkDetails)(nil), "ipfs.NetworkDetails")
 }
 
 func init() { proto.RegisterFile("ipfs.proto", fileDescriptor_faea06b5b3eb1738) }
 
 var fileDescriptor_faea06b5b3eb1738 = []byte{
-	// 398 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x52, 0xcb, 0x6e, 0xda, 0x40,
-	0x14, 0xf5, 0x63, 0x30, 0xe5, 0x52, 0xa8, 0x19, 0x44, 0xe5, 0x5a, 0xad, 0x44, 0xbd, 0xa8, 0x28,
-	0x52, 0x6d, 0x3a, 0x3c, 0x5a, 0xda, 0x15, 0xa8, 0x54, 0x54, 0x48, 0x55, 0x35, 0xee, 0xa6, 0x2b,
-	0xe4, 0xc6, 0x13, 0x64, 0x05, 0x3c, 0x16, 0x76, 0x82, 0xcc, 0x32, 0x9b, 0x7c, 0x40, 0x7e, 0x22,
-	0xff, 0x93, 0x5f, 0xc8, 0x87, 0x44, 0x1e, 0x1c, 0x1e, 0xca, 0xee, 0xf8, 0x9e, 0x73, 0xcf, 0xb9,
-	0x3a, 0x1e, 0x80, 0x20, 0x3a, 0x8f, 0xed, 0x68, 0xcd, 0x13, 0x8e, 0x51, 0x86, 0xcd, 0xb7, 0x0b,
-	0xce, 0x17, 0x4b, 0xe6, 0x78, 0x51, 0xe0, 0x78, 0x61, 0xc8, 0x13, 0x2f, 0x09, 0x78, 0x98, 0x6b,
-	0xac, 0x22, 0x14, 0x26, 0xab, 0x28, 0x49, 0xad, 0x8f, 0xf0, 0x62, 0xc6, 0xd2, 0x98, 0xb2, 0x38,
-	0xc2, 0xef, 0x00, 0x5d, 0xb0, 0x34, 0x36, 0xe4, 0xa6, 0xda, 0x2a, 0x93, 0x92, 0x2d, 0x3c, 0x67,
-	0x2c, 0xa5, 0x62, 0x6c, 0xdd, 0x29, 0xa0, 0xce, 0x58, 0x8a, 0xdf, 0x83, 0xba, 0x8e, 0x3d, 0x43,
-	0x6e, 0xca, 0xad, 0x32, 0xa9, 0xec, 0x55, 0x36, 0x75, 0x47, 0x53, 0x89, 0x66, 0x1c, 0xfe, 0x04,
-	0x45, 0xe6, 0x93, 0x7e, 0xff, 0xf3, 0xd0, 0x50, 0x84, 0xac, 0x76, 0x90, 0x4d, 0x7e, 0x08, 0x62,
-	0x2a, 0xd1, 0x27, 0x0d, 0xc6, 0x80, 0x42, 0x6f, 0xc5, 0x0c, 0xb5, 0x29, 0xb7, 0x4a, 0x54, 0x60,
-	0x5c, 0x05, 0x25, 0xf0, 0x0d, 0x24, 0x26, 0x4a, 0xe0, 0x9b, 0xff, 0x40, 0xa5, 0xee, 0x08, 0x7f,
-	0x00, 0x14, 0x07, 0x5b, 0x26, 0xd2, 0xab, 0x04, 0x9f, 0xa4, 0xdb, 0x6e, 0xb0, 0x65, 0x54, 0xf0,
-	0x56, 0x1b, 0x50, 0xf6, 0x85, 0x01, 0x34, 0x77, 0x4e, 0x3a, 0xbd, 0xaf, 0xba, 0xb4, 0xc3, 0xdd,
-	0xce, 0x17, 0xa2, 0xcb, 0x3b, 0xdc, 0xeb, 0x0c, 0x07, 0xba, 0x62, 0x4e, 0xa1, 0x98, 0x1f, 0x85,
-	0xdb, 0x27, 0xf6, 0xaf, 0x9f, 0x5d, 0x7d, 0x1c, 0x51, 0xcb, 0x23, 0x4a, 0x50, 0x70, 0xe7, 0xa4,
-	0x3f, 0xd0, 0xa5, 0xb1, 0x06, 0x28, 0x49, 0x23, 0x46, 0x6e, 0x64, 0x78, 0xf9, 0x97, 0xad, 0x22,
-	0xbe, 0xf6, 0x96, 0xbf, 0xfe, 0xfc, 0x74, 0xf1, 0x37, 0x40, 0x59, 0xcd, 0xb8, 0xbc, 0x73, 0x14,
-	0xdd, 0x9b, 0xd5, 0xbd, 0xbd, 0xe8, 0xdf, 0x6a, 0x5c, 0xdf, 0x3f, 0xdc, 0x2a, 0xaf, 0x70, 0xc5,
-	0xb9, 0xea, 0x3a, 0x19, 0xe5, 0x64, 0xbd, 0xe3, 0xef, 0xa0, 0xfd, 0x66, 0x9b, 0xac, 0xf9, 0xc3,
-	0x2f, 0x31, 0x8f, 0x8d, 0xac, 0x37, 0x62, 0xb1, 0x6e, 0xd5, 0x4e, 0x16, 0x9d, 0x90, 0x6d, 0xc6,
-	0x0d, 0xa8, 0x9f, 0x2d, 0xf9, 0xa5, 0x6f, 0x27, 0xf9, 0x39, 0x62, 0xef, 0xbf, 0x26, 0x9e, 0x41,
-	0xf7, 0x31, 0x00, 0x00, 0xff, 0xff, 0x0a, 0x46, 0x7c, 0x28, 0x38, 0x02, 0x00, 0x00,
+	// 516 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x94, 0xcb, 0x6e, 0xd3, 0x40,
+	0x14, 0x86, 0xe5, 0x5c, 0x9a, 0xf8, 0xe4, 0x52, 0x7a, 0x28, 0xad, 0x09, 0x2d, 0x44, 0xde, 0x34,
+	0x6c, 0x62, 0xa9, 0xdd, 0x20, 0xb1, 0x2a, 0x37, 0x29, 0x0a, 0xaa, 0x2a, 0x87, 0x7d, 0x34, 0x4d,
+	0xa6, 0x95, 0x55, 0xdb, 0x63, 0x3c, 0x27, 0xa9, 0xb2, 0xe5, 0x15, 0x58, 0xf0, 0x24, 0x3c, 0x09,
+	0x2b, 0xf6, 0x3c, 0x08, 0x9a, 0x4b, 0x4c, 0x9d, 0x46, 0x88, 0x05, 0x3b, 0xcf, 0xff, 0x9f, 0xf9,
+	0x72, 0xe6, 0x3f, 0x47, 0x01, 0x88, 0xb2, 0x6b, 0x39, 0xcc, 0x72, 0x41, 0x02, 0x6b, 0xea, 0xbb,
+	0x77, 0x74, 0x23, 0xc4, 0x4d, 0xcc, 0x03, 0x96, 0x45, 0x01, 0x4b, 0x53, 0x41, 0x8c, 0x22, 0x91,
+	0xda, 0x1a, 0xbf, 0x01, 0xf5, 0xf7, 0x49, 0x46, 0x2b, 0xff, 0x9b, 0x03, 0x8f, 0xde, 0xe6, 0x9c,
+	0x11, 0xbf, 0xe0, 0x74, 0x27, 0xf2, 0xdb, 0x90, 0x7f, 0xc6, 0x13, 0x68, 0xa4, 0xe6, 0xe4, 0x39,
+	0x7d, 0x67, 0xd0, 0x3a, 0xed, 0x0c, 0x35, 0x7f, 0x5d, 0xb2, 0x76, 0xf1, 0x19, 0xb8, 0xf2, 0x8e,
+	0xe5, 0xc9, 0xf4, 0x96, 0xaf, 0xbc, 0x4a, 0xdf, 0x19, 0xb8, 0x61, 0x53, 0x0b, 0x63, 0xbe, 0xc2,
+	0x13, 0xd8, 0xbd, 0x12, 0x82, 0x24, 0xe5, 0x2c, 0x9b, 0x66, 0x9c, 0xe7, 0xd2, 0xab, 0xf6, 0xab,
+	0x03, 0x37, 0xec, 0x16, 0xf2, 0xa5, 0x52, 0x71, 0x1f, 0xea, 0x0b, 0xa9, 0xec, 0x9a, 0xb6, 0xcd,
+	0xc1, 0x3f, 0x86, 0x86, 0xfd, 0x3d, 0x44, 0xa8, 0xa5, 0x2c, 0xe1, 0xba, 0x19, 0x37, 0xd4, 0xdf,
+	0xfe, 0x2b, 0x68, 0x59, 0xfb, 0x63, 0x24, 0x09, 0x5f, 0x42, 0xd3, 0x36, 0x25, 0x3d, 0xa7, 0x5f,
+	0x7d, 0xd8, 0x73, 0x61, 0xfb, 0x3f, 0x1d, 0xe8, 0x5a, 0xf5, 0x1d, 0x27, 0x16, 0xc5, 0x12, 0xbb,
+	0x50, 0x89, 0xe6, 0x1a, 0x5f, 0x0f, 0x2b, 0xd1, 0x1c, 0x8f, 0x01, 0x66, 0x3a, 0x94, 0xf9, 0x94,
+	0x91, 0x7e, 0x58, 0x35, 0x74, 0xad, 0x72, 0x4e, 0xca, 0x9e, 0xf3, 0x98, 0x5b, 0xbb, 0x6a, 0x6c,
+	0xab, 0x9c, 0x13, 0x1e, 0x81, 0xcb, 0x66, 0x14, 0x2d, 0x55, 0xb5, 0x57, 0x33, 0x6e, 0x21, 0x14,
+	0x8f, 0xa9, 0xff, 0x79, 0x4c, 0x39, 0xc7, 0x9d, 0x8d, 0x1c, 0x8b, 0x78, 0x1a, 0xf7, 0xe2, 0x51,
+	0xaa, 0xc9, 0xb4, 0x69, 0x54, 0x7d, 0x38, 0xfd, 0x5e, 0x83, 0xf6, 0x27, 0x9e, 0x64, 0x22, 0x67,
+	0xf1, 0xe8, 0xf2, 0xc3, 0x04, 0x5f, 0xc3, 0xce, 0x84, 0x18, 0x2d, 0x24, 0xb6, 0x4c, 0x1e, 0x7a,
+	0xec, 0xbd, 0xfb, 0x07, 0xff, 0xf0, 0xcb, 0x8f, 0x5f, 0x5f, 0x2b, 0x7b, 0xb8, 0x1b, 0x2c, 0xcf,
+	0x02, 0xa5, 0x07, 0xd2, 0x5c, 0x99, 0x42, 0xa7, 0xb4, 0x1b, 0x78, 0x60, 0xae, 0x6d, 0x2e, 0x4c,
+	0x6f, 0xbf, 0x94, 0xb5, 0x4d, 0xd5, 0xef, 0x6b, 0x6e, 0xcf, 0xf7, 0x0a, 0xee, 0x7a, 0x06, 0x81,
+	0xc9, 0x12, 0xc7, 0xd0, 0x9e, 0x10, 0xcb, 0x69, 0xcd, 0x2f, 0xcf, 0xac, 0xdc, 0xe5, 0x0b, 0x4d,
+	0x7b, 0xea, 0x1f, 0x3e, 0xa4, 0x49, 0xc5, 0xc0, 0x11, 0xb4, 0x26, 0x24, 0xb2, 0x7f, 0x61, 0x3d,
+	0xd7, 0x2c, 0xcf, 0x3f, 0xd8, 0xc6, 0x12, 0x19, 0x8e, 0xa1, 0x13, 0xf2, 0x44, 0x2c, 0xf9, 0xff,
+	0x80, 0x85, 0xc5, 0xa6, 0x8e, 0xd2, 0x6b, 0xb1, 0x89, 0xda, 0x1e, 0x9d, 0x65, 0xe2, 0x56, 0x26,
+	0x23, 0xbc, 0x80, 0xb6, 0x5a, 0x7b, 0x7b, 0x6b, 0x63, 0xb8, 0x7b, 0x25, 0xa4, 0xaa, 0xfb, 0x5b,
+	0x8f, 0x71, 0x24, 0xe9, 0xcd, 0x13, 0x78, 0x3c, 0x8b, 0xc5, 0x62, 0x3e, 0x24, 0xbb, 0x3c, 0x1a,
+	0x71, 0xb5, 0xa3, 0xff, 0x2d, 0xce, 0x7e, 0x07, 0x00, 0x00, 0xff, 0xff, 0xcf, 0xef, 0x68, 0x23,
+	0x5f, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -370,10 +349,13 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type TemporalIPFSClient interface {
-	// Keys returns the IPFS keys associated with an authenticated request.
-	Keys(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*KeysResp, error)
-	// NewKey generates a new IPFS key associated with an authenticated request.
-	NewKey(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Empty, error)
+	Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	CreateNetwork(ctx context.Context, in *CreateNetworkReq, opts ...grpc.CallOption) (*NetworkDetails, error)
+	StartNetwork(ctx context.Context, in *Network, opts ...grpc.CallOption) (*Empty, error)
+	StopNetwork(ctx context.Context, in *Network, opts ...grpc.CallOption) (*Empty, error)
+	RemoveNetwork(ctx context.Context, in *Network, opts ...grpc.CallOption) (*Empty, error)
+	NetworkInfo(ctx context.Context, in *Network, opts ...grpc.CallOption) (*NetworkDetails, error)
+	ListNetworks(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*NetworkList, error)
 }
 
 type temporalIPFSClient struct {
@@ -384,18 +366,63 @@ func NewTemporalIPFSClient(cc *grpc.ClientConn) TemporalIPFSClient {
 	return &temporalIPFSClient{cc}
 }
 
-func (c *temporalIPFSClient) Keys(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*KeysResp, error) {
-	out := new(KeysResp)
-	err := c.cc.Invoke(ctx, "/ipfs.TemporalIPFS/Keys", in, out, opts...)
+func (c *temporalIPFSClient) Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/ipfs.TemporalIPFS/Status", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *temporalIPFSClient) NewKey(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Empty, error) {
+func (c *temporalIPFSClient) CreateNetwork(ctx context.Context, in *CreateNetworkReq, opts ...grpc.CallOption) (*NetworkDetails, error) {
+	out := new(NetworkDetails)
+	err := c.cc.Invoke(ctx, "/ipfs.TemporalIPFS/CreateNetwork", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *temporalIPFSClient) StartNetwork(ctx context.Context, in *Network, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/ipfs.TemporalIPFS/NewKey", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/ipfs.TemporalIPFS/StartNetwork", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *temporalIPFSClient) StopNetwork(ctx context.Context, in *Network, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/ipfs.TemporalIPFS/StopNetwork", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *temporalIPFSClient) RemoveNetwork(ctx context.Context, in *Network, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/ipfs.TemporalIPFS/RemoveNetwork", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *temporalIPFSClient) NetworkInfo(ctx context.Context, in *Network, opts ...grpc.CallOption) (*NetworkDetails, error) {
+	out := new(NetworkDetails)
+	err := c.cc.Invoke(ctx, "/ipfs.TemporalIPFS/NetworkInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *temporalIPFSClient) ListNetworks(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*NetworkList, error) {
+	out := new(NetworkList)
+	err := c.cc.Invoke(ctx, "/ipfs.TemporalIPFS/ListNetworks", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -404,48 +431,141 @@ func (c *temporalIPFSClient) NewKey(ctx context.Context, in *Key, opts ...grpc.C
 
 // TemporalIPFSServer is the server API for TemporalIPFS service.
 type TemporalIPFSServer interface {
-	// Keys returns the IPFS keys associated with an authenticated request.
-	Keys(context.Context, *Empty) (*KeysResp, error)
-	// NewKey generates a new IPFS key associated with an authenticated request.
-	NewKey(context.Context, *Key) (*Empty, error)
+	Status(context.Context, *Empty) (*Empty, error)
+	CreateNetwork(context.Context, *CreateNetworkReq) (*NetworkDetails, error)
+	StartNetwork(context.Context, *Network) (*Empty, error)
+	StopNetwork(context.Context, *Network) (*Empty, error)
+	RemoveNetwork(context.Context, *Network) (*Empty, error)
+	NetworkInfo(context.Context, *Network) (*NetworkDetails, error)
+	ListNetworks(context.Context, *Empty) (*NetworkList, error)
 }
 
 func RegisterTemporalIPFSServer(s *grpc.Server, srv TemporalIPFSServer) {
 	s.RegisterService(&_TemporalIPFS_serviceDesc, srv)
 }
 
-func _TemporalIPFS_Keys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _TemporalIPFS_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TemporalIPFSServer).Keys(ctx, in)
+		return srv.(TemporalIPFSServer).Status(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/ipfs.TemporalIPFS/Keys",
+		FullMethod: "/ipfs.TemporalIPFS/Status",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TemporalIPFSServer).Keys(ctx, req.(*Empty))
+		return srv.(TemporalIPFSServer).Status(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TemporalIPFS_NewKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Key)
+func _TemporalIPFS_CreateNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateNetworkReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TemporalIPFSServer).NewKey(ctx, in)
+		return srv.(TemporalIPFSServer).CreateNetwork(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/ipfs.TemporalIPFS/NewKey",
+		FullMethod: "/ipfs.TemporalIPFS/CreateNetwork",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TemporalIPFSServer).NewKey(ctx, req.(*Key))
+		return srv.(TemporalIPFSServer).CreateNetwork(ctx, req.(*CreateNetworkReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TemporalIPFS_StartNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Network)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TemporalIPFSServer).StartNetwork(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ipfs.TemporalIPFS/StartNetwork",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TemporalIPFSServer).StartNetwork(ctx, req.(*Network))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TemporalIPFS_StopNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Network)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TemporalIPFSServer).StopNetwork(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ipfs.TemporalIPFS/StopNetwork",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TemporalIPFSServer).StopNetwork(ctx, req.(*Network))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TemporalIPFS_RemoveNetwork_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Network)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TemporalIPFSServer).RemoveNetwork(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ipfs.TemporalIPFS/RemoveNetwork",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TemporalIPFSServer).RemoveNetwork(ctx, req.(*Network))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TemporalIPFS_NetworkInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Network)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TemporalIPFSServer).NetworkInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ipfs.TemporalIPFS/NetworkInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TemporalIPFSServer).NetworkInfo(ctx, req.(*Network))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TemporalIPFS_ListNetworks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TemporalIPFSServer).ListNetworks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ipfs.TemporalIPFS/ListNetworks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TemporalIPFSServer).ListNetworks(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -455,12 +575,32 @@ var _TemporalIPFS_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*TemporalIPFSServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Keys",
-			Handler:    _TemporalIPFS_Keys_Handler,
+			MethodName: "Status",
+			Handler:    _TemporalIPFS_Status_Handler,
 		},
 		{
-			MethodName: "NewKey",
-			Handler:    _TemporalIPFS_NewKey_Handler,
+			MethodName: "CreateNetwork",
+			Handler:    _TemporalIPFS_CreateNetwork_Handler,
+		},
+		{
+			MethodName: "StartNetwork",
+			Handler:    _TemporalIPFS_StartNetwork_Handler,
+		},
+		{
+			MethodName: "StopNetwork",
+			Handler:    _TemporalIPFS_StopNetwork_Handler,
+		},
+		{
+			MethodName: "RemoveNetwork",
+			Handler:    _TemporalIPFS_RemoveNetwork_Handler,
+		},
+		{
+			MethodName: "NetworkInfo",
+			Handler:    _TemporalIPFS_NetworkInfo_Handler,
+		},
+		{
+			MethodName: "ListNetworks",
+			Handler:    _TemporalIPFS_ListNetworks_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
