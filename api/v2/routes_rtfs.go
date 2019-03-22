@@ -354,7 +354,7 @@ func (api *API) uploadDirectory(c *gin.Context) {
 	if err := z.Close(); err != nil {
 		// remove file if this fails
 		os.Remove(destPathZip)
-		api.LogError(c, err, err.Error())(http.StatusInternalServerError)
+		api.LogError(c, err, "an error occurred while processing your request")(http.StatusInternalServerError)
 		return
 	}
 	// ensure they have enough remaining data to cover upload
