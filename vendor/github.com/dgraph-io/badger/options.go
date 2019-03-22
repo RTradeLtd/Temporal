@@ -31,16 +31,17 @@ import (
 type Options struct {
 	// 1. Mandatory flags
 	// -------------------
-	// Directory to store the data in. Should exist and be writable.
+	// Directory to store the data in. If it doesn't exist, Badger will
+	// try to create it for you.
 	Dir string
-	// Directory to store the value log in. Can be the same as Dir. Should
-	// exist and be writable.
+	// Directory to store the value log in. Can be the same as Dir. If it
+	// doesn't exist, Badger will try to create it for you.
 	ValueDir string
 
 	// 2. Frequently modified flags
 	// -----------------------------
-	// Sync all writes to disk. Setting this to true would slow down data
-	// loading significantly.
+	// Sync all writes to disk. Setting this to false would achieve better
+	// performance, but may cause data to be lost.
 	SyncWrites bool
 
 	// How should LSM tree be accessed.
@@ -80,17 +81,21 @@ type Options struct {
 	// determined by the smaller of its file size and max entries.
 	ValueLogMaxEntries uint32
 
-	// Number of compaction workers to run concurrently.
+	// Number of compaction workers to run concurrently. Setting this to zero would stop compactions
+	// to happen within LSM tree. If set to zero, writes could block forever.
 	NumCompactors int
 
-	// Transaction start and commit timestamps are manaVgedTxns by end-user. This
-	// is a private option used by ManagedDB.
+	// When closing the DB, force compact Level 0. This ensures that both reads and writes are
+	// efficient when the DB is opened later.
+	CompactL0OnClose bool
+
+	// Transaction start and commit timestamps are managed by end-user.
+	// This is only useful for databases built on top of Badger (like Dgraph).
+	// Not recommended for most users.
 	managedTxns bool
 
 	// 4. Flags for testing purposes
 	// ------------------------------
-	DoNotCompact bool // Stops LSM tree from compactions.
-
 	maxBatchCount int64 // max entries in batch
 	maxBatchSize  int64 // max batch size in bytes
 
@@ -102,26 +107,29 @@ type Options struct {
 
 	// Truncate value log to delete corrupt data, if any. Would not truncate if ReadOnly is set.
 	Truncate bool
+
+	// DB-specific logger which will override the global logger.
+	Logger Logger
 }
 
 // DefaultOptions sets a list of recommended options for good performance.
 // Feel free to modify these to suit your needs.
 var DefaultOptions = Options{
-	DoNotCompact:        false,
 	LevelOneSize:        256 << 20,
 	LevelSizeMultiplier: 10,
-	TableLoadingMode:    options.LoadToRAM,
+	TableLoadingMode:    options.MemoryMap,
 	ValueLogLoadingMode: options.MemoryMap,
 	// table.MemoryMap to mmap() the tables.
 	// table.Nothing to not preload the tables.
 	MaxLevels:               7,
 	MaxTableSize:            64 << 20,
-	NumCompactors:           3,
+	NumCompactors:           2, // Compactions can be expensive. Only run 2.
 	NumLevelZeroTables:      5,
 	NumLevelZeroTablesStall: 10,
 	NumMemtables:            5,
 	SyncWrites:              true,
 	NumVersionsToKeep:       1,
+	CompactL0OnClose:        true,
 	// Nothing to read/write value log using standard File I/O
 	// MemoryMap to mmap() the value log files
 	// (2^30 - 1)*2 when mmapping < 2^31 - 1, max int32.
@@ -131,17 +139,27 @@ var DefaultOptions = Options{
 	ValueLogMaxEntries: 1000000,
 	ValueThreshold:     32,
 	Truncate:           false,
+	Logger:             defaultLogger,
 }
 
-// LSMOnlyOptions follows from DefaultOptions, but sets a higher ValueThreshold so values would
-// be colocated with the LSM tree, with value log largely acting as a write-ahead log only. These
-// options would reduce the disk usage of value log, and make Badger act like a typical LSM tree.
+// LSMOnlyOptions follows from DefaultOptions, but sets a higher ValueThreshold
+// so values would be colocated with the LSM tree, with value log largely acting
+// as a write-ahead log only. These options would reduce the disk usage of value
+// log, and make Badger act more like a typical LSM tree.
 var LSMOnlyOptions = Options{}
 
 func init() {
 	LSMOnlyOptions = DefaultOptions
 
-	LSMOnlyOptions.ValueThreshold = 65500      // Max value length which fits in uint16.
-	LSMOnlyOptions.ValueLogFileSize = 64 << 20 // Allow easy space reclamation.
-	LSMOnlyOptions.ValueLogLoadingMode = options.FileIO
+	LSMOnlyOptions.ValueThreshold = 65500 // Max value length which fits in uint16.
+	// Let's not set any other options, because they can cause issues with the
+	// size of key-value a user can pass to Badger. For e.g., if we set
+	// ValueLogFileSize to 64MB, a user can't pass a value more than that.
+	// Setting it to ValueLogMaxEntries to 1000, can generate too many files.
+	// These options are better configured on a usage basis, than broadly here.
+	// The ValueThreshold is the most important setting a user needs to do to
+	// achieve a heavier usage of LSM tree.
+	// NOTE: If a user does not want to set 64KB as the ValueThreshold because
+	// of performance reasons, 1KB would be a good option too, allowing
+	// values smaller than 1KB to be colocated with the keys in the LSM tree.
 }

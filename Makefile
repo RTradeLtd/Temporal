@@ -57,6 +57,8 @@ WAIT=3
 testenv:
 	@echo "===================   preparing test env    ==================="
 	( cd testenv ; make testenv )
+	# clamav
+	docker run -d --name clamav -p 3310:3310 mk0x/docker-clamav
 	@echo "Running migrations..."
 	go run cmd/temporal/main.go -config ./testenv/config.json --db.no_ssl migrate
 	make api-user
@@ -68,6 +70,8 @@ testenv:
 stop-testenv:
 	@echo "===================  shutting down test env ==================="
 	( cd testenv ; make stop-testenv )
+	docker container stop clamav
+	docker container rm -v clamav
 	@echo "===================          done           ==================="
 
 # Execute short tests

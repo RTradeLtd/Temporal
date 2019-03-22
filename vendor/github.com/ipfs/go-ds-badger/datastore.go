@@ -7,11 +7,13 @@ import (
 
 	osh "github.com/Kubuxu/go-os-helper"
 	badger "github.com/dgraph-io/badger"
-
 	ds "github.com/ipfs/go-datastore"
 	dsq "github.com/ipfs/go-datastore/query"
+	logger "github.com/ipfs/go-log"
 	goprocess "github.com/jbenet/goprocess"
 )
+
+var log = logger.Logger("badger")
 
 type Datastore struct {
 	DB *badger.DB
@@ -42,6 +44,10 @@ var DefaultOptions = Options{
 	Options: badger.DefaultOptions,
 }
 
+var _ ds.Datastore = (*Datastore)(nil)
+var _ ds.TxnDatastore = (*Datastore)(nil)
+var _ ds.TTLDatastore = (*Datastore)(nil)
+
 // NewDatastore creates a new badger datastore.
 //
 // DO NOT set the Dir and/or ValuePath fields of opt, they will be set for you.
@@ -63,6 +69,7 @@ func NewDatastore(path string, options *Options) (*Datastore, error) {
 
 	opt.Dir = path
 	opt.ValueDir = path
+	opt.Logger = log
 
 	kv, err := badger.Open(opt)
 	if err != nil {
@@ -81,8 +88,8 @@ func NewDatastore(path string, options *Options) (*Datastore, error) {
 // NewTransaction starts a new transaction. The resulting transaction object
 // can be mutated without incurring changes to the underlying Datastore until
 // the transaction is Committed.
-func (d *Datastore) NewTransaction(readOnly bool) ds.Txn {
-	return &txn{d.DB.NewTransaction(!readOnly), false}
+func (d *Datastore) NewTransaction(readOnly bool) (ds.Txn, error) {
+	return &txn{d.DB.NewTransaction(!readOnly), false}, nil
 }
 
 // newImplicitTransaction creates a transaction marked as 'implicit'.
@@ -145,6 +152,13 @@ func (d *Datastore) Has(key ds.Key) (bool, error) {
 	return txn.Has(key)
 }
 
+func (d *Datastore) GetSize(key ds.Key) (size int, err error) {
+	txn := d.newImplicitTransaction(true)
+	defer txn.Discard()
+
+	return txn.GetSize(key)
+}
+
 func (d *Datastore) Delete(key ds.Key) error {
 	txn := d.newImplicitTransaction(false)
 	defer txn.Discard()
@@ -179,7 +193,8 @@ func (d *Datastore) Close() error {
 func (d *Datastore) IsThreadSafe() {}
 
 func (d *Datastore) Batch() (ds.Batch, error) {
-	return d.NewTransaction(false), nil
+	tx, _ := d.NewTransaction(false)
+	return tx, nil
 }
 
 func (d *Datastore) CollectGarbage() error {
@@ -189,6 +204,9 @@ func (d *Datastore) CollectGarbage() error {
 	}
 	return err
 }
+
+var _ ds.Datastore = (*txn)(nil)
+var _ ds.TTLDatastore = (*txn)(nil)
 
 func (t *txn) Put(key ds.Key, value []byte) error {
 	return t.txn.Set(key.Bytes(), value)
@@ -226,26 +244,31 @@ func (t *txn) Get(key ds.Key) ([]byte, error) {
 		return nil, err
 	}
 
-	val, err := item.Value()
-	if err != nil {
-		return nil, err
-	}
-
-	out := make([]byte, len(val))
-	copy(out, val)
-	return out, nil
+	return item.ValueCopy(nil)
 }
 
 func (t *txn) Has(key ds.Key) (bool, error) {
-	_, err := t.Get(key)
-
-	if err == nil {
-		return true, nil
-	} else if err == ds.ErrNotFound {
+	_, err := t.txn.Get(key.Bytes())
+	switch err {
+	case badger.ErrKeyNotFound:
 		return false, nil
+	case nil:
+		return true, nil
+	default:
+		return false, err
 	}
+}
 
-	return false, err
+func (t *txn) GetSize(key ds.Key) (int, error) {
+	item, err := t.txn.Get(key.Bytes())
+	switch err {
+	case nil:
+		return int(item.ValueSize()), nil
+	case badger.ErrKeyNotFound:
+		return -1, ds.ErrNotFound
+	default:
+		return -1, err
+	}
 }
 
 func (t *txn) Delete(key ds.Key) error {
@@ -257,10 +280,23 @@ func (t *txn) Query(q dsq.Query) (dsq.Results, error) {
 	opt := badger.DefaultIteratorOptions
 	opt.PrefetchValues = !q.KeysOnly
 
+	// Special case order by key.
+	orders := q.Orders
+	if len(orders) > 0 {
+		switch q.Orders[0].(type) {
+		case dsq.OrderByKey, *dsq.OrderByKey:
+			// Already ordered by key.
+			orders = nil
+		case dsq.OrderByKeyDescending, *dsq.OrderByKeyDescending:
+			orders = nil
+			opt.Reverse = true
+		}
+	}
+
 	txn := t.txn
 
 	it := txn.NewIterator(opt)
-	it.Seek([]byte(q.Prefix))
+	it.Seek(prefix)
 	if q.Offset > 0 {
 		for j := 0; j < q.Offset; j++ {
 			it.Next()
@@ -289,13 +325,11 @@ func (t *txn) Query(q dsq.Query) (dsq.Results, error) {
 
 			var result dsq.Result
 			if !q.KeysOnly {
-				b, err := item.Value()
+				b, err := item.ValueCopy(nil)
 				if err != nil {
 					result = dsq.Result{Error: err}
 				} else {
-					bytes := make([]byte, len(b))
-					copy(bytes, b)
-					e.Value = bytes
+					e.Value = b
 					result = dsq.Result{Entry: e}
 				}
 			} else {
@@ -324,15 +358,20 @@ func (t *txn) Query(q dsq.Query) (dsq.Results, error) {
 	for _, f := range q.Filters {
 		qr = dsq.NaiveFilter(qr, f)
 	}
-	for _, o := range q.Orders {
-		qr = dsq.NaiveOrder(qr, o)
+	if len(orders) > 0 {
+		qr = dsq.NaiveOrder(qr, orders...)
 	}
 
 	return qr, nil
 }
 
 func (t *txn) Commit() error {
-	return t.txn.Commit(nil)
+	return t.txn.Commit()
+}
+
+// Alias to commit
+func (t *txn) Close() error {
+	return t.txn.Commit()
 }
 
 func (t *txn) Discard() {

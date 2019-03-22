@@ -10,6 +10,12 @@
 				"ip": "",
 				"port": ""
 			},
+			"cords": {
+				"allowed_origins": [
+					"temporal.cloud",
+					"backup.temporal.cloud"
+				]
+			},
 			"limit": ""
 		},
 		"jwt": {
@@ -40,7 +46,16 @@
 				"cert_path": "",
 				"key_file": ""
 			},
-			"auth_key": ""
+			"auth_key": "",
+			"options": {
+				"engine": {
+					"store_path": "",
+					"queue": {
+						"rate": 0,
+						"batch": 0
+					}
+				}
+			}
 		},
 		"nexus": {
 			"host": "",
@@ -65,6 +80,16 @@
 			"pass": ""
 		},
 		"krab": {
+			"url": "",
+			"TLS": {
+				"cert_path": "",
+				"key_file": ""
+			},
+			"auth_key": "",
+			"log_file": "",
+			"keystore_password": ""
+		},
+		"krab_fallback": {
 			"url": "",
 			"TLS": {
 				"cert_path": "",

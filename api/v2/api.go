@@ -13,6 +13,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
+	"github.com/RTradeLtd/Temporal/utils"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
@@ -50,7 +51,7 @@ type API struct {
 	upm         *models.UploadManager
 	zm          *models.ZoneManager
 	rm          *models.RecordManager
-	nm          *models.IPFSNetworkManager
+	nm          *models.HostedNetworkManager
 	usage       *models.UsageManager
 	l           *zap.SugaredLogger
 	signer      pbSigner.SignerClient
@@ -58,6 +59,7 @@ type API struct {
 	lens        pbLens.LensV2Client
 	dc          *dash.Client
 	queues      queues
+	clam        *utils.Shell
 	service     string
 
 	version string
@@ -123,10 +125,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 	)
 
 	// set up database manager
-	dbm, err = database.Initialize(cfg, database.Options{LogMode: debug})
+	dbm, err = database.New(cfg, database.Options{LogMode: debug})
 	if err != nil {
 		l.Warnw("failed to connect to database with secure connection - attempting insecure", "error", err.Error())
-		dbm, err = database.Initialize(cfg, database.Options{
+		dbm, err = database.New(cfg, database.Options{
 			LogMode:        debug,
 			SSLModeDisable: true,
 		})
@@ -191,6 +193,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 	if err != nil {
 		return nil, err
 	}
+	clam, err := utils.NewShell("")
+	if err != nil {
+		return nil, err
+	}
 	if cfg.Stripe.SecretKey == "" {
 		stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
 		cfg.Stripe.SecretKey = stripeSecretKey
@@ -228,9 +234,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 			dash:    qmDash,
 			eth:     qmEth,
 		},
-		zm: models.NewZoneManager(dbm.DB),
-		rm: models.NewRecordManager(dbm.DB),
-		nm: models.NewHostedIPFSNetworkManager(dbm.DB),
+		zm:   models.NewZoneManager(dbm.DB),
+		rm:   models.NewRecordManager(dbm.DB),
+		nm:   models.NewHostedNetworkManager(dbm.DB),
+		clam: clam,
 	}, nil
 }
 
@@ -363,6 +370,13 @@ func (api *API) setupRoutes() error {
 			return err
 		}
 	}
+	// ensure we have valid cors configuration
+	var allowedOrigins []string
+	if len(api.cfg.API.Connection.CORS.AllowedOrigin) == 0 {
+		allowedOrigins = middleware.DefaultAllowedOrigins
+	} else {
+		allowedOrigins = api.cfg.API.Connection.CORS.AllowedOrigin
+	}
 	// set up defaults
 	api.r.Use(
 		// allows for automatic xss removal
@@ -373,7 +387,7 @@ func (api *API) setupRoutes() error {
 		// security middleware
 		middleware.NewSecWare(dev),
 		// cors middleware
-		middleware.CORSMiddleware(dev),
+		middleware.CORSMiddleware(dev, allowedOrigins),
 		// request id middleware
 		middleware.RequestID(),
 		// stats middleware

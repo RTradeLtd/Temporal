@@ -1,30 +1,22 @@
 language: go
 go:
-  - "1.11"
+  - "1.12"
 services:
   - docker
 sudo: required
 
+env: GO111MODULE=on 
+
 install:
-  - go get -u golang.org/x/lint/golint
-  - go get -u github.com/vburenin/ifacemaker
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-  - dep ensure -v
+  - go mod download
 
 before_script:
-  # install ipfs client for usage with tests that invoke the command line
-  - /bin/bash setup/scripts/ipfs_install.sh
   - go vet ./...
   - go build ./...
   - go test -run xxxx ./...
   - make testenv
 
 script:
-  - make gen
-  - git --no-pager diff
-  - git diff-index --quiet HEAD --
-  - diff -u <(echo -n) <(gofmt -d -s `find . -type f -name '*.go' -not -path "./vendor/*"`)
-  - diff -u <(echo -n) <(golint `go list ./... | grep -v /vendor/`)
   - go test -race -short -coverprofile=coverage.txt ./...
 
 after_success:

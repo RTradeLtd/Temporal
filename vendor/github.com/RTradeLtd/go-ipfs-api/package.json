@@ -9,21 +9,21 @@
   "gxDependencies": [
     {
       "author": "whyrusleeping",
-      "hash": "QmY5Grm8pJdiSSVsYxx4uNRgweY72EmYwuSDbRnbFok3iY",
+      "hash": "QmYVXrKrKHDC9FobgmcmshCDyWwdrfwfanNQN4oxJ9Fk3h",
       "name": "go-libp2p-peer",
-      "version": "3.0.0"
+      "version": "3.1.2"
     },
     {
       "author": "multiformats",
-      "hash": "QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc",
+      "hash": "QmTZBfrPJmjWsCvHEtX5FE6KimVJhsJg5sBbqEFYf4UZtL",
       "name": "go-multiaddr",
-      "version": "1.4.0"
+      "version": "1.4.1"
     },
     {
       "author": "multiformats",
-      "hash": "QmZcLBXKaFe8ND5YHPkJRAwmhJGrVsi1JqDZNyJ4nRK5Mj",
+      "hash": "Qmc85NSvmSG4Frn9Vb2cBc1rMyULH6D3TNVEfCzSKoUpip",
       "name": "go-multiaddr-net",
-      "version": "1.7.1"
+      "version": "1.7.2"
     },
     {
       "author": "mitchellh",
@@ -45,15 +45,15 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmbYN6UmTJn5UUQdi5CTsU86TXVBSrTcRk5UmyA36Qx2J6",
+      "hash": "QmSwVwKUWzdf3ppM3FbBbpuqHUNtUFJPQQdfvKmgZoz2gR",
       "name": "go-libp2p-metrics",
-      "version": "2.1.11"
+      "version": "2.1.14"
     },
     {
       "author": "magik6k",
-      "hash": "QmXWZCd8jfaHmt4UDSnjKmGcrQMw95bDGWqEeVLVJjoANX",
+      "hash": "QmQmhotPUzVrMEWNK3x1R5jQ5ZHWyL7tVUrmRPjrBrvyCb",
       "name": "go-ipfs-files",
-      "version": "2.0.3"
+      "version": "2.0.6"
     }
   ],
   "gxVersion": "0.7.0",
@@ -61,6 +61,6 @@
   "license": "MIT",
   "name": "go-ipfs-api",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "1.4.5"
+  "version": "1.4.8"
 }
 

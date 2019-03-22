@@ -25,17 +25,18 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, l *zap.SugaredLogg
 		Timeout:    time.Hour * 24,
 		MaxRefresh: time.Hour * 24,
 		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) { // userId = username
+			lAuth := l.With("user", userId)
 			userManager := models.NewUserManager(db)
 			validLogin, err := userManager.SignIn(userId, password)
 			if err != nil {
+				lAuth.Warn("bad sign in", "error", err)
 				return userId, false
 			}
-			l = l.With("user", userId)
 			if !validLogin {
-				l.Error("bad login")
+				lAuth.Warn("bad login")
 				return userId, false
 			}
-			l.Info("successful login")
+			lAuth.Info("successful login")
 			return userId, true
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {

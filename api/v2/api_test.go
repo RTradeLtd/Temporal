@@ -33,6 +33,7 @@ const (
 	testSwarmKey       = "7fcb5a1b19bdda69da7307162e3becd2d6bd485d5aad778470b305f3f306cf79"
 	testBootstrapPeer1 = "/ip4/172.218.49.115/tcp/5002/ipfs/Qmf964tiE9JaxqntDsSBGasD4aaofPQtfYZyMSJJkRrVTQ"
 	testBootstrapPeer2 = "/ip4/192.168.1.249/tcp/4001/ipfs/QmXuGVPzEz2Ji7g54AYyqoobRJNHqtnrfaEceAes2bTKMh"
+	testPIN            = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 )
 
 var (
@@ -747,11 +748,9 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 }
 
 func loadDatabase(cfg *config.TemporalConfig) (*gorm.DB, error) {
-	return database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
-		SSLModeDisable: true,
-	})
+	dbm, err := database.New(cfg, database.Options{SSLModeDisable: true})
+	if err != nil {
+		return nil, err
+	}
+	return dbm.DB, nil
 }

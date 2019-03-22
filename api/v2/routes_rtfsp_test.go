@@ -38,7 +38,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	nm := models.NewHostedIPFSNetworkManager(db)
+	nm := models.NewHostedNetworkManager(db)
 
 	// create private network - failure missing name
 	// /v2/ipfs/private/new
@@ -261,6 +261,12 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	}
 	hash = apiResp.Response
 
+	// create a temporary object with
+	// default template
+	newObj, err := api.ipfs.NewObject("")
+	if err != nil {
+		t.Fatal(err)
+	}
 	// test pinning
 	// /v2/ipfs/private/pin
 	apiResp = apiResponse{}
@@ -268,7 +274,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	urlValues.Add("hold_time", "5")
 	urlValues.Add("network_name", "abc123")
 	if err := sendRequest(
-		api, "POST", "/v2/ipfs/private/pin/"+hash, 200, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipfs/private/pin/"+newObj, 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -276,7 +282,6 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	if apiResp.Code != 200 {
 		t.Fatal("bad api status code from  /v2/ipfs/private/pin")
 	}
-
 	// test pin check
 	// /v2/ipfs/private/check/pin
 	var boolAPIResp boolAPIResponse
