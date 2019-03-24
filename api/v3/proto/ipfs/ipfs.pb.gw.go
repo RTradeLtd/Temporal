@@ -28,15 +28,6 @@ var _ status.Status
 var _ = runtime.String
 var _ = utilities.NewDoubleArray
 
-func request_TemporalIPFS_Status_0(ctx context.Context, marshaler runtime.Marshaler, client TemporalIPFSClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Empty
-	var metadata runtime.ServerMetadata
-
-	msg, err := client.Status(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
 var (
 	filter_TemporalIPFS_CreateNetwork_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
@@ -169,26 +160,6 @@ func RegisterTemporalIPFSHandler(ctx context.Context, mux *runtime.ServeMux, con
 // "TemporalIPFSClient" to call the correct interceptors.
 func RegisterTemporalIPFSHandlerClient(ctx context.Context, mux *runtime.ServeMux, client TemporalIPFSClient) error {
 
-	mux.Handle("GET", pattern_TemporalIPFS_Status_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_TemporalIPFS_Status_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_TemporalIPFS_Status_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("POST", pattern_TemporalIPFS_CreateNetwork_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -313,8 +284,6 @@ func RegisterTemporalIPFSHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_TemporalIPFS_Status_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v3", "ipfs", "status"}, ""))
-
 	pattern_TemporalIPFS_CreateNetwork_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v3", "ipfs", "networks", "create"}, ""))
 
 	pattern_TemporalIPFS_StartNetwork_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v3", "ipfs", "networks", "start"}, ""))
@@ -329,8 +298,6 @@ var (
 )
 
 var (
-	forward_TemporalIPFS_Status_0 = runtime.ForwardResponseMessage
-
 	forward_TemporalIPFS_CreateNetwork_0 = runtime.ForwardResponseMessage
 
 	forward_TemporalIPFS_StartNetwork_0 = runtime.ForwardResponseMessage

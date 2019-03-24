@@ -13,12 +13,32 @@ type IPFSService struct {
 	l *zap.SugaredLogger
 }
 
-// Keys retrieves an account's IPFS keys
-func (i *IPFSService) Keys(ctx context.Context, req *ipfs.Empty) (*ipfs.KeysResp, error) {
+// CreateNetwork creates a new hosted IPFS network
+func (i *IPFSService) CreateNetwork(context.Context, *ipfs.CreateNetworkReq) (*ipfs.NetworkDetails, error) {
 	return nil, nil
 }
 
-// NewKey generates a new IPFS key associated with an authenticated request.
-func (i *IPFSService) NewKey(ctx context.Context, req *ipfs.Key) (*ipfs.Empty, error) {
+// StartNetwork spins up a previously created IPFS network
+func (i *IPFSService) StartNetwork(context.Context, *ipfs.Network) (*ipfs.Empty, error) {
+	return nil, nil
+}
+
+// StopNetwork shuts down an IPFS network
+func (i *IPFSService) StopNetwork(context.Context, *ipfs.Network) (*ipfs.Empty, error) {
+	return nil, nil
+}
+
+// RemoveNetwork deletes an IPFS network
+func (i *IPFSService) RemoveNetwork(context.Context, *ipfs.Network) (*ipfs.Empty, error) {
+	return nil, nil
+}
+
+// NetworkInfo retrieves information about a network
+func (i *IPFSService) NetworkInfo(context.Context, *ipfs.Network) (*ipfs.NetworkDetails, error) {
+	return nil, nil
+}
+
+// ListNetworks retrieves a list of the authenticated user's networks
+func (i *IPFSService) ListNetworks(context.Context, *ipfs.Empty) (*ipfs.NetworkList, error) {
 	return nil, nil
 }
