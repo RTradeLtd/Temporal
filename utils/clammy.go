@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"io"
+	"time"
 
 	clamd "github.com/baruwa-enterprise/clamd"
 )
@@ -21,6 +22,14 @@ func NewShell(address string) (*Shell, error) {
 	if err != nil {
 		return nil, err
 	}
+	// 3 connection retry attempts
+	c.SetConnRetries(3)
+	// sleep of 1.25 seconds
+	c.SetConnSleep(1250 * time.Millisecond)
+	// timeout of 10 minutes
+	c.SetConnTimeout(10 * time.Minute)
+	c.SetCmdTimeout(10 * time.Minute)
+
 	return &Shell{
 		clam: c,
 	}, nil
