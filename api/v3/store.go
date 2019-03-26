@@ -18,9 +18,19 @@ func (s *StoreService) Upload(store.TemporalStore_UploadServer) error {
 	return nil
 }
 
+// UploadBlob accepts a single blob (up to 5mb)
+func (s *StoreService) UploadBlob(context.Context, *store.UploadReq) (*store.Object, error) {
+	return nil, nil
+}
+
 // Download retrieves an object
 func (s *StoreService) Download(*store.DownloadReq, store.TemporalStore_DownloadServer) error {
 	return nil
+}
+
+// DownloadBlob returns a single blob (up to 5mb)
+func (s *StoreService) DownloadBlob(context.Context, *store.DownloadReq) (*store.Blob, error) {
+	return nil, nil
 }
 
 // Pin handles new pins and pin extensions

@@ -347,11 +347,17 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type TemporalIPFSClient interface {
+	// CreateNetwork creates a new hosted IPFS network
 	CreateNetwork(ctx context.Context, in *CreateNetworkReq, opts ...grpc.CallOption) (*NetworkDetails, error)
+	// StartNetwork spins up a previously created IPFS network
 	StartNetwork(ctx context.Context, in *Network, opts ...grpc.CallOption) (*Empty, error)
+	// StopNetwork shuts down an IPFS network
 	StopNetwork(ctx context.Context, in *Network, opts ...grpc.CallOption) (*Empty, error)
+	// RemoveNetwork deletes an IPFS network
 	RemoveNetwork(ctx context.Context, in *Network, opts ...grpc.CallOption) (*Empty, error)
+	// NetworkInfo retrieves information about a network
 	NetworkInfo(ctx context.Context, in *Network, opts ...grpc.CallOption) (*NetworkDetails, error)
+	// ListNetworks retrieves a list of the authenticated user's networks
 	ListNetworks(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*NetworkList, error)
 }
 
@@ -419,11 +425,17 @@ func (c *temporalIPFSClient) ListNetworks(ctx context.Context, in *Empty, opts .
 
 // TemporalIPFSServer is the server API for TemporalIPFS service.
 type TemporalIPFSServer interface {
+	// CreateNetwork creates a new hosted IPFS network
 	CreateNetwork(context.Context, *CreateNetworkReq) (*NetworkDetails, error)
+	// StartNetwork spins up a previously created IPFS network
 	StartNetwork(context.Context, *Network) (*Empty, error)
+	// StopNetwork shuts down an IPFS network
 	StopNetwork(context.Context, *Network) (*Empty, error)
+	// RemoveNetwork deletes an IPFS network
 	RemoveNetwork(context.Context, *Network) (*Empty, error)
+	// NetworkInfo retrieves information about a network
 	NetworkInfo(context.Context, *Network) (*NetworkDetails, error)
+	// ListNetworks retrieves a list of the authenticated user's networks
 	ListNetworks(context.Context, *Empty) (*NetworkList, error)
 }
 
