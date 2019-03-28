@@ -2,8 +2,10 @@ package v3
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -13,13 +15,24 @@ import (
 
 	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
 	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/database/models"
 	"github.com/RTradeLtd/sdk/go/temporal"
 )
 
+// JWTConfig denotes JWT signing configuration
+type JWTConfig struct {
+	Key   string
+	Realm string
+}
+
 // AuthService implements TemporalAuthService
 type AuthService struct {
-	users *models.UserManager
+	users  *models.UserManager
+	emails *queue.Manager
+
+	jwt JWTConfig
+	dev bool
 
 	l *zap.SugaredLogger
 }
@@ -31,25 +44,82 @@ func (a *AuthService) VerificationHandler(w http.ResponseWriter, r *http.Request
 
 // Register returns the Temporal API status
 func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*auth.User, error) {
-	if strings.ContainsRune(req.GetEmailAddress(), '+') {
+	var (
+		email = req.GetEmailAddress()
+		user  = req.GetCredentials().GetUsername()
+		pw    = req.GetCredentials().GetPassword()
+		l     = a.l.With("user", user, "email", email)
+	)
+
+	// validate email
+	if strings.ContainsRune(email, '+') {
 		return nil, grpc.Errorf(codes.InvalidArgument, "emails must not contain + signs")
 	}
-	creds := req.GetCredentials()
-	if _, err := a.users.NewUserAccount(creds.GetUsername(), creds.GetPassword(), req.GetEmailAddress()); err != nil {
+
+	// create account
+	if _, err := a.users.NewUserAccount(user, pw, email); err != nil {
 		switch err.Error() {
 		case eh.DuplicateEmailError:
 			return nil, grpc.Errorf(codes.InvalidArgument, eh.DuplicateEmailError)
 		case eh.DuplicateUserNameError:
 			return nil, grpc.Errorf(codes.InvalidArgument, eh.DuplicateUserNameError)
 		default:
-			a.l.Errorw("unexpected error occured while creating account",
-				"user", creds.GetUsername(),
+			l.Errorw("unexpected error occured while creating account",
 				"error", err)
 			return nil, grpc.Errorf(codes.InvalidArgument, eh.UserAccountCreationError)
 		}
 	}
 
-	return nil, nil
+	// generate a random token to validate email
+	u, err := a.users.GenerateEmailVerificationToken(user)
+	if err != nil {
+		l.Errorw(eh.EmailTokenGenerationError, "error", err)
+		return nil, grpc.Errorf(codes.Internal, eh.EmailTokenGenerationError)
+	}
+	// generate a jwt used to trigger email validation
+	token, err := a.signChallengeToken(u.UserName, u.EmailVerificationToken)
+	if err != nil {
+		l.Errorw("failed to generate email verification jwt", "error", err)
+		return nil, grpc.Errorf(codes.Internal, "failed to generate email verification jwt")
+	}
+	// format the url the user clicks to activate email
+	url := fmt.Sprintf("https://api.temporal.cloud/v3/auth/verify?user=%s&challenge%s", u.UserName, token)
+	if a.dev {
+		url = fmt.Sprintf("https://dev.api.temporal.cloud/v3/auth/verify?user=%s&challenge=%s", u.UserName, token)
+	}
+	// send email message to queue for processing
+	if err = a.emails.PublishMessage(queue.EmailSend{
+		Subject: "Temporal Email Verification",
+		Content: fmt.Sprintf("please click this %s to activate temporal email functionality",
+			fmt.Sprintf("<a href=\"%s\">link</a>", url)),
+		ContentType: "text/html",
+		UserNames:   []string{u.UserName},
+		Emails:      []string{u.EmailAddress},
+	}); err != nil {
+		l.Errorw(eh.QueuePublishError, "error", err)
+		return nil, grpc.Errorf(codes.Internal, "failed to send verification email")
+	}
+	l.Info("user account registered")
+
+	// return relevant user data
+	return &auth.User{
+		Id:           uint64(u.ID),
+		UserName:     u.UserName,
+		EmailAddress: u.EmailAddress,
+		Verified:     false,
+		Credits:      u.Credits,
+		IpfsKeys: func(k []string, v []string) map[string]string {
+			m := make(map[string]string)
+			for i, key := range k {
+				m[key] = v[i]
+			}
+			return m
+		}(u.IPFSKeyIDs, u.IPFSKeyNames),
+		IpfsNetworks: u.IPFSNetworkNames,
+		Tier:         auth.Tier_FREE,
+		ApiAccess:    true,
+		AdminAccess:  u.AdminAccess,
+	}, nil
 }
 
 // Recover facilitates account recovery
@@ -163,4 +233,14 @@ func (a *AuthService) validate(ctx context.Context, keyLookup jwt.Keyfunc) (cont
 
 	// set user in for retrieval context
 	return ctxSetUser(ctx, user), nil
+}
+
+func (a *AuthService) signChallengeToken(user, challenge string) (string, error) {
+	return jwt.
+		NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+			"user":      user,
+			"challenge": challenge,
+			"expire":    time.Now().Add(time.Hour * 24).UTC().String(),
+		}).
+		SignedString([]byte(a.jwt.Key))
 }
