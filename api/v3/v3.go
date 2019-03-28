@@ -4,7 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"net"
+	"net/http"
 	"time"
+
+	"github.com/go-chi/chi"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
@@ -27,6 +30,9 @@ type V3 struct {
 	auth  auth.TemporalAuthServer
 	store store.TemporalStoreServer
 	ipfs  ipfs.TemporalIPFSServer
+
+	verify http.HandlerFunc
+	http   *http.Server
 
 	options []grpc.ServerOption
 
@@ -90,6 +96,11 @@ func New(
 		store: storeService,
 		ipfs:  ipfsService,
 
+		verify: authService.VerificationHandler,
+		http: &http.Server{
+			TLSConfig: opts.TLS,
+		},
+
 		options: serverOpts,
 
 		l: l,
@@ -113,19 +124,33 @@ func (v *V3) Run(ctx context.Context, address string) error {
 	ipfs.RegisterTemporalIPFSServer(server, v.ipfs)
 	v.l.Debug("services registered")
 
+	// set up rest endpoint
+	v.l.Debug("setting up REST endpoints")
+	var m = chi.NewMux()
+	m.HandleFunc("/v3/auth/verify", v.verify)
+	v.http.Handler = m
+	v.http.Addr = address
+	v.l.Debug("rest endpoints set up")
+
 	// interrupt server gracefully if context is cancelled
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				v.l.Info("shutting down server")
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				v.http.Shutdown(ctx)
 				server.GracefulStop()
+				cancel()
 				return
 			}
 		}
 	}()
 
 	// spin up server
-	v.l.Info("spinning up server")
+	v.l.Info("spinning up http server")
+	go v.http.ListenAndServe()
+
+	v.l.Info("spinning up grpc services")
 	return server.Serve(listener)
 }

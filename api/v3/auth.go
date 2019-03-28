@@ -2,6 +2,7 @@ package v3
 
 import (
 	"context"
+	"net/http"
 	"strings"
 
 	"go.uber.org/zap"
@@ -11,6 +12,7 @@ import (
 	"gopkg.in/dgrijalva/jwt-go.v3"
 
 	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
+	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/models"
 	"github.com/RTradeLtd/sdk/go/temporal"
 )
@@ -22,8 +24,31 @@ type AuthService struct {
 	l *zap.SugaredLogger
 }
 
+// VerificationHandler is a traditional HTTP handler for handling account verifications
+func (a *AuthService) VerificationHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO
+}
+
 // Register returns the Temporal API status
 func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*auth.User, error) {
+	if strings.ContainsRune(req.GetEmailAddress(), '+') {
+		return nil, grpc.Errorf(codes.InvalidArgument, "emails must not contain + signs")
+	}
+	creds := req.GetCredentials()
+	if _, err := a.users.NewUserAccount(creds.GetUsername(), creds.GetPassword(), req.GetEmailAddress()); err != nil {
+		switch err.Error() {
+		case eh.DuplicateEmailError:
+			return nil, grpc.Errorf(codes.InvalidArgument, eh.DuplicateEmailError)
+		case eh.DuplicateUserNameError:
+			return nil, grpc.Errorf(codes.InvalidArgument, eh.DuplicateUserNameError)
+		default:
+			a.l.Errorw("unexpected error occured while creating account",
+				"user", creds.GetUsername(),
+				"error", err)
+			return nil, grpc.Errorf(codes.InvalidArgument, eh.UserAccountCreationError)
+		}
+	}
+
 	return nil, nil
 }
 
