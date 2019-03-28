@@ -20,6 +20,13 @@ import (
 	"github.com/RTradeLtd/sdk/go/temporal"
 )
 
+const (
+	claimUser      = "id"
+	claimChallenge = "challenge"
+	claimOrigAt    = "orig_iat"
+	claimExpiry    = "exp"
+)
+
 // JWTConfig denotes JWT signing configuration
 type JWTConfig struct {
 	Key   string
@@ -251,7 +258,7 @@ func (a *AuthService) validate(ctx context.Context, keyLookup jwt.Keyfunc) (cont
 
 	// retrieve ID
 	var userID string
-	if userID, ok = claims["id"].(string); !ok || userID == "" {
+	if userID, ok = claims[claimUser].(string); !ok || userID == "" {
 		return nil, grpc.Errorf(codes.Unauthenticated, "invalid key")
 	}
 
@@ -269,9 +276,9 @@ func (a *AuthService) signAPIToken(user string) (int64, string, error) {
 	expire := time.Now().Add(a.jwt.Timeout).Unix()
 	token, err := jwt.
 		NewWithClaims(a.jwt.SigningAlgo, jwt.MapClaims{
-			"id":       user,
-			"exp":      expire,
-			"orig_iat": time.Now().Unix(),
+			claimUser:   user,
+			claimExpiry: expire,
+			claimOrigAt: time.Now().Unix(),
 		}).
 		SignedString([]byte(a.jwt.Key))
 	return expire, token, err
@@ -280,9 +287,10 @@ func (a *AuthService) signAPIToken(user string) (int64, string, error) {
 func (a *AuthService) signChallengeToken(user, challenge string) (string, error) {
 	return jwt.
 		NewWithClaims(a.jwt.SigningAlgo, jwt.MapClaims{
-			"id":        user,
-			"challenge": challenge,
-			"exp":       time.Now().Add(time.Hour * 24).UTC().String(),
+			claimUser:      user,
+			claimChallenge: challenge,
+			claimExpiry:    time.Now().Add(time.Hour * 24).UTC().String(),
+			claimOrigAt:    time.Now().Unix(),
 		}).
 		SignedString([]byte(a.jwt.Key))
 }
