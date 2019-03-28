@@ -1,6 +1,8 @@
 package eh
 
 const (
+	// LoginError indicates an unexpected error occured when logging in
+	LoginError = "an error occured while signing in"
 	// IPFSConnectionError is an error used for ipfs connection failures
 	IPFSConnectionError = "failed to connect to ipfs"
 	// PrivateNetworkAccessError is used for invalid access to private networks

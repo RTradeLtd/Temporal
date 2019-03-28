@@ -24,6 +24,9 @@ import (
 type JWTConfig struct {
 	Key   string
 	Realm string
+
+	Timeout     time.Duration
+	SigningAlgo jwt.SigningMethod
 }
 
 // AuthService implements TemporalAuthService
@@ -129,7 +132,34 @@ func (a *AuthService) Recover(ctx context.Context, req *auth.RecoverReq) (*auth.
 
 // Login accepts credentials and returns a token for use with further requests.
 func (a *AuthService) Login(ctx context.Context, req *auth.Credentials) (*auth.Token, error) {
-	return nil, nil
+	var (
+		user = req.GetUsername()
+		pw   = req.GetPassword()
+		l    = a.l.With("user", user)
+	)
+
+	// sign in user
+	ok, err := a.users.SignIn(user, pw)
+	if err != nil {
+		l.Errorw("unexpected error when signing in", "error", err)
+		return nil, grpc.Errorf(codes.Internal, eh.LoginError)
+	}
+	if !ok {
+		return nil, grpc.Errorf(codes.Unauthenticated, "invalid credentials provided")
+	}
+
+	// generate token
+	expire, token, err := a.signAPIToken(user)
+	if err != nil {
+		l.Errorw("unexpected error when signing token", "error", err)
+		return nil, grpc.Errorf(codes.Internal, eh.LoginError)
+	}
+
+	// return token
+	return &auth.Token{
+		Expire: expire,
+		Token:  token,
+	}, nil
 }
 
 // Account returns the account associated with an authenticated request.
@@ -235,12 +265,24 @@ func (a *AuthService) validate(ctx context.Context, keyLookup jwt.Keyfunc) (cont
 	return ctxSetUser(ctx, user), nil
 }
 
+func (a *AuthService) signAPIToken(user string) (int64, string, error) {
+	expire := time.Now().Add(a.jwt.Timeout).Unix()
+	token, err := jwt.
+		NewWithClaims(a.jwt.SigningAlgo, jwt.MapClaims{
+			"id":       user,
+			"exp":      expire,
+			"orig_iat": time.Now().Unix(),
+		}).
+		SignedString([]byte(a.jwt.Key))
+	return expire, token, err
+}
+
 func (a *AuthService) signChallengeToken(user, challenge string) (string, error) {
 	return jwt.
-		NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
-			"user":      user,
+		NewWithClaims(a.jwt.SigningAlgo, jwt.MapClaims{
+			"id":        user,
 			"challenge": challenge,
-			"expire":    time.Now().Add(time.Hour * 24).UTC().String(),
+			"exp":       time.Now().Add(time.Hour * 24).UTC().String(),
 		}).
 		SignedString([]byte(a.jwt.Key))
 }
