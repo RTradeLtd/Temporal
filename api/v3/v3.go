@@ -16,7 +16,6 @@ import (
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"gopkg.in/dgrijalva/jwt-go.v3"
 
 	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
 	"github.com/RTradeLtd/Temporal/api/v3/proto/core"
@@ -41,8 +40,7 @@ type V3 struct {
 
 // Options denotes configuration for the V3 API
 type Options struct {
-	KeyLookup jwt.Keyfunc
-	TLS       *tls.Config
+	TLS *tls.Config
 }
 
 // New initializes a new V3 service from concrete implementations of the
@@ -62,7 +60,7 @@ func New(
 
 	// set up middleware chain
 	var (
-		unaryInterceptor, streamInterceptor = authService.newAuthInterceptors(opts.KeyLookup)
+		unaryInterceptor, streamInterceptor = authService.newAuthInterceptors()
 
 		zapOpts = []grpc_zap.Option{
 			grpc_zap.WithDurationField(func(duration time.Duration) zapcore.Field {

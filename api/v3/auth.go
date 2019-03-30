@@ -2,6 +2,7 @@ package v3
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -187,7 +188,7 @@ func (a *AuthService) Refresh(ctx context.Context, req *auth.Empty) (*auth.Token
 
 // newAuthInterceptors creates unary and stream interceptors that validate
 // requests, for use with gRPC servers
-func (a *AuthService) newAuthInterceptors(keyLookup jwt.Keyfunc) (
+func (a *AuthService) newAuthInterceptors() (
 	unaryInterceptor grpc.UnaryServerInterceptor,
 	streamInterceptor grpc.StreamServerInterceptor,
 ) {
@@ -197,7 +198,7 @@ func (a *AuthService) newAuthInterceptors(keyLookup jwt.Keyfunc) (
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (r interface{}, err error) {
-		if ctx, err = a.validate(ctx, keyLookup); err != nil {
+		if ctx, err = a.validate(ctx); err != nil {
 			return
 		}
 		if handler != nil {
@@ -213,7 +214,7 @@ func (a *AuthService) newAuthInterceptors(keyLookup jwt.Keyfunc) (
 		handler grpc.StreamHandler,
 	) (err error) {
 		var ctx = stream.Context()
-		if ctx, err = a.validate(ctx, keyLookup); err != nil {
+		if ctx, err = a.validate(ctx); err != nil {
 			return
 		}
 		if handler != nil {
@@ -225,7 +226,7 @@ func (a *AuthService) newAuthInterceptors(keyLookup jwt.Keyfunc) (
 	return
 }
 
-func (a *AuthService) validate(ctx context.Context, keyLookup jwt.Keyfunc) (context.Context, error) {
+func (a *AuthService) validate(ctx context.Context) (context.Context, error) {
 	// get authorization from context
 	meta, ok := metadata.FromIncomingContext(ctx)
 	if !ok || meta == nil {
@@ -245,27 +246,30 @@ func (a *AuthService) validate(ctx context.Context, keyLookup jwt.Keyfunc) (cont
 	tokenString := splitToken[1]
 
 	// parse takes the token string and a function for looking up the key.
-	token, err := jwt.Parse(tokenString, keyLookup)
-	if err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "invalid key")
-	}
+	var (
+		err  error
+		user *models.User
+	)
+	if _, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		// verify the claims - this checks expiry as well
+		var claims jwt.MapClaims
+		if claims, ok = t.Claims.(jwt.MapClaims); !ok || !t.Valid {
+			return nil, errors.New("invalid token")
+		}
 
-	// verify the claims - this checks expiry as well
-	var claims jwt.MapClaims
-	if claims, ok = token.Claims.(jwt.MapClaims); !ok || !token.Valid {
-		return nil, grpc.Errorf(codes.Unauthenticated, "invalid key")
-	}
+		// retrieve ID
+		var userID string
+		if userID, ok = claims[claimUser].(string); !ok || userID == "" {
+			return nil, grpc.Errorf(codes.Unauthenticated, "invalid key")
+		}
 
-	// retrieve ID
-	var userID string
-	if userID, ok = claims[claimUser].(string); !ok || userID == "" {
+		// the user should be valid
+		if user, err = a.users.FindByUserName(userID); err != nil {
+			return nil, grpc.Errorf(codes.Unauthenticated, "invalid user")
+		}
+		return t, nil
+	}); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "invalid key")
-	}
-
-	// the user should be valid
-	var user *models.User
-	if user, err = a.users.FindByUserName(userID); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "invalid user")
 	}
 
 	// set user in for retrieval context
