@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bobheadxi/res"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -46,11 +47,6 @@ type AuthService struct {
 	dev bool
 
 	l *zap.SugaredLogger
-}
-
-// VerificationHandler is a traditional HTTP handler for handling account verifications
-func (a *AuthService) VerificationHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO
 }
 
 // Register returns the Temporal API status
@@ -202,6 +198,62 @@ func (a *AuthService) Refresh(ctx context.Context, req *auth.Empty) (*auth.Token
 	}, nil
 }
 
+// HTTPVerificationHandler is a traditional HTTP handler for handling account verifications
+func (a *AuthService) HTTPVerificationHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		user     = r.URL.Query().Get("user")
+		tokenStr = r.URL.Query().Get("token")
+		l        = a.l.With("user", user)
+	)
+
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unable to validate signing method: %v", token.Header["alg"])
+		} else if method != jwt.SigningMethodHS512 {
+			return nil, errors.New("expect hs512 signing method")
+		}
+		return []byte(a.jwt.Key), nil
+	})
+	if err != nil {
+		res.R(w, r, res.ErrUnauthorized("invalid token", "error", err))
+		return
+	}
+	if !token.Valid {
+		res.R(w, r, res.ErrUnauthorized("invalid token"))
+		return
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		res.R(w, r, res.ErrBadRequest("invalid token claims"))
+		return
+	}
+	if claims["user"].(string) != user {
+		res.R(w, r, res.ErrBadRequest("user in token does not match request"))
+		return
+	}
+	u, err := a.users.FindByUserName(user)
+	if err != nil {
+		res.R(w, r, res.ErrNotFound("user not found",
+			"user", user))
+		return
+	}
+	challenge := claims["challenge"].(string)
+	if challenge != u.EmailVerificationToken {
+		res.R(w, r, res.ErrBadRequest("challenge in token does not match request"))
+		return
+	}
+	if _, err := a.users.ValidateEmailVerificationToken(user, challenge); err != nil {
+		l.Errorw("unexpected error when validating user",
+			"error", err)
+		res.R(w, r, res.ErrInternalServer("unable to validate user", err))
+		return
+	}
+
+	l.Info("user verified")
+	res.R(w, r, res.MsgOK("email verified"))
+}
+
 // newAuthInterceptors creates unary and stream interceptors that validate
 // requests, for use with gRPC servers
 func (a *AuthService) newAuthInterceptors(exceptions ...string) (
@@ -274,12 +326,12 @@ func (a *AuthService) validate(ctx context.Context) (context.Context, error) {
 
 	// parse takes the token string and a function for looking up the key.
 	var (
-		err  error
-		user *models.User
+		err    error
+		user   *models.User
+		claims jwt.MapClaims
 	)
-	if _, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+	if t, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 		// verify the claims - this checks expiry as well
-		var claims jwt.MapClaims
 		if claims, ok = t.Claims.(jwt.MapClaims); !ok || !t.Valid {
 			return nil, errors.New("invalid token")
 		}
@@ -287,20 +339,22 @@ func (a *AuthService) validate(ctx context.Context) (context.Context, error) {
 		// retrieve ID
 		var userID string
 		if userID, ok = claims[claimUser].(string); !ok || userID == "" {
-			return nil, grpc.Errorf(codes.Unauthenticated, "invalid key")
+			return nil, grpc.Errorf(codes.Unauthenticated, "invalid token")
 		}
 
 		// the user should be valid
 		if user, err = a.users.FindByUserName(userID); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "invalid user")
+			return nil, grpc.Errorf(codes.Unauthenticated, "invalid token")
 		}
-		return t, nil
+		return []byte(a.jwt.Key), nil
 	}); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "invalid key")
+		return nil, grpc.Errorf(codes.Unauthenticated, "invalid key: %v", err)
+	} else if !t.Valid {
+		return nil, grpc.Errorf(codes.Unauthenticated, "invalid token")
 	}
 
 	// set user in for retrieval context
-	return ctxSetUser(ctx, user), nil
+	return ctxSetUser(ctxSetClaims(ctx, claims), user), nil
 }
 
 func (a *AuthService) signAPIToken(user string) (int64, string, error) {
