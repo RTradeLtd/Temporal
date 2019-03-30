@@ -60,7 +60,10 @@ func New(
 
 	// set up middleware chain
 	var (
-		unaryInterceptor, streamInterceptor = authService.newAuthInterceptors()
+		unaryAuth, streamAuth = authService.newAuthInterceptors(
+			"/auth.TemporalAuth/Register",
+			"/auth.TemporalAuth/Login",
+			"/auth.TemporalAuth/Recover")
 
 		zapOpts = []grpc_zap.Option{
 			grpc_zap.WithDurationField(func(duration time.Duration) zapcore.Field {
@@ -70,11 +73,11 @@ func New(
 
 		serverOpts = []grpc.ServerOption{
 			grpc_middleware.WithUnaryServerChain(
-				unaryInterceptor,
+				unaryAuth,
 				grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 				grpc_zap.UnaryServerInterceptor(grpcLogger, zapOpts...)),
 			grpc_middleware.WithStreamServerChain(
-				streamInterceptor,
+				streamAuth,
 				grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 				grpc_zap.StreamServerInterceptor(grpcLogger, zapOpts...)),
 		}

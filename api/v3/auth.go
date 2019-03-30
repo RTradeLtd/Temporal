@@ -183,23 +183,47 @@ func (a *AuthService) Update(ctx context.Context, req *auth.UpdateReq) (*auth.Us
 
 // Refresh provides a refreshed token associated with an authenticated request.
 func (a *AuthService) Refresh(ctx context.Context, req *auth.Empty) (*auth.Token, error) {
-	return nil, nil
+	user, ok := ctxGetUser(ctx)
+	if !ok {
+		return nil, grpc.Errorf(codes.NotFound, "could not find user associated with token")
+	}
+	var l = a.l.With("user", user.UserName)
+
+	// sign a new token for the user
+	expiry, token, err := a.signAPIToken(user.UserName)
+	if err != nil {
+		l.Errorw("unexpected error when signing token", "error", err)
+		return nil, grpc.Errorf(codes.Internal, eh.LoginError)
+	}
+
+	return &auth.Token{
+		Expire: expiry,
+		Token:  token,
+	}, nil
 }
 
 // newAuthInterceptors creates unary and stream interceptors that validate
 // requests, for use with gRPC servers
-func (a *AuthService) newAuthInterceptors() (
+func (a *AuthService) newAuthInterceptors(exceptions ...string) (
 	unaryInterceptor grpc.UnaryServerInterceptor,
 	streamInterceptor grpc.StreamServerInterceptor,
 ) {
+	exclude := make(map[string]bool)
+	for _, e := range exceptions {
+		exclude[e] = true
+	}
+
+	// unaryInterceptor handles all incoming unary RPC requests
 	unaryInterceptor = func(
 		ctx context.Context,
 		req interface{},
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (r interface{}, err error) {
-		if ctx, err = a.validate(ctx); err != nil {
-			return
+		if v, found := exclude[info.FullMethod]; !v && !found {
+			if ctx, err = a.validate(ctx); err != nil {
+				return
+			}
 		}
 		if handler != nil {
 			return handler(ctx, req)
@@ -207,15 +231,18 @@ func (a *AuthService) newAuthInterceptors() (
 		return
 	}
 
+	// streamInterceptor handles all incoming stream RPC requests
 	streamInterceptor = func(
 		srv interface{},
 		stream grpc.ServerStream,
 		info *grpc.StreamServerInfo,
 		handler grpc.StreamHandler,
 	) (err error) {
-		var ctx = stream.Context()
-		if ctx, err = a.validate(ctx); err != nil {
-			return
+		if v, found := exclude[info.FullMethod]; !v && !found {
+			var ctx = stream.Context()
+			if ctx, err = a.validate(ctx); err != nil {
+				return
+			}
 		}
 		if handler != nil {
 			return handler(srv, stream)
