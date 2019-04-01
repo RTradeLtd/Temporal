@@ -22,6 +22,42 @@ import (
 	"github.com/RTradeLtd/sdk/go/temporal"
 )
 
+func toUser(u *models.User, usage *models.Usage) *auth.User {
+	if usage == nil {
+		usage = &models.Usage{}
+	}
+	return &auth.User{
+		Id:           uint64(u.ID),
+		UserName:     u.UserName,
+		EmailAddress: u.EmailAddress,
+		Verified:     u.AccountEnabled,
+		Credits:      u.Credits,
+
+		IpfsKeys: func(k []string, v []string) map[string]string {
+			m := make(map[string]string)
+			for i, key := range k {
+				m[key] = v[i]
+			}
+			return m
+		}(u.IPFSKeyIDs, u.IPFSKeyNames),
+		IpfsNetworks: u.IPFSNetworkNames,
+
+		Tier: func(t models.DataUsageTier) auth.Tier {
+			switch t {
+			case models.Partner:
+				return auth.Tier_PARTNER
+			case models.Light:
+				return auth.Tier_LIGHT
+			default:
+				return auth.Tier_FREE
+			}
+		}(usage.Tier),
+
+		ApiAccess:   true, // TODO: is this always the case?
+		AdminAccess: u.AdminAccess,
+	}
+}
+
 const (
 	claimUser      = "id"
 	claimChallenge = "challenge"
@@ -41,6 +77,7 @@ type JWTConfig struct {
 // AuthService implements TemporalAuthService
 type AuthService struct {
 	users  *models.UserManager
+	usage  *models.UsageManager
 	emails *queue.Manager
 
 	jwt JWTConfig
@@ -109,24 +146,7 @@ func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*aut
 	l.Info("user account registered")
 
 	// return relevant user data
-	return &auth.User{
-		Id:           uint64(u.ID),
-		UserName:     u.UserName,
-		EmailAddress: u.EmailAddress,
-		Verified:     false,
-		Credits:      u.Credits,
-		IpfsKeys: func(k []string, v []string) map[string]string {
-			m := make(map[string]string)
-			for i, key := range k {
-				m[key] = v[i]
-			}
-			return m
-		}(u.IPFSKeyIDs, u.IPFSKeyNames),
-		IpfsNetworks: u.IPFSNetworkNames,
-		Tier:         auth.Tier_FREE,
-		ApiAccess:    true,
-		AdminAccess:  u.AdminAccess,
-	}, nil
+	return toUser(u, nil), nil
 }
 
 // Recover facilitates account recovery
@@ -168,7 +188,21 @@ func (a *AuthService) Login(ctx context.Context, req *auth.Credentials) (*auth.T
 
 // Account returns the account associated with an authenticated request.
 func (a *AuthService) Account(ctx context.Context, req *auth.Empty) (*auth.User, error) {
-	return nil, nil
+	user, ok := ctxGetUser(ctx)
+	if !ok {
+		return nil, grpc.Errorf(codes.NotFound, "could not find user associated with token")
+	}
+	var l = a.l.With("user", user.UserName)
+
+	usage, err := a.usage.FindByUserName(user.UserName)
+	if err != nil {
+		l.Errorw("unexpected error when retrieving user usage data",
+			"error", err)
+		return nil, grpc.Errorf(codes.Internal, "failed to retrieve usage for user")
+	}
+
+	l.Info("account details accessed")
+	return toUser(user, usage), nil
 }
 
 // Update facilitates modification of the account associated with an
