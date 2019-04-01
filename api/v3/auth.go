@@ -23,9 +23,6 @@ import (
 )
 
 func toUser(u *models.User, usage *models.Usage) *auth.User {
-	if usage == nil {
-		usage = &models.Usage{}
-	}
 	return &auth.User{
 		Id:           uint64(u.ID),
 		UserName:     u.UserName,
@@ -42,16 +39,34 @@ func toUser(u *models.User, usage *models.Usage) *auth.User {
 		}(u.IPFSKeyIDs, u.IPFSKeyNames),
 		IpfsNetworks: u.IPFSNetworkNames,
 
-		Tier: func(t models.DataUsageTier) auth.Tier {
-			switch t {
-			case models.Partner:
-				return auth.Tier_PARTNER
-			case models.Light:
-				return auth.Tier_LIGHT
-			default:
-				return auth.Tier_FREE
-			}
-		}(usage.Tier),
+		Usage: &auth.User_Usage{
+			Tier: func(t models.DataUsageTier) auth.Tier {
+				switch t {
+				case models.Partner:
+					return auth.Tier_PARTNER
+				case models.Light:
+					return auth.Tier_LIGHT
+				default:
+					return auth.Tier_FREE
+				}
+			}(usage.Tier),
+			Data: &auth.User_Usage_Limits{
+				Limit: int64(usage.MonthlyDataLimitBytes),
+				Used:  int64(usage.CurrentDataUsedBytes),
+			},
+			IpnsRecords: &auth.User_Usage_Limits{
+				Limit: usage.IPNSRecordsAllowed,
+				Used:  usage.IPNSRecordsAllowed,
+			},
+			PubsubSent: &auth.User_Usage_Limits{
+				Limit: usage.PubSubMessagesAllowed,
+				Used:  usage.PubSubMessagesSent,
+			},
+			Keys: &auth.User_Usage_Limits{
+				Limit: usage.KeysAllowed,
+				Used:  usage.KeysCreated,
+			},
+		},
 
 		ApiAccess:   true, // TODO: is this always the case?
 		AdminAccess: u.AdminAccess,
@@ -145,8 +160,16 @@ func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*aut
 	}
 	l.Info("user account registered")
 
+	// generate default usage data
+	usage, err := a.usage.NewUsageEntry(u.UserName, models.Free)
+	if err != nil {
+		l.Errorw("unexpected error when generating user usage data",
+			"error", err)
+		return nil, grpc.Errorf(codes.Internal, "failed to generate usage limits for user")
+	}
+
 	// return relevant user data
-	return toUser(u, nil), nil
+	return toUser(u, usage), nil
 }
 
 // Recover facilitates account recovery
