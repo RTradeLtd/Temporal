@@ -30,16 +30,8 @@ var (
 
 	BootDelay = 60 * time.Second
 
-	unspecificRelay ma.Multiaddr
+	unspecificRelay = ma.StringCast("/p2p-circuit")
 )
-
-func init() {
-	var err error
-	unspecificRelay, err = ma.NewMultiaddr("/p2p-circuit")
-	if err != nil {
-		panic(err)
-	}
-}
 
 // AutoRelayHost is a Host that uses relays for connectivity when a NAT is detected.
 type AutoRelayHost struct {

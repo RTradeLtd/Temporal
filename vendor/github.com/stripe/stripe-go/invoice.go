@@ -123,13 +123,10 @@ type InvoiceListParams struct {
 	Billing      *string           `form:"billing"`
 	Customer     *string           `form:"customer"`
 	Created      *int64            `form:"created"`
-	CreatedRange *RangeQueryParams `form:"created_range"`
+	CreatedRange *RangeQueryParams `form:"created"`
 	DueDate      *int64            `form:"due_date"`
+	DueDateRange *RangeQueryParams `form:"due_date"`
 	Subscription *string           `form:"subscription"`
-
-	// Those parameters are deprecated. Prefer using Created or CreatedRange
-	Date      *int64            `form:"date"`
-	DateRange *RangeQueryParams `form:"date"`
 }
 
 // InvoiceLineListParams is the set of parameters that can be used when listing invoice line items.
@@ -199,7 +196,6 @@ type Invoice struct {
 	Discount                  *Discount                `json:"discount"`
 	DueDate                   int64                    `json:"due_date"`
 	EndingBalance             int64                    `json:"ending_balance"`
-	FinalizedAt               int64                    `json:"finalized_at"`
 	Footer                    string                   `json:"footer"`
 	HostedInvoiceURL          string                   `json:"hosted_invoice_url"`
 	ID                        string                   `json:"id"`
@@ -226,12 +222,6 @@ type Invoice struct {
 	Total                     int64                    `json:"total"`
 	TransferData              *InvoiceTransferData     `json:"transfer_data"`
 	WebhooksDeliveredAt       int64                    `json:"webhooks_delivered_at"`
-
-	// This property is considered deprecated. Prefer using ApplicationFeeAmount
-	ApplicationFee int64 `json:"application_fee"`
-
-	// This property is considered deprecated. Prefer using created
-	Date int64 `json:"date"`
 }
 
 // InvoiceCustomField is a structure representing a custom field on an Invoice.
