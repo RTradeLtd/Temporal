@@ -130,10 +130,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5972d312434e8624f7ad7af9d882d83295bb3e8b8e1f09464fa294a27428c38e"
+  digest = "1:54d1845707d1b533e601bc7d9520187fdf3b1dd1160911bf0ae5a35044121a28"
   name = "github.com/RTradeLtd/sdk"
   packages = [
     "go/temporal",
+    "go/temporal/auth",
+    "go/temporal/ipfs",
     "go/temporal/store",
   ]
   pruneopts = "UT"
@@ -164,6 +166,17 @@
   ]
   pruneopts = "UT"
   revision = "7a42f6693422551e17a38db1ecdf51a1711ecc5e"
+
+[[projects]]
+  branch = "master"
+  digest = "1:216d86b8a0502d397eaa430988f81b6f4a5d000b653d23fe0d0611970f548660"
+  name = "github.com/bobheadxi/res"
+  packages = [
+    ".",
+    "base",
+  ]
+  pruneopts = "UT"
+  revision = "8af2705a88a4f84e50073fa79240653e0bf1b337"
 
 [[projects]]
   branch = "master"
@@ -280,6 +293,25 @@
   ]
   pruneopts = "UT"
   revision = "70a0aba3e423246be37462cfdaedd510c26c566e"
+
+[[projects]]
+  digest = "1:58c033da727ebd5a6769209e479cac9a6e4dab53c879631af3d8161423099d57"
+  name = "github.com/go-chi/chi"
+  packages = [
+    ".",
+    "middleware",
+  ]
+  pruneopts = "UT"
+  revision = "da24bba8dcd4021cafac38724bf10dccc97c3e36"
+  version = "v4.0.2"
+
+[[projects]]
+  digest = "1:54d7b4b9ab2bb2bae35b55eea900bc8fe15cba05a95fc78bf7fd7b82a9a07afa"
+  name = "github.com/go-chi/render"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3215478343fbc559bd3fc08f7031bb134d6bdad5"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:760b2447d30444b6c2da7f77b677921f095fe19e6ed423b2edc1cd47a8507789"
@@ -1245,7 +1277,7 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:adccce69c151272d5053505aee552c6a1ac4e7bf6d18f0206ed7453187f6284d"
+  digest = "1:29f5757129c68d0f5c3ee78bf7ff2967259c52798a494fea010b1bfa83324f92"
   name = "go.uber.org/zap"
   packages = [
     ".",
@@ -1253,7 +1285,9 @@
     "internal/bufferpool",
     "internal/color",
     "internal/exit",
+    "internal/ztest",
     "zapcore",
+    "zaptest",
     "zaptest/observer",
   ]
   pruneopts = "UT"
@@ -1445,15 +1479,19 @@
     "github.com/RTradeLtd/rtfs",
     "github.com/RTradeLtd/rtfs/beam",
     "github.com/RTradeLtd/sdk/go/temporal",
+    "github.com/RTradeLtd/sdk/go/temporal/auth",
+    "github.com/RTradeLtd/sdk/go/temporal/ipfs",
     "github.com/RTradeLtd/sdk/go/temporal/store",
     "github.com/appleboy/gin-jwt",
     "github.com/aviddiviner/gin-limit",
     "github.com/baruwa-enterprise/clamd",
+    "github.com/bobheadxi/res",
     "github.com/c2h5oh/datasize",
     "github.com/dvwright/xss-mw",
     "github.com/gin-contrib/cors",
     "github.com/gin-contrib/secure",
     "github.com/gin-gonic/gin",
+    "github.com/go-chi/chi",
     "github.com/golang/protobuf/proto",
     "github.com/google/uuid",
     "github.com/grpc-ecosystem/go-grpc-middleware",
@@ -1479,6 +1517,7 @@
     "github.com/stripe/stripe-go/charge",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",
+    "go.uber.org/zap/zaptest",
     "go.uber.org/zap/zaptest/observer",
     "golang.org/x/net/context",
     "google.golang.org/genproto/googleapis/api/annotations",
