@@ -22,57 +22,6 @@ import (
 	"github.com/RTradeLtd/sdk/go/temporal"
 )
 
-func toUser(u *models.User, usage *models.Usage) *auth.User {
-	return &auth.User{
-		Id:           uint64(u.ID),
-		UserName:     u.UserName,
-		EmailAddress: u.EmailAddress,
-		Verified:     u.AccountEnabled,
-		Credits:      u.Credits,
-
-		IpfsKeys: func(k []string, v []string) map[string]string {
-			m := make(map[string]string)
-			for i, key := range k {
-				m[key] = v[i]
-			}
-			return m
-		}(u.IPFSKeyIDs, u.IPFSKeyNames),
-		IpfsNetworks: u.IPFSNetworkNames,
-
-		Usage: &auth.User_Usage{
-			Tier: func(t models.DataUsageTier) auth.Tier {
-				switch t {
-				case models.Partner:
-					return auth.Tier_PARTNER
-				case models.Light:
-					return auth.Tier_LIGHT
-				default:
-					return auth.Tier_FREE
-				}
-			}(usage.Tier),
-			Data: &auth.User_Usage_Limits{
-				Limit: int64(usage.MonthlyDataLimitBytes),
-				Used:  int64(usage.CurrentDataUsedBytes),
-			},
-			IpnsRecords: &auth.User_Usage_Limits{
-				Limit: usage.IPNSRecordsAllowed,
-				Used:  usage.IPNSRecordsAllowed,
-			},
-			PubsubSent: &auth.User_Usage_Limits{
-				Limit: usage.PubSubMessagesAllowed,
-				Used:  usage.PubSubMessagesSent,
-			},
-			Keys: &auth.User_Usage_Limits{
-				Limit: usage.KeysAllowed,
-				Used:  usage.KeysCreated,
-			},
-		},
-
-		ApiAccess:   true, // TODO: is this always the case?
-		AdminAccess: u.AdminAccess,
-	}
-}
-
 const (
 	claimUser      = "id"
 	claimChallenge = "challenge"
@@ -91,9 +40,9 @@ type JWTConfig struct {
 
 // AuthService implements TemporalAuthService
 type AuthService struct {
-	users  *models.UserManager
-	usage  *models.UsageManager
-	emails *queue.Manager
+	users  userManager
+	usage  usageManager
+	emails publisher
 
 	jwt JWTConfig
 	dev bool
@@ -435,4 +384,55 @@ func (a *AuthService) signChallengeToken(user, challenge string) (string, error)
 			claimOrigAt:    time.Now().Unix(),
 		}).
 		SignedString([]byte(a.jwt.Key))
+}
+
+func toUser(u *models.User, usage *models.Usage) *auth.User {
+	return &auth.User{
+		Id:           uint64(u.ID),
+		UserName:     u.UserName,
+		EmailAddress: u.EmailAddress,
+		Verified:     u.AccountEnabled,
+		Credits:      u.Credits,
+
+		IpfsKeys: func(k []string, v []string) map[string]string {
+			m := make(map[string]string)
+			for i, key := range k {
+				m[key] = v[i]
+			}
+			return m
+		}(u.IPFSKeyIDs, u.IPFSKeyNames),
+		IpfsNetworks: u.IPFSNetworkNames,
+
+		Usage: &auth.User_Usage{
+			Tier: func(t models.DataUsageTier) auth.Tier {
+				switch t {
+				case models.Partner:
+					return auth.Tier_PARTNER
+				case models.Light:
+					return auth.Tier_LIGHT
+				default:
+					return auth.Tier_FREE
+				}
+			}(usage.Tier),
+			Data: &auth.User_Usage_Limits{
+				Limit: int64(usage.MonthlyDataLimitBytes),
+				Used:  int64(usage.CurrentDataUsedBytes),
+			},
+			IpnsRecords: &auth.User_Usage_Limits{
+				Limit: usage.IPNSRecordsAllowed,
+				Used:  usage.IPNSRecordsAllowed,
+			},
+			PubsubSent: &auth.User_Usage_Limits{
+				Limit: usage.PubSubMessagesAllowed,
+				Used:  usage.PubSubMessagesSent,
+			},
+			Keys: &auth.User_Usage_Limits{
+				Limit: usage.KeysAllowed,
+				Used:  usage.KeysCreated,
+			},
+		},
+
+		ApiAccess:   true, // TODO: is this always the case?
+		AdminAccess: u.AdminAccess,
+	}
 }

@@ -109,6 +109,12 @@ gen:
 		./vendor/github.com/RTradeLtd/grpc/pay SignerClient
 	counterfeiter -o ./mocks/rtfs.mock.go \
 		./vendor/github.com/RTradeLtd/rtfs Manager
+	counterfeiter -o ./api/v3/mocks/user.mock.go \
+		./api/v3 userManager
+	counterfeiter -o ./api/v3/mocks/usage.mock.go \
+		./api/v3 usageManager
+	counterfeiter -o ./api/v3/mocks/publisher.mock.go \
+		./api/v3 publisher
 	@echo "===================          done           ==================="
 
 # Rebuild vendored dependencies
