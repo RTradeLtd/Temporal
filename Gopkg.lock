@@ -130,7 +130,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:54d1845707d1b533e601bc7d9520187fdf3b1dd1160911bf0ae5a35044121a28"
+  digest = "1:de29994fe83d33515eb34050e7763b355419195c837e83a991c2a682a3d8c59b"
   name = "github.com/RTradeLtd/sdk"
   packages = [
     "go/temporal",
@@ -139,7 +139,7 @@
     "go/temporal/store",
   ]
   pruneopts = "UT"
-  revision = "7c468d9aaf6c697e63671348650d1379dccb2c48"
+  revision = "4b2c8092a16fd0cc70baa439c830cfb321a10bd8"
 
 [[projects]]
   digest = "1:a164e093eccfde4fb63dc94707f3570d112ff4549072a065a48813c37c0c76a9"
