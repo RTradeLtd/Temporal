@@ -64,6 +64,11 @@ func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*aut
 		return nil, grpc.Errorf(codes.InvalidArgument, "emails must not contain + signs")
 	}
 
+	// nothing should be empty
+	if email == "" || user == "" || pw == "" {
+		return nil, grpc.Errorf(codes.InvalidArgument, "email, user, and password cannot be empty")
+	}
+
 	// create account
 	if _, err := a.users.NewUserAccount(user, pw, email); err != nil {
 		switch err.Error() {
@@ -74,7 +79,7 @@ func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*aut
 		default:
 			l.Errorw("unexpected error occured while creating account",
 				"error", err)
-			return nil, grpc.Errorf(codes.InvalidArgument, eh.UserAccountCreationError)
+			return nil, grpc.Errorf(codes.Internal, eh.UserAccountCreationError)
 		}
 	}
 
@@ -123,7 +128,7 @@ func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*aut
 
 // Recover facilitates account recovery
 func (a *AuthService) Recover(ctx context.Context, req *auth.RecoverReq) (*auth.User, error) {
-	return nil, nil
+	return nil, grpc.Errorf(codes.Unimplemented, "no implemented yet")
 }
 
 // Login accepts credentials and returns a token for use with further requests.
@@ -133,6 +138,11 @@ func (a *AuthService) Login(ctx context.Context, req *auth.Credentials) (*auth.T
 		pw   = req.GetPassword()
 		l    = a.l.With("user", user)
 	)
+
+	// nothing should be empty
+	if user == "" || pw == "" {
+		return nil, grpc.Errorf(codes.InvalidArgument, "user and password cannot be empty")
+	}
 
 	// sign in user
 	ok, err := a.users.SignIn(user, pw)
@@ -180,7 +190,7 @@ func (a *AuthService) Account(ctx context.Context, req *auth.Empty) (*auth.User,
 // Update facilitates modification of the account associated with an
 // authenticated request.
 func (a *AuthService) Update(ctx context.Context, req *auth.UpdateReq) (*auth.User, error) {
-	return nil, nil
+	return nil, grpc.Errorf(codes.Unimplemented, "no implemented yet")
 }
 
 // Refresh provides a refreshed token associated with an authenticated request.
@@ -204,18 +214,23 @@ func (a *AuthService) Refresh(ctx context.Context, req *auth.Empty) (*auth.Token
 	}, nil
 }
 
-// HTTPVerificationHandler is a traditional HTTP handler for handling account verifications
-func (a *AuthService) HTTPVerificationHandler(w http.ResponseWriter, r *http.Request) {
+// httpVerificationHandler is a traditional HTTP handler for handling account verifications
+func (a *AuthService) httpVerificationHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		user     = r.URL.Query().Get("user")
 		tokenStr = r.URL.Query().Get("token")
 		l        = a.l.With("user", user)
 	)
 
+	if user == "" || tokenStr == "" {
+		res.R(w, r, res.ErrBadRequest("parameters user, token cannot be empty"))
+		return
+	}
+
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unable to validate signing method: %v", token.Header["alg"])
-		} else if method != jwt.SigningMethodHS512 {
+		} else if method != a.jwt.SigningAlgo {
 			return nil, errors.New("expect hs512 signing method")
 		}
 		return []byte(a.jwt.Key), nil
@@ -234,7 +249,7 @@ func (a *AuthService) HTTPVerificationHandler(w http.ResponseWriter, r *http.Req
 		res.R(w, r, res.ErrBadRequest("invalid token claims"))
 		return
 	}
-	if claims["user"].(string) != user {
+	if v, ok := claims[claimUser].(string); !ok || v != user {
 		res.R(w, r, res.ErrBadRequest("user in token does not match request"))
 		return
 	}
@@ -244,9 +259,9 @@ func (a *AuthService) HTTPVerificationHandler(w http.ResponseWriter, r *http.Req
 			"user", user))
 		return
 	}
-	challenge := claims["challenge"].(string)
-	if challenge != u.EmailVerificationToken {
-		res.R(w, r, res.ErrBadRequest("challenge in token does not match request"))
+	challenge, ok := claims[claimChallenge].(string)
+	if !ok || challenge != u.EmailVerificationToken {
+		res.R(w, r, res.ErrBadRequest("challenge in token is incorrect"))
 		return
 	}
 	if _, err := a.users.ValidateEmailVerificationToken(user, challenge); err != nil {
@@ -257,7 +272,7 @@ func (a *AuthService) HTTPVerificationHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	l.Info("user verified")
-	res.R(w, r, res.MsgOK("email verified"))
+	res.R(w, r, res.MsgOK("user verified"))
 }
 
 // newAuthInterceptors creates unary and stream interceptors that validate
