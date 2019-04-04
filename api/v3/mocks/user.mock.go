@@ -49,6 +49,19 @@ type FakeUserManager struct {
 		result1 *models.User
 		result2 error
 	}
+	ResetPasswordStub        func(string) (string, error)
+	resetPasswordMutex       sync.RWMutex
+	resetPasswordArgsForCall []struct {
+		arg1 string
+	}
+	resetPasswordReturns struct {
+		result1 string
+		result2 error
+	}
+	resetPasswordReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
 	SignInStub        func(string, string) (bool, error)
 	signInMutex       sync.RWMutex
 	signInArgsForCall []struct {
@@ -62,6 +75,18 @@ type FakeUserManager struct {
 	signInReturnsOnCall map[int]struct {
 		result1 bool
 		result2 error
+	}
+	UpdateCustomerObjectHashStub        func(string, string) error
+	updateCustomerObjectHashMutex       sync.RWMutex
+	updateCustomerObjectHashArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	updateCustomerObjectHashReturns struct {
+		result1 error
+	}
+	updateCustomerObjectHashReturnsOnCall map[int]struct {
+		result1 error
 	}
 	ValidateEmailVerificationTokenStub        func(string, string) (*models.User, error)
 	validateEmailVerificationTokenMutex       sync.RWMutex
@@ -272,6 +297,69 @@ func (fake *FakeUserManager) NewUserAccountReturnsOnCall(i int, result1 *models.
 	}{result1, result2}
 }
 
+func (fake *FakeUserManager) ResetPassword(arg1 string) (string, error) {
+	fake.resetPasswordMutex.Lock()
+	ret, specificReturn := fake.resetPasswordReturnsOnCall[len(fake.resetPasswordArgsForCall)]
+	fake.resetPasswordArgsForCall = append(fake.resetPasswordArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("ResetPassword", []interface{}{arg1})
+	fake.resetPasswordMutex.Unlock()
+	if fake.ResetPasswordStub != nil {
+		return fake.ResetPasswordStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.resetPasswordReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserManager) ResetPasswordCallCount() int {
+	fake.resetPasswordMutex.RLock()
+	defer fake.resetPasswordMutex.RUnlock()
+	return len(fake.resetPasswordArgsForCall)
+}
+
+func (fake *FakeUserManager) ResetPasswordCalls(stub func(string) (string, error)) {
+	fake.resetPasswordMutex.Lock()
+	defer fake.resetPasswordMutex.Unlock()
+	fake.ResetPasswordStub = stub
+}
+
+func (fake *FakeUserManager) ResetPasswordArgsForCall(i int) string {
+	fake.resetPasswordMutex.RLock()
+	defer fake.resetPasswordMutex.RUnlock()
+	argsForCall := fake.resetPasswordArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeUserManager) ResetPasswordReturns(result1 string, result2 error) {
+	fake.resetPasswordMutex.Lock()
+	defer fake.resetPasswordMutex.Unlock()
+	fake.ResetPasswordStub = nil
+	fake.resetPasswordReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserManager) ResetPasswordReturnsOnCall(i int, result1 string, result2 error) {
+	fake.resetPasswordMutex.Lock()
+	defer fake.resetPasswordMutex.Unlock()
+	fake.ResetPasswordStub = nil
+	if fake.resetPasswordReturnsOnCall == nil {
+		fake.resetPasswordReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.resetPasswordReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeUserManager) SignIn(arg1 string, arg2 string) (bool, error) {
 	fake.signInMutex.Lock()
 	ret, specificReturn := fake.signInReturnsOnCall[len(fake.signInArgsForCall)]
@@ -334,6 +422,67 @@ func (fake *FakeUserManager) SignInReturnsOnCall(i int, result1 bool, result2 er
 		result1 bool
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *FakeUserManager) UpdateCustomerObjectHash(arg1 string, arg2 string) error {
+	fake.updateCustomerObjectHashMutex.Lock()
+	ret, specificReturn := fake.updateCustomerObjectHashReturnsOnCall[len(fake.updateCustomerObjectHashArgsForCall)]
+	fake.updateCustomerObjectHashArgsForCall = append(fake.updateCustomerObjectHashArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateCustomerObjectHash", []interface{}{arg1, arg2})
+	fake.updateCustomerObjectHashMutex.Unlock()
+	if fake.UpdateCustomerObjectHashStub != nil {
+		return fake.UpdateCustomerObjectHashStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateCustomerObjectHashReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeUserManager) UpdateCustomerObjectHashCallCount() int {
+	fake.updateCustomerObjectHashMutex.RLock()
+	defer fake.updateCustomerObjectHashMutex.RUnlock()
+	return len(fake.updateCustomerObjectHashArgsForCall)
+}
+
+func (fake *FakeUserManager) UpdateCustomerObjectHashCalls(stub func(string, string) error) {
+	fake.updateCustomerObjectHashMutex.Lock()
+	defer fake.updateCustomerObjectHashMutex.Unlock()
+	fake.UpdateCustomerObjectHashStub = stub
+}
+
+func (fake *FakeUserManager) UpdateCustomerObjectHashArgsForCall(i int) (string, string) {
+	fake.updateCustomerObjectHashMutex.RLock()
+	defer fake.updateCustomerObjectHashMutex.RUnlock()
+	argsForCall := fake.updateCustomerObjectHashArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserManager) UpdateCustomerObjectHashReturns(result1 error) {
+	fake.updateCustomerObjectHashMutex.Lock()
+	defer fake.updateCustomerObjectHashMutex.Unlock()
+	fake.UpdateCustomerObjectHashStub = nil
+	fake.updateCustomerObjectHashReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeUserManager) UpdateCustomerObjectHashReturnsOnCall(i int, result1 error) {
+	fake.updateCustomerObjectHashMutex.Lock()
+	defer fake.updateCustomerObjectHashMutex.Unlock()
+	fake.UpdateCustomerObjectHashStub = nil
+	if fake.updateCustomerObjectHashReturnsOnCall == nil {
+		fake.updateCustomerObjectHashReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateCustomerObjectHashReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeUserManager) ValidateEmailVerificationToken(arg1 string, arg2 string) (*models.User, error) {
@@ -409,8 +558,12 @@ func (fake *FakeUserManager) Invocations() map[string][][]interface{} {
 	defer fake.generateEmailVerificationTokenMutex.RUnlock()
 	fake.newUserAccountMutex.RLock()
 	defer fake.newUserAccountMutex.RUnlock()
+	fake.resetPasswordMutex.RLock()
+	defer fake.resetPasswordMutex.RUnlock()
 	fake.signInMutex.RLock()
 	defer fake.signInMutex.RUnlock()
+	fake.updateCustomerObjectHashMutex.RLock()
+	defer fake.updateCustomerObjectHashMutex.RUnlock()
 	fake.validateEmailVerificationTokenMutex.RLock()
 	defer fake.validateEmailVerificationTokenMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

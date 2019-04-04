@@ -115,6 +115,8 @@ gen:
 		./api/v3 userManager
 	counterfeiter -o ./api/v3/mocks/usage.mock.go \
 		./api/v3 usageManager
+	counterfeiter -o ./api/v3/mocks/credits.mock.go \
+		./api/v3 creditsManager
 	counterfeiter -o ./api/v3/mocks/publisher.mock.go \
 		./api/v3 publisher
 	@echo "===================          done           ==================="

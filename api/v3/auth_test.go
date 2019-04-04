@@ -8,21 +8,21 @@ import (
 	"testing"
 	"time"
 
-	"google.golang.org/grpc/metadata"
-
-	"github.com/RTradeLtd/Temporal/api/v3/mocks"
-	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
-	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/database/models"
-	"github.com/RTradeLtd/sdk/go/temporal"
 	"github.com/bobheadxi/res"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"gopkg.in/dgrijalva/jwt-go.v3"
+
+	"github.com/RTradeLtd/Temporal/api/v3/mocks"
+	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
+	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/sdk/go/temporal"
 )
 
 var defaultJWT = JWTConfig{
@@ -165,12 +165,13 @@ func TestAuthService_Register(t *testing.T) {
 				}
 
 				a = &AuthService{
-					users:  users,
-					usage:  usage,
-					emails: emails,
-					jwt:    defaultJWT,
-					dev:    true,
-					l:      zaptest.NewLogger(t).Sugar(),
+					users:   users,
+					usage:   usage,
+					credits: nil,
+					emails:  emails,
+					jwt:     defaultJWT,
+					dev:     true,
+					l:       zaptest.NewLogger(t).Sugar(),
 				}
 			)
 
@@ -229,12 +230,13 @@ func TestAuthService_Login(t *testing.T) {
 				}
 
 				a = &AuthService{
-					users:  users,
-					usage:  nil,
-					emails: nil,
-					jwt:    defaultJWT,
-					dev:    true,
-					l:      zaptest.NewLogger(t).Sugar(),
+					users:   users,
+					usage:   nil,
+					credits: nil,
+					emails:  nil,
+					jwt:     defaultJWT,
+					dev:     true,
+					l:       zaptest.NewLogger(t).Sugar(),
 				}
 			)
 			got, err := a.Login(tt.args.ctx, tt.args.req)
@@ -299,12 +301,13 @@ func TestAuthService_Account(t *testing.T) {
 				}
 
 				a = &AuthService{
-					users:  nil,
-					usage:  usage,
-					emails: nil,
-					jwt:    defaultJWT,
-					dev:    true,
-					l:      zaptest.NewLogger(t).Sugar(),
+					users:   nil,
+					usage:   usage,
+					credits: nil,
+					emails:  nil,
+					jwt:     defaultJWT,
+					dev:     true,
+					l:       zaptest.NewLogger(t).Sugar(),
 				}
 			)
 
@@ -348,12 +351,13 @@ func TestAuthService_Refresh(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var (
 				a = &AuthService{
-					users:  nil,
-					usage:  nil,
-					emails: nil,
-					jwt:    defaultJWT,
-					dev:    true,
-					l:      zaptest.NewLogger(t).Sugar(),
+					users:   nil,
+					usage:   nil,
+					credits: nil,
+					emails:  nil,
+					jwt:     defaultJWT,
+					dev:     true,
+					l:       zaptest.NewLogger(t).Sugar(),
 				}
 			)
 
@@ -568,12 +572,13 @@ func TestAuthService_httpVerificationHandler(t *testing.T) {
 				}
 
 				a = &AuthService{
-					users:  users,
-					usage:  nil,
-					emails: nil,
-					jwt:    defaultJWT,
-					dev:    true,
-					l:      zaptest.NewLogger(t).Sugar(),
+					users:   users,
+					usage:   nil,
+					credits: nil,
+					emails:  nil,
+					jwt:     defaultJWT,
+					dev:     true,
+					l:       zaptest.NewLogger(t).Sugar(),
 				}
 			)
 

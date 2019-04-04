@@ -42,9 +42,10 @@ type JWTConfig struct {
 
 // AuthService implements TemporalAuthService
 type AuthService struct {
-	users  userManager
-	usage  usageManager
-	emails publisher
+	users   userManager
+	usage   usageManager
+	credits creditsManager
+	emails  publisher
 
 	jwt JWTConfig
 	dev bool
@@ -192,7 +193,52 @@ func (a *AuthService) Account(ctx context.Context, req *auth.Empty) (*auth.User,
 // Update facilitates modification of the account associated with an
 // authenticated request.
 func (a *AuthService) Update(ctx context.Context, req *auth.UpdateReq) (*auth.User, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "no implemented yet")
+	user, ok := ctxGetUser(ctx)
+	if !ok {
+		return nil, grpc.Errorf(codes.NotFound, "could not find user associated with token")
+	}
+	var l = a.l.With("user", user.UserName)
+
+	switch v := req.GetUpdate().(type) {
+	case *auth.UpdateReq_PasswordChange:
+		l = l.With("change", "password")
+		change := v.PasswordChange
+		change.GetOldPassword()
+		return nil, nil
+
+	case *auth.UpdateReq_DataTierChange:
+		l = l.With("change", "tier")
+		usage, err := a.usage.FindByUserName(user.UserName)
+		if err != nil {
+			return nil, grpc.Errorf(codes.Internal, "unable to find usage data for user")
+		}
+		if usage.Tier != models.Free {
+			return nil, grpc.Errorf(codes.AlreadyExists, "account is already upgraded")
+		}
+		if err = a.usage.UpdateTier(user.UserName, models.Light); err != nil {
+			return nil, grpc.Errorf(codes.Internal, eh.TierUpgradeError)
+		}
+		if user, err = a.credits.AddCredits(user.UserName, 0.115); err != nil {
+			return nil, grpc.Errorf(codes.Internal, "failed to grant free credits")
+		}
+		if err = a.emails.PublishMessage(queue.EmailSend{
+			Subject:     "TEMPORAL Account Upgraded",
+			Content:     "your account has been ugpraded to Light tier. Enjoy 11.5 cents of free credit!",
+			ContentType: "text/html",
+			UserNames:   []string{user.UserName},
+			Emails:      []string{user.EmailAddress},
+		}); err != nil {
+			return nil, grpc.Errorf(codes.Internal, eh.QueuePublishError)
+		}
+		if user, err = a.users.FindByUserName(user.UserName); err != nil {
+			return nil, grpc.Errorf(codes.Internal, eh.UserSearchError)
+		}
+		l.Info("user's data tier successfully updated")
+		return toUser(user, usage), nil
+
+	default:
+		return nil, grpc.Errorf(codes.InvalidArgument, "type %v is not supported", v)
+	}
 }
 
 // Refresh provides a refreshed token associated with an authenticated request.
@@ -447,6 +493,8 @@ func toUser(u *models.User, usage *models.Usage) *auth.User {
 					return auth.Tier_PARTNER
 				case models.Light:
 					return auth.Tier_LIGHT
+				case models.Plus:
+					return auth.Tier_PLUS
 				default:
 					return auth.Tier_FREE
 				}

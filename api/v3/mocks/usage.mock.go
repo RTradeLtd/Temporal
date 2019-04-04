@@ -35,6 +35,18 @@ type FakeUsageManager struct {
 		result1 *models.Usage
 		result2 error
 	}
+	UpdateTierStub        func(string, models.DataUsageTier) error
+	updateTierMutex       sync.RWMutex
+	updateTierArgsForCall []struct {
+		arg1 string
+		arg2 models.DataUsageTier
+	}
+	updateTierReturns struct {
+		result1 error
+	}
+	updateTierReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -166,6 +178,67 @@ func (fake *FakeUsageManager) NewUsageEntryReturnsOnCall(i int, result1 *models.
 	}{result1, result2}
 }
 
+func (fake *FakeUsageManager) UpdateTier(arg1 string, arg2 models.DataUsageTier) error {
+	fake.updateTierMutex.Lock()
+	ret, specificReturn := fake.updateTierReturnsOnCall[len(fake.updateTierArgsForCall)]
+	fake.updateTierArgsForCall = append(fake.updateTierArgsForCall, struct {
+		arg1 string
+		arg2 models.DataUsageTier
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateTier", []interface{}{arg1, arg2})
+	fake.updateTierMutex.Unlock()
+	if fake.UpdateTierStub != nil {
+		return fake.UpdateTierStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.updateTierReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeUsageManager) UpdateTierCallCount() int {
+	fake.updateTierMutex.RLock()
+	defer fake.updateTierMutex.RUnlock()
+	return len(fake.updateTierArgsForCall)
+}
+
+func (fake *FakeUsageManager) UpdateTierCalls(stub func(string, models.DataUsageTier) error) {
+	fake.updateTierMutex.Lock()
+	defer fake.updateTierMutex.Unlock()
+	fake.UpdateTierStub = stub
+}
+
+func (fake *FakeUsageManager) UpdateTierArgsForCall(i int) (string, models.DataUsageTier) {
+	fake.updateTierMutex.RLock()
+	defer fake.updateTierMutex.RUnlock()
+	argsForCall := fake.updateTierArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUsageManager) UpdateTierReturns(result1 error) {
+	fake.updateTierMutex.Lock()
+	defer fake.updateTierMutex.Unlock()
+	fake.UpdateTierStub = nil
+	fake.updateTierReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeUsageManager) UpdateTierReturnsOnCall(i int, result1 error) {
+	fake.updateTierMutex.Lock()
+	defer fake.updateTierMutex.Unlock()
+	fake.UpdateTierStub = nil
+	if fake.updateTierReturnsOnCall == nil {
+		fake.updateTierReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateTierReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeUsageManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -173,6 +246,8 @@ func (fake *FakeUsageManager) Invocations() map[string][][]interface{} {
 	defer fake.findByUserNameMutex.RUnlock()
 	fake.newUsageEntryMutex.RLock()
 	defer fake.newUsageEntryMutex.RUnlock()
+	fake.updateTierMutex.RLock()
+	defer fake.updateTierMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
