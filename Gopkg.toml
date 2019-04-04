@@ -48,10 +48,6 @@ ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/i
 #    IPFS     #
 ###############
 
-[[constraint]]
-  name = "github.com/ipfs/go-ds-badger"
-  version = "0.0.1"
-
 [[override]]
   name = "github.com/multiformats/go-multiaddr-dns"
   branch = "master"
