@@ -8,15 +8,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bobheadxi/res"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/RTradeLtd/Temporal/api/v3/mocks"
 	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/sdk/go/temporal"
+	"github.com/bobheadxi/res"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gopkg.in/dgrijalva/jwt-go.v3"
@@ -26,6 +29,15 @@ var defaultJWT = JWTConfig{
 	Key:         "hello-world",
 	Timeout:     time.Minute,
 	SigningAlgo: jwt.SigningMethodHS512,
+}
+
+func defaultValidToken() (string, error) {
+	return jwt.
+		NewWithClaims(defaultJWT.SigningAlgo, jwt.MapClaims{
+			claimUser:   "bobheadxi",
+			claimExpiry: time.Now().Add(10 * time.Minute).Unix(),
+		}).
+		SignedString([]byte(defaultJWT.Key))
 }
 
 func TestAuthService_Register(t *testing.T) {
@@ -346,9 +358,8 @@ func TestAuthService_Refresh(t *testing.T) {
 			)
 
 			got, err := a.Refresh(tt.args.ctx, tt.args.req)
-			if !assert.Equal(t, tt.wantErr, status.Code(err)) {
-				t.Logf("got error = %v", err)
-			}
+			assert.Equalf(t, tt.wantErr, status.Code(err),
+				"got { %v }", err)
 			if tt.wantErr == codes.OK {
 				require.NotNil(t, got)
 				assert.True(t, time.Unix(got.GetExpire(), 0).After(time.Now()),
@@ -451,11 +462,7 @@ func TestAuthService_httpVerificationHandler(t *testing.T) {
 		{"wrong user in token",
 			args{func() *http.Request {
 				r := httptest.NewRequest("GET", "https://bobheadxi.dev", nil)
-				token, err := jwt.
-					NewWithClaims(defaultJWT.SigningAlgo, jwt.MapClaims{
-						claimUser: "bobheadxi",
-					}).
-					SignedString([]byte(defaultJWT.Key))
+				token, err := defaultValidToken()
 				require.NoError(t, err)
 				q := r.URL.Query()
 				q.Add("user", "postables")
@@ -470,11 +477,7 @@ func TestAuthService_httpVerificationHandler(t *testing.T) {
 		{"user not found",
 			args{func() *http.Request {
 				r := httptest.NewRequest("GET", "https://bobheadxi.dev", nil)
-				token, err := jwt.
-					NewWithClaims(defaultJWT.SigningAlgo, jwt.MapClaims{
-						claimUser: "bobheadxi",
-					}).
-					SignedString([]byte(defaultJWT.Key))
+				token, err := defaultValidToken()
 				require.NoError(t, err)
 				q := r.URL.Query()
 				q.Add("user", "bobheadxi")
@@ -491,11 +494,7 @@ func TestAuthService_httpVerificationHandler(t *testing.T) {
 		{"no challenge",
 			args{func() *http.Request {
 				r := httptest.NewRequest("GET", "https://bobheadxi.dev", nil)
-				token, err := jwt.
-					NewWithClaims(defaultJWT.SigningAlgo, jwt.MapClaims{
-						claimUser: "bobheadxi",
-					}).
-					SignedString([]byte(defaultJWT.Key))
+				token, err := defaultValidToken()
 				require.NoError(t, err)
 				q := r.URL.Query()
 				q.Add("user", "bobheadxi")
@@ -586,6 +585,180 @@ func TestAuthService_httpVerificationHandler(t *testing.T) {
 			assert.Equal(t, resp.HTTPStatusCode, tt.wantCode)
 			assert.Contains(t, resp.Message, tt.wantMessage)
 			assert.Contains(t, resp.Err, tt.wantError)
+		})
+	}
+}
+
+func TestAuthService_newAuthInterceptors(t *testing.T) {
+	const defaultMethod = "/auth.TemporalAuth/Register"
+	token, err := defaultValidToken()
+	require.NoError(t, err)
+
+	type args struct {
+		exceptions []string
+		ctx        context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"context without key should be rejected",
+			args{nil, c()},
+			true},
+		{"context without key should be allowed if in exceptions",
+			args{[]string{defaultMethod}, c()},
+			false},
+		{"context with metadata and key should be allowed",
+			args{nil, metadata.NewIncomingContext(c(), metadata.MD{
+				string(temporal.MetaKeyAuthorization): []string{"Bearer " + token},
+			})},
+			false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &AuthService{
+				users: &mocks.FakeUserManager{
+					FindByUserNameStub: func(u string) (*models.User, error) {
+						return &models.User{
+							UserName: "bobheadxi",
+						}, nil
+					},
+				},
+				usage:  nil,
+				emails: nil,
+				jwt:    defaultJWT,
+				dev:    true,
+				l:      zaptest.NewLogger(t).Sugar(),
+			}
+			unary, stream := a.newAuthInterceptors(tt.args.exceptions...)
+
+			var called bool
+
+			_, err := unary(tt.args.ctx, nil, &grpc.UnaryServerInfo{
+				FullMethod: defaultMethod,
+			}, func(context.Context, interface{}) (interface{}, error) {
+				called = true
+				return nil, nil
+			})
+			if tt.wantErr {
+				assert.Equalf(t, codes.Unauthenticated, status.Code(err),
+					"got { %v }", err)
+				assert.False(t, called, "handler should not have been called")
+			} else {
+				assert.Equalf(t, codes.OK, status.Code(err),
+					"got { %v }", err)
+				assert.True(t, called, "handler should have been called")
+			}
+
+			called = false
+			err = stream(nil, &mocks.FakeServerStream{
+				ContextStub: func() context.Context { return tt.args.ctx },
+			}, &grpc.StreamServerInfo{
+				FullMethod: defaultMethod,
+			}, func(interface{}, grpc.ServerStream) error {
+				called = true
+				return nil
+			})
+			if tt.wantErr {
+				assert.Equalf(t, codes.Unauthenticated, status.Code(err),
+					"got { %v }", err)
+				assert.False(t, called, "handler should not have been called")
+			} else {
+				assert.Equalf(t, codes.OK, status.Code(err),
+					"got { %v }", err)
+				assert.True(t, called, "handler should have been called")
+			}
+		})
+	}
+}
+
+func TestAuthService_validate(t *testing.T) {
+	validToken, err := defaultValidToken()
+	require.NoError(t, err)
+
+	type args struct {
+		ctx context.Context
+	}
+	type mock struct {
+		findUserErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		mock    mock
+		wantErr bool
+	}{
+		{"no token", args{c()}, mock{}, true},
+		{"expired token",
+			args{metadata.NewIncomingContext(c(), metadata.MD{
+				string(temporal.MetaKeyAuthorization): []string{"Bearer " + func() string {
+					expired, err := jwt.
+						NewWithClaims(defaultJWT.SigningAlgo, jwt.MapClaims{
+							claimUser:   "bobheadxi",
+							claimExpiry: time.Now().Add(-time.Minute).Unix(),
+						}).
+						SignedString([]byte(defaultJWT.Key))
+					require.NoError(t, err)
+					return expired
+				}()},
+			})},
+			mock{
+				findUserErr: errors.New("oh no"),
+			},
+			true},
+		{"unable to find user",
+			args{metadata.NewIncomingContext(c(), metadata.MD{
+				string(temporal.MetaKeyAuthorization): []string{"Bearer " + validToken},
+			})},
+			mock{
+				findUserErr: errors.New("oh no"),
+			},
+			true},
+		{"success",
+			args{metadata.NewIncomingContext(c(), metadata.MD{
+				string(temporal.MetaKeyAuthorization): []string{"Bearer " + validToken},
+			})},
+			mock{},
+			false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var (
+				users = &mocks.FakeUserManager{
+					FindByUserNameStub: func(u string) (*models.User, error) {
+						if tt.mock.findUserErr == nil {
+							return &models.User{
+								UserName: "bobheadxi",
+							}, nil
+						}
+						return nil, tt.mock.findUserErr
+					},
+				}
+
+				a = &AuthService{
+					users:  users,
+					usage:  nil,
+					emails: nil,
+					jwt:    defaultJWT,
+					dev:    true,
+					l:      zaptest.NewLogger(t).Sugar(),
+				}
+			)
+
+			got, err := a.validate(tt.args.ctx)
+			if tt.wantErr {
+				assert.Equalf(t, codes.Unauthenticated, status.Code(err),
+					"got { %v }", err)
+			} else {
+				assert.Equalf(t, codes.OK, status.Code(err),
+					"got { %v }", err)
+				require.NotNil(t, got)
+				u, b := ctxGetUser(got)
+				assert.True(t, b)
+				assert.NotNil(t, u)
+				assert.Equal(t, "bobheadxi", u.UserName)
+			}
 		})
 	}
 }

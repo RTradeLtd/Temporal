@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+
 	"github.com/bobheadxi/res"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -253,6 +255,14 @@ func (a *AuthService) httpVerificationHandler(w http.ResponseWriter, r *http.Req
 		res.R(w, r, res.ErrBadRequest("user in token does not match request"))
 		return
 	}
+
+	// check expiry
+	if err := claims.Valid(); err != nil {
+		res.R(w, r, res.ErrBadRequest("invalid claims",
+			"error", err))
+		return
+	}
+
 	u, err := a.users.FindByUserName(user)
 	if err != nil {
 		res.R(w, r, res.ErrNotFound("user not found",
@@ -294,6 +304,8 @@ func (a *AuthService) newAuthInterceptors(exceptions ...string) (
 		handler grpc.UnaryHandler,
 	) (r interface{}, err error) {
 		if v, found := exclude[info.FullMethod]; !v && !found {
+			a.l.Debugw("requested RPC is an exception - skipping authentication",
+				"method", info.FullMethod)
 			if ctx, err = a.validate(ctx); err != nil {
 				return
 			}
@@ -312,10 +324,15 @@ func (a *AuthService) newAuthInterceptors(exceptions ...string) (
 		handler grpc.StreamHandler,
 	) (err error) {
 		if v, found := exclude[info.FullMethod]; !v && !found {
+			a.l.Debugw("requested RPC is an exception - skipping authentication",
+				"method", info.FullMethod)
 			var ctx = stream.Context()
 			if ctx, err = a.validate(ctx); err != nil {
 				return
 			}
+			wrapped := grpc_middleware.WrapServerStream(stream)
+			wrapped.WrappedContext = ctx
+			stream = wrapped
 		}
 		if handler != nil {
 			return handler(srv, stream)
@@ -352,20 +369,25 @@ func (a *AuthService) validate(ctx context.Context) (context.Context, error) {
 		claims jwt.MapClaims
 	)
 	if t, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-		// verify the claims - this checks expiry as well
-		if claims, ok = t.Claims.(jwt.MapClaims); !ok || !t.Valid {
-			return nil, errors.New("invalid token")
+		// verify the claims
+		if claims, ok = t.Claims.(jwt.MapClaims); !ok {
+			return nil, grpc.Errorf(codes.Unauthenticated, "invalid token claims")
+		}
+
+		// check expiry
+		if err := claims.Valid(); err != nil {
+			return nil, grpc.Errorf(codes.Unauthenticated, "invalid claims: %s", err.Error())
 		}
 
 		// retrieve ID
 		var userID string
 		if userID, ok = claims[claimUser].(string); !ok || userID == "" {
-			return nil, grpc.Errorf(codes.Unauthenticated, "invalid token")
+			return nil, grpc.Errorf(codes.Unauthenticated, "invalid user associated with token")
 		}
 
 		// the user should be valid
 		if user, err = a.users.FindByUserName(userID); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "invalid token")
+			return nil, grpc.Errorf(codes.Unauthenticated, "unable to find user associated with token")
 		}
 		return []byte(a.jwt.Key), nil
 	}); err != nil {
