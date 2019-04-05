@@ -4,8 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/RTradeLtd/sdk/go/temporal"
-
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -67,6 +65,6 @@ func REST(ctx context.Context, opts RESTGatewayOptions) error {
 // metadata
 func annotator(ctx context.Context, req *http.Request) metadata.MD {
 	return metadata.MD{
-		string(temporal.MetaKeyAuthorization): []string{req.Header.Get("Authorization")},
+		"authorization": []string{req.Header.Get("Authorization")},
 	}
 }

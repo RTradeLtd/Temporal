@@ -4,6 +4,7 @@ import "github.com/RTradeLtd/database/models"
 
 type userManager interface {
 	FindByUserName(username string) (*models.User, error)
+	FindByEmail(email string) (*models.User, error)
 
 	NewUserAccount(username, password, email string) (*models.User, error)
 	SignIn(username, password string) (bool, error)

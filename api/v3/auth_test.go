@@ -22,7 +22,6 @@ import (
 	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/models"
-	"github.com/RTradeLtd/sdk/go/temporal"
 )
 
 var defaultJWT = JWTConfig{
@@ -616,7 +615,7 @@ func TestAuthService_newAuthInterceptors(t *testing.T) {
 			false},
 		{"context with metadata and key should be allowed",
 			args{nil, metadata.NewIncomingContext(c(), metadata.MD{
-				string(temporal.MetaKeyAuthorization): []string{"Bearer " + token},
+				"authorization": []string{"Bearer " + token},
 			})},
 			false},
 	}
@@ -697,7 +696,7 @@ func TestAuthService_validate(t *testing.T) {
 		{"no token", args{c()}, mock{}, true},
 		{"expired token",
 			args{metadata.NewIncomingContext(c(), metadata.MD{
-				string(temporal.MetaKeyAuthorization): []string{"Bearer " + func() string {
+				"authorization": []string{"Bearer " + func() string {
 					expired, err := jwt.
 						NewWithClaims(defaultJWT.SigningAlgo, jwt.MapClaims{
 							claimUser:   "bobheadxi",
@@ -714,7 +713,7 @@ func TestAuthService_validate(t *testing.T) {
 			true},
 		{"unable to find user",
 			args{metadata.NewIncomingContext(c(), metadata.MD{
-				string(temporal.MetaKeyAuthorization): []string{"Bearer " + validToken},
+				"authorization": []string{"Bearer " + validToken},
 			})},
 			mock{
 				findUserErr: errors.New("oh no"),
@@ -722,7 +721,7 @@ func TestAuthService_validate(t *testing.T) {
 			true},
 		{"success",
 			args{metadata.NewIncomingContext(c(), metadata.MD{
-				string(temporal.MetaKeyAuthorization): []string{"Bearer " + validToken},
+				"authorization": []string{"Bearer " + validToken},
 			})},
 			mock{},
 			false},
@@ -779,35 +778,23 @@ func Test_toUser(t *testing.T) {
 		want *auth.User
 	}{
 		{"zero-value should be equal and not panic",
-			args{&models.User{}, &models.Usage{}},
+			args{&models.User{}, nil},
 			&auth.User{
 				IpfsKeys:  map[string]string{}, // always instantiated
 				ApiAccess: true,                // hardcoded
-				Usage: &auth.User_Usage{
-					Tier:        auth.Tier_FREE,
-					Data:        &auth.User_Usage_Limits{},
-					IpnsRecords: &auth.User_Usage_Limits{},
-					PubsubSent:  &auth.User_Usage_Limits{},
-					Keys:        &auth.User_Usage_Limits{},
-				}, // always instantiated
+				Usage:     nil,                 // always instantiated
 			}},
 		{"should iterate ipfs keys",
 			args{&models.User{
 				IPFSKeyIDs:   []string{"robert"},
 				IPFSKeyNames: []string{"bobheadxi"},
-			}, &models.Usage{}},
+			}, nil},
 			&auth.User{
 				IpfsKeys: map[string]string{
 					"robert": "bobheadxi",
 				},
 				ApiAccess: true, // hardcoded
-				Usage: &auth.User_Usage{
-					Tier:        auth.Tier_FREE,
-					Data:        &auth.User_Usage_Limits{},
-					IpnsRecords: &auth.User_Usage_Limits{},
-					PubsubSent:  &auth.User_Usage_Limits{},
-					Keys:        &auth.User_Usage_Limits{},
-				}, // always instantiated
+				Usage:     nil,
 			}},
 		{"should set tier partner",
 			args{&models.User{}, &models.Usage{
@@ -822,7 +809,7 @@ func Test_toUser(t *testing.T) {
 					IpnsRecords: &auth.User_Usage_Limits{},
 					PubsubSent:  &auth.User_Usage_Limits{},
 					Keys:        &auth.User_Usage_Limits{},
-				}, // always instantiated
+				},
 			}},
 		{"should set tier light",
 			args{&models.User{}, &models.Usage{
@@ -837,7 +824,7 @@ func Test_toUser(t *testing.T) {
 					IpnsRecords: &auth.User_Usage_Limits{},
 					PubsubSent:  &auth.User_Usage_Limits{},
 					Keys:        &auth.User_Usage_Limits{},
-				}, // always instantiated
+				},
 			}},
 	}
 	for _, tt := range tests {
@@ -845,11 +832,11 @@ func Test_toUser(t *testing.T) {
 			// hack around the fact the deep deep equality isn't currently implemented
 			// as expected. possible resolution in https://github.com/stretchr/testify/issues/535
 			u := toUser(tt.args.u, tt.args.usage)
-			assert.Equal(t, tt.want.Usage.Tier, u.Usage.Tier)
-			assert.Equal(t, tt.want.Usage.Data, u.Usage.Data)
-			assert.Equal(t, tt.want.Usage.IpnsRecords, u.Usage.IpnsRecords)
-			assert.Equal(t, tt.want.Usage.PubsubSent, u.Usage.PubsubSent)
-			assert.Equal(t, tt.want.Usage.Keys, u.Usage.Keys)
+			assert.Equal(t, tt.want.GetUsage().GetTier(), u.GetUsage().GetTier())
+			assert.Equal(t, tt.want.GetUsage().GetData(), u.GetUsage().GetData())
+			assert.Equal(t, tt.want.GetUsage().GetIpnsRecords(), u.GetUsage().GetIpnsRecords())
+			assert.Equal(t, tt.want.GetUsage().GetPubsubSent(), u.GetUsage().GetPubsubSent())
+			assert.Equal(t, tt.want.GetUsage().GetKeys(), u.GetUsage().GetKeys())
 			u.Usage = nil
 			tt.want.Usage = nil
 			assert.Equal(t, tt.want, u)

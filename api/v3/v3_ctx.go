@@ -21,11 +21,13 @@ func ctxSetClaims(ctx context.Context, claims map[string]interface{}) context.Co
 	return context.WithValue(ctx, ctxKeyClaims, claims)
 }
 
+// ctxGetUser is only available on authenticated RPCs
 func ctxGetUser(ctx context.Context) (*models.User, bool) {
 	user, ok := ctx.Value(ctxKeyUser).(*models.User)
 	return user, ok
 }
 
+// ctxGetClaims is only available on authenticated RPCs
 func ctxGetClaims(ctx context.Context) (map[string]interface{}, bool) {
 	claims, ok := ctx.Value(ctxKeyUser).(map[string]interface{})
 	return claims, ok

@@ -8,9 +8,8 @@ import (
 	"strings"
 	"time"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-
 	"github.com/bobheadxi/res"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -21,7 +20,6 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/database/models"
-	"github.com/RTradeLtd/sdk/go/temporal"
 )
 
 const (
@@ -130,8 +128,59 @@ func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*aut
 }
 
 // Recover facilitates account recovery
-func (a *AuthService) Recover(ctx context.Context, req *auth.RecoverReq) (*auth.User, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "no implemented yet")
+func (a *AuthService) Recover(ctx context.Context, req *auth.RecoverReq) (*auth.Empty, error) {
+	if req.GetEmailAddress() == "" {
+		return nil, grpc.Errorf(codes.InvalidArgument, "email cannot be empty")
+	}
+	user, err := a.users.FindByEmail(req.GetEmailAddress())
+	if err != nil {
+		return nil, grpc.Errorf(codes.NotFound, eh.UserSearchError)
+	}
+	if !user.EmailEnabled {
+		return nil, grpc.Errorf(codes.FailedPrecondition,
+			"account does not have email enabled - unfortunately for security reasons we can't assist in recovery")
+	}
+	var l = a.l.With("user", user.UserName)
+
+	switch req.GetType() {
+	case auth.RecoverReq_PASSWORD:
+		newPW, err := a.users.ResetPassword(user.UserName)
+		if err != nil {
+			l.Errorw("failed to reset password",
+				"error", err)
+			return nil, grpc.Errorf(codes.Internal, eh.PasswordResetError)
+		}
+		if err := a.emails.PublishMessage(queue.EmailSend{
+			Subject:     "TEMPORAL Password Reset",
+			Content:     fmt.Sprintf("your password is %s", newPW),
+			ContentType: "text/html",
+			UserNames:   []string{user.UserName},
+			Emails:      []string{user.EmailAddress},
+		}); err != nil {
+			l.Errorw("failed to send email to queue",
+				"error", err)
+			return nil, grpc.Errorf(codes.Internal, eh.QueuePublishError)
+		}
+		return nil, nil
+
+	case auth.RecoverReq_USERNAME:
+		if err := a.emails.PublishMessage(queue.EmailSend{
+			Subject:     "TEMPORAL User Name Reminder",
+			Content:     fmt.Sprintf("your username is %s", user.UserName),
+			ContentType: "text/html",
+			UserNames:   []string{user.UserName},
+			Emails:      []string{user.EmailAddress},
+		}); err != nil {
+			l.Errorw("failed to send email to queue",
+				"error", err)
+			return nil, grpc.Errorf(codes.Internal, eh.QueuePublishError)
+		}
+		return &auth.Empty{}, nil
+
+	default:
+		return nil, grpc.Errorf(codes.InvalidArgument, "unsupported recovery type %v",
+			req.GetType())
+	}
 }
 
 // Login accepts credentials and returns a token for use with further requests.
@@ -212,13 +261,7 @@ func (a *AuthService) Update(ctx context.Context, req *auth.UpdateReq) (*auth.Us
 				"error", err)
 			return nil, grpc.Errorf(codes.Internal, eh.PasswordChangeError)
 		}
-		usage, err := a.usage.FindByUserName(user.UserName)
-		if err != nil {
-			l.Errorw("unable to find user usage",
-				"error", err)
-			return nil, grpc.Errorf(codes.Internal, "unable to find usage data for user")
-		}
-		return toUser(user, usage), nil
+		return toUser(user, nil), nil
 
 	case *auth.UpdateReq_DataTierChange:
 		l = l.With("change", "tier")
@@ -420,7 +463,7 @@ func (a *AuthService) validate(ctx context.Context) (context.Context, error) {
 	if !ok || meta == nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "missing context metadata")
 	}
-	keys, ok := meta[string(temporal.MetaKeyAuthorization)]
+	keys, ok := meta["authorization"]
 	if !ok || len(keys) == 0 {
 		return nil, grpc.Errorf(codes.Unauthenticated, "no key provided")
 	}
@@ -511,36 +554,41 @@ func toUser(u *models.User, usage *models.Usage) *auth.User {
 		}(u.IPFSKeyIDs, u.IPFSKeyNames),
 		IpfsNetworks: u.IPFSNetworkNames,
 
-		Usage: &auth.User_Usage{
-			Tier: func(t models.DataUsageTier) auth.Tier {
-				switch t {
-				case models.Partner:
-					return auth.Tier_PARTNER
-				case models.Light:
-					return auth.Tier_LIGHT
-				case models.Plus:
-					return auth.Tier_PLUS
-				default:
-					return auth.Tier_FREE
-				}
-			}(usage.Tier),
-			Data: &auth.User_Usage_Limits{
-				Limit: int64(usage.MonthlyDataLimitBytes),
-				Used:  int64(usage.CurrentDataUsedBytes),
-			},
-			IpnsRecords: &auth.User_Usage_Limits{
-				Limit: usage.IPNSRecordsAllowed,
-				Used:  usage.IPNSRecordsAllowed,
-			},
-			PubsubSent: &auth.User_Usage_Limits{
-				Limit: usage.PubSubMessagesAllowed,
-				Used:  usage.PubSubMessagesSent,
-			},
-			Keys: &auth.User_Usage_Limits{
-				Limit: usage.KeysAllowed,
-				Used:  usage.KeysCreated,
-			},
-		},
+		Usage: func(usage *models.Usage) *auth.User_Usage {
+			if usage == nil {
+				return nil
+			}
+			return &auth.User_Usage{
+				Tier: func(t models.DataUsageTier) auth.Tier {
+					switch t {
+					case models.Partner:
+						return auth.Tier_PARTNER
+					case models.Light:
+						return auth.Tier_LIGHT
+					case models.Plus:
+						return auth.Tier_PLUS
+					default:
+						return auth.Tier_FREE
+					}
+				}(usage.Tier),
+				Data: &auth.User_Usage_Limits{
+					Limit: int64(usage.MonthlyDataLimitBytes),
+					Used:  int64(usage.CurrentDataUsedBytes),
+				},
+				IpnsRecords: &auth.User_Usage_Limits{
+					Limit: usage.IPNSRecordsAllowed,
+					Used:  usage.IPNSRecordsAllowed,
+				},
+				PubsubSent: &auth.User_Usage_Limits{
+					Limit: usage.PubSubMessagesAllowed,
+					Used:  usage.PubSubMessagesSent,
+				},
+				Keys: &auth.User_Usage_Limits{
+					Limit: usage.KeysAllowed,
+					Used:  usage.KeysCreated,
+				},
+			}
+		}(usage),
 
 		ApiAccess:   true, // TODO: is this always the case?
 		AdminAccess: u.AdminAccess,

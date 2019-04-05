@@ -23,6 +23,19 @@ type FakeUserManager struct {
 		result1 bool
 		result2 error
 	}
+	FindByEmailStub        func(string) (*models.User, error)
+	findByEmailMutex       sync.RWMutex
+	findByEmailArgsForCall []struct {
+		arg1 string
+	}
+	findByEmailReturns struct {
+		result1 *models.User
+		result2 error
+	}
+	findByEmailReturnsOnCall map[int]struct {
+		result1 *models.User
+		result2 error
+	}
 	FindByUserNameStub        func(string) (*models.User, error)
 	findByUserNameMutex       sync.RWMutex
 	findByUserNameArgsForCall []struct {
@@ -182,6 +195,69 @@ func (fake *FakeUserManager) ChangePasswordReturnsOnCall(i int, result1 bool, re
 	}
 	fake.changePasswordReturnsOnCall[i] = struct {
 		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserManager) FindByEmail(arg1 string) (*models.User, error) {
+	fake.findByEmailMutex.Lock()
+	ret, specificReturn := fake.findByEmailReturnsOnCall[len(fake.findByEmailArgsForCall)]
+	fake.findByEmailArgsForCall = append(fake.findByEmailArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("FindByEmail", []interface{}{arg1})
+	fake.findByEmailMutex.Unlock()
+	if fake.FindByEmailStub != nil {
+		return fake.FindByEmailStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.findByEmailReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserManager) FindByEmailCallCount() int {
+	fake.findByEmailMutex.RLock()
+	defer fake.findByEmailMutex.RUnlock()
+	return len(fake.findByEmailArgsForCall)
+}
+
+func (fake *FakeUserManager) FindByEmailCalls(stub func(string) (*models.User, error)) {
+	fake.findByEmailMutex.Lock()
+	defer fake.findByEmailMutex.Unlock()
+	fake.FindByEmailStub = stub
+}
+
+func (fake *FakeUserManager) FindByEmailArgsForCall(i int) string {
+	fake.findByEmailMutex.RLock()
+	defer fake.findByEmailMutex.RUnlock()
+	argsForCall := fake.findByEmailArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeUserManager) FindByEmailReturns(result1 *models.User, result2 error) {
+	fake.findByEmailMutex.Lock()
+	defer fake.findByEmailMutex.Unlock()
+	fake.FindByEmailStub = nil
+	fake.findByEmailReturns = struct {
+		result1 *models.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserManager) FindByEmailReturnsOnCall(i int, result1 *models.User, result2 error) {
+	fake.findByEmailMutex.Lock()
+	defer fake.findByEmailMutex.Unlock()
+	fake.FindByEmailStub = nil
+	if fake.findByEmailReturnsOnCall == nil {
+		fake.findByEmailReturnsOnCall = make(map[int]struct {
+			result1 *models.User
+			result2 error
+		})
+	}
+	fake.findByEmailReturnsOnCall[i] = struct {
+		result1 *models.User
 		result2 error
 	}{result1, result2}
 }
@@ -634,6 +710,8 @@ func (fake *FakeUserManager) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.changePasswordMutex.RLock()
 	defer fake.changePasswordMutex.RUnlock()
+	fake.findByEmailMutex.RLock()
+	defer fake.findByEmailMutex.RUnlock()
 	fake.findByUserNameMutex.RLock()
 	defer fake.findByUserNameMutex.RUnlock()
 	fake.generateEmailVerificationTokenMutex.RLock()
