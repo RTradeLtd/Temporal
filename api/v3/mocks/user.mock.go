@@ -8,6 +8,21 @@ import (
 )
 
 type FakeUserManager struct {
+	ChangePasswordStub        func(string, string, string) (bool, error)
+	changePasswordMutex       sync.RWMutex
+	changePasswordArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+	}
+	changePasswordReturns struct {
+		result1 bool
+		result2 error
+	}
+	changePasswordReturnsOnCall map[int]struct {
+		result1 bool
+		result2 error
+	}
 	FindByUserNameStub        func(string) (*models.User, error)
 	findByUserNameMutex       sync.RWMutex
 	findByUserNameArgsForCall []struct {
@@ -104,6 +119,71 @@ type FakeUserManager struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeUserManager) ChangePassword(arg1 string, arg2 string, arg3 string) (bool, error) {
+	fake.changePasswordMutex.Lock()
+	ret, specificReturn := fake.changePasswordReturnsOnCall[len(fake.changePasswordArgsForCall)]
+	fake.changePasswordArgsForCall = append(fake.changePasswordArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("ChangePassword", []interface{}{arg1, arg2, arg3})
+	fake.changePasswordMutex.Unlock()
+	if fake.ChangePasswordStub != nil {
+		return fake.ChangePasswordStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.changePasswordReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserManager) ChangePasswordCallCount() int {
+	fake.changePasswordMutex.RLock()
+	defer fake.changePasswordMutex.RUnlock()
+	return len(fake.changePasswordArgsForCall)
+}
+
+func (fake *FakeUserManager) ChangePasswordCalls(stub func(string, string, string) (bool, error)) {
+	fake.changePasswordMutex.Lock()
+	defer fake.changePasswordMutex.Unlock()
+	fake.ChangePasswordStub = stub
+}
+
+func (fake *FakeUserManager) ChangePasswordArgsForCall(i int) (string, string, string) {
+	fake.changePasswordMutex.RLock()
+	defer fake.changePasswordMutex.RUnlock()
+	argsForCall := fake.changePasswordArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeUserManager) ChangePasswordReturns(result1 bool, result2 error) {
+	fake.changePasswordMutex.Lock()
+	defer fake.changePasswordMutex.Unlock()
+	fake.ChangePasswordStub = nil
+	fake.changePasswordReturns = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserManager) ChangePasswordReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.changePasswordMutex.Lock()
+	defer fake.changePasswordMutex.Unlock()
+	fake.ChangePasswordStub = nil
+	if fake.changePasswordReturnsOnCall == nil {
+		fake.changePasswordReturnsOnCall = make(map[int]struct {
+			result1 bool
+			result2 error
+		})
+	}
+	fake.changePasswordReturnsOnCall[i] = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeUserManager) FindByUserName(arg1 string) (*models.User, error) {
@@ -552,6 +632,8 @@ func (fake *FakeUserManager) ValidateEmailVerificationTokenReturnsOnCall(i int, 
 func (fake *FakeUserManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.changePasswordMutex.RLock()
+	defer fake.changePasswordMutex.RUnlock()
 	fake.findByUserNameMutex.RLock()
 	defer fake.findByUserNameMutex.RUnlock()
 	fake.generateEmailVerificationTokenMutex.RLock()

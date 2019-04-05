@@ -9,6 +9,7 @@ type userManager interface {
 	SignIn(username, password string) (bool, error)
 
 	ResetPassword(username string) (string, error)
+	ChangePassword(username string, curr string, new string) (bool, error)
 	UpdateCustomerObjectHash(username, newHash string) error
 
 	GenerateEmailVerificationToken(username string) (*models.User, error)

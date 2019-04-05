@@ -203,22 +203,43 @@ func (a *AuthService) Update(ctx context.Context, req *auth.UpdateReq) (*auth.Us
 	case *auth.UpdateReq_PasswordChange:
 		l = l.With("change", "password")
 		change := v.PasswordChange
-		change.GetOldPassword()
-		return nil, nil
+		ok, err := a.users.ChangePassword(user.UserName, change.GetOldPassword(), change.GetNewPassword())
+		if !ok {
+			return nil, grpc.Errorf(codes.PermissionDenied, "invalid password")
+		}
+		if err != nil {
+			l.Errorw("error when changing password",
+				"error", err)
+			return nil, grpc.Errorf(codes.Internal, eh.PasswordChangeError)
+		}
+		usage, err := a.usage.FindByUserName(user.UserName)
+		if err != nil {
+			l.Errorw("unable to find user usage",
+				"error", err)
+			return nil, grpc.Errorf(codes.Internal, "unable to find usage data for user")
+		}
+		return toUser(user, usage), nil
 
 	case *auth.UpdateReq_DataTierChange:
 		l = l.With("change", "tier")
 		usage, err := a.usage.FindByUserName(user.UserName)
 		if err != nil {
+			l.Errorw("unable to find user usage",
+				"error", err)
 			return nil, grpc.Errorf(codes.Internal, "unable to find usage data for user")
 		}
 		if usage.Tier != models.Free {
 			return nil, grpc.Errorf(codes.AlreadyExists, "account is already upgraded")
 		}
 		if err = a.usage.UpdateTier(user.UserName, models.Light); err != nil {
+			l.Errorw("unable to update user tier",
+				"tier", models.Light,
+				"error", err)
 			return nil, grpc.Errorf(codes.Internal, eh.TierUpgradeError)
 		}
 		if user, err = a.credits.AddCredits(user.UserName, 0.115); err != nil {
+			l.Errorw("unable to add free credits to user",
+				"error", err)
 			return nil, grpc.Errorf(codes.Internal, "failed to grant free credits")
 		}
 		if err = a.emails.PublishMessage(queue.EmailSend{
@@ -228,9 +249,13 @@ func (a *AuthService) Update(ctx context.Context, req *auth.UpdateReq) (*auth.Us
 			UserNames:   []string{user.UserName},
 			Emails:      []string{user.EmailAddress},
 		}); err != nil {
+			l.Errorw("failed to send email to queue",
+				"error", err)
 			return nil, grpc.Errorf(codes.Internal, eh.QueuePublishError)
 		}
 		if user, err = a.users.FindByUserName(user.UserName); err != nil {
+			l.Errorw("unable to find user",
+				"error", err)
 			return nil, grpc.Errorf(codes.Internal, eh.UserSearchError)
 		}
 		l.Info("user's data tier successfully updated")
