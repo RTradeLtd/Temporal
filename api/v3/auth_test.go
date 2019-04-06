@@ -187,6 +187,140 @@ func TestAuthService_Register(t *testing.T) {
 	}
 }
 
+func TestAuthService_Recover(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		req *auth.RecoverReq
+	}
+	type mock struct {
+		findByEmailErr    error
+		emailVerified     bool
+		resetPasswordErr  error
+		publishMessageErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		mock    mock
+		wantErr codes.Code
+	}{
+		{"no email", args{c(), &auth.RecoverReq{}}, mock{}, codes.InvalidArgument},
+		{"invalid type",
+			args{c(), &auth.RecoverReq{
+				Type:         -1,
+				EmailAddress: "robert@bobheadxi.dev",
+			}}, mock{
+				emailVerified: true,
+			}, codes.InvalidArgument},
+		{"no such user",
+			args{c(), &auth.RecoverReq{
+				EmailAddress: "robert@bobheadxi.dev",
+			}},
+			mock{
+				findByEmailErr: errors.New("oh no"),
+			},
+			codes.NotFound},
+		{"user email not enabled",
+			args{c(), &auth.RecoverReq{
+				EmailAddress: "robert@bobheadxi.dev",
+			}},
+			mock{
+				emailVerified: false,
+			},
+			codes.FailedPrecondition},
+		{"password: error when resetting",
+			args{c(), &auth.RecoverReq{
+				Type:         auth.RecoverReq_PASSWORD,
+				EmailAddress: "robert@bobheadxi.dev",
+			}},
+			mock{
+				emailVerified:    true,
+				resetPasswordErr: errors.New("oh no"),
+			},
+			codes.Internal},
+		{"password: error when publishing",
+			args{c(), &auth.RecoverReq{
+				Type:         auth.RecoverReq_PASSWORD,
+				EmailAddress: "robert@bobheadxi.dev",
+			}},
+			mock{
+				emailVerified:     true,
+				publishMessageErr: errors.New("oh no"),
+			},
+			codes.Internal},
+		{"password: success",
+			args{c(), &auth.RecoverReq{
+				Type:         auth.RecoverReq_PASSWORD,
+				EmailAddress: "robert@bobheadxi.dev",
+			}},
+			mock{
+				emailVerified: true,
+			},
+			codes.OK},
+		{"username: error when publishing",
+			args{c(), &auth.RecoverReq{
+				Type:         auth.RecoverReq_USERNAME,
+				EmailAddress: "robert@bobheadxi.dev",
+			}},
+			mock{
+				emailVerified:     true,
+				publishMessageErr: errors.New("oh no"),
+			},
+			codes.Internal},
+		{"username: success",
+			args{c(), &auth.RecoverReq{
+				Type:         auth.RecoverReq_USERNAME,
+				EmailAddress: "robert@bobheadxi.dev",
+			}},
+			mock{
+				emailVerified: true,
+			},
+			codes.OK},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var (
+				users = &mocks.FakeUserManager{
+					FindByEmailStub: func(string) (*models.User, error) {
+						if tt.mock.findByEmailErr == nil {
+							return &models.User{
+								UserName:     "bobheadxi",
+								EmailAddress: "robert@bobheadxi.dev",
+								EmailEnabled: tt.mock.emailVerified,
+							}, nil
+						}
+						return nil, tt.mock.findByEmailErr
+					},
+					ResetPasswordStub: func(string) (string, error) {
+						return "", tt.mock.resetPasswordErr
+					},
+				}
+				emails = &mocks.FakePublisher{
+					PublishMessageStub: func(interface{}) error {
+						return tt.mock.publishMessageErr
+					},
+				}
+
+				a = &AuthService{
+					users:   users,
+					usage:   nil,
+					credits: nil,
+					emails:  emails,
+					jwt:     defaultJWT,
+					dev:     true,
+					l:       zaptest.NewLogger(t).Sugar(),
+				}
+			)
+
+			got, err := a.Recover(tt.args.ctx, tt.args.req)
+			assert.Equalf(t, tt.wantErr, status.Code(err), "got err = '%v'", err)
+			if tt.wantErr == codes.OK {
+				require.NotNil(t, got)
+			}
+		})
+	}
+}
+
 func TestAuthService_Login(t *testing.T) {
 	type args struct {
 		ctx context.Context

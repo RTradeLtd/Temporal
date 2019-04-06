@@ -161,7 +161,7 @@ func (a *AuthService) Recover(ctx context.Context, req *auth.RecoverReq) (*auth.
 				"error", err)
 			return nil, grpc.Errorf(codes.Internal, eh.QueuePublishError)
 		}
-		return nil, nil
+		return &auth.Empty{}, nil
 
 	case auth.RecoverReq_USERNAME:
 		if err := a.emails.PublishMessage(queue.EmailSend{
