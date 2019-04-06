@@ -253,14 +253,15 @@ func (a *AuthService) Update(ctx context.Context, req *auth.UpdateReq) (*auth.Us
 		l = l.With("change", "password")
 		change := v.PasswordChange
 		ok, err := a.users.ChangePassword(user.UserName, change.GetOldPassword(), change.GetNewPassword())
-		if !ok {
-			return nil, grpc.Errorf(codes.PermissionDenied, "invalid password")
-		}
 		if err != nil {
 			l.Errorw("error when changing password",
 				"error", err)
 			return nil, grpc.Errorf(codes.Internal, eh.PasswordChangeError)
 		}
+		if !ok {
+			return nil, grpc.Errorf(codes.PermissionDenied, "invalid password")
+		}
+
 		return toUser(user, nil), nil
 
 	case *auth.UpdateReq_DataTierChange:
@@ -274,17 +275,20 @@ func (a *AuthService) Update(ctx context.Context, req *auth.UpdateReq) (*auth.Us
 		if usage.Tier != models.Free {
 			return nil, grpc.Errorf(codes.AlreadyExists, "account is already upgraded")
 		}
+
 		if err = a.usage.UpdateTier(user.UserName, models.Light); err != nil {
 			l.Errorw("unable to update user tier",
 				"tier", models.Light,
 				"error", err)
 			return nil, grpc.Errorf(codes.Internal, eh.TierUpgradeError)
 		}
+
 		if user, err = a.credits.AddCredits(user.UserName, 0.115); err != nil {
 			l.Errorw("unable to add free credits to user",
 				"error", err)
 			return nil, grpc.Errorf(codes.Internal, "failed to grant free credits")
 		}
+
 		if err = a.emails.PublishMessage(queue.EmailSend{
 			Subject:     "TEMPORAL Account Upgraded",
 			Content:     "your account has been ugpraded to Light tier. Enjoy 11.5 cents of free credit!",
@@ -296,12 +300,9 @@ func (a *AuthService) Update(ctx context.Context, req *auth.UpdateReq) (*auth.Us
 				"error", err)
 			return nil, grpc.Errorf(codes.Internal, eh.QueuePublishError)
 		}
-		if user, err = a.users.FindByUserName(user.UserName); err != nil {
-			l.Errorw("unable to find user",
-				"error", err)
-			return nil, grpc.Errorf(codes.Internal, eh.UserSearchError)
-		}
+
 		l.Info("user's data tier successfully updated")
+		usage.Tier = models.Light
 		return toUser(user, usage), nil
 
 	default:

@@ -311,12 +311,187 @@ func TestAuthService_Account(t *testing.T) {
 			)
 
 			got, err := a.Account(tt.args.ctx, tt.args.req)
-			if !assert.Equal(t, tt.wantErr, status.Code(err)) {
-				t.Logf("got error = %v", err)
-			}
+			assert.Equalf(t, tt.wantErr, status.Code(err), "got err = '%v'", err)
 			if tt.wantErr == codes.OK {
 				require.NotNil(t, got)
 				assert.Equal(t, auth.Tier_PARTNER, got.GetUsage().GetTier())
+			}
+		})
+	}
+}
+
+func TestAuthService_Update(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		req *auth.UpdateReq
+	}
+	type mock struct {
+		changePasswordErr error
+		changePasswordOK  bool
+
+		findUsageErr  error
+		findUsageTier models.DataUsageTier
+
+		updateTierErr     error
+		addCreditsErr     error
+		publishMessageErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		mock    mock
+		wantErr codes.Code
+	}{
+		{"no user in ctx", args{c(), &auth.UpdateReq{}}, mock{}, codes.NotFound},
+		{"password: incorrect password",
+			args{cFromMap(cMap{
+				ctxKeyUser: &models.User{UserName: "bobheadxi"},
+			}), &auth.UpdateReq{
+				Update: &auth.UpdateReq_PasswordChange{
+					PasswordChange: &auth.UpdateReq_Password{
+						OldPassword: "asdf", NewPassword: "ioiu",
+					}},
+			}},
+			mock{
+				changePasswordOK: false,
+			},
+			codes.PermissionDenied},
+		{"password: error when changing",
+			args{cFromMap(cMap{
+				ctxKeyUser: &models.User{UserName: "bobheadxi"},
+			}), &auth.UpdateReq{
+				Update: &auth.UpdateReq_PasswordChange{
+					PasswordChange: &auth.UpdateReq_Password{
+						OldPassword: "asdf", NewPassword: "ioiu",
+					}},
+			}},
+			mock{
+				changePasswordErr: errors.New("oh no"),
+			},
+			codes.Internal},
+		{"password: ok",
+			args{cFromMap(cMap{
+				ctxKeyUser: &models.User{UserName: "bobheadxi"},
+			}), &auth.UpdateReq{
+				Update: &auth.UpdateReq_PasswordChange{
+					PasswordChange: &auth.UpdateReq_Password{
+						OldPassword: "asdf", NewPassword: "ioiu",
+					}},
+			}},
+			mock{
+				changePasswordOK: true,
+			},
+			codes.OK},
+		{"tier: cant find usage",
+			args{cFromMap(cMap{
+				ctxKeyUser: &models.User{UserName: "bobheadxi"},
+			}), &auth.UpdateReq{
+				Update: &auth.UpdateReq_DataTierChange{
+					DataTierChange: &auth.UpdateReq_DataTier{}},
+			}},
+			mock{
+				findUsageErr: errors.New("oh no"),
+			},
+			codes.Internal},
+		{"tier: user is already upgraded",
+			args{cFromMap(cMap{
+				ctxKeyUser: &models.User{UserName: "bobheadxi"},
+			}), &auth.UpdateReq{
+				Update: &auth.UpdateReq_DataTierChange{
+					DataTierChange: &auth.UpdateReq_DataTier{}},
+			}},
+			mock{
+				findUsageTier: models.Light,
+			},
+			codes.AlreadyExists},
+		{"tier: fail to add credits",
+			args{cFromMap(cMap{
+				ctxKeyUser: &models.User{UserName: "bobheadxi"},
+			}), &auth.UpdateReq{
+				Update: &auth.UpdateReq_DataTierChange{
+					DataTierChange: &auth.UpdateReq_DataTier{}},
+			}},
+			mock{
+				findUsageTier: models.Free,
+				addCreditsErr: errors.New("oh no"),
+			},
+			codes.Internal},
+		{"tier: fail to publish email to queue",
+			args{cFromMap(cMap{
+				ctxKeyUser: &models.User{UserName: "bobheadxi"},
+			}), &auth.UpdateReq{
+				Update: &auth.UpdateReq_DataTierChange{
+					DataTierChange: &auth.UpdateReq_DataTier{}},
+			}},
+			mock{
+				findUsageTier:     models.Free,
+				publishMessageErr: errors.New("oh no"),
+			},
+			codes.Internal},
+		{"tier: success",
+			args{cFromMap(cMap{
+				ctxKeyUser: &models.User{UserName: "bobheadxi"},
+			}), &auth.UpdateReq{
+				Update: &auth.UpdateReq_DataTierChange{
+					DataTierChange: &auth.UpdateReq_DataTier{}},
+			}},
+			mock{
+				findUsageTier: models.Free,
+			},
+			codes.OK},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var (
+				users = &mocks.FakeUserManager{
+					ChangePasswordStub: func(string, string, string) (bool, error) {
+						return tt.mock.changePasswordOK, tt.mock.changePasswordErr
+					},
+				}
+				usage = &mocks.FakeUsageManager{
+					FindByUserNameStub: func(string) (*models.Usage, error) {
+						if tt.mock.findUsageErr == nil {
+							return &models.Usage{
+								Tier: tt.mock.findUsageTier,
+							}, nil
+						}
+						return nil, tt.mock.findUsageErr
+					},
+					UpdateTierStub: func(string, models.DataUsageTier) error {
+						return tt.mock.updateTierErr
+					},
+				}
+				credits = &mocks.FakeCreditsManager{
+					AddCreditsStub: func(string, float64) (*models.User, error) {
+						if tt.mock.addCreditsErr == nil {
+							return &models.User{
+								UserName: "bobheadxi",
+							}, nil
+						}
+						return nil, tt.mock.addCreditsErr
+					},
+				}
+				emails = &mocks.FakePublisher{
+					PublishMessageStub: func(interface{}) error {
+						return tt.mock.publishMessageErr
+					},
+				}
+
+				a = &AuthService{
+					users:   users,
+					usage:   usage,
+					credits: credits,
+					emails:  emails,
+					jwt:     defaultJWT,
+					dev:     true,
+					l:       zaptest.NewLogger(t).Sugar(),
+				}
+			)
+
+			got, err := a.Update(tt.args.ctx, tt.args.req)
+			assert.Equalf(t, tt.wantErr, status.Code(err), "got err = '%v'", err)
+			if tt.wantErr == codes.OK {
+				require.NotNil(t, got)
 			}
 		})
 	}
