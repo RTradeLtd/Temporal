@@ -477,6 +477,14 @@ func TestAuthService_Update(t *testing.T) {
 		wantErr codes.Code
 	}{
 		{"no user in ctx", args{c(), &auth.UpdateReq{}}, mock{}, codes.NotFound},
+		{"invalid type",
+			args{cFromMap(cMap{
+				ctxKeyUser: &models.User{UserName: "bobheadxi"},
+			}), &auth.UpdateReq{
+				Update: nil,
+			}},
+			mock{},
+			codes.InvalidArgument},
 		{"password: incorrect password",
 			args{cFromMap(cMap{
 				ctxKeyUser: &models.User{UserName: "bobheadxi"},
