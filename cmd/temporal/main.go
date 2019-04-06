@@ -9,6 +9,9 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
+	"time"
+
+	"gopkg.in/dgrijalva/jwt-go.v3"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -533,7 +536,6 @@ var commands = map[string]cmd.Cmd{
 	},
 	"v3": {
 		Blurb:         "experimental Temporal V3 API",
-		Hidden:        true,
 		PreRun:        true,
 		ChildRequired: true,
 		Children: map[string]cmd.Cmd{
@@ -544,6 +546,7 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("no address provided")
 						os.Exit(1)
 					}
+					// TODO: allow better configuration
 					if err := v3.REST(context.Background(), v3.RESTGatewayOptions{
 						Address:     ":8080",
 						DialAddress: os.Args[3],
@@ -561,22 +564,53 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("no address provided")
 						os.Exit(1)
 					}
-					l, err := log.NewLogger("", *devMode)
+					l, err := log.NewLogger(logPath(cfg.LogDir, "v3.server.log"), *devMode)
 					if err != nil {
 						fmt.Println(err)
 						os.Exit(1)
 					}
-					s := v3.New(
-						l.Named("v3"),
 
-						// TODO
-						&v3.CoreService{},
-						&v3.AuthService{},
-						&v3.StoreService{},
-						&v3.IPFSService{},
-
-						v3.Options{},
+					// instantiate database dependencies
+					db, err := newDB(cfg, *dbNoSSL)
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+					}
+					var (
+						users = models.NewUserManager(db)
+						usage = models.NewUsageManager(db)
 					)
+
+					// instantiate queue consumers
+					emails, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL,
+						true, *devMode, &cfg, l.Named("queue.email"))
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+					}
+
+					// set up server
+					l = l.Named("v3")
+					s := v3.New(
+						l,
+						v3.NewCoreService(*devMode, l.Named("core")),
+						v3.NewAuthService(users, usage, users, emails, v3.JWTConfig{
+							Key:   cfg.API.JWT.Key,
+							Realm: cfg.API.JWT.Realm,
+
+							// TODO: allow better configuration
+							Timeout:     24 * time.Hour,
+							SigningAlgo: jwt.SigningMethodHS512,
+						}, *devMode, l.Named("auth")),
+						v3.NewStoreService(*devMode, l.Named("store")),
+						v3.NewIPFSService(*devMode, l.Named("ipfs")),
+
+						v3.Options{
+							// TODO
+						},
+					)
+
+					// lets go!
 					if err := s.Run(context.Background(), os.Args[3]); err != nil {
 						fmt.Println("error starting v3 API server", err)
 						os.Exit(1)

@@ -51,6 +51,21 @@ type AuthService struct {
 	l *zap.SugaredLogger
 }
 
+// NewAuthService returns a new instance of the v3 authentication service
+func NewAuthService(
+	users userManager,
+	usage usageManager,
+	credits creditsManager,
+	emails publisher,
+
+	jwt JWTConfig,
+	dev bool,
+
+	l *zap.SugaredLogger,
+) *AuthService {
+	return &AuthService{users, usage, credits, emails, jwt, dev, l}
+}
+
 // Register returns the Temporal API status
 func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*auth.User, error) {
 	var (

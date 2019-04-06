@@ -12,7 +12,18 @@ import (
 
 // StoreService implements TemporalStoreService
 type StoreService struct {
+	dev bool
+
 	l *zap.SugaredLogger
+}
+
+// NewStoreService returns a new instance of the v3 authentication service
+func NewStoreService(
+	dev bool,
+
+	l *zap.SugaredLogger,
+) *StoreService {
+	return &StoreService{dev, l}
 }
 
 // Upload accepts files and directories

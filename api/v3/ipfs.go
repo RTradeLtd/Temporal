@@ -12,7 +12,18 @@ import (
 
 // IPFSService implements TemporalIPFSService
 type IPFSService struct {
+	dev bool
+
 	l *zap.SugaredLogger
+}
+
+// NewIPFSService returns a new instance of the v3 authentication service
+func NewIPFSService(
+	dev bool,
+
+	l *zap.SugaredLogger,
+) *IPFSService {
+	return &IPFSService{dev, l}
 }
 
 // CreateNetwork creates a new hosted IPFS network

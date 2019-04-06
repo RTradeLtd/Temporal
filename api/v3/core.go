@@ -12,7 +12,18 @@ import (
 
 // CoreService implements TemporalCoreService
 type CoreService struct {
+	dev bool
+
 	l *zap.SugaredLogger
+}
+
+// NewCoreService returns a new instance of the v3 authentication service
+func NewCoreService(
+	dev bool,
+
+	l *zap.SugaredLogger,
+) *CoreService {
+	return &CoreService{dev, l}
 }
 
 // Status returns the Temporal API status
