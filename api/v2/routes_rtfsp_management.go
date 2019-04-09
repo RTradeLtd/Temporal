@@ -103,14 +103,14 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 	}
 	logger := api.l.With("user", username, "network_name", networkName)
 	logger.Info("private ipfs network start requested")
-	// verify admin access to network
-	network, err := api.nm.GetNetworkByName(networkName)
-	if err != nil {
-		api.LogError(c, err, eh.NetworkSearchError)(http.StatusInternalServerError)
+	if err := api.isNetworkOwner(networkName, username); err != nil {
+		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusUnauthorized)
 		return
 	}
-	if network.Owner != username {
-		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusUnauthorized)
+	if _, err := api.orch.StartNetwork(c, &nexus.NetworkRequest{
+		Network: networkName}); err != nil {
+		api.LogError(c, err, "failed to start network")(http.StatusBadRequest)
+		return
 		return
 	}
 	// log and return
@@ -142,12 +142,7 @@ func (api *API) stopIPFSPrivateNetwork(c *gin.Context) {
 	logger := api.l.With("user", username, "network_name", networkName)
 	logger.Info("private ipfs network shutdown requested")
 	// verify admin access to network
-	network, err := api.nm.GetNetworkByName(networkName)
-	if err != nil {
-		api.LogError(c, err, eh.NetworkSearchError)(http.StatusInternalServerError)
-		return
-	}
-	if network.Owner != username {
+	if err := api.isNetworkOwner(networkName, username); err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusUnauthorized)
 		return
 	}
@@ -191,7 +186,7 @@ func (api *API) removeIPFSPrivateNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.NetworkSearchError)(http.StatusInternalServerError)
 		return
 	}
-	if network.Owner != username {
+	if err := api.isNetworkOwner(networkName, username); err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusUnauthorized)
 		return
 	}
@@ -335,7 +330,7 @@ func (api *API) addUsersToNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.NetworkSearchError)(http.StatusInternalServerError)
 		return
 	}
-	if network.Owner != username {
+	if err := api.isNetworkOwner(networkName, username); err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusUnauthorized)
 		return
 	}
@@ -347,11 +342,17 @@ func (api *API) addUsersToNetwork(c *gin.Context) {
 		}
 	}
 	// combine both the currrent list of authorized users, and the list of users to add
-	users = append(users, network.Users...)
+	network.Users = append(network.Users, users...)
 	// update the users field of the database model only
 	if err := api.nm.UpdateNetworkByName(networkName, map[string]interface{}{"users": network.Users}); err != nil {
 		api.LogError(c, err, "failed to update authorized users for network")
 		return
+	}
+	for _, user := range users {
+		if err := api.um.AddIPFSNetworkForUser(user, networkName); err != nil {
+			api.LogError(c, err, "failed to update network for user")(http.StatusInternalServerError)
+			return
+		}
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "authorized user list updated"})
 }
@@ -383,7 +384,7 @@ func (api *API) removeUsersFromNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.NetworkSearchError)(http.StatusInternalServerError)
 		return
 	}
-	if network.Owner != username {
+	if err := api.isNetworkOwner(networkName, username); err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusUnauthorized)
 		return
 	}
@@ -405,6 +406,77 @@ func (api *API) removeUsersFromNetwork(c *gin.Context) {
 	}
 	if err := api.nm.UpdateNetworkByName(networkName, map[string]interface{}{"users": newUsers}); err != nil {
 		api.LogError(c, err, "failed to update authorized users for network")
+		return
+	}
+	for user := range usersToRemove {
+		if err := api.um.RemoveIPFSNetworkForUser(user, networkName); err != nil {
+			api.LogError(c, err, "failed to remove network from user")
+			return
+		}
 	}
 	Respond(c, http.StatusOK, gin.H{"response": "authorized user list updated"})
+}
+
+func (api *API) addOwnersToNetwork(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("private networks not supported in production, please use https://dev.api.temporal.cloud"))
+		return
+	}
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	networkName, exists := c.GetPostForm("network_name")
+	if !exists {
+		FailWithMissingField(c, "network_name")
+		return
+	}
+	owners, exists := c.GetPostFormArray("owners")
+	if !exists {
+		FailWithMissingField(c, "owners")
+		return
+	}
+	if err := api.isNetworkOwner(networkName, username); err != nil {
+		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusUnauthorized)
+		return
+	}
+	// make sure the user accounts exist
+	for _, owner := range owners {
+		if _, err := api.um.FindByUserName(owner); err != nil {
+			api.LogError(c, err, eh.UserSearchError)(http.StatusInternalServerError)
+			return
+		}
+	}
+	network, err := api.nm.GetNetworkByName(networkName)
+	if err != nil { // remove network from users authorized networks
+		api.LogError(c, err, eh.NetworkSearchError)(http.StatusInternalServerError)
+		return
+	}
+	for _, v := range network.Users {
+		if err = api.um.RemoveIPFSNetworkForUser(v, networkName); err != nil {
+			api.LogError(c, err, "failed to remove network from users")(http.StatusBadRequest)
+			return
+		}
+	}
+
+	network.Owners = append(network.Owners, owners...)
+	if err := api.nm.UpdateNetworkByName(networkName, map[string]interface{}{"owners": network.Owners}); err != nil {
+		api.LogError(c, err, "failed to update network owners")
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "network owners updated"})
+}
+
+func (api *API) isNetworkOwner(network, username string) error {
+	n, err := api.nm.GetNetworkByName(network)
+	if err != nil {
+		return err
+	}
+	for _, owner := range n.Owners {
+		if owner == username {
+			return nil
+		}
+	}
+	return errors.New("user is not owner")
 }

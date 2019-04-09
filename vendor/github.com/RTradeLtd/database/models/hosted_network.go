@@ -45,7 +45,7 @@ type HostedNetwork struct {
 
 	// Owner is the creator of the private network, and is allowed to invoke
 	// administrative commands, such as network destruction.
-	Owner string `gorm:"type:text"`
+	Owners pq.StringArray `gorm:"type:text[]"`
 	// Users allowed to control this node. Includes API access.
 	Users pq.StringArray `gorm:"type:text[]"` // these are the users to which this IPFS network connection applies to specified by eth address
 }
@@ -194,7 +194,7 @@ func (im *HostedNetworkManager) CreateHostedPrivateNetwork(
 	}
 
 	// set the owner of the network
-	pnet.Owner = access.Owner
+	pnet.Owners = []string{access.Owner}
 
 	// assign misc details
 	pnet.Name = name
