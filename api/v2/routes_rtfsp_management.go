@@ -44,7 +44,7 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 		users = append(users, username)
 	}
 	// create the network in our database
-	network, err := api.nm.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, models.NetworkAccessOptions{Users: users})
+	network, err := api.nm.CreateHostedPrivateNetwork(networkName, swarmKey, bPeers, models.NetworkAccessOptions{Users: users, Owner: username})
 	if err != nil {
 		api.LogError(c, err, eh.NetworkCreationError)(http.StatusBadRequest)
 		return
