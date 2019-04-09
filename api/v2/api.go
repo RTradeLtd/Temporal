@@ -539,6 +539,10 @@ func (api *API) setupRoutes() error {
 					users.DELETE("/remove", api.removeUsersFromNetwork)
 					users.POST("/add", api.addUsersToNetwork)
 				}
+				owners := network.Group("/owners")
+				{
+					owners.POST("/add", api.addOwnersToNetwork)
+				}
 				network.GET("/:name", api.getIPFSPrivateNetworkByName)
 				network.POST("/new", api.createIPFSNetwork)
 				network.POST("/stop", api.stopIPFSPrivateNetwork)
