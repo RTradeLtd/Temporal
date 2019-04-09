@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"hash/crc32"
 	"io"
@@ -745,7 +746,10 @@ func (vlog *valueLog) open(db *DB, ptr valuePointer, replayFn logEntry) error {
 	vlog.db = db
 	vlog.elog = trace.NewEventLog("Badger", "Valuelog")
 	vlog.garbageCh = make(chan struct{}, 1) // Only allow one GC at a time.
-	vlog.lfDiscardStats = &lfDiscardStats{m: make(map[uint32]int64)}
+
+	if err := vlog.populateDiscardStats(); err != nil {
+		return err
+	}
 
 	if err := vlog.populateFilesMap(); err != nil {
 		return err
@@ -887,7 +891,9 @@ func (req *request) Wait() error {
 	return err
 }
 
-// sync is thread-unsafe and should not be called concurrently with write.
+// sync function syncs content of current value log file to disk.
+// syncing of value log directory is not required here as it happens
+// every time a new value log file is created(check createVlogFile function).
 func (vlog *valueLog) sync() error {
 	if vlog.opt.SyncWrites {
 		return nil
@@ -900,17 +906,18 @@ func (vlog *valueLog) sync() error {
 	}
 	maxFid := atomic.LoadUint32(&vlog.maxFid)
 	curlf := vlog.filesMap[maxFid]
+	// Sometimes it is possible that vlog.maxFid has been increased but file creation
+	// with same id is still in progress and this function is called. In those cases
+	// entry for the file might not be present in vlog.filesMap.
+	if curlf == nil {
+		vlog.filesLock.RUnlock()
+		return nil
+	}
 	curlf.lock.RLock()
 	vlog.filesLock.RUnlock()
 
-	dirSyncCh := make(chan error)
-	go func() { dirSyncCh <- syncDir(vlog.opt.ValueDir) }()
 	err := curlf.sync()
 	curlf.lock.RUnlock()
-	dirSyncErr := <-dirSyncCh
-	if err != nil {
-		err = dirSyncErr
-	}
 	return err
 }
 
@@ -1157,7 +1164,7 @@ func (vlog *valueLog) doRunGC(lf *logFile, discardRatio float64, tr trace.Trace)
 
 	// Set up the sampling window sizes.
 	sizeWindow := float64(fi.Size()) * 0.1                          // 10% of the file as window.
-	sizeWindowM := sizeWindow / (1 << 20) // in MBs.
+	sizeWindowM := sizeWindow / (1 << 20)                           // in MBs.
 	countWindow := int(float64(vlog.opt.ValueLogMaxEntries) * 0.01) // 1% of num entries.
 	tr.LazyPrintf("Size window: %5.2f. Count window: %d.", sizeWindow, countWindow)
 
@@ -1306,10 +1313,44 @@ func (vlog *valueLog) runGC(discardRatio float64, head valuePointer) error {
 	}
 }
 
-func (vlog *valueLog) updateGCStats(stats map[uint32]int64) {
+func (vlog *valueLog) updateDiscardStats(stats map[uint32]int64) {
 	vlog.lfDiscardStats.Lock()
 	for fid, sz := range stats {
 		vlog.lfDiscardStats.m[fid] += sz
 	}
 	vlog.lfDiscardStats.Unlock()
+}
+
+// encodedDiscardStats returns []byte representation of lfDiscardStats
+// This will be called while storing stats in BadgerDB
+func (vlog *valueLog) encodedDiscardStats() []byte {
+	vlog.lfDiscardStats.Lock()
+	defer vlog.lfDiscardStats.Unlock()
+
+	encodedStats, _ := json.Marshal(vlog.lfDiscardStats.m)
+	return encodedStats
+}
+
+// populateDiscardStats populates vlog.lfDiscardStats
+// This function will be called while initializing valueLog
+func (vlog *valueLog) populateDiscardStats() error {
+	discardStatsKey := y.KeyWithTs(lfDiscardStatsKey, math.MaxUint64)
+	vs, err := vlog.db.get(discardStatsKey)
+	if err != nil {
+		return err
+	}
+
+	// check if value is Empty
+	if vs.Value == nil || len(vs.Value) == 0 {
+		vlog.lfDiscardStats = &lfDiscardStats{m: make(map[uint32]int64)}
+		return nil
+	}
+
+	var statsMap map[uint32]int64
+	if err := json.Unmarshal(vs.Value, &statsMap); err != nil {
+		return err
+	}
+	vlog.opt.Debugf("Value Log Discard stats: %v", statsMap)
+	vlog.lfDiscardStats = &lfDiscardStats{m: statsMap}
+	return nil
 }

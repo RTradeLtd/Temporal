@@ -26,12 +26,6 @@
       "version": "2.11.4"
     },
     {
-      "author": "Kubuxu",
-      "hash": "QmXuBJ7DR6k3rmUEKtvVMhwjmXDuJgXXPUt4LQXKBMsU93",
-      "name": "go-os-helper",
-      "version": "0.0.0"
-    },
-    {
       "hash": "QmbkT7eMTyXfpeyB3ZMxxcxg7XH8t6uXp49jqzz4HB7BGF",
       "name": "go-log",
       "version": "1.5.9"
@@ -42,6 +36,6 @@
   "license": "",
   "name": "go-ds-badger",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "1.12.3"
+  "version": "1.12.4"
 }
 

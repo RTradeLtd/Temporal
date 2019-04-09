@@ -3,6 +3,7 @@ package rtns
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"time"
 
 	path "gx/ipfs/QmQAgv6Gaoe2tQpcabqwKXKChp2MZ7i3UXv9DqTTaxCaTR/go-path"
@@ -62,6 +63,8 @@ func NewPublisher(pk ci.PrivKey, permanent bool, swarmAddrs ...string) (*Publish
 	if err != nil {
 		return nil, err
 	}
+	// print connection information
+	fmt.Printf("listening on %v, with pid %s\n", swarmAddrs, pid.Pretty())
 	return &Publisher{
 		host: host,
 	}, nil

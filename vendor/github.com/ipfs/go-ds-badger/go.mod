@@ -2,8 +2,7 @@ module github.com/ipfs/go-ds-badger
 
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7 // indirect
-	github.com/Kubuxu/go-os-helper v0.0.1
-	github.com/dgraph-io/badger v1.5.5-0.20190226225317-8115aed38f8f
+	github.com/dgraph-io/badger v2.0.0-rc.2+incompatible
 	github.com/dgryski/go-farm v0.0.0-20190104051053-3adb47b1fb0f // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/golang/protobuf v1.3.0 // indirect

@@ -10,14 +10,6 @@
   revision = "e2d15f34fcf99d5dbb871c820ec73f710fca9815"
 
 [[projects]]
-  digest = "1:4a7be34ac4d3c56c039ece7d674236bde2d95f6adc93262cbb21d5b758566b15"
-  name = "github.com/Kubuxu/go-os-helper"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "3d3fc2fb493d8d889dddd5a4524283ac2faa4732"
-  version = "v0.0.1"
-
-[[projects]]
   digest = "1:8c0de084c65b43922d0c9e4d92884215ef5f0ec7874db83634f889e08b218ad5"
   name = "github.com/RTradeLtd/ChainRider-Go"
   packages = ["dash"]
@@ -34,12 +26,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  digest = "1:9cbed820d2a459786e47ab2a67b3e3b04c58b006597fdf80d58ef4cfb9e81e7c"
+  digest = "1:15606ab74a26d5cfc9034e60e48429935d5f76c764f2733bc7ee28f77530b075"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "b0ee70d215bfa47c475262b6c7d01760a0b70233"
-  version = "v2.0.4"
+  revision = "8610ac93a1fa5e5cc2933d389da65f7eeabb6537"
+  version = "v2.0.5"
 
 [[projects]]
   digest = "1:8859d83d94d112382fbdd97fc04c2ce196ea044f271ffe8e170826b25131a4f0"
@@ -160,7 +152,7 @@
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
   pruneopts = "UT"
-  revision = "306aecffea325e97f513b3ff0cf7895a5310651d"
+  revision = "aa6e0f35703c1438cc45860ddc0c3f6e6c633c93"
 
 [[projects]]
   branch = "master"
@@ -188,7 +180,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:02047c136c0ccff3a4c52eaacf4f626aba33df9ee4d665099dd63d18ecc0e1da"
+  digest = "1:e78a8ebcecf7b63d3a9937f36fcf31dbca11e3e030f408d80084154f10b84b7e"
   name = "github.com/dgraph-io/badger"
   packages = [
     ".",
@@ -199,15 +191,15 @@
     "y",
   ]
   pruneopts = "UT"
-  revision = "deee8c7ae70bab412e4f10cfa068e0be61a8d0eb"
+  revision = "851e462df52e830df8415f92676c0c9586a21df6"
 
 [[projects]]
   branch = "master"
-  digest = "1:ea678afd6431e09f84a56fc6915ccab9189ddd1379fed997e1433ead9586c50b"
+  digest = "1:4f8b6d3cfd2ac1813bddcfee3b954fc5c0315e3917d8b3879d2e1cd09f9a3692"
   name = "github.com/dgryski/go-farm"
   packages = ["."]
   pruneopts = "UT"
-  revision = "3adb47b1fb0f6d9efcc5051a6c62e2e413ac85a9"
+  revision = "8198c7b169ec28630587aded52777c5e10a037c2"
 
 [[projects]]
   digest = "1:6f9339c912bbdda81302633ad7e99a28dfa5a639c864061f1929510a9a64aa74"
@@ -259,7 +251,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f96373f831c5d4c9922c4efd348967b51ca5a1784955e063e3eb8c71095d65a2"
+  digest = "1:0088695ce10ce08480101c462510af7e28d38ed950cbb863731bef8da4b19b31"
   name = "github.com/gin-gonic/gin"
   packages = [
     ".",
@@ -268,7 +260,7 @@
     "render",
   ]
   pruneopts = "UT"
-  revision = "70a0aba3e423246be37462cfdaedd510c26c566e"
+  revision = "ffcbe77b1e6222b4e0e97eb1920adc1813fb2224"
 
 [[projects]]
   digest = "1:760b2447d30444b6c2da7f77b677921f095fe19e6ed423b2edc1cd47a8507789"
@@ -300,7 +292,7 @@
     "ptypes/wrappers",
   ]
   pruneopts = "UT"
-  revision = "b5d812f8a3706043e23a9cd5babf2e5423744d30"
+  revision = "d3c38a4eb4970272b87a425ae00ccc4548e2f9bb"
 
 [[projects]]
   digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
@@ -330,7 +322,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:c272da016742f6d54a7ea9c521f2fc89830649722cfe6f0db78e15dad9d090f0"
+  digest = "1:4cbbca3db0ff89197d000fb2fa0b90ca4516a7fbd4d8cd9fa4bebf17df484f6d"
   name = "github.com/grpc-ecosystem/grpc-gateway"
   packages = [
     "internal",
@@ -338,8 +330,8 @@
     "utilities",
   ]
   pruneopts = "UT"
-  revision = "5328886f9f5735cbc4f4819bf6b840a48609ad66"
-  version = "v1.8.2"
+  revision = "20f268a412e5b342ebfb1a0eef7c3b7bd6c260ea"
+  version = "v1.8.5"
 
 [[projects]]
   digest = "1:43c609cba7aa615eaae5aa8f2ddba65dc1b2d3af7bc434f738238df8d3797ddb"
@@ -361,20 +353,20 @@
   version = "v0.5.1"
 
 [[projects]]
-  digest = "1:224575406804342256cee53574cb6e3fd9fea70a14244dfddec36a35babf1317"
+  digest = "1:85c5dd11641ed9629eee7805d9090a71767c70ffc986036fb0eeed1961681961"
   name = "github.com/hsanjuan/go-libp2p-gostream"
   packages = ["."]
   pruneopts = "UT"
-  revision = "098a297cda2e42696ca6562524d7a7c095af762c"
-  version = "v0.0.30"
+  revision = "7c4b397577359bb57c0c36702b70581e8a271184"
+  version = "v0.0.31"
 
 [[projects]]
-  digest = "1:706c93fcb3a08e8f34932bf490544407935d33e37a8974bdfc91b8e53eeac33e"
+  digest = "1:ec6374f0f7cb064ffb681f2f58f36cba1f308bbe618b5f7662164aaf7bb09830"
   name = "github.com/hsanjuan/go-libp2p-http"
   packages = ["."]
   pruneopts = "UT"
-  revision = "62ed14fd8ee37c2eb68e8ac568143573cbd6bd8d"
-  version = "v0.0.1"
+  revision = "ef46d48bdb58ce375bfff757d019bea4b264b225"
+  version = "v0.0.2"
 
 [[projects]]
   digest = "1:c00cc6d95a674b4b923ac069d364445043bc67836e9bd8aeff8440cfbe6a2cc7"
@@ -401,23 +393,23 @@
   version = "v0.0.1"
 
 [[projects]]
-  digest = "1:5eebae7347e54894abdea56b4cc47f554824e46285d6c805ae4a5a0ca34b6221"
+  digest = "1:60331288ca93ac112d8c84a046cfffb55f069da891351f87e16e2c588f61cfc9"
   name = "github.com/ipfs/go-datastore"
   packages = [
     ".",
     "query",
   ]
   pruneopts = "UT"
-  revision = "1b371980cb3fe9edba40c0f0584042e5cb4477a4"
-  version = "v0.0.1"
+  revision = "bce485ce18d1650ac710b2046d412e6392de14fd"
+  version = "v0.0.2"
 
 [[projects]]
-  digest = "1:d8d0362ab4cd3e2a5a1650f9a6979a594ac354c83d656bde8b560af304fe111b"
+  digest = "1:8270de0224f4c8ef01e23463a6c6f2a5026a2d3ccf3f2e3145ffcd67d7b9a62c"
   name = "github.com/ipfs/go-ds-badger"
   packages = ["."]
   pruneopts = "UT"
-  revision = "fd7402d07c6f0e423fa8476a8431e690aa8c1445"
-  version = "v0.0.2"
+  revision = "7fe0af0808f565d460fa8d3851a5808d77f72628"
+  version = "v0.0.3"
 
 [[projects]]
   digest = "1:fb39724da50ef7dddf47b2491c062d1f6f14e28ae4e44e0c100e8d26ff489461"
@@ -464,12 +456,12 @@
   version = "v0.0.1"
 
 [[projects]]
-  digest = "1:b339bad919aeac5c8497e2d9607c698df54371fe30eb3c211473012142d524eb"
+  digest = "1:ff3f10c0e0d9c679390b06966df7344a72c31c3bec45c191676ab03fa845123f"
   name = "github.com/ipfs/go-ipfs-files"
   packages = ["."]
   pruneopts = "UT"
-  revision = "946ef0a5786be40d226979e960899c6af16e9a75"
-  version = "v0.0.1"
+  revision = "c68472a9b1ec45177ccf8fda607698c86ae0060f"
+  version = "v0.0.2"
 
 [[projects]]
   digest = "1:0b4439ae69776549e6489b261f66894a1390140dad53f1c3b1fbfc074478590d"
@@ -493,12 +485,12 @@
   version = "v0.0.1"
 
 [[projects]]
-  digest = "1:57bb81595e098df73d0e9018fdd7c8f32db46a2cd7fcc74e6404b6fd7a7d8c84"
+  digest = "1:b49b4c9ca7fc62eda6d73309ec22df7b4156f5079eb3ce069cba5b556f79eb70"
   name = "github.com/ipfs/go-path"
   packages = ["."]
   pruneopts = "UT"
-  revision = "95361c4d70142d87d572080aaa120790af20df5e"
-  version = "v0.0.1"
+  revision = "a1e7a849ac2bae46007920db4b6efe6faa4296a6"
+  version = "v0.0.3"
 
 [[projects]]
   digest = "1:f06df30db619cdbf373c96dcbc72c2c76c081882919bff7c72744d8ef2fcfe87"
@@ -558,12 +550,12 @@
   revision = "04140366298a54a039076d798123ffa108fff46c"
 
 [[projects]]
-  digest = "1:3e551bbb3a7c0ab2a2bf4660e7fcad16db089fdcfbb44b0199e62838038623ea"
+  digest = "1:f5a2051c55d05548d2d4fd23d244027b59fbd943217df8aa3b5e170ac2fd6e1b"
   name = "github.com/json-iterator/go"
   packages = ["."]
   pruneopts = "UT"
-  revision = "1624edc4454b8682399def8740d46db5e4362ba4"
-  version = "v1.1.5"
+  revision = "0ff49de124c6f76f8494e194af75bde0f1a49a29"
+  version = "v1.1.6"
 
 [[projects]]
   digest = "1:b18ffc558326ebaed3b4a175617f1e12ed4e3f53d6ebfe5ba372a3de16d22278"
@@ -621,7 +613,7 @@
   version = "v0.0.1"
 
 [[projects]]
-  digest = "1:ba0a94e9223806fc5e4589228b77b4cd9f3ec4f1f081368173e37b7200220018"
+  digest = "1:68cc0a374fb1da0cde9a63454e5c04317c1f71bbdd1994a046ddf33ac7cdabd8"
   name = "github.com/libp2p/go-libp2p"
   packages = [
     ".",
@@ -634,30 +626,30 @@
     "p2p/protocol/ping",
   ]
   pruneopts = "UT"
-  revision = "2308ba3c0036ddf8ac390c893b71d946c57a7328"
-  version = "v0.0.2"
+  revision = "fcb60e247420547dddf82d505cda26a1997cf3da"
+  version = "v0.0.6"
 
 [[projects]]
-  digest = "1:50b59552968891b1a76a2cb8cdfab8fcec1ef7e9f6b52a370e3272d52bdf0cc6"
+  digest = "1:950086c33d4580a2eef0eb7ca8845cea95be3e4c30c8b96e2694d52dd2623807"
   name = "github.com/libp2p/go-libp2p-autonat"
   packages = [
     ".",
     "pb",
   ]
   pruneopts = "UT"
-  revision = "16d66b2ad60fc6b6956b0c2bd332111a94db6dbb"
-  version = "v0.0.2"
+  revision = "c6b40f96419660dc6a55e811d4e3299f2e3deffe"
+  version = "v0.0.3"
 
 [[projects]]
-  digest = "1:0594d9b7872c30fc9ca10ba52548a15e65c49b4b00d0265edb169c6642e2057c"
+  digest = "1:4534e226c8cdda57f9494ecd48c6e7f39af815d62d196f49a43763af07668234"
   name = "github.com/libp2p/go-libp2p-circuit"
   packages = [
     ".",
     "pb",
   ]
   pruneopts = "UT"
-  revision = "0e57e52a3e3dc6d9e446117beded675d021fd3a4"
-  version = "v0.0.1"
+  revision = "e3f9b56aca5f404d9433ccf81e0592c0b63aade3"
+  version = "v0.0.2"
 
 [[projects]]
   digest = "1:83915d6b4485f9ca8727ad9195d0881f1eeea4c9f286b0c0fb4b0757c21d1bc2"
@@ -679,20 +671,20 @@
   version = "v0.0.1"
 
 [[projects]]
-  digest = "1:eefb0f3dc3b8f28a3449adb4a604220814aa1e62a0e14219751a32e980ae5c73"
+  digest = "1:1df10c788e75259f6ebae0612de30f0db09e690042b9db64551a188c6509cc8b"
   name = "github.com/libp2p/go-libp2p-host"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7e2de4bb2b77a5b155b9993309b34e0e8b1890b0"
-  version = "v0.0.1"
+  revision = "df61f890baee33effc62473e65c0ce481407181d"
+  version = "v0.0.2"
 
 [[projects]]
-  digest = "1:4cd4b5905ba6780005015290a0e3fd5ed0e6354ede303ab0c84caa6b7bb2e311"
+  digest = "1:bc58f4c83d59130bbef42bbd7ebb0d23ccd8cc9c1eecd63a57b5576f5f8effc2"
   name = "github.com/libp2p/go-libp2p-interface-connmgr"
   packages = ["."]
   pruneopts = "UT"
-  revision = "8bddc198c80e6242d016361b3c5f02fb920e9faa"
-  version = "v0.0.1"
+  revision = "e80dd2e9f839e44febfcb7e6b38ded8761332eb6"
+  version = "v0.0.3"
 
 [[projects]]
   digest = "1:065f0484575f052b79972215142bb50ac634c5282bf85692192fc1dfc8752b8b"
@@ -736,11 +728,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e923cfd6487ad7d67d0dff5acda73234bc25b5567d2014a7b7fa9861232cfa15"
+  digest = "1:5b3140f8ec492cfa868f3e9fe320f10c7788bd35bbbcd002b32c410c988a3fe6"
   name = "github.com/libp2p/go-libp2p-peer"
   packages = ["."]
   pruneopts = "UT"
-  revision = "6ce6ea8d949b826bc1e663ba5bc321c3cc9c2cce"
+  revision = "96d6d7940e6fc555240a92d1b4615049cd451da2"
 
 [[projects]]
   digest = "1:414e7bdbf70afac2fec22096fb5c48b4eff7e2b71bcc8b8ca1d94447c78c665f"
@@ -850,11 +842,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b37fa22b6d64e00712af8ad491c42bcb9a48c71390111b9cce5978511bdad7c0"
+  digest = "1:bf12fbd51fb864c9e2cb688581d3c14551a8c3d1c2fa60c9ad405c532e1b9d42"
   name = "github.com/libp2p/go-reuseport-transport"
   packages = ["."]
   pruneopts = "UT"
-  revision = "501048f8bce80838310c7ac79e7ed7cbf603fc64"
+  revision = "c7583c88df654a2ecd621e863f661783d79b64d1"
 
 [[projects]]
   digest = "1:28994f656f7bd53b2f506641d72878250583051bd86477ab8129c613c8437ee3"
@@ -865,20 +857,20 @@
   version = "v0.0.1"
 
 [[projects]]
-  digest = "1:dc759a08537b0057aafc75054ce7c0f83e45442da475d446079e9a82174e1dd1"
+  digest = "1:32b1b70c98be85d88229af2ba0cceb9954e7ef88c3f7e90f95a8ea2deb32c0d3"
   name = "github.com/libp2p/go-tcp-transport"
   packages = ["."]
   pruneopts = "UT"
-  revision = "69079ce9b2140ebe9e750c70ac30b94fef08f627"
-  version = "v0.0.1"
+  revision = "42717ef323c6cd024d3196d18bc1b7657c453d6d"
+  version = "v0.0.2"
 
 [[projects]]
-  digest = "1:a39747119cc6dd75a4df3e65aba7b43fd264a3f6c3eea8e2622762ae2e3caac7"
+  digest = "1:fe4581341f14aba2ef06749c5f2fc6483d4354b25e3c6e0094a4135082a22ed2"
   name = "github.com/libp2p/go-ws-transport"
   packages = ["."]
   pruneopts = "UT"
-  revision = "2114e839891f0a824d9a36919165fed197522d87"
-  version = "v0.0.1"
+  revision = "93daaa611babb322b314d33c6c6ad26298f55f56"
+  version = "v0.0.2"
 
 [[projects]]
   digest = "1:2fa7b0155cd54479a755c629de26f888a918e13f8857a2c442205d825368e084"
@@ -889,12 +881,12 @@
   version = "v0.1.1"
 
 [[projects]]
-  digest = "1:3bb9c8451d199650bfd303e0068d86f135952fead374ad87c09a9b8a2cc4bd7c"
+  digest = "1:e150b5fafbd7607e2d638e4e5cf43aa4100124e5593385147b0a74e2733d8b0d"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
   pruneopts = "UT"
-  revision = "369ecd8cea9851e459abb67eb171853e3986591e"
-  version = "v0.0.6"
+  revision = "c2a7a6ca930a4cd0bc33a3f298eb71960732a3a7"
+  version = "v0.0.7"
 
 [[projects]]
   digest = "1:6ff1026b8d873d074ddec82ad60bb0eb537dc013f456ef26b63d30beba2f99e7"
@@ -914,11 +906,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:eea9588ebf4cf89c7da8360e8d19627b74b78eec74df6df9e0c5defcee4f3617"
+  digest = "1:d69117243f58a0d320c2889872d8c14d323d865277dc49fc85bfcf48b2846b8f"
   name = "github.com/minio/sha256-simd"
   packages = ["."]
   pruneopts = "UT"
-  revision = "2d45a736cd16732fe6a57563cc20d8b035193e58"
+  revision = "05b4dd3047e5d6e86cb4e0477164b850cd896261"
 
 [[projects]]
   digest = "1:5d231480e1c64a726869bc4142d270184c419749d34f167646baa21008eb0a79"
@@ -927,6 +919,28 @@
   pruneopts = "UT"
   revision = "af06845cf3004701891bf4fdb884bfe4920b3727"
   version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:4e3b113f547147da4f7fcdd5d36fdc01e36d7416f87a51651642b4ae3451b1cf"
+  name = "github.com/mmcloughlin/avo"
+  packages = [
+    "attr",
+    "build",
+    "buildtags",
+    "gotypes",
+    "internal/prnt",
+    "internal/stack",
+    "ir",
+    "operand",
+    "pass",
+    "printer",
+    "reg",
+    "src",
+    "x86",
+  ]
+  pruneopts = "UT"
+  revision = "138eaf8dc34d1c265aab931e3541149d667426ca"
 
 [[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
@@ -949,8 +963,8 @@
   name = "github.com/mr-tron/base58"
   packages = ["base58"]
   pruneopts = "UT"
-  revision = "89529c6904fcd077434931b4eac8b4b2f0991baf"
-  version = "v1.1.0"
+  revision = "6598572f05537592acb5a609ff53c4c7fbba7a3e"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:b9fe622bbadbb060338620752b1cb3aa1473855071195ebe83813af5ebb3629b"
@@ -962,19 +976,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4fb02614401f3511d3c76482b6bc626a307811d53df34610ce5ded5ad83fa05d"
+  digest = "1:c412bd9c23b784cf2d28c6c44fbc91b3df92ea6f11b45247e59247e17bc3f489"
   name = "github.com/multiformats/go-multiaddr"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ce21123d5172669bbf37a166078bc5f9d345ec2f"
+  revision = "0460aad0fe51f7aa64d3a3c17854dc25368f7ca2"
 
 [[projects]]
   branch = "master"
-  digest = "1:e7b7007612b49b368d5b505b624b399a1de5fe2764271b92145aa9ca0440ab4e"
+  digest = "1:83577d45bb37580864b846df8fcf074c1d6eedbb83b751073b7fa44f69fb00a3"
   name = "github.com/multiformats/go-multiaddr-dns"
   packages = ["."]
   pruneopts = "UT"
-  revision = "25bd1ef04b2908f182226bff33da5057f3ae306e"
+  revision = "7d0de25ce05c9294aa44f320c03c7e85e11bbb0b"
 
 [[projects]]
   digest = "1:ccb950e76138c70abe765c3b9c0e6cad0e55fc66ff53318cea8b651df9f892c7"
@@ -1027,7 +1041,7 @@
   version = "v0.0.1"
 
 [[projects]]
-  digest = "1:450b7623b185031f3a456801155c8320209f75d0d4c4e633c6b1e59d44d6e392"
+  digest = "1:11e62d6050198055e6cd87ed57e5d8c669e84f839c16e16f192374d913d1a70d"
   name = "github.com/opentracing/opentracing-go"
   packages = [
     ".",
@@ -1035,8 +1049,8 @@
     "log",
   ]
   pruneopts = "UT"
-  revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
-  version = "v1.0.2"
+  revision = "659c90643e714681897ec2521c60567dd21da733"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
@@ -1083,14 +1097,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:baa0e36ba787113501e02a40cd45e3d17b216285bbaa3dabbc1b26e626ab4a39"
+  digest = "1:d6bb6f3240a488ffe5bb6952b513569d009927dcb20ff94885f87b76cef2b698"
   name = "github.com/streadway/amqp"
   packages = ["."]
   pruneopts = "UT"
-  revision = "30f8ed68076eedf14990dafc696f469f58fc1342"
+  revision = "75d898a42a940fbc854dfd1a4199eabdc00cf024"
 
 [[projects]]
-  digest = "1:c6fe256cb6e87d983c09ccb177118e8be1d372b9038f98a16670124afcae32da"
+  digest = "1:220598edf72e264788b74ea682f212927c82c954f1e714e1b8083453121bb187"
   name = "github.com/stripe/stripe-go"
   packages = [
     ".",
@@ -1098,16 +1112,16 @@
     "form",
   ]
   pruneopts = "UT"
-  revision = "1e0db5d0e3f9f07a375af35d93f8569e75fc5147"
-  version = "v57.6.0"
+  revision = "9379b3cb94d8542cd8796f7da1e7a0c651e22aa1"
+  version = "v60.0.1"
 
 [[projects]]
-  digest = "1:4887e9e89c80299aa520d718239809fdd2a47a9aa394909b169959bfbc424ddf"
+  digest = "1:d0072748c62defde1ad99dde77f6ffce492a0e5aea9204077e497c7edfb86653"
   name = "github.com/ugorji/go"
   packages = ["codec"]
   pruneopts = "UT"
-  revision = "8fd0f8d918c8f0b52d0af210a812ba882cc31a1e"
-  version = "v1.1.2"
+  revision = "2adff0894ba3bc2eeb9f9aea45fefd49802e1a13"
+  version = "v1.1.4"
 
 [[projects]]
   branch = "master"
@@ -1190,16 +1204,18 @@
   version = "v1.1.5"
 
 [[projects]]
-  digest = "1:d09caec893d5c9704da8cb3f1ee686ef03a5d86ff3bc3109eb9695977cbd4ee4"
+  digest = "1:279d59c83f77bd62dfacd6d0088e9a9a74bf52a08adb1b1e6ab14c5bce44d1fd"
   name = "go.opencensus.io"
   packages = [
     ".",
-    "exemplar",
     "internal",
     "internal/tagencoding",
+    "metric/metricdata",
+    "metric/metricproducer",
     "plugin/ochttp",
     "plugin/ochttp/propagation/b3",
     "plugin/ochttp/propagation/tracecontext",
+    "resource",
     "stats",
     "stats/internal",
     "stats/view",
@@ -1210,8 +1226,8 @@
     "trace/tracestate",
   ]
   pruneopts = "UT"
-  revision = "f305e5c4e2cf345eba88de13d10de1126fa45a61"
-  version = "v0.19.1"
+  revision = "8930459677fde1e11e3e1b50bbed1acc850b5665"
+  version = "v0.20.1"
 
 [[projects]]
   digest = "1:3c1a69cdae3501bf75e76d0d86dc6f2b0a7421bc205c0cb7b96b19eed464a34d"
@@ -1247,7 +1263,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6177bbab7290ffcace357846793b6d79a0b571ffbee358320b3248c292812c57"
+  digest = "1:2a551af7889264888b9b88d23e2f6096f37df57535a1284e55d2d173cc4f38c5"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -1262,11 +1278,11 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "c2843e01d9a2bc60bb26ad24e09734fdc2d9ec58"
+  revision = "38d8ce5564a5b71b2e3a00553993f1b9a7ae852f"
 
 [[projects]]
   branch = "master"
-  digest = "1:01976c6c5d54867d0f37f6c6c074bad236b4f948b95f23d5c3b7fc1a00e1d21b"
+  digest = "1:22cc603c41a19a46d0dc832c14ab0b7f72378c5c2cb79783c735ed03bd492c39"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -1281,11 +1297,11 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "b774fd8d5c0f43f4a07fc5c3dd6cba5c4dc21e77"
+  revision = "eb5bcb51f2a31c7d5141d810b70815c05d9c9146"
 
 [[projects]]
   branch = "master"
-  digest = "1:d0154f5b7da3f826b2d83975efd93b53e200e448248e7f18f3cac88357a24546"
+  digest = "1:580bd6f5fcc95d5d3dfa5f6916ccfaac7abb1722b1bfc7f042603e167428a802"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -1293,7 +1309,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "980fc434d28e11f0a5c1ae102a263b8c56641011"
+  revision = "4b34438f7a67ee5f45cc6132e2bad873a20324e9"
 
 [[projects]]
   digest = "1:436b24586f8fee329e0dd65fd67c817681420cda1d7f934345c13fe78c212a73"
@@ -1332,18 +1348,37 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:228bde098aefdcf15d514bc45673610f4168f0bf020682a1194d9acb1d41e1c8"
+  digest = "1:e51cac7607e1a755cfe164b6d182e7346dd172707aa2798a757c789e7f9e899f"
+  name = "golang.org/x/tools"
+  packages = [
+    "go/ast/astutil",
+    "go/gcexportdata",
+    "go/internal/gcimporter",
+    "go/internal/packagesdriver",
+    "go/packages",
+    "go/types/typeutil",
+    "internal/fastwalk",
+    "internal/gopathwalk",
+    "internal/semver",
+  ]
+  pruneopts = "UT"
+  revision = "e5b8258f49188ec2c4702802a35d1ea0c7ccee77"
+
+[[projects]]
+  branch = "master"
+  digest = "1:51b95dc2db289865b71364c0da23ca6bcc0b199e0d827c9cfb053b32248b77ad"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
+    "googleapis/api/httpbody",
     "googleapis/rpc/status",
     "protobuf/field_mask",
   ]
   pruneopts = "UT"
-  revision = "5fe7a883aa19554f42890211544aa549836af7b7"
+  revision = "64821d5d210748c883cd2b809589555ae4654203"
 
 [[projects]]
-  digest = "1:cbc746de4662c66fd24a037501bd65aa0f8ad0bfca0c92576e0abb88864e3741"
+  digest = "1:c00eb80d7b152379c3e94c38d82b29deca98b1d0f53e4e20362589b7fcbffa07"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -1379,8 +1414,8 @@
     "tap",
   ]
   pruneopts = "UT"
-  revision = "2fdaae294f38ed9a121193c51ec99fecd3b13eb7"
-  version = "v1.19.0"
+  revision = "3507fb8e1a5ad030303c106fef3a47c9fdad16ad"
+  version = "v1.19.1"
 
 [[projects]]
   digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
