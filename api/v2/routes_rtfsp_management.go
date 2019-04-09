@@ -111,7 +111,6 @@ func (api *API) startIPFSPrivateNetwork(c *gin.Context) {
 		Network: networkName}); err != nil {
 		api.LogError(c, err, "failed to start network")(http.StatusBadRequest)
 		return
-		return
 	}
 	// log and return
 	logger.Info("network started")
