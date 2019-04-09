@@ -388,7 +388,7 @@ func (api *API) removeUsersFromNetwork(c *gin.Context) {
 		return
 	}
 	var (
-		usersToRemove map[string]bool
+		usersToRemove = make(map[string]bool)
 		newUsers      []string
 	)
 	for _, user := range users {
