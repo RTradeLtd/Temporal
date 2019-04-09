@@ -42,7 +42,8 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:23160898269087a3b78d374257f52ea47b22b13ac1058136c9255347090c8507"
+  branch = "tem-251"
+  digest = "1:978e8ec18293603a7ab4c9b2a2e0076b2d3a934e9dc90a6ba141d84355e51b45"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -50,8 +51,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "601bdaaf3651a2f9c0a015d57fdbdaa130c9bdf7"
-  version = "v2.1.1"
+  revision = "74c477389cd561e9195b51bd4f4faadb45991fde"
 
 [[projects]]
   branch = "master"

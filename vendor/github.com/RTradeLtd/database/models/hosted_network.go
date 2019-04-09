@@ -43,6 +43,9 @@ type HostedNetwork struct {
 	ResourcesDiskGB   int
 	ResourcesMemoryGB int
 
+	// Owner is the creator of the private network, and is allowed to invoke
+	// administrative commands, such as network destruction.
+	Owner string `gorm:"type:text"`
 	// Users allowed to control this node. Includes API access.
 	Users pq.StringArray `gorm:"type:text[]"` // these are the users to which this IPFS network connection applies to specified by eth address
 }
@@ -129,6 +132,7 @@ func (im *HostedNetworkManager) GetOfflineNetworks(disabled bool) ([]*HostedNetw
 
 // NetworkAccessOptions configures access to a hosted private network
 type NetworkAccessOptions struct {
+	Owner            string
 	Users            []string
 	APIAllowedOrigin string
 	PublicGateway    bool
@@ -187,9 +191,10 @@ func (im *HostedNetworkManager) CreateHostedPrivateNetwork(
 		for _, v := range access.Users {
 			pnet.Users = append(pnet.Users, v)
 		}
-	} else {
-		pnet.Users = append(pnet.Users, AdminAddress)
 	}
+
+	// set the owner of the network
+	pnet.Owner = access.Owner
 
 	// assign misc details
 	pnet.Name = name
