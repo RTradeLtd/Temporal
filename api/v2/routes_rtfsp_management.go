@@ -452,13 +452,6 @@ func (api *API) addOwnersToNetwork(c *gin.Context) {
 		api.LogError(c, err, eh.NetworkSearchError)(http.StatusInternalServerError)
 		return
 	}
-	for _, v := range network.Users {
-		if err = api.um.RemoveIPFSNetworkForUser(v, networkName); err != nil {
-			api.LogError(c, err, "failed to remove network from users")(http.StatusBadRequest)
-			return
-		}
-	}
-
 	network.Owners = append(network.Owners, owners...)
 	if err := api.nm.UpdateNetworkByName(networkName, map[string]interface{}{"owners": network.Owners}); err != nil {
 		api.LogError(c, err, "failed to update network owners")
