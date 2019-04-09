@@ -49,6 +49,8 @@ libp2p is the product of a long, and arduous quest of understanding -- a deep di
 >
 > We will be writing a set of docs, posts, tutorials, and talks to explain what p2p is, why it is tremendously useful, and how it can help your existing and new projects. But in the meantime, check out
 >
+> - [**Our developing collection of docs**](https://docs.libp2p.io)
+> - [**Our community discussion forums**](https://discuss.libp2p.io)
 > - [**The libp2p Specification**](https://github.com/libp2p/specs)
 > - [**go-libp2p implementation**](https://github.com/libp2p/go-libp2p)
 > - [**js-libp2p implementation**](https://github.com/libp2p/js-libp2p)
@@ -139,7 +141,7 @@ List of packages currently in existence for libp2p:
 | **Stream Muxers** |
 | [`go-stream-muxer`](//github.com/libp2p/go-stream-muxer) | [![Travis CI](https://travis-ci.com/libp2p/go-stream-muxer.svg?branch=master)](https://travis-ci.com/libp2p/go-stream-muxer) | [![codecov](https://codecov.io/gh/libp2p/go-stream-muxer/branch/master/graph/badge.svg)](https://codecov.io/gh/libp2p/go-stream-muxer) | interfaces |
 | [`go-smux-yamux`](//github.com/whyrusleeping/go-smux-yamux) | [![Travis CI](https://travis-ci.com/whyrusleeping/go-smux-yamux.svg?branch=master)](https://travis-ci.com/whyrusleeping/go-smux-yamux) | [![codecov](https://codecov.io/gh/whyrusleeping/go-smux-yamux/branch/master/graph/badge.svg)](https://codecov.io/gh/whyrusleeping/go-smux-yamux) | YAMUX stream multiplexer |
-| [`go-smux-mplex`](//github.com/whyrusleeping/go-smux-mplex) | [![Travis CI](https://travis-ci.com/whyrusleeping/go-smux-mplex.svg?branch=master)](https://travis-ci.com/whyrusleeping/go-smux-mplex) | [![codecov](https://codecov.io/gh/whyrusleeping/go-smux-mplex/branch/master/graph/badge.svg)](https://codecov.io/gh/whyrusleeping/go-smux-mplex) | MPLEX stream multiplexer |
+| [`go-smux-multiplex`](//github.com/whyrusleeping/go-smux-multiplex) | [![Travis CI](https://travis-ci.com/whyrusleeping/go-smux-multiplex.svg?branch=master)](https://travis-ci.com/whyrusleeping/go-smux-multiplex) | [![codecov](https://codecov.io/gh/whyrusleeping/go-smux-multiplex/branch/master/graph/badge.svg)](https://codecov.io/gh/whyrusleeping/go-smux-multiplex) | MPLEX stream multiplexer |
 | **NAT Traversal** |
 | [`go-libp2p-nat`](//github.com/libp2p/go-libp2p-nat) | [![Travis CI](https://travis-ci.com/libp2p/go-libp2p-nat.svg?branch=master)](https://travis-ci.com/libp2p/go-libp2p-nat) | [![codecov](https://codecov.io/gh/libp2p/go-libp2p-nat/branch/master/graph/badge.svg)](https://codecov.io/gh/libp2p/go-libp2p-nat) |  |
 | **Peerstore** |
@@ -191,7 +193,7 @@ Guidelines:
 
 - read the [libp2p spec](https://github.com/libp2p/specs)
 - please make branches + pull-request, even if working on the main repository
-- ask questions or talk about things in [Issues](https://github.com/libp2p/go-libp2p/issues) or #ipfs on freenode.
+- ask questions or talk about things in [Issues](https://github.com/libp2p/go-libp2p/issues), our [discussion forums](https://discuss.libp2p.io), or #libp2p or #ipfs on freenode.
 - ensure you are able to contribute (no legal issues please-- we use the DCO)
 - run `go fmt` before pushing any code
 - run `golint` and `go vet` too -- some things (like protobuf files) are expected to fail.

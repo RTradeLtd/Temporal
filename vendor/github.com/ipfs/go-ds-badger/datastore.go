@@ -1,11 +1,12 @@
 package badger
 
 import (
+	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
-	osh "github.com/Kubuxu/go-os-helper"
 	badger "github.com/dgraph-io/badger"
 	ds "github.com/ipfs/go-datastore"
 	dsq "github.com/ipfs/go-datastore/query"
@@ -15,8 +16,15 @@ import (
 
 var log = logger.Logger("badger")
 
+var ErrClosed = errors.New("datastore closed")
+
 type Datastore struct {
 	DB *badger.DB
+
+	closeLk   sync.RWMutex
+	closed    bool
+	closeOnce sync.Once
+	closing   chan struct{}
 
 	gcDiscardRatio float64
 }
@@ -24,6 +32,7 @@ type Datastore struct {
 // Implements the datastore.Txn interface, enabling transaction support for
 // the badger Datastore.
 type txn struct {
+	ds  *Datastore
 	txn *badger.Txn
 
 	// Whether this transaction has been implicitly created as a result of a direct Datastore
@@ -38,10 +47,16 @@ type Options struct {
 	badger.Options
 }
 
-var DefaultOptions = Options{
-	gcDiscardRatio: 0.1,
+// DefaultOptions are the default options for the badger datastore.
+var DefaultOptions Options
 
-	Options: badger.DefaultOptions,
+func init() {
+	DefaultOptions = Options{
+		gcDiscardRatio: 0.1,
+		Options:        badger.DefaultOptions,
+	}
+	DefaultOptions.Options.CompactL0OnClose = false
+	DefaultOptions.Options.Truncate = true
 }
 
 var _ ds.Datastore = (*Datastore)(nil)
@@ -63,10 +78,6 @@ func NewDatastore(path string, options *Options) (*Datastore, error) {
 		gcDiscardRatio = options.gcDiscardRatio
 	}
 
-	if osh.IsWindows() && opt.SyncWrites {
-		opt.Truncate = true
-	}
-
 	opt.Dir = path
 	opt.ValueDir = path
 	opt.Logger = log
@@ -81,6 +92,7 @@ func NewDatastore(path string, options *Options) (*Datastore, error) {
 
 	return &Datastore{
 		DB:             kv,
+		closing:        make(chan struct{}),
 		gcDiscardRatio: gcDiscardRatio,
 	}, nil
 }
@@ -89,108 +101,174 @@ func NewDatastore(path string, options *Options) (*Datastore, error) {
 // can be mutated without incurring changes to the underlying Datastore until
 // the transaction is Committed.
 func (d *Datastore) NewTransaction(readOnly bool) (ds.Txn, error) {
-	return &txn{d.DB.NewTransaction(!readOnly), false}, nil
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+	if d.closed {
+		return nil, ErrClosed
+	}
+
+	return &txn{d, d.DB.NewTransaction(!readOnly), false}, nil
 }
 
 // newImplicitTransaction creates a transaction marked as 'implicit'.
 // Implicit transactions are created by Datastore methods performing single operations.
-func (d *Datastore) newImplicitTransaction(readOnly bool) ds.Txn {
-	return &txn{d.DB.NewTransaction(!readOnly), true}
+func (d *Datastore) newImplicitTransaction(readOnly bool) *txn {
+	return &txn{d, d.DB.NewTransaction(!readOnly), true}
 }
 
 func (d *Datastore) Put(key ds.Key, value []byte) error {
-	txn := d.newImplicitTransaction(false)
-	defer txn.Discard()
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+	if d.closed {
+		return ErrClosed
+	}
 
-	if err := txn.Put(key, value); err != nil {
+	txn := d.newImplicitTransaction(false)
+	defer txn.discard()
+
+	if err := txn.put(key, value); err != nil {
 		return err
 	}
 
-	return txn.Commit()
+	return txn.commit()
 }
 
 func (d *Datastore) PutWithTTL(key ds.Key, value []byte, ttl time.Duration) error {
-	txn := d.newImplicitTransaction(false).(*txn)
-	defer txn.Discard()
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+	if d.closed {
+		return ErrClosed
+	}
 
-	if err := txn.PutWithTTL(key, value, ttl); err != nil {
+	txn := d.newImplicitTransaction(false)
+	defer txn.discard()
+
+	if err := txn.putWithTTL(key, value, ttl); err != nil {
 		return err
 	}
 
-	return txn.Commit()
+	return txn.commit()
 }
 
 func (d *Datastore) SetTTL(key ds.Key, ttl time.Duration) error {
-	txn := d.newImplicitTransaction(false).(*txn)
-	defer txn.Discard()
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+	if d.closed {
+		return ErrClosed
+	}
 
-	if err := txn.SetTTL(key, ttl); err != nil {
+	txn := d.newImplicitTransaction(false)
+	defer txn.discard()
+
+	if err := txn.setTTL(key, ttl); err != nil {
 		return err
 	}
 
-	return txn.Commit()
+	return txn.commit()
 }
 
 func (d *Datastore) GetExpiration(key ds.Key) (time.Time, error) {
-	txn := d.newImplicitTransaction(false).(*txn)
-	defer txn.Discard()
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+	if d.closed {
+		return time.Time{}, ErrClosed
+	}
 
-	return txn.GetExpiration(key)
+	txn := d.newImplicitTransaction(false)
+	defer txn.discard()
+
+	return txn.getExpiration(key)
 }
 
 func (d *Datastore) Get(key ds.Key) (value []byte, err error) {
-	txn := d.newImplicitTransaction(true)
-	defer txn.Discard()
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+	if d.closed {
+		return nil, ErrClosed
+	}
 
-	return txn.Get(key)
+	txn := d.newImplicitTransaction(true)
+	defer txn.discard()
+
+	return txn.get(key)
 }
 
 func (d *Datastore) Has(key ds.Key) (bool, error) {
-	txn := d.newImplicitTransaction(true)
-	defer txn.Discard()
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+	if d.closed {
+		return false, ErrClosed
+	}
 
-	return txn.Has(key)
+	txn := d.newImplicitTransaction(true)
+	defer txn.discard()
+
+	return txn.has(key)
 }
 
 func (d *Datastore) GetSize(key ds.Key) (size int, err error) {
-	txn := d.newImplicitTransaction(true)
-	defer txn.Discard()
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+	if d.closed {
+		return -1, ErrClosed
+	}
 
-	return txn.GetSize(key)
+	txn := d.newImplicitTransaction(true)
+	defer txn.discard()
+
+	return txn.getSize(key)
 }
 
 func (d *Datastore) Delete(key ds.Key) error {
-	txn := d.newImplicitTransaction(false)
-	defer txn.Discard()
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
 
-	err := txn.Delete(key)
+	txn := d.newImplicitTransaction(false)
+	defer txn.discard()
+
+	err := txn.delete(key)
 	if err != nil {
 		return err
 	}
 
-	return txn.Commit()
+	return txn.commit()
 }
 
 func (d *Datastore) Query(q dsq.Query) (dsq.Results, error) {
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+
 	txn := d.newImplicitTransaction(true)
 	// We cannot defer txn.Discard() here, as the txn must remain active while the iterator is open.
 	// https://github.com/dgraph-io/badger/commit/b1ad1e93e483bbfef123793ceedc9a7e34b09f79
 	// The closing logic in the query goprocess takes care of discarding the implicit transaction.
-	return txn.Query(q)
+	return txn.query(q)
 }
 
 // DiskUsage implements the PersistentDatastore interface.
 // It returns the sum of lsm and value log files sizes in bytes.
 func (d *Datastore) DiskUsage() (uint64, error) {
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+	if d.closed {
+		return 0, ErrClosed
+	}
 	lsm, vlog := d.DB.Size()
 	return uint64(lsm + vlog), nil
 }
 
 func (d *Datastore) Close() error {
+	d.closeOnce.Do(func() {
+		close(d.closing)
+	})
+	d.closeLk.Lock()
+	defer d.closeLk.Unlock()
+	if d.closed {
+		return ErrClosed
+	}
+	d.closed = true
 	return d.DB.Close()
 }
-
-func (d *Datastore) IsThreadSafe() {}
 
 func (d *Datastore) Batch() (ds.Batch, error) {
 	tx, _ := d.NewTransaction(false)
@@ -198,6 +276,12 @@ func (d *Datastore) Batch() (ds.Batch, error) {
 }
 
 func (d *Datastore) CollectGarbage() error {
+	d.closeLk.RLock()
+	defer d.closeLk.RUnlock()
+	if d.closed {
+		return ErrClosed
+	}
+
 	err := d.DB.RunValueLogGC(d.gcDiscardRatio)
 	if err == badger.ErrNoRewrite {
 		err = nil
@@ -209,14 +293,42 @@ var _ ds.Datastore = (*txn)(nil)
 var _ ds.TTLDatastore = (*txn)(nil)
 
 func (t *txn) Put(key ds.Key, value []byte) error {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return ErrClosed
+	}
+	return t.put(key, value)
+}
+
+func (t *txn) put(key ds.Key, value []byte) error {
 	return t.txn.Set(key.Bytes(), value)
 }
 
 func (t *txn) PutWithTTL(key ds.Key, value []byte, ttl time.Duration) error {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return ErrClosed
+	}
+	return t.putWithTTL(key, value, ttl)
+}
+
+func (t *txn) putWithTTL(key ds.Key, value []byte, ttl time.Duration) error {
 	return t.txn.SetWithTTL(key.Bytes(), value, ttl)
 }
 
 func (t *txn) GetExpiration(key ds.Key) (time.Time, error) {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return time.Time{}, ErrClosed
+	}
+
+	return t.getExpiration(key)
+}
+
+func (t *txn) getExpiration(key ds.Key) (time.Time, error) {
 	item, err := t.txn.Get(key.Bytes())
 	if err == badger.ErrKeyNotFound {
 		return time.Time{}, ds.ErrNotFound
@@ -227,15 +339,37 @@ func (t *txn) GetExpiration(key ds.Key) (time.Time, error) {
 }
 
 func (t *txn) SetTTL(key ds.Key, ttl time.Duration) error {
-	data, err := t.Get(key)
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return ErrClosed
+	}
+
+	return t.setTTL(key, ttl)
+}
+
+func (t *txn) setTTL(key ds.Key, ttl time.Duration) error {
+	item, err := t.txn.Get(key.Bytes())
 	if err != nil {
 		return err
 	}
+	return item.Value(func(data []byte) error {
+		return t.putWithTTL(key, data, ttl)
+	})
 
-	return t.PutWithTTL(key, data, ttl)
 }
 
 func (t *txn) Get(key ds.Key) ([]byte, error) {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return nil, ErrClosed
+	}
+
+	return t.get(key)
+}
+
+func (t *txn) get(key ds.Key) ([]byte, error) {
 	item, err := t.txn.Get(key.Bytes())
 	if err == badger.ErrKeyNotFound {
 		err = ds.ErrNotFound
@@ -248,6 +382,16 @@ func (t *txn) Get(key ds.Key) ([]byte, error) {
 }
 
 func (t *txn) Has(key ds.Key) (bool, error) {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return false, ErrClosed
+	}
+
+	return t.has(key)
+}
+
+func (t *txn) has(key ds.Key) (bool, error) {
 	_, err := t.txn.Get(key.Bytes())
 	switch err {
 	case badger.ErrKeyNotFound:
@@ -260,6 +404,16 @@ func (t *txn) Has(key ds.Key) (bool, error) {
 }
 
 func (t *txn) GetSize(key ds.Key) (int, error) {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return -1, ErrClosed
+	}
+
+	return t.getSize(key)
+}
+
+func (t *txn) getSize(key ds.Key) (int, error) {
 	item, err := t.txn.Get(key.Bytes())
 	switch err {
 	case nil:
@@ -272,10 +426,30 @@ func (t *txn) GetSize(key ds.Key) (int, error) {
 }
 
 func (t *txn) Delete(key ds.Key) error {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return ErrClosed
+	}
+
+	return t.delete(key)
+}
+
+func (t *txn) delete(key ds.Key) error {
 	return t.txn.Delete(key.Bytes())
 }
 
 func (t *txn) Query(q dsq.Query) (dsq.Results, error) {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return nil, ErrClosed
+	}
+
+	return t.query(q)
+}
+
+func (t *txn) query(q dsq.Query) (dsq.Results, error) {
 	prefix := []byte(q.Prefix)
 	opt := badger.DefaultIteratorOptions
 	opt.PrefetchValues = !q.KeysOnly
@@ -297,6 +471,7 @@ func (t *txn) Query(q dsq.Query) (dsq.Results, error) {
 
 	it := txn.NewIterator(opt)
 	it.Seek(prefix)
+
 	if q.Offset > 0 {
 		for j := 0; j < q.Offset; j++ {
 			it.Next()
@@ -306,11 +481,32 @@ func (t *txn) Query(q dsq.Query) (dsq.Results, error) {
 	qrb := dsq.NewResultBuilder(q)
 
 	qrb.Process.Go(func(worker goprocess.Process) {
-		if t.implicit {
-			// this iterator is part of an implicit transaction, so when we're done we must discard
-			// the transaction. It's safe to discard the txn it because it contains the iterator only.
-			defer t.Discard()
+		t.ds.closeLk.RLock()
+		closedEarly := false
+		defer func() {
+			t.ds.closeLk.RUnlock()
+			if closedEarly {
+				select {
+				case qrb.Output <- dsq.Result{
+					Error: ErrClosed,
+				}:
+				case <-qrb.Process.Closing():
+				}
+			}
+
+		}()
+		if t.ds.closed {
+			closedEarly = true
+			return
 		}
+
+		// this iterator is part of an implicit transaction, so when
+		// we're done we must discard the transaction. It's safe to
+		// discard the txn it because it contains the iterator only.
+		if t.implicit {
+			defer t.discard()
+		}
+
 		defer it.Close()
 
 		for sent := 0; it.ValidForPrefix(prefix); sent++ {
@@ -342,9 +538,13 @@ func (t *txn) Query(q dsq.Query) (dsq.Results, error) {
 
 			select {
 			case qrb.Output <- result:
+			case <-t.ds.closing: // datastore closing.
+				closedEarly = true
+				return
 			case <-worker.Closing(): // client told us to close early
 				return
 			}
+
 			it.Next()
 		}
 
@@ -366,14 +566,43 @@ func (t *txn) Query(q dsq.Query) (dsq.Results, error) {
 }
 
 func (t *txn) Commit() error {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return ErrClosed
+	}
+
+	return t.commit()
+}
+
+func (t *txn) commit() error {
 	return t.txn.Commit()
 }
 
 // Alias to commit
 func (t *txn) Close() error {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return ErrClosed
+	}
+	return t.close()
+}
+
+func (t *txn) close() error {
 	return t.txn.Commit()
 }
 
 func (t *txn) Discard() {
+	t.ds.closeLk.RLock()
+	defer t.ds.closeLk.RUnlock()
+	if t.ds.closed {
+		return
+	}
+
+	t.discard()
+}
+
+func (t *txn) discard() {
 	t.txn.Discard()
 }
