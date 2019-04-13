@@ -29,12 +29,15 @@ type IssuingBillingParams struct {
 
 // IssuingCardholderParams is the set of parameters that can be used when creating or updating an issuing cardholder.
 type IssuingCardholderParams struct {
-	Params      `form:"*"`
-	Billing     *IssuingBillingParams `form:"billing"`
-	Email       *string               `form:"email"`
-	Name        *string               `form:"name"`
-	PhoneNumber *string               `form:"phone_number"`
-	Type        *string               `form:"type"`
+	Params                `form:"*"`
+	AuthorizationControls *AuthorizationControlsParams `form:"authorization_controls"`
+	Billing               *IssuingBillingParams        `form:"billing"`
+	Email                 *string                      `form:"email"`
+	IsDefault             *bool                        `form:"is_default"`
+	Name                  *string                      `form:"name"`
+	PhoneNumber           *string                      `form:"phone_number"`
+	Status                *string                      `form:"status"`
+	Type                  *string                      `form:"type"`
 }
 
 // IssuingCardholderListParams is the set of parameters that can be used when listing issuing cardholders.
@@ -43,6 +46,7 @@ type IssuingCardholderListParams struct {
 	Created      *int64            `form:"created"`
 	CreatedRange *RangeQueryParams `form:"created"`
 	Email        *string           `form:"email"`
+	IsDefault    *bool             `form:"is_default"`
 	PhoneNumber  *string           `form:"phone_number"`
 	Status       *string           `form:"status"`
 	Type         *string           `form:"type"`
@@ -56,17 +60,18 @@ type IssuingBilling struct {
 
 // IssuingCardholder is the resource representing a Stripe issuing cardholder.
 type IssuingCardholder struct {
-	Billing     *IssuingBilling         `json:"billing"`
-	Created     int64                   `json:"created"`
-	Email       string                  `json:"email"`
-	ID          string                  `json:"id"`
-	Livemode    bool                    `json:"livemode"`
-	Metadata    map[string]string       `json:"metadata"`
-	Name        string                  `json:"name"`
-	Object      string                  `json:"object"`
-	PhoneNumber string                  `json:"phone_number"`
-	Status      IssuingCardholderStatus `json:"status"`
-	Type        IssuingCardholderType   `json:"type"`
+	AuthorizationControls *IssuingCardAuthorizationControls `json:"authorization_controls"`
+	Billing               *IssuingBilling                   `json:"billing"`
+	Created               int64                             `json:"created"`
+	Email                 string                            `json:"email"`
+	ID                    string                            `json:"id"`
+	Livemode              bool                              `json:"livemode"`
+	Metadata              map[string]string                 `json:"metadata"`
+	Name                  string                            `json:"name"`
+	Object                string                            `json:"object"`
+	PhoneNumber           string                            `json:"phone_number"`
+	Status                IssuingCardholderStatus           `json:"status"`
+	Type                  IssuingCardholderType             `json:"type"`
 }
 
 // IssuingCardholderList is a list of issuing cardholders as retrieved from a list endpoint.

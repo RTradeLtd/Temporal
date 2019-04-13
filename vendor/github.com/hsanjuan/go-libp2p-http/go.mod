@@ -1,8 +1,8 @@
 module github.com/hsanjuan/go-libp2p-http
 
 require (
-	github.com/hsanjuan/go-libp2p-gostream v0.0.30
-	github.com/libp2p/go-libp2p v0.0.1
+	github.com/hsanjuan/go-libp2p-gostream v0.0.31
+	github.com/libp2p/go-libp2p v0.0.2
 	github.com/libp2p/go-libp2p-host v0.0.1
 	github.com/libp2p/go-libp2p-peer v0.0.1
 	github.com/libp2p/go-libp2p-peerstore v0.0.1

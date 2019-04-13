@@ -3,6 +3,18 @@
 This document tracks changes to Temporal and its related projects for all `v2.x.x`
 releases. See our [versioning policy](/VERSIONING.md) for more details.
 
+## v2.0.6
+
+### API
+
+* Directory upload virus scan, accounting [#322](https://github.com/RTradeLtd/Temporal/pull/322)
+* Allow CORS configuration through config file [#321](https://github.com/RTradeLtd/Temporal/pull/321)
+* Fix cant upload bug [#320](https://github.com/RTradeLtd/Temporal/pull/320)
+
+### dependencies
+
+* IPFS Cluster update to 0.10.0, database update which fixed data limit increases not being applied [#319](https://github.com/RTradeLtd/Temporal/pull/319)
+
 ## v2.0.5
 
 ### docker

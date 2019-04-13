@@ -25,21 +25,37 @@ const (
 // CustomerParams is the set of parameters that can be used when creating or updating a customer.
 // For more details see https://stripe.com/docs/api#create_customer and https://stripe.com/docs/api#update_customer.
 type CustomerParams struct {
-	Params         `form:"*"`
-	AccountBalance *int64                         `form:"account_balance"`
-	Coupon         *string                        `form:"coupon"`
-	DefaultSource  *string                        `form:"default_source"`
-	Description    *string                        `form:"description"`
-	Email          *string                        `form:"email"`
-	InvoicePrefix  *string                        `form:"invoice_prefix"`
-	Plan           *string                        `form:"plan"`
-	Quantity       *int64                         `form:"quantity"`
-	Shipping       *CustomerShippingDetailsParams `form:"shipping"`
-	Source         *SourceParams                  `form:"*"` // SourceParams has custom encoding so brought to top level with "*"
-	TaxInfo        *CustomerTaxInfoParams         `form:"tax_info"`
-	TaxPercent     *float64                       `form:"tax_percent"`
-	Token          *string                        `form:"-"` // This doesn't seem to be used?
-	TrialEnd       *int64                         `form:"trial_end"`
+	Params          `form:"*"`
+	AccountBalance  *int64                         `form:"account_balance"`
+	Coupon          *string                        `form:"coupon"`
+	DefaultSource   *string                        `form:"default_source"`
+	Description     *string                        `form:"description"`
+	Email           *string                        `form:"email"`
+	InvoicePrefix   *string                        `form:"invoice_prefix"`
+	InvoiceSettings *CustomerInvoiceSettingsParams `form:"invoice_settings"`
+	Plan            *string                        `form:"plan"`
+	Quantity        *int64                         `form:"quantity"`
+	Shipping        *CustomerShippingDetailsParams `form:"shipping"`
+	Source          *SourceParams                  `form:"*"` // SourceParams has custom encoding so brought to top level with "*"
+	TaxInfo         *CustomerTaxInfoParams         `form:"tax_info"`
+	TaxPercent      *float64                       `form:"tax_percent"`
+	Token           *string                        `form:"-"` // This doesn't seem to be used?
+	TrialEnd        *int64                         `form:"trial_end"`
+}
+
+// CustomerInvoiceCustomFieldParams represents the parameters associated with one custom field on
+// the customer's invoices.
+type CustomerInvoiceCustomFieldParams struct {
+	Name  *string `form:"name"`
+	Value *string `form:"value"`
+}
+
+// CustomerInvoiceSettingsParams is the structure containing the default settings for invoices
+// associated with this customer.
+type CustomerInvoiceSettingsParams struct {
+	CustomFields         []*CustomerInvoiceCustomFieldParams `form:"custom_fields"`
+	DefaultPaymentMethod *string                             `form:"default_payment_method"`
+	Footer               *string                             `form:"footer"`
 }
 
 // CustomerShippingDetailsParams is the structure containing shipping information.
@@ -69,6 +85,7 @@ type CustomerListParams struct {
 	ListParams   `form:"*"`
 	Created      *int64            `form:"created"`
 	CreatedRange *RangeQueryParams `form:"created"`
+	Email        *string           `form:"email"`
 }
 
 // Customer is the resource representing a Stripe customer.
@@ -92,6 +109,20 @@ type Customer struct {
 	Subscriptions       *SubscriptionList            `json:"subscriptions"`
 	TaxInfo             *CustomerTaxInfo             `json:"tax_info"`
 	TaxInfoVerification *CustomerTaxInfoVerification `json:"tax_info_verification"`
+}
+
+// CustomerInvoiceCustomField represents a custom field associated with the customer's invoices.
+type CustomerInvoiceCustomField struct {
+	Name  *string `form:"name"`
+	Value *string `form:"value"`
+}
+
+// CustomerInvoiceSettings is the structure containing the default settings for invoices associated
+// with this customer.
+type CustomerInvoiceSettings struct {
+	CustomFields         []*CustomerInvoiceCustomField `json:"custom_fields"`
+	DefaultPaymentMethod *PaymentMethod                `json:"default_payment_method"`
+	Footer               string                        `json:"footer"`
 }
 
 // CustomerList is a list of customers as retrieved from a list endpoint.

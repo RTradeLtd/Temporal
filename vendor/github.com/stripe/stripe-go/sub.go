@@ -11,12 +11,14 @@ type SubscriptionStatus string
 
 // List of values that SubscriptionStatus can take.
 const (
-	SubscriptionStatusActive   SubscriptionStatus = "active"
-	SubscriptionStatusAll      SubscriptionStatus = "all"
-	SubscriptionStatusCanceled SubscriptionStatus = "canceled"
-	SubscriptionStatusPastDue  SubscriptionStatus = "past_due"
-	SubscriptionStatusTrialing SubscriptionStatus = "trialing"
-	SubscriptionStatusUnpaid   SubscriptionStatus = "unpaid"
+	SubscriptionStatusActive            SubscriptionStatus = "active"
+	SubscriptionStatusAll               SubscriptionStatus = "all"
+	SubscriptionStatusCanceled          SubscriptionStatus = "canceled"
+	SubscriptionStatusIncomplete        SubscriptionStatus = "incomplete"
+	SubscriptionStatusIncompleteExpired SubscriptionStatus = "incomplete_expired"
+	SubscriptionStatusPastDue           SubscriptionStatus = "past_due"
+	SubscriptionStatusTrialing          SubscriptionStatus = "trialing"
+	SubscriptionStatusUnpaid            SubscriptionStatus = "unpaid"
 )
 
 // SubscriptionBilling is the type of billing method for this subscription's invoices.
@@ -50,6 +52,7 @@ type SubscriptionParams struct {
 	Coupon                      *string                              `form:"coupon"`
 	Customer                    *string                              `form:"customer"`
 	DaysUntilDue                *int64                               `form:"days_until_due"`
+	DefaultPaymentMethod        *string                              `form:"default_payment_method"`
 	DefaultSource               *string                              `form:"default_source"`
 	Items                       []*SubscriptionItemsParams           `form:"items"`
 	OnBehalfOf                  *string                              `form:"on_behalf_of"`
@@ -100,12 +103,13 @@ func (p *SubscriptionParams) AppendTo(body *form.Values, keyParts []string) {
 // SubscriptionItemsParams is the set of parameters that can be used when creating or updating a subscription item on a subscription
 // For more details see https://stripe.com/docs/api#create_subscription and https://stripe.com/docs/api#update_subscription.
 type SubscriptionItemsParams struct {
-	Params     `form:"*"`
-	ClearUsage *bool   `form:"clear_usage"`
-	Deleted    *bool   `form:"deleted"`
-	ID         *string `form:"id"`
-	Plan       *string `form:"plan"`
-	Quantity   *int64  `form:"quantity"`
+	Params            `form:"*"`
+	BillingThresholds *SubscriptionItemBillingThresholdsParams `form:"billing_thresholds"`
+	ClearUsage        *bool                                    `form:"clear_usage"`
+	Deleted           *bool                                    `form:"deleted"`
+	ID                *string                                  `form:"id"`
+	Plan              *string                                  `form:"plan"`
+	Quantity          *int64                                   `form:"quantity"`
 }
 
 // SubscriptionListParams is the set of parameters that can be used when listing active subscriptions.
@@ -144,6 +148,7 @@ type Subscription struct {
 	CurrentPeriodStart    int64                          `json:"current_period_start"`
 	Customer              *Customer                      `json:"customer"`
 	DaysUntilDue          int64                          `json:"days_until_due"`
+	DefaultPaymentMethod  *PaymentMethod                 `json:"default_payment_method"`
 	DefaultSource         *PaymentSource                 `json:"default_source"`
 	Discount              *Discount                      `json:"discount"`
 	EndedAt               int64                          `json:"ended_at"`

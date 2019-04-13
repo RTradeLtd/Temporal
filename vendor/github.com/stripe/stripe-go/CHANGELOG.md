@@ -1,5 +1,41 @@
 # Changelog
 
+## 60.3.0 - 2019-04-12
+* [#831](https://github.com/stripe/stripe-go/pull/831) Add support for `authorization_controls` on `Cardholder` and `authorization_controls[spending_limits]` added to `Card` too for Issuing resources
+
+## 60.2.0 - 2019-04-09
+* [#827](https://github.com/stripe/stripe-go/pull/827) Add support for `confirmation_method` on `PaymentIntent` creation
+
+## 60.1.0 - 2019-04-09
+* [#824](https://github.com/stripe/stripe-go/pull/824) Add support for `PaymentIntent` and `PaymentMethod` on `Customer`, `Subscription` and `Invoice`.
+
+## 60.0.1 - 2019-04-02
+* [#825](https://github.com/stripe/stripe-go/pull/825) Fix the API for usage record summary listing
+
+## 60.0.0 - 2019-03-27
+* [#820](https://github.com/stripe/stripe-go/pull/820) Add various missing parameters
+    * On `PIIParams` the previous `PersonalIDNumber` is fixed to `IDNumber` which we're releasing as a minor breaking change even though the old version probably didn't work correctly
+
+## 59.1.0 - 2019-03-22
+* [#819](https://github.com/stripe/stripe-go/pull/819) Add default level prefixes in messages from `LeveledLogger`
+
+## 59.0.0 - 2019-03-22
+* [#818](https://github.com/stripe/stripe-go/pull/818) Implement leveled logging (very minor breaking change -- only a couple properties were removed from the internal `BackendImplementation`)
+
+## 58.1.0 - 2019-03-19
+* [#815](https://github.com/stripe/stripe-go/pull/815) Add support for passing token on account or person creation
+
+## 58.0.0 - 2019-03-19
+* [#811](https://github.com/stripe/stripe-go/pull/811) Add support for API version 2019-03-14
+* [#814](https://github.com/stripe/stripe-go/pull/814) Properly override API version if it's set in the request
+
+## 57.8.0 - 2019-03-18
+* [#806](https://github.com/stripe/stripe-go/pull/806) Add support for the `PaymentMethod` resource and APIs
+* [#812](https://github.com/stripe/stripe-go/pull/812) Add support for deleting a Terminal `Location` and `Reader`
+
+## 57.7.0 - 2019-03-13
+* [#810](https://github.com/stripe/stripe-go/pull/810) Add support for `columns` on `ReportRun` and `default_columns` on `ReportType`.
+
 ## 57.6.0 - 2019-03-06
 * [#808](https://github.com/stripe/stripe-go/pull/808) Add support for `backdate_start_date` and `cancel_at` on `Subscription`.
 

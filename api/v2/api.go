@@ -372,10 +372,10 @@ func (api *API) setupRoutes() error {
 	}
 	// ensure we have valid cors configuration
 	var allowedOrigins []string
-	if len(api.cfg.API.Connection.CORS.AllowedOrigin) == 0 {
+	if len(api.cfg.API.Connection.CORS.AllowedOrigins) == 0 {
 		allowedOrigins = middleware.DefaultAllowedOrigins
 	} else {
-		allowedOrigins = api.cfg.API.Connection.CORS.AllowedOrigin
+		allowedOrigins = api.cfg.API.Connection.CORS.AllowedOrigins
 	}
 	// set up defaults
 	api.r.Use(
@@ -534,6 +534,15 @@ func (api *API) setupRoutes() error {
 			private.GET("/networks", api.getAuthorizedPrivateNetworks)
 			network := private.Group("/network")
 			{
+				users := network.Group("/users")
+				{
+					users.DELETE("/remove", api.removeUsersFromNetwork)
+					users.POST("/add", api.addUsersToNetwork)
+				}
+				owners := network.Group("/owners")
+				{
+					owners.POST("/add", api.addOwnersToNetwork)
+				}
 				network.GET("/:name", api.getIPFSPrivateNetworkByName)
 				network.POST("/new", api.createIPFSNetwork)
 				network.POST("/stop", api.stopIPFSPrivateNetwork)
