@@ -5,9 +5,14 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/api/v3/mocks"
+	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
+	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/RTradeLtd/database/models"
 	"github.com/bobheadxi/res"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,11 +22,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"gopkg.in/dgrijalva/jwt-go.v3"
-
-	"github.com/RTradeLtd/Temporal/api/v3/mocks"
-	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
-	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/database/models"
 )
 
 var defaultJWT = JWTConfig{
@@ -1159,4 +1159,98 @@ func Test_toUser(t *testing.T) {
 			assert.Equal(t, tt.want, u)
 		})
 	}
+}
+
+func Test_validateEmailFormat(t *testing.T) {
+	type args struct {
+		email string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"not an email", args{"bobheadxi"}, true},
+		{"no '+' in account", args{"rob+temporal@bobheadxi.dev"}, true},
+		{"no trailing '.' in account", args{"rob.@bobheadxi.dev"}, true},
+		{"no trailing '....' in account", args{"rob....@bobheadxi.dev"}, true},
+		{"invalid email domain", args{"rob@hahahaha"}, true},
+		{"valid custom email domain", args{"rob@bobheadxi.dev"}, false},
+		{"valid gmail", args{"rob@gmail.com"}, false},
+		{"valid hotmail", args{"rob@gmail.com"}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := validateEmailFormat(tt.args.email); (err != nil) != tt.wantErr {
+				t.Errorf("validateEmailFormat() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+
+	if os.Getenv("TEST_EMAIL_DOMAINS") == "true" {
+		t.Run("all popular domains should validate", func(t *testing.T) {
+			for _, domain := range commonEmailDomains {
+				if err := validateEmailFormat("rob@" + domain); err != nil {
+					t.Errorf("validateEmailFormat() error = %v", err)
+				}
+			}
+		})
+	}
+}
+
+// sourced from https://github.com/mailcheck/mailcheck/wiki/List-of-Popular-Domains
+// a few domains were removed because they can't be reached:
+// * 'sbcglobal.net'
+// * 'freeserve.co.uk'
+// * 'orange.net'
+// * 'wanadoo.co.uk'
+// * 'itelefonica.com.br'
+// It's possible these have been shut down. Either way we should probably
+// encourage users to adopt more modern email solutions.
+var commonEmailDomains = []string{
+	/* Default domains included */
+	"aol.com", "att.net", "comcast.net", "facebook.com", "gmail.com", "gmx.com", "googlemail.com",
+	"google.com", "hotmail.com", "hotmail.co.uk", "mac.com", "me.com", "mail.com", "msn.com",
+	"live.com", "verizon.net", "yahoo.com", "yahoo.co.uk",
+
+	/* Other global domains */
+	"email.com", "fastmail.fm", "games.com" /* AOL */, "gmx.net", "hush.com", "hushmail.com", "icloud.com",
+	"iname.com", "inbox.com", "lavabit.com", "love.com" /* AOL */, "outlook.com", "pobox.com", "protonmail.com",
+	"rocketmail.com" /* Yahoo */, "safe-mail.net", "wow.com" /* AOL */, "ygm.com", /* AOL */
+	"ymail.com" /* Yahoo */, "zoho.com", "yandex.com",
+
+	/* United States ISP domains */
+	"bellsouth.net", "charter.net", "cox.net", "earthlink.net", "juno.com",
+
+	/* British ISP domains */
+	"btinternet.com", "virginmedia.com", "blueyonder.co.uk", "live.co.uk",
+	"ntlworld.com", "o2.co.uk", "sky.com", "talktalk.co.uk", "tiscali.co.uk",
+	"virgin.net", "bt.com",
+
+	/* Domains used in Asia */
+	"sina.com", "sina.cn", "qq.com", "naver.com", "hanmail.net", "daum.net", "nate.com", "yahoo.co.jp", "yahoo.co.kr", "yahoo.co.id", "yahoo.co.in", "yahoo.com.sg", "yahoo.com.ph", "163.com", "126.com", "aliyun.com", "foxmail.com",
+
+	/* French ISP domains */
+	"hotmail.fr", "live.fr", "laposte.net", "yahoo.fr", "wanadoo.fr", "orange.fr", "gmx.fr", "sfr.fr", "neuf.fr", "free.fr",
+
+	/* German ISP domains */
+	"gmx.de", "hotmail.de", "live.de", "online.de", "t-online.de" /* T-Mobile */, "web.de", "yahoo.de",
+
+	/* Italian ISP domains */
+	"libero.it", "virgilio.it", "hotmail.it", "aol.it", "tiscali.it", "alice.it", "live.it", "yahoo.it", "email.it", "tin.it", "poste.it", "teletu.it",
+
+	/* Russian ISP domains */
+	"mail.ru", "rambler.ru", "yandex.ru", "ya.ru", "list.ru",
+
+	/* Belgian ISP domains */
+	"hotmail.be", "live.be", "skynet.be", "voo.be", "tvcablenet.be", "telenet.be",
+
+	/* Argentinian ISP domains */
+	"hotmail.com.ar", "live.com.ar", "yahoo.com.ar", "fibertel.com.ar", "speedy.com.ar", "arnet.com.ar",
+
+	/* Domains used in Mexico */
+	"yahoo.com.mx", "live.com.mx", "hotmail.es", "hotmail.com.mx", "prodigy.net.mx",
+
+	/* Domains used in Brazil */
+	"yahoo.com.br", "hotmail.com.br", "outlook.com.br", "uol.com.br", "bol.com.br", "terra.com.br", "ig.com.br", "r7.com", "zipmail.com.br", "globo.com", "globomail.com", "oi.com.br",
 }

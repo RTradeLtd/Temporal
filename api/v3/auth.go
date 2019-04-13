@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -76,8 +77,8 @@ func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*aut
 	)
 
 	// validate email
-	if strings.ContainsRune(email, '+') {
-		return nil, grpc.Errorf(codes.InvalidArgument, "emails must not contain + signs")
+	if err := validateEmailFormat(email); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// nothing should be empty
@@ -622,4 +623,36 @@ func toUser(u *models.User, usage *models.Usage) *auth.User {
 		ApiAccess:   true, // TODO: is this always the case?
 		AdminAccess: u.AdminAccess,
 	}
+}
+
+// validateEmailFormat validates the email address using the following rules:
+// * email must contain '@'
+// * no usage of catch-all routing (ie, username+test@example.org, username+test1@example.org)
+// * no trailing periods (ie, username.@example.org, username..........@example.org)
+// * domain must be valid
+func validateEmailFormat(email string) error {
+	if !strings.ContainsRune(email, '@') {
+		return errors.New("invalid email format")
+	}
+
+	var (
+		parts   = strings.Split(email, "@")
+		account = parts[0]
+		host    = parts[1]
+	)
+
+	// validate the account portion of email
+	if strings.ContainsRune(account, '+') {
+		return errors.New("email must not contain '+'")
+	}
+	if strings.HasSuffix(account, ".") {
+		return errors.New("email must not end with '.'")
+	}
+
+	// check the given email host is valid
+	if n, err := net.LookupIP(host); err != nil || len(n) == 0 {
+		return fmt.Errorf("invalid email host '%s'", host)
+	}
+
+	return nil
 }
