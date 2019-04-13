@@ -416,7 +416,20 @@ func (a *AuthService) httpVerificationHandler(w http.ResponseWriter, r *http.Req
 }
 
 // newAuthInterceptors creates unary and stream interceptors that validate
-// requests, for use with gRPC servers
+// requests, for use with gRPC servers, excluding the given exceptions.
+// Exceptions should be the name of the gRPC method to be excluded, for example
+// "/auth.TemporalAuth/Register". To find the method name of a function, search
+// for "FullMethod" in *.pb.go, for example in auth.pb.go:
+//
+//    func _TemporalAuth_Register_Handler(...) (interface{}, error) {
+//      ...
+//      info := &grpc.UnaryServerInfo{
+//        Server:     srv,
+//        FullMethod: "/auth.TemporalAuth/Register",
+//      }
+//      ...
+//    }
+//
 func (a *AuthService) newAuthInterceptors(exceptions ...string) (
 	unaryInterceptor grpc.UnaryServerInterceptor,
 	streamInterceptor grpc.StreamServerInterceptor,
