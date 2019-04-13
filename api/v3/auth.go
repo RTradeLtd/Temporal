@@ -181,7 +181,7 @@ func (a *AuthService) Recover(ctx context.Context, req *auth.RecoverReq) (*auth.
 
 	case auth.RecoverReq_USERNAME:
 		if err := a.emails.PublishMessage(queue.EmailSend{
-			Subject:     "TEMPORAL User Name Reminder",
+			Subject:     "Temporal Username Reminder",
 			Content:     fmt.Sprintf("your username is %s", user.UserName),
 			ContentType: "text/html",
 			UserNames:   []string{user.UserName},
