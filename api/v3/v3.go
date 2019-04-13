@@ -128,7 +128,7 @@ func (v *V3) Run(ctx context.Context, address string) error {
 	// set up rest endpoint
 	v.l.Debug("setting up REST endpoints")
 	var m = chi.NewMux()
-	m.HandleFunc("/v3/auth/verify", v.verify)
+	m.Get("/v3/auth/verify", v.verify)
 	v.http.Handler = m
 	v.http.Addr = address
 	v.l.Debug("rest endpoints set up")

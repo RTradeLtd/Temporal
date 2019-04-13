@@ -539,20 +539,26 @@ var commands = map[string]cmd.Cmd{
 		PreRun:        true,
 		ChildRequired: true,
 		Children: map[string]cmd.Cmd{
-			"proxy": {
-				Blurb: "run a RESTful proxy for the Temporal V3 API",
+			"gateway": {
+				Blurb: "run a RESTful gateway for the Temporal V3 API",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					if len(os.Args) < 4 {
-						fmt.Println("no address provided")
+						fmt.Println("no target address provided")
 						os.Exit(1)
 					}
 					// TODO: allow better configuration
 					if err := v3.REST(context.Background(), v3.RESTGatewayOptions{
 						Address:     ":8080",
 						DialAddress: os.Args[3],
-						DialOptions: []grpc.DialOption{grpc.WithInsecure()},
+						DialOptions: func() []grpc.DialOption {
+							opts := []grpc.DialOption{}
+							if *devMode {
+								return append(opts, grpc.WithInsecure())
+							}
+							return opts
+						},
 					}); err != nil {
-						fmt.Println("error occurred during proxy initialization", err)
+						fmt.Println("error occurred during gateway initialization", err)
 						os.Exit(1)
 					}
 				},
@@ -566,15 +572,13 @@ var commands = map[string]cmd.Cmd{
 					}
 					l, err := log.NewLogger(logPath(cfg.LogDir, "v3.server.log"), *devMode)
 					if err != nil {
-						fmt.Println(err)
-						os.Exit(1)
+						l.Fatal(err)
 					}
 
 					// instantiate database dependencies
 					db, err := newDB(cfg, *dbNoSSL)
 					if err != nil {
-						fmt.Println(err)
-						os.Exit(1)
+						l.Fatal(err)
 					}
 					var (
 						users = models.NewUserManager(db)
@@ -585,8 +589,7 @@ var commands = map[string]cmd.Cmd{
 					emails, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL,
 						true, *devMode, &cfg, l.Named("queue.email"))
 					if err != nil {
-						fmt.Println(err)
-						os.Exit(1)
+						l.Fatal(err)
 					}
 
 					// set up server
@@ -606,7 +609,16 @@ var commands = map[string]cmd.Cmd{
 						v3.NewIPFSService(*devMode, l.Named("ipfs")),
 
 						v3.Options{
-							// TODO
+							TLS: func() *tls.Config {
+								// todo: if no config, return nil
+								cert, err := tls.LoadX509KeyPair("", "")
+								if err != nil {
+									l.Fatal(err)
+								}
+								return &tls.Config{
+									Certificates: []tls.Certificate{cert},
+								}
+							}
 						},
 					)
 
