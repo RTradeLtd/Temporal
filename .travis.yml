@@ -14,6 +14,7 @@ env:
 install:
 - go get -u golang.org/x/lint/golint
 - git submodule update --init
+- GO111MODULE=on go mod vendor
 
 before_script:
 - go vet ./...
