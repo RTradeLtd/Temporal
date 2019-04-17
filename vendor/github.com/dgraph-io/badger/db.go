@@ -40,11 +40,10 @@ import (
 )
 
 var (
-	badgerPrefix      = []byte("!badger!")        // Prefix for internal keys used by badger.
-	head              = []byte("!badger!head")    // For storing value offset for replay.
-	txnKey            = []byte("!badger!txn")     // For indicating end of entries in txn.
-	badgerMove        = []byte("!badger!move")    // For key-value pairs which got moved during GC.
-	lfDiscardStatsKey = []byte("!badger!discard") // For storing lfDiscardStats
+	badgerPrefix = []byte("!badger!")     // Prefix for internal keys used by badger.
+	head         = []byte("!badger!head") // For storing value offset for replay.
+	txnKey       = []byte("!badger!txn")  // For indicating end of entries in txn.
+	badgerMove   = []byte("!badger!move") // For key-value pairs which got moved during GC.
 )
 
 type closers struct {
@@ -127,10 +126,9 @@ func (db *DB) replayFunction() func(Entry, valuePointer) error {
 		}
 
 		v := y.ValueStruct{
-			Value:     nv,
-			Meta:      meta,
-			UserMeta:  e.UserMeta,
-			ExpiresAt: e.ExpiresAt,
+			Value:    nv,
+			Meta:     meta,
+			UserMeta: e.UserMeta,
 		}
 
 		if e.meta&bitFinTxn > 0 {
@@ -426,12 +424,6 @@ func (db *DB) Close() (err error) {
 const (
 	lockFile = "LOCK"
 )
-
-// Sync syncs database content to disk. This function provides
-// more control to user to sync data whenever required.
-func (db *DB) Sync() error {
-	return db.vlog.sync()
-}
 
 // When you create or delete a file, you have to ensure the directory entry for the file is synced
 // in order to guarantee the file is visible (if the system crashes).  (See the man page for fsync,
@@ -826,10 +818,6 @@ func (db *DB) handleFlushTask(ft flushTask) error {
 		// commits.
 		headTs := y.KeyWithTs(head, db.orc.nextTs())
 		ft.mt.Put(headTs, y.ValueStruct{Value: offset})
-
-		// Also store lfDiscardStats before flushing memtables
-		discardStatsKey := y.KeyWithTs(lfDiscardStatsKey, 1)
-		ft.mt.Put(discardStatsKey, y.ValueStruct{Value: db.vlog.encodedDiscardStats()})
 	}
 
 	fileID := db.lc.reserveFileID()

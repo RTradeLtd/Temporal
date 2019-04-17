@@ -170,6 +170,7 @@ func (r *Relay) DialPeer(ctx context.Context, relay pstore.PeerInfo, dest pstore
 
 	rd := newDelimitedReader(s, maxMessageSize)
 	wr := newDelimitedWriter(s)
+	defer rd.Close()
 
 	var msg pb.CircuitRelay
 
@@ -218,6 +219,7 @@ func (r *Relay) CanHop(ctx context.Context, id peer.ID) (bool, error) {
 
 	rd := newDelimitedReader(s, maxMessageSize)
 	wr := newDelimitedWriter(s)
+	defer rd.Close()
 
 	var msg pb.CircuitRelay
 
@@ -249,6 +251,7 @@ func (r *Relay) handleNewStream(s inet.Stream) {
 	log.Infof("new relay stream from: %s", s.Conn().RemotePeer())
 
 	rd := newDelimitedReader(s, maxMessageSize)
+	defer rd.Close()
 
 	var msg pb.CircuitRelay
 
@@ -300,30 +303,30 @@ func (r *Relay) handleHopStream(s inet.Stream, msg *pb.CircuitRelay) {
 	}
 
 	// open stream
-	ctp := r.host.Network().ConnsToPeer(dst.ID)
-
-	if len(ctp) == 0 && !r.active {
-		r.handleError(s, pb.CircuitRelay_HOP_NO_CONN_TO_DST)
-		return
-	}
-
-	if len(dst.Addrs) > 0 {
-		r.host.Peerstore().AddAddrs(dst.ID, dst.Addrs, pstore.TempAddrTTL)
-	}
-
 	ctx, cancel := context.WithTimeout(r.ctx, HopConnectTimeout)
 	defer cancel()
+
+	if !r.active {
+		ctx = inet.WithNoDial(ctx, "relay hop")
+	} else if len(dst.Addrs) > 0 {
+		r.host.Peerstore().AddAddrs(dst.ID, dst.Addrs, pstore.TempAddrTTL)
+	}
 
 	bs, err := r.host.NewStream(ctx, dst.ID, ProtoID)
 	if err != nil {
 		log.Debugf("error opening relay stream to %s: %s", dst.ID.Pretty(), err.Error())
-		r.handleError(s, pb.CircuitRelay_HOP_CANT_DIAL_DST)
+		if err == inet.ErrNoConn {
+			r.handleError(s, pb.CircuitRelay_HOP_NO_CONN_TO_DST)
+		} else {
+			r.handleError(s, pb.CircuitRelay_HOP_CANT_DIAL_DST)
+		}
 		return
 	}
 
 	// stop handshake
 	rd := newDelimitedReader(bs, maxMessageSize)
 	wr := newDelimitedWriter(bs)
+	defer rd.Close()
 
 	msg.Type = pb.CircuitRelay_STOP.Enum()
 

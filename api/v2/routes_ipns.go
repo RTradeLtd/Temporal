@@ -7,9 +7,8 @@ import (
 	"strings"
 	"time"
 
-	path "gx/ipfs/QmQAgv6Gaoe2tQpcabqwKXKChp2MZ7i3UXv9DqTTaxCaTR/go-path"
-
 	"github.com/gin-gonic/gin"
+	path "github.com/ipfs/go-path"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
