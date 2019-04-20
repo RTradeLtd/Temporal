@@ -26,7 +26,7 @@ import (
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
-	"github.com/RTradeLtd/kaas"
+	"github.com/RTradeLtd/kaas/v2"
 )
 
 // Version denotes the tag of this build

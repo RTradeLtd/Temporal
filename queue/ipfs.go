@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/log"
-	kaas "github.com/RTradeLtd/kaas"
+	kaas "github.com/RTradeLtd/kaas/v2"
 	"github.com/RTradeLtd/rtfs/v2"
 
 	"github.com/RTradeLtd/database/v2/models"

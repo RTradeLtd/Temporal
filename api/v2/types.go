@@ -2,7 +2,7 @@ package v2
 
 import (
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/kaas"
+	"github.com/RTradeLtd/kaas/v2"
 	xss "github.com/dvwright/xss-mw"
 
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
