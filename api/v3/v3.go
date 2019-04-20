@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi"
-
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -124,14 +122,6 @@ func (v *V3) Run(ctx context.Context, address string) error {
 	store.RegisterTemporalStoreServer(server, v.store)
 	ipfs.RegisterTemporalIPFSServer(server, v.ipfs)
 	v.l.Debug("services registered")
-
-	// set up rest endpoint
-	v.l.Debug("setting up REST endpoints")
-	var m = chi.NewMux()
-	m.Get("/v3/auth/verify", v.verify)
-	v.http.Handler = m
-	v.http.Addr = address
-	v.l.Debug("rest endpoints set up")
 
 	// interrupt server gracefully if context is cancelled
 	go func() {

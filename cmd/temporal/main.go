@@ -546,6 +546,18 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("no target address provided")
 						os.Exit(1)
 					}
+
+					// instantiate database dependencies
+					db, err := newDB(cfg, *dbNoSSL)
+					if err != nil {
+						l.Fatal(err)
+					}
+					var (
+						users = models.NewUserManager(db)
+						usage = models.NewUsageManager(db)
+					)
+
+
 					// TODO: allow better configuration
 					if err := v3.REST(context.Background(), v3.RESTGatewayOptions{
 						Address:     ":8080",

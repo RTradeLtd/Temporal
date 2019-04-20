@@ -29,7 +29,12 @@ type RESTGatewayOptions struct {
 }
 
 // REST runs the RESTful reverse proxy for the Temporal V3 gRPC API
-func REST(ctx context.Context, l *zap.SugaredLogger, opts RESTGatewayOptions) error {
+func REST(
+	ctx context.Context,
+	l *zap.SugaredLogger,
+	handlers map[string]http.HandleFunc,
+	opts RESTGatewayOptions,
+) error {
 	var gateway = runtime.NewServeMux(
 		runtime.WithMetadata(gatewayAnnotator))
 
@@ -51,16 +56,28 @@ func REST(ctx context.Context, l *zap.SugaredLogger, opts RESTGatewayOptions) er
 		return err
 	}
 
-	// spin up server
+	// register routes
 	mux := chi.NewMux()
 	mux.Use(log.NewMiddleware(l.Named("requests")))
-	mux.Handle("/v3", gateway)
-	return &http.Server{
+	mux.Route("/v3", func(r *chi.Router) {
+		r.Handle("/", gateway)
+		for path, fn := range handlers {
+			r.HandleFunc(path, fn)
+		}
+	})
+	srv := &http.Server{
 		Addr: opts.Address,
 		TLS:  opts.TLS,
 
 		Handler: mux,
-	}.ListenAndServe()
+	}
+
+	// spin up server
+	go func() {
+		<-ctx.Done()
+		srv.Close()
+	}()
+	return srv.ListenAndServe()
 }
 
 // gatewayAnnotator is used by gateway to read values from HTTP requests into
