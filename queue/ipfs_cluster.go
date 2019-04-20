@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/RTradeLtd/Temporal/rtfscluster"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/gorm"
 	"github.com/streadway/amqp"
 )

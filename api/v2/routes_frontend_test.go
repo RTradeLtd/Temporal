@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/mocks"
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 )
 
 func Test_API_Routes_Frontend(t *testing.T) {

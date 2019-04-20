@@ -3,7 +3,7 @@ package clients
 import (
 	"fmt"
 
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/grpc/dialer"
 	nexus "github.com/RTradeLtd/grpc/nexus"
 	"google.golang.org/grpc"

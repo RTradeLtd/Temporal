@@ -23,14 +23,14 @@ import (
 	v3 "github.com/RTradeLtd/Temporal/api/v3"
 	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/cmd"
-	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/cmd/v2"
+	"github.com/RTradeLtd/config/v2"
+	"github.com/RTradeLtd/database/v2"
+	"github.com/RTradeLtd/database/v2/models"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
-	"github.com/RTradeLtd/kaas"
+	"github.com/RTradeLtd/kaas/v2"
 )
 
 // Version denotes the tag of this build

@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/gorm"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"

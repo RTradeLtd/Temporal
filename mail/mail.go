@@ -4,8 +4,8 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/config/v2"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/gorm"
 	"github.com/sendgrid/rest"
 	sendgrid "github.com/sendgrid/sendgrid-go"

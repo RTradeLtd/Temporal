@@ -125,20 +125,7 @@ gen:
 .PHONY: vendor
 vendor:
 	@echo "=================== generating dependencies ==================="
-	# Nuke vendor directory
-	rm -rf vendor
-
-	# rebuild dependencies
-	dep ensure -v $(DEPFLAGS)
-
-	# Generate IPFS dependencies
-	rm -rf vendor/github.com/ipfs/go-ipfs
-	git clone https://github.com/ipfs/go-ipfs.git vendor/github.com/ipfs/go-ipfs
-	( cd vendor/github.com/ipfs/go-ipfs ; git checkout $(IPFSVERSION) ; gx install --local --nofancy )
-	mv vendor/github.com/ipfs/go-ipfs/vendor/* vendor
-	
-	# Remove problematic dependencies
-	find . -name test-vectors -type d -exec rm -r {} +
+	GO111MODULE=on go mod vendor
 	@echo "===================          done           ==================="
 
 # Build CLI binary release
