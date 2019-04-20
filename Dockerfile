@@ -2,11 +2,15 @@
 FROM golang:alpine AS build-env
 ARG TEMPORALVERSION
 ENV BUILD_HOME=/go/src/github.com/RTradeLtd/Temporal \
-    TEMPORALVERSION=${TEMPORALVERSION}
+    TEMPORALVERSION=${TEMPORALVERSION} \
+    GO111MODULE=on
 
 # Mount source code
 ADD . ${BUILD_HOME}
 WORKDIR ${BUILD_HOME}
+
+# Install dependencies
+RUN go mod vendor
 
 # Build temporal binary
 RUN go build -o /bin/temporal \

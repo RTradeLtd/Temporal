@@ -24,6 +24,19 @@ The project also depends on a [range of sub-repositories](https://github.com/sea
 
 ## Development
 
+### Dependencies
+
+This project leverages go modules, and requires go 1.13 or above.
+
+#### Upgrading
+
+See https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies.
+In general:
+
+```
+go get -u=patch
+```
+
 ### Building
 
 Dependencies are vendored by default, so there is no need to install anything if you have the Go toolchain. Temporal is built with `go1.11` and is the only gauranteed version of Golang to work.
@@ -71,16 +84,6 @@ $ make lint
 ```
 
 This requires golint and spellcheck to be installed.
-
-### Vendoring
-
-To update or rebuild the dependencies, run:
-
-```bash
-$ make vendor
-```
-
-This requires the GX dependency management tool to be installed.
 
 ## Code Style
 
