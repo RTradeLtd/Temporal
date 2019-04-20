@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/utils"
-	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/config/v2"
+	"github.com/RTradeLtd/database/v2"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/gorm"
-	"github.com/RTradeLtd/rtfs"
+	"github.com/RTradeLtd/rtfs/v2"
 )
 
 const (

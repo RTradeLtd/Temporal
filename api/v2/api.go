@@ -22,16 +22,16 @@ import (
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/rtfs"
+	"github.com/RTradeLtd/rtfs/v2"
 
 	limit "github.com/aviddiviner/gin-limit"
 
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 	stats "github.com/semihalev/gin-stats"
 
 	"github.com/RTradeLtd/Temporal/api/middleware"
-	"github.com/RTradeLtd/database"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2"
+	"github.com/RTradeLtd/database/v2/models"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,7 +1,7 @@
 package clients
 
 import (
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/grpc/dialer"
 	pb "github.com/RTradeLtd/grpc/pay"
 	"google.golang.org/grpc"

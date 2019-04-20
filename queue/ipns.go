@@ -12,7 +12,7 @@ import (
 	"github.com/streadway/amqp"
 
 	"github.com/RTradeLtd/Temporal/rtns"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 	pb "github.com/RTradeLtd/grpc/krab"
 	kaas "github.com/RTradeLtd/kaas"
 )

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 )
 
 const (

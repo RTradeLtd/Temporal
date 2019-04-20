@@ -4,10 +4,10 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 
 	"github.com/RTradeLtd/Temporal/mocks"
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 )
 
 func Test_API_Routes_IPFS_Private_User_Management(t *testing.T) {

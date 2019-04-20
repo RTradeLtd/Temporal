@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 	nexus "github.com/RTradeLtd/grpc/nexus"
 	"github.com/gin-gonic/gin"
 )

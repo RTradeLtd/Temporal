@@ -3,7 +3,7 @@ package queue
 import (
 	"time"
 
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/gorm"
 	"go.uber.org/zap"
 

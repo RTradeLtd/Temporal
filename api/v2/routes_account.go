@@ -10,7 +10,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/gin-gonic/gin"
 )
 
