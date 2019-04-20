@@ -3,7 +3,7 @@ package queue
 import (
 	"testing"
 
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
 )

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/mocks"
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 	pb "github.com/RTradeLtd/grpc/lensv2"
 )
 

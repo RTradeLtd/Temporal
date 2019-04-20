@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 )
 
 // refundCredits is used to refund a users credits. We do not check for errors,

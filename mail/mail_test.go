@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/mail"
-	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/config/v2"
+	"github.com/RTradeLtd/database/v2"
 )
 
 var (

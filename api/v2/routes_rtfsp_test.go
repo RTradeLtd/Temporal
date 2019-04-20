@@ -12,8 +12,8 @@ import (
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/mocks"
-	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/config/v2"
+	"github.com/RTradeLtd/database/v2/models"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 )
 

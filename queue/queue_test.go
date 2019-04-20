@@ -9,8 +9,8 @@ import (
 	"github.com/streadway/amqp"
 
 	"github.com/RTradeLtd/Temporal/log"
-	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/config/v2"
+	"github.com/RTradeLtd/database/v2"
 	"github.com/RTradeLtd/gorm"
 )
 

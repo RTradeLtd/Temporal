@@ -12,7 +12,7 @@ import (
 	"github.com/RTradeLtd/gorm"
 	"go.uber.org/zap"
 
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 	"github.com/streadway/amqp"
 )
 

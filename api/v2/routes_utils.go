@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/crypto"
+	"github.com/RTradeLtd/crypto/v2"
 	mnemonics "github.com/RTradeLtd/entropy-mnemonics"
 	pb "github.com/RTradeLtd/grpc/krab"
-	"github.com/RTradeLtd/rtfs"
-	"github.com/RTradeLtd/rtfs/beam"
+	"github.com/RTradeLtd/rtfs/v2"
+	"github.com/RTradeLtd/rtfs/v2/beam"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )

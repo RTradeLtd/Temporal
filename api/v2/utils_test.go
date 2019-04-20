@@ -5,8 +5,8 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/Temporal/utils"
-	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/config/v2"
+	"github.com/RTradeLtd/database/v2/models"
 )
 
 func TestEmailJWT(t *testing.T) {

@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/log"
-	kaas "github.com/RTradeLtd/kaas"
-	"github.com/RTradeLtd/rtfs"
+	kaas "github.com/RTradeLtd/kaas/v2"
+	"github.com/RTradeLtd/rtfs/v2"
 
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/gorm"
 	"github.com/streadway/amqp"
 

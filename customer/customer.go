@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/RTradeLtd/database/models"
-	"github.com/RTradeLtd/rtfs"
+	"github.com/RTradeLtd/database/v2/models"
+	"github.com/RTradeLtd/rtfs/v2"
 )
 
 // Manager is used to handle managing customer objects
