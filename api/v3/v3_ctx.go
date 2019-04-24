@@ -3,7 +3,7 @@ package v3
 import (
 	"context"
 
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 )
 
 type internalCtxKey int

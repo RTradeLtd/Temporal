@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/RTradeLtd/Temporal/api/v3/mocks"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/bobheadxi/res"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -225,7 +225,8 @@ func TestAuthService_httpVerificationHandler(t *testing.T) {
 			)
 
 			w := httptest.NewRecorder()
-			a.httpVerificationHandler(w, tt.args.r)
+			// TODO
+			a.VerificationHandler(a.l, users)(w, tt.args.r)
 			resp, err := res.Unmarshal(w.Body)
 			require.NoError(t, err)
 			t.Logf("received response %#v", resp)

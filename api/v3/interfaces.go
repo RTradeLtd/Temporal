@@ -1,6 +1,6 @@
 package v3
 
-import "github.com/RTradeLtd/database/models"
+import "github.com/RTradeLtd/database/v2/models"
 
 type userManager interface {
 	FindByUserName(username string) (*models.User, error)

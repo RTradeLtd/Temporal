@@ -95,7 +95,8 @@ func New(
 		store: storeService,
 		ipfs:  ipfsService,
 
-		verify: authService.httpVerificationHandler,
+		// TODO
+		verify: authService.VerificationHandler(l, nil),
 		http: &http.Server{
 			TLSConfig: opts.TLS,
 		},

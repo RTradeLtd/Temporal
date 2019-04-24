@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"os"
@@ -11,22 +12,20 @@ import (
 	"syscall"
 	"time"
 
-	"gopkg.in/dgrijalva/jwt-go.v3"
-
+	"github.com/bobheadxi/zapx"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-
-	clients "github.com/RTradeLtd/Temporal/grpc-clients"
-	"github.com/RTradeLtd/gorm"
+	"gopkg.in/dgrijalva/jwt-go.v3"
 
 	v2 "github.com/RTradeLtd/Temporal/api/v2"
 	v3 "github.com/RTradeLtd/Temporal/api/v3"
-	"github.com/RTradeLtd/Temporal/log"
+	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd/v2"
 	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/v2"
 	"github.com/RTradeLtd/database/v2/models"
+	"github.com/RTradeLtd/gorm"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
@@ -143,15 +142,15 @@ var commands = map[string]cmd.Cmd{
 		Blurb:       "start Temporal api server",
 		Description: "Start the API service used to interact with Temporal. Run with DEBUG=true to enable debug messages.",
 		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			logger, err := log.NewLogger(logPath(cfg.LogDir, "api_service.log"), *devMode)
+			logger, err := zapx.New(logPath(cfg.LogDir, "api_service.log"), *devMode)
 			if err != nil {
 				fmt.Println("failed to start logger ", err)
 				os.Exit(1)
 			}
-			logger = logger.With("version", args["version"])
+			l := logger.Sugar().With("version", args["version"])
 
 			// init clients and clean up if necessary
-			var closers = initClients(logger, &cfg)
+			var closers = initClients(l, &cfg)
 			if closers != nil {
 				defer func() {
 					for _, c := range closers {
@@ -171,10 +170,10 @@ var commands = map[string]cmd.Cmd{
 				args["version"],
 				v2.Options{DebugLogging: *debug, DevMode: *devMode},
 				clients,
-				logger,
+				l,
 			)
 			if err != nil {
-				logger.Fatal(err)
+				l.Fatal(err)
 			}
 
 			// set up clean interrupt
@@ -219,11 +218,12 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "IPNS entry creation queue",
 						Description: "Listens to requests to create IPNS records",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							logger, err := log.NewLogger(logPath(cfg.LogDir, "ipns_consumer.log"), *devMode)
+							logger, err := zapx.New(logPath(cfg.LogDir, "ipns_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
+							l := logger.Named("ipns_consumer").Sugar()
 							db, err := newDB(cfg, *dbNoSSL)
 							if err != nil {
 								fmt.Println("failed to start db", err)
@@ -238,7 +238,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, logger)
+								qm, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, l)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -263,11 +263,12 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Pin addition queue",
 						Description: "Listens to pin requests",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							logger, err := log.NewLogger(logPath(cfg.LogDir, "pin_consumer.log"), *devMode)
+							logger, err := zapx.New(logPath(cfg.LogDir, "pin_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
+							l := logger.Named("pin_consumer").Sugar()
 
 							db, err := newDB(cfg, *dbNoSSL)
 							if err != nil {
@@ -283,7 +284,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, logger)
+								qm, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, l)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -308,11 +309,12 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Key creation queue",
 						Description: fmt.Sprintf("Listen to key creation requests.\nMessages to this queue are broadcasted to all nodes"),
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							logger, err := log.NewLogger(logPath(cfg.LogDir, "key_consumer.log"), *devMode)
+							logger, err := zapx.New(logPath(cfg.LogDir, "key_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
+							l := logger.Named("key_consumer").Sugar()
 
 							db, err := newDB(cfg, *dbNoSSL)
 							if err != nil {
@@ -328,7 +330,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, logger)
+								qm, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, l)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -353,11 +355,12 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Cluster pin queue",
 						Description: "Listens to requests to pin content to the cluster",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							logger, err := log.NewLogger(logPath(cfg.LogDir, "cluster_pin_consumer.log"), *devMode)
+							logger, err := zapx.New(logPath(cfg.LogDir, "cluster_pin_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger ", err)
 								os.Exit(1)
 							}
+							l := logger.Named("cluster_pin_consumer").Sugar()
 
 							db, err := newDB(cfg, *dbNoSSL)
 							if err != nil {
@@ -373,7 +376,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, logger)
+								qm, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, l)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -400,11 +403,12 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "Email send queue",
 				Description: "Listens to requests to send emails",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					logger, err := log.NewLogger(logPath(cfg.LogDir, "email_consumer.log"), *devMode)
+					logger, err := zapx.New(logPath(cfg.LogDir, "email_consumer.log"), *devMode)
 					if err != nil {
 						fmt.Println("failed to start logger ", err)
 						os.Exit(1)
 					}
+					l := logger.Named("email_consumer").Sugar()
 
 					db, err := newDB(cfg, *dbNoSSL)
 					if err != nil {
@@ -420,7 +424,7 @@ var commands = map[string]cmd.Cmd{
 						cancel()
 					}()
 					for {
-						qm, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, logger)
+						qm, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, false, *devMode, &cfg, l)
 						if err != nil {
 							fmt.Println("failed to start queue", err)
 							os.Exit(1)
@@ -546,30 +550,35 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("no target address provided")
 						os.Exit(1)
 					}
-
-					// instantiate database dependencies
-					db, err := newDB(cfg, *dbNoSSL)
+					logger, err := zapx.New(logPath(cfg.LogDir, "v3.gateway.log"), *devMode)
 					if err != nil {
-						l.Fatal(err)
+						fmt.Println("failed to start logger ", err)
+						os.Exit(1)
 					}
-					var (
-						users = models.NewUserManager(db)
-						usage = models.NewUsageManager(db)
-					)
+					l := logger.Sugar()
 
+					// instantiate database dependencies - TODO
+					_, err = newDB(cfg, *dbNoSSL)
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+					}
 
 					// TODO: allow better configuration
-					if err := v3.REST(context.Background(), v3.RESTGatewayOptions{
-						Address:     ":8080",
-						DialAddress: os.Args[3],
-						DialOptions: func() []grpc.DialOption {
-							opts := []grpc.DialOption{}
-							if *devMode {
-								return append(opts, grpc.WithInsecure())
-							}
-							return opts
-						},
-					}); err != nil {
+					if err := v3.REST(context.Background(),
+						l.Named("v3.gateway"),
+						nil, // TODO
+						v3.RESTGatewayOptions{
+							Address:     ":8080",
+							DialAddress: os.Args[3],
+							DialOptions: func() []grpc.DialOption {
+								opts := []grpc.DialOption{}
+								if *devMode {
+									return append(opts, grpc.WithInsecure())
+								}
+								return opts
+							}(),
+						}); err != nil {
 						fmt.Println("error occurred during gateway initialization", err)
 						os.Exit(1)
 					}
@@ -582,10 +591,12 @@ var commands = map[string]cmd.Cmd{
 						fmt.Println("no address provided")
 						os.Exit(1)
 					}
-					l, err := log.NewLogger(logPath(cfg.LogDir, "v3.server.log"), *devMode)
+					logger, err := zapx.New(logPath(cfg.LogDir, "v3.server.log"), *devMode)
 					if err != nil {
-						l.Fatal(err)
+						fmt.Println(err)
+						os.Exit(1)
 					}
+					l := logger.Sugar()
 
 					// instantiate database dependencies
 					db, err := newDB(cfg, *dbNoSSL)
@@ -630,7 +641,7 @@ var commands = map[string]cmd.Cmd{
 								return &tls.Config{
 									Certificates: []tls.Certificate{cert},
 								}
-							}
+							}(),
 						},
 					)
 

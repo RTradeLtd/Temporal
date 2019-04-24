@@ -6,9 +6,10 @@ import (
 	"reflect"
 	"testing"
 
+	"go.uber.org/zap/zaptest"
+
 	"github.com/gin-gonic/gin"
 
-	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/v2"
 )
@@ -40,10 +41,7 @@ func TestJwtMiddleware(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	jwt := JwtConfigGenerate(cfg.JWT.Key, cfg.JWT.Realm, db.DB, logger)
 	if reflect.TypeOf(jwt).String() != "*jwt.GinJWTMiddleware" {
 		t.Fatal("failed to reflect correct middleware type")

@@ -9,12 +9,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/RTradeLtd/Temporal/log"
 	kaas "github.com/RTradeLtd/kaas/v2"
 	"github.com/RTradeLtd/rtfs/v2"
 
 	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/gorm"
+	"github.com/bobheadxi/zapx"
 	"github.com/streadway/amqp"
 
 	pb "github.com/RTradeLtd/grpc/krab"
@@ -62,12 +62,13 @@ func (qm *Manager) ProccessIPFSPins(ctx context.Context, wg *sync.WaitGroup, msg
 	userManager := models.NewUserManager(qm.db)
 	networkManager := models.NewHostedNetworkManager(qm.db)
 	uploadManager := models.NewUploadManager(qm.db)
-	logger, err := log.NewLogger(qm.cfg.LogDir+"cluster_publisher.log", false)
+	// TODO: new loggers should not be instantiated here
+	logger, err := zapx.New(qm.cfg.LogDir+"cluster_publisher.log", false)
 	if err != nil {
 		return err
 	}
 	// initialize a connection to the cluster pin queue so we can trigger pinning of this content to our cluster
-	qmCluster, err := New(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true, dev, qm.cfg, logger)
+	qmCluster, err := New(IpfsClusterPinQueue, qm.cfg.RabbitMQ.URL, true, dev, qm.cfg, logger.Sugar())
 	if err != nil {
 		qm.l.Errorw("failed to intialize cluster pin queue connection", "error", err.Error())
 		return err

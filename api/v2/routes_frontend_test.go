@@ -31,7 +31,7 @@ func Test_API_Routes_Frontend(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	api, testRecorder, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}

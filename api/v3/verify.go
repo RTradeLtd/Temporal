@@ -14,7 +14,7 @@ import (
 func (a *AuthService) VerificationHandler(
 	l *zap.SugaredLogger,
 	users userManager,
-) http.HandleFunc {
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
 			user     = r.URL.Query().Get("user")

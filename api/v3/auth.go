@@ -18,7 +18,7 @@ import (
 	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 )
 
 const (

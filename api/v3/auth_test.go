@@ -10,7 +10,7 @@ import (
 	"github.com/RTradeLtd/Temporal/api/v3/mocks"
 	"github.com/RTradeLtd/Temporal/api/v3/proto/auth"
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"

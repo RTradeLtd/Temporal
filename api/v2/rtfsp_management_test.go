@@ -26,7 +26,7 @@ func Test_API_Routes_IPFS_Private_User_Management(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}

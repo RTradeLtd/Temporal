@@ -11,7 +11,6 @@ import (
 
 	"github.com/streadway/amqp"
 
-	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/Temporal/utils"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
@@ -160,36 +159,32 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 	if err != nil {
 		return nil, err
 	}
-	logger, err := log.NewLogger("", dev)
-	if err != nil {
-		return nil, err
-	}
 	// setup our queues
-	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
+	qmIpns, err := queue.New(queue.IpnsEntryQueue, cfg.RabbitMQ.URL, true, dev, cfg, l.Named("ipns"))
 	if err != nil {
 		return nil, err
 	}
-	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
+	qmPin, err := queue.New(queue.IpfsPinQueue, cfg.RabbitMQ.URL, true, dev, cfg, l.Named("pin"))
 	if err != nil {
 		return nil, err
 	}
-	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
+	qmCluster, err := queue.New(queue.IpfsClusterPinQueue, cfg.RabbitMQ.URL, true, dev, cfg, l.Named("cluster"))
 	if err != nil {
 		return nil, err
 	}
-	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
+	qmEmail, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL, true, dev, cfg, l.Named("email"))
 	if err != nil {
 		return nil, err
 	}
-	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
+	qmKey, err := queue.New(queue.IpfsKeyCreationQueue, cfg.RabbitMQ.URL, true, dev, cfg, l.Named("key"))
 	if err != nil {
 		return nil, err
 	}
-	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
+	qmDash, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, dev, cfg, l.Named("dash"))
 	if err != nil {
 		return nil, err
 	}
-	qmEth, err := queue.New(queue.EthPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, dev, cfg, logger)
+	qmEth, err := queue.New(queue.EthPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, dev, cfg, l.Named("eth"))
 	if err != nil {
 		return nil, err
 	}
