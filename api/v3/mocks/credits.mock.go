@@ -4,7 +4,7 @@ package mocks
 import (
 	"sync"
 
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 )
 
 type FakeCreditsManager struct {
