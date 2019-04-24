@@ -98,26 +98,27 @@ clean: stop-testenv
 	@echo "===================          done           ==================="
 
 # Rebuild generate code
+COUNTERFEITER=go run github.com/maxbrunsfeld/counterfeiter/v6
 .PHONY: gen
 gen:
 	@echo "===================    regenerating code    ==================="
-	counterfeiter -o ./mocks/orchestrator.mock.go \
-		./vendor/github.com/RTradeLtd/grpc/nexus ServiceClient
-	counterfeiter -o ./mocks/lens.mock.go \
-		./vendor/github.com/RTradeLtd/grpc/lensv2 LensV2Client
-	counterfeiter -o ./mocks/eth.mock.go \
-		./vendor/github.com/RTradeLtd/grpc/pay SignerClient
-	counterfeiter -o ./mocks/rtfs.mock.go \
-		./vendor/github.com/RTradeLtd/rtfs Manager
-	counterfeiter -o ./api/v3/mocks/grpc_stream.mock.go \
-		./vendor/google.golang.org/grpc ServerStream
-	counterfeiter -o ./api/v3/mocks/user.mock.go \
+	$(COUNTERFEITER) -o ./mocks/orchestrator.mock.go \
+		github.com/RTradeLtd/grpc/nexus.ServiceClient
+	$(COUNTERFEITER) -o ./mocks/lens.mock.go \
+		github.com/RTradeLtd/grpc/lensv2.LensV2Client
+	$(COUNTERFEITER) -o ./mocks/eth.mock.go \
+		github.com/RTradeLtd/grpc/pay.SignerClient
+	$(COUNTERFEITER) -o ./mocks/rtfs.mock.go \
+		github.com/RTradeLtd/rtfs/v2.Manager
+	$(COUNTERFEITER) -o ./api/v3/mocks/grpc_stream.mock.go \
+		google.golang.org/grpc.ServerStream
+	$(COUNTERFEITER) -o ./api/v3/mocks/user.mock.go \
 		./api/v3 userManager
-	counterfeiter -o ./api/v3/mocks/usage.mock.go \
+	$(COUNTERFEITER) -o ./api/v3/mocks/usage.mock.go \
 		./api/v3 usageManager
-	counterfeiter -o ./api/v3/mocks/credits.mock.go \
+	$(COUNTERFEITER) -o ./api/v3/mocks/credits.mock.go \
 		./api/v3 creditsManager
-	counterfeiter -o ./api/v3/mocks/publisher.mock.go \
+	$(COUNTERFEITER) -o ./api/v3/mocks/publisher.mock.go \
 		./api/v3 publisher
 	@echo "===================          done           ==================="
 
