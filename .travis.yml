@@ -8,13 +8,15 @@ env:
   matrix:
     - SSL_MODE_DISABLE=true
   global:
+    - GO111MODULE=on
     # decodes into SENGRID_API_KEY environment variable
     - secure: GXKJ+1Wa+pqUm1PKHJMbDrejSfIsqhsZ6l88i0paTvVou9T/mv03mx9hzrSLsYXFFVjinfbKysxMtEorTFDl0YBSNxuPc7eaiJinnoptubBh++bvEzF/A8wmWHgIBxroFIrK4SNsnreCXPqT1YBQZWi3JenMkzS68j1oa/uPa5ODZ3rjx1Wmu6hSANSZPqzOoGO6lnRP8G30oiFzbawEnB/52iBcHhPtffUihLFnn3k1wXyL8fpi4JYuyNQe84Br+w91KSS2nMmG+RVvJWumHNGXFyjEVv0n7HbirjCBI1iZo50bTdFtujkGSOCoHqM1hwa2yLWISipkb19Ls4eeWcWZBFpcdBhIIeHEmz9iCXxn0ksIGzuw00Xof/HTcWUpnzzQFq4E8iVE4tmMrFbYEcD5vcGB3S7bURjTD38uZ3/7I4Oyuo33/WQGdDNIzugU/dycGkSNzwTeIB3yJfpr/wbC6lU5RnADh5Ej5hGreAfkng/iuC9T36Fnn9u4fTocj++smOxZSjbbKsyekNNdadYmU0sfd6Ka9mFcv8H6sDs7zwqyZLTDu6P57CN5VFz4Yjc1emupFX5NFWor5jull9cr+ilOmfnBSCQPV0ArKrpKjrL9K9NJAhRKOqxmpLKx3pozGnrQMFKM0xsSuTcOCdyTdZF8JEQESeENHzwyoB4=
 
 install:
 - go get -u golang.org/x/lint/golint
 - git submodule update --init
-- GO111MODULE=on go mod vendor
+- go mod download
+- ( cd testenv ; go mod download )
 
 before_script:
 - go vet ./...
@@ -25,7 +27,8 @@ before_script:
 script:
 - diff -u <(echo -n) <(gofmt -d -s `find . -type f -name '*.go' -not -path "./vendor/*"`)
 - diff -u <(echo -n) <(golint `go list ./... | grep -v /vendor/`)
-- go test -race -short -coverprofile=coverage.txt ./...
+- go test -short -coverprofile=coverage.txt ./...
+# - go test -race -short -coverprofile=coverage.txt ./...
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)

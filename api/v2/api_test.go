@@ -13,7 +13,8 @@ import (
 	"testing"
 	"time"
 
-	log "github.com/RTradeLtd/Temporal/log"
+	"go.uber.org/zap/zaptest"
+
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
@@ -113,7 +114,7 @@ func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, u
 	return json.Unmarshal(bodyBytes, out)
 }
 
-func setupAPI(fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
+func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
 	dev = true
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
@@ -134,10 +135,7 @@ func setupAPI(fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClien
 	// create our test api
 	testRecorder := httptest.NewRecorder()
 	_, engine := gin.CreateTestContext(testRecorder)
-	logger, err := log.NewLogger("stdout", true)
-	if err != nil {
-		return nil, nil, err
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	clients := Clients{
 		Lens:   fakeLens,
 		Orch:   fakeOrch,
@@ -171,7 +169,7 @@ func Test_API_Setup(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	api, testRecorder, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -273,7 +271,7 @@ func Test_API_Routes_Misc(t *testing.T) {
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
 
-	api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+	api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -316,10 +314,7 @@ func Test_Utils(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("stdout", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	clients := Clients{
 		Lens:   &mocks.FakeLensV2Client{},
 		Orch:   &mocks.FakeServiceClient{},
@@ -416,10 +411,7 @@ func Test_API_Initialize_Cluster_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("stdout", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	// setup an unreachable cluster host
 	cfg.IPFSCluster.APIConnection.Host = "10.255.255.255"
 
@@ -443,10 +435,7 @@ func Test_API_Initialize_IPFS_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("stdout", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	// setup an unreachable cluster host
 	cfg.IPFS.APIConnection.Host = "notarealip"
 
@@ -470,10 +459,7 @@ func Test_API_Initialize_Setup_Routes_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("stdout", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	// setup an invalid connection limit
 	cfg.API.Connection.Limit = "notanumber"
 
@@ -497,10 +483,7 @@ func Test_API_Initialize_Kaas_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("stdout", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	// setup an invalid connection limit
 	cfg.Services.Krab.TLS.CertPath = "/root"
 
@@ -523,10 +506,7 @@ func Test_API_Initialize_Queue_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	cfg.RabbitMQ.URL = "notarealip"
 
 	// setup fake mock clients
@@ -549,10 +529,7 @@ func Test_API_Initialize_Main_Network(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("stdout", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	dev = false
 
 	// setup fake mock clients
@@ -577,10 +554,7 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("stdout", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+
 	type args struct {
 		certFilePath string
 		keyFilePath  string
@@ -597,6 +571,7 @@ func Test_API_Initialize_ListenAndServe(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			logger := zaptest.NewLogger(t).Sugar()
 			fakeLens := &mocks.FakeLensV2Client{}
 			fakeOrch := &mocks.FakeServiceClient{}
 			fakeSigner := &mocks.FakeSignerClient{}
@@ -629,10 +604,7 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("stdout", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	// setup fake mock clients
 	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
@@ -700,10 +672,7 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("stdout", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	// setup fake mock clients
 	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}

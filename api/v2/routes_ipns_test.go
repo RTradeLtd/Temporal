@@ -53,7 +53,7 @@ func Test_API_Routes_IPNS_Publish(t *testing.T) {
 			fakeOrch := &mocks.FakeServiceClient{}
 			fakeSigner := &mocks.FakeSignerClient{}
 
-			api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+			api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -108,7 +108,7 @@ func Test_API_Routes_IPNS_GET(t *testing.T) {
 		fakeOrch := &mocks.FakeServiceClient{}
 		fakeSigner := &mocks.FakeSignerClient{}
 
-		api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+		api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -165,7 +165,7 @@ func Test_API_Routes_IPNS_Pin(t *testing.T) {
 			fakeOrch := &mocks.FakeServiceClient{}
 			fakeSigner := &mocks.FakeSignerClient{}
 
-			api, _, err := setupAPI(fakeLens, fakeOrch, fakeSigner, cfg, db)
+			api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
 			if err != nil {
 				t.Fatal(err)
 			}

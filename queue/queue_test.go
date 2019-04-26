@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/zap/zaptest"
+
 	"github.com/streadway/amqp"
 
-	"github.com/RTradeLtd/Temporal/log"
 	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/v2"
 	"github.com/RTradeLtd/gorm"
@@ -37,10 +38,7 @@ func TestQueue_Publish(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logger, err := log.NewLogger("", true)
-			if err != nil {
-				t.Fatal(err)
-			}
+			logger := zaptest.NewLogger(t).Sugar()
 			cfg, err := config.LoadConfig(testCfgPath)
 			if err != nil {
 				t.Fatal(err)
@@ -86,10 +84,7 @@ func TestQueue_Publish(t *testing.T) {
 
 func TestRegisterChannelClosure(t *testing.T) {
 	dev = true
-	logger, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -131,10 +126,7 @@ func TestQueue_RefundCredits(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	// setup our queue backend
 	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, dev, cfg, logger)
 	if err != nil {
@@ -166,10 +158,7 @@ func TestQueue_RefundCredits(t *testing.T) {
 
 func TestQueue_ConnectionClosure(t *testing.T) {
 	dev = true
-	logger, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
 		t.Fatal(err)
@@ -223,14 +212,8 @@ func TestQueue_IPFSClusterPin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerPublisher, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	loggerConsumer := zaptest.NewLogger(t).Sugar()
+	loggerPublisher := zaptest.NewLogger(t).Sugar()
 	// setup our queue backend
 	qmConsumer, err := New(IpfsClusterPinQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
@@ -310,14 +293,8 @@ func TestQueue_EmailSend(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerPublisher, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	loggerConsumer := zaptest.NewLogger(t).Sugar()
+	loggerPublisher := zaptest.NewLogger(t).Sugar()
 	// setup our queue backend
 	qmConsumer, err := New(EmailSendQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
@@ -367,14 +344,8 @@ func TestQueue_IPNSEntry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerPublisher, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	loggerConsumer := zaptest.NewLogger(t).Sugar()
+	loggerPublisher := zaptest.NewLogger(t).Sugar()
 	// setup our queue backend
 	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
@@ -440,14 +411,8 @@ func TestQueue_IPFSPin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerPublisher, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	loggerConsumer := zaptest.NewLogger(t).Sugar()
+	loggerPublisher := zaptest.NewLogger(t).Sugar()
 	// setup our queue backend
 	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
@@ -505,14 +470,8 @@ func TestQueue_IPFSKeyCreation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerPublisher, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	loggerConsumer := zaptest.NewLogger(t).Sugar()
+	loggerPublisher := zaptest.NewLogger(t).Sugar()
 	// setup our queue backend
 	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
@@ -572,14 +531,8 @@ func TestQueue_IPFSKeyCreation_Failure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	loggerPublisher, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	loggerConsumer := zaptest.NewLogger(t).Sugar()
+	loggerPublisher := zaptest.NewLogger(t).Sugar()
 	// setup our queue backend
 	qmConsumer, err := New(IpfsKeyCreationQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
@@ -622,10 +575,7 @@ func TestQueue_IPFSPin_Failure_RabbitMQ(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	loggerConsumer := zaptest.NewLogger(t).Sugar()
 	// setup our queue backend
 	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
@@ -650,10 +600,7 @@ func TestQueue_IPFSPin_Failure_LogFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	loggerConsumer := zaptest.NewLogger(t).Sugar()
 	// setup our queue backend
 	qmConsumer, err := New(IpfsPinQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
@@ -678,10 +625,7 @@ func TestQueue_IPNSEntry_Failure_Krab(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	loggerConsumer, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	loggerConsumer := zaptest.NewLogger(t).Sugar()
 	// setup our queue backend
 	qmConsumer, err := New(IpnsEntryQueue, testRabbitAddress, false, dev, cfg, loggerConsumer)
 	if err != nil {
@@ -702,10 +646,7 @@ func TestQueue_Bad_TLS_Config_CACertFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger, err := log.NewLogger("", true)
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 	cfg.RabbitMQ.TLSConfig.CACertFile = "../README.md"
 	if _, err := New(IpnsEntryQueue, cfg.RabbitMQ.URL, false, dev, cfg, logger); err == nil {
 		t.Fatal("expected error")
