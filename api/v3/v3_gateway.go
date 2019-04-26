@@ -32,7 +32,6 @@ type RESTGatewayOptions struct {
 func REST(
 	ctx context.Context,
 	l *zap.SugaredLogger,
-	handlers map[string]http.HandlerFunc,
 	opts RESTGatewayOptions,
 ) error {
 	var gateway = runtime.NewServeMux(
@@ -61,10 +60,8 @@ func REST(
 	mux.Use(log.NewMiddleware(l.Named("requests")))
 	mux.Route("/v3", func(r chi.Router) {
 		r.Handle("/", gateway)
-		for path, fn := range handlers {
-			r.HandleFunc(path, fn)
-		}
 	})
+
 	srv := &http.Server{
 		Addr:      opts.Address,
 		TLSConfig: opts.TLS,

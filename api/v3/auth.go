@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"strings"
 	"time"
 
+	"github.com/bobheadxi/res"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -44,8 +46,9 @@ type AuthService struct {
 	credits creditsManager
 	emails  publisher
 
-	jwt JWTConfig
-	dev bool
+	verifyDomain string
+	jwt          JWTConfig
+	dev          bool
 
 	l *zap.SugaredLogger
 }
@@ -57,12 +60,14 @@ func NewAuthService(
 	credits creditsManager,
 	emails publisher,
 
+	// https://<verifyDomain>/v3/verify?user=<user>&challenge=<challenge>
+	verifyDomain string,
 	jwt JWTConfig,
 	dev bool,
 
 	l *zap.SugaredLogger,
 ) *AuthService {
-	return &AuthService{users, usage, credits, emails, jwt, dev, l}
+	return &AuthService{users, usage, credits, emails, verifyDomain, jwt, dev, l}
 }
 
 // Register returns the Temporal API status
@@ -111,10 +116,7 @@ func (a *AuthService) Register(ctx context.Context, req *auth.RegisterReq) (*aut
 		return nil, grpc.Errorf(codes.Internal, "failed to generate email verification jwt")
 	}
 	// format the url the user clicks to activate email
-	url := fmt.Sprintf("https://gateway.temporal.cloud/v3/verify?user=%s&challenge%s", u.UserName, token)
-	if a.dev {
-		url = fmt.Sprintf("https://dev.gateway.temporal.cloud/v3/verify?user=%s&challenge=%s", u.UserName, token)
-	}
+	url := fmt.Sprintf("https://%s/v3/verify?user=%s&challenge=%s", a.verifyDomain, u.UserName, token)
 	// send email message to queue for processing
 	if err = a.emails.PublishMessage(queue.EmailSend{
 		Subject: "Temporal Email Verification",
@@ -584,4 +586,77 @@ func validateEmailFormat(email string) error {
 	}
 
 	return nil
+}
+
+// VerificationHandler is a traditional HTTP handler for handling account verifications
+func (a *AuthService) VerificationHandler(
+	l *zap.SugaredLogger,
+) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var (
+			user     = r.URL.Query().Get("user")
+			tokenStr = r.URL.Query().Get("token")
+			l        = l.With("user", user)
+		)
+
+		if user == "" || tokenStr == "" {
+			res.R(w, r, res.ErrBadRequest("parameters user, token cannot be empty"))
+			return
+		}
+
+		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+			if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unable to validate signing method: %v", token.Header["alg"])
+			} else if method != a.jwt.SigningAlgo {
+				return nil, errors.New("expect hs512 signing method")
+			}
+			return []byte(a.jwt.Key), nil
+		})
+		if err != nil {
+			res.R(w, r, res.ErrUnauthorized("invalid token", "error", err))
+			return
+		}
+		if !token.Valid {
+			res.R(w, r, res.ErrUnauthorized("invalid token"))
+			return
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			res.R(w, r, res.ErrBadRequest("invalid token claims"))
+			return
+		}
+		if v, ok := claims[claimUser].(string); !ok || v != user {
+			res.R(w, r, res.ErrBadRequest("user in token does not match request"))
+			return
+		}
+
+		// check expiry
+		if err := claims.Valid(); err != nil {
+			res.R(w, r, res.ErrBadRequest("invalid claims",
+				"error", err))
+			return
+		}
+
+		u, err := a.users.FindByUserName(user)
+		if err != nil {
+			res.R(w, r, res.ErrNotFound("user not found",
+				"user", user))
+			return
+		}
+		challenge, ok := claims[claimChallenge].(string)
+		if !ok || challenge != u.EmailVerificationToken {
+			res.R(w, r, res.ErrBadRequest("challenge in token is incorrect"))
+			return
+		}
+		if _, err := a.users.ValidateEmailVerificationToken(user, challenge); err != nil {
+			l.Errorw("unexpected error when validating user",
+				"error", err)
+			res.R(w, r, res.ErrInternalServer("unable to validate user", err))
+			return
+		}
+
+		l.Info("user verified")
+		res.R(w, r, res.MsgOK("user verified"))
+	}
 }

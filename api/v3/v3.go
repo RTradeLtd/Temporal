@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/bobheadxi/zapx/zhttp"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -38,6 +41,8 @@ type V3 struct {
 
 // Options denotes configuration for the V3 API
 type Options struct {
+	VerificationDomain string
+
 	TLS *tls.Config
 }
 
@@ -95,8 +100,7 @@ func New(
 		store: storeService,
 		ipfs:  ipfsService,
 
-		// TODO
-		verify: authService.VerificationHandler(l, nil),
+		verify: authService.VerificationHandler(l),
 		http: &http.Server{
 			TLSConfig: opts.TLS,
 		},
@@ -108,10 +112,10 @@ func New(
 }
 
 // Run spins up daemon server
-func (v *V3) Run(ctx context.Context, address string) error {
-	listener, err := net.Listen("tcp", address)
+func (v *V3) Run(ctx context.Context, grpcAddress string, restAddress string) error {
+	listener, err := net.Listen("tcp", grpcAddress)
 	if err != nil {
-		v.l.Errorw("failed to listen on given address", "address", address)
+		v.l.Errorw("failed to listen on given address", "address", grpcAddress)
 		return err
 	}
 
@@ -123,6 +127,16 @@ func (v *V3) Run(ctx context.Context, address string) error {
 	store.RegisterTemporalStoreServer(server, v.store)
 	ipfs.RegisterTemporalIPFSServer(server, v.ipfs)
 	v.l.Debug("services registered")
+
+	// initialize REST component
+	var mux = chi.NewMux()
+	mux.Use(
+		middleware.Recoverer,
+		zhttp.NewMiddleware(v.l.Named("rest").Desugar(), zhttp.LogFields{}),
+	)
+	mux.Handle("/v3/verify", v.verify)
+	v.http.Handler = mux
+	v.http.Addr = restAddress
 
 	// interrupt server gracefully if context is cancelled
 	go func() {

@@ -6,9 +6,9 @@ require (
 	github.com/RTradeLtd/ChainRider-Go v1.0.8
 	github.com/RTradeLtd/cmd/v2 v2.1.0
 	github.com/RTradeLtd/config v2.0.5+incompatible // indirect
-	github.com/RTradeLtd/config/v2 v2.1.1
+	github.com/RTradeLtd/config/v2 v2.1.2-0.20190426013051-5f0cd297f6e8
 	github.com/RTradeLtd/crypto/v2 v2.1.1
-	github.com/RTradeLtd/database v2.2.0+incompatible
+	github.com/RTradeLtd/database v2.2.0+incompatible // indirect
 	github.com/RTradeLtd/database/v2 v2.2.1
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
 	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190308091756-8b7099fd5e21
@@ -20,7 +20,7 @@ require (
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
 	github.com/baruwa-enterprise/clamd v0.0.0-20190131085824-7a42f6693422
 	github.com/bobheadxi/res v0.1.0
-	github.com/bobheadxi/zapx v0.1.0
+	github.com/bobheadxi/zapx v0.2.0
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect

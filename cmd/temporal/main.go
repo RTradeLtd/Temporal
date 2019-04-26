@@ -546,10 +546,6 @@ var commands = map[string]cmd.Cmd{
 			"gateway": {
 				Blurb: "run a RESTful gateway for the Temporal V3 API",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					if len(os.Args) < 4 {
-						fmt.Println("no target address provided")
-						os.Exit(1)
-					}
 					logger, err := zapx.New(logPath(cfg.LogDir, "v3.gateway.log"), *devMode)
 					if err != nil {
 						fmt.Println("failed to start logger ", err)
@@ -567,10 +563,9 @@ var commands = map[string]cmd.Cmd{
 					// TODO: allow better configuration
 					if err := v3.REST(context.Background(),
 						l.Named("v3.gateway"),
-						nil, // TODO
 						v3.RESTGatewayOptions{
 							Address:     ":8080",
-							DialAddress: os.Args[3],
+							DialAddress: cfg.V3.API.Address,
 							DialOptions: func() []grpc.DialOption {
 								opts := []grpc.DialOption{}
 								if *devMode {
@@ -587,10 +582,6 @@ var commands = map[string]cmd.Cmd{
 			"server": {
 				Blurb: "run the Temporal V3 API server",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					if len(os.Args) < 4 {
-						fmt.Println("no address provided")
-						os.Exit(1)
-					}
 					logger, err := zapx.New(logPath(cfg.LogDir, "v3.server.log"), *devMode)
 					if err != nil {
 						fmt.Println(err)
@@ -620,21 +611,24 @@ var commands = map[string]cmd.Cmd{
 					s := v3.New(
 						l,
 						v3.NewCoreService(*devMode, l.Named("core")),
-						v3.NewAuthService(users, usage, users, emails, v3.JWTConfig{
-							Key:   cfg.API.JWT.Key,
-							Realm: cfg.API.JWT.Realm,
-
-							// TODO: allow better configuration
-							Timeout:     24 * time.Hour,
-							SigningAlgo: jwt.SigningMethodHS512,
-						}, *devMode, l.Named("auth")),
+						v3.NewAuthService(users, usage, users, emails,
+							cfg.V3.API.VerifyDomain,
+							v3.JWTConfig{
+								Key:         cfg.API.JWT.Key,
+								Realm:       cfg.API.JWT.Realm,
+								Timeout:     24 * time.Hour,
+								SigningAlgo: jwt.SigningMethodHS512,
+							}, *devMode, l.Named("auth")),
 						v3.NewStoreService(*devMode, l.Named("store")),
 						v3.NewIPFSService(*devMode, l.Named("ipfs")),
 
 						v3.Options{
 							TLS: func() *tls.Config {
-								// todo: if no config, return nil
-								cert, err := tls.LoadX509KeyPair("", "")
+								tlsConf := cfg.V3.API.TLS
+								if tlsConf.CertPath == "" {
+									return nil
+								}
+								cert, err := tls.LoadX509KeyPair(tlsConf.CertPath, tlsConf.KeyPath)
 								if err != nil {
 									l.Fatal(err)
 								}
@@ -646,7 +640,7 @@ var commands = map[string]cmd.Cmd{
 					)
 
 					// lets go!
-					if err := s.Run(context.Background(), os.Args[3]); err != nil {
+					if err := s.Run(context.Background(), ":8080", ":8081"); err != nil {
 						fmt.Println("error starting v3 API server", err)
 						os.Exit(1)
 					}

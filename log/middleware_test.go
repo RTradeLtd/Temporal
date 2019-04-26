@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/bobheadxi/res"
-	zapx "github.com/bobheadxi/zapx/test"
+	"github.com/bobheadxi/zapx/ztest"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
@@ -38,7 +38,7 @@ func Test_loggerMiddleware(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// create bootstrapped logger and middleware
-			var l, out = zapx.NewObservable()
+			var l, out = ztest.NewObservable()
 			var handler = NewMiddleware(l.Sugar())
 
 			// set up mock router

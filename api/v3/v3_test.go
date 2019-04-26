@@ -2,7 +2,7 @@ package v3
 
 import "context"
 
-// c is a alias for a testing context
+// c is an alias for a testing context
 func c() context.Context { return context.Background() }
 
 type cMap map[interface{}]interface{}

@@ -26,6 +26,8 @@ github.com/RTradeLtd/config v2.0.5+incompatible h1:qShcZtJqSBT2MIM7WcD+IRSJhGdJD
 github.com/RTradeLtd/config v2.0.5+incompatible/go.mod h1:FVv/bU49cFXT3MRNrPe1VztMBxHQW6MS/DHWqtxNiRc=
 github.com/RTradeLtd/config/v2 v2.1.1 h1:6jhXT+p/0Py14QAV/5Y15E5ggAB4RLNZGVw3D5IEius=
 github.com/RTradeLtd/config/v2 v2.1.1/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
+github.com/RTradeLtd/config/v2 v2.1.2-0.20190426013051-5f0cd297f6e8 h1:D/OtC8N25WCwElaXanKBwb8ObM9/p+PX3ekTVn11kKM=
+github.com/RTradeLtd/config/v2 v2.1.2-0.20190426013051-5f0cd297f6e8/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
 github.com/RTradeLtd/crypto/v2 v2.1.1 h1:P59zYkkNkl6K1KiTRvW52AYwLvwmtzuzZ9+AjLWmKsU=
 github.com/RTradeLtd/crypto/v2 v2.1.1/go.mod h1:saIQ67Btn4JWsOdzjn9U6Dl+aZlg+YKgg4RsQKXxjf4=
 github.com/RTradeLtd/database v2.2.0+incompatible h1:/gkNEaMlbLZq6jhXBx6ImhXaIalH9OzbSrH5eMsO9rQ=
@@ -75,6 +77,8 @@ github.com/bobheadxi/res v0.1.0 h1:HvQyMPalXjwR9LN43i47E8jP3YaSwGbkjLemIyHt894=
 github.com/bobheadxi/res v0.1.0/go.mod h1:Ugi1RaQgosePjerNr8CoabVcvTVSXeXJ37JxytXZt3k=
 github.com/bobheadxi/zapx v0.1.0 h1:25hJsZkg7I+WV296k0tP8P5TDECddDSpE4ulgLqWstc=
 github.com/bobheadxi/zapx v0.1.0/go.mod h1:0H6tYDuNu4bq3R+STIud0Im8b8Hr7rWVvvwwLIayEpg=
+github.com/bobheadxi/zapx v0.2.0 h1:s22q1v4KZqihOCnDDY/r+choakvAea2YLNVXe8nFXPE=
+github.com/bobheadxi/zapx v0.2.0/go.mod h1:aja7t3qqkAV35L4AtRSRubcaZS69iju7jAqgDsyOiLY=
 github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=

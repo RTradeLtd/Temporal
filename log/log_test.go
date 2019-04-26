@@ -3,11 +3,11 @@ package log
 import (
 	"testing"
 
-	zapx "github.com/bobheadxi/zapx/test"
+	"github.com/bobheadxi/zapx/ztest"
 )
 
 func TestNewProcessLogger(t *testing.T) {
-	l, out := zapx.NewObservable()
+	l, out := ztest.NewObservable()
 	logger := NewProcessLogger(l.Sugar(), "network_up", "id", "1234")
 	logger.Info("hi")
 	if out.All()[0].ContextMap()["network_up.id"].(string) != "1234" {
