@@ -19,6 +19,9 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 * Update `ipfs-cluster` to `0.10.1` [#330](https://github.com/RTradeLtd/Temporal/pull/330)
 * Move to gomod [#330](https://github.com/RTradeLtd/Temporal/pull/330)
 
+### ci
+
+* All releases now include sha256 checksums [#331](https://github.com/RTradeLtd/Temporal/pull/331)
 
 ## v2.0.6
 
