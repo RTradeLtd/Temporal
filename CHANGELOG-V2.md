@@ -3,6 +3,23 @@
 This document tracks changes to Temporal and its related projects for all `v2.x.x`
 releases. See our [versioning policy](/VERSIONING.md) for more details.
 
+## v2.1.0
+
+### api/v2
+
+* Private network user access and management [#328](https://github.com/RTradeLtd/Temporal/pull/328)
+
+### api/v3
+
+* scaffold structure, implement authentication [#326](https://github.com/RTradeLtd/Temporal/pull/326)
+
+### dependencies
+
+* Update `go-ipfs` to `0.4.20` [#329](https://github.com/RTradeLtd/Temporal/pull/329)
+* Update `ipfs-cluster` to `0.10.1` [#330](https://github.com/RTradeLtd/Temporal/pull/330)
+* Move to gomod [#330](https://github.com/RTradeLtd/Temporal/pull/330)
+
+
 ## v2.0.6
 
 ### API
