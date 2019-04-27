@@ -12,3 +12,9 @@ gox -output="release/temporal-$(git describe --tags)-{{.OS}}-{{.Arch}}" \
     -ldflags "-X main.Version=$RELEASE" \
     -osarch="$TARGETS" \
     ./cmd/temporal
+
+
+ls ./release/temporal* > files
+for i in $(cat files); do
+    sha256sum "$i" > "$i.sha256"
+done
