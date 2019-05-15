@@ -229,6 +229,24 @@ func (api *API) createBchPayment(c *gin.Context) {
 		api.LogError(c, err, "failed to get bch deposit address", http.StatusInternalServerError)
 		return
 	}
+	// format a unique payment number to take the place of deposit address and tx hash temporarily
+	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
+	if _, err := api.pm.NewPayment(
+		paymentNumber,
+		addrReq.GetAddress(),
+		// temporary fake tx hash
+		// will get updated when
+		// confirming the payment
+		paymentNumberString,
+		creditValueFloat,
+		chargeAmountFloat,
+		"bitcoin-cash",
+		"bch",
+		username,
+	); err != nil {
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
+		return
+	}
 	response := gin.H{
 		"deposit_address": addrReq.GetAddress(),
 		"charge_amount":   chargeAmountFloat,
@@ -238,7 +256,45 @@ func (api *API) createBchPayment(c *gin.Context) {
 }
 
 func (api *API) confirmBchPayment(c *gin.Context) {
-	Respond(c, http.StatusNotImplemented, gin.H{"response": "api call not yet implemented"})
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	forms, missingField := api.extractPostForms(c, "payment_number", "tx_hash")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	// parse payment number
+	paymentNumberInt, err := strconv.ParseInt(forms["payment_number"], 10, 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// check to see if this payment is already registered
+	payment, err := api.pm.FindPaymentByNumber(username, paymentNumberInt)
+	if err != nil {
+		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
+		return
+	}
+	if payment.Blockchain != "bitcoin-cash" {
+		Fail(c, errors.New("payment you are trying to confirm is not for the bitcoin-cash blockchain"))
+		return
+	}
+	if _, err := api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt); err != nil {
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
+		return
+	}
+	confirmation := queue.BchPaymentConfirmation{
+		UserName:      username,
+		PaymentNumber: paymentNumberInt,
+	}
+	if err := api.queues.bch.PublishMessage(confirmation); err != nil {
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": confirmation})
 }
 
 // CreateDashPayment is used to create a dash payment via chainrider
