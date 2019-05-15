@@ -36,6 +36,8 @@ var (
 	EthPaymentConfirmationQueue Queue = "eth-payment-confirmation-queue"
 	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
 	DashPaymentConfirmationQueue Queue = "dash-payment-confirmation-queue"
+	// BitcoinCashPaymentConfirmationQueue is a queue used to handle confirming bitcoin cash payments
+	BitcoinCashPaymentConfirmationQueue Queue = "bitcoin-cash-payment-confirmation-queue"
 	// AdminEmail is the email used to notify RTrade about any critical errors
 	AdminEmail = "temporal.reports@rtradetechnologies.com"
 	// IpfsPinFailedContent is a to-be formatted message sent on IPFS pin failures
