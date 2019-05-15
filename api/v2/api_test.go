@@ -114,7 +114,7 @@ func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, u
 	return json.Unmarshal(bodyBytes, out)
 }
 
-func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
+func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, fakeBchWallet *mocks.FakeWalletServiceClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
 	dev = true
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
@@ -137,9 +137,10 @@ func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.Fa
 	_, engine := gin.CreateTestContext(testRecorder)
 	logger := zaptest.NewLogger(t).Sugar()
 	clients := Clients{
-		Lens:   fakeLens,
-		Orch:   fakeOrch,
-		Signer: fakeSigner,
+		Lens:      fakeLens,
+		Orch:      fakeOrch,
+		Signer:    fakeSigner,
+		BchWallet: fakeBchWallet,
 	}
 	api, err := new(cfg, engine, logger, clients, im, imCluster, false)
 	if err != nil {
@@ -168,8 +169,9 @@ func Test_API_Setup(t *testing.T) {
 	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
+	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
+	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,8 +272,9 @@ func Test_API_Routes_Misc(t *testing.T) {
 	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
+	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
+	api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -24,8 +24,9 @@ func Test_API_Routes_Account(t *testing.T) {
 	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
+	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
+	api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
