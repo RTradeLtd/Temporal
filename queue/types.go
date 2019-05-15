@@ -162,8 +162,6 @@ type EthPaymentConfirmation struct {
 
 // BchPaymentConfirmation is used to confirm a bitcoin cash based payment
 type BchPaymentConfirmation struct {
-	UserName         string `json:"user_name"`
-	SenderAddress    string `json:"sender_address"`
-	RecipientAddress string `json:"recipient_address"`
-	PaymentNumber    int64  `json:"payment_number"`
+	UserName      string `json:"user_name"`
+	PaymentNumber int64  `json:"payment_number"`
 }
