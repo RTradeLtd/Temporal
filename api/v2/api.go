@@ -442,6 +442,11 @@ func (api *API) setupRoutes() error {
 			eth.POST("/request", api.RequestSignedPaymentMessage)
 			eth.POST("/confirm", api.ConfirmETHPayment)
 		}
+		bch := payments.Group("/bch")
+		{
+			bch.POST("/create", api.createBchPayment)
+			bch.POST("/confirm", api.confirmBchPayment)
+		}
 		stripe := payments.Group("/stripe")
 		{
 			stripe.POST("/charge", api.stripeCharge)

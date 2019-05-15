@@ -195,6 +195,45 @@ func (api *API) RequestSignedPaymentMessage(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": response})
 }
 
+func (api *API) createBchPayment(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	forms, missingField := api.extractPostForms(c, "credit_value")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	usdValueFloat, err := api.getUSDValue("bch")
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	creditValueFloat, err := strconv.ParseFloat(forms["credit_value"], 64)
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	chargeAmountFloat := creditValueFloat / usdValueFloat
+	paymentNumber, err := api.pm.GetLatestPaymentNumber(username)
+	if err != nil {
+		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
+		return
+	}
+	response := gin.H{
+		"address_send_to": "temporary",
+		"charge_amount":   chargeAmountFloat,
+		"payment_number":  paymentNumber,
+	}
+	Respond(c, http.StatusOK, gin.H{"response": response})
+}
+
+func (api *API) confirmBchPayment(c *gin.Context) {
+	Respond(c, http.StatusNotImplemented, gin.H{"response": "api call not yet implemented"})
+}
+
 // CreateDashPayment is used to create a dash payment via chainrider
 func (api *API) CreateDashPayment(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
