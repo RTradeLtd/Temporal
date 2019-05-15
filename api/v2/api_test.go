@@ -354,13 +354,12 @@ func Test_Utils(t *testing.T) {
 		{"XMRPass", args{"xmr", "monero"}, false},
 		{"DASHFail", args{"DASH", "DASH"}, true},
 		{"DASHPass", args{"dash", "dash"}, false},
+		{"BitcoinCashPass", args{"bch", "bitcoin-cash"}, false},
+		{"BitcoinCashFail", args{"bhc", "bticoin-csah"}, true},
 		{"InvalidCoinFail", args{"biiiitcoooonnneeeeeeecccct", "biiiitcoooonnneeeeeeecccct"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if valid := api.validateBlockchain(tt.args.blockchain); !valid != tt.wantErr {
-				t.Errorf("validateBlockchain() error = %v, wantErr %v", valid, tt.wantErr)
-			}
 			if _, err := api.getUSDValue(tt.args.paymentType); (err != nil) != tt.wantErr {
 				t.Errorf("getUSDValue() error = %v, wantErr %v", err, tt.wantErr)
 			}
