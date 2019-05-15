@@ -59,6 +59,7 @@ require (
 	github.com/libp2p/go-libp2p-kad-dht v0.0.8 // indirect
 	github.com/libp2p/go-libp2p-peer v0.1.0
 	github.com/lightninglabs/gozmq v0.0.0-20180324010646-462a8a753885 // indirect
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.0.2 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/miekg/dns v1.1.8 // indirect
 	github.com/multiformats/go-multiaddr v0.0.2
