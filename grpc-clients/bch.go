@@ -34,3 +34,6 @@ func NewBchWalletClient(opts config.Services) (*BchWalletClient, error) {
 	}
 	return &BchWalletClient{pb.NewWalletServiceClient(gConn)}, nil
 }
+
+// Close is used to close the gRPC connection
+func (bw *BchWalletClient) Close() { bw.Close() }

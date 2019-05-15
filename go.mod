@@ -26,7 +26,7 @@ require (
 	github.com/dchest/siphash v1.2.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dvwright/xss-mw v0.0.0-20190112074351-3b0e27d93653
-	github.com/gcash/bchd v0.14.3 // indirect
+	github.com/gcash/bchd v0.14.3
 	github.com/gcash/bchlog v0.0.0-20180913005452-b4f036f92fa6 // indirect
 	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0 // indirect
 	github.com/gcash/bchwallet v0.8.0

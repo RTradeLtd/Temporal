@@ -17,6 +17,8 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/utils"
 	greq "github.com/RTradeLtd/grpc/pay/request"
+	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -222,8 +224,13 @@ func (api *API) createBchPayment(c *gin.Context) {
 		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
+	addrReq, err := api.bchWallet.NextAddress(context.Background(), &pbBchWallet.NextAddressRequest{Account: 0})
+	if err != nil {
+		api.LogError(c, err, "failed to get bch deposit address", http.StatusInternalServerError)
+		return
+	}
 	response := gin.H{
-		"address_send_to": "temporary",
+		"deposit_address": addrReq.GetAddress(),
 		"charge_amount":   chargeAmountFloat,
 		"payment_number":  paymentNumber,
 	}

@@ -16,6 +16,8 @@ import (
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
+	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
+
 	"github.com/RTradeLtd/kaas/v2"
 	"go.uber.org/zap"
 
@@ -56,6 +58,7 @@ type API struct {
 	signer      pbSigner.SignerClient
 	orch        pbOrch.ServiceClient
 	lens        pbLens.LensV2Client
+	bchWallet   pbBchWallet.WalletServiceClient
 	dc          *dash.Client
 	queues      queues
 	clam        *utils.Shell
