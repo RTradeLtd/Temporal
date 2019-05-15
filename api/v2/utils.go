@@ -71,7 +71,7 @@ func (api *API) FileSizeCheck(size int64) error {
 
 func (api *API) validateBlockchain(blockchain string) bool {
 	switch blockchain {
-	case "ethereum", "bitcoin", "litecoin", "monero", "dash":
+	case "ethereum", "bitcoin", "bitcoin-cash", "litecoin", "monero", "dash":
 		return true
 	}
 	return false

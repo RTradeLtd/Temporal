@@ -384,6 +384,8 @@ func (api *API) getUSDValue(paymentType string) (float64, error) {
 		return utils.RetrieveUsdPrice("dash")
 	case "btc":
 		return utils.RetrieveUsdPrice("bitcoin")
+	case "bch":
+		return utils.RetrieveUsdPrice("bitcoin-cash")
 	case "ltc":
 		return utils.RetrieveUsdPrice("litecoin")
 	case "rtc":
