@@ -5,1410 +5,2068 @@ import (
 	"context"
 	"sync"
 
-	"github.com/gcash/bchd/bchrpc/pb"
+	"github.com/gcash/bchwallet/rpc/walletrpc"
 	"google.golang.org/grpc"
 )
 
-type FakeBchrpcClient struct {
-	GetAddressTransactionsStub        func(context.Context, *pb.GetAddressTransactionsRequest, ...grpc.CallOption) (*pb.GetAddressTransactionsResponse, error)
-	getAddressTransactionsMutex       sync.RWMutex
-	getAddressTransactionsArgsForCall []struct {
+type FakeWalletServiceClient struct {
+	AccountNotificationsStub        func(context.Context, *walletrpc.AccountNotificationsRequest, ...grpc.CallOption) (walletrpc.WalletService_AccountNotificationsClient, error)
+	accountNotificationsMutex       sync.RWMutex
+	accountNotificationsArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetAddressTransactionsRequest
+		arg2 *walletrpc.AccountNotificationsRequest
 		arg3 []grpc.CallOption
 	}
-	getAddressTransactionsReturns struct {
-		result1 *pb.GetAddressTransactionsResponse
+	accountNotificationsReturns struct {
+		result1 walletrpc.WalletService_AccountNotificationsClient
 		result2 error
 	}
-	getAddressTransactionsReturnsOnCall map[int]struct {
-		result1 *pb.GetAddressTransactionsResponse
+	accountNotificationsReturnsOnCall map[int]struct {
+		result1 walletrpc.WalletService_AccountNotificationsClient
 		result2 error
 	}
-	GetAddressUnspentOutputsStub        func(context.Context, *pb.GetAddressUnspentOutputsRequest, ...grpc.CallOption) (*pb.GetAddressUnspentOutputsResponse, error)
-	getAddressUnspentOutputsMutex       sync.RWMutex
-	getAddressUnspentOutputsArgsForCall []struct {
+	AccountNumberStub        func(context.Context, *walletrpc.AccountNumberRequest, ...grpc.CallOption) (*walletrpc.AccountNumberResponse, error)
+	accountNumberMutex       sync.RWMutex
+	accountNumberArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetAddressUnspentOutputsRequest
+		arg2 *walletrpc.AccountNumberRequest
 		arg3 []grpc.CallOption
 	}
-	getAddressUnspentOutputsReturns struct {
-		result1 *pb.GetAddressUnspentOutputsResponse
+	accountNumberReturns struct {
+		result1 *walletrpc.AccountNumberResponse
 		result2 error
 	}
-	getAddressUnspentOutputsReturnsOnCall map[int]struct {
-		result1 *pb.GetAddressUnspentOutputsResponse
+	accountNumberReturnsOnCall map[int]struct {
+		result1 *walletrpc.AccountNumberResponse
 		result2 error
 	}
-	GetBlockStub        func(context.Context, *pb.GetBlockRequest, ...grpc.CallOption) (*pb.GetBlockResponse, error)
-	getBlockMutex       sync.RWMutex
-	getBlockArgsForCall []struct {
+	AccountsStub        func(context.Context, *walletrpc.AccountsRequest, ...grpc.CallOption) (*walletrpc.AccountsResponse, error)
+	accountsMutex       sync.RWMutex
+	accountsArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetBlockRequest
+		arg2 *walletrpc.AccountsRequest
 		arg3 []grpc.CallOption
 	}
-	getBlockReturns struct {
-		result1 *pb.GetBlockResponse
+	accountsReturns struct {
+		result1 *walletrpc.AccountsResponse
 		result2 error
 	}
-	getBlockReturnsOnCall map[int]struct {
-		result1 *pb.GetBlockResponse
+	accountsReturnsOnCall map[int]struct {
+		result1 *walletrpc.AccountsResponse
 		result2 error
 	}
-	GetBlockFilterStub        func(context.Context, *pb.GetBlockFilterRequest, ...grpc.CallOption) (*pb.GetBlockFilterResponse, error)
-	getBlockFilterMutex       sync.RWMutex
-	getBlockFilterArgsForCall []struct {
+	BalanceStub        func(context.Context, *walletrpc.BalanceRequest, ...grpc.CallOption) (*walletrpc.BalanceResponse, error)
+	balanceMutex       sync.RWMutex
+	balanceArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetBlockFilterRequest
+		arg2 *walletrpc.BalanceRequest
 		arg3 []grpc.CallOption
 	}
-	getBlockFilterReturns struct {
-		result1 *pb.GetBlockFilterResponse
+	balanceReturns struct {
+		result1 *walletrpc.BalanceResponse
 		result2 error
 	}
-	getBlockFilterReturnsOnCall map[int]struct {
-		result1 *pb.GetBlockFilterResponse
+	balanceReturnsOnCall map[int]struct {
+		result1 *walletrpc.BalanceResponse
 		result2 error
 	}
-	GetBlockInfoStub        func(context.Context, *pb.GetBlockInfoRequest, ...grpc.CallOption) (*pb.GetBlockInfoResponse, error)
-	getBlockInfoMutex       sync.RWMutex
-	getBlockInfoArgsForCall []struct {
+	ChangePassphraseStub        func(context.Context, *walletrpc.ChangePassphraseRequest, ...grpc.CallOption) (*walletrpc.ChangePassphraseResponse, error)
+	changePassphraseMutex       sync.RWMutex
+	changePassphraseArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetBlockInfoRequest
+		arg2 *walletrpc.ChangePassphraseRequest
 		arg3 []grpc.CallOption
 	}
-	getBlockInfoReturns struct {
-		result1 *pb.GetBlockInfoResponse
+	changePassphraseReturns struct {
+		result1 *walletrpc.ChangePassphraseResponse
 		result2 error
 	}
-	getBlockInfoReturnsOnCall map[int]struct {
-		result1 *pb.GetBlockInfoResponse
+	changePassphraseReturnsOnCall map[int]struct {
+		result1 *walletrpc.ChangePassphraseResponse
 		result2 error
 	}
-	GetBlockchainInfoStub        func(context.Context, *pb.GetBlockchainInfoRequest, ...grpc.CallOption) (*pb.GetBlockchainInfoResponse, error)
-	getBlockchainInfoMutex       sync.RWMutex
-	getBlockchainInfoArgsForCall []struct {
+	CreateTransactionStub        func(context.Context, *walletrpc.CreateTransactionRequest, ...grpc.CallOption) (*walletrpc.CreateTransactionResponse, error)
+	createTransactionMutex       sync.RWMutex
+	createTransactionArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetBlockchainInfoRequest
+		arg2 *walletrpc.CreateTransactionRequest
 		arg3 []grpc.CallOption
 	}
-	getBlockchainInfoReturns struct {
-		result1 *pb.GetBlockchainInfoResponse
+	createTransactionReturns struct {
+		result1 *walletrpc.CreateTransactionResponse
 		result2 error
 	}
-	getBlockchainInfoReturnsOnCall map[int]struct {
-		result1 *pb.GetBlockchainInfoResponse
+	createTransactionReturnsOnCall map[int]struct {
+		result1 *walletrpc.CreateTransactionResponse
 		result2 error
 	}
-	GetHeadersStub        func(context.Context, *pb.GetHeadersRequest, ...grpc.CallOption) (*pb.GetHeadersResponse, error)
-	getHeadersMutex       sync.RWMutex
-	getHeadersArgsForCall []struct {
+	CurrentAddressStub        func(context.Context, *walletrpc.CurrentAddressRequest, ...grpc.CallOption) (*walletrpc.CurrentAddressResponse, error)
+	currentAddressMutex       sync.RWMutex
+	currentAddressArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetHeadersRequest
+		arg2 *walletrpc.CurrentAddressRequest
 		arg3 []grpc.CallOption
 	}
-	getHeadersReturns struct {
-		result1 *pb.GetHeadersResponse
+	currentAddressReturns struct {
+		result1 *walletrpc.CurrentAddressResponse
 		result2 error
 	}
-	getHeadersReturnsOnCall map[int]struct {
-		result1 *pb.GetHeadersResponse
+	currentAddressReturnsOnCall map[int]struct {
+		result1 *walletrpc.CurrentAddressResponse
 		result2 error
 	}
-	GetMempoolInfoStub        func(context.Context, *pb.GetMempoolInfoRequest, ...grpc.CallOption) (*pb.GetMempoolInfoResponse, error)
-	getMempoolInfoMutex       sync.RWMutex
-	getMempoolInfoArgsForCall []struct {
+	DownloadPaymentRequestStub        func(context.Context, *walletrpc.DownloadPaymentRequestRequest, ...grpc.CallOption) (*walletrpc.DownloadPaymentRequestResponse, error)
+	downloadPaymentRequestMutex       sync.RWMutex
+	downloadPaymentRequestArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetMempoolInfoRequest
+		arg2 *walletrpc.DownloadPaymentRequestRequest
 		arg3 []grpc.CallOption
 	}
-	getMempoolInfoReturns struct {
-		result1 *pb.GetMempoolInfoResponse
+	downloadPaymentRequestReturns struct {
+		result1 *walletrpc.DownloadPaymentRequestResponse
 		result2 error
 	}
-	getMempoolInfoReturnsOnCall map[int]struct {
-		result1 *pb.GetMempoolInfoResponse
+	downloadPaymentRequestReturnsOnCall map[int]struct {
+		result1 *walletrpc.DownloadPaymentRequestResponse
 		result2 error
 	}
-	GetMerkleProofStub        func(context.Context, *pb.GetMerkleProofRequest, ...grpc.CallOption) (*pb.GetMerkleProofResponse, error)
-	getMerkleProofMutex       sync.RWMutex
-	getMerkleProofArgsForCall []struct {
+	FundTransactionStub        func(context.Context, *walletrpc.FundTransactionRequest, ...grpc.CallOption) (*walletrpc.FundTransactionResponse, error)
+	fundTransactionMutex       sync.RWMutex
+	fundTransactionArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetMerkleProofRequest
+		arg2 *walletrpc.FundTransactionRequest
 		arg3 []grpc.CallOption
 	}
-	getMerkleProofReturns struct {
-		result1 *pb.GetMerkleProofResponse
+	fundTransactionReturns struct {
+		result1 *walletrpc.FundTransactionResponse
 		result2 error
 	}
-	getMerkleProofReturnsOnCall map[int]struct {
-		result1 *pb.GetMerkleProofResponse
+	fundTransactionReturnsOnCall map[int]struct {
+		result1 *walletrpc.FundTransactionResponse
 		result2 error
 	}
-	GetRawAddressTransactionsStub        func(context.Context, *pb.GetRawAddressTransactionsRequest, ...grpc.CallOption) (*pb.GetRawAddressTransactionsResponse, error)
-	getRawAddressTransactionsMutex       sync.RWMutex
-	getRawAddressTransactionsArgsForCall []struct {
+	GetTransactionsStub        func(context.Context, *walletrpc.GetTransactionsRequest, ...grpc.CallOption) (*walletrpc.GetTransactionsResponse, error)
+	getTransactionsMutex       sync.RWMutex
+	getTransactionsArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetRawAddressTransactionsRequest
+		arg2 *walletrpc.GetTransactionsRequest
 		arg3 []grpc.CallOption
 	}
-	getRawAddressTransactionsReturns struct {
-		result1 *pb.GetRawAddressTransactionsResponse
+	getTransactionsReturns struct {
+		result1 *walletrpc.GetTransactionsResponse
 		result2 error
 	}
-	getRawAddressTransactionsReturnsOnCall map[int]struct {
-		result1 *pb.GetRawAddressTransactionsResponse
+	getTransactionsReturnsOnCall map[int]struct {
+		result1 *walletrpc.GetTransactionsResponse
 		result2 error
 	}
-	GetRawBlockStub        func(context.Context, *pb.GetRawBlockRequest, ...grpc.CallOption) (*pb.GetRawBlockResponse, error)
-	getRawBlockMutex       sync.RWMutex
-	getRawBlockArgsForCall []struct {
+	ImportPrivateKeyStub        func(context.Context, *walletrpc.ImportPrivateKeyRequest, ...grpc.CallOption) (*walletrpc.ImportPrivateKeyResponse, error)
+	importPrivateKeyMutex       sync.RWMutex
+	importPrivateKeyArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetRawBlockRequest
+		arg2 *walletrpc.ImportPrivateKeyRequest
 		arg3 []grpc.CallOption
 	}
-	getRawBlockReturns struct {
-		result1 *pb.GetRawBlockResponse
+	importPrivateKeyReturns struct {
+		result1 *walletrpc.ImportPrivateKeyResponse
 		result2 error
 	}
-	getRawBlockReturnsOnCall map[int]struct {
-		result1 *pb.GetRawBlockResponse
+	importPrivateKeyReturnsOnCall map[int]struct {
+		result1 *walletrpc.ImportPrivateKeyResponse
 		result2 error
 	}
-	GetRawTransactionStub        func(context.Context, *pb.GetRawTransactionRequest, ...grpc.CallOption) (*pb.GetRawTransactionResponse, error)
-	getRawTransactionMutex       sync.RWMutex
-	getRawTransactionArgsForCall []struct {
+	NetworkStub        func(context.Context, *walletrpc.NetworkRequest, ...grpc.CallOption) (*walletrpc.NetworkResponse, error)
+	networkMutex       sync.RWMutex
+	networkArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetRawTransactionRequest
+		arg2 *walletrpc.NetworkRequest
 		arg3 []grpc.CallOption
 	}
-	getRawTransactionReturns struct {
-		result1 *pb.GetRawTransactionResponse
+	networkReturns struct {
+		result1 *walletrpc.NetworkResponse
 		result2 error
 	}
-	getRawTransactionReturnsOnCall map[int]struct {
-		result1 *pb.GetRawTransactionResponse
+	networkReturnsOnCall map[int]struct {
+		result1 *walletrpc.NetworkResponse
 		result2 error
 	}
-	GetTransactionStub        func(context.Context, *pb.GetTransactionRequest, ...grpc.CallOption) (*pb.GetTransactionResponse, error)
-	getTransactionMutex       sync.RWMutex
-	getTransactionArgsForCall []struct {
+	NextAccountStub        func(context.Context, *walletrpc.NextAccountRequest, ...grpc.CallOption) (*walletrpc.NextAccountResponse, error)
+	nextAccountMutex       sync.RWMutex
+	nextAccountArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.GetTransactionRequest
+		arg2 *walletrpc.NextAccountRequest
 		arg3 []grpc.CallOption
 	}
-	getTransactionReturns struct {
-		result1 *pb.GetTransactionResponse
+	nextAccountReturns struct {
+		result1 *walletrpc.NextAccountResponse
 		result2 error
 	}
-	getTransactionReturnsOnCall map[int]struct {
-		result1 *pb.GetTransactionResponse
+	nextAccountReturnsOnCall map[int]struct {
+		result1 *walletrpc.NextAccountResponse
 		result2 error
 	}
-	SubmitTransactionStub        func(context.Context, *pb.SubmitTransactionRequest, ...grpc.CallOption) (*pb.SubmitTransactionResponse, error)
-	submitTransactionMutex       sync.RWMutex
-	submitTransactionArgsForCall []struct {
+	NextAddressStub        func(context.Context, *walletrpc.NextAddressRequest, ...grpc.CallOption) (*walletrpc.NextAddressResponse, error)
+	nextAddressMutex       sync.RWMutex
+	nextAddressArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.SubmitTransactionRequest
+		arg2 *walletrpc.NextAddressRequest
 		arg3 []grpc.CallOption
 	}
-	submitTransactionReturns struct {
-		result1 *pb.SubmitTransactionResponse
+	nextAddressReturns struct {
+		result1 *walletrpc.NextAddressResponse
 		result2 error
 	}
-	submitTransactionReturnsOnCall map[int]struct {
-		result1 *pb.SubmitTransactionResponse
+	nextAddressReturnsOnCall map[int]struct {
+		result1 *walletrpc.NextAddressResponse
 		result2 error
 	}
-	SubscribeBlocksStub        func(context.Context, *pb.SubscribeBlocksRequest, ...grpc.CallOption) (pb.Bchrpc_SubscribeBlocksClient, error)
-	subscribeBlocksMutex       sync.RWMutex
-	subscribeBlocksArgsForCall []struct {
+	PingStub        func(context.Context, *walletrpc.PingRequest, ...grpc.CallOption) (*walletrpc.PingResponse, error)
+	pingMutex       sync.RWMutex
+	pingArgsForCall []struct {
 		arg1 context.Context
-		arg2 *pb.SubscribeBlocksRequest
+		arg2 *walletrpc.PingRequest
 		arg3 []grpc.CallOption
 	}
-	subscribeBlocksReturns struct {
-		result1 pb.Bchrpc_SubscribeBlocksClient
+	pingReturns struct {
+		result1 *walletrpc.PingResponse
 		result2 error
 	}
-	subscribeBlocksReturnsOnCall map[int]struct {
-		result1 pb.Bchrpc_SubscribeBlocksClient
+	pingReturnsOnCall map[int]struct {
+		result1 *walletrpc.PingResponse
 		result2 error
 	}
-	SubscribeTransactionStreamStub        func(context.Context, ...grpc.CallOption) (pb.Bchrpc_SubscribeTransactionStreamClient, error)
-	subscribeTransactionStreamMutex       sync.RWMutex
-	subscribeTransactionStreamArgsForCall []struct {
+	PostPaymentStub        func(context.Context, *walletrpc.PostPaymentRequest, ...grpc.CallOption) (*walletrpc.PostPaymentResponse, error)
+	postPaymentMutex       sync.RWMutex
+	postPaymentArgsForCall []struct {
 		arg1 context.Context
-		arg2 []grpc.CallOption
-	}
-	subscribeTransactionStreamReturns struct {
-		result1 pb.Bchrpc_SubscribeTransactionStreamClient
-		result2 error
-	}
-	subscribeTransactionStreamReturnsOnCall map[int]struct {
-		result1 pb.Bchrpc_SubscribeTransactionStreamClient
-		result2 error
-	}
-	SubscribeTransactionsStub        func(context.Context, *pb.SubscribeTransactionsRequest, ...grpc.CallOption) (pb.Bchrpc_SubscribeTransactionsClient, error)
-	subscribeTransactionsMutex       sync.RWMutex
-	subscribeTransactionsArgsForCall []struct {
-		arg1 context.Context
-		arg2 *pb.SubscribeTransactionsRequest
+		arg2 *walletrpc.PostPaymentRequest
 		arg3 []grpc.CallOption
 	}
-	subscribeTransactionsReturns struct {
-		result1 pb.Bchrpc_SubscribeTransactionsClient
+	postPaymentReturns struct {
+		result1 *walletrpc.PostPaymentResponse
 		result2 error
 	}
-	subscribeTransactionsReturnsOnCall map[int]struct {
-		result1 pb.Bchrpc_SubscribeTransactionsClient
+	postPaymentReturnsOnCall map[int]struct {
+		result1 *walletrpc.PostPaymentResponse
+		result2 error
+	}
+	PublishTransactionStub        func(context.Context, *walletrpc.PublishTransactionRequest, ...grpc.CallOption) (*walletrpc.PublishTransactionResponse, error)
+	publishTransactionMutex       sync.RWMutex
+	publishTransactionArgsForCall []struct {
+		arg1 context.Context
+		arg2 *walletrpc.PublishTransactionRequest
+		arg3 []grpc.CallOption
+	}
+	publishTransactionReturns struct {
+		result1 *walletrpc.PublishTransactionResponse
+		result2 error
+	}
+	publishTransactionReturnsOnCall map[int]struct {
+		result1 *walletrpc.PublishTransactionResponse
+		result2 error
+	}
+	RenameAccountStub        func(context.Context, *walletrpc.RenameAccountRequest, ...grpc.CallOption) (*walletrpc.RenameAccountResponse, error)
+	renameAccountMutex       sync.RWMutex
+	renameAccountArgsForCall []struct {
+		arg1 context.Context
+		arg2 *walletrpc.RenameAccountRequest
+		arg3 []grpc.CallOption
+	}
+	renameAccountReturns struct {
+		result1 *walletrpc.RenameAccountResponse
+		result2 error
+	}
+	renameAccountReturnsOnCall map[int]struct {
+		result1 *walletrpc.RenameAccountResponse
+		result2 error
+	}
+	RescanStub        func(context.Context, *walletrpc.RescanRequest, ...grpc.CallOption) (*walletrpc.RescanResponse, error)
+	rescanMutex       sync.RWMutex
+	rescanArgsForCall []struct {
+		arg1 context.Context
+		arg2 *walletrpc.RescanRequest
+		arg3 []grpc.CallOption
+	}
+	rescanReturns struct {
+		result1 *walletrpc.RescanResponse
+		result2 error
+	}
+	rescanReturnsOnCall map[int]struct {
+		result1 *walletrpc.RescanResponse
+		result2 error
+	}
+	RescanNotificationsStub        func(context.Context, *walletrpc.RescanNotificationsRequest, ...grpc.CallOption) (walletrpc.WalletService_RescanNotificationsClient, error)
+	rescanNotificationsMutex       sync.RWMutex
+	rescanNotificationsArgsForCall []struct {
+		arg1 context.Context
+		arg2 *walletrpc.RescanNotificationsRequest
+		arg3 []grpc.CallOption
+	}
+	rescanNotificationsReturns struct {
+		result1 walletrpc.WalletService_RescanNotificationsClient
+		result2 error
+	}
+	rescanNotificationsReturnsOnCall map[int]struct {
+		result1 walletrpc.WalletService_RescanNotificationsClient
+		result2 error
+	}
+	SignTransactionStub        func(context.Context, *walletrpc.SignTransactionRequest, ...grpc.CallOption) (*walletrpc.SignTransactionResponse, error)
+	signTransactionMutex       sync.RWMutex
+	signTransactionArgsForCall []struct {
+		arg1 context.Context
+		arg2 *walletrpc.SignTransactionRequest
+		arg3 []grpc.CallOption
+	}
+	signTransactionReturns struct {
+		result1 *walletrpc.SignTransactionResponse
+		result2 error
+	}
+	signTransactionReturnsOnCall map[int]struct {
+		result1 *walletrpc.SignTransactionResponse
+		result2 error
+	}
+	SpentnessNotificationsStub        func(context.Context, *walletrpc.SpentnessNotificationsRequest, ...grpc.CallOption) (walletrpc.WalletService_SpentnessNotificationsClient, error)
+	spentnessNotificationsMutex       sync.RWMutex
+	spentnessNotificationsArgsForCall []struct {
+		arg1 context.Context
+		arg2 *walletrpc.SpentnessNotificationsRequest
+		arg3 []grpc.CallOption
+	}
+	spentnessNotificationsReturns struct {
+		result1 walletrpc.WalletService_SpentnessNotificationsClient
+		result2 error
+	}
+	spentnessNotificationsReturnsOnCall map[int]struct {
+		result1 walletrpc.WalletService_SpentnessNotificationsClient
+		result2 error
+	}
+	SweepAccountStub        func(context.Context, *walletrpc.SweepAccountRequest, ...grpc.CallOption) (*walletrpc.SweepAccountResponse, error)
+	sweepAccountMutex       sync.RWMutex
+	sweepAccountArgsForCall []struct {
+		arg1 context.Context
+		arg2 *walletrpc.SweepAccountRequest
+		arg3 []grpc.CallOption
+	}
+	sweepAccountReturns struct {
+		result1 *walletrpc.SweepAccountResponse
+		result2 error
+	}
+	sweepAccountReturnsOnCall map[int]struct {
+		result1 *walletrpc.SweepAccountResponse
+		result2 error
+	}
+	TransactionNotificationsStub        func(context.Context, *walletrpc.TransactionNotificationsRequest, ...grpc.CallOption) (walletrpc.WalletService_TransactionNotificationsClient, error)
+	transactionNotificationsMutex       sync.RWMutex
+	transactionNotificationsArgsForCall []struct {
+		arg1 context.Context
+		arg2 *walletrpc.TransactionNotificationsRequest
+		arg3 []grpc.CallOption
+	}
+	transactionNotificationsReturns struct {
+		result1 walletrpc.WalletService_TransactionNotificationsClient
+		result2 error
+	}
+	transactionNotificationsReturnsOnCall map[int]struct {
+		result1 walletrpc.WalletService_TransactionNotificationsClient
+		result2 error
+	}
+	ValidateAddressStub        func(context.Context, *walletrpc.ValidateAddressRequest, ...grpc.CallOption) (*walletrpc.ValidateAddressResponse, error)
+	validateAddressMutex       sync.RWMutex
+	validateAddressArgsForCall []struct {
+		arg1 context.Context
+		arg2 *walletrpc.ValidateAddressRequest
+		arg3 []grpc.CallOption
+	}
+	validateAddressReturns struct {
+		result1 *walletrpc.ValidateAddressResponse
+		result2 error
+	}
+	validateAddressReturnsOnCall map[int]struct {
+		result1 *walletrpc.ValidateAddressResponse
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeBchrpcClient) GetAddressTransactions(arg1 context.Context, arg2 *pb.GetAddressTransactionsRequest, arg3 ...grpc.CallOption) (*pb.GetAddressTransactionsResponse, error) {
-	fake.getAddressTransactionsMutex.Lock()
-	ret, specificReturn := fake.getAddressTransactionsReturnsOnCall[len(fake.getAddressTransactionsArgsForCall)]
-	fake.getAddressTransactionsArgsForCall = append(fake.getAddressTransactionsArgsForCall, struct {
+func (fake *FakeWalletServiceClient) AccountNotifications(arg1 context.Context, arg2 *walletrpc.AccountNotificationsRequest, arg3 ...grpc.CallOption) (walletrpc.WalletService_AccountNotificationsClient, error) {
+	fake.accountNotificationsMutex.Lock()
+	ret, specificReturn := fake.accountNotificationsReturnsOnCall[len(fake.accountNotificationsArgsForCall)]
+	fake.accountNotificationsArgsForCall = append(fake.accountNotificationsArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetAddressTransactionsRequest
+		arg2 *walletrpc.AccountNotificationsRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetAddressTransactions", []interface{}{arg1, arg2, arg3})
-	fake.getAddressTransactionsMutex.Unlock()
-	if fake.GetAddressTransactionsStub != nil {
-		return fake.GetAddressTransactionsStub(arg1, arg2, arg3...)
+	fake.recordInvocation("AccountNotifications", []interface{}{arg1, arg2, arg3})
+	fake.accountNotificationsMutex.Unlock()
+	if fake.AccountNotificationsStub != nil {
+		return fake.AccountNotificationsStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getAddressTransactionsReturns
+	fakeReturns := fake.accountNotificationsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetAddressTransactionsCallCount() int {
-	fake.getAddressTransactionsMutex.RLock()
-	defer fake.getAddressTransactionsMutex.RUnlock()
-	return len(fake.getAddressTransactionsArgsForCall)
+func (fake *FakeWalletServiceClient) AccountNotificationsCallCount() int {
+	fake.accountNotificationsMutex.RLock()
+	defer fake.accountNotificationsMutex.RUnlock()
+	return len(fake.accountNotificationsArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetAddressTransactionsCalls(stub func(context.Context, *pb.GetAddressTransactionsRequest, ...grpc.CallOption) (*pb.GetAddressTransactionsResponse, error)) {
-	fake.getAddressTransactionsMutex.Lock()
-	defer fake.getAddressTransactionsMutex.Unlock()
-	fake.GetAddressTransactionsStub = stub
+func (fake *FakeWalletServiceClient) AccountNotificationsCalls(stub func(context.Context, *walletrpc.AccountNotificationsRequest, ...grpc.CallOption) (walletrpc.WalletService_AccountNotificationsClient, error)) {
+	fake.accountNotificationsMutex.Lock()
+	defer fake.accountNotificationsMutex.Unlock()
+	fake.AccountNotificationsStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetAddressTransactionsArgsForCall(i int) (context.Context, *pb.GetAddressTransactionsRequest, []grpc.CallOption) {
-	fake.getAddressTransactionsMutex.RLock()
-	defer fake.getAddressTransactionsMutex.RUnlock()
-	argsForCall := fake.getAddressTransactionsArgsForCall[i]
+func (fake *FakeWalletServiceClient) AccountNotificationsArgsForCall(i int) (context.Context, *walletrpc.AccountNotificationsRequest, []grpc.CallOption) {
+	fake.accountNotificationsMutex.RLock()
+	defer fake.accountNotificationsMutex.RUnlock()
+	argsForCall := fake.accountNotificationsArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetAddressTransactionsReturns(result1 *pb.GetAddressTransactionsResponse, result2 error) {
-	fake.getAddressTransactionsMutex.Lock()
-	defer fake.getAddressTransactionsMutex.Unlock()
-	fake.GetAddressTransactionsStub = nil
-	fake.getAddressTransactionsReturns = struct {
-		result1 *pb.GetAddressTransactionsResponse
+func (fake *FakeWalletServiceClient) AccountNotificationsReturns(result1 walletrpc.WalletService_AccountNotificationsClient, result2 error) {
+	fake.accountNotificationsMutex.Lock()
+	defer fake.accountNotificationsMutex.Unlock()
+	fake.AccountNotificationsStub = nil
+	fake.accountNotificationsReturns = struct {
+		result1 walletrpc.WalletService_AccountNotificationsClient
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetAddressTransactionsReturnsOnCall(i int, result1 *pb.GetAddressTransactionsResponse, result2 error) {
-	fake.getAddressTransactionsMutex.Lock()
-	defer fake.getAddressTransactionsMutex.Unlock()
-	fake.GetAddressTransactionsStub = nil
-	if fake.getAddressTransactionsReturnsOnCall == nil {
-		fake.getAddressTransactionsReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetAddressTransactionsResponse
+func (fake *FakeWalletServiceClient) AccountNotificationsReturnsOnCall(i int, result1 walletrpc.WalletService_AccountNotificationsClient, result2 error) {
+	fake.accountNotificationsMutex.Lock()
+	defer fake.accountNotificationsMutex.Unlock()
+	fake.AccountNotificationsStub = nil
+	if fake.accountNotificationsReturnsOnCall == nil {
+		fake.accountNotificationsReturnsOnCall = make(map[int]struct {
+			result1 walletrpc.WalletService_AccountNotificationsClient
 			result2 error
 		})
 	}
-	fake.getAddressTransactionsReturnsOnCall[i] = struct {
-		result1 *pb.GetAddressTransactionsResponse
+	fake.accountNotificationsReturnsOnCall[i] = struct {
+		result1 walletrpc.WalletService_AccountNotificationsClient
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetAddressUnspentOutputs(arg1 context.Context, arg2 *pb.GetAddressUnspentOutputsRequest, arg3 ...grpc.CallOption) (*pb.GetAddressUnspentOutputsResponse, error) {
-	fake.getAddressUnspentOutputsMutex.Lock()
-	ret, specificReturn := fake.getAddressUnspentOutputsReturnsOnCall[len(fake.getAddressUnspentOutputsArgsForCall)]
-	fake.getAddressUnspentOutputsArgsForCall = append(fake.getAddressUnspentOutputsArgsForCall, struct {
+func (fake *FakeWalletServiceClient) AccountNumber(arg1 context.Context, arg2 *walletrpc.AccountNumberRequest, arg3 ...grpc.CallOption) (*walletrpc.AccountNumberResponse, error) {
+	fake.accountNumberMutex.Lock()
+	ret, specificReturn := fake.accountNumberReturnsOnCall[len(fake.accountNumberArgsForCall)]
+	fake.accountNumberArgsForCall = append(fake.accountNumberArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetAddressUnspentOutputsRequest
+		arg2 *walletrpc.AccountNumberRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetAddressUnspentOutputs", []interface{}{arg1, arg2, arg3})
-	fake.getAddressUnspentOutputsMutex.Unlock()
-	if fake.GetAddressUnspentOutputsStub != nil {
-		return fake.GetAddressUnspentOutputsStub(arg1, arg2, arg3...)
+	fake.recordInvocation("AccountNumber", []interface{}{arg1, arg2, arg3})
+	fake.accountNumberMutex.Unlock()
+	if fake.AccountNumberStub != nil {
+		return fake.AccountNumberStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getAddressUnspentOutputsReturns
+	fakeReturns := fake.accountNumberReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetAddressUnspentOutputsCallCount() int {
-	fake.getAddressUnspentOutputsMutex.RLock()
-	defer fake.getAddressUnspentOutputsMutex.RUnlock()
-	return len(fake.getAddressUnspentOutputsArgsForCall)
+func (fake *FakeWalletServiceClient) AccountNumberCallCount() int {
+	fake.accountNumberMutex.RLock()
+	defer fake.accountNumberMutex.RUnlock()
+	return len(fake.accountNumberArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetAddressUnspentOutputsCalls(stub func(context.Context, *pb.GetAddressUnspentOutputsRequest, ...grpc.CallOption) (*pb.GetAddressUnspentOutputsResponse, error)) {
-	fake.getAddressUnspentOutputsMutex.Lock()
-	defer fake.getAddressUnspentOutputsMutex.Unlock()
-	fake.GetAddressUnspentOutputsStub = stub
+func (fake *FakeWalletServiceClient) AccountNumberCalls(stub func(context.Context, *walletrpc.AccountNumberRequest, ...grpc.CallOption) (*walletrpc.AccountNumberResponse, error)) {
+	fake.accountNumberMutex.Lock()
+	defer fake.accountNumberMutex.Unlock()
+	fake.AccountNumberStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetAddressUnspentOutputsArgsForCall(i int) (context.Context, *pb.GetAddressUnspentOutputsRequest, []grpc.CallOption) {
-	fake.getAddressUnspentOutputsMutex.RLock()
-	defer fake.getAddressUnspentOutputsMutex.RUnlock()
-	argsForCall := fake.getAddressUnspentOutputsArgsForCall[i]
+func (fake *FakeWalletServiceClient) AccountNumberArgsForCall(i int) (context.Context, *walletrpc.AccountNumberRequest, []grpc.CallOption) {
+	fake.accountNumberMutex.RLock()
+	defer fake.accountNumberMutex.RUnlock()
+	argsForCall := fake.accountNumberArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetAddressUnspentOutputsReturns(result1 *pb.GetAddressUnspentOutputsResponse, result2 error) {
-	fake.getAddressUnspentOutputsMutex.Lock()
-	defer fake.getAddressUnspentOutputsMutex.Unlock()
-	fake.GetAddressUnspentOutputsStub = nil
-	fake.getAddressUnspentOutputsReturns = struct {
-		result1 *pb.GetAddressUnspentOutputsResponse
+func (fake *FakeWalletServiceClient) AccountNumberReturns(result1 *walletrpc.AccountNumberResponse, result2 error) {
+	fake.accountNumberMutex.Lock()
+	defer fake.accountNumberMutex.Unlock()
+	fake.AccountNumberStub = nil
+	fake.accountNumberReturns = struct {
+		result1 *walletrpc.AccountNumberResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetAddressUnspentOutputsReturnsOnCall(i int, result1 *pb.GetAddressUnspentOutputsResponse, result2 error) {
-	fake.getAddressUnspentOutputsMutex.Lock()
-	defer fake.getAddressUnspentOutputsMutex.Unlock()
-	fake.GetAddressUnspentOutputsStub = nil
-	if fake.getAddressUnspentOutputsReturnsOnCall == nil {
-		fake.getAddressUnspentOutputsReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetAddressUnspentOutputsResponse
+func (fake *FakeWalletServiceClient) AccountNumberReturnsOnCall(i int, result1 *walletrpc.AccountNumberResponse, result2 error) {
+	fake.accountNumberMutex.Lock()
+	defer fake.accountNumberMutex.Unlock()
+	fake.AccountNumberStub = nil
+	if fake.accountNumberReturnsOnCall == nil {
+		fake.accountNumberReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.AccountNumberResponse
 			result2 error
 		})
 	}
-	fake.getAddressUnspentOutputsReturnsOnCall[i] = struct {
-		result1 *pb.GetAddressUnspentOutputsResponse
+	fake.accountNumberReturnsOnCall[i] = struct {
+		result1 *walletrpc.AccountNumberResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetBlock(arg1 context.Context, arg2 *pb.GetBlockRequest, arg3 ...grpc.CallOption) (*pb.GetBlockResponse, error) {
-	fake.getBlockMutex.Lock()
-	ret, specificReturn := fake.getBlockReturnsOnCall[len(fake.getBlockArgsForCall)]
-	fake.getBlockArgsForCall = append(fake.getBlockArgsForCall, struct {
+func (fake *FakeWalletServiceClient) Accounts(arg1 context.Context, arg2 *walletrpc.AccountsRequest, arg3 ...grpc.CallOption) (*walletrpc.AccountsResponse, error) {
+	fake.accountsMutex.Lock()
+	ret, specificReturn := fake.accountsReturnsOnCall[len(fake.accountsArgsForCall)]
+	fake.accountsArgsForCall = append(fake.accountsArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetBlockRequest
+		arg2 *walletrpc.AccountsRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetBlock", []interface{}{arg1, arg2, arg3})
-	fake.getBlockMutex.Unlock()
-	if fake.GetBlockStub != nil {
-		return fake.GetBlockStub(arg1, arg2, arg3...)
+	fake.recordInvocation("Accounts", []interface{}{arg1, arg2, arg3})
+	fake.accountsMutex.Unlock()
+	if fake.AccountsStub != nil {
+		return fake.AccountsStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getBlockReturns
+	fakeReturns := fake.accountsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetBlockCallCount() int {
-	fake.getBlockMutex.RLock()
-	defer fake.getBlockMutex.RUnlock()
-	return len(fake.getBlockArgsForCall)
+func (fake *FakeWalletServiceClient) AccountsCallCount() int {
+	fake.accountsMutex.RLock()
+	defer fake.accountsMutex.RUnlock()
+	return len(fake.accountsArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetBlockCalls(stub func(context.Context, *pb.GetBlockRequest, ...grpc.CallOption) (*pb.GetBlockResponse, error)) {
-	fake.getBlockMutex.Lock()
-	defer fake.getBlockMutex.Unlock()
-	fake.GetBlockStub = stub
+func (fake *FakeWalletServiceClient) AccountsCalls(stub func(context.Context, *walletrpc.AccountsRequest, ...grpc.CallOption) (*walletrpc.AccountsResponse, error)) {
+	fake.accountsMutex.Lock()
+	defer fake.accountsMutex.Unlock()
+	fake.AccountsStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetBlockArgsForCall(i int) (context.Context, *pb.GetBlockRequest, []grpc.CallOption) {
-	fake.getBlockMutex.RLock()
-	defer fake.getBlockMutex.RUnlock()
-	argsForCall := fake.getBlockArgsForCall[i]
+func (fake *FakeWalletServiceClient) AccountsArgsForCall(i int) (context.Context, *walletrpc.AccountsRequest, []grpc.CallOption) {
+	fake.accountsMutex.RLock()
+	defer fake.accountsMutex.RUnlock()
+	argsForCall := fake.accountsArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetBlockReturns(result1 *pb.GetBlockResponse, result2 error) {
-	fake.getBlockMutex.Lock()
-	defer fake.getBlockMutex.Unlock()
-	fake.GetBlockStub = nil
-	fake.getBlockReturns = struct {
-		result1 *pb.GetBlockResponse
+func (fake *FakeWalletServiceClient) AccountsReturns(result1 *walletrpc.AccountsResponse, result2 error) {
+	fake.accountsMutex.Lock()
+	defer fake.accountsMutex.Unlock()
+	fake.AccountsStub = nil
+	fake.accountsReturns = struct {
+		result1 *walletrpc.AccountsResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetBlockReturnsOnCall(i int, result1 *pb.GetBlockResponse, result2 error) {
-	fake.getBlockMutex.Lock()
-	defer fake.getBlockMutex.Unlock()
-	fake.GetBlockStub = nil
-	if fake.getBlockReturnsOnCall == nil {
-		fake.getBlockReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetBlockResponse
+func (fake *FakeWalletServiceClient) AccountsReturnsOnCall(i int, result1 *walletrpc.AccountsResponse, result2 error) {
+	fake.accountsMutex.Lock()
+	defer fake.accountsMutex.Unlock()
+	fake.AccountsStub = nil
+	if fake.accountsReturnsOnCall == nil {
+		fake.accountsReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.AccountsResponse
 			result2 error
 		})
 	}
-	fake.getBlockReturnsOnCall[i] = struct {
-		result1 *pb.GetBlockResponse
+	fake.accountsReturnsOnCall[i] = struct {
+		result1 *walletrpc.AccountsResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetBlockFilter(arg1 context.Context, arg2 *pb.GetBlockFilterRequest, arg3 ...grpc.CallOption) (*pb.GetBlockFilterResponse, error) {
-	fake.getBlockFilterMutex.Lock()
-	ret, specificReturn := fake.getBlockFilterReturnsOnCall[len(fake.getBlockFilterArgsForCall)]
-	fake.getBlockFilterArgsForCall = append(fake.getBlockFilterArgsForCall, struct {
+func (fake *FakeWalletServiceClient) Balance(arg1 context.Context, arg2 *walletrpc.BalanceRequest, arg3 ...grpc.CallOption) (*walletrpc.BalanceResponse, error) {
+	fake.balanceMutex.Lock()
+	ret, specificReturn := fake.balanceReturnsOnCall[len(fake.balanceArgsForCall)]
+	fake.balanceArgsForCall = append(fake.balanceArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetBlockFilterRequest
+		arg2 *walletrpc.BalanceRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetBlockFilter", []interface{}{arg1, arg2, arg3})
-	fake.getBlockFilterMutex.Unlock()
-	if fake.GetBlockFilterStub != nil {
-		return fake.GetBlockFilterStub(arg1, arg2, arg3...)
+	fake.recordInvocation("Balance", []interface{}{arg1, arg2, arg3})
+	fake.balanceMutex.Unlock()
+	if fake.BalanceStub != nil {
+		return fake.BalanceStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getBlockFilterReturns
+	fakeReturns := fake.balanceReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetBlockFilterCallCount() int {
-	fake.getBlockFilterMutex.RLock()
-	defer fake.getBlockFilterMutex.RUnlock()
-	return len(fake.getBlockFilterArgsForCall)
+func (fake *FakeWalletServiceClient) BalanceCallCount() int {
+	fake.balanceMutex.RLock()
+	defer fake.balanceMutex.RUnlock()
+	return len(fake.balanceArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetBlockFilterCalls(stub func(context.Context, *pb.GetBlockFilterRequest, ...grpc.CallOption) (*pb.GetBlockFilterResponse, error)) {
-	fake.getBlockFilterMutex.Lock()
-	defer fake.getBlockFilterMutex.Unlock()
-	fake.GetBlockFilterStub = stub
+func (fake *FakeWalletServiceClient) BalanceCalls(stub func(context.Context, *walletrpc.BalanceRequest, ...grpc.CallOption) (*walletrpc.BalanceResponse, error)) {
+	fake.balanceMutex.Lock()
+	defer fake.balanceMutex.Unlock()
+	fake.BalanceStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetBlockFilterArgsForCall(i int) (context.Context, *pb.GetBlockFilterRequest, []grpc.CallOption) {
-	fake.getBlockFilterMutex.RLock()
-	defer fake.getBlockFilterMutex.RUnlock()
-	argsForCall := fake.getBlockFilterArgsForCall[i]
+func (fake *FakeWalletServiceClient) BalanceArgsForCall(i int) (context.Context, *walletrpc.BalanceRequest, []grpc.CallOption) {
+	fake.balanceMutex.RLock()
+	defer fake.balanceMutex.RUnlock()
+	argsForCall := fake.balanceArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetBlockFilterReturns(result1 *pb.GetBlockFilterResponse, result2 error) {
-	fake.getBlockFilterMutex.Lock()
-	defer fake.getBlockFilterMutex.Unlock()
-	fake.GetBlockFilterStub = nil
-	fake.getBlockFilterReturns = struct {
-		result1 *pb.GetBlockFilterResponse
+func (fake *FakeWalletServiceClient) BalanceReturns(result1 *walletrpc.BalanceResponse, result2 error) {
+	fake.balanceMutex.Lock()
+	defer fake.balanceMutex.Unlock()
+	fake.BalanceStub = nil
+	fake.balanceReturns = struct {
+		result1 *walletrpc.BalanceResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetBlockFilterReturnsOnCall(i int, result1 *pb.GetBlockFilterResponse, result2 error) {
-	fake.getBlockFilterMutex.Lock()
-	defer fake.getBlockFilterMutex.Unlock()
-	fake.GetBlockFilterStub = nil
-	if fake.getBlockFilterReturnsOnCall == nil {
-		fake.getBlockFilterReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetBlockFilterResponse
+func (fake *FakeWalletServiceClient) BalanceReturnsOnCall(i int, result1 *walletrpc.BalanceResponse, result2 error) {
+	fake.balanceMutex.Lock()
+	defer fake.balanceMutex.Unlock()
+	fake.BalanceStub = nil
+	if fake.balanceReturnsOnCall == nil {
+		fake.balanceReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.BalanceResponse
 			result2 error
 		})
 	}
-	fake.getBlockFilterReturnsOnCall[i] = struct {
-		result1 *pb.GetBlockFilterResponse
+	fake.balanceReturnsOnCall[i] = struct {
+		result1 *walletrpc.BalanceResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetBlockInfo(arg1 context.Context, arg2 *pb.GetBlockInfoRequest, arg3 ...grpc.CallOption) (*pb.GetBlockInfoResponse, error) {
-	fake.getBlockInfoMutex.Lock()
-	ret, specificReturn := fake.getBlockInfoReturnsOnCall[len(fake.getBlockInfoArgsForCall)]
-	fake.getBlockInfoArgsForCall = append(fake.getBlockInfoArgsForCall, struct {
+func (fake *FakeWalletServiceClient) ChangePassphrase(arg1 context.Context, arg2 *walletrpc.ChangePassphraseRequest, arg3 ...grpc.CallOption) (*walletrpc.ChangePassphraseResponse, error) {
+	fake.changePassphraseMutex.Lock()
+	ret, specificReturn := fake.changePassphraseReturnsOnCall[len(fake.changePassphraseArgsForCall)]
+	fake.changePassphraseArgsForCall = append(fake.changePassphraseArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetBlockInfoRequest
+		arg2 *walletrpc.ChangePassphraseRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetBlockInfo", []interface{}{arg1, arg2, arg3})
-	fake.getBlockInfoMutex.Unlock()
-	if fake.GetBlockInfoStub != nil {
-		return fake.GetBlockInfoStub(arg1, arg2, arg3...)
+	fake.recordInvocation("ChangePassphrase", []interface{}{arg1, arg2, arg3})
+	fake.changePassphraseMutex.Unlock()
+	if fake.ChangePassphraseStub != nil {
+		return fake.ChangePassphraseStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getBlockInfoReturns
+	fakeReturns := fake.changePassphraseReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetBlockInfoCallCount() int {
-	fake.getBlockInfoMutex.RLock()
-	defer fake.getBlockInfoMutex.RUnlock()
-	return len(fake.getBlockInfoArgsForCall)
+func (fake *FakeWalletServiceClient) ChangePassphraseCallCount() int {
+	fake.changePassphraseMutex.RLock()
+	defer fake.changePassphraseMutex.RUnlock()
+	return len(fake.changePassphraseArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetBlockInfoCalls(stub func(context.Context, *pb.GetBlockInfoRequest, ...grpc.CallOption) (*pb.GetBlockInfoResponse, error)) {
-	fake.getBlockInfoMutex.Lock()
-	defer fake.getBlockInfoMutex.Unlock()
-	fake.GetBlockInfoStub = stub
+func (fake *FakeWalletServiceClient) ChangePassphraseCalls(stub func(context.Context, *walletrpc.ChangePassphraseRequest, ...grpc.CallOption) (*walletrpc.ChangePassphraseResponse, error)) {
+	fake.changePassphraseMutex.Lock()
+	defer fake.changePassphraseMutex.Unlock()
+	fake.ChangePassphraseStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetBlockInfoArgsForCall(i int) (context.Context, *pb.GetBlockInfoRequest, []grpc.CallOption) {
-	fake.getBlockInfoMutex.RLock()
-	defer fake.getBlockInfoMutex.RUnlock()
-	argsForCall := fake.getBlockInfoArgsForCall[i]
+func (fake *FakeWalletServiceClient) ChangePassphraseArgsForCall(i int) (context.Context, *walletrpc.ChangePassphraseRequest, []grpc.CallOption) {
+	fake.changePassphraseMutex.RLock()
+	defer fake.changePassphraseMutex.RUnlock()
+	argsForCall := fake.changePassphraseArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetBlockInfoReturns(result1 *pb.GetBlockInfoResponse, result2 error) {
-	fake.getBlockInfoMutex.Lock()
-	defer fake.getBlockInfoMutex.Unlock()
-	fake.GetBlockInfoStub = nil
-	fake.getBlockInfoReturns = struct {
-		result1 *pb.GetBlockInfoResponse
+func (fake *FakeWalletServiceClient) ChangePassphraseReturns(result1 *walletrpc.ChangePassphraseResponse, result2 error) {
+	fake.changePassphraseMutex.Lock()
+	defer fake.changePassphraseMutex.Unlock()
+	fake.ChangePassphraseStub = nil
+	fake.changePassphraseReturns = struct {
+		result1 *walletrpc.ChangePassphraseResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetBlockInfoReturnsOnCall(i int, result1 *pb.GetBlockInfoResponse, result2 error) {
-	fake.getBlockInfoMutex.Lock()
-	defer fake.getBlockInfoMutex.Unlock()
-	fake.GetBlockInfoStub = nil
-	if fake.getBlockInfoReturnsOnCall == nil {
-		fake.getBlockInfoReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetBlockInfoResponse
+func (fake *FakeWalletServiceClient) ChangePassphraseReturnsOnCall(i int, result1 *walletrpc.ChangePassphraseResponse, result2 error) {
+	fake.changePassphraseMutex.Lock()
+	defer fake.changePassphraseMutex.Unlock()
+	fake.ChangePassphraseStub = nil
+	if fake.changePassphraseReturnsOnCall == nil {
+		fake.changePassphraseReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.ChangePassphraseResponse
 			result2 error
 		})
 	}
-	fake.getBlockInfoReturnsOnCall[i] = struct {
-		result1 *pb.GetBlockInfoResponse
+	fake.changePassphraseReturnsOnCall[i] = struct {
+		result1 *walletrpc.ChangePassphraseResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetBlockchainInfo(arg1 context.Context, arg2 *pb.GetBlockchainInfoRequest, arg3 ...grpc.CallOption) (*pb.GetBlockchainInfoResponse, error) {
-	fake.getBlockchainInfoMutex.Lock()
-	ret, specificReturn := fake.getBlockchainInfoReturnsOnCall[len(fake.getBlockchainInfoArgsForCall)]
-	fake.getBlockchainInfoArgsForCall = append(fake.getBlockchainInfoArgsForCall, struct {
+func (fake *FakeWalletServiceClient) CreateTransaction(arg1 context.Context, arg2 *walletrpc.CreateTransactionRequest, arg3 ...grpc.CallOption) (*walletrpc.CreateTransactionResponse, error) {
+	fake.createTransactionMutex.Lock()
+	ret, specificReturn := fake.createTransactionReturnsOnCall[len(fake.createTransactionArgsForCall)]
+	fake.createTransactionArgsForCall = append(fake.createTransactionArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetBlockchainInfoRequest
+		arg2 *walletrpc.CreateTransactionRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetBlockchainInfo", []interface{}{arg1, arg2, arg3})
-	fake.getBlockchainInfoMutex.Unlock()
-	if fake.GetBlockchainInfoStub != nil {
-		return fake.GetBlockchainInfoStub(arg1, arg2, arg3...)
+	fake.recordInvocation("CreateTransaction", []interface{}{arg1, arg2, arg3})
+	fake.createTransactionMutex.Unlock()
+	if fake.CreateTransactionStub != nil {
+		return fake.CreateTransactionStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getBlockchainInfoReturns
+	fakeReturns := fake.createTransactionReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetBlockchainInfoCallCount() int {
-	fake.getBlockchainInfoMutex.RLock()
-	defer fake.getBlockchainInfoMutex.RUnlock()
-	return len(fake.getBlockchainInfoArgsForCall)
+func (fake *FakeWalletServiceClient) CreateTransactionCallCount() int {
+	fake.createTransactionMutex.RLock()
+	defer fake.createTransactionMutex.RUnlock()
+	return len(fake.createTransactionArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetBlockchainInfoCalls(stub func(context.Context, *pb.GetBlockchainInfoRequest, ...grpc.CallOption) (*pb.GetBlockchainInfoResponse, error)) {
-	fake.getBlockchainInfoMutex.Lock()
-	defer fake.getBlockchainInfoMutex.Unlock()
-	fake.GetBlockchainInfoStub = stub
+func (fake *FakeWalletServiceClient) CreateTransactionCalls(stub func(context.Context, *walletrpc.CreateTransactionRequest, ...grpc.CallOption) (*walletrpc.CreateTransactionResponse, error)) {
+	fake.createTransactionMutex.Lock()
+	defer fake.createTransactionMutex.Unlock()
+	fake.CreateTransactionStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetBlockchainInfoArgsForCall(i int) (context.Context, *pb.GetBlockchainInfoRequest, []grpc.CallOption) {
-	fake.getBlockchainInfoMutex.RLock()
-	defer fake.getBlockchainInfoMutex.RUnlock()
-	argsForCall := fake.getBlockchainInfoArgsForCall[i]
+func (fake *FakeWalletServiceClient) CreateTransactionArgsForCall(i int) (context.Context, *walletrpc.CreateTransactionRequest, []grpc.CallOption) {
+	fake.createTransactionMutex.RLock()
+	defer fake.createTransactionMutex.RUnlock()
+	argsForCall := fake.createTransactionArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetBlockchainInfoReturns(result1 *pb.GetBlockchainInfoResponse, result2 error) {
-	fake.getBlockchainInfoMutex.Lock()
-	defer fake.getBlockchainInfoMutex.Unlock()
-	fake.GetBlockchainInfoStub = nil
-	fake.getBlockchainInfoReturns = struct {
-		result1 *pb.GetBlockchainInfoResponse
+func (fake *FakeWalletServiceClient) CreateTransactionReturns(result1 *walletrpc.CreateTransactionResponse, result2 error) {
+	fake.createTransactionMutex.Lock()
+	defer fake.createTransactionMutex.Unlock()
+	fake.CreateTransactionStub = nil
+	fake.createTransactionReturns = struct {
+		result1 *walletrpc.CreateTransactionResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetBlockchainInfoReturnsOnCall(i int, result1 *pb.GetBlockchainInfoResponse, result2 error) {
-	fake.getBlockchainInfoMutex.Lock()
-	defer fake.getBlockchainInfoMutex.Unlock()
-	fake.GetBlockchainInfoStub = nil
-	if fake.getBlockchainInfoReturnsOnCall == nil {
-		fake.getBlockchainInfoReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetBlockchainInfoResponse
+func (fake *FakeWalletServiceClient) CreateTransactionReturnsOnCall(i int, result1 *walletrpc.CreateTransactionResponse, result2 error) {
+	fake.createTransactionMutex.Lock()
+	defer fake.createTransactionMutex.Unlock()
+	fake.CreateTransactionStub = nil
+	if fake.createTransactionReturnsOnCall == nil {
+		fake.createTransactionReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.CreateTransactionResponse
 			result2 error
 		})
 	}
-	fake.getBlockchainInfoReturnsOnCall[i] = struct {
-		result1 *pb.GetBlockchainInfoResponse
+	fake.createTransactionReturnsOnCall[i] = struct {
+		result1 *walletrpc.CreateTransactionResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetHeaders(arg1 context.Context, arg2 *pb.GetHeadersRequest, arg3 ...grpc.CallOption) (*pb.GetHeadersResponse, error) {
-	fake.getHeadersMutex.Lock()
-	ret, specificReturn := fake.getHeadersReturnsOnCall[len(fake.getHeadersArgsForCall)]
-	fake.getHeadersArgsForCall = append(fake.getHeadersArgsForCall, struct {
+func (fake *FakeWalletServiceClient) CurrentAddress(arg1 context.Context, arg2 *walletrpc.CurrentAddressRequest, arg3 ...grpc.CallOption) (*walletrpc.CurrentAddressResponse, error) {
+	fake.currentAddressMutex.Lock()
+	ret, specificReturn := fake.currentAddressReturnsOnCall[len(fake.currentAddressArgsForCall)]
+	fake.currentAddressArgsForCall = append(fake.currentAddressArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetHeadersRequest
+		arg2 *walletrpc.CurrentAddressRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetHeaders", []interface{}{arg1, arg2, arg3})
-	fake.getHeadersMutex.Unlock()
-	if fake.GetHeadersStub != nil {
-		return fake.GetHeadersStub(arg1, arg2, arg3...)
+	fake.recordInvocation("CurrentAddress", []interface{}{arg1, arg2, arg3})
+	fake.currentAddressMutex.Unlock()
+	if fake.CurrentAddressStub != nil {
+		return fake.CurrentAddressStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getHeadersReturns
+	fakeReturns := fake.currentAddressReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetHeadersCallCount() int {
-	fake.getHeadersMutex.RLock()
-	defer fake.getHeadersMutex.RUnlock()
-	return len(fake.getHeadersArgsForCall)
+func (fake *FakeWalletServiceClient) CurrentAddressCallCount() int {
+	fake.currentAddressMutex.RLock()
+	defer fake.currentAddressMutex.RUnlock()
+	return len(fake.currentAddressArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetHeadersCalls(stub func(context.Context, *pb.GetHeadersRequest, ...grpc.CallOption) (*pb.GetHeadersResponse, error)) {
-	fake.getHeadersMutex.Lock()
-	defer fake.getHeadersMutex.Unlock()
-	fake.GetHeadersStub = stub
+func (fake *FakeWalletServiceClient) CurrentAddressCalls(stub func(context.Context, *walletrpc.CurrentAddressRequest, ...grpc.CallOption) (*walletrpc.CurrentAddressResponse, error)) {
+	fake.currentAddressMutex.Lock()
+	defer fake.currentAddressMutex.Unlock()
+	fake.CurrentAddressStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetHeadersArgsForCall(i int) (context.Context, *pb.GetHeadersRequest, []grpc.CallOption) {
-	fake.getHeadersMutex.RLock()
-	defer fake.getHeadersMutex.RUnlock()
-	argsForCall := fake.getHeadersArgsForCall[i]
+func (fake *FakeWalletServiceClient) CurrentAddressArgsForCall(i int) (context.Context, *walletrpc.CurrentAddressRequest, []grpc.CallOption) {
+	fake.currentAddressMutex.RLock()
+	defer fake.currentAddressMutex.RUnlock()
+	argsForCall := fake.currentAddressArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetHeadersReturns(result1 *pb.GetHeadersResponse, result2 error) {
-	fake.getHeadersMutex.Lock()
-	defer fake.getHeadersMutex.Unlock()
-	fake.GetHeadersStub = nil
-	fake.getHeadersReturns = struct {
-		result1 *pb.GetHeadersResponse
+func (fake *FakeWalletServiceClient) CurrentAddressReturns(result1 *walletrpc.CurrentAddressResponse, result2 error) {
+	fake.currentAddressMutex.Lock()
+	defer fake.currentAddressMutex.Unlock()
+	fake.CurrentAddressStub = nil
+	fake.currentAddressReturns = struct {
+		result1 *walletrpc.CurrentAddressResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetHeadersReturnsOnCall(i int, result1 *pb.GetHeadersResponse, result2 error) {
-	fake.getHeadersMutex.Lock()
-	defer fake.getHeadersMutex.Unlock()
-	fake.GetHeadersStub = nil
-	if fake.getHeadersReturnsOnCall == nil {
-		fake.getHeadersReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetHeadersResponse
+func (fake *FakeWalletServiceClient) CurrentAddressReturnsOnCall(i int, result1 *walletrpc.CurrentAddressResponse, result2 error) {
+	fake.currentAddressMutex.Lock()
+	defer fake.currentAddressMutex.Unlock()
+	fake.CurrentAddressStub = nil
+	if fake.currentAddressReturnsOnCall == nil {
+		fake.currentAddressReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.CurrentAddressResponse
 			result2 error
 		})
 	}
-	fake.getHeadersReturnsOnCall[i] = struct {
-		result1 *pb.GetHeadersResponse
+	fake.currentAddressReturnsOnCall[i] = struct {
+		result1 *walletrpc.CurrentAddressResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetMempoolInfo(arg1 context.Context, arg2 *pb.GetMempoolInfoRequest, arg3 ...grpc.CallOption) (*pb.GetMempoolInfoResponse, error) {
-	fake.getMempoolInfoMutex.Lock()
-	ret, specificReturn := fake.getMempoolInfoReturnsOnCall[len(fake.getMempoolInfoArgsForCall)]
-	fake.getMempoolInfoArgsForCall = append(fake.getMempoolInfoArgsForCall, struct {
+func (fake *FakeWalletServiceClient) DownloadPaymentRequest(arg1 context.Context, arg2 *walletrpc.DownloadPaymentRequestRequest, arg3 ...grpc.CallOption) (*walletrpc.DownloadPaymentRequestResponse, error) {
+	fake.downloadPaymentRequestMutex.Lock()
+	ret, specificReturn := fake.downloadPaymentRequestReturnsOnCall[len(fake.downloadPaymentRequestArgsForCall)]
+	fake.downloadPaymentRequestArgsForCall = append(fake.downloadPaymentRequestArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetMempoolInfoRequest
+		arg2 *walletrpc.DownloadPaymentRequestRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetMempoolInfo", []interface{}{arg1, arg2, arg3})
-	fake.getMempoolInfoMutex.Unlock()
-	if fake.GetMempoolInfoStub != nil {
-		return fake.GetMempoolInfoStub(arg1, arg2, arg3...)
+	fake.recordInvocation("DownloadPaymentRequest", []interface{}{arg1, arg2, arg3})
+	fake.downloadPaymentRequestMutex.Unlock()
+	if fake.DownloadPaymentRequestStub != nil {
+		return fake.DownloadPaymentRequestStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getMempoolInfoReturns
+	fakeReturns := fake.downloadPaymentRequestReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetMempoolInfoCallCount() int {
-	fake.getMempoolInfoMutex.RLock()
-	defer fake.getMempoolInfoMutex.RUnlock()
-	return len(fake.getMempoolInfoArgsForCall)
+func (fake *FakeWalletServiceClient) DownloadPaymentRequestCallCount() int {
+	fake.downloadPaymentRequestMutex.RLock()
+	defer fake.downloadPaymentRequestMutex.RUnlock()
+	return len(fake.downloadPaymentRequestArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetMempoolInfoCalls(stub func(context.Context, *pb.GetMempoolInfoRequest, ...grpc.CallOption) (*pb.GetMempoolInfoResponse, error)) {
-	fake.getMempoolInfoMutex.Lock()
-	defer fake.getMempoolInfoMutex.Unlock()
-	fake.GetMempoolInfoStub = stub
+func (fake *FakeWalletServiceClient) DownloadPaymentRequestCalls(stub func(context.Context, *walletrpc.DownloadPaymentRequestRequest, ...grpc.CallOption) (*walletrpc.DownloadPaymentRequestResponse, error)) {
+	fake.downloadPaymentRequestMutex.Lock()
+	defer fake.downloadPaymentRequestMutex.Unlock()
+	fake.DownloadPaymentRequestStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetMempoolInfoArgsForCall(i int) (context.Context, *pb.GetMempoolInfoRequest, []grpc.CallOption) {
-	fake.getMempoolInfoMutex.RLock()
-	defer fake.getMempoolInfoMutex.RUnlock()
-	argsForCall := fake.getMempoolInfoArgsForCall[i]
+func (fake *FakeWalletServiceClient) DownloadPaymentRequestArgsForCall(i int) (context.Context, *walletrpc.DownloadPaymentRequestRequest, []grpc.CallOption) {
+	fake.downloadPaymentRequestMutex.RLock()
+	defer fake.downloadPaymentRequestMutex.RUnlock()
+	argsForCall := fake.downloadPaymentRequestArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetMempoolInfoReturns(result1 *pb.GetMempoolInfoResponse, result2 error) {
-	fake.getMempoolInfoMutex.Lock()
-	defer fake.getMempoolInfoMutex.Unlock()
-	fake.GetMempoolInfoStub = nil
-	fake.getMempoolInfoReturns = struct {
-		result1 *pb.GetMempoolInfoResponse
+func (fake *FakeWalletServiceClient) DownloadPaymentRequestReturns(result1 *walletrpc.DownloadPaymentRequestResponse, result2 error) {
+	fake.downloadPaymentRequestMutex.Lock()
+	defer fake.downloadPaymentRequestMutex.Unlock()
+	fake.DownloadPaymentRequestStub = nil
+	fake.downloadPaymentRequestReturns = struct {
+		result1 *walletrpc.DownloadPaymentRequestResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetMempoolInfoReturnsOnCall(i int, result1 *pb.GetMempoolInfoResponse, result2 error) {
-	fake.getMempoolInfoMutex.Lock()
-	defer fake.getMempoolInfoMutex.Unlock()
-	fake.GetMempoolInfoStub = nil
-	if fake.getMempoolInfoReturnsOnCall == nil {
-		fake.getMempoolInfoReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetMempoolInfoResponse
+func (fake *FakeWalletServiceClient) DownloadPaymentRequestReturnsOnCall(i int, result1 *walletrpc.DownloadPaymentRequestResponse, result2 error) {
+	fake.downloadPaymentRequestMutex.Lock()
+	defer fake.downloadPaymentRequestMutex.Unlock()
+	fake.DownloadPaymentRequestStub = nil
+	if fake.downloadPaymentRequestReturnsOnCall == nil {
+		fake.downloadPaymentRequestReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.DownloadPaymentRequestResponse
 			result2 error
 		})
 	}
-	fake.getMempoolInfoReturnsOnCall[i] = struct {
-		result1 *pb.GetMempoolInfoResponse
+	fake.downloadPaymentRequestReturnsOnCall[i] = struct {
+		result1 *walletrpc.DownloadPaymentRequestResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetMerkleProof(arg1 context.Context, arg2 *pb.GetMerkleProofRequest, arg3 ...grpc.CallOption) (*pb.GetMerkleProofResponse, error) {
-	fake.getMerkleProofMutex.Lock()
-	ret, specificReturn := fake.getMerkleProofReturnsOnCall[len(fake.getMerkleProofArgsForCall)]
-	fake.getMerkleProofArgsForCall = append(fake.getMerkleProofArgsForCall, struct {
+func (fake *FakeWalletServiceClient) FundTransaction(arg1 context.Context, arg2 *walletrpc.FundTransactionRequest, arg3 ...grpc.CallOption) (*walletrpc.FundTransactionResponse, error) {
+	fake.fundTransactionMutex.Lock()
+	ret, specificReturn := fake.fundTransactionReturnsOnCall[len(fake.fundTransactionArgsForCall)]
+	fake.fundTransactionArgsForCall = append(fake.fundTransactionArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetMerkleProofRequest
+		arg2 *walletrpc.FundTransactionRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetMerkleProof", []interface{}{arg1, arg2, arg3})
-	fake.getMerkleProofMutex.Unlock()
-	if fake.GetMerkleProofStub != nil {
-		return fake.GetMerkleProofStub(arg1, arg2, arg3...)
+	fake.recordInvocation("FundTransaction", []interface{}{arg1, arg2, arg3})
+	fake.fundTransactionMutex.Unlock()
+	if fake.FundTransactionStub != nil {
+		return fake.FundTransactionStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getMerkleProofReturns
+	fakeReturns := fake.fundTransactionReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetMerkleProofCallCount() int {
-	fake.getMerkleProofMutex.RLock()
-	defer fake.getMerkleProofMutex.RUnlock()
-	return len(fake.getMerkleProofArgsForCall)
+func (fake *FakeWalletServiceClient) FundTransactionCallCount() int {
+	fake.fundTransactionMutex.RLock()
+	defer fake.fundTransactionMutex.RUnlock()
+	return len(fake.fundTransactionArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetMerkleProofCalls(stub func(context.Context, *pb.GetMerkleProofRequest, ...grpc.CallOption) (*pb.GetMerkleProofResponse, error)) {
-	fake.getMerkleProofMutex.Lock()
-	defer fake.getMerkleProofMutex.Unlock()
-	fake.GetMerkleProofStub = stub
+func (fake *FakeWalletServiceClient) FundTransactionCalls(stub func(context.Context, *walletrpc.FundTransactionRequest, ...grpc.CallOption) (*walletrpc.FundTransactionResponse, error)) {
+	fake.fundTransactionMutex.Lock()
+	defer fake.fundTransactionMutex.Unlock()
+	fake.FundTransactionStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetMerkleProofArgsForCall(i int) (context.Context, *pb.GetMerkleProofRequest, []grpc.CallOption) {
-	fake.getMerkleProofMutex.RLock()
-	defer fake.getMerkleProofMutex.RUnlock()
-	argsForCall := fake.getMerkleProofArgsForCall[i]
+func (fake *FakeWalletServiceClient) FundTransactionArgsForCall(i int) (context.Context, *walletrpc.FundTransactionRequest, []grpc.CallOption) {
+	fake.fundTransactionMutex.RLock()
+	defer fake.fundTransactionMutex.RUnlock()
+	argsForCall := fake.fundTransactionArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetMerkleProofReturns(result1 *pb.GetMerkleProofResponse, result2 error) {
-	fake.getMerkleProofMutex.Lock()
-	defer fake.getMerkleProofMutex.Unlock()
-	fake.GetMerkleProofStub = nil
-	fake.getMerkleProofReturns = struct {
-		result1 *pb.GetMerkleProofResponse
+func (fake *FakeWalletServiceClient) FundTransactionReturns(result1 *walletrpc.FundTransactionResponse, result2 error) {
+	fake.fundTransactionMutex.Lock()
+	defer fake.fundTransactionMutex.Unlock()
+	fake.FundTransactionStub = nil
+	fake.fundTransactionReturns = struct {
+		result1 *walletrpc.FundTransactionResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetMerkleProofReturnsOnCall(i int, result1 *pb.GetMerkleProofResponse, result2 error) {
-	fake.getMerkleProofMutex.Lock()
-	defer fake.getMerkleProofMutex.Unlock()
-	fake.GetMerkleProofStub = nil
-	if fake.getMerkleProofReturnsOnCall == nil {
-		fake.getMerkleProofReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetMerkleProofResponse
+func (fake *FakeWalletServiceClient) FundTransactionReturnsOnCall(i int, result1 *walletrpc.FundTransactionResponse, result2 error) {
+	fake.fundTransactionMutex.Lock()
+	defer fake.fundTransactionMutex.Unlock()
+	fake.FundTransactionStub = nil
+	if fake.fundTransactionReturnsOnCall == nil {
+		fake.fundTransactionReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.FundTransactionResponse
 			result2 error
 		})
 	}
-	fake.getMerkleProofReturnsOnCall[i] = struct {
-		result1 *pb.GetMerkleProofResponse
+	fake.fundTransactionReturnsOnCall[i] = struct {
+		result1 *walletrpc.FundTransactionResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetRawAddressTransactions(arg1 context.Context, arg2 *pb.GetRawAddressTransactionsRequest, arg3 ...grpc.CallOption) (*pb.GetRawAddressTransactionsResponse, error) {
-	fake.getRawAddressTransactionsMutex.Lock()
-	ret, specificReturn := fake.getRawAddressTransactionsReturnsOnCall[len(fake.getRawAddressTransactionsArgsForCall)]
-	fake.getRawAddressTransactionsArgsForCall = append(fake.getRawAddressTransactionsArgsForCall, struct {
+func (fake *FakeWalletServiceClient) GetTransactions(arg1 context.Context, arg2 *walletrpc.GetTransactionsRequest, arg3 ...grpc.CallOption) (*walletrpc.GetTransactionsResponse, error) {
+	fake.getTransactionsMutex.Lock()
+	ret, specificReturn := fake.getTransactionsReturnsOnCall[len(fake.getTransactionsArgsForCall)]
+	fake.getTransactionsArgsForCall = append(fake.getTransactionsArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetRawAddressTransactionsRequest
+		arg2 *walletrpc.GetTransactionsRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetRawAddressTransactions", []interface{}{arg1, arg2, arg3})
-	fake.getRawAddressTransactionsMutex.Unlock()
-	if fake.GetRawAddressTransactionsStub != nil {
-		return fake.GetRawAddressTransactionsStub(arg1, arg2, arg3...)
+	fake.recordInvocation("GetTransactions", []interface{}{arg1, arg2, arg3})
+	fake.getTransactionsMutex.Unlock()
+	if fake.GetTransactionsStub != nil {
+		return fake.GetTransactionsStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getRawAddressTransactionsReturns
+	fakeReturns := fake.getTransactionsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetRawAddressTransactionsCallCount() int {
-	fake.getRawAddressTransactionsMutex.RLock()
-	defer fake.getRawAddressTransactionsMutex.RUnlock()
-	return len(fake.getRawAddressTransactionsArgsForCall)
+func (fake *FakeWalletServiceClient) GetTransactionsCallCount() int {
+	fake.getTransactionsMutex.RLock()
+	defer fake.getTransactionsMutex.RUnlock()
+	return len(fake.getTransactionsArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetRawAddressTransactionsCalls(stub func(context.Context, *pb.GetRawAddressTransactionsRequest, ...grpc.CallOption) (*pb.GetRawAddressTransactionsResponse, error)) {
-	fake.getRawAddressTransactionsMutex.Lock()
-	defer fake.getRawAddressTransactionsMutex.Unlock()
-	fake.GetRawAddressTransactionsStub = stub
+func (fake *FakeWalletServiceClient) GetTransactionsCalls(stub func(context.Context, *walletrpc.GetTransactionsRequest, ...grpc.CallOption) (*walletrpc.GetTransactionsResponse, error)) {
+	fake.getTransactionsMutex.Lock()
+	defer fake.getTransactionsMutex.Unlock()
+	fake.GetTransactionsStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetRawAddressTransactionsArgsForCall(i int) (context.Context, *pb.GetRawAddressTransactionsRequest, []grpc.CallOption) {
-	fake.getRawAddressTransactionsMutex.RLock()
-	defer fake.getRawAddressTransactionsMutex.RUnlock()
-	argsForCall := fake.getRawAddressTransactionsArgsForCall[i]
+func (fake *FakeWalletServiceClient) GetTransactionsArgsForCall(i int) (context.Context, *walletrpc.GetTransactionsRequest, []grpc.CallOption) {
+	fake.getTransactionsMutex.RLock()
+	defer fake.getTransactionsMutex.RUnlock()
+	argsForCall := fake.getTransactionsArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetRawAddressTransactionsReturns(result1 *pb.GetRawAddressTransactionsResponse, result2 error) {
-	fake.getRawAddressTransactionsMutex.Lock()
-	defer fake.getRawAddressTransactionsMutex.Unlock()
-	fake.GetRawAddressTransactionsStub = nil
-	fake.getRawAddressTransactionsReturns = struct {
-		result1 *pb.GetRawAddressTransactionsResponse
+func (fake *FakeWalletServiceClient) GetTransactionsReturns(result1 *walletrpc.GetTransactionsResponse, result2 error) {
+	fake.getTransactionsMutex.Lock()
+	defer fake.getTransactionsMutex.Unlock()
+	fake.GetTransactionsStub = nil
+	fake.getTransactionsReturns = struct {
+		result1 *walletrpc.GetTransactionsResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetRawAddressTransactionsReturnsOnCall(i int, result1 *pb.GetRawAddressTransactionsResponse, result2 error) {
-	fake.getRawAddressTransactionsMutex.Lock()
-	defer fake.getRawAddressTransactionsMutex.Unlock()
-	fake.GetRawAddressTransactionsStub = nil
-	if fake.getRawAddressTransactionsReturnsOnCall == nil {
-		fake.getRawAddressTransactionsReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetRawAddressTransactionsResponse
+func (fake *FakeWalletServiceClient) GetTransactionsReturnsOnCall(i int, result1 *walletrpc.GetTransactionsResponse, result2 error) {
+	fake.getTransactionsMutex.Lock()
+	defer fake.getTransactionsMutex.Unlock()
+	fake.GetTransactionsStub = nil
+	if fake.getTransactionsReturnsOnCall == nil {
+		fake.getTransactionsReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.GetTransactionsResponse
 			result2 error
 		})
 	}
-	fake.getRawAddressTransactionsReturnsOnCall[i] = struct {
-		result1 *pb.GetRawAddressTransactionsResponse
+	fake.getTransactionsReturnsOnCall[i] = struct {
+		result1 *walletrpc.GetTransactionsResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetRawBlock(arg1 context.Context, arg2 *pb.GetRawBlockRequest, arg3 ...grpc.CallOption) (*pb.GetRawBlockResponse, error) {
-	fake.getRawBlockMutex.Lock()
-	ret, specificReturn := fake.getRawBlockReturnsOnCall[len(fake.getRawBlockArgsForCall)]
-	fake.getRawBlockArgsForCall = append(fake.getRawBlockArgsForCall, struct {
+func (fake *FakeWalletServiceClient) ImportPrivateKey(arg1 context.Context, arg2 *walletrpc.ImportPrivateKeyRequest, arg3 ...grpc.CallOption) (*walletrpc.ImportPrivateKeyResponse, error) {
+	fake.importPrivateKeyMutex.Lock()
+	ret, specificReturn := fake.importPrivateKeyReturnsOnCall[len(fake.importPrivateKeyArgsForCall)]
+	fake.importPrivateKeyArgsForCall = append(fake.importPrivateKeyArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetRawBlockRequest
+		arg2 *walletrpc.ImportPrivateKeyRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetRawBlock", []interface{}{arg1, arg2, arg3})
-	fake.getRawBlockMutex.Unlock()
-	if fake.GetRawBlockStub != nil {
-		return fake.GetRawBlockStub(arg1, arg2, arg3...)
+	fake.recordInvocation("ImportPrivateKey", []interface{}{arg1, arg2, arg3})
+	fake.importPrivateKeyMutex.Unlock()
+	if fake.ImportPrivateKeyStub != nil {
+		return fake.ImportPrivateKeyStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getRawBlockReturns
+	fakeReturns := fake.importPrivateKeyReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetRawBlockCallCount() int {
-	fake.getRawBlockMutex.RLock()
-	defer fake.getRawBlockMutex.RUnlock()
-	return len(fake.getRawBlockArgsForCall)
+func (fake *FakeWalletServiceClient) ImportPrivateKeyCallCount() int {
+	fake.importPrivateKeyMutex.RLock()
+	defer fake.importPrivateKeyMutex.RUnlock()
+	return len(fake.importPrivateKeyArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetRawBlockCalls(stub func(context.Context, *pb.GetRawBlockRequest, ...grpc.CallOption) (*pb.GetRawBlockResponse, error)) {
-	fake.getRawBlockMutex.Lock()
-	defer fake.getRawBlockMutex.Unlock()
-	fake.GetRawBlockStub = stub
+func (fake *FakeWalletServiceClient) ImportPrivateKeyCalls(stub func(context.Context, *walletrpc.ImportPrivateKeyRequest, ...grpc.CallOption) (*walletrpc.ImportPrivateKeyResponse, error)) {
+	fake.importPrivateKeyMutex.Lock()
+	defer fake.importPrivateKeyMutex.Unlock()
+	fake.ImportPrivateKeyStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetRawBlockArgsForCall(i int) (context.Context, *pb.GetRawBlockRequest, []grpc.CallOption) {
-	fake.getRawBlockMutex.RLock()
-	defer fake.getRawBlockMutex.RUnlock()
-	argsForCall := fake.getRawBlockArgsForCall[i]
+func (fake *FakeWalletServiceClient) ImportPrivateKeyArgsForCall(i int) (context.Context, *walletrpc.ImportPrivateKeyRequest, []grpc.CallOption) {
+	fake.importPrivateKeyMutex.RLock()
+	defer fake.importPrivateKeyMutex.RUnlock()
+	argsForCall := fake.importPrivateKeyArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetRawBlockReturns(result1 *pb.GetRawBlockResponse, result2 error) {
-	fake.getRawBlockMutex.Lock()
-	defer fake.getRawBlockMutex.Unlock()
-	fake.GetRawBlockStub = nil
-	fake.getRawBlockReturns = struct {
-		result1 *pb.GetRawBlockResponse
+func (fake *FakeWalletServiceClient) ImportPrivateKeyReturns(result1 *walletrpc.ImportPrivateKeyResponse, result2 error) {
+	fake.importPrivateKeyMutex.Lock()
+	defer fake.importPrivateKeyMutex.Unlock()
+	fake.ImportPrivateKeyStub = nil
+	fake.importPrivateKeyReturns = struct {
+		result1 *walletrpc.ImportPrivateKeyResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetRawBlockReturnsOnCall(i int, result1 *pb.GetRawBlockResponse, result2 error) {
-	fake.getRawBlockMutex.Lock()
-	defer fake.getRawBlockMutex.Unlock()
-	fake.GetRawBlockStub = nil
-	if fake.getRawBlockReturnsOnCall == nil {
-		fake.getRawBlockReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetRawBlockResponse
+func (fake *FakeWalletServiceClient) ImportPrivateKeyReturnsOnCall(i int, result1 *walletrpc.ImportPrivateKeyResponse, result2 error) {
+	fake.importPrivateKeyMutex.Lock()
+	defer fake.importPrivateKeyMutex.Unlock()
+	fake.ImportPrivateKeyStub = nil
+	if fake.importPrivateKeyReturnsOnCall == nil {
+		fake.importPrivateKeyReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.ImportPrivateKeyResponse
 			result2 error
 		})
 	}
-	fake.getRawBlockReturnsOnCall[i] = struct {
-		result1 *pb.GetRawBlockResponse
+	fake.importPrivateKeyReturnsOnCall[i] = struct {
+		result1 *walletrpc.ImportPrivateKeyResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetRawTransaction(arg1 context.Context, arg2 *pb.GetRawTransactionRequest, arg3 ...grpc.CallOption) (*pb.GetRawTransactionResponse, error) {
-	fake.getRawTransactionMutex.Lock()
-	ret, specificReturn := fake.getRawTransactionReturnsOnCall[len(fake.getRawTransactionArgsForCall)]
-	fake.getRawTransactionArgsForCall = append(fake.getRawTransactionArgsForCall, struct {
+func (fake *FakeWalletServiceClient) Network(arg1 context.Context, arg2 *walletrpc.NetworkRequest, arg3 ...grpc.CallOption) (*walletrpc.NetworkResponse, error) {
+	fake.networkMutex.Lock()
+	ret, specificReturn := fake.networkReturnsOnCall[len(fake.networkArgsForCall)]
+	fake.networkArgsForCall = append(fake.networkArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetRawTransactionRequest
+		arg2 *walletrpc.NetworkRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetRawTransaction", []interface{}{arg1, arg2, arg3})
-	fake.getRawTransactionMutex.Unlock()
-	if fake.GetRawTransactionStub != nil {
-		return fake.GetRawTransactionStub(arg1, arg2, arg3...)
+	fake.recordInvocation("Network", []interface{}{arg1, arg2, arg3})
+	fake.networkMutex.Unlock()
+	if fake.NetworkStub != nil {
+		return fake.NetworkStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getRawTransactionReturns
+	fakeReturns := fake.networkReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetRawTransactionCallCount() int {
-	fake.getRawTransactionMutex.RLock()
-	defer fake.getRawTransactionMutex.RUnlock()
-	return len(fake.getRawTransactionArgsForCall)
+func (fake *FakeWalletServiceClient) NetworkCallCount() int {
+	fake.networkMutex.RLock()
+	defer fake.networkMutex.RUnlock()
+	return len(fake.networkArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetRawTransactionCalls(stub func(context.Context, *pb.GetRawTransactionRequest, ...grpc.CallOption) (*pb.GetRawTransactionResponse, error)) {
-	fake.getRawTransactionMutex.Lock()
-	defer fake.getRawTransactionMutex.Unlock()
-	fake.GetRawTransactionStub = stub
+func (fake *FakeWalletServiceClient) NetworkCalls(stub func(context.Context, *walletrpc.NetworkRequest, ...grpc.CallOption) (*walletrpc.NetworkResponse, error)) {
+	fake.networkMutex.Lock()
+	defer fake.networkMutex.Unlock()
+	fake.NetworkStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetRawTransactionArgsForCall(i int) (context.Context, *pb.GetRawTransactionRequest, []grpc.CallOption) {
-	fake.getRawTransactionMutex.RLock()
-	defer fake.getRawTransactionMutex.RUnlock()
-	argsForCall := fake.getRawTransactionArgsForCall[i]
+func (fake *FakeWalletServiceClient) NetworkArgsForCall(i int) (context.Context, *walletrpc.NetworkRequest, []grpc.CallOption) {
+	fake.networkMutex.RLock()
+	defer fake.networkMutex.RUnlock()
+	argsForCall := fake.networkArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetRawTransactionReturns(result1 *pb.GetRawTransactionResponse, result2 error) {
-	fake.getRawTransactionMutex.Lock()
-	defer fake.getRawTransactionMutex.Unlock()
-	fake.GetRawTransactionStub = nil
-	fake.getRawTransactionReturns = struct {
-		result1 *pb.GetRawTransactionResponse
+func (fake *FakeWalletServiceClient) NetworkReturns(result1 *walletrpc.NetworkResponse, result2 error) {
+	fake.networkMutex.Lock()
+	defer fake.networkMutex.Unlock()
+	fake.NetworkStub = nil
+	fake.networkReturns = struct {
+		result1 *walletrpc.NetworkResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetRawTransactionReturnsOnCall(i int, result1 *pb.GetRawTransactionResponse, result2 error) {
-	fake.getRawTransactionMutex.Lock()
-	defer fake.getRawTransactionMutex.Unlock()
-	fake.GetRawTransactionStub = nil
-	if fake.getRawTransactionReturnsOnCall == nil {
-		fake.getRawTransactionReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetRawTransactionResponse
+func (fake *FakeWalletServiceClient) NetworkReturnsOnCall(i int, result1 *walletrpc.NetworkResponse, result2 error) {
+	fake.networkMutex.Lock()
+	defer fake.networkMutex.Unlock()
+	fake.NetworkStub = nil
+	if fake.networkReturnsOnCall == nil {
+		fake.networkReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.NetworkResponse
 			result2 error
 		})
 	}
-	fake.getRawTransactionReturnsOnCall[i] = struct {
-		result1 *pb.GetRawTransactionResponse
+	fake.networkReturnsOnCall[i] = struct {
+		result1 *walletrpc.NetworkResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetTransaction(arg1 context.Context, arg2 *pb.GetTransactionRequest, arg3 ...grpc.CallOption) (*pb.GetTransactionResponse, error) {
-	fake.getTransactionMutex.Lock()
-	ret, specificReturn := fake.getTransactionReturnsOnCall[len(fake.getTransactionArgsForCall)]
-	fake.getTransactionArgsForCall = append(fake.getTransactionArgsForCall, struct {
+func (fake *FakeWalletServiceClient) NextAccount(arg1 context.Context, arg2 *walletrpc.NextAccountRequest, arg3 ...grpc.CallOption) (*walletrpc.NextAccountResponse, error) {
+	fake.nextAccountMutex.Lock()
+	ret, specificReturn := fake.nextAccountReturnsOnCall[len(fake.nextAccountArgsForCall)]
+	fake.nextAccountArgsForCall = append(fake.nextAccountArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.GetTransactionRequest
+		arg2 *walletrpc.NextAccountRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetTransaction", []interface{}{arg1, arg2, arg3})
-	fake.getTransactionMutex.Unlock()
-	if fake.GetTransactionStub != nil {
-		return fake.GetTransactionStub(arg1, arg2, arg3...)
+	fake.recordInvocation("NextAccount", []interface{}{arg1, arg2, arg3})
+	fake.nextAccountMutex.Unlock()
+	if fake.NextAccountStub != nil {
+		return fake.NextAccountStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getTransactionReturns
+	fakeReturns := fake.nextAccountReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) GetTransactionCallCount() int {
-	fake.getTransactionMutex.RLock()
-	defer fake.getTransactionMutex.RUnlock()
-	return len(fake.getTransactionArgsForCall)
+func (fake *FakeWalletServiceClient) NextAccountCallCount() int {
+	fake.nextAccountMutex.RLock()
+	defer fake.nextAccountMutex.RUnlock()
+	return len(fake.nextAccountArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) GetTransactionCalls(stub func(context.Context, *pb.GetTransactionRequest, ...grpc.CallOption) (*pb.GetTransactionResponse, error)) {
-	fake.getTransactionMutex.Lock()
-	defer fake.getTransactionMutex.Unlock()
-	fake.GetTransactionStub = stub
+func (fake *FakeWalletServiceClient) NextAccountCalls(stub func(context.Context, *walletrpc.NextAccountRequest, ...grpc.CallOption) (*walletrpc.NextAccountResponse, error)) {
+	fake.nextAccountMutex.Lock()
+	defer fake.nextAccountMutex.Unlock()
+	fake.NextAccountStub = stub
 }
 
-func (fake *FakeBchrpcClient) GetTransactionArgsForCall(i int) (context.Context, *pb.GetTransactionRequest, []grpc.CallOption) {
-	fake.getTransactionMutex.RLock()
-	defer fake.getTransactionMutex.RUnlock()
-	argsForCall := fake.getTransactionArgsForCall[i]
+func (fake *FakeWalletServiceClient) NextAccountArgsForCall(i int) (context.Context, *walletrpc.NextAccountRequest, []grpc.CallOption) {
+	fake.nextAccountMutex.RLock()
+	defer fake.nextAccountMutex.RUnlock()
+	argsForCall := fake.nextAccountArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) GetTransactionReturns(result1 *pb.GetTransactionResponse, result2 error) {
-	fake.getTransactionMutex.Lock()
-	defer fake.getTransactionMutex.Unlock()
-	fake.GetTransactionStub = nil
-	fake.getTransactionReturns = struct {
-		result1 *pb.GetTransactionResponse
+func (fake *FakeWalletServiceClient) NextAccountReturns(result1 *walletrpc.NextAccountResponse, result2 error) {
+	fake.nextAccountMutex.Lock()
+	defer fake.nextAccountMutex.Unlock()
+	fake.NextAccountStub = nil
+	fake.nextAccountReturns = struct {
+		result1 *walletrpc.NextAccountResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) GetTransactionReturnsOnCall(i int, result1 *pb.GetTransactionResponse, result2 error) {
-	fake.getTransactionMutex.Lock()
-	defer fake.getTransactionMutex.Unlock()
-	fake.GetTransactionStub = nil
-	if fake.getTransactionReturnsOnCall == nil {
-		fake.getTransactionReturnsOnCall = make(map[int]struct {
-			result1 *pb.GetTransactionResponse
+func (fake *FakeWalletServiceClient) NextAccountReturnsOnCall(i int, result1 *walletrpc.NextAccountResponse, result2 error) {
+	fake.nextAccountMutex.Lock()
+	defer fake.nextAccountMutex.Unlock()
+	fake.NextAccountStub = nil
+	if fake.nextAccountReturnsOnCall == nil {
+		fake.nextAccountReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.NextAccountResponse
 			result2 error
 		})
 	}
-	fake.getTransactionReturnsOnCall[i] = struct {
-		result1 *pb.GetTransactionResponse
+	fake.nextAccountReturnsOnCall[i] = struct {
+		result1 *walletrpc.NextAccountResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) SubmitTransaction(arg1 context.Context, arg2 *pb.SubmitTransactionRequest, arg3 ...grpc.CallOption) (*pb.SubmitTransactionResponse, error) {
-	fake.submitTransactionMutex.Lock()
-	ret, specificReturn := fake.submitTransactionReturnsOnCall[len(fake.submitTransactionArgsForCall)]
-	fake.submitTransactionArgsForCall = append(fake.submitTransactionArgsForCall, struct {
+func (fake *FakeWalletServiceClient) NextAddress(arg1 context.Context, arg2 *walletrpc.NextAddressRequest, arg3 ...grpc.CallOption) (*walletrpc.NextAddressResponse, error) {
+	fake.nextAddressMutex.Lock()
+	ret, specificReturn := fake.nextAddressReturnsOnCall[len(fake.nextAddressArgsForCall)]
+	fake.nextAddressArgsForCall = append(fake.nextAddressArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.SubmitTransactionRequest
+		arg2 *walletrpc.NextAddressRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("SubmitTransaction", []interface{}{arg1, arg2, arg3})
-	fake.submitTransactionMutex.Unlock()
-	if fake.SubmitTransactionStub != nil {
-		return fake.SubmitTransactionStub(arg1, arg2, arg3...)
+	fake.recordInvocation("NextAddress", []interface{}{arg1, arg2, arg3})
+	fake.nextAddressMutex.Unlock()
+	if fake.NextAddressStub != nil {
+		return fake.NextAddressStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.submitTransactionReturns
+	fakeReturns := fake.nextAddressReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) SubmitTransactionCallCount() int {
-	fake.submitTransactionMutex.RLock()
-	defer fake.submitTransactionMutex.RUnlock()
-	return len(fake.submitTransactionArgsForCall)
+func (fake *FakeWalletServiceClient) NextAddressCallCount() int {
+	fake.nextAddressMutex.RLock()
+	defer fake.nextAddressMutex.RUnlock()
+	return len(fake.nextAddressArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) SubmitTransactionCalls(stub func(context.Context, *pb.SubmitTransactionRequest, ...grpc.CallOption) (*pb.SubmitTransactionResponse, error)) {
-	fake.submitTransactionMutex.Lock()
-	defer fake.submitTransactionMutex.Unlock()
-	fake.SubmitTransactionStub = stub
+func (fake *FakeWalletServiceClient) NextAddressCalls(stub func(context.Context, *walletrpc.NextAddressRequest, ...grpc.CallOption) (*walletrpc.NextAddressResponse, error)) {
+	fake.nextAddressMutex.Lock()
+	defer fake.nextAddressMutex.Unlock()
+	fake.NextAddressStub = stub
 }
 
-func (fake *FakeBchrpcClient) SubmitTransactionArgsForCall(i int) (context.Context, *pb.SubmitTransactionRequest, []grpc.CallOption) {
-	fake.submitTransactionMutex.RLock()
-	defer fake.submitTransactionMutex.RUnlock()
-	argsForCall := fake.submitTransactionArgsForCall[i]
+func (fake *FakeWalletServiceClient) NextAddressArgsForCall(i int) (context.Context, *walletrpc.NextAddressRequest, []grpc.CallOption) {
+	fake.nextAddressMutex.RLock()
+	defer fake.nextAddressMutex.RUnlock()
+	argsForCall := fake.nextAddressArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) SubmitTransactionReturns(result1 *pb.SubmitTransactionResponse, result2 error) {
-	fake.submitTransactionMutex.Lock()
-	defer fake.submitTransactionMutex.Unlock()
-	fake.SubmitTransactionStub = nil
-	fake.submitTransactionReturns = struct {
-		result1 *pb.SubmitTransactionResponse
+func (fake *FakeWalletServiceClient) NextAddressReturns(result1 *walletrpc.NextAddressResponse, result2 error) {
+	fake.nextAddressMutex.Lock()
+	defer fake.nextAddressMutex.Unlock()
+	fake.NextAddressStub = nil
+	fake.nextAddressReturns = struct {
+		result1 *walletrpc.NextAddressResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) SubmitTransactionReturnsOnCall(i int, result1 *pb.SubmitTransactionResponse, result2 error) {
-	fake.submitTransactionMutex.Lock()
-	defer fake.submitTransactionMutex.Unlock()
-	fake.SubmitTransactionStub = nil
-	if fake.submitTransactionReturnsOnCall == nil {
-		fake.submitTransactionReturnsOnCall = make(map[int]struct {
-			result1 *pb.SubmitTransactionResponse
+func (fake *FakeWalletServiceClient) NextAddressReturnsOnCall(i int, result1 *walletrpc.NextAddressResponse, result2 error) {
+	fake.nextAddressMutex.Lock()
+	defer fake.nextAddressMutex.Unlock()
+	fake.NextAddressStub = nil
+	if fake.nextAddressReturnsOnCall == nil {
+		fake.nextAddressReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.NextAddressResponse
 			result2 error
 		})
 	}
-	fake.submitTransactionReturnsOnCall[i] = struct {
-		result1 *pb.SubmitTransactionResponse
+	fake.nextAddressReturnsOnCall[i] = struct {
+		result1 *walletrpc.NextAddressResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) SubscribeBlocks(arg1 context.Context, arg2 *pb.SubscribeBlocksRequest, arg3 ...grpc.CallOption) (pb.Bchrpc_SubscribeBlocksClient, error) {
-	fake.subscribeBlocksMutex.Lock()
-	ret, specificReturn := fake.subscribeBlocksReturnsOnCall[len(fake.subscribeBlocksArgsForCall)]
-	fake.subscribeBlocksArgsForCall = append(fake.subscribeBlocksArgsForCall, struct {
+func (fake *FakeWalletServiceClient) Ping(arg1 context.Context, arg2 *walletrpc.PingRequest, arg3 ...grpc.CallOption) (*walletrpc.PingResponse, error) {
+	fake.pingMutex.Lock()
+	ret, specificReturn := fake.pingReturnsOnCall[len(fake.pingArgsForCall)]
+	fake.pingArgsForCall = append(fake.pingArgsForCall, struct {
 		arg1 context.Context
-		arg2 *pb.SubscribeBlocksRequest
+		arg2 *walletrpc.PingRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("SubscribeBlocks", []interface{}{arg1, arg2, arg3})
-	fake.subscribeBlocksMutex.Unlock()
-	if fake.SubscribeBlocksStub != nil {
-		return fake.SubscribeBlocksStub(arg1, arg2, arg3...)
+	fake.recordInvocation("Ping", []interface{}{arg1, arg2, arg3})
+	fake.pingMutex.Unlock()
+	if fake.PingStub != nil {
+		return fake.PingStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.subscribeBlocksReturns
+	fakeReturns := fake.pingReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) SubscribeBlocksCallCount() int {
-	fake.subscribeBlocksMutex.RLock()
-	defer fake.subscribeBlocksMutex.RUnlock()
-	return len(fake.subscribeBlocksArgsForCall)
+func (fake *FakeWalletServiceClient) PingCallCount() int {
+	fake.pingMutex.RLock()
+	defer fake.pingMutex.RUnlock()
+	return len(fake.pingArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) SubscribeBlocksCalls(stub func(context.Context, *pb.SubscribeBlocksRequest, ...grpc.CallOption) (pb.Bchrpc_SubscribeBlocksClient, error)) {
-	fake.subscribeBlocksMutex.Lock()
-	defer fake.subscribeBlocksMutex.Unlock()
-	fake.SubscribeBlocksStub = stub
+func (fake *FakeWalletServiceClient) PingCalls(stub func(context.Context, *walletrpc.PingRequest, ...grpc.CallOption) (*walletrpc.PingResponse, error)) {
+	fake.pingMutex.Lock()
+	defer fake.pingMutex.Unlock()
+	fake.PingStub = stub
 }
 
-func (fake *FakeBchrpcClient) SubscribeBlocksArgsForCall(i int) (context.Context, *pb.SubscribeBlocksRequest, []grpc.CallOption) {
-	fake.subscribeBlocksMutex.RLock()
-	defer fake.subscribeBlocksMutex.RUnlock()
-	argsForCall := fake.subscribeBlocksArgsForCall[i]
+func (fake *FakeWalletServiceClient) PingArgsForCall(i int) (context.Context, *walletrpc.PingRequest, []grpc.CallOption) {
+	fake.pingMutex.RLock()
+	defer fake.pingMutex.RUnlock()
+	argsForCall := fake.pingArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) SubscribeBlocksReturns(result1 pb.Bchrpc_SubscribeBlocksClient, result2 error) {
-	fake.subscribeBlocksMutex.Lock()
-	defer fake.subscribeBlocksMutex.Unlock()
-	fake.SubscribeBlocksStub = nil
-	fake.subscribeBlocksReturns = struct {
-		result1 pb.Bchrpc_SubscribeBlocksClient
+func (fake *FakeWalletServiceClient) PingReturns(result1 *walletrpc.PingResponse, result2 error) {
+	fake.pingMutex.Lock()
+	defer fake.pingMutex.Unlock()
+	fake.PingStub = nil
+	fake.pingReturns = struct {
+		result1 *walletrpc.PingResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) SubscribeBlocksReturnsOnCall(i int, result1 pb.Bchrpc_SubscribeBlocksClient, result2 error) {
-	fake.subscribeBlocksMutex.Lock()
-	defer fake.subscribeBlocksMutex.Unlock()
-	fake.SubscribeBlocksStub = nil
-	if fake.subscribeBlocksReturnsOnCall == nil {
-		fake.subscribeBlocksReturnsOnCall = make(map[int]struct {
-			result1 pb.Bchrpc_SubscribeBlocksClient
+func (fake *FakeWalletServiceClient) PingReturnsOnCall(i int, result1 *walletrpc.PingResponse, result2 error) {
+	fake.pingMutex.Lock()
+	defer fake.pingMutex.Unlock()
+	fake.PingStub = nil
+	if fake.pingReturnsOnCall == nil {
+		fake.pingReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.PingResponse
 			result2 error
 		})
 	}
-	fake.subscribeBlocksReturnsOnCall[i] = struct {
-		result1 pb.Bchrpc_SubscribeBlocksClient
+	fake.pingReturnsOnCall[i] = struct {
+		result1 *walletrpc.PingResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) SubscribeTransactionStream(arg1 context.Context, arg2 ...grpc.CallOption) (pb.Bchrpc_SubscribeTransactionStreamClient, error) {
-	fake.subscribeTransactionStreamMutex.Lock()
-	ret, specificReturn := fake.subscribeTransactionStreamReturnsOnCall[len(fake.subscribeTransactionStreamArgsForCall)]
-	fake.subscribeTransactionStreamArgsForCall = append(fake.subscribeTransactionStreamArgsForCall, struct {
+func (fake *FakeWalletServiceClient) PostPayment(arg1 context.Context, arg2 *walletrpc.PostPaymentRequest, arg3 ...grpc.CallOption) (*walletrpc.PostPaymentResponse, error) {
+	fake.postPaymentMutex.Lock()
+	ret, specificReturn := fake.postPaymentReturnsOnCall[len(fake.postPaymentArgsForCall)]
+	fake.postPaymentArgsForCall = append(fake.postPaymentArgsForCall, struct {
 		arg1 context.Context
-		arg2 []grpc.CallOption
-	}{arg1, arg2})
-	fake.recordInvocation("SubscribeTransactionStream", []interface{}{arg1, arg2})
-	fake.subscribeTransactionStreamMutex.Unlock()
-	if fake.SubscribeTransactionStreamStub != nil {
-		return fake.SubscribeTransactionStreamStub(arg1, arg2...)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.subscribeTransactionStreamReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeBchrpcClient) SubscribeTransactionStreamCallCount() int {
-	fake.subscribeTransactionStreamMutex.RLock()
-	defer fake.subscribeTransactionStreamMutex.RUnlock()
-	return len(fake.subscribeTransactionStreamArgsForCall)
-}
-
-func (fake *FakeBchrpcClient) SubscribeTransactionStreamCalls(stub func(context.Context, ...grpc.CallOption) (pb.Bchrpc_SubscribeTransactionStreamClient, error)) {
-	fake.subscribeTransactionStreamMutex.Lock()
-	defer fake.subscribeTransactionStreamMutex.Unlock()
-	fake.SubscribeTransactionStreamStub = stub
-}
-
-func (fake *FakeBchrpcClient) SubscribeTransactionStreamArgsForCall(i int) (context.Context, []grpc.CallOption) {
-	fake.subscribeTransactionStreamMutex.RLock()
-	defer fake.subscribeTransactionStreamMutex.RUnlock()
-	argsForCall := fake.subscribeTransactionStreamArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeBchrpcClient) SubscribeTransactionStreamReturns(result1 pb.Bchrpc_SubscribeTransactionStreamClient, result2 error) {
-	fake.subscribeTransactionStreamMutex.Lock()
-	defer fake.subscribeTransactionStreamMutex.Unlock()
-	fake.SubscribeTransactionStreamStub = nil
-	fake.subscribeTransactionStreamReturns = struct {
-		result1 pb.Bchrpc_SubscribeTransactionStreamClient
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeBchrpcClient) SubscribeTransactionStreamReturnsOnCall(i int, result1 pb.Bchrpc_SubscribeTransactionStreamClient, result2 error) {
-	fake.subscribeTransactionStreamMutex.Lock()
-	defer fake.subscribeTransactionStreamMutex.Unlock()
-	fake.SubscribeTransactionStreamStub = nil
-	if fake.subscribeTransactionStreamReturnsOnCall == nil {
-		fake.subscribeTransactionStreamReturnsOnCall = make(map[int]struct {
-			result1 pb.Bchrpc_SubscribeTransactionStreamClient
-			result2 error
-		})
-	}
-	fake.subscribeTransactionStreamReturnsOnCall[i] = struct {
-		result1 pb.Bchrpc_SubscribeTransactionStreamClient
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeBchrpcClient) SubscribeTransactions(arg1 context.Context, arg2 *pb.SubscribeTransactionsRequest, arg3 ...grpc.CallOption) (pb.Bchrpc_SubscribeTransactionsClient, error) {
-	fake.subscribeTransactionsMutex.Lock()
-	ret, specificReturn := fake.subscribeTransactionsReturnsOnCall[len(fake.subscribeTransactionsArgsForCall)]
-	fake.subscribeTransactionsArgsForCall = append(fake.subscribeTransactionsArgsForCall, struct {
-		arg1 context.Context
-		arg2 *pb.SubscribeTransactionsRequest
+		arg2 *walletrpc.PostPaymentRequest
 		arg3 []grpc.CallOption
 	}{arg1, arg2, arg3})
-	fake.recordInvocation("SubscribeTransactions", []interface{}{arg1, arg2, arg3})
-	fake.subscribeTransactionsMutex.Unlock()
-	if fake.SubscribeTransactionsStub != nil {
-		return fake.SubscribeTransactionsStub(arg1, arg2, arg3...)
+	fake.recordInvocation("PostPayment", []interface{}{arg1, arg2, arg3})
+	fake.postPaymentMutex.Unlock()
+	if fake.PostPaymentStub != nil {
+		return fake.PostPaymentStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.subscribeTransactionsReturns
+	fakeReturns := fake.postPaymentReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeBchrpcClient) SubscribeTransactionsCallCount() int {
-	fake.subscribeTransactionsMutex.RLock()
-	defer fake.subscribeTransactionsMutex.RUnlock()
-	return len(fake.subscribeTransactionsArgsForCall)
+func (fake *FakeWalletServiceClient) PostPaymentCallCount() int {
+	fake.postPaymentMutex.RLock()
+	defer fake.postPaymentMutex.RUnlock()
+	return len(fake.postPaymentArgsForCall)
 }
 
-func (fake *FakeBchrpcClient) SubscribeTransactionsCalls(stub func(context.Context, *pb.SubscribeTransactionsRequest, ...grpc.CallOption) (pb.Bchrpc_SubscribeTransactionsClient, error)) {
-	fake.subscribeTransactionsMutex.Lock()
-	defer fake.subscribeTransactionsMutex.Unlock()
-	fake.SubscribeTransactionsStub = stub
+func (fake *FakeWalletServiceClient) PostPaymentCalls(stub func(context.Context, *walletrpc.PostPaymentRequest, ...grpc.CallOption) (*walletrpc.PostPaymentResponse, error)) {
+	fake.postPaymentMutex.Lock()
+	defer fake.postPaymentMutex.Unlock()
+	fake.PostPaymentStub = stub
 }
 
-func (fake *FakeBchrpcClient) SubscribeTransactionsArgsForCall(i int) (context.Context, *pb.SubscribeTransactionsRequest, []grpc.CallOption) {
-	fake.subscribeTransactionsMutex.RLock()
-	defer fake.subscribeTransactionsMutex.RUnlock()
-	argsForCall := fake.subscribeTransactionsArgsForCall[i]
+func (fake *FakeWalletServiceClient) PostPaymentArgsForCall(i int) (context.Context, *walletrpc.PostPaymentRequest, []grpc.CallOption) {
+	fake.postPaymentMutex.RLock()
+	defer fake.postPaymentMutex.RUnlock()
+	argsForCall := fake.postPaymentArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeBchrpcClient) SubscribeTransactionsReturns(result1 pb.Bchrpc_SubscribeTransactionsClient, result2 error) {
-	fake.subscribeTransactionsMutex.Lock()
-	defer fake.subscribeTransactionsMutex.Unlock()
-	fake.SubscribeTransactionsStub = nil
-	fake.subscribeTransactionsReturns = struct {
-		result1 pb.Bchrpc_SubscribeTransactionsClient
+func (fake *FakeWalletServiceClient) PostPaymentReturns(result1 *walletrpc.PostPaymentResponse, result2 error) {
+	fake.postPaymentMutex.Lock()
+	defer fake.postPaymentMutex.Unlock()
+	fake.PostPaymentStub = nil
+	fake.postPaymentReturns = struct {
+		result1 *walletrpc.PostPaymentResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) SubscribeTransactionsReturnsOnCall(i int, result1 pb.Bchrpc_SubscribeTransactionsClient, result2 error) {
-	fake.subscribeTransactionsMutex.Lock()
-	defer fake.subscribeTransactionsMutex.Unlock()
-	fake.SubscribeTransactionsStub = nil
-	if fake.subscribeTransactionsReturnsOnCall == nil {
-		fake.subscribeTransactionsReturnsOnCall = make(map[int]struct {
-			result1 pb.Bchrpc_SubscribeTransactionsClient
+func (fake *FakeWalletServiceClient) PostPaymentReturnsOnCall(i int, result1 *walletrpc.PostPaymentResponse, result2 error) {
+	fake.postPaymentMutex.Lock()
+	defer fake.postPaymentMutex.Unlock()
+	fake.PostPaymentStub = nil
+	if fake.postPaymentReturnsOnCall == nil {
+		fake.postPaymentReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.PostPaymentResponse
 			result2 error
 		})
 	}
-	fake.subscribeTransactionsReturnsOnCall[i] = struct {
-		result1 pb.Bchrpc_SubscribeTransactionsClient
+	fake.postPaymentReturnsOnCall[i] = struct {
+		result1 *walletrpc.PostPaymentResponse
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeBchrpcClient) Invocations() map[string][][]interface{} {
+func (fake *FakeWalletServiceClient) PublishTransaction(arg1 context.Context, arg2 *walletrpc.PublishTransactionRequest, arg3 ...grpc.CallOption) (*walletrpc.PublishTransactionResponse, error) {
+	fake.publishTransactionMutex.Lock()
+	ret, specificReturn := fake.publishTransactionReturnsOnCall[len(fake.publishTransactionArgsForCall)]
+	fake.publishTransactionArgsForCall = append(fake.publishTransactionArgsForCall, struct {
+		arg1 context.Context
+		arg2 *walletrpc.PublishTransactionRequest
+		arg3 []grpc.CallOption
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("PublishTransaction", []interface{}{arg1, arg2, arg3})
+	fake.publishTransactionMutex.Unlock()
+	if fake.PublishTransactionStub != nil {
+		return fake.PublishTransactionStub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.publishTransactionReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeWalletServiceClient) PublishTransactionCallCount() int {
+	fake.publishTransactionMutex.RLock()
+	defer fake.publishTransactionMutex.RUnlock()
+	return len(fake.publishTransactionArgsForCall)
+}
+
+func (fake *FakeWalletServiceClient) PublishTransactionCalls(stub func(context.Context, *walletrpc.PublishTransactionRequest, ...grpc.CallOption) (*walletrpc.PublishTransactionResponse, error)) {
+	fake.publishTransactionMutex.Lock()
+	defer fake.publishTransactionMutex.Unlock()
+	fake.PublishTransactionStub = stub
+}
+
+func (fake *FakeWalletServiceClient) PublishTransactionArgsForCall(i int) (context.Context, *walletrpc.PublishTransactionRequest, []grpc.CallOption) {
+	fake.publishTransactionMutex.RLock()
+	defer fake.publishTransactionMutex.RUnlock()
+	argsForCall := fake.publishTransactionArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeWalletServiceClient) PublishTransactionReturns(result1 *walletrpc.PublishTransactionResponse, result2 error) {
+	fake.publishTransactionMutex.Lock()
+	defer fake.publishTransactionMutex.Unlock()
+	fake.PublishTransactionStub = nil
+	fake.publishTransactionReturns = struct {
+		result1 *walletrpc.PublishTransactionResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) PublishTransactionReturnsOnCall(i int, result1 *walletrpc.PublishTransactionResponse, result2 error) {
+	fake.publishTransactionMutex.Lock()
+	defer fake.publishTransactionMutex.Unlock()
+	fake.PublishTransactionStub = nil
+	if fake.publishTransactionReturnsOnCall == nil {
+		fake.publishTransactionReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.PublishTransactionResponse
+			result2 error
+		})
+	}
+	fake.publishTransactionReturnsOnCall[i] = struct {
+		result1 *walletrpc.PublishTransactionResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) RenameAccount(arg1 context.Context, arg2 *walletrpc.RenameAccountRequest, arg3 ...grpc.CallOption) (*walletrpc.RenameAccountResponse, error) {
+	fake.renameAccountMutex.Lock()
+	ret, specificReturn := fake.renameAccountReturnsOnCall[len(fake.renameAccountArgsForCall)]
+	fake.renameAccountArgsForCall = append(fake.renameAccountArgsForCall, struct {
+		arg1 context.Context
+		arg2 *walletrpc.RenameAccountRequest
+		arg3 []grpc.CallOption
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("RenameAccount", []interface{}{arg1, arg2, arg3})
+	fake.renameAccountMutex.Unlock()
+	if fake.RenameAccountStub != nil {
+		return fake.RenameAccountStub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.renameAccountReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeWalletServiceClient) RenameAccountCallCount() int {
+	fake.renameAccountMutex.RLock()
+	defer fake.renameAccountMutex.RUnlock()
+	return len(fake.renameAccountArgsForCall)
+}
+
+func (fake *FakeWalletServiceClient) RenameAccountCalls(stub func(context.Context, *walletrpc.RenameAccountRequest, ...grpc.CallOption) (*walletrpc.RenameAccountResponse, error)) {
+	fake.renameAccountMutex.Lock()
+	defer fake.renameAccountMutex.Unlock()
+	fake.RenameAccountStub = stub
+}
+
+func (fake *FakeWalletServiceClient) RenameAccountArgsForCall(i int) (context.Context, *walletrpc.RenameAccountRequest, []grpc.CallOption) {
+	fake.renameAccountMutex.RLock()
+	defer fake.renameAccountMutex.RUnlock()
+	argsForCall := fake.renameAccountArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeWalletServiceClient) RenameAccountReturns(result1 *walletrpc.RenameAccountResponse, result2 error) {
+	fake.renameAccountMutex.Lock()
+	defer fake.renameAccountMutex.Unlock()
+	fake.RenameAccountStub = nil
+	fake.renameAccountReturns = struct {
+		result1 *walletrpc.RenameAccountResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) RenameAccountReturnsOnCall(i int, result1 *walletrpc.RenameAccountResponse, result2 error) {
+	fake.renameAccountMutex.Lock()
+	defer fake.renameAccountMutex.Unlock()
+	fake.RenameAccountStub = nil
+	if fake.renameAccountReturnsOnCall == nil {
+		fake.renameAccountReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.RenameAccountResponse
+			result2 error
+		})
+	}
+	fake.renameAccountReturnsOnCall[i] = struct {
+		result1 *walletrpc.RenameAccountResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) Rescan(arg1 context.Context, arg2 *walletrpc.RescanRequest, arg3 ...grpc.CallOption) (*walletrpc.RescanResponse, error) {
+	fake.rescanMutex.Lock()
+	ret, specificReturn := fake.rescanReturnsOnCall[len(fake.rescanArgsForCall)]
+	fake.rescanArgsForCall = append(fake.rescanArgsForCall, struct {
+		arg1 context.Context
+		arg2 *walletrpc.RescanRequest
+		arg3 []grpc.CallOption
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("Rescan", []interface{}{arg1, arg2, arg3})
+	fake.rescanMutex.Unlock()
+	if fake.RescanStub != nil {
+		return fake.RescanStub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.rescanReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeWalletServiceClient) RescanCallCount() int {
+	fake.rescanMutex.RLock()
+	defer fake.rescanMutex.RUnlock()
+	return len(fake.rescanArgsForCall)
+}
+
+func (fake *FakeWalletServiceClient) RescanCalls(stub func(context.Context, *walletrpc.RescanRequest, ...grpc.CallOption) (*walletrpc.RescanResponse, error)) {
+	fake.rescanMutex.Lock()
+	defer fake.rescanMutex.Unlock()
+	fake.RescanStub = stub
+}
+
+func (fake *FakeWalletServiceClient) RescanArgsForCall(i int) (context.Context, *walletrpc.RescanRequest, []grpc.CallOption) {
+	fake.rescanMutex.RLock()
+	defer fake.rescanMutex.RUnlock()
+	argsForCall := fake.rescanArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeWalletServiceClient) RescanReturns(result1 *walletrpc.RescanResponse, result2 error) {
+	fake.rescanMutex.Lock()
+	defer fake.rescanMutex.Unlock()
+	fake.RescanStub = nil
+	fake.rescanReturns = struct {
+		result1 *walletrpc.RescanResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) RescanReturnsOnCall(i int, result1 *walletrpc.RescanResponse, result2 error) {
+	fake.rescanMutex.Lock()
+	defer fake.rescanMutex.Unlock()
+	fake.RescanStub = nil
+	if fake.rescanReturnsOnCall == nil {
+		fake.rescanReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.RescanResponse
+			result2 error
+		})
+	}
+	fake.rescanReturnsOnCall[i] = struct {
+		result1 *walletrpc.RescanResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) RescanNotifications(arg1 context.Context, arg2 *walletrpc.RescanNotificationsRequest, arg3 ...grpc.CallOption) (walletrpc.WalletService_RescanNotificationsClient, error) {
+	fake.rescanNotificationsMutex.Lock()
+	ret, specificReturn := fake.rescanNotificationsReturnsOnCall[len(fake.rescanNotificationsArgsForCall)]
+	fake.rescanNotificationsArgsForCall = append(fake.rescanNotificationsArgsForCall, struct {
+		arg1 context.Context
+		arg2 *walletrpc.RescanNotificationsRequest
+		arg3 []grpc.CallOption
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("RescanNotifications", []interface{}{arg1, arg2, arg3})
+	fake.rescanNotificationsMutex.Unlock()
+	if fake.RescanNotificationsStub != nil {
+		return fake.RescanNotificationsStub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.rescanNotificationsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeWalletServiceClient) RescanNotificationsCallCount() int {
+	fake.rescanNotificationsMutex.RLock()
+	defer fake.rescanNotificationsMutex.RUnlock()
+	return len(fake.rescanNotificationsArgsForCall)
+}
+
+func (fake *FakeWalletServiceClient) RescanNotificationsCalls(stub func(context.Context, *walletrpc.RescanNotificationsRequest, ...grpc.CallOption) (walletrpc.WalletService_RescanNotificationsClient, error)) {
+	fake.rescanNotificationsMutex.Lock()
+	defer fake.rescanNotificationsMutex.Unlock()
+	fake.RescanNotificationsStub = stub
+}
+
+func (fake *FakeWalletServiceClient) RescanNotificationsArgsForCall(i int) (context.Context, *walletrpc.RescanNotificationsRequest, []grpc.CallOption) {
+	fake.rescanNotificationsMutex.RLock()
+	defer fake.rescanNotificationsMutex.RUnlock()
+	argsForCall := fake.rescanNotificationsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeWalletServiceClient) RescanNotificationsReturns(result1 walletrpc.WalletService_RescanNotificationsClient, result2 error) {
+	fake.rescanNotificationsMutex.Lock()
+	defer fake.rescanNotificationsMutex.Unlock()
+	fake.RescanNotificationsStub = nil
+	fake.rescanNotificationsReturns = struct {
+		result1 walletrpc.WalletService_RescanNotificationsClient
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) RescanNotificationsReturnsOnCall(i int, result1 walletrpc.WalletService_RescanNotificationsClient, result2 error) {
+	fake.rescanNotificationsMutex.Lock()
+	defer fake.rescanNotificationsMutex.Unlock()
+	fake.RescanNotificationsStub = nil
+	if fake.rescanNotificationsReturnsOnCall == nil {
+		fake.rescanNotificationsReturnsOnCall = make(map[int]struct {
+			result1 walletrpc.WalletService_RescanNotificationsClient
+			result2 error
+		})
+	}
+	fake.rescanNotificationsReturnsOnCall[i] = struct {
+		result1 walletrpc.WalletService_RescanNotificationsClient
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) SignTransaction(arg1 context.Context, arg2 *walletrpc.SignTransactionRequest, arg3 ...grpc.CallOption) (*walletrpc.SignTransactionResponse, error) {
+	fake.signTransactionMutex.Lock()
+	ret, specificReturn := fake.signTransactionReturnsOnCall[len(fake.signTransactionArgsForCall)]
+	fake.signTransactionArgsForCall = append(fake.signTransactionArgsForCall, struct {
+		arg1 context.Context
+		arg2 *walletrpc.SignTransactionRequest
+		arg3 []grpc.CallOption
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("SignTransaction", []interface{}{arg1, arg2, arg3})
+	fake.signTransactionMutex.Unlock()
+	if fake.SignTransactionStub != nil {
+		return fake.SignTransactionStub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.signTransactionReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeWalletServiceClient) SignTransactionCallCount() int {
+	fake.signTransactionMutex.RLock()
+	defer fake.signTransactionMutex.RUnlock()
+	return len(fake.signTransactionArgsForCall)
+}
+
+func (fake *FakeWalletServiceClient) SignTransactionCalls(stub func(context.Context, *walletrpc.SignTransactionRequest, ...grpc.CallOption) (*walletrpc.SignTransactionResponse, error)) {
+	fake.signTransactionMutex.Lock()
+	defer fake.signTransactionMutex.Unlock()
+	fake.SignTransactionStub = stub
+}
+
+func (fake *FakeWalletServiceClient) SignTransactionArgsForCall(i int) (context.Context, *walletrpc.SignTransactionRequest, []grpc.CallOption) {
+	fake.signTransactionMutex.RLock()
+	defer fake.signTransactionMutex.RUnlock()
+	argsForCall := fake.signTransactionArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeWalletServiceClient) SignTransactionReturns(result1 *walletrpc.SignTransactionResponse, result2 error) {
+	fake.signTransactionMutex.Lock()
+	defer fake.signTransactionMutex.Unlock()
+	fake.SignTransactionStub = nil
+	fake.signTransactionReturns = struct {
+		result1 *walletrpc.SignTransactionResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) SignTransactionReturnsOnCall(i int, result1 *walletrpc.SignTransactionResponse, result2 error) {
+	fake.signTransactionMutex.Lock()
+	defer fake.signTransactionMutex.Unlock()
+	fake.SignTransactionStub = nil
+	if fake.signTransactionReturnsOnCall == nil {
+		fake.signTransactionReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.SignTransactionResponse
+			result2 error
+		})
+	}
+	fake.signTransactionReturnsOnCall[i] = struct {
+		result1 *walletrpc.SignTransactionResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) SpentnessNotifications(arg1 context.Context, arg2 *walletrpc.SpentnessNotificationsRequest, arg3 ...grpc.CallOption) (walletrpc.WalletService_SpentnessNotificationsClient, error) {
+	fake.spentnessNotificationsMutex.Lock()
+	ret, specificReturn := fake.spentnessNotificationsReturnsOnCall[len(fake.spentnessNotificationsArgsForCall)]
+	fake.spentnessNotificationsArgsForCall = append(fake.spentnessNotificationsArgsForCall, struct {
+		arg1 context.Context
+		arg2 *walletrpc.SpentnessNotificationsRequest
+		arg3 []grpc.CallOption
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("SpentnessNotifications", []interface{}{arg1, arg2, arg3})
+	fake.spentnessNotificationsMutex.Unlock()
+	if fake.SpentnessNotificationsStub != nil {
+		return fake.SpentnessNotificationsStub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.spentnessNotificationsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeWalletServiceClient) SpentnessNotificationsCallCount() int {
+	fake.spentnessNotificationsMutex.RLock()
+	defer fake.spentnessNotificationsMutex.RUnlock()
+	return len(fake.spentnessNotificationsArgsForCall)
+}
+
+func (fake *FakeWalletServiceClient) SpentnessNotificationsCalls(stub func(context.Context, *walletrpc.SpentnessNotificationsRequest, ...grpc.CallOption) (walletrpc.WalletService_SpentnessNotificationsClient, error)) {
+	fake.spentnessNotificationsMutex.Lock()
+	defer fake.spentnessNotificationsMutex.Unlock()
+	fake.SpentnessNotificationsStub = stub
+}
+
+func (fake *FakeWalletServiceClient) SpentnessNotificationsArgsForCall(i int) (context.Context, *walletrpc.SpentnessNotificationsRequest, []grpc.CallOption) {
+	fake.spentnessNotificationsMutex.RLock()
+	defer fake.spentnessNotificationsMutex.RUnlock()
+	argsForCall := fake.spentnessNotificationsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeWalletServiceClient) SpentnessNotificationsReturns(result1 walletrpc.WalletService_SpentnessNotificationsClient, result2 error) {
+	fake.spentnessNotificationsMutex.Lock()
+	defer fake.spentnessNotificationsMutex.Unlock()
+	fake.SpentnessNotificationsStub = nil
+	fake.spentnessNotificationsReturns = struct {
+		result1 walletrpc.WalletService_SpentnessNotificationsClient
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) SpentnessNotificationsReturnsOnCall(i int, result1 walletrpc.WalletService_SpentnessNotificationsClient, result2 error) {
+	fake.spentnessNotificationsMutex.Lock()
+	defer fake.spentnessNotificationsMutex.Unlock()
+	fake.SpentnessNotificationsStub = nil
+	if fake.spentnessNotificationsReturnsOnCall == nil {
+		fake.spentnessNotificationsReturnsOnCall = make(map[int]struct {
+			result1 walletrpc.WalletService_SpentnessNotificationsClient
+			result2 error
+		})
+	}
+	fake.spentnessNotificationsReturnsOnCall[i] = struct {
+		result1 walletrpc.WalletService_SpentnessNotificationsClient
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) SweepAccount(arg1 context.Context, arg2 *walletrpc.SweepAccountRequest, arg3 ...grpc.CallOption) (*walletrpc.SweepAccountResponse, error) {
+	fake.sweepAccountMutex.Lock()
+	ret, specificReturn := fake.sweepAccountReturnsOnCall[len(fake.sweepAccountArgsForCall)]
+	fake.sweepAccountArgsForCall = append(fake.sweepAccountArgsForCall, struct {
+		arg1 context.Context
+		arg2 *walletrpc.SweepAccountRequest
+		arg3 []grpc.CallOption
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("SweepAccount", []interface{}{arg1, arg2, arg3})
+	fake.sweepAccountMutex.Unlock()
+	if fake.SweepAccountStub != nil {
+		return fake.SweepAccountStub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.sweepAccountReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeWalletServiceClient) SweepAccountCallCount() int {
+	fake.sweepAccountMutex.RLock()
+	defer fake.sweepAccountMutex.RUnlock()
+	return len(fake.sweepAccountArgsForCall)
+}
+
+func (fake *FakeWalletServiceClient) SweepAccountCalls(stub func(context.Context, *walletrpc.SweepAccountRequest, ...grpc.CallOption) (*walletrpc.SweepAccountResponse, error)) {
+	fake.sweepAccountMutex.Lock()
+	defer fake.sweepAccountMutex.Unlock()
+	fake.SweepAccountStub = stub
+}
+
+func (fake *FakeWalletServiceClient) SweepAccountArgsForCall(i int) (context.Context, *walletrpc.SweepAccountRequest, []grpc.CallOption) {
+	fake.sweepAccountMutex.RLock()
+	defer fake.sweepAccountMutex.RUnlock()
+	argsForCall := fake.sweepAccountArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeWalletServiceClient) SweepAccountReturns(result1 *walletrpc.SweepAccountResponse, result2 error) {
+	fake.sweepAccountMutex.Lock()
+	defer fake.sweepAccountMutex.Unlock()
+	fake.SweepAccountStub = nil
+	fake.sweepAccountReturns = struct {
+		result1 *walletrpc.SweepAccountResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) SweepAccountReturnsOnCall(i int, result1 *walletrpc.SweepAccountResponse, result2 error) {
+	fake.sweepAccountMutex.Lock()
+	defer fake.sweepAccountMutex.Unlock()
+	fake.SweepAccountStub = nil
+	if fake.sweepAccountReturnsOnCall == nil {
+		fake.sweepAccountReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.SweepAccountResponse
+			result2 error
+		})
+	}
+	fake.sweepAccountReturnsOnCall[i] = struct {
+		result1 *walletrpc.SweepAccountResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) TransactionNotifications(arg1 context.Context, arg2 *walletrpc.TransactionNotificationsRequest, arg3 ...grpc.CallOption) (walletrpc.WalletService_TransactionNotificationsClient, error) {
+	fake.transactionNotificationsMutex.Lock()
+	ret, specificReturn := fake.transactionNotificationsReturnsOnCall[len(fake.transactionNotificationsArgsForCall)]
+	fake.transactionNotificationsArgsForCall = append(fake.transactionNotificationsArgsForCall, struct {
+		arg1 context.Context
+		arg2 *walletrpc.TransactionNotificationsRequest
+		arg3 []grpc.CallOption
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("TransactionNotifications", []interface{}{arg1, arg2, arg3})
+	fake.transactionNotificationsMutex.Unlock()
+	if fake.TransactionNotificationsStub != nil {
+		return fake.TransactionNotificationsStub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.transactionNotificationsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeWalletServiceClient) TransactionNotificationsCallCount() int {
+	fake.transactionNotificationsMutex.RLock()
+	defer fake.transactionNotificationsMutex.RUnlock()
+	return len(fake.transactionNotificationsArgsForCall)
+}
+
+func (fake *FakeWalletServiceClient) TransactionNotificationsCalls(stub func(context.Context, *walletrpc.TransactionNotificationsRequest, ...grpc.CallOption) (walletrpc.WalletService_TransactionNotificationsClient, error)) {
+	fake.transactionNotificationsMutex.Lock()
+	defer fake.transactionNotificationsMutex.Unlock()
+	fake.TransactionNotificationsStub = stub
+}
+
+func (fake *FakeWalletServiceClient) TransactionNotificationsArgsForCall(i int) (context.Context, *walletrpc.TransactionNotificationsRequest, []grpc.CallOption) {
+	fake.transactionNotificationsMutex.RLock()
+	defer fake.transactionNotificationsMutex.RUnlock()
+	argsForCall := fake.transactionNotificationsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeWalletServiceClient) TransactionNotificationsReturns(result1 walletrpc.WalletService_TransactionNotificationsClient, result2 error) {
+	fake.transactionNotificationsMutex.Lock()
+	defer fake.transactionNotificationsMutex.Unlock()
+	fake.TransactionNotificationsStub = nil
+	fake.transactionNotificationsReturns = struct {
+		result1 walletrpc.WalletService_TransactionNotificationsClient
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) TransactionNotificationsReturnsOnCall(i int, result1 walletrpc.WalletService_TransactionNotificationsClient, result2 error) {
+	fake.transactionNotificationsMutex.Lock()
+	defer fake.transactionNotificationsMutex.Unlock()
+	fake.TransactionNotificationsStub = nil
+	if fake.transactionNotificationsReturnsOnCall == nil {
+		fake.transactionNotificationsReturnsOnCall = make(map[int]struct {
+			result1 walletrpc.WalletService_TransactionNotificationsClient
+			result2 error
+		})
+	}
+	fake.transactionNotificationsReturnsOnCall[i] = struct {
+		result1 walletrpc.WalletService_TransactionNotificationsClient
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) ValidateAddress(arg1 context.Context, arg2 *walletrpc.ValidateAddressRequest, arg3 ...grpc.CallOption) (*walletrpc.ValidateAddressResponse, error) {
+	fake.validateAddressMutex.Lock()
+	ret, specificReturn := fake.validateAddressReturnsOnCall[len(fake.validateAddressArgsForCall)]
+	fake.validateAddressArgsForCall = append(fake.validateAddressArgsForCall, struct {
+		arg1 context.Context
+		arg2 *walletrpc.ValidateAddressRequest
+		arg3 []grpc.CallOption
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("ValidateAddress", []interface{}{arg1, arg2, arg3})
+	fake.validateAddressMutex.Unlock()
+	if fake.ValidateAddressStub != nil {
+		return fake.ValidateAddressStub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.validateAddressReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeWalletServiceClient) ValidateAddressCallCount() int {
+	fake.validateAddressMutex.RLock()
+	defer fake.validateAddressMutex.RUnlock()
+	return len(fake.validateAddressArgsForCall)
+}
+
+func (fake *FakeWalletServiceClient) ValidateAddressCalls(stub func(context.Context, *walletrpc.ValidateAddressRequest, ...grpc.CallOption) (*walletrpc.ValidateAddressResponse, error)) {
+	fake.validateAddressMutex.Lock()
+	defer fake.validateAddressMutex.Unlock()
+	fake.ValidateAddressStub = stub
+}
+
+func (fake *FakeWalletServiceClient) ValidateAddressArgsForCall(i int) (context.Context, *walletrpc.ValidateAddressRequest, []grpc.CallOption) {
+	fake.validateAddressMutex.RLock()
+	defer fake.validateAddressMutex.RUnlock()
+	argsForCall := fake.validateAddressArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeWalletServiceClient) ValidateAddressReturns(result1 *walletrpc.ValidateAddressResponse, result2 error) {
+	fake.validateAddressMutex.Lock()
+	defer fake.validateAddressMutex.Unlock()
+	fake.ValidateAddressStub = nil
+	fake.validateAddressReturns = struct {
+		result1 *walletrpc.ValidateAddressResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) ValidateAddressReturnsOnCall(i int, result1 *walletrpc.ValidateAddressResponse, result2 error) {
+	fake.validateAddressMutex.Lock()
+	defer fake.validateAddressMutex.Unlock()
+	fake.ValidateAddressStub = nil
+	if fake.validateAddressReturnsOnCall == nil {
+		fake.validateAddressReturnsOnCall = make(map[int]struct {
+			result1 *walletrpc.ValidateAddressResponse
+			result2 error
+		})
+	}
+	fake.validateAddressReturnsOnCall[i] = struct {
+		result1 *walletrpc.ValidateAddressResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWalletServiceClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getAddressTransactionsMutex.RLock()
-	defer fake.getAddressTransactionsMutex.RUnlock()
-	fake.getAddressUnspentOutputsMutex.RLock()
-	defer fake.getAddressUnspentOutputsMutex.RUnlock()
-	fake.getBlockMutex.RLock()
-	defer fake.getBlockMutex.RUnlock()
-	fake.getBlockFilterMutex.RLock()
-	defer fake.getBlockFilterMutex.RUnlock()
-	fake.getBlockInfoMutex.RLock()
-	defer fake.getBlockInfoMutex.RUnlock()
-	fake.getBlockchainInfoMutex.RLock()
-	defer fake.getBlockchainInfoMutex.RUnlock()
-	fake.getHeadersMutex.RLock()
-	defer fake.getHeadersMutex.RUnlock()
-	fake.getMempoolInfoMutex.RLock()
-	defer fake.getMempoolInfoMutex.RUnlock()
-	fake.getMerkleProofMutex.RLock()
-	defer fake.getMerkleProofMutex.RUnlock()
-	fake.getRawAddressTransactionsMutex.RLock()
-	defer fake.getRawAddressTransactionsMutex.RUnlock()
-	fake.getRawBlockMutex.RLock()
-	defer fake.getRawBlockMutex.RUnlock()
-	fake.getRawTransactionMutex.RLock()
-	defer fake.getRawTransactionMutex.RUnlock()
-	fake.getTransactionMutex.RLock()
-	defer fake.getTransactionMutex.RUnlock()
-	fake.submitTransactionMutex.RLock()
-	defer fake.submitTransactionMutex.RUnlock()
-	fake.subscribeBlocksMutex.RLock()
-	defer fake.subscribeBlocksMutex.RUnlock()
-	fake.subscribeTransactionStreamMutex.RLock()
-	defer fake.subscribeTransactionStreamMutex.RUnlock()
-	fake.subscribeTransactionsMutex.RLock()
-	defer fake.subscribeTransactionsMutex.RUnlock()
+	fake.accountNotificationsMutex.RLock()
+	defer fake.accountNotificationsMutex.RUnlock()
+	fake.accountNumberMutex.RLock()
+	defer fake.accountNumberMutex.RUnlock()
+	fake.accountsMutex.RLock()
+	defer fake.accountsMutex.RUnlock()
+	fake.balanceMutex.RLock()
+	defer fake.balanceMutex.RUnlock()
+	fake.changePassphraseMutex.RLock()
+	defer fake.changePassphraseMutex.RUnlock()
+	fake.createTransactionMutex.RLock()
+	defer fake.createTransactionMutex.RUnlock()
+	fake.currentAddressMutex.RLock()
+	defer fake.currentAddressMutex.RUnlock()
+	fake.downloadPaymentRequestMutex.RLock()
+	defer fake.downloadPaymentRequestMutex.RUnlock()
+	fake.fundTransactionMutex.RLock()
+	defer fake.fundTransactionMutex.RUnlock()
+	fake.getTransactionsMutex.RLock()
+	defer fake.getTransactionsMutex.RUnlock()
+	fake.importPrivateKeyMutex.RLock()
+	defer fake.importPrivateKeyMutex.RUnlock()
+	fake.networkMutex.RLock()
+	defer fake.networkMutex.RUnlock()
+	fake.nextAccountMutex.RLock()
+	defer fake.nextAccountMutex.RUnlock()
+	fake.nextAddressMutex.RLock()
+	defer fake.nextAddressMutex.RUnlock()
+	fake.pingMutex.RLock()
+	defer fake.pingMutex.RUnlock()
+	fake.postPaymentMutex.RLock()
+	defer fake.postPaymentMutex.RUnlock()
+	fake.publishTransactionMutex.RLock()
+	defer fake.publishTransactionMutex.RUnlock()
+	fake.renameAccountMutex.RLock()
+	defer fake.renameAccountMutex.RUnlock()
+	fake.rescanMutex.RLock()
+	defer fake.rescanMutex.RUnlock()
+	fake.rescanNotificationsMutex.RLock()
+	defer fake.rescanNotificationsMutex.RUnlock()
+	fake.signTransactionMutex.RLock()
+	defer fake.signTransactionMutex.RUnlock()
+	fake.spentnessNotificationsMutex.RLock()
+	defer fake.spentnessNotificationsMutex.RUnlock()
+	fake.sweepAccountMutex.RLock()
+	defer fake.sweepAccountMutex.RUnlock()
+	fake.transactionNotificationsMutex.RLock()
+	defer fake.transactionNotificationsMutex.RUnlock()
+	fake.validateAddressMutex.RLock()
+	defer fake.validateAddressMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
@@ -1416,7 +2074,7 @@ func (fake *FakeBchrpcClient) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeBchrpcClient) recordInvocation(key string, args []interface{}) {
+func (fake *FakeWalletServiceClient) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -1428,4 +2086,4 @@ func (fake *FakeBchrpcClient) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ pb.BchrpcClient = new(FakeBchrpcClient)
+var _ walletrpc.WalletServiceClient = new(FakeWalletServiceClient)
