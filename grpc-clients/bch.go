@@ -13,6 +13,7 @@ import (
 // to manage a BCH wallet
 type BchWalletClient struct {
 	pb.WalletServiceClient
+	conn *grpc.ClientConn
 }
 
 // NewBchWalletClient is used to instantaite our connection
@@ -32,8 +33,8 @@ func NewBchWalletClient(opts config.Services) (*BchWalletClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &BchWalletClient{pb.NewWalletServiceClient(gConn)}, nil
+	return &BchWalletClient{pb.NewWalletServiceClient(gConn), gConn}, nil
 }
 
 // Close is used to close the gRPC connection
-func (bw *BchWalletClient) Close() { bw.Close() }
+func (bw *BchWalletClient) Close() { bw.conn.Close() }
