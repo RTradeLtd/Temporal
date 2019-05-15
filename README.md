@@ -48,7 +48,7 @@ Temporal is an enterprise-grade storage solution that allows you easily integrat
 
 Temporal's API comes in two flavours, hosted or on-site. Should you not have the resources, or interest in maintaining your own infrastructure you can take advantage of our hosted API running in our very own datacenter. Those which have the interest, and/or resources may deploy Temporal within your own environments. For those that deploy Temporal themselves, we offer paid for support, installation, tutorials, and product usage information sessions allowing organizations to leverage all the capabilities that Temporal offers.
 
-Temporal is modular such that the underlying protocols it connects to, can easily be upgraded, and replaced with without having to change the overall architecture. Simply write the interface for whatever protocol you're interested in, and a subsequent RabbitMQ consumer, and you're good to go. For a guideline on how this can be accomplished see [protocol-expansion.md](/docs/protocol-expansion.md)
+Temporal is modular such that the underlying protocols it connects to, can easily be upgraded, and replaced with without having to change the overall architecture. See our [protocol-expansion.md](/docs/protocol-expansion.md) documentation for details on extending the available functionality.
 
 We have comprehensive API documentation available [here](https://gateway.temporal.cloud/ipns/docs.api.temporal.cloud) as well as an in-depth [wiki](https://rtradetechnologies.atlassian.net/wiki/spaces/TEM/overview) which contains additional information such as architectural diagrams, design decisions, and more.
 
