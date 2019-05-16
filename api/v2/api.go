@@ -222,6 +222,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 		lens:        clients.Lens,
 		signer:      clients.Signer,
 		orch:        clients.Orch,
+		bchWallet:   clients.BchWallet,
 		dc:          dc,
 		queues: queues{
 			pin:     qmPin,
