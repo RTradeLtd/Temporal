@@ -191,6 +191,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 	if err != nil {
 		return nil, err
 	}
+	qmBch, err := queue.New(queue.BitcoinCashPaymentConfirmationQueue, cfg.RabbitMQ.URL, true, dev, cfg, l.Named("bch"))
+	if err != nil {
+		return nil, err
+	}
 	clam, err := utils.NewShell("")
 	if err != nil {
 		return nil, err
@@ -232,6 +236,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 			key:     qmKey,
 			dash:    qmDash,
 			eth:     qmEth,
+			bch:     qmBch,
 		},
 		zm:   models.NewZoneManager(dbm.DB),
 		rm:   models.NewRecordManager(dbm.DB),
@@ -350,6 +355,12 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 				return server.Close()
 			}
 			api.queues.pin = qmPin
+		case msg := <-api.queues.bch.ErrCh:
+			qmBch, err := api.handleQueueError(msg, api.cfg.RabbitMQ.URL, queue.BitcoinCashPaymentConfirmationQueue, true)
+			if err != nil {
+				return server.Close()
+			}
+			api.queues.bch = qmBch
 		}
 	}
 }
