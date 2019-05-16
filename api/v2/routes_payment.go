@@ -224,11 +224,18 @@ func (api *API) createBchPayment(c *gin.Context) {
 		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
-	addrReq, err := api.bchWallet.NextAddress(context.Background(), &pbBchWallet.NextAddressRequest{Account: 0})
+	addrReq, err := api.bchWallet.CurrentAddress(context.Background(), &pbBchWallet.CurrentAddressRequest{Account: 0})
 	if err != nil {
 		api.LogError(c, err, "failed to get bch deposit address", http.StatusInternalServerError)
 		return
 	}
+	/* this is temporary fix until the underlying issue is fixed
+	https://github.com/gcash/bchwallet/issues/41
+	addrReq, err := api.bchWallet.NextAddress(context.Background(), &pbBchWallet.NextAddressRequest{Account: 0})
+	if err != nil {
+		api.LogError(c, err, "failed to get bch deposit address", http.StatusInternalServerError)
+		return
+	}*/
 	// format a unique payment number to take the place of deposit address and tx hash temporarily
 	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
 	if _, err := api.pm.NewPayment(
