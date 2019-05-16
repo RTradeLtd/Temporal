@@ -12,8 +12,7 @@
 
 <p align="center">
   <a href="https://t.me/RTradeTEMPORAL">
-    <img src=".scripts/telegram.png"
-      alt="Telegram Chat" />
+    <img src="https://patrolavia.github.io/telegram-badge/chat.png"/>
   </a>
   <a href="https://godoc.org/github.com/RTradeLtd/Temporal">
     <img src="https://godoc.org/github.com/RTradeLtd/Temporal?status.svg"
