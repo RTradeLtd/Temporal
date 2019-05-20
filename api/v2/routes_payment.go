@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gcash/bchutil"
+
 	"github.com/stripe/stripe-go/charge"
 
 	"github.com/RTradeLtd/Temporal/eh"
@@ -236,6 +238,11 @@ func (api *API) createBchPayment(c *gin.Context) {
 		api.LogError(c, err, "failed to get bch deposit address", http.StatusInternalServerError)
 		return
 	}*/
+	bchChargeAmount, err := bchutil.NewAmount(chargeAmountFloat)
+	if err != nil {
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
+		return
+	}
 	// format a unique payment number to take the place of deposit address and tx hash temporarily
 	paymentNumberString := fmt.Sprintf("%s-%s", username, strconv.FormatInt(paymentNumber, 10))
 	if _, err := api.pm.NewPayment(
@@ -246,7 +253,7 @@ func (api *API) createBchPayment(c *gin.Context) {
 		// confirming the payment
 		paymentNumberString,
 		creditValueFloat,
-		chargeAmountFloat,
+		bchChargeAmount.ToBCH(),
 		"bitcoin-cash",
 		"bch",
 		username,
@@ -256,7 +263,7 @@ func (api *API) createBchPayment(c *gin.Context) {
 	}
 	response := gin.H{
 		"deposit_address": addrReq.GetAddress(),
-		"charge_amount":   chargeAmountFloat,
+		"charge_amount":   bchChargeAmount.ToBCH(),
 		"payment_number":  paymentNumber,
 	}
 	Respond(c, http.StatusOK, gin.H{"response": response})
