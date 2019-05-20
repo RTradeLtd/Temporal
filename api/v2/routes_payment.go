@@ -226,18 +226,23 @@ func (api *API) createBchPayment(c *gin.Context) {
 		api.LogError(c, err, eh.PaymentSearchError)(http.StatusBadRequest)
 		return
 	}
-	addrReq, err := api.bchWallet.CurrentAddress(context.Background(), &pbBchWallet.CurrentAddressRequest{Account: 0})
-	if err != nil {
-		api.LogError(c, err, "failed to get bch deposit address", http.StatusInternalServerError)
-		return
-	}
-	/* this is temporary fix until the underlying issue is fixed
-	https://github.com/gcash/bchwallet/issues/41
+	/*
+			addrReq, err := api.bchWallet.CurrentAddress(context.Background(), &pbBchWallet.CurrentAddressRequest{Account: 0})
+			if err != nil {
+				api.LogError(c, err, "failed to get bch deposit address", http.StatusInternalServerError)
+				return
+			}
+		one thing to note about the below solution, this is technically only usable with a fully synced blockchain
+		so it may/may not cause issues in the future. If this does cause issues, then we will need to disable
+		this section, and enable the previously commented section above
+		this is temporary fix until the underlying issue is fixed
+		https://github.com/gcash/bchwallet/issues/41
+	*/
 	addrReq, err := api.bchWallet.NextAddress(context.Background(), &pbBchWallet.NextAddressRequest{Account: 0})
 	if err != nil {
 		api.LogError(c, err, "failed to get bch deposit address", http.StatusInternalServerError)
 		return
-	}*/
+	}
 	bchChargeAmount, err := bchutil.NewAmount(chargeAmountFloat)
 	if err != nil {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)

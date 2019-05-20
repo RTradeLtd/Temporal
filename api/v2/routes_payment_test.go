@@ -74,4 +74,23 @@ func Test_API_Routes_Payments(t *testing.T) {
 	urlValues.Add("tx_hash", "0x1")
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
+
+	// test bch create
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/v2/payments/bch/create", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("credit_value", "10")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+
+	// test bch confirm
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/v2/payments/bch/confirm", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("payment_number", "10")
+	urlValues.Add("tx_hash", "0x1")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
 }
