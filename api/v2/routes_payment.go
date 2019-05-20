@@ -296,6 +296,10 @@ func (api *API) confirmBchPayment(c *gin.Context) {
 		Fail(c, errors.New("payment you are trying to confirm is not for the bitcoin-cash blockchain"))
 		return
 	}
+	if payment.Confirmed {
+		Fail(c, errors.New("payment is already confirmed"))
+		return
+	}
 	if _, err := api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt); err != nil {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
