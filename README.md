@@ -11,6 +11,9 @@
 </p>
 
 <p align="center">
+  <a href="https://t.me/RTradeTEMPORAL">
+    <img src="https://patrolavia.github.io/telegram-badge/chat.png"/>
+  </a>
   <a href="https://godoc.org/github.com/RTradeLtd/Temporal">
     <img src="https://godoc.org/github.com/RTradeLtd/Temporal?status.svg"
        alt="GoDocs available" />
@@ -40,13 +43,13 @@
 
 ## About Temporal
 
-Temporal is an enterprise-grade storage solution featuring an easy to consume API that can be easily integrated into your existing application stack, providing all the benefits of the distributed web, without any of the overhead that comes with running distributed storage nodes. Currently supporting public and private IPFS+IPNS usage, subsequent releases will bring about support for additional protocols like STORJ, and SWARM.
+Temporal is an enterprise-grade storage solution that allows you easily integrate with distributed storage technologies like IPFS, without sacrificing functionality by leveraging an easy to use API leveraging all the benefits the distributed web has to offer.
 
 Temporal's API comes in two flavours, hosted or on-site. Should you not have the resources, or interest in maintaining your own infrastructure you can take advantage of our hosted API running in our very own datacenter. Those which have the interest, and/or resources may deploy Temporal within your own environments. For those that deploy Temporal themselves, we offer paid for support, installation, tutorials, and product usage information sessions allowing organizations to leverage all the capabilities that Temporal offers.
 
-Temporal is modular such that the underlying protocols it connects to, can easily be upgraded, and replaced with without having to change the overall architecture. Simply write the interface for whatever protocol you're interested in, and a subsequent RabbitMQ consumer, and you're good to go. For a guideline on how this can be accomplished see [protocol-expansion.md](/docs/protocol-expansion.md)
+Temporal is modular such that the underlying protocols it connects to, can easily be upgraded, and replaced with without having to change the overall architecture. See our [protocol-expansion.md](/docs/protocol-expansion.md) documentation for details on extending the available functionality.
 
-We have a [telegram chat](https://t.me/RTradeTEMPORAL), feel free to join and ask any questions you may have that could not be answered by reading the documentation here. We have an in-depth [wiki](https://rtradetechnologies.atlassian.net/wiki/spaces/TEM/overview) which contains additional information such as architectural diagrams, design decisions, and more.
+We have comprehensive API documentation available [here](https://gateway.temporal.cloud/ipns/docs.api.temporal.cloud) as well as an in-depth [wiki](https://rtradetechnologies.atlassian.net/wiki/spaces/TEM/overview) which contains additional information such as architectural diagrams, design decisions, and more.
 
 ### Goals
 
@@ -71,9 +74,9 @@ Please note that support for the I2P Interface is very experimental at the momen
 
 ## How We're Different
 
-We aren't doing an ICO,  and we're not wasting our development efforts on redesigning the wheel with some new fangled storage protocol, and blockchain solution. Although we're using bleeding edge technology, we're commited to using names, and open source software that is already tested, and that has a thriving development community behind them. And finally, results matter; It is far to common in this space for companies to ask you to hand over your hand earned cash on the fleeting promise that it will lead to something, but that something is either never delivered, or extremely lack in features, and is not the original idea which was sold.
+Temporal gives everyone the chances to run their own enterprise grade IPFS infrastructure without needing to rely on third-party API providers that dominate the blockchain development market. However if you are unable to do this, you can use our hosted API running in our very own datacenter, using the exact same open-source code you see here. By using our hosted API you can experience the same level of enterprise quality service that you can setup in your own environments, whether that be cloud VMs, your own datacenter, or a server under your bed.  Additionally by building your applications decentralized or centralized with Temporal, you won't be vendor locked in if you decide to transition to a self-hosted infrastructure, because all it takes is changing a single URL that your application points to.
 
-We aren't running in a third-party cloud environment, as our hosted API runs in our very own datacenter. The only third-party cloud environments we utilize are for off-site backups, and service should any critical infrastructure failures occur in our datacenter. In the future as we expand and receive more funding, we will build-out another facility to provide our off-site backups and service endpoints. We are committed to bringing back control to users data, and we believe the only way to fully do this, is to build our own infrastructure, for which we maintain all control, and design decisions for. As a startup, we have to rely on third-party cloud providers for backups and off-site service points due to funding limitations, however we realize this is undesirable. This is one of our main concerns, and is something we are intent on resolving when our company grows, and we receive more funding.
+Temporal provides a first of its kind API that outweighs every other third-party IPFS and decentralized storage API on the market so you can fully leverage all the benefits the distributed web has to offer.
 
 ## Funding
 
