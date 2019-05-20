@@ -28,7 +28,7 @@ require (
 	github.com/dvwright/xss-mw v0.0.0-20190112074351-3b0e27d93653
 	github.com/gcash/bchd v0.14.3
 	github.com/gcash/bchlog v0.0.0-20180913005452-b4f036f92fa6 // indirect
-	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0 // indirect
+	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0
 	github.com/gcash/bchwallet v0.8.0
 	github.com/gcash/neutrino v0.0.0-20190430193207-0c43966850de // indirect
 	github.com/gin-contrib/cors v0.0.0-20170318125340-cf4846e6a636
