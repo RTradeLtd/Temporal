@@ -639,6 +639,7 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 		{queue.IpfsKeyCreationQueue.String(), args{queue.IpfsKeyCreationQueue}},
 		{queue.DashPaymentConfirmationQueue.String(), args{queue.DashPaymentConfirmationQueue}},
 		{queue.EthPaymentConfirmationQueue.String(), args{queue.EthPaymentConfirmationQueue}},
+		{queue.BitcoinCashPaymentConfirmationQueue.String(), args{queue.BitcoinCashPaymentConfirmationQueue}},
 	}
 	// declare an error to use for testing
 	amqpErr := &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
@@ -660,6 +661,8 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 				api.queues.dash.ErrCh <- amqpErr
 			case queue.EthPaymentConfirmationQueue:
 				api.queues.eth.ErrCh <- amqpErr
+			case queue.BitcoinCashPaymentConfirmationQueue:
+				api.queues.bch.ErrCh <- amqpErr
 			}
 			// test handleQueueError function directly
 			if _, err := api.handleQueueError(amqpErr, api.cfg.RabbitMQ.URL, tt.args.queueType, true); err != nil {
@@ -702,6 +705,7 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 		{queue.IpfsKeyCreationQueue.String(), args{queue.IpfsKeyCreationQueue}},
 		{queue.DashPaymentConfirmationQueue.String(), args{queue.DashPaymentConfirmationQueue}},
 		{queue.EthPaymentConfirmationQueue.String(), args{queue.EthPaymentConfirmationQueue}},
+		{queue.BitcoinCashPaymentConfirmationQueue.String(), args{queue.BitcoinCashPaymentConfirmationQueue}},
 	}
 	// setup a bad rabbitmq url for testing connectivity failures
 	api.cfg.RabbitMQ.URL = "notarealprotocol://notarealurl"
