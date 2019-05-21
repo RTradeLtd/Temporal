@@ -305,6 +305,14 @@ func (api *API) confirmBchPayment(c *gin.Context) {
 		Fail(c, errors.New("payment is already confirmed"))
 		return
 	}
+	// when a payment is first created, we insert temporary data into the TxHash field
+	// this field only gets updated when confirming a payment. In order to prevent
+	// abuse and multiple transactions being submitted for the same payment
+	// before it is confirmed, ensure that we only allow processing if the temporary
+	// TxHash is present
+	if payment.TxHash != fmt.Sprintf("%s-%s", username, strconv.FormatInt(payment.Number, 10)) {
+		Fail(c, errors.New("payment is already being processed"))
+	}
 	if _, err := api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt); err != nil {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
 		return
