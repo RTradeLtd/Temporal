@@ -312,6 +312,7 @@ func (api *API) confirmBchPayment(c *gin.Context) {
 	// TxHash is present
 	if payment.TxHash != fmt.Sprintf("%s-%s", username, strconv.FormatInt(payment.Number, 10)) {
 		Fail(c, errors.New("payment is already being processed"))
+		return
 	}
 	if _, err := api.pm.UpdatePaymentTxHash(username, forms["tx_hash"], paymentNumberInt); err != nil {
 		api.LogError(c, err, err.Error())(http.StatusBadRequest)
