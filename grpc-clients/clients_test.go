@@ -31,6 +31,27 @@ func TestLensClient_Pass(t *testing.T) {
 	}
 }
 
+func TestWalletService_Fail(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.Services.BchGRPC.Wallet.CertFile = "fakepath"
+	if _, err = clients.NewBchWalletClient(cfg.Services); err == nil {
+		t.Fatal("error expected")
+	}
+}
+
+func TestWalletService_Pass(t *testing.T) {
+	cfg, err := config.LoadConfig(testCfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = clients.NewBchWalletClient(cfg.Services); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestSignerClient_Pass(t *testing.T) {
 	cfg, err := config.LoadConfig(testCfgPath)
 	if err != nil {
