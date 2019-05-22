@@ -10,6 +10,7 @@ ADD . ${BUILD_HOME}
 WORKDIR ${BUILD_HOME}
 
 # Install dependencies
+RUN apk add --no-cache git
 RUN go mod vendor
 
 # Build temporal binary
