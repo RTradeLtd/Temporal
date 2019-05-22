@@ -134,6 +134,11 @@ func (api *API) addFile(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	var defaultHash = "sha2-256"
+	hashType := c.PostForm("hash_type")
+	if hashType == "" {
+		hashType = defaultHash
+	}
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
@@ -159,7 +164,7 @@ func (api *API) addFile(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	hash, err := api.ipfs.Add(bytes.NewReader(fileBytes), ipfsapi.OnlyHash(true))
+	hash, err := api.ipfs.Add(bytes.NewReader(fileBytes), ipfsapi.OnlyHash(true), ipfsapi.Hash(hashType))
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		return
@@ -233,7 +238,7 @@ func (api *API) addFile(c *gin.Context) {
 		reader = bytes.NewReader(fileBytes)
 	}
 	api.l.Debug("adding file...")
-	resp, err := api.ipfs.Add(reader)
+	resp, err := api.ipfs.Add(reader, ipfsapi.Hash(hashType))
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
