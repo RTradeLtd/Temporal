@@ -24,6 +24,7 @@ import (
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
+	multihash "github.com/multiformats/go-multihash"
 )
 
 // PinHashLocally is used to pin a hash to the local ipfs node
@@ -138,6 +139,10 @@ func (api *API) addFile(c *gin.Context) {
 	hashType := c.PostForm("hash_type")
 	if hashType == "" {
 		hashType = defaultHash
+	}
+	if hashNamed := multihash.Names[hashType]; hashNamed == 0 {
+		Fail(c, errors.New("invalid multihash type given in post form hash_type"))
+		return
 	}
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
