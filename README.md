@@ -74,7 +74,9 @@ Please note that support for the I2P Interface is very experimental at the momen
 
 ## How We're Different
 
-Temporal gives everyone the chances to run their own enterprise grade IPFS infrastructure without needing to rely on third-party API providers that dominate the blockchain development market. However if you are unable to do this, you can use our hosted API running in our very own datacenter, using the exact same open-source code you see here. By using our hosted API you can experience the same level of enterprise quality service that you can setup in your own environments, whether that be cloud VMs, your own datacenter, or a server under your bed.  Additionally by building your applications decentralized or centralized with Temporal, you won't be vendor locked in if you decide to transition to a self-hosted infrastructure, because all it takes is changing a single URL that your application points to.
+Temporal gives everyone the chances to run their own enterprise grade IPFS infrastructure without needing to rely on third-party API providers that dominate the blockchain development market. However if you are unable to do this, you can use our hosted API running in our very own datacenter, using the exact same open-source code you see here. 
+
+By using our hosted API you can experience the same level of enterprise quality service that you can setup in your own environments, whether that be cloud VMs, your own datacenter, or a server under your bed.  Additionally by building your applications decentralized or centralized with Temporal, you won't be vendor locked in if you decide to transition to a self-hosted infrastructure, because all it takes is changing a single URL that your application points to.
 
 Temporal provides a first of its kind API that outweighs every other third-party IPFS and decentralized storage API on the market so you can fully leverage all the benefits the distributed web has to offer.
 
@@ -161,5 +163,5 @@ Without open source, Temporal wouldn't be possible, as such we would like to ext
 * https://github.com/ethereum/
 * https://github.com/jinzhu/gorm
 * https://github.com/gin-gonic/gin
-* https://github.com/minio/minio
 * https://github.com/streadway/amqp
+* https://github.com/gcash/bchwallet
