@@ -8,6 +8,7 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 ### api/v2
 
 * Add BCH Payments [#333](https://github.com/RTradeLtd/Temporal/pull/333)
+* Enable multihash slection when uploading [#342](https://github.com/RTradeLtd/Temporal/pull/342)
 
 ## ci
 
