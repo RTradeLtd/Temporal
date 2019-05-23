@@ -115,7 +115,7 @@ One of the big concerns with IPFS, and even cloud data storage in general is enc
 Once you have a `config.json` set up (a template can be generated using `temporal init`), you can run the following commands to use docker-compose to spin up Temporal:
 
 ```shell
-$> curl https://raw.githubusercontent.com/RTradeLtd/Temporal/V2/temporal.yml --output temporal.yml
+$> curl https://raw.githubusercontent.com/RTradeLtd/Temporal/master/temporal.yml --output temporal.yml
 $> docker-compose -f temporal.yml up
 ```
 

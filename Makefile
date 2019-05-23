@@ -108,6 +108,8 @@ gen:
 		github.com/RTradeLtd/grpc/lensv2.LensV2Client
 	$(COUNTERFEITER) -o ./mocks/eth.mock.go \
 		github.com/RTradeLtd/grpc/pay.SignerClient
+	$(COUNTERFEITER) -o ./mocks/bch.mock.go \
+		github.com/gcash/bchwallet/rpc/walletrpc.WalletServiceClient
 	$(COUNTERFEITER) -o ./mocks/rtfs.mock.go \
 		github.com/RTradeLtd/rtfs/v2.Manager
 	$(COUNTERFEITER) -o ./api/v3/mocks/grpc_stream.mock.go \

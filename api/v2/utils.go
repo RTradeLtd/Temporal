@@ -69,14 +69,6 @@ func (api *API) FileSizeCheck(size int64) error {
 	return nil
 }
 
-func (api *API) validateBlockchain(blockchain string) bool {
-	switch blockchain {
-	case "ethereum", "bitcoin", "litecoin", "monero", "dash":
-		return true
-	}
-	return false
-}
-
 // generateEmailJWTToken is used to generate a jwt token used to validate emails
 func (api *API) generateEmailJWTToken(username, verificationString string) (string, error) {
 	// generate a jwt with claims to verify email
