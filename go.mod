@@ -11,11 +11,11 @@ require (
 	github.com/RTradeLtd/database v2.2.0+incompatible // indirect
 	github.com/RTradeLtd/database/v2 v2.2.1
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
-	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190308091756-8b7099fd5e21
+	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190522213636-8e3700e602fd
 	github.com/RTradeLtd/gorm v2.0.0+incompatible
 	github.com/RTradeLtd/grpc v2.0.0+incompatible
 	github.com/RTradeLtd/kaas/v2 v2.1.0
-	github.com/RTradeLtd/rtfs/v2 v2.1.0
+	github.com/RTradeLtd/rtfs/v2 v2.1.2
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
 	github.com/baruwa-enterprise/clamd v0.0.0-20190131085824-7a42f6693422
@@ -46,7 +46,7 @@ require (
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/libp2p/go-libp2p v0.0.13 // indirect
 	github.com/libp2p/go-libp2p-connmgr v0.0.3 // indirect
-	github.com/libp2p/go-libp2p-crypto v0.0.1
+	github.com/libp2p/go-libp2p-crypto v0.0.2
 	github.com/libp2p/go-libp2p-discovery v0.0.2 // indirect
 	github.com/libp2p/go-libp2p-host v0.0.2 // indirect
 	github.com/libp2p/go-libp2p-kad-dht v0.0.8 // indirect
@@ -62,11 +62,7 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/stripe/stripe-go v60.0.1+incompatible
 	go.uber.org/zap v1.9.1
-	golang.org/x/crypto v0.0.0-20190422183909-d864b10871cd // indirect
-	golang.org/x/net v0.0.0-20190424112056-4829fb13d2c6
-	golang.org/x/sys v0.0.0-20190424175732-18eb32c0e2f0 // indirect
-	golang.org/x/text v0.3.1 // indirect
-	golang.org/x/tools v0.0.0-20190424031103-cb2dda6eabdf // indirect
+	golang.org/x/net v0.0.0-20190503192946-f4e77d36d62c
 	google.golang.org/genproto v0.0.0-20190418145605-e7d98fc518a7
 	google.golang.org/grpc v1.20.1
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0

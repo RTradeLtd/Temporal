@@ -24,6 +24,7 @@ import (
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
+	multihash "github.com/multiformats/go-multihash"
 )
 
 // PinHashLocally is used to pin a hash to the local ipfs node
@@ -134,6 +135,15 @@ func (api *API) addFile(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	var defaultHash = "sha2-256"
+	hashType := c.PostForm("hash_type")
+	if hashType == "" {
+		hashType = defaultHash
+	}
+	if hashNamed := multihash.Names[hashType]; hashNamed == 0 {
+		Fail(c, errors.New("invalid multihash type given in post form hash_type"))
+		return
+	}
 	// fetch the file, and create a handler to interact with it
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
@@ -159,7 +169,7 @@ func (api *API) addFile(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	hash, err := api.ipfs.Add(bytes.NewReader(fileBytes), ipfsapi.OnlyHash(true))
+	hash, err := api.ipfs.Add(bytes.NewReader(fileBytes), ipfsapi.OnlyHash(true), ipfsapi.Hash(hashType))
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		return
@@ -233,7 +243,7 @@ func (api *API) addFile(c *gin.Context) {
 		reader = bytes.NewReader(fileBytes)
 	}
 	api.l.Debug("adding file...")
-	resp, err := api.ipfs.Add(reader)
+	resp, err := api.ipfs.Add(reader, ipfsapi.Hash(hashType))
 	if err != nil {
 		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
