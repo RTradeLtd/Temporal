@@ -140,7 +140,7 @@ func (api *API) addFile(c *gin.Context) {
 	if hashType == "" {
 		hashType = defaultHash
 	}
-	if hashNamed := multihash.Names[hashType]; hashNamed == 0 {
+	if _, ok := multihash.Names[hashType]; !ok {
 		Fail(c, errors.New("invalid multihash type given in post form hash_type"))
 		return
 	}
