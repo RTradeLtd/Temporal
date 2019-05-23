@@ -13,9 +13,6 @@
 #     - set TEMPORAL in env to use desired version
 #   * ipfs, ipfs-cluster:
 #     - configuration files should be in data directory
-#   * minio:
-#     - place private.key, public.crt, etc in $BASE/minio/config to enable SSL
-#     - to set access keys, set MINIO_SECRET_KEY and MINIO_ACCESS_KEY in env
 #
 
 version: '3'
@@ -24,6 +21,13 @@ services:
   temporal:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  krab:
+    image: rtradetech/temporal:${TEMPORAL}
+    network_mode: "host" # expose all
+    command: krab
     volumes:
       - ${BASE}/data/temporal:/data/temporal
 
@@ -63,7 +67,7 @@ services:
       - ${BASE}/data/temporal:/data/temporal
 
   ipfs:
-    image: ipfs/go-ipfs:v0.4.18
+    image: ipfs/go-ipfs:v0.4.20
     command: daemon --migrate=true --enable-pubsub-experiment
     ports:
       - 4001:4001
@@ -75,7 +79,7 @@ services:
   ipfs_cluster:
     depends_on: 
       - ipfs
-    image: ipfs/ipfs-cluster:v0.9.0
+    image: ipfs/ipfs-cluster:v0.10.1
     ports:
       - 9094:9094
       - 9095:9095
