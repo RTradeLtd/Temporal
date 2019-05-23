@@ -114,7 +114,7 @@ func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, u
 	return json.Unmarshal(bodyBytes, out)
 }
 
-func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
+func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, fakeBchWallet *mocks.FakeWalletServiceClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
 	dev = true
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
@@ -137,9 +137,10 @@ func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.Fa
 	_, engine := gin.CreateTestContext(testRecorder)
 	logger := zaptest.NewLogger(t).Sugar()
 	clients := Clients{
-		Lens:   fakeLens,
-		Orch:   fakeOrch,
-		Signer: fakeSigner,
+		Lens:      fakeLens,
+		Orch:      fakeOrch,
+		Signer:    fakeSigner,
+		BchWallet: fakeBchWallet,
 	}
 	api, err := new(cfg, engine, logger, clients, im, imCluster, false)
 	if err != nil {
@@ -168,8 +169,9 @@ func Test_API_Setup(t *testing.T) {
 	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
+	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
+	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,8 +272,9 @@ func Test_API_Routes_Misc(t *testing.T) {
 	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
+	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
+	api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -354,13 +357,12 @@ func Test_Utils(t *testing.T) {
 		{"XMRPass", args{"xmr", "monero"}, false},
 		{"DASHFail", args{"DASH", "DASH"}, true},
 		{"DASHPass", args{"dash", "dash"}, false},
+		{"BitcoinCashPass", args{"bch", "bitcoin-cash"}, false},
+		{"BitcoinCashFail", args{"bhc", "bticoin-csah"}, true},
 		{"InvalidCoinFail", args{"biiiitcoooonnneeeeeeecccct", "biiiitcoooonnneeeeeeecccct"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if valid := api.validateBlockchain(tt.args.blockchain); !valid != tt.wantErr {
-				t.Errorf("validateBlockchain() error = %v, wantErr %v", valid, tt.wantErr)
-			}
 			if _, err := api.getUSDValue(tt.args.paymentType); (err != nil) != tt.wantErr {
 				t.Errorf("getUSDValue() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -637,6 +639,7 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 		{queue.IpfsKeyCreationQueue.String(), args{queue.IpfsKeyCreationQueue}},
 		{queue.DashPaymentConfirmationQueue.String(), args{queue.DashPaymentConfirmationQueue}},
 		{queue.EthPaymentConfirmationQueue.String(), args{queue.EthPaymentConfirmationQueue}},
+		{queue.BitcoinCashPaymentConfirmationQueue.String(), args{queue.BitcoinCashPaymentConfirmationQueue}},
 	}
 	// declare an error to use for testing
 	amqpErr := &amqp.Error{Code: 400, Reason: "test", Server: true, Recover: false}
@@ -658,6 +661,8 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 				api.queues.dash.ErrCh <- amqpErr
 			case queue.EthPaymentConfirmationQueue:
 				api.queues.eth.ErrCh <- amqpErr
+			case queue.BitcoinCashPaymentConfirmationQueue:
+				api.queues.bch.ErrCh <- amqpErr
 			}
 			// test handleQueueError function directly
 			if _, err := api.handleQueueError(amqpErr, api.cfg.RabbitMQ.URL, tt.args.queueType, true); err != nil {
@@ -700,6 +705,7 @@ func TestAPI_HandleQueuError_Failure(t *testing.T) {
 		{queue.IpfsKeyCreationQueue.String(), args{queue.IpfsKeyCreationQueue}},
 		{queue.DashPaymentConfirmationQueue.String(), args{queue.DashPaymentConfirmationQueue}},
 		{queue.EthPaymentConfirmationQueue.String(), args{queue.EthPaymentConfirmationQueue}},
+		{queue.BitcoinCashPaymentConfirmationQueue.String(), args{queue.BitcoinCashPaymentConfirmationQueue}},
 	}
 	// setup a bad rabbitmq url for testing connectivity failures
 	api.cfg.RabbitMQ.URL = "notarealprotocol://notarealurl"

@@ -24,8 +24,9 @@ func Test_API_Routes_Payments(t *testing.T) {
 	fakeLens := &mocks.FakeLensV2Client{}
 	fakeOrch := &mocks.FakeServiceClient{}
 	fakeSigner := &mocks.FakeSignerClient{}
+	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, cfg, db)
+	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,6 +68,25 @@ func Test_API_Routes_Payments(t *testing.T) {
 	// /v2/payments/confirm
 	testRecorder = httptest.NewRecorder()
 	req = httptest.NewRequest("POST", "/v2/payments/eth/confirm", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("payment_number", "10")
+	urlValues.Add("tx_hash", "0x1")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+
+	// test bch create
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/v2/payments/bch/create", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("credit_value", "10")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+
+	// test bch confirm
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/v2/payments/bch/confirm", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("payment_number", "10")

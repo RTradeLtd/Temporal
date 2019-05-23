@@ -30,6 +30,7 @@ import (
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas/v2"
+	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
 )
 
 // Version denotes the tag of this build
@@ -42,11 +43,12 @@ const (
 
 // globals
 var (
-	ctx    context.Context
-	cancel context.CancelFunc
-	orch   pbOrch.ServiceClient
-	lens   pbLens.LensV2Client
-	signer pbSigner.SignerClient
+	ctx       context.Context
+	cancel    context.CancelFunc
+	orch      pbOrch.ServiceClient
+	lens      pbLens.LensV2Client
+	signer    pbSigner.SignerClient
+	bchWallet pbBchWallet.WalletServiceClient
 )
 
 // command-line flags
@@ -134,6 +136,14 @@ func initClients(l *zap.SugaredLogger, cfg *config.TemporalConfig) (closers []fu
 		closers = append(closers, client.Close)
 		signer = client
 	}
+	if bchWallet == nil {
+		client, err := clients.NewBchWalletClient(cfg.Services)
+		if err != nil {
+			l.Fatal(err)
+		}
+		closers = append(closers, client.Close)
+		bchWallet = client
+	}
 	return
 }
 
@@ -159,9 +169,10 @@ var commands = map[string]cmd.Cmd{
 				}()
 			}
 			clients := v2.Clients{
-				Lens:   lens,
-				Orch:   orch,
-				Signer: signer,
+				Lens:      lens,
+				Orch:      orch,
+				Signer:    signer,
+				BchWallet: bchWallet,
 			}
 			// init api service
 			service, err := v2.Initialize(
