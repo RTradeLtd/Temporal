@@ -3,6 +3,23 @@
 This document tracks changes to Temporal and its related projects for all `v2.x.x`
 releases. See our [versioning policy](/VERSIONING.md) for more details.
 
+## v2.1.1
+
+### api/v2
+
+* Add BCH Payments [#333](https://github.com/RTradeLtd/Temporal/pull/333)
+* Enable multihash slection when uploading [#342](https://github.com/RTradeLtd/Temporal/pull/342)
+
+## ci
+
+* Fix dockerhub builds [#338](https://github.com/RTradeLtd/Temporal/pull/338)
+* Update docker compose [#339](https://github.com/RTradeLtd/Temporal/pull/339)
+
+### misc
+
+* Add script to interconnect RTNS publishers and IPFS nodes [#332](https://github.com/RTradeLtd/Temporal/pull/332)
+* README update [#340](https://github.com/RTradeLtd/Temporal/pull/340)
+
 ## v2.1.0
 
 ### api/v2
