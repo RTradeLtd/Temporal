@@ -44,6 +44,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	if err != nil {
 		return err
 	}
+	publisher.DefaultBootstrap()
 	ipnsManager := models.NewIPNSManager(qm.db)
 	qm.l.Info("processing ipns entry creation requests")
 	for {
