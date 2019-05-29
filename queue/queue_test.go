@@ -340,7 +340,6 @@ func TestQueue_IPNSEntry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cfg.Services.RTNS.KeyName = "admin-key"
 	cfg.Services.RTNS.DatastorePath = "test"
 	cfg.Services.RTNS.MultiAddresses = []string{"/ip4/0.0.0.0/tcp/3999"}
 	db, err := loadDatabase(cfg)
