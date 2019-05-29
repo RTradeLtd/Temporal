@@ -76,6 +76,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		case msg := <-qm.ErrCh:
 			qm.Close()
 			wg.Done()
+			publisher.Close()
 			qm.l.Errorw(
 				"a protocol connection error stopping rabbitmq was received",
 				"error", msg.Error())
