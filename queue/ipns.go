@@ -26,12 +26,20 @@ const (
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
+	kbPrimary, err := kaas.NewClient(qm.cfg.Services, false)
+	if err != nil {
+		return err
+	}
 	kbBackup, err := kaas.NewClient(qm.cfg.Services, true)
 	if err != nil {
 		return err
 	}
-	// generate a temporary private key to reuse across our publisher
-	pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
+	// get the private used to run the RTNS node from krab
+	resp, err := kbPrimary.GetPrivateKey(ctx, &pb.KeyGet{Name: qm.cfg.Services.RTNS.KeyName})
+	if err != nil {
+		return err
+	}
+	pubPK, err := ci.UnmarshalPrivateKey(resp.GetPrivateKey())
 	if err != nil {
 		return err
 	}
@@ -39,8 +47,12 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	if err != nil {
 		return err
 	}
-	addrs := []multiaddr.Multiaddr{addr}
-	publisher, err := rtns.NewRTNS(ctx, qm.cfg.Services, "", pk, addrs)
+	rConfig := rtns.Config{
+		PK:          pubPK,
+		ListenAddrs: []multiaddr.Multiaddr{addr},
+		DSPath:      qm.cfg.Services.RTNS.DatastorePath,
+	}
+	publisher, err := rtns.NewRTNS(ctx, kbPrimary, rConfig)
 	if err != nil {
 		return err
 	}
