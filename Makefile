@@ -66,7 +66,7 @@ testenv:
 	make api-admin
 	make krab &
 	sleep 10
-	go run cmd/temporal/main.go -config testenv/config.json -key.name $(TESTKEYNAME) krab key create
+	go run cmd/temporal/main.go -config testenv/config.json -key.name admin-key krab key create
 	@echo "===================          done           ==================="
 
 # Shut down testenv
