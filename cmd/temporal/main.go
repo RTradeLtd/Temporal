@@ -26,11 +26,13 @@ import (
 	"github.com/RTradeLtd/database/v2"
 	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/gorm"
+	pbKrab "github.com/RTradeLtd/grpc/krab"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas/v2"
 	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
+	ci "github.com/libp2p/go-libp2p-core/crypto"
 )
 
 // Version denotes the tag of this build
@@ -63,6 +65,8 @@ var (
 
 	// bucket flags
 	bucketLocation *string
+
+	keyName *string
 )
 
 func baseFlagSet() *flag.FlagSet {
@@ -89,6 +93,9 @@ func baseFlagSet() *flag.FlagSet {
 	// api configuration
 	apiPort = f.String("api.port", "6767",
 		"set port to expose API on")
+
+	keyName = f.String("key.name", "admin-key",
+		"the name of the key to create")
 
 	return f
 }
@@ -459,13 +466,53 @@ var commands = map[string]cmd.Cmd{
 		},
 	},
 	"krab": {
-		Blurb:       "runs the krab service",
-		Description: "Runs the krab grpc server, allowing for secure private key management",
-		Action: func(cfg config.TemporalConfig, args map[string]string) {
-			if err := kaas.NewServer(cfg.Services.Krab.URL, "tcp", &cfg); err != nil {
-				fmt.Println("failed to start krab server", err)
-				os.Exit(1)
-			}
+		Blurb:         "krab keystore management",
+		ChildRequired: true,
+		Children: map[string]cmd.Cmd{
+			"server": {
+				Blurb:       "runs KaaS server daemon",
+				Description: "Runs the krab grpc server, allowing for secure private key management",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					if err := kaas.NewServer(cfg.Services.Krab.URL, "tcp", &cfg); err != nil {
+						fmt.Println("failed to start krab server", err)
+						os.Exit(1)
+					}
+				},
+			},
+			"key": {
+				Blurb:         "krab keystore cli tool",
+				Description:   "Allows interaction with the underlying keystore",
+				ChildRequired: true,
+				Children: map[string]cmd.Cmd{
+					"create": {
+						Blurb:       "create keys",
+						Description: "Create IPFS keys",
+						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							client, err := kaas.NewClient(cfg.Services, false)
+							if err != nil {
+								fmt.Println("failed to instantiate kaas client", err)
+								os.Exit(1)
+							}
+							pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
+							if err != nil {
+								fmt.Println("failed to create key pair", err)
+								os.Exit(1)
+							}
+							pkBytes, err := pk.Bytes()
+							if err != nil {
+								fmt.Println("failed to get pk bytes", err)
+								os.Exit(1)
+							}
+							_, err = client.PutPrivateKey(context.Background(), &pbKrab.KeyPut{Name: *keyName, PrivateKey: pkBytes})
+							if err != nil {
+								fmt.Println("failed to store private key", err)
+								os.Exit(1)
+							}
+							fmt.Println("successfully created key named", *keyName)
+						},
+					},
+				},
+			},
 		},
 	},
 	"init": {
