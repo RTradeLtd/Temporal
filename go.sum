@@ -65,10 +65,10 @@ github.com/RTradeLtd/rtfs/v2 v2.1.0 h1:12Yx7zTkrq41f23umQ+Y6UJewTzUshSUJfHJW7kVr
 github.com/RTradeLtd/rtfs/v2 v2.1.0/go.mod h1:6J+GxAuNjmiKx+4ss4xTow7m4GNn/54KHR9y1kbyqZY=
 github.com/RTradeLtd/rtfs/v2 v2.1.2 h1:4wam5uStNHUqN7QBTjanKNGqQZHfK0wrnv7Z/zFD/t8=
 github.com/RTradeLtd/rtfs/v2 v2.1.2/go.mod h1:h1C/iSVuRbNPLlTMA3i3p9ZNTUdn9sZmUUI2T8d0zMw=
-github.com/RTradeLtd/rtns v0.0.4 h1:5CJiq/+mN5boIdgIqOZfpoPa0VSDOZeNF6UUzEjx9eE=
-github.com/RTradeLtd/rtns v0.0.4/go.mod h1:Ggdz156/plfLZUl+zAqb9nlss1qcav8/IDPqxOnRBOI=
 github.com/RTradeLtd/rtns v0.0.5 h1:OvZ+qayn7qAFb4vybam9gAIhU5YqOLeGQOZVWo3ubbY=
 github.com/RTradeLtd/rtns v0.0.5/go.mod h1:UtTmwf6FzZCWDDx8ihH3B2qjToqZOqhdKBfnOtzPMms=
+github.com/RTradeLtd/rtns v0.0.6 h1:7p2Lfqp/BWAbbJQ7t7iAdJVYFkoe7hPtW91o5p+x2gA=
+github.com/RTradeLtd/rtns v0.0.6/go.mod h1:OcmynfW2+jqUGjCmnIFsDAPAH+0vFk6Vw8aL0TG+in8=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/sarama v1.22.0/go.mod h1:lm3THZ8reqBDBQKQyb5HB3sY1lKp3grEbQ81aWSgPp4=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
@@ -973,10 +973,7 @@ github.com/syndtr/goleveldb v1.0.0/go.mod h1:ZVVdQEZoIme9iO1Ch2Jdy24qqXrMMOU6lpP
 github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07/go.mod h1:kDXzergiv9cbyO7IOYJZWg1U88JhDg3PB6klq9Hg2pA=
 github.com/texttheater/golang-levenshtein v0.0.0-20180516184445-d188e65d659e/go.mod h1:XDKHRm5ThF8YJjx001LtgelzsoaEcvnA7lVWz9EeX3g=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
-github.com/ugorji/go v0.0.0-20181209151446-772ced7fd4c2 h1:c3hsfAKt9dRzwckD9YqrACtMWPmjXSf+eocCfhoYdU8=
 github.com/ugorji/go v1.1.2/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJQ=
-github.com/ugorji/go v1.1.4 h1:j4s+tAvLfL3bZyefP2SEWmhBzmuIlH/eqNuPdFPgngw=
-github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/ugorji/go/codec v0.0.0-20181209151446-772ced7fd4c2 h1:EICbibRW4JNKMcY+LsWmuwob+CRS1BmdRdjphAm9mH4=
 github.com/ugorji/go/codec v0.0.0-20181209151446-772ced7fd4c2/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
 github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43 h1:BasDe+IErOQKrMVXab7UayvSlIpiyGwRvuX3EKYY7UA=
