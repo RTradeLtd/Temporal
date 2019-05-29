@@ -64,9 +64,6 @@ testenv:
 	go run cmd/temporal/main.go -config ./testenv/config.json --db.no_ssl migrate
 	make api-user
 	make api-admin
-	make krab &
-	sleep 10
-	go run cmd/temporal/main.go  $(TEMPORALDEVFLAGS) krab key create
 	@echo "===================          done           ==================="
 
 # Shut down testenv
