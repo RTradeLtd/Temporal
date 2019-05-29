@@ -22,8 +22,6 @@ import (
 var nilTime time.Time
 
 const (
-	// FilesUploadBucket is the bucket files are stored into before being processed
-	FilesUploadBucket = "filesuploadbucket"
 	// RtcCostUsd is the price of a single RTC in USD
 	RtcCostUsd = 0.125
 )
