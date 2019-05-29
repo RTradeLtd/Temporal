@@ -1,5 +1,5 @@
 TEMPORALVERSION=`git describe --tags`
-TEMPORALDEVFLAGS=-config ./testenv/config.json -db.no_ssl -dev
+TEMPORALDEVFLAGS=-config ./testenv/config.json -db.no_ssl -dev -key.name admin-key
 IPFSVERSION=v0.4.19
 TESTKEYNAME=admin-key
 
@@ -66,7 +66,7 @@ testenv:
 	make api-admin
 	make krab &
 	sleep 10
-	go run cmd/temporal/main.go -config testenv/config.json -key.name admin-key krab key create
+	go run cmd/temporal/main.go  $(TEMPORALDEVFLAGS) krab key create
 	@echo "===================          done           ==================="
 
 # Shut down testenv
