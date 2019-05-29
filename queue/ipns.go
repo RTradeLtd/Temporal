@@ -24,6 +24,19 @@ const (
 	ipnsPublishTTL contextKey = "ipns-publish-ttl"
 )
 
+func (qm *Manager) getPublisherKey(ctx context.Context, kb *kaas.Client) (ci.PrivKey, error) {
+	// generate a temporary key if we have not specified a key name
+	if qm.cfg.Services.RTNS.KeyName == "" {
+		pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
+		return pk, err
+	}
+	resp, err := kb.GetPrivateKey(ctx, &pb.KeyGet{Name: qm.cfg.Services.RTNS.KeyName})
+	if err != nil {
+		return nil, err
+	}
+	return ci.UnmarshalPrivateKey(resp.GetPrivateKey())
+}
+
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
 	kbPrimary, err := kaas.NewClient(qm.cfg.Services, false)
@@ -34,15 +47,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	if err != nil {
 		return err
 	}
-	// get the private used to run the RTNS node from krab
-	resp, err := kbPrimary.GetPrivateKey(ctx, &pb.KeyGet{Name: qm.cfg.Services.RTNS.KeyName})
-	if err != nil {
-		return err
-	}
-	pubPK, err := ci.UnmarshalPrivateKey(resp.GetPrivateKey())
-	if err != nil {
-		return err
-	}
+	pubPK, err := qm.getPublisherKey(ctx, kbPrimary)
 	addr, err := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/3999")
 	if err != nil {
 		return err
