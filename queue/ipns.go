@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -52,6 +53,11 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	if err != nil {
 		return err
 	}
+	pid, err := peer.IDFromPublicKey(pubPK.GetPublic())
+	if err != nil {
+		return err
+	}
+	fmt.Printf("using peerid of %s for publisher\n", pid.String())
 	rConfig := rtns.Config{
 		PK:          pubPK,
 		ListenAddrs: []multiaddr.Multiaddr{addr},
