@@ -15,6 +15,9 @@ import (
 	pb "github.com/RTradeLtd/grpc/krab"
 	kaas "github.com/RTradeLtd/kaas/v2"
 	"github.com/RTradeLtd/rtns"
+	datastore "github.com/ipfs/go-datastore"
+	dssync "github.com/ipfs/go-datastore/sync"
+	badger "github.com/ipfs/go-ds-badger"
 	"github.com/multiformats/go-multiaddr"
 )
 
@@ -37,6 +40,15 @@ func (qm *Manager) getPublisherKey(ctx context.Context, kb *kaas.Client) (ci.Pri
 	return ci.UnmarshalPrivateKey(resp.GetPrivateKey())
 }
 
+func (qm *Manager) getDatastore() (datastore.Batching, error) {
+	if qm.dev || qm.cfg.Services.RTNS.DatastorePath == "" {
+		qm.l.Info("using map datastore")
+		return dssync.MutexWrap(datastore.NewMapDatastore()), nil
+	}
+	qm.l.Info("using badger datastore")
+	return badger.NewDatastore(qm.cfg.Services.RTNS.DatastorePath, &badger.DefaultOptions)
+}
+
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
 	kbPrimary, err := kaas.NewClient(qm.cfg.Services, false)
@@ -56,24 +68,28 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	if err != nil {
 		return err
 	}
+	ds, err := qm.getDatastore()
+	if err != nil {
+		return err
+	}
 	qm.l.Infof("usering peerid of %s for publisher", pid.String())
 	rConfig := rtns.Config{
 		PK:          pubPK,
 		ListenAddrs: []multiaddr.Multiaddr{addr},
-		DSPath:      qm.cfg.Services.RTNS.DatastorePath,
+		Datastore:   ds,
 	}
-	publisher, err := rtns.NewRTNS(ctx, kbPrimary, rConfig)
+	publisher, err := rtns.NewService(ctx, kbPrimary, rConfig)
 	if err != nil {
 		return err
 	}
-	publisher.DefaultBootstrap()
+	publisher.Bootstrap(publisher.DefaultBootstrapPeers())
 	ipnsManager := models.NewIPNSManager(qm.db)
 	qm.l.Info("processing ipns entry creation requests")
 	for {
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processIPNSEntryCreationRequest(d, wg, kbBackup, publisher, ipnsManager)
+			go qm.processIPNSEntryCreationRequest(d, wg, kbBackup, ipnsManager, publisher)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -90,7 +106,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	}
 }
 
-func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kbBackup *kaas.Client, pub *rtns.RTNS, im *models.IpnsManager) {
+func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kbBackup *kaas.Client, im *models.IpnsManager, pub rtns.Service) {
 	defer wg.Done()
 	qm.l.Info("new ipns entry creation detected")
 	ie := IPNSEntry{}
@@ -118,7 +134,7 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 	// first attempt to retrieve private key
 	// from the primary krab keystore which
 	// is embedded into the RTNS publisher
-	pk, err := pub.Keys.Get(ie.Key)
+	pk, err := pub.GetKey(ie.Key)
 	if err != nil {
 		// do not cache entries if the key is not available in the primary keystore
 		cache = false
