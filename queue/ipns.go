@@ -30,9 +30,11 @@ const (
 func (qm *Manager) getPublisherKey(ctx context.Context, kb *kaas.Client) (ci.PrivKey, error) {
 	// generate a temporary key if we have not specified a key name
 	if qm.cfg.Services.RTNS.KeyName == "" {
+		qm.l.Info("using a temporary publisher identity")
 		pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
 		return pk, err
 	}
+	qm.l.Info("using a persistent publisher identity")
 	resp, err := kb.GetPrivateKey(ctx, &pb.KeyGet{Name: qm.cfg.Services.RTNS.KeyName})
 	if err != nil {
 		return nil, err
