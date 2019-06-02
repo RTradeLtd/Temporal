@@ -66,6 +66,8 @@ github.com/RTradeLtd/rtfs/v2 v2.1.2 h1:4wam5uStNHUqN7QBTjanKNGqQZHfK0wrnv7Z/zFD/
 github.com/RTradeLtd/rtfs/v2 v2.1.2/go.mod h1:h1C/iSVuRbNPLlTMA3i3p9ZNTUdn9sZmUUI2T8d0zMw=
 github.com/RTradeLtd/rtns v0.0.6 h1:7p2Lfqp/BWAbbJQ7t7iAdJVYFkoe7hPtW91o5p+x2gA=
 github.com/RTradeLtd/rtns v0.0.6/go.mod h1:OcmynfW2+jqUGjCmnIFsDAPAH+0vFk6Vw8aL0TG+in8=
+github.com/RTradeLtd/rtns v0.0.8 h1:xMbRmIe1G2R7KaGLfAewKtF/MfYe/MN9M4qwVFPdD6U=
+github.com/RTradeLtd/rtns v0.0.8/go.mod h1:AknZ7iW5o2MceM8m+wg9hSFlWzgMK1BB1Vsr5H0dXKA=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/sarama v1.22.0/go.mod h1:lm3THZ8reqBDBQKQyb5HB3sY1lKp3grEbQ81aWSgPp4=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=

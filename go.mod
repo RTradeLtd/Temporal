@@ -15,7 +15,7 @@ require (
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
 	github.com/RTradeLtd/kaas/v2 v2.1.1
 	github.com/RTradeLtd/rtfs/v2 v2.1.2
-	github.com/RTradeLtd/rtns v0.0.6
+	github.com/RTradeLtd/rtns v0.0.8
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
 	github.com/baruwa-enterprise/clamd v0.0.0-20190131085824-7a42f6693422
@@ -39,6 +39,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.8.5
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
 	github.com/ipfs/go-cid v0.0.2
+	github.com/ipfs/go-datastore v0.0.5
+	github.com/ipfs/go-ds-badger v0.0.3
 	github.com/ipfs/go-ipfs v0.4.21 // indirect
 	github.com/ipfs/go-ipfs-addr v0.0.1
 	github.com/ipfs/go-path v0.0.7
