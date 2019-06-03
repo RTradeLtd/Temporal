@@ -60,9 +60,6 @@ var (
 	dbMigrate  *bool
 	grpcNoSSL  *bool
 	apiPort    *string
-
-	// bucket flags
-	bucketLocation *string
 )
 
 func baseFlagSet() *flag.FlagSet {

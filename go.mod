@@ -3,18 +3,19 @@ module github.com/RTradeLtd/Temporal
 go 1.12
 
 require (
+	cloud.google.com/go v0.39.0 // indirect
 	github.com/RTradeLtd/ChainRider-Go v1.0.8
 	github.com/RTradeLtd/cmd/v2 v2.1.0
-	github.com/RTradeLtd/config v2.0.5+incompatible // indirect
-	github.com/RTradeLtd/config/v2 v2.1.4
+	github.com/RTradeLtd/config/v2 v2.1.5-0.20190529011106-4b23a7bc6e57
 	github.com/RTradeLtd/crypto/v2 v2.1.1
 	github.com/RTradeLtd/database/v2 v2.2.1
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
 	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190522213636-8e3700e602fd
 	github.com/RTradeLtd/gorm v2.0.0+incompatible
-	github.com/RTradeLtd/grpc v2.0.0+incompatible
-	github.com/RTradeLtd/kaas/v2 v2.1.0
+	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
+	github.com/RTradeLtd/kaas/v2 v2.1.1
 	github.com/RTradeLtd/rtfs/v2 v2.1.2
+	github.com/RTradeLtd/rtns v0.0.8
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
 	github.com/baruwa-enterprise/clamd v0.0.0-20190131085824-7a42f6693422
@@ -30,33 +31,25 @@ require (
 	github.com/gcash/bchwallet v0.8.0
 	github.com/gin-contrib/cors v0.0.0-20170318125340-cf4846e6a636
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
-	github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3 // indirect
-	github.com/gin-gonic/gin v1.3.0
+	github.com/gin-gonic/gin v1.4.0
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/golang/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/grpc-ecosystem/grpc-gateway v1.8.5
-	github.com/hashicorp/raft v1.0.1 // indirect
-	github.com/ipfs/go-cid v0.0.1
+	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
+	github.com/ipfs/go-cid v0.0.2
 	github.com/ipfs/go-datastore v0.0.5
-	github.com/ipfs/go-ipfs v0.4.20
+	github.com/ipfs/go-ds-badger v0.0.3
+	github.com/ipfs/go-ipfs v0.4.21 // indirect
 	github.com/ipfs/go-ipfs-addr v0.0.1
-	github.com/ipfs/go-ipfs-config v0.0.1
-	github.com/ipfs/go-mfs v0.0.5 // indirect
-	github.com/ipfs/go-path v0.0.3
-	github.com/ipfs/ipfs-cluster v0.10.1
-	github.com/json-iterator/go v1.1.6 // indirect
-	github.com/libp2p/go-libp2p v0.0.13 // indirect
-	github.com/libp2p/go-libp2p-connmgr v0.0.3 // indirect
-	github.com/libp2p/go-libp2p-crypto v0.0.2
-	github.com/libp2p/go-libp2p-discovery v0.0.2 // indirect
-	github.com/libp2p/go-libp2p-host v0.0.2 // indirect
-	github.com/libp2p/go-libp2p-kad-dht v0.0.8 // indirect
-	github.com/libp2p/go-libp2p-peer v0.1.0
+	github.com/ipfs/go-path v0.0.7
+	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
+	github.com/libp2p/go-libp2p-crypto v0.1.0
+	github.com/libp2p/go-libp2p-peer v0.2.0
+	github.com/libp2p/go-libp2p-pubsub v0.1.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
-	github.com/miekg/dns v1.1.8 // indirect
-	github.com/multiformats/go-multiaddr v0.0.2
+	github.com/multiformats/go-multiaddr v0.0.4
 	github.com/multiformats/go-multihash v0.0.5
 	github.com/semihalev/gin-stats v0.0.0-20180505163755-30fdcbbd3533
 	github.com/sendgrid/rest v2.4.1+incompatible
@@ -65,10 +58,11 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/stripe/stripe-go v60.0.1+incompatible
 	go.uber.org/zap v1.9.1
-	golang.org/x/net v0.0.0-20190503192946-f4e77d36d62c
-	google.golang.org/genproto v0.0.0-20190418145605-e7d98fc518a7
-	google.golang.org/grpc v1.20.1
+	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
+	golang.org/x/tools v0.0.0-20190521203540-521d6ed310dd // indirect
+	google.golang.org/genproto v0.0.0-20190508193815-b515fa19cec8
+	google.golang.org/grpc v1.21.0
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 )
 
-replace github.com/ugorji/go v0.0.0-20171015030454-f26fc641ec9d => github.com/ugorji/go v0.0.0-20181209151446-772ced7fd4c2
+replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43

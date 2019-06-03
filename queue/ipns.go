@@ -11,10 +11,14 @@ import (
 	peer "github.com/libp2p/go-libp2p-peer"
 	"github.com/streadway/amqp"
 
-	"github.com/RTradeLtd/Temporal/rtns"
 	"github.com/RTradeLtd/database/v2/models"
 	pb "github.com/RTradeLtd/grpc/krab"
 	kaas "github.com/RTradeLtd/kaas/v2"
+	"github.com/RTradeLtd/rtns"
+	datastore "github.com/ipfs/go-datastore"
+	dssync "github.com/ipfs/go-datastore/sync"
+	badger "github.com/ipfs/go-ds-badger"
+	"github.com/multiformats/go-multiaddr"
 )
 
 type contextKey string
@@ -22,6 +26,30 @@ type contextKey string
 const (
 	ipnsPublishTTL contextKey = "ipns-publish-ttl"
 )
+
+func (qm *Manager) getPublisherKey(ctx context.Context, kb *kaas.Client) (ci.PrivKey, error) {
+	// generate a temporary key if we have not specified a key name
+	if qm.cfg.Services.RTNS.KeyName == "" {
+		qm.l.Info("using a temporary publisher identity")
+		pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
+		return pk, err
+	}
+	qm.l.Info("using a persistent publisher identity")
+	resp, err := kb.GetPrivateKey(ctx, &pb.KeyGet{Name: qm.cfg.Services.RTNS.KeyName})
+	if err != nil {
+		return nil, err
+	}
+	return ci.UnmarshalPrivateKey(resp.GetPrivateKey())
+}
+
+func (qm *Manager) getDatastore() (datastore.Batching, error) {
+	if qm.dev || qm.cfg.Services.RTNS.DatastorePath == "" {
+		qm.l.Info("using map datastore")
+		return dssync.MutexWrap(datastore.NewMapDatastore()), nil
+	}
+	qm.l.Info("using badger datastore")
+	return badger.NewDatastore(qm.cfg.Services.RTNS.DatastorePath, &badger.DefaultOptions)
+}
 
 // ProcessIPNSEntryCreationRequests is used to process IPNS entry creation requests
 func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
@@ -33,23 +61,37 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	if err != nil {
 		return err
 	}
-	// generate a temporary private key to reuse across our publisher
-	pk, _, err := ci.GenerateKeyPair(ci.Ed25519, 256)
+	pubPK, err := qm.getPublisherKey(ctx, kbPrimary)
+	addr, err := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/3999")
 	if err != nil {
 		return err
 	}
-	// user a long running publisher
-	publisher, err := rtns.NewPublisher(pk, true, "/ip4/0.0.0.0/tcp/3999")
+	pid, err := peer.IDFromPublicKey(pubPK.GetPublic())
 	if err != nil {
 		return err
 	}
+	ds, err := qm.getDatastore()
+	if err != nil {
+		return err
+	}
+	qm.l.Infof("usering peerid of %s for publisher", pid.String())
+	rConfig := rtns.Config{
+		PK:          pubPK,
+		ListenAddrs: []multiaddr.Multiaddr{addr},
+		Datastore:   ds,
+	}
+	publisher, err := rtns.NewService(ctx, kbPrimary, rConfig)
+	if err != nil {
+		return err
+	}
+	publisher.Bootstrap(publisher.DefaultBootstrapPeers())
 	ipnsManager := models.NewIPNSManager(qm.db)
 	qm.l.Info("processing ipns entry creation requests")
 	for {
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processIPNSEntryCreationRequest(d, wg, kbPrimary, kbBackup, publisher, ipnsManager)
+			go qm.processIPNSEntryCreationRequest(d, wg, kbBackup, ipnsManager, publisher)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -57,6 +99,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		case msg := <-qm.ErrCh:
 			qm.Close()
 			wg.Done()
+			publisher.Close()
 			qm.l.Errorw(
 				"a protocol connection error stopping rabbitmq was received",
 				"error", msg.Error())
@@ -65,7 +108,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	}
 }
 
-func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kbPrimary *kaas.Client, kbBackup *kaas.Client, pub *rtns.Publisher, im *models.IpnsManager) {
+func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kbBackup *kaas.Client, im *models.IpnsManager, pub rtns.Service) {
 	defer wg.Done()
 	qm.l.Info("new ipns entry creation detected")
 	ie := IPNSEntry{}
@@ -89,13 +132,14 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 		"user", ie.UserName,
 		"key", ie.Key,
 		"cid", ie.CID)
-	var (
-		resp *pb.Response
-		err  error
-	)
-	// get the private key from krab to use with publishing
-	resp, err = kbPrimary.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
+	var cache bool
+	// first attempt to retrieve private key
+	// from the primary krab keystore which
+	// is embedded into the RTNS publisher
+	pk, err := pub.GetKey(ie.Key)
 	if err != nil {
+		// do not cache entries if the key is not available in the primary keystore
+		cache = false
 		qm.l.Warnw(
 			"failed to retrieve private key from priamry krab, attempting backup",
 			"error", err.Error(),
@@ -105,11 +149,23 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 		)
 		if !qm.dev {
 			var errCheck error
-			resp, errCheck = kbBackup.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
+			resp, errCheck := kbBackup.GetPrivateKey(context.Background(), &pb.KeyGet{Name: ie.Key})
 			if errCheck != nil {
 				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
 				qm.l.Errorw(
 					"failed to retrieve private key from backup krab",
+					"error", err.Error(),
+					"user", ie.UserName,
+					"key", ie.Key,
+					"cid", ie.CID)
+				d.Ack(false)
+				return
+			}
+			pk, err = ci.UnmarshalPrivateKey(resp.GetPrivateKey())
+			if err != nil {
+				qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
+				qm.l.Errorw(
+					"failed to unmarshal private key",
 					"error", err.Error(),
 					"user", ie.UserName,
 					"key", ie.Key,
@@ -127,25 +183,15 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 			d.Ack(false)
 			return
 		}
-	}
-	// unmarshal the key that was returned by krab
-	pk2, err := ci.UnmarshalPrivateKey(resp.PrivateKey)
-	if err != nil {
-		qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
-		qm.l.Errorw(
-			"failed to unmarshal private key",
-			"error", err.Error(),
-			"user", ie.UserName,
-			"key", ie.Key,
-			"cid", ie.CID)
-		d.Ack(false)
-		return
+	} else {
+		// only cache entries whose key is available via the primary keystore
+		cache = true
 	}
 	// Note: context is used to pass in the experimental ttl value
 	// see https://discuss.ipfs.io/t/clarification-over-ttl-and-lifetime-for-ipns-records/4346 for more information
 	ctx := context.WithValue(context.Background(), ipnsPublishTTL, ie.TTL)
 	eol := time.Now().Add(ie.LifeTime)
-	if err := pub.PublishWithEOL(ctx, pk2, ie.CID, eol); err != nil {
+	if err := pub.PublishWithEOL(ctx, pk, eol, cache, ie.Key, ie.CID); err != nil {
 		qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
 		qm.l.Errorw(
 			"failed to publish ipns entry",
@@ -157,7 +203,7 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 		return
 	}
 	// retrieve the peer id from the private key used to resolve the IPNS record
-	id, err := peer.IDFromPrivateKey(pk2)
+	id, err := peer.IDFromPrivateKey(pk)
 	if err != nil {
 		// do not refund here since the record is published
 		qm.l.Errorw(
