@@ -3,6 +3,21 @@
 This document tracks changes to Temporal and its related projects for all `v2.x.x`
 releases. See our [versioning policy](/VERSIONING.md) for more details.
 
+## v2.2.0
+
+### queue
+
+* extract `rtns` publisher into separate package [#343](https://github.com/RTradeLtd/Temporal/pull/343)
+
+### dependencies
+
+* Update `go-ipfs` to `0.4.21` [#343](https://github.com/RTradeLtd/Temporal/pull/343)
+* Update `ipfs-cluster` to `master` [#343](https://github.com/RTradeLtd/Temporal/pull/343)
+
+### misc
+
+* Remove some unused variables in `cmd/temporal` and `api/v2` [#343](https://github.com/RTradeLtd/Temporal/pull/343)
+
 ## v2.1.1
 
 ### api/v2
