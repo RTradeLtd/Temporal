@@ -38,7 +38,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 		t.Fatal(err)
 	}
 	// update the users tier
-	if err := api.usage.UpdateTier("testuser", models.Plus); err != nil {
+	if err := api.usage.UpdateTier("testuser", models.Paid); err != nil {
 		t.Fatal(err)
 	}
 

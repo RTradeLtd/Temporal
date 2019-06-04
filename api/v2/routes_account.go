@@ -392,7 +392,7 @@ func (api *API) upgradeAccount(c *gin.Context) {
 		return
 	}
 	// update tier
-	if err := api.usage.UpdateTier(username, models.Light); err != nil {
+	if err := api.usage.UpdateTier(username, models.Paid); err != nil {
 		api.LogError(c, err, eh.TierUpgradeError)(http.StatusBadRequest)
 		return
 	}
