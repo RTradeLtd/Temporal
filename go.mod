@@ -33,10 +33,7 @@ require (
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-chi/chi v4.0.2+incompatible
-	github.com/golang/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
-	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
-	github.com/grpc-ecosystem/grpc-gateway v1.8.5
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
 	github.com/ipfs/go-cid v0.0.2
 	github.com/ipfs/go-datastore v0.0.5
@@ -55,12 +52,9 @@ require (
 	github.com/sendgrid/rest v2.4.1+incompatible
 	github.com/sendgrid/sendgrid-go v3.4.1+incompatible
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
-	github.com/stretchr/testify v1.3.0
 	github.com/stripe/stripe-go v60.0.1+incompatible
 	go.uber.org/zap v1.9.1
-	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 	golang.org/x/tools v0.0.0-20190521203540-521d6ed310dd // indirect
-	google.golang.org/genproto v0.0.0-20190508193815-b515fa19cec8
 	google.golang.org/grpc v1.21.0
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 )

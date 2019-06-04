@@ -44,8 +44,6 @@ github.com/RTradeLtd/crypto v2.0.0+incompatible h1:3+UEo0upD0p3A+7yLJ14UJpT6aZEh
 github.com/RTradeLtd/crypto v2.0.0+incompatible/go.mod h1:xhKwg748pxs2as6Ts65TiBBFrYzntioTqBIZEa1BUio=
 github.com/RTradeLtd/crypto/v2 v2.1.1 h1:P59zYkkNkl6K1KiTRvW52AYwLvwmtzuzZ9+AjLWmKsU=
 github.com/RTradeLtd/crypto/v2 v2.1.1/go.mod h1:saIQ67Btn4JWsOdzjn9U6Dl+aZlg+YKgg4RsQKXxjf4=
-github.com/RTradeLtd/database/v2 v2.2.1 h1:b0ZhlRhBMUI8ydtfHSs8tQIEz6B+bIgHtwRkqjarayE=
-github.com/RTradeLtd/database/v2 v2.2.1/go.mod h1:kMCIfaLYciPHOO4w8qJR5CyKIgYCb1etIfG5JfyJE2g=
 github.com/RTradeLtd/database/v2 v2.2.2-0.20190604230456-3fe910a00aa2 h1:y6V+y+dtsX61iKRjNJ2s5hVTk+j2Nrvq8eh6cgRL0eo=
 github.com/RTradeLtd/database/v2 v2.2.2-0.20190604230456-3fe910a00aa2/go.mod h1:kMCIfaLYciPHOO4w8qJR5CyKIgYCb1etIfG5JfyJE2g=
 github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636 h1:i/+1LBA+YMfD1m9UnQP52A7S6y2U3C0xpMBehPkDRug=
@@ -66,8 +64,6 @@ github.com/RTradeLtd/rtfs/v2 v2.1.0 h1:12Yx7zTkrq41f23umQ+Y6UJewTzUshSUJfHJW7kVr
 github.com/RTradeLtd/rtfs/v2 v2.1.0/go.mod h1:6J+GxAuNjmiKx+4ss4xTow7m4GNn/54KHR9y1kbyqZY=
 github.com/RTradeLtd/rtfs/v2 v2.1.2 h1:4wam5uStNHUqN7QBTjanKNGqQZHfK0wrnv7Z/zFD/t8=
 github.com/RTradeLtd/rtfs/v2 v2.1.2/go.mod h1:h1C/iSVuRbNPLlTMA3i3p9ZNTUdn9sZmUUI2T8d0zMw=
-github.com/RTradeLtd/rtns v0.0.6 h1:7p2Lfqp/BWAbbJQ7t7iAdJVYFkoe7hPtW91o5p+x2gA=
-github.com/RTradeLtd/rtns v0.0.6/go.mod h1:OcmynfW2+jqUGjCmnIFsDAPAH+0vFk6Vw8aL0TG+in8=
 github.com/RTradeLtd/rtns v0.0.8 h1:xMbRmIe1G2R7KaGLfAewKtF/MfYe/MN9M4qwVFPdD6U=
 github.com/RTradeLtd/rtns v0.0.8/go.mod h1:AknZ7iW5o2MceM8m+wg9hSFlWzgMK1BB1Vsr5H0dXKA=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
@@ -320,8 +316,6 @@ github.com/grpc-ecosystem/go-grpc-middleware v1.0.0 h1:Iju5GlWwrvL6UBg4zJJt3btmo
 github.com/grpc-ecosystem/go-grpc-middleware v1.0.0/go.mod h1:FiyG127CGDf3tlThmgyCl78X/SZQqEOJBCDaAfeWzPs=
 github.com/grpc-ecosystem/grpc-gateway v1.5.0/go.mod h1:RSKVYQBd5MCa4OVpNdGskqpgL2+G+NZTnrVHpWWfpdw=
 github.com/grpc-ecosystem/grpc-gateway v1.6.2/go.mod h1:RSKVYQBd5MCa4OVpNdGskqpgL2+G+NZTnrVHpWWfpdw=
-github.com/grpc-ecosystem/grpc-gateway v1.8.5 h1:2+KSC78XiO6Qy0hIjfc1OD9H+hsaJdJlb8Kqsd41CTE=
-github.com/grpc-ecosystem/grpc-gateway v1.8.5/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
 github.com/gxed/go-shellwords v1.0.3/go.mod h1:N7paucT91ByIjmVJHhvoarjoQnmsi3Jd3vH7VqgtMxQ=
 github.com/gxed/hashland/keccakpg v0.0.1 h1:wrk3uMNaMxbXiHibbPO4S0ymqJMm41WiudyFSs7UnsU=
 github.com/gxed/hashland/keccakpg v0.0.1/go.mod h1:kRzw3HkwxFU1mpmPP8v1WyQzwdGfmKFJ6tItnhQ67kU=
@@ -996,7 +990,6 @@ github.com/prometheus/procfs v0.0.0-20190519111021-9935e8e0588d/go.mod h1:TjEm7z
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a h1:9ZKAASQSHhDYGoxY8uLVpewe1GDZ2vu2Tr/vTdVAkFQ=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
-github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
 github.com/rogpeppe/go-internal v1.1.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rs/cors v1.6.0 h1:G9tHG9lebljV9mfp9SNPDL36nCDxmo3zTlAf1YgvzmI=
 github.com/rs/cors v1.6.0/go.mod h1:gFx+x8UowdsKA9AchylcLynDq+nNFfI8FkUZdN/jGCU=
@@ -1340,7 +1333,6 @@ gopkg.in/go-playground/assert.v1 v1.2.1/go.mod h1:9RXL0bg/zibRAgZUYszZSwO/z8Y/a8
 gopkg.in/go-playground/validator.v8 v8.18.2 h1:lFB4DoMU6B626w8ny76MV7VX6W2VHct2GVOI3xgiMrQ=
 gopkg.in/go-playground/validator.v8 v8.18.2/go.mod h1:RX2a/7Ha8BgOhfk7j780h4/u/RRjR0eouCJSH80/M2Y=
 gopkg.in/inf.v0 v0.9.1/go.mod h1:cWUDdTG/fYaXco+Dcufb5Vnc6Gp2YChqWtbxRZE0mXw=
-gopkg.in/resty.v1 v1.12.0/go.mod h1:mDo4pnntr5jdWRML875a/NmxYqAlA73dVijT2AXvQQo=
 gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 h1:uRGJdciOHaEIrze2W8Q3AKkepLTh2hOroT7a+7czfdQ=
 gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7/go.mod h1:dt/ZhP58zS4L8KSrWDmTeBkI65Dw0HsyUHuEVlX15mw=
 gopkg.in/yaml.v2 v2.0.0-20170812160011-eb3733d160e7/go.mod h1:JAlM8MvJe8wmxCU4Bli9HhUf9+ttbYbLASfIpnQbh74=
