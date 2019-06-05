@@ -58,6 +58,8 @@ github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228 h1:5dTh6W++5HbZAuyk
 github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228/go.mod h1:1+2Dnmd+g26sFHF7sJhV5aIpJKZVwGUAnoRQ5EewR1k=
 github.com/RTradeLtd/kaas/v2 v2.1.1 h1:TaIISqabrMoue8TAYFvk/BDR/4anfyYvLrJZqGI7HBQ=
 github.com/RTradeLtd/kaas/v2 v2.1.1/go.mod h1:cIdsn1J/SyPvE+TcSo2Y8697k4KhVPlk9WJXq333WFY=
+github.com/RTradeLtd/kaas/v2 v2.1.2 h1:ksBp4TRgY/5CSH6vtknN9mZQzbsUumpbDlMn/7R3Z9I=
+github.com/RTradeLtd/kaas/v2 v2.1.2/go.mod h1:cIdsn1J/SyPvE+TcSo2Y8697k4KhVPlk9WJXq333WFY=
 github.com/RTradeLtd/rtfs v2.0.1+incompatible h1:E5mG0RCFYnWjWf2pAb+k+eR2tZ3nlqCRenMhCKMKLQQ=
 github.com/RTradeLtd/rtfs v2.0.1+incompatible/go.mod h1:6ASGKwTU8Bf0o3YOGzXsU2oVmjX36GCvleKGEScXCe8=
 github.com/RTradeLtd/rtfs/v2 v2.1.0 h1:12Yx7zTkrq41f23umQ+Y6UJewTzUshSUJfHJW7kVr5w=
