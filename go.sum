@@ -48,6 +48,8 @@ github.com/RTradeLtd/database/v2 v2.2.2-0.20190604230456-3fe910a00aa2 h1:y6V+y+d
 github.com/RTradeLtd/database/v2 v2.2.2-0.20190604230456-3fe910a00aa2/go.mod h1:kMCIfaLYciPHOO4w8qJR5CyKIgYCb1etIfG5JfyJE2g=
 github.com/RTradeLtd/database/v2 v2.3.1-0.20190605071939-913f7973e40f h1:m8sQAgI/FbFG42iAUUHNbZc9HQO5ErWV+ubOuyaSgnQ=
 github.com/RTradeLtd/database/v2 v2.3.1-0.20190605071939-913f7973e40f/go.mod h1:YMDy/KeZAoowATQdYEAtjIFF7Mth2Jc4gF//YPKmLAg=
+github.com/RTradeLtd/database/v2 v2.3.1 h1:cds23BREVoiQZC6Ej4PuOETKAhTOlUDhgioCWXt3k9w=
+github.com/RTradeLtd/database/v2 v2.3.1/go.mod h1:YMDy/KeZAoowATQdYEAtjIFF7Mth2Jc4gF//YPKmLAg=
 github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636 h1:i/+1LBA+YMfD1m9UnQP52A7S6y2U3C0xpMBehPkDRug=
 github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636/go.mod h1:zpzHNRdCMCG9PM9QO5jVSldXCRMJ7lY42yJ5TEe//7M=
 github.com/RTradeLtd/go-ipfs-api v0.0.0-20190308091756-8b7099fd5e21 h1:AHtzjhhX63ayVKzYZbNv+LL7sHieM6IKRSa08QQSz60=
