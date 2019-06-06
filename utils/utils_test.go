@@ -8,7 +8,7 @@ import (
 	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/v2"
 	"github.com/RTradeLtd/database/v2/models"
-	"github.com/RTradeLtd/gorm"
+	"github.com/jinzhu/gorm"
 	"github.com/RTradeLtd/rtfs/v2"
 )
 

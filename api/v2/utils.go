@@ -13,7 +13,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/v2/models"
-	"github.com/RTradeLtd/gorm"
+	"github.com/jinzhu/gorm"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
 	jwt "gopkg.in/dgrijalva/jwt-go.v3"

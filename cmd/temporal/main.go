@@ -20,7 +20,7 @@ import (
 	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/v2"
 	"github.com/RTradeLtd/database/v2/models"
-	"github.com/RTradeLtd/gorm"
+	"github.com/jinzhu/gorm"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
