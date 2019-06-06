@@ -15,7 +15,7 @@ require (
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
 	github.com/RTradeLtd/kaas/v2 v2.1.2
 	github.com/RTradeLtd/rtfs/v2 v2.1.2
-	github.com/RTradeLtd/rtns v0.0.8
+	github.com/RTradeLtd/rtns v0.0.11
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
 	github.com/baruwa-enterprise/clamd v0.0.0-20190131085824-7a42f6693422
@@ -38,11 +38,11 @@ require (
 	github.com/ipfs/go-cid v0.0.2
 	github.com/ipfs/go-datastore v0.0.5
 	github.com/ipfs/go-ds-badger v0.0.3
-	github.com/ipfs/go-ipfs v0.4.21 // indirect
 	github.com/ipfs/go-ipfs-addr v0.0.1
 	github.com/ipfs/go-path v0.0.7
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
 	github.com/libp2p/go-libp2p-crypto v0.1.0
+	github.com/libp2p/go-libp2p-interface-pnet v0.1.0 // indirect
 	github.com/libp2p/go-libp2p-peer v0.2.0
 	github.com/libp2p/go-libp2p-pubsub v0.1.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
@@ -54,7 +54,6 @@ require (
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	github.com/stripe/stripe-go v60.0.1+incompatible
 	go.uber.org/zap v1.9.1
-	golang.org/x/tools v0.0.0-20190521203540-521d6ed310dd // indirect
 	google.golang.org/grpc v1.21.0
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 )
