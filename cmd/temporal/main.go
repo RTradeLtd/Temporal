@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"flag"
 	"fmt"
 	"os"
@@ -10,15 +9,11 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/bobheadxi/zapx"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"gopkg.in/dgrijalva/jwt-go.v3"
 
 	v2 "github.com/RTradeLtd/Temporal/api/v2"
-	v3 "github.com/RTradeLtd/Temporal/api/v3"
 	clients "github.com/RTradeLtd/Temporal/grpc-clients"
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/cmd/v2"
@@ -544,116 +539,6 @@ var commands = map[string]cmd.Cmd{
 				fmt.Println("failed to find user", err)
 				os.Exit(1)
 			}
-		},
-	},
-	"v3": {
-		Blurb:         "experimental Temporal V3 API",
-		PreRun:        true,
-		ChildRequired: true,
-		Children: map[string]cmd.Cmd{
-			"gateway": {
-				Blurb: "run a RESTful gateway for the Temporal V3 API",
-				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					logger, err := zapx.New(logPath(cfg.LogDir, "v3.gateway.log"), *devMode)
-					if err != nil {
-						fmt.Println("failed to start logger ", err)
-						os.Exit(1)
-					}
-					l := logger.Sugar()
-
-					// instantiate database dependencies - TODO
-					_, err = newDB(cfg, *dbNoSSL)
-					if err != nil {
-						fmt.Println(err)
-						os.Exit(1)
-					}
-
-					// TODO: allow better configuration
-					if err := v3.REST(context.Background(),
-						l.Named("v3.gateway"),
-						v3.RESTGatewayOptions{
-							Address:     ":8080",
-							DialAddress: cfg.V3.API.Address,
-							DialOptions: func() []grpc.DialOption {
-								opts := []grpc.DialOption{}
-								if *devMode {
-									return append(opts, grpc.WithInsecure())
-								}
-								return opts
-							}(),
-						}); err != nil {
-						fmt.Println("error occurred during gateway initialization", err)
-						os.Exit(1)
-					}
-				},
-			},
-			"server": {
-				Blurb: "run the Temporal V3 API server",
-				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					logger, err := zapx.New(logPath(cfg.LogDir, "v3.server.log"), *devMode)
-					if err != nil {
-						fmt.Println(err)
-						os.Exit(1)
-					}
-					l := logger.Sugar()
-
-					// instantiate database dependencies
-					db, err := newDB(cfg, *dbNoSSL)
-					if err != nil {
-						l.Fatal(err)
-					}
-					var (
-						users = models.NewUserManager(db)
-						usage = models.NewUsageManager(db)
-					)
-
-					// instantiate queue consumers
-					emails, err := queue.New(queue.EmailSendQueue, cfg.RabbitMQ.URL,
-						true, *devMode, &cfg, l.Named("queue.email"))
-					if err != nil {
-						l.Fatal(err)
-					}
-
-					// set up server
-					l = l.Named("v3")
-					s := v3.New(
-						l,
-						v3.NewCoreService(*devMode, l.Named("core")),
-						v3.NewAuthService(users, usage, users, emails,
-							cfg.V3.API.VerifyDomain,
-							v3.JWTConfig{
-								Key:         cfg.API.JWT.Key,
-								Realm:       cfg.API.JWT.Realm,
-								Timeout:     24 * time.Hour,
-								SigningAlgo: jwt.SigningMethodHS512,
-							}, *devMode, l.Named("auth")),
-						v3.NewStoreService(*devMode, l.Named("store")),
-						v3.NewIPFSService(*devMode, l.Named("ipfs")),
-
-						v3.Options{
-							TLS: func() *tls.Config {
-								tlsConf := cfg.V3.API.TLS
-								if tlsConf.CertPath == "" {
-									return nil
-								}
-								cert, err := tls.LoadX509KeyPair(tlsConf.CertPath, tlsConf.KeyPath)
-								if err != nil {
-									l.Fatal(err)
-								}
-								return &tls.Config{
-									Certificates: []tls.Certificate{cert},
-								}
-							}(),
-						},
-					)
-
-					// lets go!
-					if err := s.Run(context.Background(), ":8080", ":8081"); err != nil {
-						fmt.Println("error starting v3 API server", err)
-						os.Exit(1)
-					}
-				},
-			},
 		},
 	},
 	"migrate": {

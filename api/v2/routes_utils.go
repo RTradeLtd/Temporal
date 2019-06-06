@@ -136,19 +136,15 @@ func (api *API) exportKey(c *gin.Context) {
 	}
 	// after successful parsing delete key from krab primary
 	if resp, err := api.keys.kb1.DeletePrivateKey(context.Background(), &pb.KeyDelete{Name: keyName}); err != nil {
-		api.LogError(c, err, "failed to delete key")(http.StatusBadRequest)
-		return
+		api.l.Warnw("failed to delete key from primary krab", "error", err.Error())
 	} else if resp.Status != "private key deleted" {
-		Fail(c, errors.New("failed to delete private key"))
-		return
+		api.l.Warnw("bad status from primary krab key delete", "status", resp.Status)
 	}
 	// after successful parsing delete key from krab fallback
 	if resp, err := api.keys.kb2.DeletePrivateKey(context.Background(), &pb.KeyDelete{Name: keyName}); err != nil {
-		api.LogError(c, err, "failed to delete key")(http.StatusBadRequest)
-		return
+		api.l.Warnw("failed to delete key from backup krab", "error", err.Error())
 	} else if resp.Status != "private key deleted" {
-		Fail(c, errors.New("failed to delete private key"))
-		return
+		api.l.Warnw("bad status from backup krab key delete", "status", resp.Status)
 	}
 	// get key id from database
 	keyID, err := api.um.GetKeyIDByName(username, keyName)

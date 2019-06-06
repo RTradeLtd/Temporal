@@ -392,13 +392,8 @@ func (api *API) upgradeAccount(c *gin.Context) {
 		return
 	}
 	// update tier
-	if err := api.usage.UpdateTier(username, models.Light); err != nil {
+	if err := api.usage.UpdateTier(username, models.Paid); err != nil {
 		api.LogError(c, err, eh.TierUpgradeError)(http.StatusBadRequest)
-		return
-	}
-	// grant 10 cents in free credits
-	if _, err := api.um.AddCredits(username, 0.115); err != nil {
-		api.LogError(c, err, "an error occurred while granting free credits")(http.StatusBadRequest)
 		return
 	}
 	// find user
@@ -410,7 +405,7 @@ func (api *API) upgradeAccount(c *gin.Context) {
 	// create email message
 	es := queue.EmailSend{
 		Subject:     "TEMPORAL Account Upgraded",
-		Content:     "your account has been ugpraded to Light tier. Enjoy 11.5 cents of free credit!",
+		Content:     "your account has been upgraded to a paid account!",
 		ContentType: "text/html",
 		UserNames:   []string{username},
 		Emails:      []string{user.EmailAddress},
@@ -421,7 +416,7 @@ func (api *API) upgradeAccount(c *gin.Context) {
 		return
 	}
 	// return
-	Respond(c, http.StatusOK, gin.H{"response": "account upgraded, enjoy 11.5 cents of free credit, enough to store 0.5gb for 1 month"})
+	Respond(c, http.StatusOK, gin.H{"response": "account upgraded"})
 }
 
 func (api *API) usageData(c *gin.Context) {
