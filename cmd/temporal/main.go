@@ -20,12 +20,12 @@ import (
 	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/v2"
 	"github.com/RTradeLtd/database/v2/models"
-	"github.com/jinzhu/gorm"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas/v2"
 	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
+	"github.com/jinzhu/gorm"
 )
 
 // Version denotes the tag of this build
