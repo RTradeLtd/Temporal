@@ -5,6 +5,16 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 
 ## v2.2.0
 
+### api/v2
+
+* Better handling of key deletion requests [#346](https://github.com/RTradeLtd/Temporal/pull/346)
+* Free credits no longer granted when upgrading to paid tier [#346](https://github.com/RTradeLtd/Temporal/pull/346)
+* Implement refactored pricing model [#346](https://github.com/RTradeLtd/Temporal/pull/346)
+
+### api/v3
+
+* Removed into separate repository for upcoming TemporalX [#346](https://github.com/RTradeLtd/Temporal/pull/346)
+
 ### queue
 
 * extract `rtns` publisher into separate package [#343](https://github.com/RTradeLtd/Temporal/pull/343)
@@ -13,6 +23,9 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 
 * Update `go-ipfs` to `0.4.21` [#343](https://github.com/RTradeLtd/Temporal/pull/343)
 * Update `ipfs-cluster` to `master` [#343](https://github.com/RTradeLtd/Temporal/pull/343)
+* Update `kaas` to `v2.1.2` [#346](https://github.com/RTradeLtd/Temporal/pull/346)
+* Update `database` to `v2.3.1` [#346](https://github.com/RTradeLtd/Temporal/pull/346)
+* Update `gorm` to `v1.9.8` [#346](https://github.com/RTradeLtd/Temporal/pull/346)
 
 ### misc
 
