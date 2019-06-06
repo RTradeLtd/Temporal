@@ -168,11 +168,6 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		api.LogError(c, err, eh.IPFSObjectStatError)(http.StatusBadRequest)
 		return
 	}
-	// ensure user can upload
-	if err := api.usage.CanUpload(username, uint64(stats.CumulativeSize)); err != nil {
-		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
-		return
-	}
 	// get the cost of this object
 	cost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
 	if err != nil {
@@ -185,7 +180,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		return
 	}
 	if err := api.usage.UpdateDataUsage(username, uint64(stats.CumulativeSize)); err != nil {
-		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
+		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}

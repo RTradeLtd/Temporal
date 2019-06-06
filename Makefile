@@ -113,16 +113,6 @@ gen:
 		github.com/gcash/bchwallet/rpc/walletrpc.WalletServiceClient
 	$(COUNTERFEITER) -o ./mocks/rtfs.mock.go \
 		github.com/RTradeLtd/rtfs/v2.Manager
-	$(COUNTERFEITER) -o ./api/v3/mocks/grpc_stream.mock.go \
-		google.golang.org/grpc.ServerStream
-	$(COUNTERFEITER) -o ./api/v3/mocks/user.mock.go \
-		./api/v3 userManager
-	$(COUNTERFEITER) -o ./api/v3/mocks/usage.mock.go \
-		./api/v3 usageManager
-	$(COUNTERFEITER) -o ./api/v3/mocks/credits.mock.go \
-		./api/v3 creditsManager
-	$(COUNTERFEITER) -o ./api/v3/mocks/publisher.mock.go \
-		./api/v3 publisher
 	@echo "===================          done           ==================="
 
 # Rebuild vendored dependencies
@@ -185,7 +175,3 @@ api-user:
 .PHONY: api-admin
 api-admin:
 	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) admin $(USER)
-
-.PHONY: v3-proto
-v3-proto:
-	$(MAKE) -C sdk proto-go-server OUT=../api/v3/proto

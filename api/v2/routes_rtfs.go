@@ -66,18 +66,6 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		api.LogError(c, err, eh.IPFSObjectStatError)(http.StatusBadRequest)
 		return
 	}
-	// check to make sure they can upload an object of this size
-	if err := api.usage.CanUpload(username, uint64(stats.CumulativeSize)); err != nil {
-		usages, err := api.usage.FindByUserName(username)
-		if err != nil {
-			api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
-			return
-		}
-		api.LogError(c, err,
-			api.formatUploadErrorMessage(hash, usages.CurrentDataUsedBytes, usages.MonthlyDataLimitBytes),
-		)
-		return
-	}
 	// determine cost of upload
 	cost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
 	if err != nil {
@@ -91,7 +79,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	}
 	// update their data usage
 	if err := api.usage.UpdateDataUsage(username, uint64(stats.CumulativeSize)); err != nil {
-		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
+		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
 		return
 	}
@@ -185,11 +173,6 @@ func (api *API) addFile(c *gin.Context) {
 	// format size of file into gigabytes
 	fileSizeInGB := uint64(fileHandler.Size) / datasize.GB.Bytes()
 	api.l.Debug("user", username, "file_size_in_gb", fileSizeInGB)
-	// validate if they can upload an object of this size
-	if err := api.usage.CanUpload(username, fileSizeInGB); err != nil {
-		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
-		return
-	}
 	// calculate code of upload
 	cost, err := utils.CalculateFileCost(username, holdTimeInMonthsInt, fileHandler.Size, api.usage)
 	if err != nil {
@@ -203,7 +186,7 @@ func (api *API) addFile(c *gin.Context) {
 	}
 	// update their data usage
 	if err := api.usage.UpdateDataUsage(username, uint64(fileHandler.Size)); err != nil {
-		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
+		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "file", cost)
 		return
 	}
@@ -367,18 +350,11 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		api.LogError(c, err, "an error occurred while processing your request")(http.StatusInternalServerError)
 		return
 	}
-	// ensure they have enough remaining data to cover upload
-	if err := api.usage.CanUpload(username, uint64(uncompressedSize)); err != nil {
-		// remove file if this fails
-		os.Remove(destPathZip)
-		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
-		return
-	}
 	// upgrade their data usage
 	if err := api.usage.UpdateDataUsage(username, uint64(uncompressedSize)); err != nil {
 		// remove file if this fails
 		os.Remove(destPathZip)
-		api.LogError(c, err, eh.DataUsageUpdateError)(http.StatusBadRequest)
+		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		return
 	}
 	// calculate cost of file
