@@ -23,9 +23,7 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 
 * Update `go-ipfs` to `0.4.21` [#343](https://github.com/RTradeLtd/Temporal/pull/343)
 * Update `ipfs-cluster` to `master` [#343](https://github.com/RTradeLtd/Temporal/pull/343)
-* Update `kaas` to `v2.1.2` [#346](https://github.com/RTradeLtd/Temporal/pull/346)
-* Update `database` to `v2.3.1` [#346](https://github.com/RTradeLtd/Temporal/pull/346)
-* Update `gorm` to `v1.9.8` [#346](https://github.com/RTradeLtd/Temporal/pull/346)
+* Switch back to `jinzhu/gorm` and move to `v1.9.8` [#345](https://github.com/RTradeLtd/Temporal/pull/345)
 
 ### misc
 
