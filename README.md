@@ -86,7 +86,7 @@ Currently the project is paid for by RTrade Technologies Ltd, and we will *not* 
 
 Should you wish to consider donations, or private investment, email admin@rtradetechnologies.com.
 
-Should you wish to contribute not just to TEMPORAL, but to the overall success of RTrade and our platform, you may purchase RTC for ETH from our [RTCETH Smart Contract](https://etherscan.io/address/0x40e68e3F58b9C1928954BEe5dEcC09A45aA531f8#code)
+Should you wish to contribute not just to Temporal, but to the overall success of RTrade and our platform, you may purchase RTC for ETH from our [RTCETH Smart Contract](https://etherscan.io/address/0x40e68e3F58b9C1928954BEe5dEcC09A45aA531f8#code)
 
 ## Media
 
