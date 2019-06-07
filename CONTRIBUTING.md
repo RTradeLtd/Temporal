@@ -96,7 +96,7 @@ All new scripts must pass validation by [shellcheck](https://www.shellcheck.net/
 For functions where no return values are kept:
 
 ```Golang
-if _, err = um.ChangeEthereumAddress( ... ); if err != nil {
+if _, err = um.ChangeEthereumAddress( ... ); err != nil {
     ...
 }
 ```
