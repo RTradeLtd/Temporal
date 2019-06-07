@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/RTradeLtd/Temporal/mail"
-	"github.com/RTradeLtd/gorm"
+	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
 

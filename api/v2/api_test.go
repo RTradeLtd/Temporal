@@ -21,10 +21,10 @@ import (
 	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/v2"
 	"github.com/RTradeLtd/database/v2/models"
-	"github.com/RTradeLtd/gorm"
 	"github.com/RTradeLtd/rtfs/v2"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 )
 
