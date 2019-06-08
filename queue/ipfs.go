@@ -13,13 +13,13 @@ import (
 	"github.com/RTradeLtd/rtfs/v2"
 
 	"github.com/RTradeLtd/database/v2/models"
-	"github.com/RTradeLtd/gorm"
 	"github.com/bobheadxi/zapx"
+	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 
 	pb "github.com/RTradeLtd/grpc/krab"
-	ci "github.com/libp2p/go-libp2p-crypto"
-	peer "github.com/libp2p/go-libp2p-peer"
+	ci "github.com/libp2p/go-libp2p-core/crypto"
+	peer "github.com/libp2p/go-libp2p-core/peer"
 )
 
 // ProcessIPFSKeyCreation is used to create IPFS keys
