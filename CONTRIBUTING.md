@@ -39,7 +39,7 @@ go get -u=patch
 
 ### Building
 
-Dependencies are vendored by default, so there is no need to install anything if you have the Go toolchain. Temporal is built with `go1.11` and is the only gauranteed version of Golang to work.
+Dependencies are vendored by default, so there is no need to install anything if you have the Go toolchain. Temporal is built with `go1.11` and is the only guaranteed version of Golang to work.
 
 To build run the following commands:
 
