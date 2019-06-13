@@ -13,10 +13,10 @@ import (
 
 var (
 	// actual zdpuAnUGSDoNQoHQ2jpjhPePHEvg26mYLsAAGxr4jkzCWUpde
-	emptyObjHash = "zdpuAnUGSDoNQoHQ2jpjhPePHEvg26mYLsAAGxr4jkzCWUpde"
+	emptyObjHash = "bafyreia6oda253w5hnbg4tjgcyid2o2itnghc2mixgcqnukj4ripnm4ise"
 	testHash     = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
-	testObjHash  = "zdpuAvGhHHFzp7hrs4p3nv4tncWQ4tMCNsaGez1BuZpZUYhpJ"
-	testIP       = "192.168.1.101:5001"
+	testObjHash  = "bafyreiesk5qclq2ct4zcycmtfl2fbcosjewek3cm36ppytqqq346w6x5t4"
+	testIP       = "127.0.0.1:5001"
 )
 
 func Test_Customer_Empty_Object(t *testing.T) {
@@ -109,7 +109,7 @@ func Test_Customer_Empty_Object(t *testing.T) {
 		t.Fatal("failed to calculate correct size")
 	}
 	newObjHash, err := manager.Update("testuser", newHash)
-	if newObjHash != "zdpuAnjTAEDkXQi2aXPkPtscmxRZZQcZr3rw7a2YLvg3pveU8" {
+	if newObjHash != "bafyreibcksmdzfandtmo6xhresbkcmhqsswubxmokqgc3t6jbrpx7q7nce" {
 		t.Fatal("failed to properly construct new object hash")
 	}
 	// now repeat the same test ensuring we get a 0 for size used
