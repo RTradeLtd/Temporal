@@ -25,7 +25,7 @@ import (
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas/v2"
 	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 )
 
 // Version denotes the tag of this build

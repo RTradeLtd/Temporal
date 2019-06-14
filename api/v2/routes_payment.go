@@ -12,7 +12,7 @@ import (
 	"github.com/stripe/stripe-go/charge"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"github.com/stripe/stripe-go"
 
 	"github.com/RTradeLtd/ChainRider-Go/dash"

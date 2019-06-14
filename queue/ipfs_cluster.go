@@ -8,7 +8,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/database/v2/models"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"github.com/streadway/amqp"
 )
 

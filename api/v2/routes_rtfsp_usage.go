@@ -16,7 +16,7 @@ import (
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
 	"github.com/RTradeLtd/rtfs/v2"
 	gocid "github.com/ipfs/go-cid"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 
 	"github.com/gin-gonic/gin"
 )

@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"go.uber.org/zap"
 
 	"github.com/RTradeLtd/config/v2"

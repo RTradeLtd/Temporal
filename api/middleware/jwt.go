@@ -6,7 +6,7 @@ import (
 	"github.com/RTradeLtd/database/v2/models"
 	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"go.uber.org/zap"
 )
 

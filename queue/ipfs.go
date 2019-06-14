@@ -14,7 +14,7 @@ import (
 
 	"github.com/RTradeLtd/database/v2/models"
 	"github.com/bobheadxi/zapx"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"github.com/streadway/amqp"
 
 	pb "github.com/RTradeLtd/grpc/krab"

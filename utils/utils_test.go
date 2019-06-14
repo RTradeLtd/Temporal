@@ -9,7 +9,7 @@ import (
 	"github.com/RTradeLtd/database/v2"
 	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/rtfs/v2"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 )
 
 const (

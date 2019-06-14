@@ -24,7 +24,7 @@ import (
 	"github.com/RTradeLtd/rtfs/v2"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"github.com/RTradeLtd/gorm"
 	"github.com/streadway/amqp"
 )
 
