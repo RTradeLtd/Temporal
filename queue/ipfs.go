@@ -13,8 +13,8 @@ import (
 	"github.com/RTradeLtd/rtfs/v2"
 
 	"github.com/RTradeLtd/database/v2/models"
-	"github.com/bobheadxi/zapx"
 	"github.com/RTradeLtd/gorm"
+	"github.com/bobheadxi/zapx"
 	"github.com/streadway/amqp"
 
 	pb "github.com/RTradeLtd/grpc/krab"

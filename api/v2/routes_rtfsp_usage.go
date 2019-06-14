@@ -14,9 +14,9 @@ import (
 	"github.com/RTradeLtd/crypto/v2"
 	"github.com/RTradeLtd/database/v2/models"
 	ipfsapi "github.com/RTradeLtd/go-ipfs-api"
+	"github.com/RTradeLtd/gorm"
 	"github.com/RTradeLtd/rtfs/v2"
 	gocid "github.com/ipfs/go-cid"
-	"github.com/RTradeLtd/gorm"
 
 	"github.com/gin-gonic/gin"
 )
