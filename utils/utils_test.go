@@ -14,7 +14,7 @@ import (
 
 const (
 	testHash       = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
-	nodeOneAPIAddr = "192.168.1.101:5001"
+	nodeOneAPIAddr = "127.0.0.1:5001"
 	testSize       = int64(132520817)
 )
 

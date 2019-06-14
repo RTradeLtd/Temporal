@@ -11,9 +11,7 @@ import (
 const (
 	testPIN = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 	// ip address of our first ipfs and ipfs cluster node as per our makefile
-	nodeOneAPIAddr = "192.168.1.101"
-	// ip address of our second ipfs and ipfs cluster node as per our makefile
-	nodeTwoAPIAddr = "192.168.2.101"
+	nodeOneAPIAddr = "127.0.0.1"
 	// this is the port of the IPFS Cluster API
 	nodePort = "9094"
 )
