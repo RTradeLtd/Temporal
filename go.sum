@@ -40,8 +40,6 @@ github.com/RTradeLtd/crypto v2.0.0+incompatible h1:3+UEo0upD0p3A+7yLJ14UJpT6aZEh
 github.com/RTradeLtd/crypto v2.0.0+incompatible/go.mod h1:xhKwg748pxs2as6Ts65TiBBFrYzntioTqBIZEa1BUio=
 github.com/RTradeLtd/crypto/v2 v2.1.1 h1:P59zYkkNkl6K1KiTRvW52AYwLvwmtzuzZ9+AjLWmKsU=
 github.com/RTradeLtd/crypto/v2 v2.1.1/go.mod h1:saIQ67Btn4JWsOdzjn9U6Dl+aZlg+YKgg4RsQKXxjf4=
-github.com/RTradeLtd/database/v2 v2.4.0 h1:JZDPg5UH+/xjf8dMAZDTMgzOEz9M2fzCyFRrfBnVsSY=
-github.com/RTradeLtd/database/v2 v2.4.0/go.mod h1:7t4vOzLgmvIz9qnZC0UY0cwdbpkVIhE6I9BaCKV4/us=
 github.com/RTradeLtd/database/v2 v2.4.2 h1:ILokR44JKUeSgPrqcmUyfMLTKEJCD81pw596aFjXagU=
 github.com/RTradeLtd/database/v2 v2.4.2/go.mod h1:7t4vOzLgmvIz9qnZC0UY0cwdbpkVIhE6I9BaCKV4/us=
 github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636 h1:i/+1LBA+YMfD1m9UnQP52A7S6y2U3C0xpMBehPkDRug=
@@ -158,9 +156,11 @@ github.com/dchest/siphash v1.2.1/go.mod h1:q+IRvb2gOSrUnYoPqHiyHXS0FOBBOdl6tONBl
 github.com/denisenkom/go-mssqldb v0.0.0-20190423183735-731ef375ac02 h1:PS3xfVPa8N84AzoWZHFCbA0+ikz4f4skktfjQoNMsgk=
 github.com/denisenkom/go-mssqldb v0.0.0-20190423183735-731ef375ac02/go.mod h1:zAg7JM8CkOJ43xKXIj7eRO9kmWm/TW578qo+oDO6tuM=
 github.com/dgraph-io/badger v1.5.5-0.20190226225317-8115aed38f8f/go.mod h1:VZxzAIRPHRVNRKRo6AXrX9BJegn6il06VMTZVJYCIjQ=
-github.com/dgraph-io/badger v2.0.0-rc.2+incompatible h1:7KPp6xv5+wymkVUbkAnZZXvmDrJlf09m/7u1HG5lAYA=
-github.com/dgraph-io/badger v2.0.0-rc.2+incompatible/go.mod h1:VZxzAIRPHRVNRKRo6AXrX9BJegn6il06VMTZVJYCIjQ=
 github.com/dgraph-io/badger/v2 v2.0.0-20190620211019-41d170b5158f/go.mod h1:jUaIjOV835xZ/mCLG/8P/38ZxiT4bG/K1khDNZJxuwU=
+github.com/dgraph-io/badger/v2 v2.0.0-rc.2 h1:HXmSgq9dse10yQ//f4W76hU23zOpd5y2NS2D9itqGgI=
+github.com/dgraph-io/badger/v2 v2.0.0-rc.2/go.mod h1:jUaIjOV835xZ/mCLG/8P/38ZxiT4bG/K1khDNZJxuwU=
+github.com/dgraph-io/badger/v2 v2.0.0-rc1 h1:LqsK84oDd/+zd0lO5Y6gDFaR+z5g9CihmSFtOVRpCA0=
+github.com/dgraph-io/badger/v2 v2.0.0-rc1/go.mod h1:jUaIjOV835xZ/mCLG/8P/38ZxiT4bG/K1khDNZJxuwU=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-farm v0.0.0-20180109070241-2de33835d102/go.mod h1:SqUrOPUnsFjfmXRMNPybcSiG0BgUW2AuFH8PAnS2iTw=
@@ -383,6 +383,8 @@ github.com/ipfs/go-detect-race v0.0.1/go.mod h1:8BNT7shDZPo99Q74BpGMK+4D8Mn4j46U
 github.com/ipfs/go-ds-badger v0.0.2/go.mod h1:Y3QpeSFWQf6MopLTiZD+VT6IC1yZqaGmjvRcKeSGij8=
 github.com/ipfs/go-ds-badger v0.0.3 h1:sVYE2YlCzltznTZeAP1S+bp3qipz7VzogfZDtf6tGq0=
 github.com/ipfs/go-ds-badger v0.0.3/go.mod h1:7AzMKCsGav0u46HpdLiAEAOqizR1H6AZsjpHpQSPYCQ=
+github.com/ipfs/go-ds-badger v0.0.4 h1:zpAfddnYEZBX980c2a7PJHAlwlnSE4LVCjmUJYevgFc=
+github.com/ipfs/go-ds-badger v0.0.4/go.mod h1:UIu++7eal30eVc+njb9LyGgBoJ3F+Y5cBpvD/dwn5VQ=
 github.com/ipfs/go-ds-crdt v0.0.14 h1:+/S+jc1sHPipIwldyeS60p6GeNK7Nykpmx4Cnxotn3w=
 github.com/ipfs/go-ds-crdt v0.0.14/go.mod h1:ioLVScdQ2TNRPqrrB1su+Pck+gceuAlyhRMUD6TNHx4=
 github.com/ipfs/go-ds-flatfs v0.0.2 h1:1zujtU5bPBH6B8roE+TknKIbBCrpau865xUk0dH3x2A=

@@ -23,6 +23,7 @@ require (
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae
 	github.com/dchest/siphash v1.2.1 // indirect
+	github.com/dgraph-io/badger/v2 v2.0.0-rc.2 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dvwright/xss-mw v0.0.0-20190112074351-3b0e27d93653
 	github.com/gcash/bchd v0.14.4 // indirect
@@ -36,7 +37,7 @@ require (
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
 	github.com/ipfs/go-cid v0.0.2
 	github.com/ipfs/go-datastore v0.0.5
-	github.com/ipfs/go-ds-badger v0.0.3
+	github.com/ipfs/go-ds-badger v0.0.4
 	github.com/ipfs/go-ipfs-addr v0.0.1
 	github.com/ipfs/go-path v0.0.7
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
