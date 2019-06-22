@@ -8,7 +8,7 @@ require (
 	github.com/RTradeLtd/cmd/v2 v2.1.0
 	github.com/RTradeLtd/config/v2 v2.1.5
 	github.com/RTradeLtd/crypto/v2 v2.1.1
-	github.com/RTradeLtd/database/v2 v2.4.0
+	github.com/RTradeLtd/database/v2 v2.4.2
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
 	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190522213636-8e3700e602fd
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
@@ -62,3 +62,5 @@ require (
 )
 
 replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43
+
+replace github.com/dgraph-io/badger v2.0.0-rc.2+incompatible => github.com/dgraph-io/badger/v2 v2.0.0-20190620211019-41d170b5158f
