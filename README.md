@@ -41,6 +41,12 @@
 
 <br>
 
+
+## Multi-Language
+
+[![](https://img.shields.io/badge/Lang-English-blue.svg)](README.md)  [![jaywcjlove/sb](https://jaywcjlove.github.io/sb/lang/chinese.svg)](README-zh.md)
+
+
 ## About Temporal
 
 Temporal is an enterprise-grade storage solution that allows you easily integrate with distributed storage technologies like IPFS, without sacrificing functionality with an easy to use API leveraging all the benefits the distributed web has to offer.
