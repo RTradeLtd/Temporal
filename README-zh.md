@@ -158,7 +158,9 @@ Temporal的监控系统是通过Zabbix和 Grafana+Prometheus的形式来集成�
 
 ## 许可证
 
- 最初，[Temporal 核心开发者 postables](https://github.com/postables)，打算基于Apache 2.0许可证发布，但为了更好地帮助IPFS和开源社区的发展，并与最初发起该项目的先驱保持一致，Temporal已更改为MIT许可证发布。[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_large)
+ 最初，[Temporal 核心开发者 postables](https://github.com/postables)，打算基于Apache 2.0许可证发布，但为了更好地帮助IPFS和开源社区的发展，并与最初发起该项目的先驱保持一致，Temporal已更改为MIT许可证发布。
+ 
+ [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FRTradeLtd%2FTemporal?ref=badge_large)
 
 ## 鸣谢
 
