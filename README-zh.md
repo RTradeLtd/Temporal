@@ -42,7 +42,7 @@
 <br>
 
 
-## Multi-Language
+## 多语言
 
 [![](https://img.shields.io/badge/Lang-English-blue.svg)](README.md)  [![jaywcjlove/sb](https://jaywcjlove.github.io/sb/lang/chinese.svg)](README-zh.md)
 
