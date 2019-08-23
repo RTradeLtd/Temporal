@@ -81,6 +81,10 @@ func TestCORSMiddleware(t *testing.T) {
 	if reflect.TypeOf(cors).String() != "gin.HandlerFunc" {
 		t.Fatal("failed to reflect correct middleware type")
 	}
+	cors = CORSMiddleware(false, []string{})
+	if reflect.TypeOf(cors).String() != "gin.HandlerFunc" {
+		t.Fatal("failed to reflect correct middleware type")
+	}
 }
 
 func TestSecMiddleware(t *testing.T) {
