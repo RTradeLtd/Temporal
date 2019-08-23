@@ -3,6 +3,7 @@ package v2
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -132,6 +133,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
+		fmt.Printf("%+v\n", apiResp)
 		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
 	}
 
