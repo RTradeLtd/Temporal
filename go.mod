@@ -29,7 +29,7 @@ require (
 	github.com/gcash/bchd v0.14.4 // indirect
 	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0
 	github.com/gcash/bchwallet v0.8.1
-	github.com/gin-contrib/cors v0.0.0-20170318125340-cf4846e6a636
+	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-chi/chi v4.0.2+incompatible

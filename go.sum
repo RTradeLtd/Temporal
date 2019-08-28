@@ -203,6 +203,8 @@ github.com/gcash/bchwallet v0.8.1 h1:TuE5US34hmBsZzNJa8e1uw5Vy5MPZkQWW1aEXCnbnhI
 github.com/gcash/bchwallet v0.8.1/go.mod h1:dY8/NgSEv2poJeKVi9F9RfGyp50TjJWCjdJpbPjU2c0=
 github.com/gin-contrib/cors v0.0.0-20170318125340-cf4846e6a636 h1:oGgJA7DJphAc81EMHZ+2G7Ai2xyg5eoq7bbqzCsiWFc=
 github.com/gin-contrib/cors v0.0.0-20170318125340-cf4846e6a636/go.mod h1:cw+u9IsAkC16e42NtYYVCLsHYXE98nB3M7Dr9mLSeH4=
+github.com/gin-contrib/cors v1.3.0 h1:PolezCc89peu+NgkIWt9OB01Kbzt6IP0J/JvkG6xxlg=
+github.com/gin-contrib/cors v1.3.0/go.mod h1:artPvLlhkF7oG06nK8v3U8TNz6IeX+w1uzCSEId5/Vc=
 github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106 h1:EvzHcDe2j4sFRLhCJR6sE1cwmt9LtrMMDdejcdjQ1Dg=
 github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106/go.mod h1:l2I5UUSmHxQp81CF1EmB6RIo22QgZx7yIa8bwgFwq3k=
 github.com/gin-contrib/sse v0.0.0-20170109093832-22d885f9ecc7/go.mod h1:VJ0WA2NBN22VlZ2dKZQPAPnyWw5XTlK1KymzLKsr59s=
