@@ -101,6 +101,11 @@ func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, u
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != wantStatus {
+		bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
+		if err != nil {
+			api.l.Error(err)
+		}
+		fmt.Printf("reason for failure: %+v\n", string(bodyBytes))
 		return fmt.Errorf("received status %v expected %v from api call %s", testRecorder.Code, wantStatus, url)
 	}
 	if out == nil {
