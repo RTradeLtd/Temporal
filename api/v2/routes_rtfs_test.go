@@ -127,7 +127,7 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	urlValues = url.Values{}
 	urlValues.Add("hold_time", "5")
 	if err := sendRequest(
-		api, "POST", "/v2/ipfs/public/pin/"+testPIN, 200, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipfs/public/pin/"+testPIN2, 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
