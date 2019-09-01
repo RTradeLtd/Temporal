@@ -125,7 +125,7 @@ $> curl https://raw.githubusercontent.com/RTradeLtd/Temporal/master/temporal.yml
 $> docker-compose -f temporal.yml up
 ```
 
-The standalone Temporal Docker image is available on [Docker Hub](https://cloud.docker.com/u/rtradetech/repository/docker/rtradetech/temporal).
+The standalone Temporal Docker image is available on [Docker Hub](https://hub.docker.com/r/rtradetech/temporal).
 
 Refer to the `temporal.yml` documentation for more details.
 
