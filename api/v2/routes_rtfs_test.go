@@ -3,6 +3,7 @@ package v2
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -126,12 +127,13 @@ func Test_API_Routes_IPFS_Public(t *testing.T) {
 	urlValues = url.Values{}
 	urlValues.Add("hold_time", "5")
 	if err := sendRequest(
-		api, "POST", "/v2/ipfs/public/pin/"+testPIN, 200, nil, urlValues, &apiResp,
+		api, "POST", "/v2/ipfs/public/pin/"+testPIN2, 200, nil, urlValues, &apiResp,
 	); err != nil {
 		t.Fatal(err)
 	}
 	// validate the response code
 	if apiResp.Code != 200 {
+		fmt.Printf("%+v\n", apiResp)
 		t.Fatal("bad api status code from  /v2/ipfs/public/pin")
 	}
 

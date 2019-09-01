@@ -49,3 +49,8 @@ deploy:
 
 notifications:
   email: false
+
+cache:
+  directories:
+    - $GOPATH/pkg/mod
+    - $HOME/.cache/go-build

@@ -29,7 +29,7 @@ require (
 	github.com/gcash/bchd v0.14.4 // indirect
 	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0
 	github.com/gcash/bchwallet v0.8.1
-	github.com/gin-contrib/cors v0.0.0-20170318125340-cf4846e6a636
+	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-chi/chi v4.0.2+incompatible
@@ -37,9 +37,11 @@ require (
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
 	github.com/ipfs/go-cid v0.0.2
 	github.com/ipfs/go-datastore v0.0.5
-	github.com/ipfs/go-ds-badger v0.0.4
+	github.com/ipfs/go-ds-badger v0.0.5
+	github.com/ipfs/go-ipfs v0.4.22 // indirect
 	github.com/ipfs/go-ipfs-addr v0.0.1
 	github.com/ipfs/go-path v0.0.7
+	github.com/ipfs/go-peertaskqueue v0.0.5-0.20190704154349-f09820a0a5b6 // indirect
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
 	github.com/jinzhu/gorm v1.9.8
 	github.com/lib/pq v1.1.1 // indirect
@@ -64,4 +66,4 @@ require (
 
 replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43
 
-replace github.com/dgraph-io/badger v2.0.0-rc.2+incompatible => github.com/dgraph-io/badger/v2 v2.0.0-20190620211019-41d170b5158f
+replace github.com/dgraph-io/badger v2.0.0-rc.2+incompatible => github.com/dgraph-io/badger v1.6.0-rc1

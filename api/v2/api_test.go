@@ -35,6 +35,7 @@ const (
 	testBootstrapPeer1 = "/ip4/172.218.49.115/tcp/5002/ipfs/Qmf964tiE9JaxqntDsSBGasD4aaofPQtfYZyMSJJkRrVTQ"
 	testBootstrapPeer2 = "/ip4/192.168.1.249/tcp/4001/ipfs/QmXuGVPzEz2Ji7g54AYyqoobRJNHqtnrfaEceAes2bTKMh"
 	testPIN            = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
+	testPIN2           = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn"
 )
 
 var (
@@ -101,6 +102,11 @@ func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, u
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != wantStatus {
+		bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
+		if err != nil {
+			api.l.Error(err)
+		}
+		fmt.Printf("reason for failure: %+v\n", string(bodyBytes))
 		return fmt.Errorf("received status %v expected %v from api call %s", testRecorder.Code, wantStatus, url)
 	}
 	if out == nil {

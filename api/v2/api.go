@@ -380,11 +380,9 @@ func (api *API) setupRoutes() error {
 			return err
 		}
 	}
-	// ensure we have valid cors configuration
+	// ensure we have valid cors configuration, otherwise default to allow all
 	var allowedOrigins []string
-	if len(api.cfg.API.Connection.CORS.AllowedOrigins) == 0 {
-		allowedOrigins = middleware.DefaultAllowedOrigins
-	} else {
+	if len(api.cfg.API.Connection.CORS.AllowedOrigins) > 0 {
 		allowedOrigins = api.cfg.API.Connection.CORS.AllowedOrigins
 	}
 	// set up defaults

@@ -17,6 +17,11 @@ func CORSMiddleware(devMode bool, allowedOrigins []string) gin.HandlerFunc {
 	if devMode {
 		corsConfig.AllowAllOrigins = true
 		corsConfig.AllowCredentials = false
+	} else if !devMode && len(allowedOrigins) == 0 {
+		// not dev mode, and no specified origins
+		// so we should allow all
+		corsConfig.AllowAllOrigins = true
+		corsConfig.AllowOrigins = nil
 	} else {
 		// configure allowed origins
 		corsConfig.AllowOrigins = allowedOrigins
