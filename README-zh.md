@@ -128,7 +128,7 @@ $> curl https://raw.githubusercontent.com/RTradeLtd/Temporal/master/temporal.yml
 $> docker-compose -f temporal.yml up
 ```
 
-Temporal的Docker镜像获取地址：[Docker Hub](https://cloud.docker.com/u/rtradetech/repository/docker/rtradetech/temporal).
+Temporal的Docker镜像获取地址：[Docker Hub](https://hub.docker.com/r/rtradetech/temporal).
 
 更多细节请参考`temporal.yml` 文档.
 
