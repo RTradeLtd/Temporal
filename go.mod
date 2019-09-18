@@ -59,7 +59,6 @@ require (
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	github.com/stripe/stripe-go v60.0.1+incompatible
 	go.uber.org/zap v1.9.1
-	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7 // indirect
 	google.golang.org/grpc v1.21.1
 	gopkg.in/appleboy/gofight.v2 v2.0.0-00010101000000-000000000000 // indirect
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
@@ -70,3 +69,7 @@ replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go/codec v0.0.0-2019020
 replace github.com/dgraph-io/badger v2.0.0-rc.2+incompatible => github.com/dgraph-io/badger v1.6.0-rc1
 
 replace gopkg.in/appleboy/gofight.v2 => github.com/appleboy/gofight/v2 v2.1.2-0.20190917094147-9fdcf0fe61e5
+
+replace github.com/golangci/golangci-lint => github.com/golangci/golangci-lint v1.18.0
+
+replace github.com/go-critic/go-critic v0.0.0-20181204210945-ee9bf5809ead => github.com/go-critic/go-critic v0.3.5-0.20190526074819-1df300866540
