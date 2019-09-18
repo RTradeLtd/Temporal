@@ -20,8 +20,16 @@ func CORSMiddleware(devMode bool, allowedOrigins []string) gin.HandlerFunc {
 	} else {
 		opts.AllowedOrigins = allowedOrigins
 	}
-	opts.AllowedMethods = []string{"GET", "POST", "OPTIONS", "DELETE", "PUT"}
-	opts.AllowedHeaders = []string{"cache-control", "Authorization", "Content-Type", "X-Request-ID"}
+	opts.AllowedMethods = []string{"GET", "POST", "OPTIONS", "DELETE", "PUT", "HEAD"}
+	opts.AllowedHeaders = []string{
+		"cache-control",
+		"Authorization",
+		"X-Request-ID",
+		"Origin",
+		"Accept",
+		"Content-Type",
+		"X-Requested-With",
+	}
 	opts.OptionsPassthrough = true
 	return rscors.New(opts)
 }
