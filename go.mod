@@ -1,6 +1,6 @@
 module github.com/RTradeLtd/Temporal
 
-go 1.12
+go 1.13
 
 require (
 	cloud.google.com/go v0.39.0 // indirect
@@ -41,7 +41,6 @@ require (
 	github.com/ipfs/go-ipfs v0.4.22 // indirect
 	github.com/ipfs/go-ipfs-addr v0.0.1
 	github.com/ipfs/go-path v0.0.7
-	github.com/ipfs/go-peertaskqueue v0.0.5-0.20190704154349-f09820a0a5b6 // indirect
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
 	github.com/jinzhu/gorm v1.9.8
 	github.com/lib/pq v1.1.1 // indirect
@@ -60,6 +59,7 @@ require (
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	github.com/stripe/stripe-go v60.0.1+incompatible
 	go.uber.org/zap v1.9.1
+	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7 // indirect
 	google.golang.org/grpc v1.21.1
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 )
