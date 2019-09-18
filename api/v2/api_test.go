@@ -153,7 +153,7 @@ func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.Fa
 		return nil, nil, err
 	}
 	// setup api routes
-	if err = api.setupRoutes(); err != nil {
+	if err = api.setupRoutes(true); err != nil {
 		return nil, nil, err
 	}
 	return api, testRecorder, nil

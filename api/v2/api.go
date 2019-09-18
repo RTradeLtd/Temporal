@@ -111,7 +111,7 @@ func Initialize(
 	api.version = version
 
 	// init routes
-	if err = api.setupRoutes(); err != nil {
+	if err = api.setupRoutes(opts.DebugLogging); err != nil {
 		return nil, err
 	}
 	api.l.Info("api initialization successful")
@@ -366,7 +366,7 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 }
 
 // setupRoutes is used to setup all of our api routes
-func (api *API) setupRoutes() error {
+func (api *API) setupRoutes(debug bool) error {
 	var (
 		connLimit int
 		err       error
@@ -387,6 +387,8 @@ func (api *API) setupRoutes() error {
 	}
 	// set up defaults
 	api.r.Use(
+		// cors middleware
+		middleware.CORSMiddleware(dev, debug, allowedOrigins),
 		// allows for automatic xss removal
 		// greater than what can be configured with HTTP Headers
 		xssMdlwr.RemoveXss(),
@@ -394,8 +396,6 @@ func (api *API) setupRoutes() error {
 		limit.MaxAllowed(connLimit),
 		// security middleware
 		middleware.NewSecWare(dev),
-		// cors middleware
-		middleware.CORSMiddleware(dev, allowedOrigins),
 		// request id middleware
 		middleware.RequestID(),
 		// stats middleware
