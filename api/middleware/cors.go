@@ -34,7 +34,5 @@ func CORSMiddleware(devMode bool, debug bool, allowedOrigins []string) gin.Handl
 	if debug {
 		opts.Debug = true
 	}
-	// temporarily disable
-	//opts.OptionsPassthrough = true
 	return rscors.New(opts)
 }
