@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	rscors "github.com/rs/cors/wrapper/gin"
 )
 
 var (
@@ -13,22 +13,15 @@ var (
 
 // CORSMiddleware is used to load our CORS handling logic
 func CORSMiddleware(devMode bool, allowedOrigins []string) gin.HandlerFunc {
-	corsConfig := cors.DefaultConfig()
+	opts := rscors.Options{}
 	if devMode {
-		corsConfig.AllowAllOrigins = true
-		corsConfig.AllowCredentials = false
-	} else if !devMode && len(allowedOrigins) == 0 {
-		// not dev mode, and no specified origins
-		// so we should allow all
-		corsConfig.AllowAllOrigins = true
-		corsConfig.AllowOrigins = nil
+		opts.AllowedOrigins = []string{"*"}
+		opts.AllowCredentials = true
 	} else {
-		// configure allowed origins
-		corsConfig.AllowOrigins = allowedOrigins
+		opts.AllowedOrigins = allowedOrigins
 	}
-	// allow the DELETE method, allowed methods are now
-	// DELETE GET POST PUT HEAD
-	corsConfig.AddAllowMethods("DELETE")
-	corsConfig.AddAllowHeaders("cache-control", "Authorization", "Content-Type", "X-Request-ID")
-	return cors.New(corsConfig)
+	opts.AllowedMethods = []string{"GET", "POST", "OPTIONS", "DELETE", "PUT"}
+	opts.AllowedHeaders = []string{"cache-control", "Authorization", "Content-Type", "X-Request-ID"}
+	opts.OptionsPassthrough = true
+	return rscors.New(opts)
 }
