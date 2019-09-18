@@ -73,15 +73,15 @@ func TestJwtMiddleware(t *testing.T) {
 }
 
 func TestCORSMiddleware(t *testing.T) {
-	cors := CORSMiddleware(true, DefaultAllowedOrigins)
+	cors := CORSMiddleware(true, true, DefaultAllowedOrigins)
 	if reflect.TypeOf(cors).String() != "gin.HandlerFunc" {
 		t.Fatal("failed to reflect correct middleware type")
 	}
-	cors = CORSMiddleware(false, DefaultAllowedOrigins)
+	cors = CORSMiddleware(false, true, DefaultAllowedOrigins)
 	if reflect.TypeOf(cors).String() != "gin.HandlerFunc" {
 		t.Fatal("failed to reflect correct middleware type")
 	}
-	cors = CORSMiddleware(false, []string{})
+	cors = CORSMiddleware(false, true, []string{})
 	if reflect.TypeOf(cors).String() != "gin.HandlerFunc" {
 		t.Fatal("failed to reflect correct middleware type")
 	}

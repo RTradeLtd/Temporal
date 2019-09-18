@@ -12,7 +12,7 @@ var (
 )
 
 // CORSMiddleware is used to load our CORS handling logic
-func CORSMiddleware(devMode bool, allowedOrigins []string) gin.HandlerFunc {
+func CORSMiddleware(devMode bool, debug bool, allowedOrigins []string) gin.HandlerFunc {
 	opts := rscors.Options{}
 	if devMode {
 		opts.AllowedOrigins = []string{"*"}
@@ -29,6 +29,10 @@ func CORSMiddleware(devMode bool, allowedOrigins []string) gin.HandlerFunc {
 		"Accept",
 		"Content-Type",
 		"X-Requested-With",
+		"user-agent",
+	}
+	if debug {
+		opts.Debug = true
 	}
 	// temporarily disable
 	//opts.OptionsPassthrough = true

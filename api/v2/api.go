@@ -111,7 +111,7 @@ func Initialize(
 	api.version = version
 
 	// init routes
-	if err = api.setupRoutes(); err != nil {
+	if err = api.setupRoutes(opts.DebugLogging); err != nil {
 		return nil, err
 	}
 	api.l.Info("api initialization successful")
@@ -366,7 +366,7 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 }
 
 // setupRoutes is used to setup all of our api routes
-func (api *API) setupRoutes() error {
+func (api *API) setupRoutes(debug bool) error {
 	var (
 		connLimit int
 		err       error
@@ -395,7 +395,7 @@ func (api *API) setupRoutes() error {
 		// security middleware
 		middleware.NewSecWare(dev),
 		// cors middleware
-		middleware.CORSMiddleware(dev, allowedOrigins),
+		middleware.CORSMiddleware(dev, debug, allowedOrigins),
 		// request id middleware
 		middleware.RequestID(),
 		// stats middleware
