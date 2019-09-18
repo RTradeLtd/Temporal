@@ -17,7 +17,14 @@ func CORSMiddleware(devMode bool, debug bool, allowedOrigins []string) gin.Handl
 	if devMode {
 		opts.AllowedOrigins = []string{"*"}
 		opts.AllowCredentials = true
-	} else {
+	} else if len(allowedOrigins) == 1 && allowedOrigins[0] == "*" {
+		// in order to white list all origins, this appears to be the only
+		// way to do so, as even when specifying "*" it doesn't appear
+		// to match all domains
+		opts.AllowOriginFunc = func(origin string) bool {
+			return true
+		}
+	} else if len(allowedOrigins) > 1 {
 		opts.AllowedOrigins = allowedOrigins
 	}
 	opts.AllowedMethods = []string{"GET", "POST", "OPTIONS", "DELETE", "PUT", "HEAD"}
