@@ -387,6 +387,8 @@ func (api *API) setupRoutes(debug bool) error {
 	}
 	// set up defaults
 	api.r.Use(
+		// cors middleware
+		middleware.CORSMiddleware(dev, debug, allowedOrigins),
 		// allows for automatic xss removal
 		// greater than what can be configured with HTTP Headers
 		xssMdlwr.RemoveXss(),
@@ -394,8 +396,6 @@ func (api *API) setupRoutes(debug bool) error {
 		limit.MaxAllowed(connLimit),
 		// security middleware
 		middleware.NewSecWare(dev),
-		// cors middleware
-		middleware.CORSMiddleware(dev, debug, allowedOrigins),
 		// request id middleware
 		middleware.RequestID(),
 		// stats middleware
