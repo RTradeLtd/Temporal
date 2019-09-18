@@ -30,6 +30,7 @@ func CORSMiddleware(devMode bool, allowedOrigins []string) gin.HandlerFunc {
 		"Content-Type",
 		"X-Requested-With",
 	}
-	opts.OptionsPassthrough = true
+	// temporarily disable
+	//opts.OptionsPassthrough = true
 	return rscors.New(opts)
 }
