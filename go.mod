@@ -30,7 +30,7 @@ require (
 	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0
 	github.com/gcash/bchwallet v0.8.1
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
-	github.com/gin-gonic/gin v1.4.0
+	github.com/gin-gonic/gin v1.4.1-0.20190911101039-b562fed3aa28
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
