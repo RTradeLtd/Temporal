@@ -34,7 +34,7 @@ require (
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
-	github.com/ipfs/go-cid v0.0.2
+	github.com/ipfs/go-cid v0.0.3
 	github.com/ipfs/go-datastore v0.0.5
 	github.com/ipfs/go-ds-badger v0.0.5
 	github.com/ipfs/go-ipfs v0.4.22 // indirect
