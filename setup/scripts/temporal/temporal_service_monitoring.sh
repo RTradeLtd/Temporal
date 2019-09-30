@@ -14,18 +14,11 @@ case "$1" in
         fi
         ;;
     api)
-        # first check production
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal api" | grep -iv grep | awk '{print $(NF-1)" "$NF}')
-        if [[ "$PID" == "temporal api" ]]; then
-            echo 1
-        else
-            # if production check fails, check dev, otherwise echo 0   
-            PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal -dev api" | grep -iv grep | awk '{print $(NF-2)" "$(NF-1)" "$NF}')
-            if [[ "$PID" == "temporal -dev api" ]]; then
+        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep -e "api")
+        if [[ "$PID" != "" ]]; then
                 echo 1
-            else
-                echo 0
-            fi
+        else
+            echo 0
         fi
         ;;
     ipfs-pin-queue)
