@@ -634,6 +634,12 @@ func (api *API) setupRoutes(debug bool) error {
 		}
 	}
 
+	// organization routes
+	org := v2.Group("/org", authware...)
+	{
+		org.POST("/new", api.newOrganization)
+		org.POST("/register/user", api.registerOrgUser)
+	}
 	api.l.Info("Routes initialized")
 	return nil
 }
