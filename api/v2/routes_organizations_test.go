@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -39,6 +40,10 @@ func Test_API_Routes_Organization(t *testing.T) {
 	urlValues.Add("name", "testorg")
 	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Result().StatusCode != http.StatusOK {
+		t.Fatal("bad status returned")
+	}
+	// find the organization model to ensure it is create
 	org, err := models.NewOrgManager(db).FindByName("testorg")
 	if err != nil {
 		t.Fatal(err)
