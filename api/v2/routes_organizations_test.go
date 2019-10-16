@@ -61,9 +61,7 @@ func Test_API_Routes_Organization(t *testing.T) {
 	urlValues.Add("email_address", "testorg+22@example.org")
 	urlValues.Add("organization_name", "testorg")
 	req.PostForm = urlValues
-	if testRecorder.Result().StatusCode != http.StatusOK {
-		t.Fatal("bad status returned")
-	}
+	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Result().StatusCode != http.StatusOK {
 		t.Fatal("bad status returned")
 	}
