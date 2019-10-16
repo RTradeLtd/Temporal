@@ -30,11 +30,7 @@ func CalculatePinCost(username, contentHash string, holdTimeInMonths int64, im r
 		return 0, err
 	}
 	// if they are free tier, they don't incur data charges
-	if usage.Tier == models.Free {
-		return 0, nil
-	}
-	// if they are white labelled they don't incur data charges
-	if usage.Tier == models.WhiteLabeled {
+	if usage.Tier == models.Free || usage.Tier == models.WhiteLabeled {
 		return 0, nil
 	}
 	// dynamic pricing based on their usage tier
@@ -53,11 +49,7 @@ func CalculateFileCost(username string, holdTimeInMonths, size int64, um *models
 		return 0, err
 	}
 	// if they are free tier, they don't incur data charges
-	if usage.Tier == models.Free {
-		return 0, nil
-	}
-	// if they are white labelled they don't incur data charges
-	if usage.Tier == models.WhiteLabeled {
+	if usage.Tier == models.Free || usage.Tier == models.WhiteLabeled {
 		return 0, nil
 	}
 	// dynamic pricing based on their usage tier
