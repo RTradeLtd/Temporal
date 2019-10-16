@@ -81,4 +81,15 @@ func Test_API_Routes_Organization(t *testing.T) {
 	if usg.Tier != models.WhiteLabeled {
 		t.Fatal("bad tier found")
 	}
+	// search for the organization
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/v2/org/get", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("name", "testorg")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Result().StatusCode != http.StatusOK {
+		t.Fatal("bad status returned")
+	}
 }

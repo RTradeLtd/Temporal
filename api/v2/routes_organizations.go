@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"errors"
 	"fmt"
 	"html"
 	"net/http"
@@ -40,6 +41,39 @@ func (api *API) newOrganization(c *gin.Context) {
 	api.l.Infow("organization created",
 		"name", forms["name"], "owner", username)
 	Respond(c, http.StatusOK, gin.H{"response": "organization created"})
+}
+
+// getOrganization returns the organization model
+// can only be called by organization owner
+func (api *API) getOrganization(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	// get the organization name
+	forms, missingField := api.extractPostForms(c, "name")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	org, err := api.orgs.FindByName(forms["name"])
+	if err != nil {
+		api.LogError(
+			c,
+			err,
+			"failed to find org",
+		)(http.StatusInternalServerError)
+		return
+	}
+	if org.UserOwner != username {
+		api.LogError(
+			c,
+			errors.New("user is not owner"),
+			"you are not the organization owner",
+		)(http.StatusForbidden)
+	}
+	Respond(c, http.StatusOK, gin.H{"response": org})
 }
 
 // registerOrgUser is used to register an organization user
