@@ -145,7 +145,11 @@ func (api *API) registerOrgUser(c *gin.Context) {
 		return
 	}
 	// log
-	api.l.With("user", forms["username"]).Info("user account registered")
+	api.l.With(
+		"user", forms["username"],
+		"organization", forms["organization_name"],
+		"organization.owner", username,
+	).Info("organization user account registered")
 	// remove hashed password from output
 	user.HashedPassword = "scrubbed"
 	// remove the verification token from output
