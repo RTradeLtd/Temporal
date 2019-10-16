@@ -44,6 +44,8 @@ github.com/RTradeLtd/crypto/v2 v2.1.1 h1:P59zYkkNkl6K1KiTRvW52AYwLvwmtzuzZ9+AjLW
 github.com/RTradeLtd/crypto/v2 v2.1.1/go.mod h1:saIQ67Btn4JWsOdzjn9U6Dl+aZlg+YKgg4RsQKXxjf4=
 github.com/RTradeLtd/database/v2 v2.4.2 h1:ILokR44JKUeSgPrqcmUyfMLTKEJCD81pw596aFjXagU=
 github.com/RTradeLtd/database/v2 v2.4.2/go.mod h1:7t4vOzLgmvIz9qnZC0UY0cwdbpkVIhE6I9BaCKV4/us=
+github.com/RTradeLtd/database/v2 v2.4.3-0.20191016024723-9e07ae5551e0 h1:uVcGnWnPocgallh9TUvI5M7e6xZCCPh9KNROxoSSbSI=
+github.com/RTradeLtd/database/v2 v2.4.3-0.20191016024723-9e07ae5551e0/go.mod h1:Poy11+7mv9T+YzSTY9Vu5RM1X3kAxIcEN03h6Dh66fg=
 github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636 h1:i/+1LBA+YMfD1m9UnQP52A7S6y2U3C0xpMBehPkDRug=
 github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636/go.mod h1:zpzHNRdCMCG9PM9QO5jVSldXCRMJ7lY42yJ5TEe//7M=
 github.com/RTradeLtd/go-ipfs-api v0.0.0-20190308091756-8b7099fd5e21 h1:AHtzjhhX63ayVKzYZbNv+LL7sHieM6IKRSa08QQSz60=
@@ -577,6 +579,7 @@ github.com/jtolds/gls v4.2.1+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfVY
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
 github.com/jung-kurt/gofpdf v1.0.3-0.20190309125859-24315acbbda5 h1:PJr+ZMXIecYc1Ey2zucXdR73SMBtgjPgwa31099IMv0=
 github.com/jung-kurt/gofpdf v1.0.3-0.20190309125859-24315acbbda5/go.mod h1:7Id9E/uU8ce6rXgefFLlgrJj/GYY22cpxn+r32jIOes=
+github.com/k0kubun/pp v3.0.1+incompatible/go.mod h1:GWse8YhT0p8pT4ir3ZgBbfZild3tgzSScAn6HmfYukg=
 github.com/kelseyhightower/envconfig v1.3.0 h1:IvRS4f2VcIQy6j4ORGIf9145T/AsUB+oY8LyvN8BXNM=
 github.com/kelseyhightower/envconfig v1.3.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=

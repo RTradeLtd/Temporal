@@ -33,6 +33,10 @@ func CalculatePinCost(username, contentHash string, holdTimeInMonths int64, im r
 	if usage.Tier == models.Free {
 		return 0, nil
 	}
+	// if they are white labelled they don't incur data charges
+	if usage.Tier == models.WhiteLabeled {
+		return 0, nil
+	}
 	// dynamic pricing based on their usage tier
 	costPerMonthFloat := objectSizeInGigabytesFloat * usage.Tier.PricePerGB()
 	return costPerMonthFloat * float64(holdTimeInMonths), nil
