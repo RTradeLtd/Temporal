@@ -56,6 +56,10 @@ func CalculateFileCost(username string, holdTimeInMonths, size int64, um *models
 	if usage.Tier == models.Free {
 		return 0, nil
 	}
+	// if they are white labelled they don't incur data charges
+	if usage.Tier == models.WhiteLabeled {
+		return 0, nil
+	}
 	// dynamic pricing based on their usage tier
 	costPerMonthFloat := sizeGigabytesFloat * usage.Tier.PricePerGB()
 	return costPerMonthFloat * float64(holdTimeInMonths), nil
