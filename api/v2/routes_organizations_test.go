@@ -33,6 +33,7 @@ func Test_API_Routes_Organization(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// create organization
 	testRecorder = httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/org/new", nil)
 	req.Header.Add("Authorization", authHeader)
@@ -49,4 +50,37 @@ func Test_API_Routes_Organization(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Unscoped().Delete(org)
+
+	// register organization user
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("POST", "/v2/org/register/user", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("username", "testorg-user")
+	urlValues.Add("password", "password123")
+	urlValues.Add("email_address", "testorg+22@example.org")
+	urlValues.Add("organization_name", "testorg")
+	req.PostForm = urlValues
+	if testRecorder.Result().StatusCode != http.StatusOK {
+		t.Fatal("bad status returned")
+	}
+	if testRecorder.Result().StatusCode != http.StatusOK {
+		t.Fatal("bad status returned")
+	}
+	usr, err := models.NewUserManager(db).FindByUserName("testorg-user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Unscoped().Delete(usr)
+	if usr.Organization != "testorg" {
+		t.Fatal("bad organization found")
+	}
+	usg, err := models.NewUsageManager(db).FindByUserName("testorg-user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Unscoped().Delete(usg)
+	if usg.Tier != models.WhiteLabeled {
+		t.Fatal("bad tier found")
+	}
 }
