@@ -83,7 +83,7 @@ func Test_API_Routes_Organization(t *testing.T) {
 	}
 	// search for the organization
 	testRecorder = httptest.NewRecorder()
-	req = httptest.NewRequest("GET", "/v2/org/get", nil)
+	req = httptest.NewRequest("GET", "/v2/org/get/model", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues = url.Values{}
 	urlValues.Add("name", "testorg")
