@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"html"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/queue"
@@ -74,6 +76,59 @@ func (api *API) getOrganization(c *gin.Context) {
 		)(http.StatusForbidden)
 	}
 	Respond(c, http.StatusOK, gin.H{"response": org})
+}
+
+func (api *API) getOrgBillingReport(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	// get the organization name
+	forms, missingField := api.extractPostForms(c, "name", "number_of_days")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	// validate number_of_days parameter
+	numDays, err := strconv.Atoi(forms["number_of_days"])
+	if err != nil {
+		api.LogError(
+			c,
+			err,
+			"number_of_days is not an int",
+		)(http.StatusBadRequest)
+		return
+	}
+	// validate user is owner
+	if org, err := api.orgs.FindByName(forms["name"]); err != nil {
+		api.LogError(
+			c,
+			err,
+			"failed to find org",
+		)(http.StatusInternalServerError)
+		return
+	} else if org.UserOwner != username {
+		api.LogError(
+			c,
+			errors.New("user is not owner"),
+			"you are not the organization owner",
+		)(http.StatusForbidden)
+	}
+	// generate a billing report
+	report, err := api.orgs.GenerateBillingReport(
+		forms["name"],
+		time.Now().AddDate(0, 0, -numDays),
+		time.Now(),
+	)
+	if err != nil {
+		api.LogError(
+			c,
+			err,
+			"failed to generate billing report",
+		)(http.StatusInternalServerError)
+	}
+	Respond(c, http.StatusOK, gin.H{"response": report})
 }
 
 // registerOrgUser is used to register an organization user

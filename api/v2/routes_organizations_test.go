@@ -92,4 +92,16 @@ func Test_API_Routes_Organization(t *testing.T) {
 	if testRecorder.Result().StatusCode != http.StatusOK {
 		t.Fatal("bad status returned")
 	}
+	// get a billing report
+	testRecorder = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/v2/org/get/billing/report", nil)
+	req.Header.Add("Authorization", authHeader)
+	urlValues = url.Values{}
+	urlValues.Add("name", "testorg")
+	urlValues.Add("number_of_days", "30")
+	req.PostForm = urlValues
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Result().StatusCode != http.StatusOK {
+		t.Fatal("bad status returned")
+	}
 }

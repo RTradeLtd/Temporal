@@ -637,7 +637,11 @@ func (api *API) setupRoutes(debug bool) error {
 	// organization routes
 	org := v2.Group("/org", authware...)
 	{
-		org.GET("/get", api.getOrganization)
+		get := org.Group("/get")
+		{
+			get.GET("/", api.getOrganization)
+			get.GET("/billing/report", api.getOrgBillingReport)
+		}
 		org.POST("/new", api.newOrganization)
 		org.POST("/register/user", api.registerOrgUser)
 	}
