@@ -97,6 +97,23 @@ func (api *API) registerOrgUser(c *gin.Context) {
 		FailWithMissingField(c, missingField)
 		return
 	}
+	// ensure user is org owner
+	org, err := api.orgs.FindByName(forms["organization_name"])
+	if err != nil {
+		api.LogError(
+			c,
+			err,
+			"failed to find organization",
+		)(http.StatusInternalServerError)
+		return
+	}
+	if org.UserOwner != username {
+		api.LogError(
+			c,
+			errors.New("user is not owner"),
+			"you are not the organization owner",
+		)(http.StatusForbidden)
+	}
 	// parse html encoded strings
 	forms["password"] = html.UnescapeString(forms["password"])
 	// create the org user. this process is similar to regular
