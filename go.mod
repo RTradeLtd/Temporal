@@ -15,7 +15,7 @@ require (
 	github.com/RTradeLtd/kaas/v2 v2.1.2
 	github.com/RTradeLtd/rtfs/v2 v2.1.2
 	github.com/RTradeLtd/rtns v0.0.12
-	github.com/appleboy/gin-jwt v2.3.1+incompatible
+	github.com/appleboy/gin-jwt v2.5.0+incompatible
 	github.com/appleboy/gofight/v2 v2.1.1 // indirect
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
 	github.com/baruwa-enterprise/clamd v0.0.0-20190131085824-7a42f6693422
