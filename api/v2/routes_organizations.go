@@ -28,7 +28,7 @@ func (api *API) newOrganization(c *gin.Context) {
 		return
 	}
 	// create the organization
-	if err := api.orgs.NewOrganization(
+	if _, err := api.orgs.NewOrganization(
 		forms["name"],
 		username,
 	); err != nil {
@@ -68,7 +68,7 @@ func (api *API) getOrganization(c *gin.Context) {
 		)(http.StatusInternalServerError)
 		return
 	}
-	if org.UserOwner != username {
+	if org.AccountOwner != username {
 		api.LogError(
 			c,
 			errors.New("user is not owner"),
@@ -108,7 +108,7 @@ func (api *API) getOrgBillingReport(c *gin.Context) {
 			"failed to find org",
 		)(http.StatusInternalServerError)
 		return
-	} else if org.UserOwner != username {
+	} else if org.AccountOwner != username {
 		api.LogError(
 			c,
 			errors.New("user is not owner"),
@@ -162,7 +162,7 @@ func (api *API) registerOrgUser(c *gin.Context) {
 		)(http.StatusInternalServerError)
 		return
 	}
-	if org.UserOwner != username {
+	if org.AccountOwner != username {
 		api.LogError(
 			c,
 			errors.New("user is not owner"),
