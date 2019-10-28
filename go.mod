@@ -36,7 +36,7 @@ require (
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
 	github.com/ipfs/go-cid v0.0.2
 	github.com/ipfs/go-datastore v0.0.5
-	github.com/ipfs/go-ds-badger v0.0.5
+	github.com/ipfs/go-ds-badger v0.0.7
 	github.com/ipfs/go-ipfs v0.4.22 // indirect
 	github.com/ipfs/go-ipfs-addr v0.0.1
 	github.com/ipfs/go-path v0.0.7

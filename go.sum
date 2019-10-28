@@ -179,6 +179,7 @@ github.com/denisenkom/go-mssqldb v0.0.0-20190423183735-731ef375ac02/go.mod h1:zA
 github.com/dgraph-io/badger v1.5.5-0.20190226225317-8115aed38f8f/go.mod h1:VZxzAIRPHRVNRKRo6AXrX9BJegn6il06VMTZVJYCIjQ=
 github.com/dgraph-io/badger v1.6.0-rc1 h1:JphPpoBZJ3WHha133BGYlQqltSGIhV+VsEID0++nN9A=
 github.com/dgraph-io/badger v1.6.0-rc1/go.mod h1:zwt7syl517jmP8s94KqSxTlM6IMsdhYy6psNgSztDR4=
+github.com/dgraph-io/badger v1.6.0/go.mod h1:zwt7syl517jmP8s94KqSxTlM6IMsdhYy6psNgSztDR4=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-farm v0.0.0-20190104051053-3adb47b1fb0f/go.mod h1:SqUrOPUnsFjfmXRMNPybcSiG0BgUW2AuFH8PAnS2iTw=
@@ -415,6 +416,8 @@ github.com/ipfs/go-datastore v0.0.3/go.mod h1:d4KVXhMt913cLBEI/PXAy6ko+W7e9AhyAK
 github.com/ipfs/go-datastore v0.0.4/go.mod h1:d4KVXhMt913cLBEI/PXAy6ko+W7e9AhyAKBGh803qeE=
 github.com/ipfs/go-datastore v0.0.5 h1:q3OfiOZV5rlsK1H5V8benjeUApRfMGs4Mrhmr6NriQo=
 github.com/ipfs/go-datastore v0.0.5/go.mod h1:d4KVXhMt913cLBEI/PXAy6ko+W7e9AhyAKBGh803qeE=
+github.com/ipfs/go-datastore v0.1.1 h1:F4k0TkTAZGLFzBOrVKDAvch6JZtuN4NHkfdcEZL50aI=
+github.com/ipfs/go-datastore v0.1.1/go.mod h1:w38XXW9kVFNp57Zj5knbKWM2T+KOZCGDRVNdgPHtbHw=
 github.com/ipfs/go-detect-race v0.0.1 h1:qX/xay2W3E4Q1U7d9lNs1sU9nvguX0a7319XbyQ6cOk=
 github.com/ipfs/go-detect-race v0.0.1/go.mod h1:8BNT7shDZPo99Q74BpGMK+4D8Mn4j46UU0LZ723meps=
 github.com/ipfs/go-ds-badger v0.0.2/go.mod h1:Y3QpeSFWQf6MopLTiZD+VT6IC1yZqaGmjvRcKeSGij8=
@@ -422,6 +425,8 @@ github.com/ipfs/go-ds-badger v0.0.3 h1:sVYE2YlCzltznTZeAP1S+bp3qipz7VzogfZDtf6tG
 github.com/ipfs/go-ds-badger v0.0.3/go.mod h1:7AzMKCsGav0u46HpdLiAEAOqizR1H6AZsjpHpQSPYCQ=
 github.com/ipfs/go-ds-badger v0.0.5 h1:dxKuqw5T1Jm8OuV+lchA76H9QZFyPKZeLuT6bN42hJQ=
 github.com/ipfs/go-ds-badger v0.0.5/go.mod h1:g5AuuCGmr7efyzQhLL8MzwqcauPojGPUaHzfGTzuE3s=
+github.com/ipfs/go-ds-badger v0.0.7 h1:NMyh88Q50HG6/S2YD58DLkq0c0/ZQPMbSojONH+PRf4=
+github.com/ipfs/go-ds-badger v0.0.7/go.mod h1:qt0/fWzZDoPW6jpQeqUjR5kBfhDNB65jd9YlmAvpQBk=
 github.com/ipfs/go-ds-crdt v0.0.14 h1:+/S+jc1sHPipIwldyeS60p6GeNK7Nykpmx4Cnxotn3w=
 github.com/ipfs/go-ds-crdt v0.0.14/go.mod h1:ioLVScdQ2TNRPqrrB1su+Pck+gceuAlyhRMUD6TNHx4=
 github.com/ipfs/go-ds-flatfs v0.0.2 h1:1zujtU5bPBH6B8roE+TknKIbBCrpau865xUk0dH3x2A=
