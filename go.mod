@@ -8,7 +8,7 @@ require (
 	github.com/RTradeLtd/cmd/v2 v2.1.0
 	github.com/RTradeLtd/config/v2 v2.1.5
 	github.com/RTradeLtd/crypto/v2 v2.1.1
-	github.com/RTradeLtd/database/v2 v2.4.3-0.20191016211121-4aadf1337a5f
+	github.com/RTradeLtd/database/v2 v2.5.0
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
 	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190522213636-8e3700e602fd
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
@@ -42,7 +42,6 @@ require (
 	github.com/ipfs/go-path v0.0.7
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
 	github.com/jinzhu/gorm v1.9.8
-	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/lib/pq v1.1.1 // indirect
 	github.com/libp2p/go-libp2p-core v0.0.3
 	github.com/libp2p/go-libp2p-interface-pnet v0.1.0 // indirect
