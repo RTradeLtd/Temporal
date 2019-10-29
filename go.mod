@@ -28,7 +28,7 @@ require (
 	github.com/dvwright/xss-mw v0.0.0-20190112074351-3b0e27d93653
 	github.com/gcash/bchd v0.14.4 // indirect
 	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0
-	github.com/gcash/bchwallet v0.8.1
+	github.com/gcash/bchwallet v0.8.2
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
 	github.com/gin-gonic/gin v1.4.1-0.20190911101039-b562fed3aa28
 	github.com/go-chi/chi v4.0.2+incompatible
