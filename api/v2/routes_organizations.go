@@ -21,6 +21,18 @@ func (api *API) newOrganization(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// first validate they are a partner
+	if org, err := api.usage.FindByUserName(username); err != nil {
+		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
+		return
+	} else if org.Tier != models.Partner {
+		api.LogError(
+			c,
+			errors.New("account tier is not partner"),
+			"only partner accounts can create orgs",
+		)(http.StatusBadRequest)
+		return
+	}
 	// get the organization name
 	forms, missingField := api.extractPostForms(c, "name")
 	if missingField != "" {
