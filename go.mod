@@ -28,7 +28,7 @@ require (
 	github.com/dvwright/xss-mw v0.0.0-20190112074351-3b0e27d93653
 	github.com/gcash/bchd v0.14.4 // indirect
 	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0
-	github.com/gcash/bchwallet v0.8.1
+	github.com/gcash/bchwallet v0.8.2
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
 	github.com/gin-gonic/gin v1.4.1-0.20190911101039-b562fed3aa28
 	github.com/go-chi/chi v4.0.2+incompatible
@@ -36,7 +36,7 @@ require (
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
 	github.com/ipfs/go-cid v0.0.2
 	github.com/ipfs/go-datastore v0.0.5
-	github.com/ipfs/go-ds-badger v0.0.5
+	github.com/ipfs/go-ds-badger v0.0.7
 	github.com/ipfs/go-ipfs v0.4.22 // indirect
 	github.com/ipfs/go-ipfs-addr v0.0.1
 	github.com/ipfs/go-path v0.0.7
@@ -58,8 +58,8 @@ require (
 	github.com/sendgrid/sendgrid-go v3.4.1+incompatible
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	github.com/stripe/stripe-go v60.0.1+incompatible
-	go.uber.org/zap v1.9.1
-	google.golang.org/grpc v1.21.1
+	go.uber.org/zap v1.11.0
+	google.golang.org/grpc v1.24.0
 	gopkg.in/appleboy/gofight.v2 v2.0.0-00010101000000-000000000000 // indirect
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 )
