@@ -32,7 +32,10 @@ func Test_API_Routes_Organization(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	// upgrade account to partner for test.
+	if err := api.usage.UpdateTier("testuser", models.Partner); err != nil {
+		t.Fatal(err)
+	}
 	// create organization
 	testRecorder = httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/org/new", nil)
