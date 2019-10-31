@@ -8,7 +8,7 @@ require (
 	github.com/RTradeLtd/cmd/v2 v2.1.0
 	github.com/RTradeLtd/config/v2 v2.1.5
 	github.com/RTradeLtd/crypto/v2 v2.1.1
-	github.com/RTradeLtd/database/v2 v2.4.2
+	github.com/RTradeLtd/database/v2 v2.5.0
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
 	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190522213636-8e3700e602fd
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
@@ -23,11 +23,9 @@ require (
 	github.com/bobheadxi/zapx v0.2.0
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae
-	github.com/dchest/siphash v1.2.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dvwright/xss-mw v0.0.0-20190112074351-3b0e27d93653
-	github.com/gcash/bchd v0.14.4 // indirect
-	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0
+	github.com/gcash/bchutil v0.0.0-20191012211144-98e73ec336ba
 	github.com/gcash/bchwallet v0.8.2
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
 	github.com/gin-gonic/gin v1.4.1-0.20190911101039-b562fed3aa28
@@ -35,7 +33,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
 	github.com/ipfs/go-cid v0.0.2
-	github.com/ipfs/go-datastore v0.0.5
+	github.com/ipfs/go-datastore v0.1.1
 	github.com/ipfs/go-ds-badger v0.0.7
 	github.com/ipfs/go-ipfs v0.4.22 // indirect
 	github.com/ipfs/go-ipfs-addr v0.0.1

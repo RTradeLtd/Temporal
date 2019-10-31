@@ -54,6 +54,7 @@ type API struct {
 	rm          *models.RecordManager
 	nm          *models.HostedNetworkManager
 	usage       *models.UsageManager
+	orgs        *models.OrgManager
 	l           *zap.SugaredLogger
 	signer      pbSigner.SignerClient
 	orch        pbOrch.ServiceClient
@@ -223,6 +224,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 		ue:          models.NewEncryptedUploadManager(dbm.DB),
 		upm:         models.NewUploadManager(dbm.DB),
 		usage:       models.NewUsageManager(dbm.DB),
+		orgs:        models.NewOrgManager(dbm.DB),
 		lens:        clients.Lens,
 		signer:      clients.Signer,
 		orch:        clients.Orch,
@@ -632,6 +634,17 @@ func (api *API) setupRoutes(debug bool) error {
 		}
 	}
 
+	// organization routes
+	org := v2.Group("/org", authware...)
+	{
+		get := org.Group("/get")
+		{
+			get.GET("/model", api.getOrganization)
+			get.GET("/billing/report", api.getOrgBillingReport)
+		}
+		org.POST("/new", api.newOrganization)
+		org.POST("/register/user", api.registerOrgUser)
+	}
 	api.l.Info("Routes initialized")
 	return nil
 }
