@@ -86,6 +86,7 @@ func (api *API) getOrganization(c *gin.Context) {
 			errors.New("user is not owner"),
 			"you are not the organization owner",
 		)(http.StatusForbidden)
+		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": org})
 }
@@ -182,6 +183,7 @@ func (api *API) registerOrgUser(c *gin.Context) {
 			errors.New("user is not owner"),
 			"you are not the organization owner",
 		)(http.StatusForbidden)
+		return
 	}
 	// parse html encoded strings
 	forms["password"] = html.UnescapeString(forms["password"])
