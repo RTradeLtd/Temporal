@@ -86,6 +86,7 @@ func (api *API) getOrganization(c *gin.Context) {
 			errors.New("user is not owner"),
 			"you are not the organization owner",
 		)(http.StatusForbidden)
+		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": org})
 }
@@ -126,6 +127,7 @@ func (api *API) getOrgBillingReport(c *gin.Context) {
 			errors.New("user is not owner"),
 			"you are not the organization owner",
 		)(http.StatusForbidden)
+		return
 	}
 	// generate a billing report
 	report, err := api.orgs.GenerateBillingReport(
@@ -139,6 +141,7 @@ func (api *API) getOrgBillingReport(c *gin.Context) {
 			err,
 			"failed to generate billing report",
 		)(http.StatusInternalServerError)
+		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": report})
 }
@@ -180,6 +183,7 @@ func (api *API) registerOrgUser(c *gin.Context) {
 			errors.New("user is not owner"),
 			"you are not the organization owner",
 		)(http.StatusForbidden)
+		return
 	}
 	// parse html encoded strings
 	forms["password"] = html.UnescapeString(forms["password"])
