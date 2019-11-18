@@ -1,7 +1,7 @@
 # Production docker-compose setup for Temporal.
 #
 # Usage:
-#   env TEMPORAL=latest BASE=/my/dir docker-compose -f prod.yml up
+#   env TEMPORAL=latest BASE=/my/dir docker-compose -f temporal.yml up
 #
 # Data:
 #   - Leave BASE unassigned to use the root directory.
