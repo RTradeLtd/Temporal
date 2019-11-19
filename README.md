@@ -116,9 +116,9 @@ One of the big concerns with IPFS, and even cloud data storage in general is enc
 
 ## Usage and Features
 
-Before attempting to use Temporal you will need to install it. Even if you are going to be using our dockerized tooling, an install of Temporal is needed primarily for configuration file initialization, and running of a [kaas](https://github.com/RTradeLtd/kaas) grpc server. 
+Before attempting to use Temporal you will need to install it. Even if you are going to be using our dockerized tooling, an install of Temporal is needed primarily for configuration file initialization.
 
-Please note that a full-blown Temporal instance including the payment processing backend can take awhile, and requires an API key for [ChainRider](https://chainrider.io/) as well as a fully synced [geth node](https://github.com/ethereum/go-ethereum), and [bchd node](https://github.com/gcash/bchd). We will *not* be covering the setup of either chainrider, geth, and bchd, please consult appropriate documentation for setting those up.
+Please note that a full-blown Temporal instance including the payment processing backend can take awhile, and requires an API key for [ChainRider](https://chainrider.io/) as well as a fully synced [geth node](https://github.com/ethereum/go-ethereum), and [bchd node](https://github.com/gcash/bchd). We will *not* be covering the setup of either chainrider, geth, and bchd, please consult appropriate documentation for setting those up. Should you want to read about our payment processing backedn see [RTradeLtd/Pay](https://github.com/RTradeLtd/Pay)
 
 The rest of this usage documentation will be covering a bare-minimum Temporal setup which does not include any payment processing capabilities. Thus you will not be able to "purchase credits" the remedy to this is to manually alter user account balances, or promote a user to a partner tier, registering an organization, and then creating all new users under that organization. This effectively side-steps the billing process, and requires no manually management of user credits. 
 
@@ -237,7 +237,7 @@ Our API documentation has been redesigned to use slate, hosted through IPFS. The
 
 ### Supported Technologies
 
-Currently we fully support all non-experimental IPFS and IPNS feature-sets. Features like UnixFS, MFS are on-hold until their specs, and implementations become more stable and usable within production environments. Additional protocols like STORJ, and SWARM will be added, fully supporting public+private integrations. At the moment, the next planned protocol is STORJ, with alpha integration expected near the of January/February 2019.
+Currently we fully support all non-experimental IPFS and IPNS feature-sets. Features like UnixFS, MFS are on-hold until their specs, and implementations become more stable and usable within production environments.
 
 ### System Monitoring
 
