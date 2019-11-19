@@ -116,7 +116,11 @@ One of the big concerns with IPFS, and even cloud data storage in general is enc
 
 ## Usage and Features
 
-Before attempting to use Temporal you will need to install it. Even if you are going to be using our dockerized tooling, an install of Temporal is needed.
+Before attempting to use Temporal you will need to install it. Even if you are going to be using our dockerized tooling, an install of Temporal is needed primarily for configuration file initialization, and running of a [kaas](https://github.com/RTradeLtd/kaas) grpc server. 
+
+Please note that a full-blown Temporal instance including the payment processing backend can take awhile, and requires an API key for [ChainRider](https://chainrider.io/) as well as a fully synced [geth node](https://github.com/ethereum/go-ethereum), and [bchd node](https://github.com/gcash/bchd). We will *not* be covering the setup of either chainrider, geth, and bchd, please consult appropriate documentation for setting those up.
+
+The rest of this usage documentation will be covering a bare-minimum Temporal setup which does not include any payment processing capabilities.
 
 ### Installing Temporal
 
@@ -131,7 +135,7 @@ This is quite a bit more complicated, and requires things like a proper golang v
 
 If you do want to download and build from source, be-aware the download process can take *A LONG TIME* depending on your bandwidth and internet speed. Usually it takes up to 30 minutes.
 
-Should you still want to do this, download the [install_from_source.sh script](./setup/scripts/misc/install_from_source.sh). Alternatively here's the script
+Should you still want to do this, download the [install_from_source.sh script](./setup/scripts/misc/install_from_source.sh). This will ensure you have the proper go version, download the github repository, compile the cli, and install it. The main settings, such as workdir and binary install location are configurable, but come with sensible defaults. Alternatively here's a copy of the script
 
 ```bash
 #! /bin/bash
@@ -140,6 +144,7 @@ Should you still want to do this, download the [install_from_source.sh script](.
 GOVERSION=$(go version | awk '{print $3}' | tr -d "go" | awk -F "." '{print $2}')
 WORKDIR="/tmp/temporal-workdir"
 BINARY_DIR="/usr/local/bin"
+
 # handle golagn version detection
 if [[ "$GOVERSION" -lt 11 ]]; then
     echo "[ERROR] golang is less than 1.11 and will produce errors"
@@ -159,7 +164,7 @@ make setup
 # make cli binary
 make cli
 # copy the cli binary to /usr/bin
-sudo cp ./temporal /usr/local/bin
+sudo cp ./temporal "$BINARY_DIR"
 ```
 
 **Downloading Pre-Built Binaries:**
@@ -170,7 +175,7 @@ Download a binary for your appropriate platform, additionally you can download s
 
 You'll then want to copy the pre-built binary over to anywhere in your `PATH` environment variable.
 
-Example
+Example for downloading and installing the Linux version:
 
 ```bash
 # download the binary
@@ -190,12 +195,17 @@ if [[ "$CK_HASH" == "$DL_HASH" ]]; then  echo && sudo cp temporal-v2.2.7-linux-a
 
 After downloading Temporal, regardless of your setup process you will need a configuration file. If you want to generate a config file at `/tmp/config.json` run the following command:
 ```
-temporal -config /tmp/config.json init
+temporal -config /home/youruser/config.json init
 ```
 **Alternatively you can set the environmetn variable `CONFIG_DAG` and `temporal init`, along with *all other commands* will read from this location. It is recommended that you do this as it makes using the cli a lot easier**
 
+It is **extremely** important you keep this in a directory that is only accessible to the users required to run the servivce as it contains usernames and passwords to key pieces of Temporal's infrastructure.
+
+For an example bare-minium configuration file, check out [testenv/config.json](https://github.com/RTradeLtd/testenv/blob/master/config.json)
 
 ### Setup Without Docker
+
+Now that you've got the CLI installed and a configuration file generated, you can continue with the setup procedure.
 
 ### Setup With Docker
 

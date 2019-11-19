@@ -4,6 +4,7 @@
 GOVERSION=$(go version | awk '{print $3}' | tr -d "go" | awk -F "." '{print $2}')
 WORKDIR="/tmp/temporal-workdir"
 BINARY_DIR="/usr/local/bin"
+
 # handle golagn version detection
 if [[ "$GOVERSION" -lt 11 ]]; then
     echo "[ERROR] golang is less than 1.11 and will produce errors"
@@ -23,4 +24,4 @@ make setup
 # make cli binary
 make cli
 # copy the cli binary to /usr/bin
-sudo cp ./temporal /usr/local/bin
+sudo cp ./temporal "$BINARY_DIR"
