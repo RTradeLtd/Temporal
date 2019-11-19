@@ -120,7 +120,9 @@ Before attempting to use Temporal you will need to install it. Even if you are g
 
 Please note that a full-blown Temporal instance including the payment processing backend can take awhile, and requires an API key for [ChainRider](https://chainrider.io/) as well as a fully synced [geth node](https://github.com/ethereum/go-ethereum), and [bchd node](https://github.com/gcash/bchd). We will *not* be covering the setup of either chainrider, geth, and bchd, please consult appropriate documentation for setting those up.
 
-The rest of this usage documentation will be covering a bare-minimum Temporal setup which does not include any payment processing capabilities.
+The rest of this usage documentation will be covering a bare-minimum Temporal setup which does not include any payment processing capabilities. Thus you will not be able to "purchase credits" the remedy to this is to manually alter user account balances, or promote a user to a partner tier, registering an organization, and then creating all new users under that organization. This effectively side-steps the billing process, and requires no manually management of user credits. 
+
+For details on organization management, and the entire API please consult  our [api docs](https://gateway.temporal.cloud/ipns/docs.api.temporal.cloud/account.html#organization-management).
 
 ### Installing Temporal
 
@@ -133,7 +135,7 @@ The first thing you need to do is install Temporal, for which there are two main
 
 This is quite a bit more complicated, and requires things like a proper golang version installed. Unless you have specific reason to compile from source, it is recommended you skip this and stick with download the pre-built binaries.
 
-If you do want to download and build from source, be-aware the download process can take *A LONG TIME* depending on your bandwidth and internet speed. Usually it takes up to 30 minutes.
+If you do want to download and build from source, be aware the download process can take *A LONG TIME* depending on your bandwidth and internet speed. Usually it takes up to 30 minutes.
 
 Should you still want to do this, download the [install_from_source.sh script](./setup/scripts/misc/install_from_source.sh). This will ensure you have the proper go version, download the github repository, compile the cli, and install it. The main settings, such as workdir and binary install location are configurable, but come with sensible defaults. Alternatively here's a copy of the script
 
@@ -143,8 +145,6 @@ Should you still want to do this, download the [install_from_source.sh script](.
 # setup install variabels
 GOVERSION=$(go version | awk '{print $3}' | tr -d "go" | awk -F "." '{print $2}')
 WORKDIR="/tmp/temporal-workdir"
-BINARY_DIR="/usr/local/bin"
-
 # handle golagn version detection
 if [[ "$GOVERSION" -lt 11 ]]; then
     echo "[ERROR] golang is less than 1.11 and will produce errors"
@@ -162,9 +162,7 @@ cd Temporal
 # initialize submodules, and download all dependencies
 make setup
 # make cli binary
-make cli
-# copy the cli binary to /usr/bin
-sudo cp ./temporal "$BINARY_DIR"
+make install
 ```
 
 **Downloading Pre-Built Binaries:**
@@ -203,22 +201,23 @@ It is **extremely** important you keep this in a directory that is only accessib
 
 For an example bare-minium configuration file, check out [testenv/config.json](https://github.com/RTradeLtd/testenv/blob/master/config.json)
 
-### Setup Without Docker
+### Manual Setup
 
-Now that you've got the CLI installed and a configuration file generated, you can continue with the setup procedure.
+This exact process will vary a bit depending on the environment you are installing Temporal in. At the very least you are required to use Postgres, and RabbitMQ. The operating systems you install those, and the supplementary services on is entirely up to you, but we recommend using Ubuntu 18.04LTS.
 
-### Setup With Docker
+For the manual setup process using Ubuntu 18.04LTS consult our [confluence page](https://rtradetechnologies.atlassian.net/wiki/spaces/TEM/pages/55083603/Installing+Temporal+In+Production). For the manual setup process using other operating systems, please read the confluence page and adjust the commands as needed.
 
-Once you have a `config.json` set up (a template can be generated using `temporal init`), you can run the following commands to use docker-compose to spin up Temporal:
+### Dockerized Setup
+
+The dockerized setup process is generally much easier, however it requires manually spinning up Postgres and RabbitMQ nodes either via docker, or manually. Additionally you'll need to make sure that you copy the config file over to the appropriate locations for the docker containers to access. The `temporal.yml` docker-compose file has more information about this, so please consult that.
+
+To download the docker-compose file:
 
 ```shell
 $> curl https://raw.githubusercontent.com/RTradeLtd/Temporal/master/temporal.yml --output temporal.yml
-$> docker-compose -f temporal.yml up
 ```
 
 The standalone Temporal Docker image is available on [Docker Hub](https://hub.docker.com/r/rtradetech/temporal).
-
-Refer to the `temporal.yml` documentation for more details.
 
 ### API Documentation
 
