@@ -120,6 +120,8 @@ Before attempting to use Temporal you will need to install it. Even if you are g
 
 Please note that a full-blown Temporal instance including the payment processing backend can take awhile, and requires an API key for [ChainRider](https://chainrider.io/) as well as a fully synced [geth node](https://github.com/ethereum/go-ethereum), and [bchd node](https://github.com/gcash/bchd). We will *not* be covering the setup of either chainrider, geth, and bchd, please consult appropriate documentation for setting those up. Should you want to read about our payment processing backedn see [RTradeLtd/Pay](https://github.com/RTradeLtd/Pay)
 
+For a minimal setup you do not need to configure any of this, and can leave that part of the config file alone as it will be ignored. It is worth mentioning though that running a minimal setup doesn't disable the payment API calls, so if someone were to place these API calls against your minimal setup it might result in unexpected errors, such as panics. If this happens please open a bug report on github.
+
 The rest of this usage documentation will be covering a bare-minimum Temporal setup which does not include any payment processing capabilities. Thus you will not be able to "purchase credits" the remedy to this is to manually alter user account balances, or promote a user to partner tier, registering an organization, and then creating all new users under that organization. This effectively side-steps the billing process, and requires no manual management of user credits. 
 
 For details on organization management, and the entire API please consult  our [api docs](https://gateway.temporal.cloud/ipns/docs.api.temporal.cloud/account.html#organization-management).
