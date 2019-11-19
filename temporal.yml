@@ -67,8 +67,8 @@ services:
       - ${BASE}/data/temporal:/data/temporal
 
   ipfs:
-    image: ipfs/go-ipfs:v0.4.20
-    command: daemon --migrate=true --enable-pubsub-experiment
+    image: ipfs/go-ipfs:v0.4.22
+    command: daemon --migrate=true --enable-namesys-pubsub
     ports:
       - 4001:4001
       - 5001:5001
@@ -79,10 +79,24 @@ services:
   ipfs_cluster:
     depends_on: 
       - ipfs
-    image: ipfs/ipfs-cluster:v0.10.1
+    image: ipfs/ipfs-cluster:v0.11.0
     ports:
       - 9094:9094
       - 9095:9095
       - 9096:9096
     volumes:
       - ${BASE}/data/ipfs-cluster:/data/ipfs-cluster
+
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "temporal"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password123"
+
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - "5672:5672"
