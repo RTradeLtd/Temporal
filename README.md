@@ -116,7 +116,49 @@ One of the big concerns with IPFS, and even cloud data storage in general is enc
 
 ## Usage and Features
 
-### Spinning up a Node
+Before attempting to use Temporal you will need to install it. Even if you are going to be using our dockerized tooling, an install of Temporal is needed.
+
+### Installing Temporal
+
+The first thing you need to do is install Temporal, for which there are two main options:
+
+1) Compiling from source
+2) Downloading pre-built binaries
+
+**Compiling From Source:**
+
+This is quite a bit more complicated, and requires things like a proper golang version installed. Unless you have specific reason to compile from source, it is recommended you skip this and stick with download the pre-built binaries.
+
+**Downloading Pre-Built Binaries:**
+
+To download pre-built binaries, currently available for Linux and Mac OSX platforms, head on over to our [github releases page](https://github.com/RTradeLtd/Temporal/releases/latest).
+
+Download a binary for your appropriate platform, additionally you can download sha256 checksums of the released binaries for post-download integrity verification. 
+
+You'll then want to copy the pre-built binary over to anywhere in your `PATH` environment variable.
+
+Example
+
+```bash
+# download the binary
+wget https://github.com/RTradeLtd/Temporal/releases/download/v2.2.7/temporal-v2.2.7-linux-amd64
+# download the binary checksum
+wget https://github.com/RTradeLtd/Temporal/releases/download/v2.2.7/temporal-v2.2.7-linux-amd64.sha256
+# store downloaded checksum output
+CK_HASH=$(cat *.sha256  | awk '{print $1}')
+# calculate sha256 checksum of downloaded binary
+DL_HASH=$(sha256sum temporal-v2.2.7-linux-amd64 | awk '{print $1}')
+# compare checksums, and copy file to `PATH` if ok
+# if this doesn't show ok then your binary is corrupted or has been tampered with
+if [[ "$CK_HASH" == "$DL_HASH" ]]; then  echo && sudo cp temporal-v2.2.7-linux-amd64 /usr/local/bin; fi
+```
+
+
+
+
+### Setup Without Docker
+
+### Setup With Docker
 
 Once you have a `config.json` set up (a template can be generated using `temporal init`), you can run the following commands to use docker-compose to spin up Temporal:
 
