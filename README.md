@@ -137,7 +137,7 @@ This is quite a bit more complicated, and requires things like a proper golang v
 
 If you do want to download and build from source, be aware the download process can take *A LONG TIME* depending on your bandwidth and internet speed. Usually it takes up to 30 minutes.
 
-Should you still want to do this, download the [install_from_source.sh script](./setup/scripts/misc/install_from_source.sh). This will ensure you have the proper go version, download the github repository, compile the cli, and install it. The main settings, such as workdir and binary install location are configurable, but come with sensible defaults. Alternatively here's a copy of the script
+Should you still want to do this, download the [install_from_source.sh script](./setup/scripts/misc/install_from_source.sh). This will ensure you have the proper go version, download the github repository, compile the cli, and install it to `/bin/temporal`.
 
 ```bash
 #! /bin/bash
