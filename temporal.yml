@@ -86,17 +86,3 @@ services:
       - 9096:9096
     volumes:
       - ${BASE}/data/ipfs-cluster:/data/ipfs-cluster
-
-  postgres:
-    image: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: "temporal"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "password123"
-
-  rabbitmq:
-    image: rabbitmq
-    ports:
-      - "5672:5672"
