@@ -209,7 +209,7 @@ Note that if you did the install from source method, you will already have a con
 
 This exact process will vary a bit depending on the environment you are installing Temporal in. At the very least you are required to use Postgres, and RabbitMQ. The operating systems you install those, and the supplementary services on is entirely up to you, but we recommend using Ubuntu 18.04LTS. For instructions on setting up Postgres see their [documentation](https://www.postgresql.org/docs/10/tutorial-start.html). For instructions on setting up RabbitMQ consult their [documentation](https://www.rabbitmq.com/download.html). We do go into a bit of a setup process for RabbitMQ in the confluence page linked below, although it is always good to read official sources.
 
-For the manual setup process using Ubuntu 18.04LTS consult our [confluence page](https://rtradetechnologies.atlassian.net/wiki/spaces/TEM/pages/55083603/Installing+Temporal+In+Production). For the manual setup process using other operating systems, please read the confluence page and adjust the commands as needed.
+For the manual setup process using Ubuntu 18.04LTS consult our [confluence page](https://rtradetechnologies.atlassian.net/wiki/spaces/TEM/pages/55083603/Installing+Temporal+In+Production). For the manual setup process using other operating systems, please read the confluence page and adjust the commands as needed. The confluence page covers filling out the needed parts of the configuration file.
 
 ### Dockerized Setup
 
