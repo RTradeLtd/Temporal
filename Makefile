@@ -175,3 +175,9 @@ api-user:
 .PHONY: api-admin
 api-admin:
 	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) admin $(USER)
+
+.PHOYN: setup
+setup:
+	git submodule update --init
+	go mod download
+	( cd testenv ; go mod download )

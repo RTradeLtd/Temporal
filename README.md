@@ -129,6 +129,39 @@ The first thing you need to do is install Temporal, for which there are two main
 
 This is quite a bit more complicated, and requires things like a proper golang version installed. Unless you have specific reason to compile from source, it is recommended you skip this and stick with download the pre-built binaries.
 
+If you do want to download and build from source, be-aware the download process can take *A LONG TIME* depending on your bandwidth and internet speed. Usually it takes up to 30 minutes.
+
+Should you still want to do this, download the [install_from_source.sh script](./setup/scripts/misc/install_from_source.sh). Alternatively here's the script
+
+```bash
+#! /bin/bash
+
+# setup install variabels
+GOVERSION=$(go version | awk '{print $3}' | tr -d "go" | awk -F "." '{print $2}')
+WORKDIR="/tmp/temporal-workdir"
+BINARY_DIR="/usr/local/bin"
+# handle golagn version detection
+if [[ "$GOVERSION" -lt 11 ]]; then
+    echo "[ERROR] golang is less than 1.11 and will produce errors"
+    exit 1
+fi
+if [[ "$GOVERSION" -lt 12 ]]; then
+    echo "[WARN] detected golang version is less than 1.12 and may produce errors"
+fi
+# create working directory
+mkdir "$WORKDIR"
+cd "$WORKDIR"
+# download temporal
+git clone https://github.com/RTradeLtd/Temporal.git
+cd Temporal
+# initialize submodules, and download all dependencies
+make setup
+# make cli binary
+make cli
+# copy the cli binary to /usr/bin
+sudo cp ./temporal /usr/local/bin
+```
+
 **Downloading Pre-Built Binaries:**
 
 To download pre-built binaries, currently available for Linux and Mac OSX platforms, head on over to our [github releases page](https://github.com/RTradeLtd/Temporal/releases/latest).
@@ -153,7 +186,13 @@ DL_HASH=$(sha256sum temporal-v2.2.7-linux-amd64 | awk '{print $1}')
 if [[ "$CK_HASH" == "$DL_HASH" ]]; then  echo && sudo cp temporal-v2.2.7-linux-amd64 /usr/local/bin; fi
 ```
 
+### Configuration Initialization
 
+After downloading Temporal, regardless of your setup process you will need a configuration file. If you want to generate a config file at `/tmp/config.json` run the following command:
+```
+temporal -config /tmp/config.json init
+```
+**Alternatively you can set the environmetn variable `CONFIG_DAG` and `temporal init`, along with *all other commands* will read from this location. It is recommended that you do this as it makes using the cli a lot easier**
 
 
 ### Setup Without Docker
