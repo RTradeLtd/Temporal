@@ -3,7 +3,7 @@ TEMPORALDEVFLAGS=-config ./testenv/config.json -db.no_ssl -dev
 IPFSVERSION=v0.4.19
 TESTKEYNAME=admin-key
 
-all: check cli
+all: check install
 
 # Build temporal if binary is not already present
 temporal:
