@@ -120,7 +120,7 @@ Before attempting to use Temporal you will need to install it. Even if you are g
 
 Please note that a full-blown Temporal instance including the payment processing backend can take awhile, and requires an API key for [ChainRider](https://chainrider.io/) as well as a fully synced [geth node](https://github.com/ethereum/go-ethereum), and [bchd node](https://github.com/gcash/bchd). We will *not* be covering the setup of either chainrider, geth, and bchd, please consult appropriate documentation for setting those up. Should you want to read about our payment processing backedn see [RTradeLtd/Pay](https://github.com/RTradeLtd/Pay)
 
-The rest of this usage documentation will be covering a bare-minimum Temporal setup which does not include any payment processing capabilities. Thus you will not be able to "purchase credits" the remedy to this is to manually alter user account balances, or promote a user to a partner tier, registering an organization, and then creating all new users under that organization. This effectively side-steps the billing process, and requires no manually management of user credits. 
+The rest of this usage documentation will be covering a bare-minimum Temporal setup which does not include any payment processing capabilities. Thus you will not be able to "purchase credits" the remedy to this is to manually alter user account balances, or promote a user to partner tier, registering an organization, and then creating all new users under that organization. This effectively side-steps the billing process, and requires no manual management of user credits. 
 
 For details on organization management, and the entire API please consult  our [api docs](https://gateway.temporal.cloud/ipns/docs.api.temporal.cloud/account.html#organization-management).
 
@@ -186,20 +186,22 @@ CK_HASH=$(cat *.sha256  | awk '{print $1}')
 DL_HASH=$(sha256sum temporal-v2.2.7-linux-amd64 | awk '{print $1}')
 # compare checksums, and copy file to `PATH` if ok
 # if this doesn't show ok then your binary is corrupted or has been tampered with
-if [[ "$CK_HASH" == "$DL_HASH" ]]; then  echo && sudo cp temporal-v2.2.7-linux-amd64 /usr/local/bin; fi
+if [[ "$CK_HASH" == "$DL_HASH" ]]; then  echo "ok" && sudo cp temporal-v2.2.7-linux-amd64 /usr/local/bin; fi
 ```
 
 ### Configuration Initialization
 
-After downloading Temporal, regardless of your setup process you will need a configuration file. If you want to generate a config file at `/tmp/config.json` run the following command:
+After downloading Temporal, regardless of your setup process you will need a configuration file. To generate a config file at `/home/doggo/config.json` run the following command:
 ```
-temporal -config /home/youruser/config.json init
+temporal -config /home/doggo/config.json init
 ```
-**Alternatively you can set the environmetn variable `CONFIG_DAG` and `temporal init`, along with *all other commands* will read from this location. It is recommended that you do this as it makes using the cli a lot easier**
+**Alternatively you can set the environment variable `CONFIG_DAG` and `temporal init`, along with *all other commands* will read from this location. It is recommended that you do this as it makes using the cli a lot easier**
 
 It is **extremely** important you keep this in a directory that is only accessible to the users required to run the servivce as it contains usernames and passwords to key pieces of Temporal's infrastructure.
 
 For an example bare-minium configuration file, check out [testenv/config.json](https://github.com/RTradeLtd/testenv/blob/master/config.json)
+
+Note that if you did the install from source method, you will already have a config file in your home directory called `temporal-config.json`.
 
 ### Manual Setup
 
@@ -209,7 +211,7 @@ For the manual setup process using Ubuntu 18.04LTS consult our [confluence page]
 
 ### Dockerized Setup
 
-The dockerized setup process is generally much easier, however it requires manually spinning up Postgres and RabbitMQ nodes either via docker, or manually. Additionally you'll need to make sure that you copy the config file over to the appropriate locations for the docker containers to access. The `temporal.yml` docker-compose file has more information about this, so please consult that.
+The dockerized setup process is generally much easier, however it requires manually spinning up Postgres and RabbitMQ nodes either via docker, or manually. Additionally you'll need to make sure that you copy the config file over to the appropriate locations for the docker containers to access. For instructions on that, and for usage of docker-compose please consult the `temporal.yml` docker-composefile.
 
 To download the docker-compose file:
 
