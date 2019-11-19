@@ -18,7 +18,7 @@ ls:
 .PHONY: install
 install: cli
 	@echo "=================== installing Temporal CLI ==================="
-	go install -ldflags "-X main.Version=$(TEMPORALVERSION)" cmd/temporal
+	go install -ldflags "-X main.Version=$(TEMPORALVERSION)" ./cmd/temporal
 	@echo "===================          done           ==================="
 
 # Run simple checks
