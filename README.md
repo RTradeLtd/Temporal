@@ -120,7 +120,7 @@ Before attempting to use Temporal you will need to install it. Even if you are g
 
 Please note that a full-blown Temporal instance including the payment processing backend can take awhile, and requires an API key for [ChainRider](https://chainrider.io/) as well as a fully synced [geth node](https://github.com/ethereum/go-ethereum), and [bchd node](https://github.com/gcash/bchd). We will *not* be covering the setup of either chainrider, geth, and bchd, please consult appropriate documentation for setting those up. Should you want to read about our payment processing backedn see [RTradeLtd/Pay](https://github.com/RTradeLtd/Pay)
 
-For a minimal setup you do not need to configure any of this, and can leave that part of the config file alone as it will be ignored. It is worth mentioning though that running a minimal setup doesn't disable the payment API calls, so if someone were to place these API calls against your minimal setup it might result in unexpected errors, such as panics. If this happens please open a bug report on github.
+For a minimal setup you do not need to configure anything related to the aforementioned topics (geth, pay, bch, etc..). It is worth mentioning though that running a minimal setup doesn't disable the payment API calls, so if someone were to place these API calls against your minimal setup it might result in unexpected errors, such as panics. If this happens please open a bug report on github.
 
 The rest of this usage documentation will be covering a bare-minimum Temporal setup which does not include any payment processing capabilities. Thus you will not be able to "purchase credits" the remedy to this is to manually alter user account balances, or promote a user to partner tier, registering an organization, and then creating all new users under that organization. This effectively side-steps the billing process, and requires no manual management of user credits. 
 
@@ -207,7 +207,7 @@ Note that if you did the install from source method, you will already have a con
 
 ### Manual Setup
 
-This exact process will vary a bit depending on the environment you are installing Temporal in. At the very least you are required to use Postgres, and RabbitMQ. The operating systems you install those, and the supplementary services on is entirely up to you, but we recommend using Ubuntu 18.04LTS.
+This exact process will vary a bit depending on the environment you are installing Temporal in. At the very least you are required to use Postgres, and RabbitMQ. The operating systems you install those, and the supplementary services on is entirely up to you, but we recommend using Ubuntu 18.04LTS. For instructions on setting up Postgres see their [documentation](https://www.postgresql.org/docs/10/tutorial-start.html). For instructions on setting up RabbitMQ consult their [documentation](https://www.rabbitmq.com/download.html). We do go into a bit of a setup process for RabbitMQ in the confluence page linked below, although it is always good to read official sources.
 
 For the manual setup process using Ubuntu 18.04LTS consult our [confluence page](https://rtradetechnologies.atlassian.net/wiki/spaces/TEM/pages/55083603/Installing+Temporal+In+Production). For the manual setup process using other operating systems, please read the confluence page and adjust the commands as needed.
 
