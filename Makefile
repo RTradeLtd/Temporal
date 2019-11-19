@@ -16,9 +16,10 @@ ls:
 
 # Installs Temporal to GOBIN
 .PHONY: install
-install: cli
+install: setup cli
 	@echo "=================== installing Temporal CLI ==================="
-	go install -ldflags "-X main.Version=$(TEMPORALVERSION)" ./cmd/temporal
+	sudo cp ./temporal /bin/temporal
+	/bin/temporal -config ${HOME}/temporal-config.json init
 	@echo "===================          done           ==================="
 
 # Run simple checks
@@ -176,7 +177,7 @@ api-user:
 api-admin:
 	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) admin $(USER)
 
-.PHOYN: setup
+.PHONY: setup
 setup:
 	git submodule update --init
 	go mod download
