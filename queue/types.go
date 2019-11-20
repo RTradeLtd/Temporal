@@ -101,6 +101,7 @@ type IPFSPin struct {
 	CreditCost       float64 `json:"credit_cost"`
 	Size             int64   `json:"size"`
 	JWT              string  `json:"jwt,omitempty"`
+	FileName         string  `json:"file_name,omitempty"`
 }
 
 // IPFSClusterPin is a queue message used when sending a message to the cluster to pin content
@@ -111,6 +112,7 @@ type IPFSClusterPin struct {
 	HoldTimeInMonths int64   `json:"hold_time_in_months"`
 	Size             int64   `json:"size"`
 	CreditCost       float64 `json:"credit_cost"`
+	FileName         string  `json:"file_name,omitempty"`
 }
 
 // IPNSUpdate is our message for the ipns update queue
