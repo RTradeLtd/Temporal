@@ -117,6 +117,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	fileName := fileHandler.Filename
 	// validate file size
 	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
 		Fail(c, err)
@@ -193,7 +194,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 			NetworkName:      forms["network_name"],
 			Username:         username,
 			HoldTimeInMonths: holdTimeInt,
-			FileName:         c.PostForm("file_name"),
+			FileName:         fileName,
 		})
 	} else {
 		_, err = api.upm.UpdateUpload(holdTimeInt, username, resp, forms["network_name"])
