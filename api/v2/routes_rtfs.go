@@ -91,6 +91,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 		Size:             int64(stats.CumulativeSize),
 		CreditCost:       cost,
+		FileName:         c.PostForm("file_name"),
 	}
 	// sent pin message
 	if err = api.queues.cluster.PublishMessage(qp); err != nil {
@@ -248,6 +249,7 @@ func (api *API) addFile(c *gin.Context) {
 		NetworkName:      "public",
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInMonthsInt,
+		FileName:         c.PostForm("file_name"),
 	}
 	// send message to rabbitmq
 	if err = api.queues.cluster.PublishMessage(qp); err != nil {
