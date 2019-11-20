@@ -101,7 +101,8 @@ func (qm *Manager) processIPFSClusterPin(ctx context.Context, d amqp.Delivery, w
 		_, err = um.NewUpload(clusterAdd.CID, "pin-cluster", models.UploadOptions{
 			NetworkName:      clusterAdd.NetworkName,
 			Username:         clusterAdd.UserName,
-			HoldTimeInMonths: clusterAdd.HoldTimeInMonths})
+			HoldTimeInMonths: clusterAdd.HoldTimeInMonths,
+			FileName:         clusterAdd.FileName})
 	} else {
 		_, err = um.UpdateUpload(clusterAdd.HoldTimeInMonths, clusterAdd.UserName, clusterAdd.CID, clusterAdd.NetworkName)
 	}

@@ -182,7 +182,8 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 		_, err = upldm.NewUpload(pin.CID, "pin", models.UploadOptions{
 			NetworkName:      pin.NetworkName,
 			Username:         pin.UserName,
-			HoldTimeInMonths: pin.HoldTimeInMonths})
+			HoldTimeInMonths: pin.HoldTimeInMonths,
+			FileName:         pin.FileName})
 	} else {
 		// the record already exists so we will update
 		_, err = upldm.UpdateUpload(pin.HoldTimeInMonths, pin.UserName, pin.CID, pin.NetworkName)
