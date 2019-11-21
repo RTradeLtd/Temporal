@@ -3,7 +3,7 @@ TEMPORALDEVFLAGS=-config ./testenv/config.json -db.no_ssl -dev
 IPFSVERSION=v0.4.19
 TESTKEYNAME=admin-key
 
-all: check cli
+all: check install
 
 # Build temporal if binary is not already present
 temporal:
@@ -16,9 +16,10 @@ ls:
 
 # Installs Temporal to GOBIN
 .PHONY: install
-install: cli
+install: setup cli
 	@echo "=================== installing Temporal CLI ==================="
-	go install -ldflags "-X main.Version=$(TEMPORALVERSION)" cmd/temporal
+	sudo cp ./temporal /bin/temporal
+	/bin/temporal -config ${HOME}/temporal-config.json init
 	@echo "===================          done           ==================="
 
 # Run simple checks
@@ -175,3 +176,9 @@ api-user:
 .PHONY: api-admin
 api-admin:
 	go run cmd/temporal/main.go $(TEMPORALDEVFLAGS) admin $(USER)
+
+.PHONY: setup
+setup:
+	git submodule update --init
+	go mod download
+	( cd testenv ; go mod download )

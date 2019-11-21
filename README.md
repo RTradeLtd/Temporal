@@ -116,18 +116,122 @@ One of the big concerns with IPFS, and even cloud data storage in general is enc
 
 ## Usage and Features
 
-### Spinning up a Node
+Before attempting to use Temporal you will need to install it. Even if you are going to be using our dockerized tooling, an install of Temporal is needed primarily for configuration file initialization.
 
-Once you have a `config.json` set up (a template can be generated using `temporal init`), you can run the following commands to use docker-compose to spin up Temporal:
+Please note that a full-blown Temporal instance including the payment processing backend can take awhile, and requires an API key for [ChainRider](https://chainrider.io/) as well as a fully synced [geth node](https://github.com/ethereum/go-ethereum), and [bchd node](https://github.com/gcash/bchd). We will *not* be covering the setup of either chainrider, geth, and bchd, please consult appropriate documentation for setting those up. Should you want to read about our payment processing backedn see [RTradeLtd/Pay](https://github.com/RTradeLtd/Pay)
+
+For a minimal setup you do not need to configure anything related to the aforementioned topics (geth, pay, bch, etc..). It is worth mentioning though that running a minimal setup doesn't disable the payment API calls, so if someone were to place these API calls against your minimal setup it might result in unexpected errors, such as panics. If this happens please open a bug report on github.
+
+The rest of this usage documentation will be covering a bare-minimum Temporal setup which does not include any payment processing capabilities. Thus you will not be able to "purchase credits" the remedy to this is to manually alter user account balances, or promote a user to partner tier, registering an organization, and then creating all new users under that organization. This effectively side-steps the billing process, and requires no manual management of user credits. 
+
+For details on organization management, and the entire API please consult  our [api docs](https://gateway.temporal.cloud/ipns/docs.api.temporal.cloud/account.html#organization-management).
+
+### Installing Temporal
+
+The first thing you need to do is install Temporal, for which there are two main options:
+
+1) Compiling from source
+2) Downloading pre-built binaries
+
+**Compiling From Source:**
+
+This is quite a bit more complicated, and requires things like a proper golang version installed. Unless you have specific reason to compile from source, it is recommended you skip this and stick with download the pre-built binaries.
+
+If you do want to download and build from source, be aware the download process can take *A LONG TIME* depending on your bandwidth and internet speed. Usually it takes up to 30 minutes.
+
+Should you still want to do this, download the [install_from_source.sh script](./setup/scripts/misc/install_from_source.sh). This will ensure you have the proper go version, download the github repository, compile the cli, and install it to `/bin/temporal`.
+
+```bash
+#! /bin/bash
+
+# setup install variabels
+GOVERSION=$(go version | awk '{print $3}' | tr -d "go" | awk -F "." '{print $2}')
+WORKDIR="/tmp/temporal-workdir"
+# handle golagn version detection
+if [[ "$GOVERSION" -lt 11 ]]; then
+    echo "[ERROR] golang is less than 1.11 and will produce errors"
+    exit 1
+fi
+if [[ "$GOVERSION" -lt 12 ]]; then
+    echo "[WARN] detected golang version is less than 1.12 and may produce errors"
+fi
+# create working directory
+mkdir "$WORKDIR"
+cd "$WORKDIR"
+# download temporal
+git clone https://github.com/RTradeLtd/Temporal.git
+cd Temporal
+# initialize submodules, and download all dependencies
+make setup
+# make cli binary
+make install
+```
+
+**Downloading Pre-Built Binaries:**
+
+To download pre-built binaries, currently available for Linux and Mac OSX platforms, head on over to our [github releases page](https://github.com/RTradeLtd/Temporal/releases/latest).
+
+Download a binary for your appropriate platform, additionally you can download sha256 checksums of the released binaries for post-download integrity verification. 
+
+You'll then want to copy the pre-built binary over to anywhere in your `PATH` environment variable.
+
+Example for downloading and installing the Linux version:
+
+```bash
+# download the binary
+wget https://github.com/RTradeLtd/Temporal/releases/download/v2.2.7/temporal-v2.2.7-linux-amd64
+# download the binary checksum
+wget https://github.com/RTradeLtd/Temporal/releases/download/v2.2.7/temporal-v2.2.7-linux-amd64.sha256
+# store downloaded checksum output
+CK_HASH=$(cat *.sha256  | awk '{print $1}')
+# calculate sha256 checksum of downloaded binary
+DL_HASH=$(sha256sum temporal-v2.2.7-linux-amd64 | awk '{print $1}')
+# compare checksums, and copy file to `PATH` if ok
+# if this doesn't show ok then your binary is corrupted or has been tampered with
+if [[ "$CK_HASH" == "$DL_HASH" ]]; then  echo "ok" && sudo cp temporal-v2.2.7-linux-amd64 /usr/local/bin; fi
+```
+
+### Configuration Initialization
+
+After downloading Temporal, regardless of your setup process you will need a configuration file. To generate a config file at `/home/doggo/config.json` run the following command:
+```
+temporal -config /home/doggo/config.json init
+```
+**Alternatively you can set the environment variable `CONFIG_DAG` and `temporal init`, along with *all other commands* will read from this location. It is recommended that you do this as it makes using the cli a lot easier**
+
+It is **extremely** important you keep this in a directory that is only accessible to the users required to run the servivce as it contains usernames and passwords to key pieces of Temporal's infrastructure.
+
+For an example bare-minium configuration file, check out [testenv/config.json](https://github.com/RTradeLtd/testenv/blob/master/config.json)
+
+Note that if you did the install from source method, you will already have a config file in your home directory called `temporal-config.json`.
+
+### Manual Setup
+
+This exact process will vary a bit depending on the environment you are installing Temporal in. At the very least you are required to use Postgres, and RabbitMQ. The operating systems you install those, and the supplementary services on is entirely up to you, but we recommend using Ubuntu 18.04LTS. For instructions on setting up Postgres see their [documentation](https://www.postgresql.org/docs/10/tutorial-start.html). For instructions on setting up RabbitMQ consult their [documentation](https://www.rabbitmq.com/download.html). We do go into a bit of a setup process for RabbitMQ in the confluence page linked below, although it is always good to read official sources.
+
+For the manual setup process using Ubuntu 18.04LTS consult our [confluence page](https://rtradetechnologies.atlassian.net/wiki/spaces/TEM/pages/55083603/Installing+Temporal+In+Production). For the manual setup process using other operating systems, please read the confluence page and adjust the commands as needed. The confluence page covers filling out the needed parts of the configuration file.
+
+### Dockerized Setup
+
+The docker-compose file defaults to placing everything in `/data/temporal`, so for this part of the tutorial we will be using that particular default. If you want to override it you can use the `BASE=/path/to/base` variable.
+
+First off you'll need to copy the Temporal config file to `/data/temporal/config.json` then you can proceed with the rest of the steps. Ensure that the config file is pointing to a postgresql and rabbitmq docker contianer, or server that is reachable by the docker containers that will be started up.
+
+Additionally you'll need to make sure that any tls certificates, and files needed by the api service are appropriately located within `/data/temporal`.
+
+To download the docker-compose file:
 
 ```shell
 $> curl https://raw.githubusercontent.com/RTradeLtd/Temporal/master/temporal.yml --output temporal.yml
-$> docker-compose -f temporal.yml up
+```
+
+Then afterwards to execute the docker-compose file using the latest version of the temporal docker image run
+
+```shell
+$> env TEMPORAL=latest docker-compose -f temporal.yml up
 ```
 
 The standalone Temporal Docker image is available on [Docker Hub](https://hub.docker.com/r/rtradetech/temporal).
-
-Refer to the `temporal.yml` documentation for more details.
 
 ### API Documentation
 
@@ -147,7 +251,7 @@ Our API documentation has been redesigned to use slate, hosted through IPFS. The
 
 ### Supported Technologies
 
-Currently we fully support all non-experimental IPFS and IPNS feature-sets. Features like UnixFS, MFS are on-hold until their specs, and implementations become more stable and usable within production environments. Additional protocols like STORJ, and SWARM will be added, fully supporting public+private integrations. At the moment, the next planned protocol is STORJ, with alpha integration expected near the of January/February 2019.
+Currently we fully support all non-experimental IPFS and IPNS feature-sets. Features like UnixFS, MFS are on-hold until their specs, and implementations become more stable and usable within production environments.
 
 ### System Monitoring
 
