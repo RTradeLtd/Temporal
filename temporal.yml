@@ -22,53 +22,53 @@ services:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     volumes:
-      - ${BASE}/data/temporal:/data/temporal
+      - ${BASE}/data/temporal:/temporal
 
   krab:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: krab
     volumes:
-      - ${BASE}/data/temporal:/data/temporal
+      - ${BASE}/data/temporal:/temporal
 
   queue-email-send:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue email-send
     volumes:
-      - ${BASE}/data/temporal:/data/temporal
+      - ${BASE}/data/temporal:/temporal
 
   queue-ipfs-cluster:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue ipfs cluster
     volumes:
-      - ${BASE}/data/temporal:/data/temporal
+      - ${BASE}/data/temporal:/temporal
 
   queue-ipfs-ipns-entry:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue ipfs ipns-entry
     volumes:
-      - ${BASE}/data/temporal:/data/temporal
+      - ${BASE}/data/temporal:/temporal
 
   queue-ipfs-key-creation:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue ipfs key-creation
     volumes:
-      - ${BASE}/data/temporal:/data/temporal
+      - ${BASE}/data/temporal:/temporal
 
   queue-ipfs-pin:
     image: rtradetech/temporal:${TEMPORAL}
     network_mode: "host" # expose all
     command: queue ipfs pin
     volumes:
-      - ${BASE}/data/temporal:/data/temporal
+      - ${BASE}/data/temporal:/temporal
 
   ipfs:
-    image: ipfs/go-ipfs:v0.4.20
-    command: daemon --migrate=true --enable-pubsub-experiment
+    image: ipfs/go-ipfs:v0.4.22
+    command: daemon --migrate=true --enable-namesys-pubsub
     ports:
       - 4001:4001
       - 5001:5001
@@ -79,7 +79,7 @@ services:
   ipfs_cluster:
     depends_on: 
       - ipfs
-    image: ipfs/ipfs-cluster:v0.10.1
+    image: ipfs/ipfs-cluster:v0.11.0
     ports:
       - 9094:9094
       - 9095:9095
