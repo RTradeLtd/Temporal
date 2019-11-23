@@ -91,6 +91,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 		Size:             int64(stats.CumulativeSize),
 		CreditCost:       cost,
+		FileName:         c.PostForm("file_name"),
 	}
 	// sent pin message
 	if err = api.queues.cluster.PublishMessage(qp); err != nil {
@@ -138,6 +139,7 @@ func (api *API) addFile(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	fileName := fileHandler.Filename
 	// validate the size of upload is within limits
 	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
 		Fail(c, err)
@@ -248,6 +250,7 @@ func (api *API) addFile(c *gin.Context) {
 		NetworkName:      "public",
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInMonthsInt,
+		FileName:         fileName,
 	}
 	// send message to rabbitmq
 	if err = api.queues.cluster.PublishMessage(qp); err != nil {
@@ -308,6 +311,7 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	fileName := fileHandler.Filename
 	if err := api.clam.Scan(fh); err != nil {
 		api.LogError(c, err, err.Error())(http.StatusInternalServerError)
 		return
@@ -412,6 +416,7 @@ func (api *API) uploadDirectory(c *gin.Context) {
 		NetworkName:      "public",
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
+		FileName:         fileName,
 	}
 	if err := api.queues.cluster.PublishMessage(qp); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusInternalServerError)

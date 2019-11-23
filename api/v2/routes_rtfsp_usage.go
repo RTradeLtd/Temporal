@@ -69,6 +69,7 @@ func (api *API) pinToHostedIPFSNetwork(c *gin.Context) {
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       0,
 		JWT:              GetAuthToken(c),
+		FileName:         c.PostForm("file_name"),
 	}
 	// send message for processing
 	if err = api.queues.pin.PublishMessage(ip); err != nil {
@@ -116,6 +117,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	fileName := fileHandler.Filename
 	// validate file size
 	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
 		Fail(c, err)
@@ -192,6 +194,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 			NetworkName:      forms["network_name"],
 			Username:         username,
 			HoldTimeInMonths: holdTimeInt,
+			FileName:         fileName,
 		})
 	} else {
 		_, err = api.upm.UpdateUpload(holdTimeInt, username, resp, forms["network_name"])
