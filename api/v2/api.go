@@ -655,6 +655,7 @@ func (api *API) setupRoutes(debug bool) error {
 	ens := v2.Group("/ens", authware...)
 	{
 		ens.POST("/claim", api.ClaimENSName)
+		ens.POST("/update", api.UpdateContentHash)
 	}
 
 	api.l.Info("Routes initialized")
