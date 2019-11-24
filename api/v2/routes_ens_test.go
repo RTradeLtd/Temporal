@@ -32,7 +32,7 @@ func Test_API_Routes_ENS(t *testing.T) {
 	}
 	testRecorder = httptest.NewRecorder()
 	gctx, _ := gin.CreateTestContext(testRecorder)
-	req := httptest.NewRequest("GET", "127.0.0.1:9090", nil)
+	req := httptest.NewRequest("GET", "/v2/ens/claim", nil)
 	vals := url.Values{}
 	req.PostForm = vals
 	req.Header.Add("Authorization", authHeader)
@@ -41,7 +41,7 @@ func Test_API_Routes_ENS(t *testing.T) {
 
 	testRecorder = httptest.NewRecorder()
 	gctx, _ = gin.CreateTestContext(testRecorder)
-	req = httptest.NewRequest("GET", "127.0.0.1:9090", nil)
+	req = httptest.NewRequest("GET", "/v2/ens/update", nil)
 	vals = url.Values{}
 	vals.Add("content_hash", hash)
 	req.PostForm = vals
