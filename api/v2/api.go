@@ -530,7 +530,6 @@ func (api *API) setupRoutes(debug bool) error {
 			file := public.Group("/file")
 			{
 				file.POST("/add", api.addFile)
-				file.POST("/add/directory", api.uploadDirectory)
 			}
 			// pubsub routes
 			pubsub := public.Group("/pubsub")
