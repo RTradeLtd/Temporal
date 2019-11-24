@@ -38,8 +38,10 @@ func (api *API) ClaimENSName(c *gin.Context) {
 		Type:     queue.ENSRegisterSubName,
 		UserName: username,
 	}); err != nil {
+		if err := api.usage.UnclaimENSName(username); err != nil {
+			api.l.Errorw("failed to unclaim ens name", "user", username, "error", err)
+		}
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
-		// TODO(bonedaddy): handle name reset
 		return
 	}
 	api.l.Infow("ens name claim request sent to backend", "user", username)

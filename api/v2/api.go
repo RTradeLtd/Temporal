@@ -650,6 +650,13 @@ func (api *API) setupRoutes(debug bool) error {
 		org.POST("/new", api.newOrganization)
 		org.POST("/register/user", api.registerOrgUser)
 	}
+
+	// ens routes
+	ens := v2.Group("/ens", authware...)
+	{
+		ens.POST("/claim", api.ClaimENSName)
+	}
+
 	api.l.Info("Routes initialized")
 	return nil
 }
