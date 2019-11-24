@@ -167,3 +167,26 @@ type BchPaymentConfirmation struct {
 	UserName      string `json:"user_name"`
 	PaymentNumber int64  `json:"payment_number"`
 }
+
+// ENSRequestType denotes a particular request type
+type ENSRequestType string
+
+func (ert ENSRequestType) String() string {
+	return string(ert)
+}
+
+const (
+	// ENSRegisterName is a name registration request message
+	ENSRegisterName = ENSRequestType("register-name")
+	// ENSRegisterSubName is a subdomain name registration request message
+	ENSRegisterSubName = ENSRequestType("regsiter-sub-name")
+	// ENSUpdateContentHash is used to update the content hash for a record
+	ENSUpdateContentHash = ENSRequestType("update-content-hash")
+)
+
+// ENSRequest is used to process an ens api request
+type ENSRequest struct {
+	Type        ENSRequestType `json:"type"`
+	UserName    string         `json:"user_name"`
+	ContentHash string         `json:"content_hash"`
+}
