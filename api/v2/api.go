@@ -196,6 +196,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 	if err != nil {
 		return nil, err
 	}
+	qmENS, err := queue.New(queue.ENSRequestQueue, cfg.RabbitMQ.URL, true, dev, cfg, l.Named("ens"))
+	if err != nil {
+		return nil, err
+	}
 	clam, err := utils.NewShell("")
 	if err != nil {
 		return nil, err
@@ -239,6 +243,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 			dash:    qmDash,
 			eth:     qmEth,
 			bch:     qmBch,
+			ens:     qmENS,
 		},
 		zm:   models.NewZoneManager(dbm.DB),
 		rm:   models.NewRecordManager(dbm.DB),
