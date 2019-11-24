@@ -34,7 +34,7 @@ func Test_API_Routes_ENS(t *testing.T) {
 	urlValues := url.Values{}
 	urlValues.Add("content_hash", hash)
 	if err := sendRequest(
-		api, "POST", "/v2/ens/update", 200, nil, urlValues, &resp,
+		api, "POST", "/v2/ens/update", 400, nil, urlValues, &resp,
 	); err != nil {
 		t.Fatal(err)
 	}
