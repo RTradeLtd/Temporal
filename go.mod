@@ -18,7 +18,6 @@ require (
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/appleboy/gofight/v2 v2.1.1 // indirect
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
-	github.com/baruwa-enterprise/clamd v0.0.0-20190131085824-7a42f6693422
 	github.com/bobheadxi/res v0.1.0
 	github.com/bobheadxi/zapx v0.2.0
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
