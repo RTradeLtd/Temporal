@@ -191,8 +191,8 @@ github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2/go.mod h1:SqUrOPUn
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
-github.com/dvwright/xss-mw v0.0.0-20190112074351-3b0e27d93653 h1:5jEJUizf2KaWpo0YwbpaK1UWFeqtu/PyhMXQDTxHtaU=
-github.com/dvwright/xss-mw v0.0.0-20190112074351-3b0e27d93653/go.mod h1:+UdfGXO9UsD+TZdjGD9Mb9Jp0P+fUPxOQaFBtlgc8BU=
+github.com/dvwright/xss-mw v0.0.0-20191029162136-7a0dab86d8f6 h1:mCfX6Cqb+9G9WwhJWwOv+yNAEe30vaUTp6rYjTfe/0U=
+github.com/dvwright/xss-mw v0.0.0-20191029162136-7a0dab86d8f6/go.mod h1:+UdfGXO9UsD+TZdjGD9Mb9Jp0P+fUPxOQaFBtlgc8BU=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
