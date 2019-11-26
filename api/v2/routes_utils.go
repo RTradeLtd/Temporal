@@ -218,13 +218,7 @@ func (api *API) downloadContentHash(c *gin.Context) {
 		return
 	}
 	reader := bytes.NewReader(contents)
-	// get the size of hte file in bytes
-	stats, err := manager.Stat(contentHash)
-	if err != nil {
-		api.LogError(c, err, eh.IPFSObjectStatError)(http.StatusBadRequest)
-		return
-	}
-	size := stats.CumulativeSize
+	size := len(contents)
 	// decrypt Temporal-encrypted content if key is provided
 	decryptKey := c.PostForm("decrypt_key")
 	if decryptKey != "" {
@@ -256,7 +250,6 @@ func (api *API) downloadContentHash(c *gin.Context) {
 			}
 		}
 	}
-
-	api.l.Infow("private ipfs content download served", "user", username)
+	api.l.Infow("ipfs content download served", "user", username)
 	c.DataFromReader(200, int64(size), contentType, reader, extraHeaders)
 }
