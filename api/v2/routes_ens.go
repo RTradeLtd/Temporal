@@ -8,6 +8,7 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/database/v2/models"
 	"github.com/gin-gonic/gin"
+	gocid "github.com/ipfs/go-cid"
 )
 
 // ClaimENSName is used to claim a username based ens subdomain
@@ -22,14 +23,17 @@ func (api *API) ClaimENSName(c *gin.Context) {
 		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
 		return
 	}
+	// prevent processing if account is free tier
 	if usage.Tier == models.Free {
 		Fail(c, errors.New("free accounts not eligible for ens claim"), http.StatusBadRequest)
 		return
 	}
+	// prevent processing if account is using an already claimed name
 	if usage.ClaimedENSName {
 		Fail(c, errors.New("user already claimed ens name"), http.StatusBadRequest)
 		return
 	}
+	// mark account as having claimed ens name
 	if err := api.usage.ClaimENSName(username); err != nil {
 		api.LogError(c, err, "failed to claim ens name")(http.StatusBadRequest)
 		return
@@ -38,6 +42,7 @@ func (api *API) ClaimENSName(c *gin.Context) {
 		Type:     queue.ENSRegisterSubName,
 		UserName: username,
 	}); err != nil {
+		// this fails, unclaim
 		if err := api.usage.UnclaimENSName(username); err != nil {
 			api.l.Errorw("failed to unclaim ens name", "user", username, "error", err)
 		}
@@ -62,10 +67,12 @@ func (api *API) UpdateContentHash(c *gin.Context) {
 		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
 		return
 	}
+	// prevent processing if account is free tier
 	if usage.Tier == models.Free {
 		Fail(c, errors.New("free accounts not eligible for ens claim"), http.StatusBadRequest)
 		return
 	}
+	// prevent processing if name is unclaimed
 	if !usage.ClaimedENSName {
 		Fail(c, errors.New("user has not claimed ens name"), http.StatusBadRequest)
 		return
@@ -74,6 +81,11 @@ func (api *API) UpdateContentHash(c *gin.Context) {
 	forms, missingField := api.extractPostForms(c, "content_hash")
 	if missingField != "" {
 		FailWithMissingField(c, missingField)
+		return
+	}
+	// validate the content is is valid
+	if _, err := gocid.Decode(forms["content_hash"]); err != nil {
+		Fail(c, err)
 		return
 	}
 	if err := api.queues.ens.PublishMessage(queue.ENSRequest{
