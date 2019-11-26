@@ -1,18 +1,12 @@
 package v2
 
 import (
-	"archive/zip"
 	"bytes"
 	"errors"
-	"fmt"
 	"html"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 
 	"github.com/c2h5oh/datasize"
 
@@ -260,170 +254,6 @@ func (api *API) addFile(c *gin.Context) {
 	// log and return
 	api.l.Infow("simple ipfs file upload processed", "user", username)
 	Respond(c, http.StatusOK, gin.H{"response": resp})
-}
-
-// uploadDirectory is used to upload a directory to IPFS
-// TODO: add virus scanning of zip file
-func (api *API) uploadDirectory(c *gin.Context) {
-	if !dev {
-		Fail(c, errors.New("this api call is only permitted in development environments"))
-		return
-	}
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
-		return
-	}
-	holdTime, exists := c.GetPostForm("hold_time")
-	if !exists {
-		FailWithMissingField(c, "hold_time")
-		return
-	}
-	holdTimeInt, err := strconv.ParseInt(holdTime, 10, 64)
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	fileHandler, err := c.FormFile("file")
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	// ensure the zip file is below limits
-	if err := api.FileSizeCheck(fileHandler.Size); err != nil {
-		Fail(c, err)
-		return
-	}
-	// remove paths from file name
-	_, filename := filepath.Split(fileHandler.Filename)
-	fileNameSplit := strings.Split(filename, ".")
-	if len(fileNameSplit) < 2 {
-		Fail(c, errors.New("failed to validate file type"))
-		return
-	}
-	if fileNameSplit[len(fileNameSplit)-1] != "zip" {
-		Fail(c, errors.New("only zip files are supported"))
-		return
-	}
-	// perform an initial scan in memory before processing anymore
-	fh, err := fileHandler.Open()
-	if err != nil {
-		Fail(c, err)
-		return
-	}
-	fileName := fileHandler.Filename
-	if err := api.clam.Scan(fh); err != nil {
-		api.LogError(c, err, err.Error())(http.StatusInternalServerError)
-		return
-	}
-	randUtils := utils.GenerateRandomUtils()
-	randString := randUtils.GenerateString(5, utils.LetterBytes)
-	destPathZip := fmt.Sprintf("/tmp/%s_%s_%s", username, randString, filename)
-	// save the zip file
-	if err := c.SaveUploadedFile(fileHandler, destPathZip); err != nil {
-		api.LogError(c, err, err.Error())(http.StatusInternalServerError)
-		return
-	}
-	z, err := zip.OpenReader(destPathZip)
-	if err != nil {
-		api.LogError(c, err, err.Error())(http.StatusInternalServerError)
-		return
-	}
-	// protect against zip bombs
-	var uncompressedSize int64
-	for _, f := range z.File {
-		uncompressedSize = uncompressedSize + int64(f.UncompressedSize64)
-		// protect against large uploads and overflows
-		if uncompressedSize >= int64(datasize.GB.Bytes()) {
-			z.Close()
-			// remove file if this fails
-			os.Remove(destPathZip)
-			Fail(c, errors.New("uncompressed size of zip file is larger than 1gb max upload"))
-			return
-		} else if uncompressedSize < 0 {
-			z.Close()
-			// remove file if this fails
-			os.Remove(destPathZip)
-			Fail(c, errors.New("overflow detected"))
-			return
-		}
-	}
-	if err := z.Close(); err != nil {
-		// remove file if this fails
-		os.Remove(destPathZip)
-		api.LogError(c, err, "an error occurred while processing your request")(http.StatusInternalServerError)
-		return
-	}
-	// upgrade their data usage
-	if err := api.usage.UpdateDataUsage(username, uint64(uncompressedSize)); err != nil {
-		// remove file if this fails
-		os.Remove(destPathZip)
-		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
-		return
-	}
-	// calculate cost of file
-	cost, err := utils.CalculateFileCost(username, holdTimeInt, uncompressedSize, api.usage)
-	if err != nil {
-		// remove file if this fails
-		os.Remove(destPathZip)
-		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
-		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusBadRequest)
-		return
-	}
-	// validate user credits
-	if err := api.validateUserCredits(username, cost); err != nil {
-		// remove file if this fails
-		os.Remove(destPathZip)
-		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
-		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
-		return
-	}
-	randString = randUtils.GenerateString(5, utils.LetterBytes)
-	destPathUnzip := fmt.Sprintf("/tmp/unzipped_%s_%s", username, randString)
-	// unzip the file
-	if _, err := Unzip(destPathZip, destPathUnzip); err != nil {
-		// remove file if this fails
-		os.Remove(destPathZip)
-		os.RemoveAll(destPathUnzip)
-		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
-		api.l.Error(err)
-		Fail(c, err)
-		return
-	}
-	// add directory to ipfs
-	hash, err := api.ipfs.AddDir(destPathUnzip)
-	if err != nil {
-		// remove file if this fails
-		os.Remove(destPathZip)
-		os.RemoveAll(destPathUnzip)
-		api.usage.ReduceDataUsage(username, uint64(uncompressedSize))
-		api.LogError(c, err, eh.IPFSAddError)(http.StatusBadRequest)
-		return
-	}
-	// cleanup unzipped file
-	if err := os.RemoveAll(destPathUnzip); err != nil {
-		os.Remove(destPathZip)
-		api.LogError(c, err, "failed to cleanup file(s)")(http.StatusBadRequest)
-		return
-	}
-	// cleanup zip file
-	if err := os.Remove(destPathZip); err != nil {
-		api.LogError(c, err, "failed to cleanup file(s)")(http.StatusBadRequest)
-		return
-	}
-	qp := queue.IPFSClusterPin{
-		CID:              hash,
-		NetworkName:      "public",
-		UserName:         username,
-		HoldTimeInMonths: holdTimeInt,
-		FileName:         fileName,
-	}
-	if err := api.queues.cluster.PublishMessage(qp); err != nil {
-		api.LogError(c, err, eh.QueuePublishError)(http.StatusInternalServerError)
-		return
-	}
-	api.l.Infow("directory upload processed", "user", username)
-	Respond(c, http.StatusOK, gin.H{"response": hash})
 }
 
 // IpfsPubSubPublish is used to publish a pubsub msg

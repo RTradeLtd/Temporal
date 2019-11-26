@@ -18,13 +18,12 @@ require (
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/appleboy/gofight/v2 v2.1.1 // indirect
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
-	github.com/baruwa-enterprise/clamd v0.0.0-20190131085824-7a42f6693422
 	github.com/bobheadxi/res v0.1.0
 	github.com/bobheadxi/zapx v0.2.0
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
-	github.com/dvwright/xss-mw v0.0.0-20190112074351-3b0e27d93653
+	github.com/dvwright/xss-mw v0.0.0-20191029162136-7a0dab86d8f6
 	github.com/gcash/bchutil v0.0.0-20191012211144-98e73ec336ba
 	github.com/gcash/bchwallet v0.8.2
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106

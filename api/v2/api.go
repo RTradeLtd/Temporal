@@ -12,7 +12,6 @@ import (
 	"github.com/streadway/amqp"
 
 	"github.com/RTradeLtd/Temporal/rtfscluster"
-	"github.com/RTradeLtd/Temporal/utils"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
@@ -62,7 +61,6 @@ type API struct {
 	bchWallet   pbBchWallet.WalletServiceClient
 	dc          *dash.Client
 	queues      queues
-	clam        *utils.Shell
 	service     string
 
 	version string
@@ -200,10 +198,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 	if err != nil {
 		return nil, err
 	}
-	clam, err := utils.NewShell("")
-	if err != nil {
-		return nil, err
-	}
 	if cfg.Stripe.SecretKey == "" {
 		stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
 		cfg.Stripe.SecretKey = stripeSecretKey
@@ -245,10 +239,9 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 			bch:     qmBch,
 			ens:     qmENS,
 		},
-		zm:   models.NewZoneManager(dbm.DB),
-		rm:   models.NewRecordManager(dbm.DB),
-		nm:   models.NewHostedNetworkManager(dbm.DB),
-		clam: clam,
+		zm: models.NewZoneManager(dbm.DB),
+		rm: models.NewRecordManager(dbm.DB),
+		nm: models.NewHostedNetworkManager(dbm.DB),
 	}, nil
 }
 
@@ -535,7 +528,6 @@ func (api *API) setupRoutes(debug bool) error {
 			file := public.Group("/file")
 			{
 				file.POST("/add", api.addFile)
-				file.POST("/add/directory", api.uploadDirectory)
 			}
 			// pubsub routes
 			pubsub := public.Group("/pubsub")
