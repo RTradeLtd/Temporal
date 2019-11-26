@@ -33,9 +33,14 @@ func (api *API) ClaimENSName(c *gin.Context) {
 		Fail(c, errors.New("user already claimed ens name"), http.StatusBadRequest)
 		return
 	}
+	if err := api.validateUserCredits(username, 0.15); err != nil {
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
+		return
+	}
 	// mark account as having claimed ens name
 	if err := api.usage.ClaimENSName(username); err != nil {
 		api.LogError(c, err, "failed to claim ens name")(http.StatusBadRequest)
+		api.refundUserCredits(username, "ens", 0.15)
 		return
 	}
 	if err := api.queues.ens.PublishMessage(queue.ENSRequest{
@@ -47,6 +52,7 @@ func (api *API) ClaimENSName(c *gin.Context) {
 			api.l.Errorw("failed to unclaim ens name", "user", username, "error", err)
 		}
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
+		api.refundUserCredits(username, "ens", 0.15)
 		return
 	}
 	api.l.Infow("ens name claim request sent to backend", "user", username)
@@ -88,12 +94,17 @@ func (api *API) UpdateContentHash(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	if err := api.validateUserCredits(username, 0.15); err != nil {
+		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
+		return
+	}
 	if err := api.queues.ens.PublishMessage(queue.ENSRequest{
 		Type:        queue.ENSUpdateContentHash,
 		UserName:    username,
 		ContentHash: forms["content_hash"],
 	}); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
+		api.refundUserCredits(username, "ens", 0.15)
 		return
 	}
 	api.l.Infow("ens content hash update request sent to backend", "user", username)
