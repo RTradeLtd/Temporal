@@ -49,6 +49,7 @@ type queues struct {
 	dash    *queue.Manager
 	eth     *queue.Manager
 	bch     *queue.Manager
+	ens     *queue.Manager
 }
 
 // kaas key managers

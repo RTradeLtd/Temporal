@@ -194,6 +194,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 	if err != nil {
 		return nil, err
 	}
+	qmENS, err := queue.New(queue.ENSRequestQueue, cfg.RabbitMQ.URL, true, dev, cfg, l.Named("ens"))
+	if err != nil {
+		return nil, err
+	}
 	if cfg.Stripe.SecretKey == "" {
 		stripeSecretKey := os.Getenv("STRIPE_SECRET_KEY")
 		cfg.Stripe.SecretKey = stripeSecretKey
@@ -233,6 +237,7 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 			dash:    qmDash,
 			eth:     qmEth,
 			bch:     qmBch,
+			ens:     qmENS,
 		},
 		zm: models.NewZoneManager(dbm.DB),
 		rm: models.NewRecordManager(dbm.DB),
@@ -637,6 +642,14 @@ func (api *API) setupRoutes(debug bool) error {
 		org.POST("/new", api.newOrganization)
 		org.POST("/register/user", api.registerOrgUser)
 	}
+
+	// ens routes
+	ens := v2.Group("/ens", authware...)
+	{
+		ens.POST("/claim", api.ClaimENSName)
+		ens.POST("/update", api.UpdateContentHash)
+	}
+
 	api.l.Info("Routes initialized")
 	return nil
 }
