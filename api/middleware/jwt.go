@@ -24,7 +24,8 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, l *zap.SugaredLogg
 		Key:        []byte(jwtKey),
 		Timeout:    time.Hour * 24,
 		MaxRefresh: time.Hour * 24,
-		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) { // userId = username
+		// userId will be either the username or email address
+		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {
 			lAuth := l.With("user", userId)
 			userManager := models.NewUserManager(db)
 			validLogin, err := userManager.SignIn(userId, password)
@@ -36,6 +37,9 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, l *zap.SugaredLogg
 				lAuth.Warn("bad login")
 				return userId, false
 			}
+			// fixes https://github.com/RTradeLtd/Temporal/issues/405
+			// regardless of whether or not they are providing username or email
+			// always return the username
 			usr, err := userManager.FindByUserName(userId)
 			if err != nil {
 				usr, err = userManager.FindByEmail(userId)
