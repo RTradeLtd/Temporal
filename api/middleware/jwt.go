@@ -36,8 +36,16 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, l *zap.SugaredLogg
 				lAuth.Warn("bad login")
 				return userId, false
 			}
-			lAuth.Info("successful login")
-			return userId, true
+			usr, err := userManager.FindByUserName(userId)
+			if err != nil {
+				usr, err = userManager.FindByEmail(userId)
+				if err != nil {
+					lAuth.Warn("failed to find user", "error", err)
+					return "", false
+				}
+			}
+			lAuth.Info("successful login", "username", usr.UserName)
+			return usr.UserName, true
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {
 			// as a final security step, ensure that we can find the user in our database
