@@ -199,6 +199,7 @@ func Test_API_Setup(t *testing.T) {
 		{"Register-Email-Fail", args{"POST", "/v2/auth/register", "testuer3", "password123", "testuser+test22@example.org"}, 400},
 		{"Register-DuplicateUser", args{"POST", "/v2/auth/register", "testuser2", "password123", "testuser+user22example.org"}, 400},
 		{"Register-DuplicateEmail", args{"POST", "/v2/auth/register", "testuser333", "password123", "testuser@example.org"}, 400},
+		{"Register-BadUserName", args{"POST", "/v2/auth/register", "testuser333@", "password123", "testusernotafailure@example.org"}, 400},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -230,6 +231,8 @@ func Test_API_Setup(t *testing.T) {
 	}{
 		{"Login-testuser2", args{"POST", "/v2/auth/login", "testuser2", "password123!@#$%^&&**(!@#!", ""}, 200},
 		{"Login-testuser", args{"POST", "/v2/auth/login", "testuser", "admin", ""}, 200},
+		// tests login via the email instead of using
+		{"Login-TestUser-Email", args{"POST", "/v2/auth/login", "test@email.com", "admin", ""}, 200},
 	}
 
 	for _, tt := range tests {
@@ -249,7 +252,7 @@ func Test_API_Setup(t *testing.T) {
 				t.Fatal(err)
 			}
 			// if we're logging in with the account used for testing the v2 api, update our authorization header
-			if tt.args.username == "testuser" {
+			if tt.args.username == "testuser" || tt.args.email == "test@email.com" {
 				var loginResp loginResponse
 				if err = json.Unmarshal(bodBytes, &loginResp); err != nil {
 					t.Fatal(err)
