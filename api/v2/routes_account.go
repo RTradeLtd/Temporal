@@ -89,6 +89,10 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		Fail(c, errors.New("emails must not contain + signs, this is to prevent abuse of catch all routing"))
 		return
 	}
+	if strings.ContainsRune(forms["username"], '@') {
+		Fail(c, errors.New("usernames cant contain @ sign"))
+		return
+	}
 	// parse html encoded strings
 	forms["password"] = html.UnescapeString(forms["password"])
 	api.l.Info("user account registration detected")
