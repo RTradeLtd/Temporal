@@ -89,6 +89,9 @@ func (api *API) registerUserAccount(c *gin.Context) {
 		Fail(c, errors.New("emails must not contain + signs, this is to prevent abuse of catch all routing"))
 		return
 	}
+	// prevent people from registering usernames that contain an `@` sign
+	// this prevents griefing by prevent user sign-ins by using a username
+	// that is based off an email address
 	if strings.ContainsRune(forms["username"], '@') {
 		Fail(c, errors.New("usernames cant contain @ sign"))
 		return

@@ -199,6 +199,7 @@ func Test_API_Setup(t *testing.T) {
 		{"Register-Email-Fail", args{"POST", "/v2/auth/register", "testuer3", "password123", "testuser+test22@example.org"}, 400},
 		{"Register-DuplicateUser", args{"POST", "/v2/auth/register", "testuser2", "password123", "testuser+user22example.org"}, 400},
 		{"Register-DuplicateEmail", args{"POST", "/v2/auth/register", "testuser333", "password123", "testuser@example.org"}, 400},
+		{"Register-BadUserName", args{"POST", "/v2/auth/register", "testuser333@", "password123", "testusernotafailure@example.org"}, 400},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
