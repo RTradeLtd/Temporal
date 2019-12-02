@@ -31,7 +31,7 @@ require (
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
-	github.com/ipfs/go-cid v0.0.2
+	github.com/ipfs/go-cid v0.0.3
 	github.com/ipfs/go-datastore v0.1.1
 	github.com/ipfs/go-ds-badger v0.0.7
 	github.com/ipfs/go-ipfs v0.4.22 // indirect
@@ -40,13 +40,14 @@ require (
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
 	github.com/jinzhu/gorm v1.9.8
 	github.com/lib/pq v1.1.1 // indirect
+	github.com/libp2p/go-libp2p v0.4.2 // indirect
 	github.com/libp2p/go-libp2p-core v0.2.5
 	github.com/libp2p/go-libp2p-interface-pnet v0.1.0 // indirect
 	github.com/libp2p/go-libp2p-pubsub v0.1.0 // indirect
 	github.com/libp2p/go-libp2p-raft v0.0.4 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
-	github.com/multiformats/go-multiaddr v0.0.4
-	github.com/multiformats/go-multihash v0.0.5
+	github.com/multiformats/go-multiaddr v0.1.1
+	github.com/multiformats/go-multihash v0.0.8
 	github.com/prometheus/common v0.4.1 // indirect
 	github.com/prometheus/procfs v0.0.2 // indirect
 	github.com/rs/cors v1.6.0
