@@ -38,7 +38,7 @@ require (
 	github.com/ipfs/go-ipfs-addr v0.0.1
 	github.com/ipfs/go-path v0.0.7
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
-	github.com/jinzhu/gorm v1.9.8
+	github.com/jinzhu/gorm v1.9.11
 	github.com/lib/pq v1.1.1 // indirect
 	github.com/libp2p/go-libp2p v0.4.2 // indirect
 	github.com/libp2p/go-libp2p-core v0.2.5
@@ -46,7 +46,7 @@ require (
 	github.com/libp2p/go-libp2p-pubsub v0.1.0 // indirect
 	github.com/libp2p/go-libp2p-raft v0.0.4 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
-	github.com/multiformats/go-multiaddr v0.1.1
+	github.com/multiformats/go-multiaddr v0.1.2
 	github.com/multiformats/go-multihash v0.0.8
 	github.com/prometheus/common v0.4.1 // indirect
 	github.com/prometheus/procfs v0.0.2 // indirect
@@ -57,7 +57,7 @@ require (
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	github.com/stripe/stripe-go v60.0.1+incompatible
 	go.uber.org/zap v1.11.0
-	google.golang.org/grpc v1.24.0
+	google.golang.org/grpc v1.25.1
 	gopkg.in/appleboy/gofight.v2 v2.0.0-00010101000000-000000000000 // indirect
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 )
