@@ -39,6 +39,8 @@ github.com/RTradeLtd/config/v2 v2.1.4 h1:vD7GY+jNUFvg3sfb+YZNC6FCznxO5Ztyu0qj+Qe
 github.com/RTradeLtd/config/v2 v2.1.4/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
 github.com/RTradeLtd/config/v2 v2.1.5 h1:5RqXYZJNufmsHk9tL1I2wyQHxkgc/fdXjyamoegTI4A=
 github.com/RTradeLtd/config/v2 v2.1.5/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
+github.com/RTradeLtd/config/v2 v2.2.0-rc1 h1:iGYhfpVodV86sHfO5+2jdSM9++c0DJJlpIg/0bK2NHY=
+github.com/RTradeLtd/config/v2 v2.2.0-rc1/go.mod h1:J2vFG/293yeXFaoX51M7hyvU+5NJqZYQ8Mm+aLiV30E=
 github.com/RTradeLtd/crypto v2.0.0+incompatible h1:3+UEo0upD0p3A+7yLJ14UJpT6aZEhpzQqF5dt9iRivM=
 github.com/RTradeLtd/crypto v2.0.0+incompatible/go.mod h1:xhKwg748pxs2as6Ts65TiBBFrYzntioTqBIZEa1BUio=
 github.com/RTradeLtd/crypto/v2 v2.1.1 h1:P59zYkkNkl6K1KiTRvW52AYwLvwmtzuzZ9+AjLWmKsU=
@@ -1227,6 +1229,8 @@ github.com/valyala/quicktemplate v1.1.1/go.mod h1:EH+4AkTd43SvgIbQHYu59/cJyxDoOV
 github.com/valyala/tcplisten v0.0.0-20161114210144-ceec8f93295a/go.mod h1:v3UYOV9WzVtRmSR+PDvWpU/qWl4Wa5LApYYX4ZtKbio=
 github.com/vektah/dataloaden v0.2.0/go.mod h1:vxM6NuRlgiR0M6wbVTJeKp9vQIs81ZMfCYO+4yq/jbE=
 github.com/vektah/gqlparser v1.1.2/go.mod h1:1ycwN7Ij5njmMkPPAOaRFY4rET2Enx7IkVv3vaXspKw=
+github.com/vrischmann/envconfig v1.2.0 h1:5/u4fI34/g3m0SdTQj/6f3r640jv9E5+yTXIZOWsxk0=
+github.com/vrischmann/envconfig v1.2.0/go.mod h1:c5DuUlkzfsnspy1g7qiqryPCsW+NjsrLsYq4zhwsoHo=
 github.com/warpfork/go-wish v0.0.0-20180510122957-5ad1f5abf436 h1:qOpVTI+BrstcjTZLm2Yz/3sOnqkzj3FQoh0g+E5s3Gc=
 github.com/warpfork/go-wish v0.0.0-20180510122957-5ad1f5abf436/go.mod h1:x6AKhvSSexNrVSrViXSHUEbICjmGXhtgABaHIySUSGw=
 github.com/wendal/errors v0.0.0-20130201093226-f66c77a7882b/go.mod h1:Q12BUT7DqIlHRmgv3RskH+UCM/4eqVMgI0EMmlSpAXc=

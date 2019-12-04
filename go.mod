@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.39.0 // indirect
 	github.com/RTradeLtd/ChainRider-Go v1.0.8
 	github.com/RTradeLtd/cmd/v2 v2.1.0
-	github.com/RTradeLtd/config/v2 v2.1.5
+	github.com/RTradeLtd/config/v2 v2.2.0-rc1
 	github.com/RTradeLtd/crypto/v2 v2.1.1
 	github.com/RTradeLtd/database/v2 v2.6.2
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
