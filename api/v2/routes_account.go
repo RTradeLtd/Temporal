@@ -202,7 +202,7 @@ func (api *API) createIPFSKey(c *gin.Context) {
 		return
 	}
 	// format key name
-	// we prepend with the username to prevent key name collission
+	// we prepend with the username to prevent key name collisions
 	keyName := fmt.Sprintf("%s-%s", username, forms["key_name"])
 	// parse through existing key names, and ensure one doesnt' already exist
 	for _, v := range keys["key_names"] {

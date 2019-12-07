@@ -1,2 +1,2 @@
-// Package utils provides miscellanious helpers and utilities
+// Package utils provides miscellaneous helpers and utilities
 package utils

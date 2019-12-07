@@ -1,8 +1,8 @@
 package eh
 
 const (
-	// LoginError indicates an unexpected error occured when logging in
-	LoginError = "an error occured while signing in"
+	// LoginError indicates an unexpected error occurred when logging in
+	LoginError = "an error occurred while signing in"
 	// IPFSConnectionError is an error used for ipfs connection failures
 	IPFSConnectionError = "failed to connect to ipfs"
 	// PrivateNetworkAccessError is used for invalid access to private networks
@@ -121,13 +121,13 @@ const (
 	CantUploadError = "uploading would breach monthly data limit, please upload a smaller object"
 	// DataUsageUpdateError is an error when a failure occurs while trying to update a users
 	// current data usage
-	DataUsageUpdateError = "an error occured while updating your account data usage"
+	DataUsageUpdateError = "an error occurred while updating your account data usage"
 	// TierUpgradeError is an error when a failure to upgrade a user tier occurs
-	TierUpgradeError = "an error occured upgrading your tier"
+	TierUpgradeError = "an error occurred upgrading your tier"
 	// EncryptionError is an error when a failure to encrypt data occurs
-	EncryptionError = "an error occured when trying to encrypt file"
+	EncryptionError = "an error occurred when trying to encrypt file"
 	// DatabaseUpdateError is an error message used when a failure to update the database happesn
-	DatabaseUpdateError = "en error occured wile updating the database"
+	DatabaseUpdateError = "en error occurred wile updating the database"
 	// PinExtendError is an error message used when someone attempts to extend the pin for content they haven't uploaded
 	PinExtendError = "failed to extend pin duration, this likely means you haven't actually uploaded this content before"
 	// MaxHoldTimeError is an error message when the current hold time value would breach set pin time limits

@@ -199,7 +199,7 @@ func (api *API) extractPostForms(c *gin.Context, formNames ...string) (map[strin
 }
 
 // ValidateHoldTime is used to perform parsing of requested hold times,
-// returning an int64 type of the provded hold time
+// returning an int64 type of the provided hold time
 func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 	var (
 		// 1 month

@@ -73,7 +73,7 @@ This requires Docker running and docker-compose installed.
 
 To run the full suite of tests, more advanced setup and configuration is required. If all the prerequisites are set up, you can execute the tests using `make test-all`.
 
-Occassionally the test environment make files may not work on your distribution due to variations in ethernet NIC identifiers. This can be solved by editing `testenv/Makefile` and updating the `INTERFACE=eth0` declaration on line 3.
+Occasionally the test environment make files may not work on your distribution due to variations in ethernet NIC identifiers. This can be solved by editing `testenv/Makefile` and updating the `INTERFACE=eth0` declaration on line 3.
 
 ### Linting
 
