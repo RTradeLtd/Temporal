@@ -1,7 +1,7 @@
 #! /bin/bash
 
 
-# used to faclitate management of ipfs daemons seperate from ipfs clusters
+# used to faclitate management of ipfs daemons separate from ipfs clusters
 
 LOG_PATH="/var/log/ipfs"
 MODE="daemon"

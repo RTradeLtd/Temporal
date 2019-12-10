@@ -215,7 +215,7 @@ For the manual setup process using Ubuntu 18.04LTS consult our [confluence page]
 
 The docker-compose file defaults to placing everything in `/data/temporal`, so for this part of the tutorial we will be using that particular default. If you want to override it you can use the `BASE=/path/to/base` variable.
 
-First off you'll need to copy the Temporal config file to `/data/temporal/config.json` then you can proceed with the rest of the steps. Ensure that the config file is pointing to a postgresql and rabbitmq docker contianer, or server that is reachable by the docker containers that will be started up.
+First off you'll need to copy the Temporal config file to `/data/temporal/config.json` then you can proceed with the rest of the steps. Ensure that the config file is pointing to a postgresql and rabbitmq docker container, or server that is reachable by the docker containers that will be started up.
 
 Additionally you'll need to make sure that any tls certificates, and files needed by the api service are appropriately located within `/data/temporal`.
 

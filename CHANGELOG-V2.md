@@ -89,7 +89,7 @@ releases. See our [versioning policy](/VERSIONING.md) for more details.
 ### api/v2
 
 * Allow uploading directories, mainly to assist with adding websites to IPFS [#311](https://github.com/RTradeLtd/Temporal/pull/311)
-* re-add Lens functionality targetting the v2 refactor [#314](https://github.com/RTradeLtd/Temporal/pull/314)
+* re-add Lens functionality targeting the v2 refactor [#314](https://github.com/RTradeLtd/Temporal/pull/314)
 * fix jwt logging from repeatedly appending the failed user to the included fields [#318](https://github.com/RTradeLtd/Temporal/pull/318)
 * add production terms and service [#318](https://github.com/RTradeLtd/Temporal/pull/318)
 
