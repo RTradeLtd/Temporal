@@ -50,7 +50,12 @@ func init() {
 	}
 }
 
-// RetrieveUsdPrice is used to retrieve the USD price for a coin from CMC
+// RetrieveUsdPrice is used to retrieve the USD price for a coin from CMC.
+//
+// Whenever we have a "fresh" coin price that is newer than 10 minutes
+// we will return that price instead of querying coinmarketcap. In the event
+// of a "stale" value we will hit the coinmarketcap api. If that errors
+// then we return both the error, and whatever price we have in-memory
 func RetrieveUsdPrice(coin string) (float64, error) {
 	pricer.mux.RLock()
 	if pricer.coins[coin].price != 0 {
