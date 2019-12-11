@@ -65,6 +65,9 @@ REFRESH:
 	pricer.mux.RUnlock()
 	pricer.mux.Lock()
 	defer pricer.mux.Unlock()
+	if pricer.coins[coin].price != 0 && !time.Now().After(pricer.coins[coin].nextRefresh) {
+		return pricer.coins[coin].price, nil
+	}
 	url := fmt.Sprintf("%s/%s", tickerURL, coin)
 	response, err := http.Get(url)
 	if err != nil {
