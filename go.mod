@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.39.0 // indirect
 	github.com/RTradeLtd/ChainRider-Go v1.0.8
 	github.com/RTradeLtd/cmd/v2 v2.1.0
-	github.com/RTradeLtd/config/v2 v2.1.5
+	github.com/RTradeLtd/config/v2 v2.2.0
 	github.com/RTradeLtd/crypto/v2 v2.1.1
 	github.com/RTradeLtd/database/v2 v2.6.2
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
@@ -39,7 +39,6 @@ require (
 	github.com/ipfs/go-path v0.0.7
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
 	github.com/jinzhu/gorm v1.9.11
-	github.com/lib/pq v1.1.1 // indirect
 	github.com/libp2p/go-libp2p v0.4.2 // indirect
 	github.com/libp2p/go-libp2p-core v0.2.5
 	github.com/libp2p/go-libp2p-interface-pnet v0.1.0 // indirect
