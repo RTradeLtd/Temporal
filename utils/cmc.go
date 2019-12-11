@@ -6,11 +6,23 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"sync"
+	"time"
 )
 
 var (
 	tickerURL = "https://api.coinmarketcap.com/v1/ticker"
+	pricer    *priceChecker
 )
+
+type coinPrice struct {
+	price       float64
+	nextRefresh time.Time
+}
+type priceChecker struct {
+	coins map[string]*coinPrice
+	mux   *sync.RWMutex
+}
 
 // Response used to hold response data from cmc
 type Response struct {
@@ -31,8 +43,28 @@ type Response struct {
 	LastUpdate         string `json:"last_updated"`
 }
 
+func init() {
+	pricer = &priceChecker{
+		coins: make(map[string]*coinPrice),
+		mux:   &sync.RWMutex{},
+	}
+}
+
 // RetrieveUsdPrice is used to retrieve the USD price for a coin from CMC
 func RetrieveUsdPrice(coin string) (float64, error) {
+	pricer.mux.RLock()
+	if pricer.coins[coin].price != 0 {
+		if time.Now().After(pricer.coins[coin].nextRefresh) {
+			goto REFRESH
+		}
+		cost := pricer.coins[coin].price
+		pricer.mux.RUnlock()
+		return cost, nil
+	}
+REFRESH:
+	pricer.mux.RUnlock()
+	pricer.mux.Lock()
+	defer pricer.mux.Unlock()
 	url := fmt.Sprintf("%s/%s", tickerURL, coin)
 	response, err := http.Get(url)
 	if err != nil {
@@ -47,5 +79,11 @@ func RetrieveUsdPrice(coin string) (float64, error) {
 	if err = json.Unmarshal(body, &decode); err != nil {
 		return 0, err
 	}
-	return strconv.ParseFloat(decode[0].PriceUsd, 64)
+	cost, err := strconv.ParseFloat(decode[0].PriceUsd, 64)
+	if err != nil {
+		return 0, err
+	}
+	pricer.coins[coin].price = cost
+	pricer.coins[coin].nextRefresh = time.Now().Add(time.Minute * 10)
+	return cost, nil
 }
