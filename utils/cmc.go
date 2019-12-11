@@ -20,7 +20,7 @@ type coinPrice struct {
 	nextRefresh time.Time
 }
 type priceChecker struct {
-	coins map[string]*coinPrice
+	coins map[string]coinPrice
 	mux   *sync.RWMutex
 }
 
@@ -45,7 +45,7 @@ type Response struct {
 
 func init() {
 	pricer = &priceChecker{
-		coins: make(map[string]*coinPrice),
+		coins: make(map[string]coinPrice),
 		mux:   &sync.RWMutex{},
 	}
 }
@@ -83,7 +83,9 @@ REFRESH:
 	if err != nil {
 		return 0, err
 	}
-	pricer.coins[coin].price = cost
-	pricer.coins[coin].nextRefresh = time.Now().Add(time.Minute * 10)
+	pricer.coins[coin] = coinPrice{
+		price:       cost,
+		nextRefresh: time.Now().Add(time.Minute * 10),
+	}
 	return cost, nil
 }
