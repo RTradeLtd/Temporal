@@ -509,21 +509,33 @@ func (api *API) getPaymentStatus(c *gin.Context) {
 
 // GetUSDValue is used to retrieve the usd value of a given payment type
 func (api *API) getUSDValue(paymentType string) (float64, error) {
+	var (
+		cost float64
+		err  error
+	)
 	switch paymentType {
 	case "eth":
-		return utils.RetrieveUsdPrice("ethereum")
+		cost, err = utils.RetrieveUsdPrice("ethereum")
 	case "xmr":
-		return utils.RetrieveUsdPrice("monero")
+		cost, err = utils.RetrieveUsdPrice("monero")
 	case "dash":
-		return utils.RetrieveUsdPrice("dash")
+		cost, err = utils.RetrieveUsdPrice("dash")
 	case "btc":
-		return utils.RetrieveUsdPrice("bitcoin")
+		cost, err = utils.RetrieveUsdPrice("bitcoin")
 	case "bch":
-		return utils.RetrieveUsdPrice("bitcoin-cash")
+		cost, err = utils.RetrieveUsdPrice("bitcoin-cash")
 	case "ltc":
-		return utils.RetrieveUsdPrice("litecoin")
+		cost, err = utils.RetrieveUsdPrice("litecoin")
 	case "rtc":
-		return RtcCostUsd, nil
+		cost, err = RtcCostUsd, nil
+	default:
+		return 0, errors.New(eh.InvalidPaymentTypeError)
 	}
-	return 0, errors.New(eh.InvalidPaymentTypeError)
+	// if we have an error, and the cost is 0 return the error
+	// otherwise if we have an error, and a non-zero cost
+	// then we should return the most recent price we have
+	if err != nil && cost == 0 {
+		return 0, err
+	}
+	return cost, nil
 }
