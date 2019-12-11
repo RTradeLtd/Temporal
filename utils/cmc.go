@@ -71,20 +71,20 @@ REFRESH:
 	url := fmt.Sprintf("%s/%s", tickerURL, coin)
 	response, err := http.Get(url)
 	if err != nil {
-		return 0, err
+		return pricer.coins[coin].price, err
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return 0, err
+		return pricer.coins[coin].price, err
 	}
 	var decode []Response
 	if err = json.Unmarshal(body, &decode); err != nil {
-		return 0, err
+		return pricer.coins[coin].price, err
 	}
 	cost, err := strconv.ParseFloat(decode[0].PriceUsd, 64)
 	if err != nil {
-		return 0, err
+		return pricer.coins[coin].price, err
 	}
 	pricer.coins[coin] = coinPrice{
 		price:       cost,
