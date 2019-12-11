@@ -31,6 +31,13 @@ func TestRetrieveUsdPrice(t *testing.T) {
 			if price == 0 && tt.args.coin != "NotARealCoin" {
 				t.Error("price is 0, unexpected result")
 			}
+			price, err = utils.RetrieveUsdPrice(tt.args.coin)
+			if (err != nil) != tt.wantErr {
+				t.Error(err)
+			}
+			if price == 0 && tt.args.coin != "NotARealCoin" {
+				t.Error("price is 0, unexpected result")
+			}
 		})
 	}
 }

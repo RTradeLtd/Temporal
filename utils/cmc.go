@@ -6,11 +6,23 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"sync"
+	"time"
 )
 
 var (
 	tickerURL = "https://api.coinmarketcap.com/v1/ticker"
+	pricer    *priceChecker
 )
+
+type coinPrice struct {
+	price       float64
+	nextRefresh time.Time
+}
+type priceChecker struct {
+	coins map[string]coinPrice
+	mux   *sync.RWMutex
+}
 
 // Response used to hold response data from cmc
 type Response struct {
@@ -31,21 +43,57 @@ type Response struct {
 	LastUpdate         string `json:"last_updated"`
 }
 
-// RetrieveUsdPrice is used to retrieve the USD price for a coin from CMC
+func init() {
+	pricer = &priceChecker{
+		coins: make(map[string]coinPrice),
+		mux:   &sync.RWMutex{},
+	}
+}
+
+// RetrieveUsdPrice is used to retrieve the USD price for a coin from CMC.
+//
+// Whenever we have a "fresh" coin price that is newer than 10 minutes
+// we will return that price instead of querying coinmarketcap. In the event
+// of a "stale" value we will hit the coinmarketcap api. If that errors
+// then we return both the error, and whatever price we have in-memory
 func RetrieveUsdPrice(coin string) (float64, error) {
+	pricer.mux.RLock()
+	if pricer.coins[coin].price != 0 {
+		if time.Now().After(pricer.coins[coin].nextRefresh) {
+			goto REFRESH
+		}
+		cost := pricer.coins[coin].price
+		pricer.mux.RUnlock()
+		return cost, nil
+	}
+REFRESH:
+	pricer.mux.RUnlock()
+	pricer.mux.Lock()
+	defer pricer.mux.Unlock()
+	if pricer.coins[coin].price != 0 && !time.Now().After(pricer.coins[coin].nextRefresh) {
+		return pricer.coins[coin].price, nil
+	}
 	url := fmt.Sprintf("%s/%s", tickerURL, coin)
 	response, err := http.Get(url)
 	if err != nil {
-		return 0, err
+		return pricer.coins[coin].price, err
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return 0, err
+		return pricer.coins[coin].price, err
 	}
 	var decode []Response
 	if err = json.Unmarshal(body, &decode); err != nil {
-		return 0, err
+		return pricer.coins[coin].price, err
 	}
-	return strconv.ParseFloat(decode[0].PriceUsd, 64)
+	cost, err := strconv.ParseFloat(decode[0].PriceUsd, 64)
+	if err != nil {
+		return pricer.coins[coin].price, err
+	}
+	pricer.coins[coin] = coinPrice{
+		price:       cost,
+		nextRefresh: time.Now().Add(time.Minute * 10),
+	}
+	return cost, nil
 }
