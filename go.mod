@@ -14,7 +14,7 @@ require (
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
 	github.com/RTradeLtd/kaas/v2 v2.1.2
 	github.com/RTradeLtd/rtfs/v2 v2.1.2
-	github.com/RTradeLtd/rtns v0.0.12
+	github.com/RTradeLtd/rtns v1.0.2-rc1
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/appleboy/gofight/v2 v2.1.1 // indirect
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
@@ -34,16 +34,21 @@ require (
 	github.com/ipfs/go-cid v0.0.3
 	github.com/ipfs/go-datastore v0.1.1
 	github.com/ipfs/go-ds-badger v0.0.7
-	github.com/ipfs/go-ipfs v0.4.22 // indirect
 	github.com/ipfs/go-ipfs-addr v0.0.1
+	github.com/ipfs/go-ipfs-config v0.0.6 // indirect
+	github.com/ipfs/go-ipns v0.0.1
 	github.com/ipfs/go-path v0.0.7
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
 	github.com/jinzhu/gorm v1.9.11
-	github.com/libp2p/go-libp2p v0.4.2 // indirect
+	github.com/libp2p/go-libp2p v0.4.2
 	github.com/libp2p/go-libp2p-core v0.2.5
+	github.com/libp2p/go-libp2p-host v0.1.0
 	github.com/libp2p/go-libp2p-interface-pnet v0.1.0 // indirect
+	github.com/libp2p/go-libp2p-kad-dht v0.1.1
+	github.com/libp2p/go-libp2p-peerstore v0.1.4
 	github.com/libp2p/go-libp2p-pubsub v0.1.0 // indirect
 	github.com/libp2p/go-libp2p-raft v0.0.4 // indirect
+	github.com/libp2p/go-libp2p-record v0.1.0
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/multiformats/go-multiaddr v0.1.2
 	github.com/multiformats/go-multihash v0.0.8

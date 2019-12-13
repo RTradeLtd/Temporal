@@ -7,10 +7,6 @@ import (
 	"sync"
 	"time"
 
-	ci "github.com/libp2p/go-libp2p-core/crypto"
-	peer "github.com/libp2p/go-libp2p-core/peer"
-	"github.com/streadway/amqp"
-
 	"github.com/RTradeLtd/database/v2/models"
 	pb "github.com/RTradeLtd/grpc/krab"
 	kaas "github.com/RTradeLtd/kaas/v2"
@@ -18,7 +14,18 @@ import (
 	datastore "github.com/ipfs/go-datastore"
 	dssync "github.com/ipfs/go-datastore/sync"
 	badger "github.com/ipfs/go-ds-badger"
+	"github.com/ipfs/go-ipns"
+	"github.com/libp2p/go-libp2p"
+	ci "github.com/libp2p/go-libp2p-core/crypto"
+	peer "github.com/libp2p/go-libp2p-core/peer"
+	host "github.com/libp2p/go-libp2p-host"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
+	dhtOpts "github.com/libp2p/go-libp2p-kad-dht/opts"
+	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
+	record "github.com/libp2p/go-libp2p-record"
+	routedhost "github.com/libp2p/go-libp2p/p2p/host/routed"
 	"github.com/multiformats/go-multiaddr"
+	"github.com/streadway/amqp"
 )
 
 type contextKey string
@@ -70,21 +77,17 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	if err != nil {
 		return err
 	}
+	qm.l.Infof("usering peerid of %s for publisher", pid.String())
 	ds, err := qm.getDatastore()
 	if err != nil {
 		return err
 	}
-	qm.l.Infof("usering peerid of %s for publisher", pid.String())
-	rConfig := rtns.Config{
-		PK:          pubPK,
-		ListenAddrs: []multiaddr.Multiaddr{addr},
-		Datastore:   ds,
-	}
-	publisher, err := rtns.NewService(ctx, kbPrimary, rConfig)
+	_, dt, err := setupLibP2PHost(context.Background(), addr, ds)
 	if err != nil {
 		return err
 	}
-	publisher.Bootstrap(publisher.DefaultBootstrapPeers())
+	publisher := rtns.NewRTNS(context.Background(), dt, ds, rtns.NewRKeystore(context.Background(), kbPrimary), 128)
+	//	publisher.Bootstrap(publisher.DefaultBootstrapPeers())
 	ipnsManager := models.NewIPNSManager(qm.db)
 	qm.l.Info("processing ipns entry creation requests")
 	for {
@@ -99,7 +102,6 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		case msg := <-qm.ErrCh:
 			qm.Close()
 			wg.Done()
-			publisher.Close()
 			qm.l.Errorw(
 				"a protocol connection error stopping rabbitmq was received",
 				"error", msg.Error())
@@ -108,7 +110,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	}
 }
 
-func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kbBackup *kaas.Client, im *models.IpnsManager, pub rtns.Service) {
+func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kbBackup *kaas.Client, im *models.IpnsManager, pub *rtns.RTNS) {
 	defer wg.Done()
 	qm.l.Info("new ipns entry creation detected")
 	ie := IPNSEntry{}
@@ -238,4 +240,23 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 	d.Ack(false)
 	return // we must return here in order to trigger the wg.Done() defer
 
+}
+
+func setupLibP2PHost(ctx context.Context, addr multiaddr.Multiaddr, dstore datastore.Batching) (host.Host, *dht.IpfsDHT, error) {
+	pstore := pstoremem.NewPeerstore()
+	h, err := libp2p.New(ctx, libp2p.ListenAddrs(addr), libp2p.Peerstore(pstore))
+	idht, err := dht.New(ctx, h,
+		dhtOpts.Validator(record.NamespacedValidator{
+			"pk":   record.PublicKeyValidator{},
+			"ipns": ipns.Validator{KeyBook: pstore},
+		}),
+		dhtOpts.Datastore(dstore),
+	)
+	if err != nil {
+		h.Close()
+		return nil, nil, err
+	}
+	go idht.Bootstrap(ctx)
+	rHost := routedhost.Wrap(h, idht)
+	return rHost, idht, nil
 }
