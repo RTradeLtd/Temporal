@@ -16,77 +16,77 @@ case "$1" in
     api)
         PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep -e "api")
         if [[ "$PID" != "" ]]; then
-                echo 1
+            echo 1
         else
             echo 0
         fi
         ;;
     ipfs-pin-queue)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue ipfs pin" | grep -iv grep | awk '{print $(NF-2)" "$(NF-1)" "$NF}')
-        if [[ "$PID" == "queue ipfs pin" ]]; then
-            echo 1
-        else
+        COUNT=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep -c "queue ipfs pin")
+        if [[ "$COUNT" == "0" ]]; then
             echo 0
+        else   
+            echo 1
         fi
         ;;
     email-send-queue)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue email-send" | grep -iv grep | awk '{print $(NF-1)" "$NF}')
-        if [[ "$PID" == "queue email-send" ]]; then
-            echo 1
-        else
+        COUNT=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep -c "queue email-send")
+        if [[ "$COUNT" == "0" ]]; then
             echo 0
+        else   
+            echo 1
         fi
         ;;
     ipns-entry-queue)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue ipfs ipns-entry" | grep -iv grep | awk '{print $(NF-2)" "$(NF-1)" "$NF}')
-        if [[ "$PID" == "queue ipfs ipns-entry" ]]; then
-            echo 1
-        else
+        COUNT=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep -c "queue ipfs ipns-entry")
+        if [[ "$COUNT" == "0" ]]; then
             echo 0
+        else   
+            echo 1
         fi
         ;;
     ipfs-key-creation-queue)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue ipfs key-creation" | grep -iv grep | awk '{print $(NF-2)" "$(NF-1)" "$NF}')
-        if [[ "$PID" == "queue ipfs key-creation" ]]; then
-            echo 1
-        else
+        COUNT=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep -c "queue ipfs key-creation")
+        if [[ "$COUNT" == "0" ]]; then
             echo 0
+        else   
+            echo 1
         fi
         ;;
     ipfs-cluster-queue)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal queue ipfs cluster" | grep -iv grep | awk '{print $(NF-2)" "$(NF-1)" "$NF}')
-        if [[ "$PID" == "queue ipfs cluster" ]]; then
-            echo 1
-        else
+        COUNT=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep -c "queue ipfs cluster")
+        if [[ "$COUNT" == "0" ]]; then
             echo 0
+        else   
+            echo 1
         fi
         ;;
 
     # pay related service monitors
     pay-eth-queue)
-        PID=$(pgrep -ax pay | awk '{print $(NF-2)" "$NF}' | grep "queue ethereum" | grep -iv grep | awk '{print $(NF-1)" "$NF}')
-        if [[ "$PID" == "queue ethereum" ]]; then
-            echo 1
-        else
+        COUNT=$(pgrep -ax pay | awk '{print $(NF-2)" "$NF}' | grep -c "queue ethereum")
+        if [[ "$COUNT" == "0" ]]; then
             echo 0
+        else   
+            echo 1
         fi
         ;;
     pay-dash-queue)
-        PID=$(pgrep -ax pay | awk '{print $(NF-2)" "$NF}' | grep "queue dash" | grep -iv grep | awk '{print $(NF-1)" "$NF}')
-        if [[ "$PID" == "queue dash" ]]; then
-            echo 1
-        else
+        COUNT=$(pgrep -ax pay | awk '{print $(NF-2)" "$NF}' | grep -c "queue dash")
+        if [[ "$COUNT" == "0" ]]; then
             echo 0
+        else   
+            echo 1
         fi
         ;;
     pay-signer-service)
         # $(NF-1) in awk is the second last column
-        PID=$(pgrep -ax pay | awk '{print $(NF-1)" "$NF}' | grep "grpc server" | grep -iv grep | awk '{print $(NF-1)" "$NF}')
-        if [[ "$PID" == "grpc server" ]]; then
-            echo 1
-        else
+        COUNT=$(pgrep -ax pay | awk '{print $(NF-1)" "$NF}' | grep -c "grpc server")
+        if [[ "$COUNT" == "0" ]]; then
             echo 0
-        fi   
+        else   
+            echo 1
+        fi
         ;;     
     *)
         echo "Bad invocation method"
