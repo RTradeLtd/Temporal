@@ -6,19 +6,19 @@ case "$1" in
     
     # temporal related service monitors
     krab)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep "temporal krab" | grep -iv grep | awk '{print $2}')
-        if [[ "$PID" == "krab" ]]; then
-            echo 1
-        else   
+        COUNT=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep -c "krab")
+        if [[ "$COUNT" == "0" ]]; then
             echo 0
+        else   
+            echo 1
         fi
         ;;
     api)
-        PID=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep -e "api")
-        if [[ "$PID" != "" ]]; then
-            echo 1
-        else
+        COUNT=$(pgrep -ax temporal | awk '{print $2" "$3" "$4" "$5" "$6" "$7}' | grep -c "api")
+        if [[ "$COUNT" == "0" ]]; then
             echo 0
+        else
+            echo 1
         fi
         ;;
     ipfs-pin-queue)
