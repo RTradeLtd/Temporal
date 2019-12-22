@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
@@ -19,6 +20,12 @@ import (
 
 // SystemsCheck is a basic check of system integrity
 func (api *API) SystemsCheck(c *gin.Context) {
+	hostname, err := os.Hostname()
+	if err != nil {
+		api.LogError(c, err, eh.HostNameNotFoundError)(http.StatusInternalServerError)
+		return
+	}
+	c.Writer.Header().Set("X-API-Hostname", hostname)
 	Respond(c, http.StatusOK, gin.H{
 		"version":  api.version,
 		"response": "systems online",
