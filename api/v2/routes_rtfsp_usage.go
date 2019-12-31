@@ -195,6 +195,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 			Username:         username,
 			HoldTimeInMonths: holdTimeInt,
 			FileName:         fileName,
+			Size:             fileHandler.Size,
 		})
 	} else {
 		_, err = api.upm.UpdateUpload(holdTimeInt, username, resp, forms["network_name"])
