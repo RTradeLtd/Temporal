@@ -245,6 +245,7 @@ func (api *API) addFile(c *gin.Context) {
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInMonthsInt,
 		FileName:         fileName,
+		Size:             fileHandler.Size,
 	}
 	// send message to rabbitmq
 	if err = api.queues.cluster.PublishMessage(qp); err != nil {

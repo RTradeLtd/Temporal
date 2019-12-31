@@ -191,6 +191,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       cost,
+		Size:             int64(stats.CumulativeSize),
 	}
 	// send message for processing
 	if err = api.queues.cluster.PublishMessage(qp); err != nil {
