@@ -46,7 +46,7 @@ require (
 	github.com/libp2p/go-libp2p-raft v0.0.4 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/multiformats/go-multiaddr v0.1.2
-	github.com/multiformats/go-multihash v0.0.8
+	github.com/multiformats/go-multihash v0.0.10
 	github.com/prometheus/common v0.4.1 // indirect
 	github.com/prometheus/procfs v0.0.2 // indirect
 	github.com/rs/cors v1.6.0
