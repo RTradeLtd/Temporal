@@ -52,7 +52,7 @@ require (
 	github.com/rs/cors v1.6.0
 	github.com/semihalev/gin-stats v0.0.0-20180505163755-30fdcbbd3533
 	github.com/sendgrid/rest v2.4.1+incompatible
-	github.com/sendgrid/sendgrid-go v3.4.1+incompatible
+	github.com/sendgrid/sendgrid-go v3.5.0+incompatible
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	github.com/stripe/stripe-go v60.0.1+incompatible
 	go.uber.org/zap v1.11.0
