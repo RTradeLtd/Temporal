@@ -13,7 +13,7 @@ require (
 	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190522213636-8e3700e602fd
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
 	github.com/RTradeLtd/kaas/v2 v2.1.2
-	github.com/RTradeLtd/rtfs/v2 v2.1.2
+	github.com/RTradeLtd/rtfs/v2 v2.2.0
 	github.com/RTradeLtd/rtns v0.0.12
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/appleboy/gofight/v2 v2.1.1 // indirect
