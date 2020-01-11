@@ -185,7 +185,7 @@ func (api *API) registerOrgUser(c *gin.Context) {
 		FailWithMissingField(c, missingField)
 		return
 	}
-	if _, ok := api.validateOrgOwner(c, forms["name"], username); !ok {
+	if _, ok := api.validateOrgOwner(c, forms["organization_name"], username); !ok {
 		return
 	}
 	// parse html encoded strings
