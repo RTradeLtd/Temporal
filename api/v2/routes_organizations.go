@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"html"
@@ -12,6 +13,7 @@ import (
 	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/database/v2/models"
 	"github.com/gin-gonic/gin"
+	"github.com/jszwec/csvutil"
 )
 
 // creates a new organization
@@ -76,50 +78,6 @@ func (api *API) getOrganization(c *gin.Context) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": org})
-}
-
-// getOrgUserUploads allows returning uploads for organization users
-// optionally
-func (api *API) getOrgUserUploads(c *gin.Context) {
-	username, err := GetAuthenticatedUserFromContext(c)
-	if err != nil {
-		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
-		return
-	}
-	forms, missingField := api.extractPostForms(c, "name")
-	if missingField != "" {
-		FailWithMissingField(c, missingField)
-		return
-	}
-	users, ok := c.GetPostFormArray("users")
-	if !ok {
-		FailWithMissingField(c, "users")
-		return
-	}
-
-	// allows optional returning the response as a generated PDF file
-	asPDF := c.PostForm("as_pdf") == "true"
-
-	// validate user is owner
-	if _, ok := api.validateOrgOwner(c, forms["name"], username); !ok {
-		return
-	}
-	type r struct {
-		Users map[string][]models.Upload `json:"users"`
-	}
-	resp := &r{Users: make(map[string][]models.Upload)}
-	for _, user := range users {
-		uplds, err := api.orgs.GetUserUploads(forms["name"], user)
-		if err != nil {
-			api.LogError(c, err, "failed to get user uploads "+err.Error())
-			return
-		}
-		resp.Users[user] = uplds
-	}
-	if asPDF {
-		Respond(c, http.StatusBadRequest, gin.H{"response": "not yet implemented"})
-	}
-	Respond(c, http.StatusOK, gin.H{"response": resp})
 }
 
 func (api *API) getOrgBillingReport(c *gin.Context) {
@@ -301,6 +259,62 @@ func (api *API) registerOrgUser(c *gin.Context) {
 		user, status,
 	},
 	})
+}
+
+// getOrgUserUploads allows returning uploads for organization users
+// optionally
+func (api *API) getOrgUserUploads(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	forms, missingField := api.extractPostForms(c, "name")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	users, ok := c.GetPostFormArray("users")
+	if !ok {
+		FailWithMissingField(c, "users")
+		return
+	}
+
+	// allows optional returning the response as a generated csv file
+	asCSV := c.PostForm("as_csv") == "true"
+
+	// validate user is owner
+	if _, ok := api.validateOrgOwner(c, forms["name"], username); !ok {
+		return
+	}
+	type r struct {
+		Users map[string][]models.Upload `json:"users"`
+	}
+	resp := &r{Users: make(map[string][]models.Upload)}
+	for _, user := range users {
+		uplds, err := api.orgs.GetUserUploads(forms["name"], user)
+		if err != nil {
+			api.LogError(c, err, "failed to get user uploads "+err.Error())
+			return
+		}
+		resp.Users[user] = uplds
+	}
+	if asCSV {
+		csvBytes, err := csvutil.Marshal(resp)
+		if err != nil {
+			api.LogError(c, err, "failed to generate csv file "+err.Error())
+			return
+		}
+		c.DataFromReader(
+			200,
+			int64(len(csvBytes)),
+			"application/octet-stream",
+			bytes.NewReader(csvBytes),
+			make(map[string]string),
+		)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": resp})
 }
 
 // returns true if user is owner

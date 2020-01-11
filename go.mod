@@ -39,6 +39,8 @@ require (
 	github.com/ipfs/go-path v0.0.7
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
 	github.com/jinzhu/gorm v1.9.11
+	github.com/jszwec/csvutil v1.2.1
+	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/libp2p/go-libp2p v0.4.2 // indirect
 	github.com/libp2p/go-libp2p-core v0.2.5
 	github.com/libp2p/go-libp2p-interface-pnet v0.1.0 // indirect
