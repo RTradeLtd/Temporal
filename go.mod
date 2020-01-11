@@ -8,7 +8,7 @@ require (
 	github.com/RTradeLtd/cmd/v2 v2.1.0
 	github.com/RTradeLtd/config/v2 v2.2.0
 	github.com/RTradeLtd/crypto/v2 v2.1.1
-	github.com/RTradeLtd/database/v2 v2.6.3
+	github.com/RTradeLtd/database/v2 v2.7.0-rc1
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
 	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190522213636-8e3700e602fd
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
