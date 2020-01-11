@@ -80,15 +80,32 @@ func (api *API) getOrganization(c *gin.Context) {
 		)(http.StatusInternalServerError)
 		return
 	}
-	if org.AccountOwner != username {
-		api.LogError(
-			c,
-			errors.New("user is not owner"),
-			"you are not the organization owner",
-		)(http.StatusForbidden)
+	if !api.validateOrgOwner(c, forms["name"], username) {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": org})
+}
+
+// getOrgUserUploads allows returning uploads for organization users
+// optionally
+func (api *API) getOrgUserUploads(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	forms, missingField := api.extractPostForms(c, "name")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	// allows optional returning the response as a generated PDF file
+	//asPDF := c.PostForm("as_pdf") == "true"
+
+	// validate user is owner
+	if !api.validateOrgOwner(c, forms["name"], username) {
+		return
+	}
 }
 
 func (api *API) getOrgBillingReport(c *gin.Context) {
@@ -113,20 +130,7 @@ func (api *API) getOrgBillingReport(c *gin.Context) {
 		)(http.StatusBadRequest)
 		return
 	}
-	// validate user is owner
-	if org, err := api.orgs.FindByName(forms["name"]); err != nil {
-		api.LogError(
-			c,
-			err,
-			"failed to find org",
-		)(http.StatusInternalServerError)
-		return
-	} else if org.AccountOwner != username {
-		api.LogError(
-			c,
-			errors.New("user is not owner"),
-			"you are not the organization owner",
-		)(http.StatusForbidden)
+	if !api.validateOrgOwner(c, forms["name"], username) {
 		return
 	}
 	// generate a billing report
@@ -167,22 +171,7 @@ func (api *API) registerOrgUser(c *gin.Context) {
 		FailWithMissingField(c, missingField)
 		return
 	}
-	// ensure user is org owner
-	org, err := api.orgs.FindByName(forms["organization_name"])
-	if err != nil {
-		api.LogError(
-			c,
-			err,
-			"failed to find organization",
-		)(http.StatusInternalServerError)
-		return
-	}
-	if org.AccountOwner != username {
-		api.LogError(
-			c,
-			errors.New("user is not owner"),
-			"you are not the organization owner",
-		)(http.StatusForbidden)
+	if !api.validateOrgOwner(c, forms["name"], username) {
 		return
 	}
 	// parse html encoded strings
@@ -298,4 +287,26 @@ func (api *API) registerOrgUser(c *gin.Context) {
 		user, status,
 	},
 	})
+}
+
+// returns true if user is owner
+func (api *API) validateOrgOwner(c *gin.Context, organization, username string) bool {
+	org, err := api.orgs.FindByName(organization)
+	if err != nil {
+		api.LogError(
+			c,
+			err,
+			"failed to find org",
+		)(http.StatusInternalServerError)
+		return false
+	}
+	if org.AccountOwner != username {
+		api.LogError(
+			c,
+			errors.New("user is not owner"),
+			"you are not the organization owner",
+		)(http.StatusForbidden)
+		return false
+	}
+	return true
 }
