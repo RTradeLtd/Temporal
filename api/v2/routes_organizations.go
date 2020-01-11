@@ -290,16 +290,16 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 	type r struct {
 		Users map[string][]models.Upload `json:"users"`
 	}
-	resp := &r{Users: make(map[string][]models.Upload)}
-	for _, user := range users {
-		uplds, err := api.orgs.GetUserUploads(forms["name"], user)
-		if err != nil {
-			api.LogError(c, err, "failed to get user uploads "+err.Error())
-			return
-		}
-		resp.Users[user] = uplds
-	}
 	if asCSV {
+		resp := &r{Users: make(map[string][]models.Upload)}
+		for _, user := range users {
+			uplds, err := api.orgs.GetUserUploads(forms["name"], user)
+			if err != nil {
+				api.LogError(c, err, "failed to get user uploads "+err.Error())
+				return
+			}
+			resp.Users[user] = uplds
+		}
 		csvBytes, err := csvutil.Marshal(resp)
 		if err != nil {
 			api.LogError(c, err, "failed to generate csv file "+err.Error())
@@ -314,6 +314,44 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 			make(map[string]string),
 		)
 		return
+	}
+	/* TODO(bonedaddy): enable
+	page := c.PostForm("page")
+	if page == "" {
+		page = "1"
+	}
+	limit := c.PostForm("limit")
+	if limit == "" {
+		limit = "10"
+	}
+	pageInt, err := strconv.Atoi(page)
+	if !ok {
+		Fail(c, err, http.StatusBadRequest)
+		return
+	}
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		Fail(c, err, http.StatusBadRequest)
+		return
+	}
+	*/
+	resp := &r{Users: make(map[string][]models.Upload)}
+	for _, user := range users {
+		/* TODO(bonedaddy): enable
+		var uploads []models.Upload
+		pagination.Paging(&pagination.Param{
+			DB:    api.upm.DB.Where("user_name = ?", user),
+			Page:  pageInt,
+			Limit: limitInt,
+		}, &uploads)
+		resp.Users[user] = uploads
+		*/
+		uplds, err := api.orgs.GetUserUploads(forms["name"], user)
+		if err != nil {
+			api.LogError(c, err, "failed to get user uploads "+err.Error())
+			return
+		}
+		resp.Users[user] = uplds
 	}
 	Respond(c, http.StatusOK, gin.H{"response": resp})
 }
