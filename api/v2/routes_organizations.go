@@ -305,6 +305,7 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 			api.LogError(c, err, "failed to generate csv file "+err.Error())
 			return
 		}
+		fmt.Println(string(csvBytes))
 		c.DataFromReader(
 			200,
 			int64(len(csvBytes)),
