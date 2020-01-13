@@ -301,7 +301,6 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 			api.LogError(c, err, "failed to generate csv file "+err.Error())
 			return
 		}
-		fmt.Println(string(csvBytes))
 		c.DataFromReader(
 			200,
 			int64(len(csvBytes)),
@@ -329,32 +328,48 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
-	// validate that the user is part of the organization
-	usr, err := api.um.FindByUserName(users[0])
-	if err != nil {
-		api.LogError(c, err, eh.UserSearchError)
-		return
+	type pagedUploadsUser struct {
+		Error        error             `json:"error,omitempty"`
+		PagedUploads *gpaginator.Paged `json:"paged_uploads,omitempty"`
 	}
-	if usr.Organization != forms["name"] {
-		Fail(c, errors.New("user is not part of organization"))
-		return
+	type pagedUploads struct {
+		Users map[string]pagedUploadsUser `json:"users"`
 	}
-	// get paginated uploads, preventing us from returning
-	// a massive payload
-	var uploads []models.Upload
-	resp, err := gpaginator.Paging(
-		&gpaginator.Param{
-			DB:    api.upm.DB.Where("user_name = ?", users[0]),
-			Page:  pageInt,
-			Limit: limitInt,
-		},
-		&uploads,
-	)
-	if err != nil {
-		api.LogError(c, err, "failed to get paged response")
-		return
+	// return paged uploads for all request users
+	pu := &pagedUploads{
+		Users: make(map[string]pagedUploadsUser),
 	}
-	Respond(c, http.StatusOK, gin.H{"response": resp})
+	for _, user := range users {
+		// validate that the user is part of the organization
+		// however dont fail on an error, simply continue
+		usr, err := api.um.FindByUserName(user)
+		if err != nil {
+			continue
+		}
+		if usr.Organization != forms["name"] {
+			continue
+		}
+		var (
+			uploads []models.Upload
+			pgu     pagedUploadsUser
+		)
+		paged, err := gpaginator.Paging(
+			&gpaginator.Param{
+				DB:    api.upm.DB.Where("user_name = ?", user),
+				Page:  pageInt,
+				Limit: limitInt,
+			},
+			&uploads,
+		)
+		if err != nil {
+			pgu.Error = err
+		} else {
+			pgu.PagedUploads = paged
+		}
+		pu.Users[user] = pgu
+	}
+	// return the response
+	Respond(c, http.StatusOK, gin.H{"response": pu})
 }
 
 func (api *API) getUploads(orgName string, users []string) (map[string][]models.Upload, error) {
