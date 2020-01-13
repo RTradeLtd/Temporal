@@ -120,9 +120,11 @@ func Test_API_Routes_Organization(t *testing.T) {
 		wantCode int
 	}{
 		{"1-user-NoCSV", args{"testorg", []string{"testorg-user"}, "false"}, 200},
+		{"2-User-NoCSV-1-Invalid-User", args{"testorg", []string{"testorg-user", "testorg-usernotreal"}, "false"}, 200},
+		{"2-User-YesCSV-1-Invalid-User", args{"testorg", []string{"testorg-user", "testorg-usernotreal"}, "true"}, 200},
 		{"1-user-YesCSV", args{"testorg", []string{"testorg-user"}, "true"}, 200},
 		{"No-OrgName", args{"", []string{"testorg-user"}, "false"}, 400},
-		{"No-Users", args{"testorg", []string{""}, "false"}, 400},
+		{"No-Users", args{"testorg", nil, "false"}, 400},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
