@@ -638,7 +638,7 @@ func (api *API) setupRoutes(debug bool) error {
 		{
 			get.GET("/model", api.getOrganization)
 			get.GET("/billing/report", api.getOrgBillingReport)
-			get.GET("/user/uploads", api.getOrgUserUploads)
+			get.POST("/user/uploads", api.getOrgUserUploads)
 		}
 		org.POST("/new", api.newOrganization)
 		org.POST("/register/user", api.registerOrgUser)

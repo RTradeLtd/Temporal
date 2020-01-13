@@ -107,4 +107,42 @@ func Test_API_Routes_Organization(t *testing.T) {
 	if testRecorder.Result().StatusCode != http.StatusOK {
 		t.Fatal("bad status returned")
 	}
+	// user upload tests
+
+	type args struct {
+		name  string
+		users []string
+		asCSV string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantCode int
+	}{
+		{"1-user-NoCSV", args{"testorg", []string{"testorg-user"}, "false"}, 200},
+		{"1-user-YesCSV", args{"testorg", []string{"testorg-user"}, "true"}, 200},
+		{"No-OrgName", args{"", []string{"testorg-user"}, "false"}, 400},
+		{"No-Users", args{"testorg", []string{""}, "false"}, 400},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testRecorder = httptest.NewRecorder()
+			req = httptest.NewRequest("POST", "/v2/user/uploads", nil)
+			req.Header.Add("Authorization", authHeader)
+			urlValues = url.Values{}
+			// set org name
+			urlValues.Add("name", tt.args.name)
+			// set users
+			for _, user := range tt.args.users {
+				urlValues.Add("users", user)
+			}
+			// set as csv
+			urlValues.Add("as_csv", tt.args.asCSV)
+			req.PostForm = urlValues
+			api.r.ServeHTTP(testRecorder, req)
+			if testRecorder.Result().StatusCode != tt.wantCode {
+				t.Fatal("bad status")
+			}
+		})
+	}
 }
