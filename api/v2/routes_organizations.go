@@ -4,16 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/RTradeLtd/Temporal/queue"
+	"github.com/RTradeLtd/database/v2/models"
+	gpaginator "github.com/RTradeLtd/gpaginator"
+	"github.com/gin-gonic/gin"
+	"github.com/jszwec/csvutil"
 	"html"
 	"net/http"
 	"strconv"
 	"time"
-
-	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/database/v2/models"
-	"github.com/gin-gonic/gin"
-	"github.com/jszwec/csvutil"
 )
 
 // creates a new organization
@@ -279,27 +279,23 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 		FailWithMissingField(c, "users")
 		return
 	}
-
 	// allows optional returning the response as a generated csv file
 	asCSV := c.PostForm("as_csv") == "true"
-
 	// validate user is owner
 	if _, ok := api.validateOrgOwner(c, forms["name"], username); !ok {
 		return
 	}
-	type r struct {
-		Users map[string][]models.Upload `json:"users"`
-	}
 	if asCSV {
-		resp := &r{Users: make(map[string][]models.Upload)}
-		for _, user := range users {
-			uplds, err := api.orgs.GetUserUploads(forms["name"], user)
-			if err != nil {
-				api.LogError(c, err, "failed to get user uploads "+err.Error())
-				return
-			}
-			resp.Users[user] = uplds
+		type r struct {
+			Users map[string][]models.Upload `json:"users"`
 		}
+		resp := &r{Users: make(map[string][]models.Upload)}
+		uplds, err := api.getUploads(forms["name"], users)
+		if err != nil {
+			api.LogError(c, err, "failed to get user uploads"+err.Error())
+			return
+		}
+		resp.Users = uplds
 		csvBytes, err := csvutil.Marshal(resp)
 		if err != nil {
 			api.LogError(c, err, "failed to generate csv file "+err.Error())
@@ -315,7 +311,6 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 		)
 		return
 	}
-	/* TODO(bonedaddy): enable
 	page := c.PostForm("page")
 	if page == "" {
 		page = "1"
@@ -334,26 +329,44 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
-	*/
-	resp := &r{Users: make(map[string][]models.Upload)}
-	for _, user := range users {
-		/* TODO(bonedaddy): enable
-		var uploads []models.Upload
-		pagination.Paging(&pagination.Param{
-			DB:    api.upm.DB.Where("user_name = ?", user),
+	// validate that the user is part of the organization
+	usr, err := api.um.FindByUserName(users[0])
+	if err != nil {
+		api.LogError(c, err, eh.UserSearchError)
+		return
+	}
+	if usr.Organization != forms["name"] {
+		Fail(c, errors.New("user is not part of organization"))
+		return
+	}
+	// get paginated uploads, preventing us from returning
+	// a massive payload
+	var uploads []models.Upload
+	resp, err := gpaginator.Paging(
+		&gpaginator.Param{
+			DB:    api.upm.DB.Where("user_name = ?", users[0]),
 			Page:  pageInt,
 			Limit: limitInt,
-		}, &uploads)
-		resp.Users[user] = uploads
-		*/
-		uplds, err := api.orgs.GetUserUploads(forms["name"], user)
-		if err != nil {
-			api.LogError(c, err, "failed to get user uploads "+err.Error())
-			return
-		}
-		resp.Users[user] = uplds
+		},
+		&uploads,
+	)
+	if err != nil {
+		api.LogError(c, err, "failed to get paged response")
+		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": resp})
+}
+
+func (api *API) getUploads(orgName string, users []string) (map[string][]models.Upload, error) {
+	resp := make(map[string][]models.Upload)
+	for _, user := range users {
+		uplds, err := api.orgs.GetUserUploads(orgName, user)
+		if err != nil {
+			return nil, err
+		}
+		resp[user] = uplds
+	}
+	return resp, nil
 }
 
 // returns true if user is owner

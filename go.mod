@@ -10,6 +10,7 @@ require (
 	github.com/RTradeLtd/database/v2 v2.7.0-rc1
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
 	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190522213636-8e3700e602fd
+	github.com/RTradeLtd/gpaginator v0.0.4
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
 	github.com/RTradeLtd/kaas/v2 v2.1.2
 	github.com/RTradeLtd/rtfs/v2 v2.1.2
@@ -21,7 +22,6 @@ require (
 	github.com/bobheadxi/zapx v0.2.0
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae
-	github.com/denisenkom/go-mssqldb v0.0.0-20191128021309-1d7a30a10f73 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dvwright/xss-mw v0.0.0-20191029162136-7a0dab86d8f6
 	github.com/gcash/bchutil v0.0.0-20191012211144-98e73ec336ba
@@ -29,7 +29,6 @@ require (
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-chi/chi v4.0.2+incompatible
-	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
 	github.com/ipfs/go-cid v0.0.3
@@ -40,16 +39,13 @@ require (
 	github.com/ipfs/go-path v0.0.7
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
 	github.com/jinzhu/gorm v1.9.11
-	github.com/jinzhu/now v1.1.1 // indirect
 	github.com/jszwec/csvutil v1.2.1
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect
-	github.com/lib/pq v1.3.0 // indirect
 	github.com/libp2p/go-libp2p v0.4.2 // indirect
 	github.com/libp2p/go-libp2p-core v0.2.5
 	github.com/libp2p/go-libp2p-interface-pnet v0.1.0 // indirect
 	github.com/libp2p/go-libp2p-pubsub v0.1.0 // indirect
 	github.com/libp2p/go-libp2p-raft v0.0.4 // indirect
-	github.com/mattn/go-sqlite3 v2.0.2+incompatible // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/multiformats/go-multiaddr v0.1.2
 	github.com/multiformats/go-multihash v0.0.8

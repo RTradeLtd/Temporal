@@ -193,6 +193,9 @@ func (api *API) extractPostForms(c *gin.Context, formNames ...string) (map[strin
 		if !exists {
 			return nil, name
 		}
+		if value == "" { // prevent empty values counting as valid
+			return nil, name
+		}
 		forms[name] = value
 	}
 	return forms, ""
