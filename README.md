@@ -57,6 +57,18 @@ Temporal is modular such that the underlying protocols it connects to, can easil
 
 We have comprehensive API documentation available [here](https://gateway.temporal.cloud/ipns/docs.api.temporal.cloud) as well as an in-depth [wiki](https://rtradetechnologies.atlassian.net/wiki/spaces/TEM/overview) which contains additional information such as architectural diagrams, design decisions, and more.
 
+### Benefits Over Direct IPFS HTTP API Access
+
+* Authenticated API access
+* Better performance via load balanced requests to different ipfs nodes
+* Leverage multiple different nodes from a single API
+  * Requests are distributed round-robin across different nodes
+* Built-in handling of IPFS and IPFS Cluster requests
+* Content encryption
+* At rest encrypted of IPFS keys
+* More efficient IPNS publishing
+* Easy to scale up, simply spin up additional queue runners with a single command
+
 ### Goals
 
 * Provide an easy to use interface into distributed and decentralized storage technologies.
