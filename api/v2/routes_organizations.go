@@ -174,14 +174,9 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
-	forms, missingField := api.extractPostForms(c, "name")
+	forms, missingField := api.extractPostForms(c, "name", "user")
 	if missingField != "" {
 		FailWithMissingField(c, missingField)
-		return
-	}
-	users, ok := c.GetPostFormArray("users")
-	if !ok {
-		FailWithMissingField(c, "users")
 		return
 	}
 	// allows optional returning the response as a generated csv file
@@ -191,17 +186,12 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 		return
 	}
 	if asCSV {
-		type r struct {
-			Users map[string][]models.Upload `json:"users"`
-		}
-		resp := &r{Users: make(map[string][]models.Upload)}
-		uplds, err := api.getUploads(forms["name"], users)
+		uplds, err := api.getUploads(forms["name"], []string{forms["user"]})
 		if err != nil {
 			api.LogError(c, err, "failed to get user uploads"+err.Error())
 			return
 		}
-		resp.Users = uplds
-		csvBytes, err := csvutil.Marshal(resp)
+		csvBytes, err := csvutil.Marshal(uplds[forms["user"]])
 		if err != nil {
 			api.LogError(c, err, "failed to generate csv file "+err.Error())
 			return
@@ -224,7 +214,7 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 		limit = "10"
 	}
 	pageInt, err := strconv.Atoi(page)
-	if !ok {
+	if err != nil {
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
@@ -233,48 +223,32 @@ func (api *API) getOrgUserUploads(c *gin.Context) {
 		Fail(c, err, http.StatusBadRequest)
 		return
 	}
-	type pagedUploadsUser struct {
-		Error        error             `json:"error,omitempty"`
-		PagedUploads *gpaginator.Paged `json:"paged_uploads,omitempty"`
+	// validate that the user is part of the organization
+	// however dont fail on an error, simply continue
+	usr, err := api.um.FindByUserName(forms["user"])
+	if err != nil {
+		api.LogError(c, err, eh.UserSearchError)
+		return
 	}
-	type pagedUploads struct {
-		Users map[string]pagedUploadsUser `json:"users"`
+	if usr.Organization != forms["name"] {
+		Fail(c, errors.New("user is not part of organization"))
+		return
 	}
-	// return paged uploads for all request users
-	pu := &pagedUploads{
-		Users: make(map[string]pagedUploadsUser),
-	}
-	for _, user := range users {
-		// validate that the user is part of the organization
-		// however dont fail on an error, simply continue
-		usr, err := api.um.FindByUserName(user)
-		if err != nil {
-			continue
-		}
-		if usr.Organization != forms["name"] {
-			continue
-		}
-		var (
-			uploads []models.Upload
-			pgu     pagedUploadsUser
-		)
-		paged, err := gpaginator.Paging(
-			&gpaginator.Param{
-				DB:    api.upm.DB.Where("user_name = ?", user),
-				Page:  pageInt,
-				Limit: limitInt,
-			},
-			&uploads,
-		)
-		if err != nil {
-			pgu.Error = err
-		} else {
-			pgu.PagedUploads = paged
-		}
-		pu.Users[user] = pgu
+	var uploads []models.Upload
+	paged, err := gpaginator.Paging(
+		&gpaginator.Param{
+			DB:    api.upm.DB.Where("user_name = ?", forms["user"]),
+			Page:  pageInt,
+			Limit: limitInt,
+		},
+		&uploads,
+	)
+	if err != nil {
+		api.LogError(c, err, "failed to get paged user upload")
+		return
 	}
 	// return the response
-	Respond(c, http.StatusOK, gin.H{"response": pu})
+	Respond(c, http.StatusOK, gin.H{"response": paged})
 }
 
 func (api *API) getUploads(orgName string, users []string) (map[string][]models.Upload, error) {
@@ -282,7 +256,7 @@ func (api *API) getUploads(orgName string, users []string) (map[string][]models.
 	for _, user := range users {
 		uplds, err := api.orgs.GetUserUploads(orgName, user)
 		if err != nil {
-			return nil, err
+			continue
 		}
 		resp[user] = uplds
 	}

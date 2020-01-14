@@ -113,7 +113,7 @@ func Test_API_Routes_Organization(t *testing.T) {
 
 	type args struct {
 		name  string
-		users []string
+		user  string
 		asCSV string
 	}
 	tests := []struct {
@@ -121,12 +121,10 @@ func Test_API_Routes_Organization(t *testing.T) {
 		args     args
 		wantCode int
 	}{
-		{"1-user-NoCSV", args{"testorg", []string{"testorg-user"}, "false"}, 200},
-		{"2-User-NoCSV-1-Invalid-User", args{"testorg", []string{"testorg-user", "testorg-usernotreal"}, "false"}, 200},
-		{"2-User-YesCSV-1-Invalid-User", args{"testorg", []string{"testorg-user", "testorg-usernotreal"}, "true"}, 200},
-		{"1-user-YesCSV", args{"testorg", []string{"testorg-user"}, "true"}, 200},
-		{"No-OrgName", args{"", []string{"testorg-user"}, "false"}, 400},
-		{"No-Users", args{"testorg", nil, "false"}, 400},
+		{"NoCSV", args{"testorg", "testorg-user", "false"}, 200},
+		{"WithCSV", args{"testorg", "testorg-user", "false"}, 200},
+		{"No-OrgName", args{"", "testorg-user", "false"}, 400},
+		{"No-Users", args{"testorg", "", "false"}, 400},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -137,9 +135,7 @@ func Test_API_Routes_Organization(t *testing.T) {
 			// set org name
 			urlValues.Add("name", tt.args.name)
 			// set users
-			for _, user := range tt.args.users {
-				urlValues.Add("users", user)
-			}
+			urlValues.Add("user", tt.args.user)
 			// set as csv
 			urlValues.Add("as_csv", tt.args.asCSV)
 			req.PostForm = urlValues
