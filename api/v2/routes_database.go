@@ -2,10 +2,6 @@ package v2
 
 import (
 	"net/http"
-	"strconv"
-
-	"github.com/RTradeLtd/database/v2/models"
-	gpaginator "github.com/RTradeLtd/gpaginator"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/gin-gonic/gin"
@@ -16,42 +12,6 @@ func (api *API) getUploadsForUser(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
-		return
-	}
-	// TODO(bonedaddy): add tests
-	if c.Param("paged") == "true" {
-		page := c.Param("page")
-		if page == "" {
-			page = "1"
-		}
-		limit := c.Param("limit")
-		if limit == "" {
-			limit = "10"
-		}
-		pageInt, err := strconv.Atoi(page)
-		if err != nil {
-			Fail(c, err, http.StatusBadRequest)
-			return
-		}
-		limitInt, err := strconv.Atoi(limit)
-		if err != nil {
-			Fail(c, err, http.StatusBadRequest)
-			return
-		}
-		var uploads []models.Upload
-		paged, err := gpaginator.Paging(
-			&gpaginator.Param{
-				DB:    api.upm.DB.Where("user_name = ?", username),
-				Page:  pageInt,
-				Limit: limitInt,
-			},
-			&uploads,
-		)
-		if err != nil {
-			api.LogError(c, err, "failed to get paged user upload")
-			return
-		}
-		Respond(c, http.StatusOK, gin.H{"response": paged})
 		return
 	}
 	// fetch all uploads by the specified user
