@@ -53,7 +53,6 @@ var (
 	configPath *string
 	dbNoSSL    *bool
 	dbMigrate  *bool
-	grpcNoSSL  *bool
 	apiPort    *string
 )
 
@@ -73,10 +72,6 @@ func baseFlagSet() *flag.FlagSet {
 		"toggle SSL connection with database")
 	dbMigrate = f.Bool("db.migrate", false,
 		"toggle whether a database migration should occur")
-
-	// grpc configuration
-	grpcNoSSL = f.Bool("grpc.no_ssl", false,
-		"toggle SSL connection with GRPC services")
 
 	// api configuration
 	apiPort = f.String("api.port", "6767",

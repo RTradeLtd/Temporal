@@ -20,8 +20,7 @@ func (qt Queue) String() string {
 }
 
 var (
-	dev     = false
-	nilTime time.Time
+	dev = false
 	// ENSRequestQueue is a queue used to handle ens requests
 	ENSRequestQueue Queue = "ens-request-queue"
 	// IpfsPinQueue is a queue used for ipfs pins

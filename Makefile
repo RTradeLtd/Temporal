@@ -178,3 +178,9 @@ setup:
 	git submodule update --init
 	go mod download
 	( cd testenv ; go mod download )
+
+verifiers: staticcheck
+
+staticcheck:
+	@echo "Running $@ check"
+	@GO111MODULE=on ${GOPATH}/bin/staticcheck ./...

@@ -20,7 +20,6 @@ import (
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/v2"
-	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/rtfs/v2"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
@@ -48,12 +47,6 @@ type apiResponse struct {
 	Response string `json:"response"`
 }
 
-// login form structure.
-type login struct {
-	Username string `form:"username" json:"username" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
-}
-
 type loginResponse struct {
 	Expire string `json:"expire"`
 	Token  string `json:"token"`
@@ -79,19 +72,9 @@ type floatAPIResponse struct {
 	Response float64 `json:"response"`
 }
 
-type ipnsAPIResponse struct {
-	Code     int            `json:"code"`
-	Response *[]models.IPNS `json:"response"`
-}
-
 type stringSliceAPIResponse struct {
 	Code     int      `json:"code"`
 	Response []string `json:"response"`
-}
-
-type lensSearchAPIResponse struct {
-	Code     int                 `json:"code"`
-	Response []map[string]string `json:"response"`
 }
 
 // sendRequest is a helper method used to handle sending an api request
@@ -631,7 +614,7 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 	}
 	go func() {
 		if err := api.ListenAndServe(context.Background(), "127.0.0.1:6799", &TLSConfig{"../../testenv/certs/api.cert", "../../testenv/certs/api.key"}); err != nil && err != http.ErrServerClosed {
-			t.Fatal(err)
+			t.Error(err)
 		}
 	}()
 	type args struct {

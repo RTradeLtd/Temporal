@@ -305,7 +305,6 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 			return
 		}
 		errChan <- server.ListenAndServe()
-		return
 	}()
 	for {
 		select {

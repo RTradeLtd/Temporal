@@ -190,7 +190,7 @@ func TestQueue_ConnectionClosure(t *testing.T) {
 			wg.Add(1)
 			go func() {
 				if err := qmPublisher.ConsumeMessages(context.Background(), wg, db, cfg); err != nil && err.Error() != ErrReconnect {
-					t.Fatal(err)
+					t.Error(err)
 				}
 			}()
 			go func() {

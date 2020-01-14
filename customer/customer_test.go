@@ -16,7 +16,6 @@ var (
 	emptyObjHash = "bafyreia6oda253w5hnbg4tjgcyid2o2itnghc2mixgcqnukj4ripnm4ise"
 	testHash     = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 	testObjHash  = "bafyreiesk5qclq2ct4zcycmtfl2fbcosjewek3cm36ppytqqq346w6x5t4"
-	testIP       = "127.0.0.1:5001"
 )
 
 func Test_Customer_Empty_Object(t *testing.T) {
@@ -66,6 +65,9 @@ func Test_Customer_Empty_Object(t *testing.T) {
 		t.Fatal("failed to get size for empty customer object check")
 	}
 	hash, err := manager.Update("testuser", testHash)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if hash != testObjHash {
 		t.Fatal("failed to get correct object hash")
 	}
@@ -86,6 +88,9 @@ func Test_Customer_Empty_Object(t *testing.T) {
 		t.Fatal("failed to get size for empty customer object check")
 	}
 	hash, err = manager.Update("testuser", testHash)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if hash != "" {
 		t.Fatal("hash should be empty")
 	}
@@ -109,6 +114,9 @@ func Test_Customer_Empty_Object(t *testing.T) {
 		t.Fatal("failed to calculate correct size")
 	}
 	newObjHash, err := manager.Update("testuser", newHash)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if newObjHash != "bafyreibcksmdzfandtmo6xhresbkcmhqsswubxmokqgc3t6jbrpx7q7nce" {
 		t.Fatal("failed to properly construct new object hash")
 	}
@@ -122,6 +130,9 @@ func Test_Customer_Empty_Object(t *testing.T) {
 		t.Fatal("failed to calculate correct size")
 	}
 	newObjHash, err = manager.Update("testuser", newHash)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if newObjHash != "" {
 		t.Fatal("failed to properly construct new object hash")
 	}

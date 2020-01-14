@@ -120,5 +120,4 @@ func (qm *Manager) processIPFSClusterPin(ctx context.Context, d amqp.Delivery, w
 			"user", clusterAdd.UserName)
 	}
 	d.Ack(false)
-	return // we must return here in order to trigger the wg.Done() defer
 }

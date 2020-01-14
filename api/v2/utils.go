@@ -14,8 +14,6 @@ import (
 	jwt "gopkg.in/dgrijalva/jwt-go.v3"
 )
 
-var nilTime time.Time
-
 const (
 	// RtcCostUsd is the price of a single RTC in USD
 	RtcCostUsd = 0.125
@@ -79,7 +77,7 @@ func (api *API) verifyEmailJWTToken(jwtString, username string) error {
 	token, err := jwt.Parse(jwtString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unable to validate signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unable to validate signing method: %v", token.Header["alg"])
 		} else if method != jwt.SigningMethodHS512 {
 			return nil, errors.New("expect hs512 signing method")
 		}
@@ -172,15 +170,6 @@ func (api *API) validateAdminRequest(username string) error {
 		return errors.New(eh.UnAuthorizedAdminAccess)
 	}
 	return nil
-}
-
-func (api *API) formatUploadErrorMessage(file string, currentDataUsedBytes, maxDataAllowedBytes uint64) string {
-	currentDataUsedGB := float64(currentDataUsedBytes) / float64(datasize.GB.Bytes())
-	maxDataAllowedGB := float64(maxDataAllowedBytes) / float64(datasize.GB.Bytes())
-	return fmt.Sprintf(
-		"uploading object %s would breach your current data limit of %vGB as you are currently using %vGB, please upload a smaller object",
-		file, maxDataAllowedGB, currentDataUsedGB,
-	)
 }
 
 // used to extract needed post forms that should be provided with api calls.

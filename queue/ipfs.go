@@ -108,8 +108,6 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 		d.Ack(false)
 		return
 	}
-	// setup the default api connection
-	apiURL := qm.cfg.IPFS.APIConnection.Host + ":" + qm.cfg.IPFS.APIConnection.Port
 	// check whether or not this pin is for a private network
 	// if it is, verify whether the user has acess to the network, and retrieve the api url
 	if pin.NetworkName != "public" {
@@ -127,7 +125,7 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 			d.Ack(false)
 			return
 		}
-		apiURL = fmt.Sprintf("%s/network/%s/api", qm.cfg.Nexus.Host+":"+qm.cfg.Nexus.Delegator.Port, pin.NetworkName)
+		apiURL := fmt.Sprintf("%s/network/%s/api", qm.cfg.Nexus.Host+":"+qm.cfg.Nexus.Delegator.Port, pin.NetworkName)
 		// connect to ipfs
 		ipfsManager, err = rtfs.NewManager(apiURL, pin.JWT, time.Minute*60)
 		if err != nil {
@@ -197,7 +195,6 @@ func (qm *Manager) processIPFSPin(d amqp.Delivery, wg *sync.WaitGroup, usrm *mod
 			"user", pin.UserName)
 	}
 	d.Ack(false)
-	return // we must return here in order to trigger the wg.Done() defer
 }
 
 func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, kbPrimary *kaas.Client, kbBackup *kaas.Client, um *models.UserManager) {
@@ -315,5 +312,4 @@ func (qm *Manager) processIPFSKeyCreation(d amqp.Delivery, wg *sync.WaitGroup, k
 			"key_name", key.Name)
 	}
 	d.Ack(false)
-	return // we must return here in order to trigger the wg.Done() defer
 }
