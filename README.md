@@ -60,11 +60,11 @@ We have comprehensive API documentation available [here](https://gateway.tempora
 ### Benefits Over Direct IPFS HTTP API Access
 
 * Authenticated API access
-* Better performance
+* Better performance via load balanced requests to different ipfs nodes
 * Leverage multiple different nodes from a single API
   * Requests are distributed round-robin across different nodes
 * Built-in handling of IPFS and IPFS Cluster requests
-* Encrypted uploads
+* Content encryption
 * At rest encrypted of IPFS keys
 * More efficient IPNS publishing
 * Easy to scale up, simply spin up additional queue runners with a single command
