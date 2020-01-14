@@ -51,7 +51,7 @@ func Test_API_Routes_Lens_Index(t *testing.T) {
 			fakeSigner := &mocks.FakeSignerClient{}
 			fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-			api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+			api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -112,7 +112,7 @@ func Test_API_Routes_Lens_Search(t *testing.T) {
 			fakeSigner := &mocks.FakeSignerClient{}
 			fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-			api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+			api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -103,7 +103,7 @@ func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, u
 	return json.Unmarshal(bodyBytes, out)
 }
 
-func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, fakeBchWallet *mocks.FakeWalletServiceClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
+func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, fakeBchWallet *mocks.FakeWalletServiceClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, error) {
 	dev = true
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
@@ -111,7 +111,7 @@ func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.Fa
 		"", time.Minute*60,
 	)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	imCluster, err := rtfscluster.Initialize(
 		context.Background(),
@@ -119,7 +119,7 @@ func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.Fa
 		cfg.IPFSCluster.APIConnection.Port,
 	)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	// create our test api
 	testRecorder := httptest.NewRecorder()
@@ -133,13 +133,13 @@ func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.Fa
 	}
 	api, err := new(cfg, engine, logger, clients, im, imCluster, false)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	// setup api routes
 	if err = api.setupRoutes(true); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return api, testRecorder, nil
+	return api, nil
 }
 
 // this does a quick initial test of the API, and setups a second user account to use for testing
@@ -160,7 +160,7 @@ func Test_API_Setup(t *testing.T) {
 	fakeSigner := &mocks.FakeSignerClient{}
 	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+	api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -186,7 +186,6 @@ func Test_API_Setup(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testRecorder = httptest.NewRecorder()
 			// register user account
 			// /v2/auth/register
 			var interfaceAPIResp interfaceAPIResponse
@@ -220,7 +219,7 @@ func Test_API_Setup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testRecorder = httptest.NewRecorder()
+			testRecorder := httptest.NewRecorder()
 			req := httptest.NewRequest(
 				tt.args.method,
 				tt.args.call,
@@ -266,7 +265,7 @@ func Test_API_Routes_Misc(t *testing.T) {
 	fakeSigner := &mocks.FakeSignerClient{}
 	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+	api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}

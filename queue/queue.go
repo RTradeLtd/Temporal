@@ -47,38 +47,27 @@ func New(queue Queue, url string, publish, devMode bool, cfg *config.TemporalCon
 }
 
 func setupConnection(connectionURL string, cfg *config.TemporalConfig) (*amqp.Connection, error) {
-	var (
-		conn *amqp.Connection
-		cert tls.Certificate
-		ca   []byte
-		err  error
-	)
 	switch cfg.RabbitMQ.TLSConfig.CACertFile {
 	case "":
-		conn, err = amqp.Dial(connectionURL)
+		return amqp.Dial(connectionURL)
 	default:
 		// see https://godoc.org/github.com/streadway/amqp#DialTLS for more information
 		tlsConfig := new(tls.Config)
 		tlsConfig.RootCAs = x509.NewCertPool()
-		ca, err = ioutil.ReadFile(cfg.RabbitMQ.TLSConfig.CACertFile)
+		ca, err := ioutil.ReadFile(cfg.RabbitMQ.TLSConfig.CACertFile)
 		if err != nil {
-			break
+			return nil, err
 		}
-		if ok := tlsConfig.RootCAs.AppendCertsFromPEM(ca); !ok {
-			err = errors.New("failed to successfully append cert file")
-			break
+		if !tlsConfig.RootCAs.AppendCertsFromPEM(ca) {
+			return nil, errors.New("failed to successfully append cert file")
 		}
-		cert, err = tls.LoadX509KeyPair(cfg.RabbitMQ.TLSConfig.CertFile, cfg.RabbitMQ.TLSConfig.KeyFile)
+		cert, err := tls.LoadX509KeyPair(cfg.RabbitMQ.TLSConfig.CertFile, cfg.RabbitMQ.TLSConfig.KeyFile)
 		if err != nil {
-			break
+			return nil, err
 		}
 		tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
-		conn, err = amqp.DialTLS(connectionURL, tlsConfig)
-		if err != nil {
-			break
-		}
+		return amqp.DialTLS(connectionURL, tlsConfig)
 	}
-	return conn, err
 }
 
 // OpenChannel is used to open a channel to the rabbitmq server

@@ -30,7 +30,7 @@ func Test_API_Routes_Organization(t *testing.T) {
 	fakeSigner := &mocks.FakeSignerClient{}
 	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+	api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +39,7 @@ func Test_API_Routes_Organization(t *testing.T) {
 		t.Fatal(err)
 	}
 	// create organization
-	testRecorder = httptest.NewRecorder()
+	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/org/new", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues := url.Values{}
