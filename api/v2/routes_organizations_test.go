@@ -1,6 +1,8 @@
 package v2
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -143,6 +145,11 @@ func Test_API_Routes_Organization(t *testing.T) {
 			req.PostForm = urlValues
 			api.r.ServeHTTP(testRecorder, req)
 			if testRecorder.Result().StatusCode != tt.wantCode {
+				data, err := ioutil.ReadAll(testRecorder.Result().Body)
+				if err != nil {
+					t.Error(err)
+				}
+				fmt.Printf("response:\t%s\t", string(data))
 				t.Fatal("bad status")
 			}
 		})
