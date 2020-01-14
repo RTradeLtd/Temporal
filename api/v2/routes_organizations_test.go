@@ -131,7 +131,7 @@ func Test_API_Routes_Organization(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testRecorder = httptest.NewRecorder()
-			req = httptest.NewRequest("POST", "/v2/user/uploads", nil)
+			req = httptest.NewRequest("POST", "/v2/org/user/uploads", nil)
 			req.Header.Add("Authorization", authHeader)
 			urlValues = url.Values{}
 			// set org name
