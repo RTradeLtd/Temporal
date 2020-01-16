@@ -26,10 +26,9 @@ func TestRequestIDMiddleware(t *testing.T) {
 		c.String(200, "hello")
 	})
 	engine.ServeHTTP(testRecorder, req)
-	if testRecorder.HeaderMap.Get("X-Request-ID") == "" {
+	if testRecorder.Result().Header.Get("X-Request-ID") == "" {
 		t.Fatal("failed to set a request header")
 	}
-
 }
 
 func TestJwtMiddleware(t *testing.T) {

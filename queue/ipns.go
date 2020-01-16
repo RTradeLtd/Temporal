@@ -62,6 +62,9 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		return err
 	}
 	pubPK, err := qm.getPublisherKey(ctx, kbPrimary)
+	if err != nil {
+		return err
+	}
 	addr, err := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/3999")
 	if err != nil {
 		return err
@@ -236,6 +239,5 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 			"cid", ie.CID)
 	}
 	d.Ack(false)
-	return // we must return here in order to trigger the wg.Done() defer
 
 }

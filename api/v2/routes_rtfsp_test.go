@@ -34,7 +34,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	fakeSigner := &mocks.FakeSignerClient{}
 	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+	api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +44,6 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// create private network - failure missing name
 	// /v2/ipfs/private/new
 	var apiResp apiResponse
-	urlValues := url.Values{}
 	if err := sendRequest(
 		api, "POST", "/v2/ipfs/private/network/new", 400, nil, nil, &apiResp,
 	); err != nil {
@@ -60,7 +59,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 	// create private network - failure name is PUBLIC
 	// /v2/ipfs/private/new
 	apiResp = apiResponse{}
-	urlValues = url.Values{}
+	urlValues := url.Values{}
 	urlValues.Add("network_name", "PUBLIC")
 	if err := sendRequest(
 		api, "POST", "/v2/ipfs/private/network/new", 400, nil, nil, &apiResp,
@@ -235,7 +234,7 @@ func Test_API_Routes_IPFS_Private(t *testing.T) {
 		t.Fatal(err)
 	}
 	bodyWriter.Close()
-	testRecorder = httptest.NewRecorder()
+	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/ipfs/private/file/add", bodyBuf)
 	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())

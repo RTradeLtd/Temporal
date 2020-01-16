@@ -3,14 +3,14 @@ module github.com/RTradeLtd/Temporal
 go 1.13
 
 require (
-	cloud.google.com/go v0.39.0 // indirect
 	github.com/RTradeLtd/ChainRider-Go v1.0.8
 	github.com/RTradeLtd/cmd/v2 v2.1.0
 	github.com/RTradeLtd/config/v2 v2.2.0
 	github.com/RTradeLtd/crypto/v2 v2.1.1
-	github.com/RTradeLtd/database/v2 v2.6.3
+	github.com/RTradeLtd/database/v2 v2.7.0
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
 	github.com/RTradeLtd/go-ipfs-api v0.0.0-20190522213636-8e3700e602fd
+	github.com/RTradeLtd/gpaginator v0.0.4
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
 	github.com/RTradeLtd/kaas/v2 v2.1.2
 	github.com/RTradeLtd/rtfs/v2 v2.1.2
@@ -27,7 +27,7 @@ require (
 	github.com/gcash/bchutil v0.0.0-20191012211144-98e73ec336ba
 	github.com/gcash/bchwallet v0.8.2
 	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
-	github.com/gin-gonic/gin v1.4.1-0.20190911101039-b562fed3aa28
+	github.com/gin-gonic/gin v1.5.0
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/hsanjuan/go-libp2p-gostream v0.1.0 // indirect
@@ -39,6 +39,8 @@ require (
 	github.com/ipfs/go-path v0.0.7
 	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
 	github.com/jinzhu/gorm v1.9.11
+	github.com/jszwec/csvutil v1.2.1
+	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/libp2p/go-libp2p v0.4.2 // indirect
 	github.com/libp2p/go-libp2p-core v0.2.5
 	github.com/libp2p/go-libp2p-interface-pnet v0.1.0 // indirect
@@ -56,6 +58,7 @@ require (
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	github.com/stripe/stripe-go v60.0.1+incompatible
 	go.uber.org/zap v1.11.0
+	google.golang.org/api v0.5.0 // indirect
 	google.golang.org/grpc v1.25.1
 	gopkg.in/appleboy/gofight.v2 v2.0.0-00010101000000-000000000000 // indirect
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0

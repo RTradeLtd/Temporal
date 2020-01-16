@@ -20,7 +20,6 @@ import (
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/v2"
-	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/rtfs/v2"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
@@ -48,12 +47,6 @@ type apiResponse struct {
 	Response string `json:"response"`
 }
 
-// login form structure.
-type login struct {
-	Username string `form:"username" json:"username" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
-}
-
 type loginResponse struct {
 	Expire string `json:"expire"`
 	Token  string `json:"token"`
@@ -79,19 +72,9 @@ type floatAPIResponse struct {
 	Response float64 `json:"response"`
 }
 
-type ipnsAPIResponse struct {
-	Code     int            `json:"code"`
-	Response *[]models.IPNS `json:"response"`
-}
-
 type stringSliceAPIResponse struct {
 	Code     int      `json:"code"`
 	Response []string `json:"response"`
-}
-
-type lensSearchAPIResponse struct {
-	Code     int                 `json:"code"`
-	Response []map[string]string `json:"response"`
 }
 
 // sendRequest is a helper method used to handle sending an api request
@@ -120,7 +103,7 @@ func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, u
 	return json.Unmarshal(bodyBytes, out)
 }
 
-func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, fakeBchWallet *mocks.FakeWalletServiceClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, *httptest.ResponseRecorder, error) {
+func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.FakeServiceClient, fakeSigner *mocks.FakeSignerClient, fakeBchWallet *mocks.FakeWalletServiceClient, cfg *config.TemporalConfig, db *gorm.DB) (*API, error) {
 	dev = true
 	// setup connection to ipfs-node-1
 	im, err := rtfs.NewManager(
@@ -128,7 +111,7 @@ func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.Fa
 		"", time.Minute*60,
 	)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	imCluster, err := rtfscluster.Initialize(
 		context.Background(),
@@ -136,7 +119,7 @@ func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.Fa
 		cfg.IPFSCluster.APIConnection.Port,
 	)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	// create our test api
 	testRecorder := httptest.NewRecorder()
@@ -150,13 +133,13 @@ func setupAPI(t *testing.T, fakeLens *mocks.FakeLensV2Client, fakeOrch *mocks.Fa
 	}
 	api, err := new(cfg, engine, logger, clients, im, imCluster, false)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	// setup api routes
 	if err = api.setupRoutes(true); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return api, testRecorder, nil
+	return api, nil
 }
 
 // this does a quick initial test of the API, and setups a second user account to use for testing
@@ -177,7 +160,7 @@ func Test_API_Setup(t *testing.T) {
 	fakeSigner := &mocks.FakeSignerClient{}
 	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+	api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -203,7 +186,6 @@ func Test_API_Setup(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testRecorder = httptest.NewRecorder()
 			// register user account
 			// /v2/auth/register
 			var interfaceAPIResp interfaceAPIResponse
@@ -237,7 +219,7 @@ func Test_API_Setup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testRecorder = httptest.NewRecorder()
+			testRecorder := httptest.NewRecorder()
 			req := httptest.NewRequest(
 				tt.args.method,
 				tt.args.call,
@@ -283,7 +265,7 @@ func Test_API_Routes_Misc(t *testing.T) {
 	fakeSigner := &mocks.FakeSignerClient{}
 	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+	api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -631,7 +613,7 @@ func TestAPI_HandleQueuError_Success(t *testing.T) {
 	}
 	go func() {
 		if err := api.ListenAndServe(context.Background(), "127.0.0.1:6799", &TLSConfig{"../../testenv/certs/api.cert", "../../testenv/certs/api.key"}); err != nil && err != http.ErrServerClosed {
-			t.Fatal(err)
+			t.Error(err)
 		}
 	}()
 	type args struct {

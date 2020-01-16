@@ -1,6 +1,8 @@
 package v2
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -28,7 +30,7 @@ func Test_API_Routes_Organization(t *testing.T) {
 	fakeSigner := &mocks.FakeSignerClient{}
 	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+	api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +39,7 @@ func Test_API_Routes_Organization(t *testing.T) {
 		t.Fatal(err)
 	}
 	// create organization
-	testRecorder = httptest.NewRecorder()
+	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/org/new", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues := url.Values{}
@@ -106,5 +108,46 @@ func Test_API_Routes_Organization(t *testing.T) {
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Result().StatusCode != http.StatusOK {
 		t.Fatal("bad status returned")
+	}
+	// user upload tests
+
+	type args struct {
+		name  string
+		user  string
+		asCSV string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantCode int
+	}{
+		{"NoCSV", args{"testorg", "testorg-user", "false"}, 200},
+		{"WithCSV", args{"testorg", "testorg-user", "false"}, 200},
+		{"No-OrgName", args{"", "testorg-user", "false"}, 400},
+		{"No-Users", args{"testorg", "", "false"}, 400},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testRecorder = httptest.NewRecorder()
+			req = httptest.NewRequest("POST", "/v2/org/user/uploads", nil)
+			req.Header.Add("Authorization", authHeader)
+			urlValues = url.Values{}
+			// set org name
+			urlValues.Add("name", tt.args.name)
+			// set users
+			urlValues.Add("user", tt.args.user)
+			// set as csv
+			urlValues.Add("as_csv", tt.args.asCSV)
+			req.PostForm = urlValues
+			api.r.ServeHTTP(testRecorder, req)
+			if testRecorder.Result().StatusCode != tt.wantCode {
+				data, err := ioutil.ReadAll(testRecorder.Result().Body)
+				if err != nil {
+					t.Error(err)
+				}
+				fmt.Printf("response:\t%s\t", string(data))
+				t.Fatal("bad status")
+			}
+		})
 	}
 }

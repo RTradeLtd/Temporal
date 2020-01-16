@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/crypto/v2"
+	"github.com/RTradeLtd/database/v2/models"
 	mnemonics "github.com/RTradeLtd/entropy-mnemonics"
 	pb "github.com/RTradeLtd/grpc/krab"
 	"github.com/RTradeLtd/rtfs/v2"
@@ -259,4 +262,105 @@ func (api *API) downloadContentHash(c *gin.Context) {
 	}
 	api.l.Infow("ipfs content download served", "user", username)
 	c.DataFromReader(200, int64(size), contentType, reader, extraHeaders)
+}
+
+func (api *API) handleUserCreate(c *gin.Context, forms map[string]string, createErr error) {
+	if createErr != nil {
+		switch createErr.Error() {
+		case eh.DuplicateEmailError:
+			api.LogError(
+				c,
+				createErr,
+				eh.DuplicateEmailError,
+				"email",
+				forms["email_address"])(http.StatusBadRequest)
+			return
+		case eh.DuplicateUserNameError:
+			api.LogError(
+				c,
+				createErr,
+				eh.DuplicateUserNameError,
+				"username",
+				forms["username"])(http.StatusBadRequest)
+			return
+		default:
+			api.LogError(
+				c,
+				createErr,
+				eh.UserAccountCreationError)(http.StatusBadRequest)
+			return
+		}
+	}
+	// generate a random token to validate email
+	user, err := api.um.GenerateEmailVerificationToken(forms["username"])
+	if err != nil {
+		api.LogError(c, err, eh.EmailTokenGenerationError)(http.StatusBadRequest)
+		return
+	}
+	// generate a jwt used to trigger email validation
+	token, err := api.generateEmailJWTToken(user.UserName, user.EmailVerificationToken)
+	if err != nil {
+		api.LogError(c, err, "failed to generate email verification jwt")
+		return
+	}
+	var url string
+	// format the url the user clicks to activate email
+	if dev {
+		url = fmt.Sprintf(
+			"https://dev.api.temporal.cloud/v2/account/email/verify/%s/%s",
+			user.UserName, token,
+		)
+	} else {
+		url = fmt.Sprintf(
+			"https://api.temporal.cloud/v2/account/email/verify/%s/%s",
+			user.UserName, token,
+		)
+
+	}
+	// format a link tag
+	link := fmt.Sprintf("<a href=\"%s\">link</a>", url)
+	emailSubject := fmt.Sprintf(
+		"%s Temporal Email Verification", forms["organization_name"],
+	)
+	// build email message
+	es := queue.EmailSend{
+		Subject: emailSubject,
+		Content: fmt.Sprintf(
+			"please click this %s to activate temporal email functionality", link,
+		),
+		ContentType: "text/html",
+		UserNames:   []string{user.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	// send email message to queue for processing
+	if err = api.queues.email.PublishMessage(es); err != nil {
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
+		return
+	}
+	// remove hashed password from output
+	user.HashedPassword = "scrubbed"
+	// remove the verification token from output
+	user.EmailVerificationToken = "scrubbed"
+	// format a custom response that includes the user model
+	// and an additional status field
+	var status string
+	if dev {
+		status = fmt.Sprintf(
+			"by continuing to use this service you agree to be bound by the following api terms and service %s",
+			devTermsAndServiceURL,
+		)
+	} else {
+		status = fmt.Sprintf(
+			"by continuing to use this service you agree to be bound by the following api terms and service %s",
+			prodTermsAndServiceURL,
+		)
+	}
+	// return
+	Respond(c, http.StatusOK, gin.H{"response": struct {
+		*models.User
+		Status string
+	}{
+		user, status,
+	},
+	})
 }

@@ -64,5 +64,4 @@ func (qm *Manager) processMailSend(d amqp.Delivery, wg *sync.WaitGroup, mm *mail
 			"user", es.UserNames[k])
 	}
 	d.Ack(false)
-	return // we must return here in order to trigger the wg.Done() defer
 }

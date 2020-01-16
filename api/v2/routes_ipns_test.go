@@ -12,10 +12,9 @@ import (
 )
 
 var (
-	validIPNSTestPath   = "/ipns/docs.api.temporal.cloud"
-	invalidIPNSTestPath = "/snpi/docs.api.temporal.cloud"
-	badIPNSTestPath     = "/not/a/real/path"
-	validResolveResult  = "/ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
+	validIPNSTestPath  = "/ipns/docs.api.temporal.cloud"
+	badIPNSTestPath    = "/not/a/real/path"
+	validResolveResult = "/ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 )
 
 func Test_API_Routes_IPNS_Publish(t *testing.T) {
@@ -54,7 +53,7 @@ func Test_API_Routes_IPNS_Publish(t *testing.T) {
 			fakeSigner := &mocks.FakeSignerClient{}
 			fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-			api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+			api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -110,7 +109,7 @@ func Test_API_Routes_IPNS_GET(t *testing.T) {
 		fakeSigner := &mocks.FakeSignerClient{}
 		fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-		api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+		api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -168,7 +167,7 @@ func Test_API_Routes_IPNS_Pin(t *testing.T) {
 			fakeSigner := &mocks.FakeSignerClient{}
 			fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-			api, _, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+			api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 			if err != nil {
 				t.Fatal(err)
 			}

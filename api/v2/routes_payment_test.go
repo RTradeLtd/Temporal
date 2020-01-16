@@ -26,13 +26,13 @@ func Test_API_Routes_Payments(t *testing.T) {
 	fakeSigner := &mocks.FakeSignerClient{}
 	fakeWalletService := &mocks.FakeWalletServiceClient{}
 
-	api, testRecorder, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
+	api, err := setupAPI(t, fakeLens, fakeOrch, fakeSigner, fakeWalletService, cfg, db)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// test basic dash payment
 	// /v2/payments/create/dash
-	testRecorder = httptest.NewRecorder()
+	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/payments/dash/create", nil)
 	req.Header.Add("Authorization", authHeader)
 	urlValues := url.Values{}

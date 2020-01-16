@@ -1,17 +1,19 @@
 package v2
 
 import (
+	"bytes"
 	"errors"
-	"fmt"
 	"html"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
-	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/database/v2/models"
+	gpaginator "github.com/RTradeLtd/gpaginator"
 	"github.com/gin-gonic/gin"
+	"github.com/jszwec/csvutil"
 )
 
 // creates a new organization
@@ -71,21 +73,8 @@ func (api *API) getOrganization(c *gin.Context) {
 		FailWithMissingField(c, missingField)
 		return
 	}
-	org, err := api.orgs.FindByName(forms["name"])
-	if err != nil {
-		api.LogError(
-			c,
-			err,
-			"failed to find org",
-		)(http.StatusInternalServerError)
-		return
-	}
-	if org.AccountOwner != username {
-		api.LogError(
-			c,
-			errors.New("user is not owner"),
-			"you are not the organization owner",
-		)(http.StatusForbidden)
+	org, ok := api.validateOrgOwner(c, forms["name"], username)
+	if !ok {
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": org})
@@ -113,20 +102,7 @@ func (api *API) getOrgBillingReport(c *gin.Context) {
 		)(http.StatusBadRequest)
 		return
 	}
-	// validate user is owner
-	if org, err := api.orgs.FindByName(forms["name"]); err != nil {
-		api.LogError(
-			c,
-			err,
-			"failed to find org",
-		)(http.StatusInternalServerError)
-		return
-	} else if org.AccountOwner != username {
-		api.LogError(
-			c,
-			errors.New("user is not owner"),
-			"you are not the organization owner",
-		)(http.StatusForbidden)
+	if _, ok := api.validateOrgOwner(c, forms["name"], username); !ok {
 		return
 	}
 	// generate a billing report
@@ -167,15 +143,136 @@ func (api *API) registerOrgUser(c *gin.Context) {
 		FailWithMissingField(c, missingField)
 		return
 	}
-	// ensure user is org owner
-	org, err := api.orgs.FindByName(forms["organization_name"])
+	// prevent people from registering usernames that contain an `@` sign
+	// this prevents griefing by prevent user sign-ins by using a username
+	// that is based off an email address
+	if strings.ContainsRune(forms["username"], '@') {
+		Fail(c, errors.New("usernames cant contain @ sign"))
+		return
+	}
+	if _, ok := api.validateOrgOwner(c, forms["organization_name"], username); !ok {
+		return
+	}
+	// parse html encoded strings
+	forms["password"] = html.UnescapeString(forms["password"])
+	// create the org user. this process is similar to regular
+	// user registration, so we handle the errors in the same way
+	_, err = api.orgs.RegisterOrgUser(
+		forms["organization_name"],
+		forms["username"],
+		forms["password"],
+		forms["email_address"],
+	)
+	api.handleUserCreate(c, forms, err)
+}
+
+// getOrgUserUploads allows returning uploads for organization users
+// optionally
+func (api *API) getOrgUserUploads(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	forms, missingField := api.extractPostForms(c, "name", "user")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	// allows optional returning the response as a generated csv file
+	asCSV := c.PostForm("as_csv") == "true"
+	// validate user is owner
+	if _, ok := api.validateOrgOwner(c, forms["name"], username); !ok {
+		return
+	}
+	if asCSV {
+		uplds, err := api.getUploads(forms["name"], []string{forms["user"]})
+		if err != nil {
+			api.LogError(c, err, "failed to get user uploads"+err.Error())
+			return
+		}
+		csvBytes, err := csvutil.Marshal(uplds[forms["user"]])
+		if err != nil {
+			api.LogError(c, err, "failed to generate csv file "+err.Error())
+			return
+		}
+		c.DataFromReader(
+			200,
+			int64(len(csvBytes)),
+			"application/octet-stream",
+			bytes.NewReader(csvBytes),
+			make(map[string]string),
+		)
+		return
+	}
+	page := c.PostForm("page")
+	if page == "" {
+		page = "1"
+	}
+	limit := c.PostForm("limit")
+	if limit == "" {
+		limit = "10"
+	}
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		Fail(c, err, http.StatusBadRequest)
+		return
+	}
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		Fail(c, err, http.StatusBadRequest)
+		return
+	}
+	// validate that the user is part of the organization
+	// however dont fail on an error, simply continue
+	usr, err := api.um.FindByUserName(forms["user"])
+	if err != nil {
+		api.LogError(c, err, eh.UserSearchError)
+		return
+	}
+	if usr.Organization != forms["name"] {
+		Fail(c, errors.New("user is not part of organization"))
+		return
+	}
+	var uploads []models.Upload
+	paged, err := gpaginator.Paging(
+		&gpaginator.Param{
+			DB:    api.upm.DB.Where("user_name = ?", forms["user"]),
+			Page:  pageInt,
+			Limit: limitInt,
+		},
+		&uploads,
+	)
+	if err != nil {
+		api.LogError(c, err, "failed to get paged user upload")
+		return
+	}
+	// return the response
+	Respond(c, http.StatusOK, gin.H{"response": paged})
+}
+
+func (api *API) getUploads(orgName string, users []string) (map[string][]models.Upload, error) {
+	resp := make(map[string][]models.Upload)
+	for _, user := range users {
+		uplds, err := api.orgs.GetUserUploads(orgName, user)
+		if err != nil {
+			continue
+		}
+		resp[user] = uplds
+	}
+	return resp, nil
+}
+
+// returns true if user is owner
+func (api *API) validateOrgOwner(c *gin.Context, organization, username string) (*models.Organization, bool) {
+	org, err := api.orgs.FindByName(organization)
 	if err != nil {
 		api.LogError(
 			c,
 			err,
-			"failed to find organization",
+			"failed to find org",
 		)(http.StatusInternalServerError)
-		return
+		return nil, false
 	}
 	if org.AccountOwner != username {
 		api.LogError(
@@ -183,119 +280,7 @@ func (api *API) registerOrgUser(c *gin.Context) {
 			errors.New("user is not owner"),
 			"you are not the organization owner",
 		)(http.StatusForbidden)
-		return
+		return nil, false
 	}
-	// parse html encoded strings
-	forms["password"] = html.UnescapeString(forms["password"])
-	// create the org user. this process is similar to regular
-	// user registration, so we handle the errors in the same way
-	if _, err := api.orgs.RegisterOrgUser(
-		forms["organization_name"],
-		forms["username"],
-		forms["password"],
-		forms["email_address"],
-	); err != nil {
-		switch err.Error() {
-		case eh.DuplicateEmailError:
-			api.LogError(
-				c,
-				err,
-				eh.DuplicateEmailError,
-				"email",
-				forms["email_address"])(http.StatusBadRequest)
-			return
-		case eh.DuplicateUserNameError:
-			api.LogError(
-				c,
-				err,
-				eh.DuplicateUserNameError,
-				"username",
-				forms["username"])(http.StatusBadRequest)
-			return
-		default:
-			api.LogError(
-				c,
-				err,
-				eh.UserAccountCreationError)(http.StatusBadRequest)
-			return
-		}
-	}
-	// generate a random token to validate email
-	user, err := api.um.GenerateEmailVerificationToken(forms["username"])
-	if err != nil {
-		api.LogError(c, err, eh.EmailTokenGenerationError)(http.StatusBadRequest)
-		return
-	}
-	// generate a jwt used to trigger email validation
-	token, err := api.generateEmailJWTToken(user.UserName, user.EmailVerificationToken)
-	if err != nil {
-		api.LogError(c, err, "failed to generate email verification jwt")
-		return
-	}
-	var url string
-	// format the url the user clicks to activate email
-	if dev {
-		url = fmt.Sprintf(
-			"https://dev.api.temporal.cloud/v2/account/email/verify/%s/%s",
-			user.UserName, token,
-		)
-	} else {
-		url = fmt.Sprintf(
-			"https://api.temporal.cloud/v2/account/email/verify/%s/%s",
-			user.UserName, token,
-		)
-
-	}
-	// format a link tag
-	link := fmt.Sprintf("<a href=\"%s\">link</a>", url)
-	emailSubject := fmt.Sprintf(
-		"%s Temporal Email Verification", forms["organization_name"],
-	)
-	// build email message
-	es := queue.EmailSend{
-		Subject: emailSubject,
-		Content: fmt.Sprintf(
-			"please click this %s to activate temporal email functionality", link,
-		),
-		ContentType: "text/html",
-		UserNames:   []string{user.UserName},
-		Emails:      []string{user.EmailAddress},
-	}
-	// send email message to queue for processing
-	if err = api.queues.email.PublishMessage(es); err != nil {
-		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
-		return
-	}
-	// log
-	api.l.With(
-		"user", forms["username"],
-		"organization", forms["organization_name"],
-		"organization.owner", username,
-	).Info("organization user account registered")
-	// remove hashed password from output
-	user.HashedPassword = "scrubbed"
-	// remove the verification token from output
-	user.EmailVerificationToken = "scrubbed"
-	// format a custom response that includes the user model
-	// and an additional status field
-	var status string
-	if dev {
-		status = fmt.Sprintf(
-			"by continuing to use this service you agree to be bound by the following api terms and service %s",
-			devTermsAndServiceURL,
-		)
-	} else {
-		status = fmt.Sprintf(
-			"by continuing to use this service you agree to be bound by the following api terms and service %s",
-			prodTermsAndServiceURL,
-		)
-	}
-	// return
-	Respond(c, http.StatusOK, gin.H{"response": struct {
-		*models.User
-		Status string
-	}{
-		user, status,
-	},
-	})
+	return org, true
 }

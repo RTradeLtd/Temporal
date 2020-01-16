@@ -305,7 +305,6 @@ func (api *API) ListenAndServe(ctx context.Context, addr string, tlsConfig *TLSC
 			return
 		}
 		errChan <- server.ListenAndServe()
-		return
 	}()
 	for {
 		select {
@@ -641,6 +640,7 @@ func (api *API) setupRoutes(debug bool) error {
 		}
 		org.POST("/new", api.newOrganization)
 		org.POST("/register/user", api.registerOrgUser)
+		org.POST("/user/uploads", api.getOrgUserUploads)
 	}
 
 	// ens routes
