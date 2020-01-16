@@ -3,11 +3,13 @@ package v2
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/v2/models"
+	gpaginator "github.com/RTradeLtd/gpaginator"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -18,6 +20,41 @@ const (
 	// RtcCostUsd is the price of a single RTC in USD
 	RtcCostUsd = 0.125
 )
+
+// pageIt is used to serve paginated responses
+func (api *API) pageIt(c *gin.Context, db *gorm.DB, model interface{}) {
+	page := c.Param("page")
+	if page == "" {
+		page = "1"
+	}
+	limit := c.Param("limit")
+	if limit == "" {
+		limit = "10"
+	}
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		Fail(c, err, http.StatusBadRequest)
+		return
+	}
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		Fail(c, err, http.StatusBadRequest)
+		return
+	}
+	paged, err := gpaginator.Paging(
+		&gpaginator.Param{
+			DB:    db,
+			Page:  pageInt,
+			Limit: limitInt,
+		},
+		&model,
+	)
+	if err != nil {
+		api.LogError(c, err, "failed to get paged user upload")
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": paged})
+}
 
 // CheckAccessForPrivateNetwork checks if a user has access to a private network
 func CheckAccessForPrivateNetwork(username, networkName string, db *gorm.DB) error {

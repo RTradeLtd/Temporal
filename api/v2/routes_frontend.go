@@ -8,6 +8,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/utils"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -91,6 +92,10 @@ func (api *API) getEncryptedUploadsForUser(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	if c.Param("paged") == "true" {
+		api.pageIt(c, api.ue.DB.Where("user_name = ?", username), []models.EncryptedUpload{})
 		return
 	}
 	// find all uploads by this user

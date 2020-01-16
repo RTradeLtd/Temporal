@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/eh"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,6 +13,10 @@ func (api *API) getUploadsForUser(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	if c.Param("paged") == "true" {
+		api.pageIt(c, api.upm.DB.Where("user_name = ?", username), []models.Upload{})
 		return
 	}
 	// fetch all uploads by the specified user
@@ -37,6 +42,13 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 	// validate the user can access the network
 	if err := CheckAccessForPrivateNetwork(username, networkName, api.dbm.DB); err != nil {
 		api.LogError(c, err, eh.PrivateNetworkAccessError)(http.StatusBadRequest)
+		return
+	}
+	if c.Param("paged") == "true" {
+		api.pageIt(c, api.upm.DB.Where(
+			"user_name = ? AND network_name = ?",
+			username, networkName,
+		), []models.Upload{})
 		return
 	}
 	// find uploads for the network
