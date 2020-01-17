@@ -37,15 +37,23 @@ func Test_API_Routes_Database(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
-	// validate the response code
-	if interfaceAPIResp.Code != 200 {
-		t.Fatal("bad api status code from api/v2/database/uploads")
+	// test paginated
+	interfaceAPIResp = interfaceAPIResponse{}
+	if err := sendRequest(
+		api, "GET", "/v2/database/uploads?paged=true", 200, nil, nil, &interfaceAPIResp,
+	); err != nil {
+		t.Fatal(err)
 	}
 
 	// test get encrypted uploads
 	// /v2/frontend/uploads/encrypted
 	if err := sendRequest(
 		api, "GET", "/v2/database/uploads/encrypted", 200, nil, nil, nil,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if err := sendRequest(
+		api, "GET", "/v2/database/uploads/encrypted?paged=true", 200, nil, nil, nil,
 	); err != nil {
 		t.Fatal(err)
 	}
