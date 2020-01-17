@@ -133,8 +133,14 @@ func Test_API_Routes_IPNS_GET(t *testing.T) {
 			t.Fatal(err)
 		}
 		intAPIResp = interfaceAPIResponse{}
-		if err := sendRequest(
-			api, "GET", "/v2/ipns/records?paged=true", tt.wantStatus, nil, nil, &intAPIResp,
+		if err := sendRequestPaged(
+			api,
+			"GET",
+			"/v2/ipns/records",
+			200,
+			nil,
+			url.Values{"paged": {"true"}},
+			&intAPIResp,
 		); err != nil {
 			t.Fatal(err)
 		}
