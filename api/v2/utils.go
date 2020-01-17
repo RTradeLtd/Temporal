@@ -23,11 +23,11 @@ const (
 
 // pageIt is used to serve paginated responses
 func (api *API) pageIt(c *gin.Context, db *gorm.DB, model interface{}) {
-	page := c.Param("page")
+	page := c.Query("page")
 	if page == "" {
 		page = "1"
 	}
-	limit := c.Param("limit")
+	limit := c.Query("limit")
 	if limit == "" {
 		limit = "10"
 	}

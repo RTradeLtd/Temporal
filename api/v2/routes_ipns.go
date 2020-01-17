@@ -97,7 +97,7 @@ func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
-	if c.Param("paged") == "true" {
+	if c.Query("paged") == "true" {
 		api.pageIt(c, api.upm.DB.Where("user_name = ?", username), []models.IPNS{})
 		return
 	}
