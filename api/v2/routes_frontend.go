@@ -95,7 +95,7 @@ func (api *API) getEncryptedUploadsForUser(c *gin.Context) {
 		return
 	}
 	if c.Query("paged") == "true" {
-		api.pageIt(c, api.ue.DB.Where("user_name = ?", username), []models.EncryptedUpload{})
+		api.pageIt(c, api.ue.DB.Where("user_name = ?", username), &[]models.EncryptedUpload{})
 		return
 	}
 	// find all uploads by this user

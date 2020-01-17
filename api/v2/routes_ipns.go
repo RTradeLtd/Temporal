@@ -98,7 +98,7 @@ func (api *API) getIPNSRecordsPublishedByUser(c *gin.Context) {
 		return
 	}
 	if c.Query("paged") == "true" {
-		api.pageIt(c, api.upm.DB.Where("user_name = ?", username), []models.IPNS{})
+		api.pageIt(c, api.upm.DB.Where("user_name = ?", username), &[]models.IPNS{})
 		return
 	}
 	// search for all records published by this user

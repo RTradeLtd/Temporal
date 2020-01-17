@@ -47,10 +47,10 @@ func (api *API) pageIt(c *gin.Context, db *gorm.DB, model interface{}) {
 			Page:  pageInt,
 			Limit: limitInt,
 		},
-		&model,
+		model,
 	)
 	if err != nil {
-		api.LogError(c, err, "failed to get paged user upload")
+		api.LogError(c, err, "failed to get paged user upload "+err.Error())(http.StatusBadRequest)
 		return
 	}
 	Respond(c, http.StatusOK, gin.H{"response": paged})

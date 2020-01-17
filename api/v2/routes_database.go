@@ -16,7 +16,7 @@ func (api *API) getUploadsForUser(c *gin.Context) {
 		return
 	}
 	if c.Query("paged") == "true" {
-		api.pageIt(c, api.upm.DB.Where("user_name = ?", username), []models.Upload{})
+		api.pageIt(c, api.upm.DB.Where("user_name = ?", username), &[]models.Upload{})
 		return
 	}
 	// fetch all uploads by the specified user
@@ -48,7 +48,7 @@ func (api *API) getUploadsByNetworkName(c *gin.Context) {
 		api.pageIt(c, api.upm.DB.Where(
 			"user_name = ? AND network_name = ?",
 			username, networkName,
-		), []models.Upload{})
+		), &[]models.Upload{})
 		return
 	}
 	// find uploads for the network
