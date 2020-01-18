@@ -77,7 +77,8 @@ type stringSliceAPIResponse struct {
 	Response []string `json:"response"`
 }
 
-// sendRequest is a helper method used to handle sending an api request
+// sendRequestPaged is a helper method used to handle sending an api request with paged responses
+// If `out` is not nil, the response from the API will be unmarshaled into `out`.
 func sendRequestPaged(
 	api *API,
 	method, url string,
@@ -115,6 +116,7 @@ func sendRequestPaged(
 }
 
 // sendRequest is a helper method used to handle sending an api request
+// If `out` is not nil, the response from the API will be unmarshaled into `out`.
 func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, urlValues url.Values, out interface{}) error {
 	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest(method, url, body)
