@@ -77,7 +77,46 @@ type stringSliceAPIResponse struct {
 	Response []string `json:"response"`
 }
 
+// sendRequestPaged is a helper method used to handle sending an api request with paged responses
+// If `out` is not nil, the response from the API will be unmarshaled into `out`.
+func sendRequestPaged(
+	api *API,
+	method, url string,
+	wantStatus int,
+	body io.Reader,
+	urlValues url.Values,
+	out interface{},
+) error {
+	testRecorder := httptest.NewRecorder()
+	req := httptest.NewRequest(method, url, body)
+	req.Header.Add("Authorization", authHeader)
+	for k, v := range urlValues {
+		for _, kv := range v {
+			req.URL.Query().Add(k, kv)
+		}
+	}
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != wantStatus {
+		bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
+		if err != nil {
+			api.l.Error(err)
+		}
+		fmt.Printf("reason for failure: %+v\n", string(bodyBytes))
+		return fmt.Errorf("received status %v expected %v from api call %s", testRecorder.Code, wantStatus, url)
+	}
+	if out == nil {
+		return nil
+	}
+	// unmarshal the response
+	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(bodyBytes, out)
+}
+
 // sendRequest is a helper method used to handle sending an api request
+// If `out` is not nil, the response from the API will be unmarshaled into `out`.
 func sendRequest(api *API, method, url string, wantStatus int, body io.Reader, urlValues url.Values, out interface{}) error {
 	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest(method, url, body)

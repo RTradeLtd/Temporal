@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/mocks"
@@ -37,15 +38,36 @@ func Test_API_Routes_Database(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
-	// validate the response code
-	if interfaceAPIResp.Code != 200 {
-		t.Fatal("bad api status code from api/v2/database/uploads")
+	// test paginated
+	interfaceAPIResp = interfaceAPIResponse{}
+	if err := sendRequestPaged(
+		api,
+		"GET",
+		"/v2/database/uploads",
+		200,
+		nil,
+		url.Values{"paged": {"true"}},
+		&interfaceAPIResp,
+	); err != nil {
+		t.Fatal(err)
 	}
 
 	// test get encrypted uploads
 	// /v2/frontend/uploads/encrypted
 	if err := sendRequest(
 		api, "GET", "/v2/database/uploads/encrypted", 200, nil, nil, nil,
+	); err != nil {
+		t.Fatal(err)
+	}
+	interfaceAPIResp = interfaceAPIResponse{}
+	if err := sendRequestPaged(
+		api,
+		"GET",
+		"/v2/database/uploads/encrypted",
+		200,
+		nil,
+		url.Values{"paged": {"true"}},
+		&interfaceAPIResp,
 	); err != nil {
 		t.Fatal(err)
 	}
