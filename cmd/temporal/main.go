@@ -186,19 +186,32 @@ var commands = map[string]cmd.Cmd{
 
 			// go!
 			var addr = fmt.Sprintf("%s:%s", args["listenAddress"], *apiPort)
+			var (
+				cert string
+				key  string
+			)
 			if args["certFilePath"] == "" || args["keyFilePath"] == "" {
 				fmt.Println("TLS config incomplete - starting API service without TLS...")
 				err = service.ListenAndServe(ctx, addr, nil)
 			} else {
+				if cert, err = filepath.Abs(args["certFilePath"]); err != nil {
+					fmt.Println("certFilePath:", err)
+					os.Exit(1)
+				}
+				if key, err = filepath.Abs(args["keyFilePath"]); err != nil {
+					fmt.Println("keyFilePath:", err)
+					os.Exit(1)
+				}
 				fmt.Println("Starting API service with TLS...")
 				err = service.ListenAndServe(ctx, addr, &v2.TLSConfig{
-					CertFile: args["certFilePath"],
-					KeyFile:  args["keyFilePath"],
+					CertFile: cert,
+					KeyFile:  key,
 				})
 			}
 			if err != nil {
 				fmt.Printf("API service execution failed: %s\n", err.Error())
 				fmt.Println("Refer to the logs for more details")
+				os.Exit(1)
 			}
 		},
 	},
