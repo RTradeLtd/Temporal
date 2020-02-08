@@ -76,9 +76,9 @@ func (qm *Manager) processIPFSClusterPin(ctx context.Context, d amqp.Delivery, w
 		"pinning has to cluster",
 		"cid", clusterAdd.CID,
 		"user", clusterAdd.UserName)
-	if err = cm.Pin(ctx, encodedCid); err != nil {
-		qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
-		models.NewUsageManager(qm.db).ReduceDataUsage(clusterAdd.UserName, uint64(clusterAdd.Size))
+	if err = cm.Pin(ctx, encodedCid); err != nil && err.Error() != "json: Unmarshal(nil) (200)" {
+		_ = qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
+		_ = models.NewUsageManager(qm.db).ReduceDataUsage(clusterAdd.UserName, uint64(clusterAdd.Size))
 		qm.l.Errorw(
 			"failed to pin hash to cluster",
 			"error", err.Error(),
