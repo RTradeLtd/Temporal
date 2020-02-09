@@ -87,7 +87,7 @@ func (qm *Manager) processIPFSClusterPin(ctx context.Context, d amqp.Delivery, w
 		d.Ack(false)
 		return
 	}
-	if err.Error() == "json: Unmarshal(nil) (200)" {
+	if err != nil && err.Error() == "json: Unmarshal(nil) (200)" {
 		qm.l.Infow("compat bug", "error", err)
 	}
 	upload, err := um.FindUploadByHashAndUserAndNetwork(clusterAdd.UserName, clusterAdd.CID, clusterAdd.NetworkName)
