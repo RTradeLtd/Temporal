@@ -423,6 +423,8 @@ github.com/huin/goupnp v0.0.0-20180415215157-1395d1447324/go.mod h1:MZ2ZmwcBpvOo
 github.com/huin/goupnp v1.0.0 h1:wg75sLpL6DZqwHQN6E1Cfk6mtfzS45z8OV+ic+DtHRo=
 github.com/huin/goupnp v1.0.0/go.mod h1:n9v9KO1tAxYH82qOn+UTIFQDmx5n1Zxd/ClZDMX7Bnc=
 github.com/huin/goutil v0.0.0-20170803182201-1ca381bf3150/go.mod h1:PpLOETDnJ0o3iZrZfqZzyLl6l7F3c6L1oWn7OICBi6o=
+github.com/imdario/mergo v0.3.7 h1:Y+UAYTZ7gDEuOfhxKWy+dvb5dRQ6rJjFSdX2HZY1/gI=
+github.com/imdario/mergo v0.3.7/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
 github.com/improbable-eng/grpc-web v0.9.1/go.mod h1:6hRR09jOEG81ADP5wCQju1z71g6OL4eEvELdran/3cs=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/ipfs/bbloom v0.0.1 h1:s7KkiBPfxCeDVo47KySjK0ACPc5GJRUxFpdyWEuDjhw=
@@ -570,8 +572,8 @@ github.com/ipfs/interface-go-ipfs-core v0.0.8 h1:nmEYOfK6QRf3VIdggoZ4rmbKXcC2g6c
 github.com/ipfs/interface-go-ipfs-core v0.0.8/go.mod h1:RU+DSZXV+JdA7Yagu3OrSoB6hngSmMtK1w6ENOqmfQ8=
 github.com/ipfs/interface-go-ipfs-core v0.0.9 h1:+DxfVIAt+DkITkU00TYvoNpmxhb/4jjtftZEnUO49VU=
 github.com/ipfs/interface-go-ipfs-core v0.0.9/go.mod h1:RU+DSZXV+JdA7Yagu3OrSoB6hngSmMtK1w6ENOqmfQ8=
-github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b h1:To0OMkjDDrNe+13rA2LX3Z1Bdest2bZMnvLTA8okwOs=
-github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b/go.mod h1:DYQ0F2aa2+hwwfFgEXsbgWRNw0TZEW+dy5lNRBRpVIw=
+github.com/ipfs/ipfs-cluster v0.11.0-rc3 h1:zOIOErqcBjlMMhgw4pkYLQ2YnMCZEXbjaAeVrOGjJjA=
+github.com/ipfs/ipfs-cluster v0.11.0-rc3/go.mod h1:ixCoddapUP8TJhPoYsqVBfKi24PmdJnteQrieGt6sC8=
 github.com/ipfs/iptb v1.4.0/go.mod h1:1rzHpCYtNp87/+hTxG5TfCVn/yMY3dKnLn8tBiMfdmg=
 github.com/ipfs/iptb-plugins v0.0.2/go.mod h1:Vud+X6lHv5QlgVbqCPBHt91I0gPIRgmkD6/tMUsI07U=
 github.com/jackc/fake v0.0.0-20150926172116-812a484cc733/go.mod h1:WrMFNQdiFJ80sQsxDoMokWK1W5TQtxBFNpzWTD84ibQ=

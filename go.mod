@@ -37,7 +37,7 @@ require (
 	github.com/ipfs/go-ipfs v0.4.22 // indirect
 	github.com/ipfs/go-ipfs-addr v0.0.1
 	github.com/ipfs/go-path v0.0.7
-	github.com/ipfs/ipfs-cluster v0.9.0-rc1.0.20190527122736-35860d337f6b
+	github.com/ipfs/ipfs-cluster v0.11.0-rc3
 	github.com/jinzhu/gorm v1.9.11
 	github.com/jszwec/csvutil v1.2.1
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect

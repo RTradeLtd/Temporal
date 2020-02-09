@@ -73,7 +73,7 @@ func (qm *Manager) processIPFSClusterPin(ctx context.Context, d amqp.Delivery, w
 		return
 	}
 	qm.l.Infow(
-		"pinning has to cluster",
+		"pinning hash to cluster",
 		"cid", clusterAdd.CID,
 		"user", clusterAdd.UserName)
 	if err = cm.Pin(ctx, encodedCid); err != nil && err.Error() != "json: Unmarshal(nil) (200)" {
@@ -86,6 +86,9 @@ func (qm *Manager) processIPFSClusterPin(ctx context.Context, d amqp.Delivery, w
 			"user", clusterAdd.UserName)
 		d.Ack(false)
 		return
+	}
+	if err.Error() == "json: Unmarshal(nil) (200)" {
+		qm.l.Infow("compat bug", "error", err)
 	}
 	upload, err := um.FindUploadByHashAndUserAndNetwork(clusterAdd.UserName, clusterAdd.CID, clusterAdd.NetworkName)
 	if err != nil && err != gorm.ErrRecordNotFound {
