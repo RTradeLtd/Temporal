@@ -18,8 +18,6 @@ require (
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/appleboy/gofight/v2 v2.1.1 // indirect
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
-	github.com/bobheadxi/res v0.1.0
-	github.com/bobheadxi/zapx v0.2.0
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
@@ -57,6 +55,9 @@ require (
 	github.com/sendgrid/sendgrid-go v3.4.1+incompatible
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	github.com/stripe/stripe-go v60.0.1+incompatible
+	go.bobheadxi.dev/res v0.2.0
+	go.bobheadxi.dev/zapx/zapx v0.6.8
+	go.bobheadxi.dev/zapx/ztest v0.6.4
 	go.uber.org/zap v1.11.0
 	google.golang.org/api v0.5.0 // indirect
 	google.golang.org/grpc v1.25.1
