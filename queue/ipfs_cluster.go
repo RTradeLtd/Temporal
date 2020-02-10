@@ -76,19 +76,20 @@ func (qm *Manager) processIPFSClusterPin(ctx context.Context, d amqp.Delivery, w
 		"pinning hash to cluster",
 		"cid", clusterAdd.CID,
 		"user", clusterAdd.UserName)
-	if err = cm.Pin(ctx, encodedCid); err != nil && err.Error() != "json: Unmarshal(nil) (200)" {
-		_ = qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
-		_ = models.NewUsageManager(qm.db).ReduceDataUsage(clusterAdd.UserName, uint64(clusterAdd.Size))
-		qm.l.Errorw(
-			"failed to pin hash to cluster",
-			"error", err.Error(),
-			"cid", clusterAdd.CID,
-			"user", clusterAdd.UserName)
-		d.Ack(false)
-		return
-	}
-	if err != nil && err.Error() == "json: Unmarshal(nil) (200)" {
-		qm.l.Infow("compat bug", "error", err)
+	if err = cm.Pin(ctx, encodedCid); err != nil {
+		if err.Error() == "json: Unmarshal(nil) (200)" {
+			qm.l.Errorw("compat bug, specific pin error ignored", "error", err)
+		} else {
+			_ = qm.refundCredits(clusterAdd.UserName, "pin", clusterAdd.CreditCost)
+			_ = models.NewUsageManager(qm.db).ReduceDataUsage(clusterAdd.UserName, uint64(clusterAdd.Size))
+			qm.l.Errorw(
+				"failed to pin hash to cluster",
+				"error", err.Error(),
+				"cid", clusterAdd.CID,
+				"user", clusterAdd.UserName)
+			d.Ack(false)
+			return
+		}
 	}
 	upload, err := um.FindUploadByHashAndUserAndNetwork(clusterAdd.UserName, clusterAdd.CID, clusterAdd.NetworkName)
 	if err != nil && err != gorm.ErrRecordNotFound {
