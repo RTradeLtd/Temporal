@@ -26,6 +26,7 @@ import (
 	"github.com/RTradeLtd/kaas/v2"
 	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
 	"github.com/jinzhu/gorm"
+	libcrypto "github.com/libp2p/go-libp2p-core/crypto"
 )
 
 // Version denotes the tag of this build
@@ -555,6 +556,10 @@ func main() {
 	if Version == "" {
 		Version = "latest"
 	}
+
+	// allow 1024 bit key on ipfs
+	libcrypto.MinRsaKeyBits = 1024
+	libcrypto.ErrRsaKeyTooSmall = fmt.Errorf("rsa keys must be >= %d bits to be useful", libcrypto.MinRsaKeyBits)
 
 	// initialize global context
 	ctx, cancel = context.WithCancel(context.Background())
