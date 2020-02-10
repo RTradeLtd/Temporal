@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -89,10 +90,24 @@ func logPath(base, file string) (logPath string) {
 	return
 }
 
-func newDB(cfg config.TemporalConfig, noSSL bool) (*gorm.DB, error) {
-	dbm, err := database.New(&cfg, database.Options{SSLModeDisable: noSSL})
+func newDB(cfg config.TemporalConfig) (*gorm.DB, error) {
+	var (
+		dbm *database.Manager
+		err error
+	)
+	//dbm, err = database.New(&cfg, database.Options{SSLModeDisable: noSSL})
+	dbm, err = database.New(&cfg, database.Options{})
 	if err != nil {
-		return nil, err
+		log.Println(
+			"WARNING: secure db connection failed, attempting fallback to insecure connection",
+		)
+		dbm, err = database.New(&cfg, database.Options{SSLModeDisable: true})
+		if err != nil {
+			log.Println(
+				"ERROR: insecure db connection failed, exiting",
+			)
+			return nil, err
+		}
 	}
 	return dbm.DB, nil
 }
@@ -222,7 +237,7 @@ var commands = map[string]cmd.Cmd{
 								os.Exit(1)
 							}
 							l := logger.Named("ipns_consumer").Sugar()
-							db, err := newDB(cfg, *dbNoSSL)
+							db, err := newDB(cfg)
 							if err != nil {
 								fmt.Println("failed to start db", err)
 								os.Exit(1)
@@ -268,7 +283,7 @@ var commands = map[string]cmd.Cmd{
 							}
 							l := logger.Named("pin_consumer").Sugar()
 
-							db, err := newDB(cfg, *dbNoSSL)
+							db, err := newDB(cfg)
 							if err != nil {
 								fmt.Println("failed to start db", err)
 								os.Exit(1)
@@ -314,7 +329,7 @@ var commands = map[string]cmd.Cmd{
 							}
 							l := logger.Named("key_consumer").Sugar()
 
-							db, err := newDB(cfg, *dbNoSSL)
+							db, err := newDB(cfg)
 							if err != nil {
 								fmt.Println("failed to start db", err)
 								os.Exit(1)
@@ -360,7 +375,7 @@ var commands = map[string]cmd.Cmd{
 							}
 							l := logger.Named("cluster_pin_consumer").Sugar()
 
-							db, err := newDB(cfg, *dbNoSSL)
+							db, err := newDB(cfg)
 							if err != nil {
 								fmt.Println("failed to start db", err)
 								os.Exit(1)
@@ -408,7 +423,7 @@ var commands = map[string]cmd.Cmd{
 					}
 					l := logger.Named("email_consumer").Sugar()
 
-					db, err := newDB(cfg, *dbNoSSL)
+					db, err := newDB(cfg)
 					if err != nil {
 						fmt.Println("failed to start db", err)
 						os.Exit(1)
