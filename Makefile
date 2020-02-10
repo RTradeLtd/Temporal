@@ -1,6 +1,6 @@
 TEMPORALVERSION=`git describe --tags`
 TEMPORALDEVFLAGS=-config ./testenv/config.json -db.no_ssl -dev
-IPFSVERSION=v0.4.19
+IPFSVERSION=v0.4.23
 TESTKEYNAME=admin-key
 
 all: check install
@@ -184,3 +184,19 @@ verifiers: staticcheck
 staticcheck:
 	@echo "Running $@ check"
 	@GO111MODULE=on ${GOPATH}/bin/staticcheck ./...
+
+# run standard go tooling for better rcode hygiene
+.PHONY: tidy
+tidy: imports fmt
+	go vet ./...
+	golint ./...
+
+# automatically add missing imports
+.PHONY: imports
+imports:
+	find . -type f -name '*.go' -exec goimports -w {} \;
+
+# format code and simplify if possible
+.PHONY: fmt
+fmt:
+	find . -type f -name '*.go' -exec gofmt -s -w {} \;
