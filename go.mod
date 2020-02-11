@@ -14,7 +14,7 @@ require (
 	github.com/RTradeLtd/grpc v0.0.0-20190528193535-5184ecc77228
 	github.com/RTradeLtd/kaas/v2 v2.1.3
 	github.com/RTradeLtd/rtfs/v2 v2.1.2
-	github.com/RTradeLtd/rtns v0.0.18
+	github.com/RTradeLtd/rtns v0.0.19
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/appleboy/gofight/v2 v2.1.1 // indirect
 	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1

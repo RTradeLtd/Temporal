@@ -94,7 +94,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processIPNSEntryCreationRequest(d, wg, kbBackup, ipnsManager, publisher)
+			go qm.processIPNSEntryCreationRequest(ctx, d, wg, kbBackup, ipnsManager, publisher)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
