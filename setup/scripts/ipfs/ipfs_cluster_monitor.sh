@@ -19,6 +19,10 @@ case "$1" in
         COUNT=$(ipfs-cluster-ctl status --local=true | grep -c PIN_ERROR)
         echo "$COUNT"
         ;;
+    pin-errors)
+        # displays all pin in error status
+        ipfs-cluster-ctl status --filter=error,pin_error,cluster_error
+        ;;
     daemon-status)
         # if this is not 0 then there's an error
         # this is used to avoid scenarios where the cluster service is up
@@ -36,7 +40,7 @@ case "$1" in
         ;;
     *)
         echo "invalid invocation"
-        echo "valid commands: peer-count, queued-pin-count, pin-count, error-count, daemon-status"
+        echo "valid commands: peer-count, queued-pin-count, pin-count, error-count, daemon-status, pin-errors"
         exit 1
         ;;
 
