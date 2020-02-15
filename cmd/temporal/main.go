@@ -11,7 +11,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/bobheadxi/zapx"
+	"go.bobheadxi.dev/zapx/zapx"
 	"go.uber.org/zap"
 
 	v2 "github.com/RTradeLtd/Temporal/api/v2"

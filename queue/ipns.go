@@ -94,7 +94,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processIPNSEntryCreationRequest(d, wg, kbBackup, ipnsManager, publisher)
+			go qm.processIPNSEntryCreationRequest(ctx, d, wg, kbBackup, ipnsManager, publisher)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -111,7 +111,7 @@ func (qm *Manager) ProcessIPNSEntryCreationRequests(ctx context.Context, wg *syn
 	}
 }
 
-func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.WaitGroup, kbBackup *kaas.Client, im *models.IpnsManager, pub rtns.Service) {
+func (qm *Manager) processIPNSEntryCreationRequest(ctx context.Context, d amqp.Delivery, wg *sync.WaitGroup, kbBackup *kaas.Client, im *models.IpnsManager, pub rtns.Service) {
 	defer wg.Done()
 	qm.l.Info("new ipns entry creation detected")
 	ie := IPNSEntry{}
@@ -192,9 +192,9 @@ func (qm *Manager) processIPNSEntryCreationRequest(d amqp.Delivery, wg *sync.Wai
 	}
 	// Note: context is used to pass in the experimental ttl value
 	// see https://discuss.ipfs.io/t/clarification-over-ttl-and-lifetime-for-ipns-records/4346 for more information
-	ctx := context.WithValue(context.Background(), ipnsPublishTTL, ie.TTL)
+	cctx := context.WithValue(ctx, ipnsPublishTTL, ie.TTL)
 	eol := time.Now().Add(ie.LifeTime)
-	if err := pub.PublishWithEOL(ctx, pk, eol, cache, ie.Key, ie.CID); err != nil {
+	if err := pub.PublishWithEOL(cctx, pk, eol, cache, ie.Key, ie.CID); err != nil {
 		qm.refundCredits(ie.UserName, "ipns", ie.CreditCost)
 		qm.l.Errorw(
 			"failed to publish ipns entry",

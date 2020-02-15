@@ -3,7 +3,7 @@ package log
 import (
 	"testing"
 
-	"github.com/bobheadxi/zapx/ztest"
+	"go.bobheadxi.dev/zapx/ztest"
 )
 
 func TestNewProcessLogger(t *testing.T) {

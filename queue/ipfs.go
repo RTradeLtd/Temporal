@@ -13,9 +13,9 @@ import (
 	"github.com/RTradeLtd/rtfs/v2"
 
 	"github.com/RTradeLtd/database/v2/models"
-	"github.com/bobheadxi/zapx"
 	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
+	"go.bobheadxi.dev/zapx/zapx"
 
 	pb "github.com/RTradeLtd/grpc/krab"
 	ci "github.com/libp2p/go-libp2p-core/crypto"

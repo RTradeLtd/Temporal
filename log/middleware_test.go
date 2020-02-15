@@ -6,10 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/bobheadxi/res"
-	"github.com/bobheadxi/zapx/ztest"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"go.bobheadxi.dev/res"
+	"go.bobheadxi.dev/zapx/ztest"
 )
 
 func Test_loggerMiddleware(t *testing.T) {
