@@ -614,6 +614,7 @@ func (api *API) setupRoutes(debug bool) error {
 	database := v2.Group("/database", authware...)
 	{
 		database.GET("/uploads", api.getUploadsForUser)
+		database.GET("/uploads/search", api.searchUploadsForUser)
 		database.GET("/uploads/encrypted", api.getEncryptedUploadsForUser)
 	}
 
