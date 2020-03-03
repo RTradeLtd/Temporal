@@ -17,7 +17,7 @@ func (api *API) searchUploadsForUser(c *gin.Context) {
 		return
 	}
 	forms, missingField := api.extractPostForms(c, "search_query")
-	if missingField == "" {
+	if missingField != "" {
 		FailWithMissingField(c, missingField)
 		return
 	}
