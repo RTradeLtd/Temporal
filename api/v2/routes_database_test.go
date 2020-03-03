@@ -29,10 +29,29 @@ func Test_API_Routes_Database(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// test search
+	var interfaceAPIResp interfaceAPIResponse
+	if err := sendRequest(
+		api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
+			"search_query": []string{"%%"},
+		}, &interfaceAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
+	// test search (paged)
+	interfaceAPIResp = interfaceAPIResponse{}
+	if err := sendRequest(
+		api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
+			"search_query": []string{"%%"},
+			"paged":        []string{"true"},
+		}, &interfaceAPIResp,
+	); err != nil {
+		t.Fatal(err)
+	}
 
 	// test database specific uploads
 	// /v2/database/uploads/testuser
-	var interfaceAPIResp interfaceAPIResponse
+	interfaceAPIResp = interfaceAPIResponse{}
 	if err := sendRequest(
 		api, "GET", "/v2/database/uploads", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
