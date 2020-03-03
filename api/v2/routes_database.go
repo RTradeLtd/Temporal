@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"html"
 	"net/http"
 
 	"github.com/RTradeLtd/Temporal/eh"
@@ -20,6 +21,8 @@ func (api *API) searchUploadsForUser(c *gin.Context) {
 		FailWithMissingField(c, missingField)
 		return
 	}
+	// escape string
+	forms["search_query"] = html.UnescapeString(forms["search_query"])
 	if c.Query("paged") == "true" {
 		api.pageIt(
 			c,
