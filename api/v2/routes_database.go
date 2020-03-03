@@ -34,7 +34,6 @@ func (api *API) searchUploadsForUser(c *gin.Context) {
 		)
 		return
 	}
-	// TODO(bonedaddy): handle paginated response
 	uploads, err := api.upm.Search(username, forms["search_query"])
 	if err != nil {
 		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
