@@ -1,8 +1,10 @@
 package v2
 
 import (
+	"errors"
 	"html"
 	"net/http"
+	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/v2/models"
@@ -23,18 +25,29 @@ func (api *API) searchUploadsForUser(c *gin.Context) {
 	}
 	// escape string to prevent html encoded characters causing issues
 	forms["search_query"] = html.UnescapeString(forms["search_query"])
+	// force lower-case to make matching more likely s
+	lower := strings.ToLower(forms["search_query"])
+	// just in case lets try and avoid any possible headaches
+	if strings.Contains(lower, "drop") || strings.Contains(lower, "select") {
+		if strings.Contains(lower, "table") ||
+			strings.Contains(lower, "column") ||
+			strings.Contains(lower, "row") {
+			Fail(c, errors.New("possible sql injection attack, goodbye"), http.StatusBadRequest)
+			return
+		}
+	}
 	if c.Query("paged") == "true" {
 		api.pageIt(
 			c,
 			api.upm.DB.Where(
 				"user_name = ? AND file_name_lower_case LIKE ?",
-				username, forms["search_query"],
+				username, lower,
 			),
 			&[]models.Upload{},
 		)
 		return
 	}
-	uploads, err := api.upm.Search(username, forms["search_query"])
+	uploads, err := api.upm.Search(username, lower)
 	if err != nil {
 		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
 		return
