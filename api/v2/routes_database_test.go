@@ -98,6 +98,7 @@ func Test_API_Routes_Database(t *testing.T) {
 			}
 			for _, up := range searchAPIResp.Response {
 				if !tt.args.wantName[up.FileNameLowerCase] {
+					fmt.Printf("DBDEBUG\n%+v\nDBDEBUG", up)
 					t.Fatal("bad upload found")
 				}
 			}
