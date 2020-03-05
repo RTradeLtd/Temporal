@@ -615,6 +615,7 @@ func (api *API) setupRoutes(debug bool) error {
 	{
 		database.GET("/uploads", api.getUploadsForUser)
 		database.GET("/uploads/encrypted", api.getEncryptedUploadsForUser)
+		database.POST("/uploads/search", api.searchUploadsForUser)
 	}
 
 	// frontend

@@ -1,12 +1,60 @@
 package v2
 
 import (
+	"errors"
+	"html"
 	"net/http"
+	"strings"
 
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/v2/models"
 	"github.com/gin-gonic/gin"
 )
+
+// allows performing arbitrary searches against upload file names
+func (api *API) searchUploadsForUser(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	forms, missingField := api.extractPostForms(c, "search_query")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	// escape string to prevent html encoded characters causing issues
+	forms["search_query"] = html.UnescapeString(forms["search_query"])
+	// force lower-case to make matching more likely s
+	lower := strings.ToLower(forms["search_query"])
+	// just in case lets try and avoid any possible headaches
+	if strings.Contains(lower, "drop table") ||
+		strings.Contains(lower, "drop column") ||
+		strings.Contains(lower, "drop row") ||
+		strings.Contains(lower, "delete table") ||
+		strings.Contains(lower, "delete column") ||
+		strings.Contains(lower, "delete row") {
+		Fail(c, errors.New("possible sql injection attack, goodbye"), http.StatusBadRequest)
+		return
+	}
+	if c.Query("paged") == "true" {
+		api.pageIt(
+			c,
+			api.upm.DB.Where(
+				"user_name = ? AND file_name_lower_case LIKE ?",
+				username, lower,
+			),
+			&[]models.Upload{},
+		)
+		return
+	}
+	uploads, err := api.upm.Search(username, lower)
+	if err != nil {
+		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": uploads})
+}
 
 // GetUploadsForUser is used to retrieve all uploads for the authenticated user
 func (api *API) getUploadsForUser(c *gin.Context) {
