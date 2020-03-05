@@ -85,24 +85,22 @@ func Test_API_Routes_Database(t *testing.T) {
 	// test search (non paged)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var interfaceAPIResp interfaceAPIResponse
+			var searchAPIResp searchAPIResponse
 			if err := sendRequest(
 				api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
 					"search_query": []string{tt.args.query},
-				}, &interfaceAPIResp,
+				}, &searchAPIResp,
 			); err != nil {
 				t.Fatal(err)
 			}
-			fmt.Printf("DBDEBUG\n%+v\nDBDEBUG\n", interfaceAPIResp)
-			/*if len(searchAPIResp.Response) != tt.args.wantCount {
+			if len(searchAPIResp.Response) != tt.args.wantCount {
 				t.Fatal("bad count")
 			}
 			for _, up := range searchAPIResp.Response {
 				if !tt.args.wantName[up.FileNameLowerCase] {
 					t.Fatal("bad upload found")
 				}
-			}*/
-			t.Error("just a test")
+			}
 		})
 	}
 	// test search (paged)
