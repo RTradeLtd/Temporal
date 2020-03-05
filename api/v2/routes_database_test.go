@@ -83,7 +83,6 @@ func Test_API_Routes_Database(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var searchAPIResp searchAPIResponse
-			defer fmt.Sprintf("DEBUG\n%+v\nDEBUG\n", searchAPIResp)
 			if err := sendRequest(
 				api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
 					"search_query": []string{tt.args.query},
@@ -91,6 +90,7 @@ func Test_API_Routes_Database(t *testing.T) {
 			); err != nil {
 				t.Fatal(err)
 			}
+			fmt.Printf("DBDEBUG\n%+v\nDBDEBUG\n", searchAPIResp)
 			if len(searchAPIResp.Response) != tt.args.wantCount {
 				t.Fatal("bad count")
 			}
@@ -105,7 +105,6 @@ func Test_API_Routes_Database(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var searchAPIResp searchAPIResponse
-			defer fmt.Sprintf("DEBUG\n%+v\nDEBUG\n", searchAPIResp)
 			if err := sendRequest(
 				api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
 					"search_query": []string{tt.args.query},
@@ -114,6 +113,7 @@ func Test_API_Routes_Database(t *testing.T) {
 			); err != nil {
 				t.Fatal(err)
 			}
+			fmt.Printf("DBDEBUG\n%+v\nDBDEBUG\n", searchAPIResp)
 			if len(searchAPIResp.Response) != tt.args.wantCount {
 				t.Fatal("bad count")
 			}
