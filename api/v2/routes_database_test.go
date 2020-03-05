@@ -70,15 +70,15 @@ func Test_API_Routes_Database(t *testing.T) {
 		args args
 	}{
 		{"dog", args{
-			map[string]bool{"bigdogpic123": true, "dogpic123": true},
+			map[string]bool{"bigdogpic123.jpg": true, "dogpic123.jpg": true},
 			"%dog%", 2,
 		}},
 		{"cat", args{
-			map[string]bool{"catpic123": true},
+			map[string]bool{"catpic123.jpg": true},
 			"%cat%", 1,
 		}},
 		{"pic", args{
-			map[string]bool{"dogpic123": true, "bigdogpic123": true, "catpic123": true},
+			map[string]bool{"dogpic123.jpg": true, "bigdogpic123.jpg": true, "catpic123.jpg": true},
 			"%pic%", 3,
 		}},
 	}
