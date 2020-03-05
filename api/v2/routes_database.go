@@ -1,7 +1,6 @@
 package v2
 
 import (
-	"fmt"
 	"html"
 	"net/http"
 
@@ -22,7 +21,7 @@ func (api *API) searchUploadsForUser(c *gin.Context) {
 		FailWithMissingField(c, missingField)
 		return
 	}
-	// escape string
+	// escape string to prevent html encoded characters causing issues
 	forms["search_query"] = html.UnescapeString(forms["search_query"])
 	if c.Query("paged") == "true" {
 		api.pageIt(
@@ -40,7 +39,6 @@ func (api *API) searchUploadsForUser(c *gin.Context) {
 		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("APIDEBUG\n%+v-user-%s\nAPIDEBUG", uploads, username)
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 
