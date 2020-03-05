@@ -33,6 +33,7 @@ func Test_API_Routes_Database(t *testing.T) {
 	}
 	// create uploads to test searching with
 	up1, err := api.upm.NewUpload("testhash123", "file", models.UploadOptions{
+		Username:         "testuser",
 		FileName:         "dogpic123.jpg",
 		HoldTimeInMonths: 1,
 	})
@@ -41,6 +42,7 @@ func Test_API_Routes_Database(t *testing.T) {
 	}
 	defer api.upm.DB.Unscoped().Delete(up1)
 	up2, err := api.upm.NewUpload("testhash1234", "file", models.UploadOptions{
+		Username:         "testuser",
 		FileName:         "catpic123.jpg",
 		HoldTimeInMonths: 1,
 	})
@@ -49,6 +51,7 @@ func Test_API_Routes_Database(t *testing.T) {
 	}
 	defer api.upm.DB.Unscoped().Delete(up2)
 	up3, err := api.upm.NewUpload("testhash12345", "file", models.UploadOptions{
+		Username:         "testuser",
 		FileName:         "bigdogpic123.jpg",
 		HoldTimeInMonths: 1,
 	})
