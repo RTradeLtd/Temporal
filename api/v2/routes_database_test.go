@@ -81,18 +81,6 @@ func Test_API_Routes_Database(t *testing.T) {
 			map[string]bool{"dogpic123.jpg": true, "bigdogpic123.jpg": true, "catpic123.jpg": true},
 			"%pic%", 3, 200,
 		}},
-		{"select", args{
-			nil,
-			"select and table", 0, 400,
-		}},
-		{"drop", args{
-			nil,
-			"drop and column", 0, 400,
-		}},
-		{"select", args{
-			nil,
-			"select and row", 0, 400,
-		}},
 	}
 	// test search (non paged)
 	for _, tt := range tests {
@@ -104,9 +92,6 @@ func Test_API_Routes_Database(t *testing.T) {
 				}, &searchAPIResp,
 			); err != nil {
 				t.Fatal(err)
-			}
-			if tt.args.wantCode != 200 {
-				return
 			}
 			if len(searchAPIResp.Response) != tt.args.wantCount {
 				t.Fatal("bad count")
@@ -143,7 +128,35 @@ func Test_API_Routes_Database(t *testing.T) {
 			}
 		})
 	}
-
+	tests = []struct {
+		name string
+		args args
+	}{
+		{"select", args{
+			nil,
+			"select and table", 0, 400,
+		}},
+		{"drop", args{
+			nil,
+			"drop and column", 0, 400,
+		}},
+		{"select", args{
+			nil,
+			"select and row", 0, 400,
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var interfaceAPIResp interfaceAPIResponse
+			if err := sendRequest(
+				api, "POST", "/v2/database/uploads/search", tt.args.wantCode, nil, url.Values{
+					"search_query": []string{tt.args.query},
+				}, &interfaceAPIResp,
+			); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
 	// test database specific uploads
 	// /v2/database/uploads/testuser
 	var interfaceAPIResp interfaceAPIResponse
