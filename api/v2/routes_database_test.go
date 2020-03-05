@@ -60,10 +60,9 @@ func Test_API_Routes_Database(t *testing.T) {
 	defer api.upm.DB.Unscoped().Delete(up3)
 
 	type args struct {
-		wantName  map[string]bool
-		query     string
-		wantCount int
-		wantCode  int
+		wantName map[string]bool
+		query    string
+		wantCode int
 	}
 	tests := []struct {
 		name string
@@ -71,15 +70,15 @@ func Test_API_Routes_Database(t *testing.T) {
 	}{
 		{"dog", args{
 			map[string]bool{"bigdogpic123.jpg": true, "dogpic123.jpg": true},
-			"%dog%", 2, 200,
+			"%dog%", 200,
 		}},
 		{"cat", args{
 			map[string]bool{"catpic123.jpg": true},
-			"%cat%", 1, 200,
+			"%cat%", 200,
 		}},
 		{"pic", args{
 			map[string]bool{"dogpic123.jpg": true, "bigdogpic123.jpg": true, "catpic123.jpg": true},
-			"%pic%", 3, 200,
+			"%pic%", 200,
 		}},
 	}
 	// test search (non paged)
@@ -93,7 +92,7 @@ func Test_API_Routes_Database(t *testing.T) {
 			); err != nil {
 				t.Fatal(err)
 			}
-			if len(searchAPIResp.Response) != tt.args.wantCount {
+			if len(searchAPIResp.Response) != len(tt.args.wantName) {
 				t.Fatal("bad count")
 			}
 			for _, up := range searchAPIResp.Response {
@@ -115,10 +114,7 @@ func Test_API_Routes_Database(t *testing.T) {
 			); err != nil {
 				t.Fatal(err)
 			}
-			if tt.args.wantCode != 200 {
-				return
-			}
-			if len(searchAPIResp.Response) != tt.args.wantCount {
+			if len(searchAPIResp.Response) != len(tt.args.wantName) {
 				t.Fatal("bad count")
 			}
 			for _, up := range searchAPIResp.Response {
@@ -132,17 +128,29 @@ func Test_API_Routes_Database(t *testing.T) {
 		name string
 		args args
 	}{
-		{"select", args{
+		{"1", args{
 			nil,
-			"select and table", 0, 400,
+			"drop table", 400,
 		}},
-		{"drop", args{
+		{"2", args{
 			nil,
-			"drop and column", 0, 400,
+			"drop column", 400,
 		}},
-		{"select", args{
+		{"3", args{
 			nil,
-			"select and row", 0, 400,
+			"drop row", 400,
+		}},
+		{"4", args{
+			nil,
+			"delete table", 400,
+		}},
+		{"5", args{
+			nil,
+			"delete column", 400,
+		}},
+		{"6", args{
+			nil,
+			"delete row", 400,
 		}},
 	}
 	for _, tt := range tests {

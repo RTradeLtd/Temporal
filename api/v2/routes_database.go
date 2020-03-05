@@ -28,13 +28,14 @@ func (api *API) searchUploadsForUser(c *gin.Context) {
 	// force lower-case to make matching more likely s
 	lower := strings.ToLower(forms["search_query"])
 	// just in case lets try and avoid any possible headaches
-	if strings.Contains(lower, "drop") || strings.Contains(lower, "select") {
-		if strings.Contains(lower, "table") ||
-			strings.Contains(lower, "column") ||
-			strings.Contains(lower, "row") {
-			Fail(c, errors.New("possible sql injection attack, goodbye"), http.StatusBadRequest)
-			return
-		}
+	if strings.Contains(lower, "drop table") ||
+		strings.Contains(lower, "drop column") ||
+		strings.Contains(lower, "drop row") ||
+		strings.Contains(lower, "delete table") ||
+		strings.Contains(lower, "delete column") ||
+		strings.Contains(lower, "delete row") {
+		Fail(c, errors.New("possible sql injection attack, goodbye"), http.StatusBadRequest)
+		return
 	}
 	if c.Query("paged") == "true" {
 		api.pageIt(
