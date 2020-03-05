@@ -6,6 +6,7 @@ import (
 
 	"github.com/RTradeLtd/Temporal/mocks"
 	"github.com/RTradeLtd/config/v2"
+	"github.com/RTradeLtd/database/v2/models"
 )
 
 func Test_API_Routes_Database(t *testing.T) {
@@ -29,6 +30,31 @@ func Test_API_Routes_Database(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// create uploads to test searching with
+	up1, err := api.upm.NewUpload("testhash123", "file", models.UploadOptions{
+		FileName:         "dogpic123.jpg",
+		HoldTimeInMonths: 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer api.upm.DB.Unscoped().Delete(up1)
+	up2, err := api.upm.NewUpload("testhash1234", "file", models.UploadOptions{
+		FileName:         "catpic123.jpg",
+		HoldTimeInMonths: 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer api.upm.DB.Unscoped().Delete(up2)
+	up3, err := api.upm.NewUpload("testhash12345", "file", models.UploadOptions{
+		FileName:         "dogfood123.jpg",
+		HoldTimeInMonths: 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer api.upm.DB.Unscoped().Delete(up3)
 	// test search
 	var interfaceAPIResp interfaceAPIResponse
 	if err := sendRequest(
