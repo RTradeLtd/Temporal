@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"fmt"
 	"html"
 	"net/http"
 
@@ -39,6 +40,7 @@ func (api *API) searchUploadsForUser(c *gin.Context) {
 		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
 		return
 	}
+	fmt.Printf("APIDEBUG\n%+v\nAPIDEBUG", uploads)
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 
