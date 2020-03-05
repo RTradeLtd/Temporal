@@ -20,6 +20,7 @@ import (
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/v2"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/RTradeLtd/rtfs/v2"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
@@ -75,6 +76,11 @@ type floatAPIResponse struct {
 type stringSliceAPIResponse struct {
 	Code     int      `json:"code"`
 	Response []string `json:"response"`
+}
+
+type searchAPIResponse struct {
+	Code     int             `json:"code"`
+	Response []models.Upload `json:"response"`
 }
 
 // sendRequestPaged is a helper method used to handle sending an api request with paged responses

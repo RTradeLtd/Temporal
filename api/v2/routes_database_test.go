@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"fmt"
 	"net/url"
 	"testing"
 
@@ -48,36 +49,85 @@ func Test_API_Routes_Database(t *testing.T) {
 	}
 	defer api.upm.DB.Unscoped().Delete(up2)
 	up3, err := api.upm.NewUpload("testhash12345", "file", models.UploadOptions{
-		FileName:         "dogfood123.jpg",
+		FileName:         "bigdogpic123.jpg",
 		HoldTimeInMonths: 1,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer api.upm.DB.Unscoped().Delete(up3)
-	// test search
-	var interfaceAPIResp interfaceAPIResponse
-	if err := sendRequest(
-		api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
-			"search_query": []string{"%%"},
-		}, &interfaceAPIResp,
-	); err != nil {
-		t.Fatal(err)
+
+	type args struct {
+		wantName  map[string]bool
+		query     string
+		wantCount int
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"dog", args{
+			map[string]bool{"bigdogpic123": true, "dogpic123": true},
+			"%dog%", 2,
+		}},
+		{"cat", args{
+			map[string]bool{"catpic123": true},
+			"%cat%", 1,
+		}},
+		{"pic", args{
+			map[string]bool{"dogpic123": true, "bigdogpic123": true, "catpic123": true},
+			"%pic%", 3,
+		}},
+	}
+	// test search (non paged)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var searchAPIResp searchAPIResponse
+			defer fmt.Sprintf("DEBUG\n%+v\nDEBUG\n", searchAPIResp)
+			if err := sendRequest(
+				api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
+					"search_query": []string{tt.args.query},
+				}, &searchAPIResp,
+			); err != nil {
+				t.Fatal(err)
+			}
+			if len(searchAPIResp.Response) != tt.args.wantCount {
+				t.Fatal("bad count")
+			}
+			for _, up := range searchAPIResp.Response {
+				if !tt.args.wantName[up.FileNameLowerCase] {
+					t.Fatal("bad upload found")
+				}
+			}
+		})
 	}
 	// test search (paged)
-	interfaceAPIResp = interfaceAPIResponse{}
-	if err := sendRequest(
-		api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
-			"search_query": []string{"%%"},
-			"paged":        []string{"true"},
-		}, &interfaceAPIResp,
-	); err != nil {
-		t.Fatal(err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var searchAPIResp searchAPIResponse
+			defer fmt.Sprintf("DEBUG\n%+v\nDEBUG\n", searchAPIResp)
+			if err := sendRequest(
+				api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
+					"search_query": []string{tt.args.query},
+					"paged":        []string{"true"},
+				}, &searchAPIResp,
+			); err != nil {
+				t.Fatal(err)
+			}
+			if len(searchAPIResp.Response) != tt.args.wantCount {
+				t.Fatal("bad count")
+			}
+			for _, up := range searchAPIResp.Response {
+				if !tt.args.wantName[up.FileNameLowerCase] {
+					t.Fatal("bad upload found")
+				}
+			}
+		})
 	}
 
 	// test database specific uploads
 	// /v2/database/uploads/testuser
-	interfaceAPIResp = interfaceAPIResponse{}
+	var interfaceAPIResp interfaceAPIResponse
 	if err := sendRequest(
 		api, "GET", "/v2/database/uploads", 200, nil, nil, &interfaceAPIResp,
 	); err != nil {
