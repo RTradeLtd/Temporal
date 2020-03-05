@@ -1,7 +1,6 @@
 package v2
 
 import (
-	"fmt"
 	"net/url"
 	"testing"
 
@@ -64,6 +63,7 @@ func Test_API_Routes_Database(t *testing.T) {
 		wantName  map[string]bool
 		query     string
 		wantCount int
+		wantCode  int
 	}
 	tests := []struct {
 		name string
@@ -71,15 +71,27 @@ func Test_API_Routes_Database(t *testing.T) {
 	}{
 		{"dog", args{
 			map[string]bool{"bigdogpic123.jpg": true, "dogpic123.jpg": true},
-			"%dog%", 2,
+			"%dog%", 2, 200,
 		}},
 		{"cat", args{
 			map[string]bool{"catpic123.jpg": true},
-			"%cat%", 1,
+			"%cat%", 1, 200,
 		}},
 		{"pic", args{
 			map[string]bool{"dogpic123.jpg": true, "bigdogpic123.jpg": true, "catpic123.jpg": true},
-			"%pic%", 3,
+			"%pic%", 3, 200,
+		}},
+		{"select", args{
+			nil,
+			"select and table", 0, 400,
+		}},
+		{"drop", args{
+			nil,
+			"drop and column", 0, 400,
+		}},
+		{"select", args{
+			nil,
+			"select and row", 0, 400,
 		}},
 	}
 	// test search (non paged)
@@ -87,11 +99,14 @@ func Test_API_Routes_Database(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var searchAPIResp searchAPIResponse
 			if err := sendRequest(
-				api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
+				api, "POST", "/v2/database/uploads/search", tt.args.wantCode, nil, url.Values{
 					"search_query": []string{tt.args.query},
 				}, &searchAPIResp,
 			); err != nil {
 				t.Fatal(err)
+			}
+			if tt.args.wantCode != 200 {
+				return
 			}
 			if len(searchAPIResp.Response) != tt.args.wantCount {
 				t.Fatal("bad count")
@@ -108,14 +123,16 @@ func Test_API_Routes_Database(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var searchAPIResp searchAPIResponse
 			if err := sendRequest(
-				api, "POST", "/v2/database/uploads/search", 200, nil, url.Values{
+				api, "POST", "/v2/database/uploads/search", tt.args.wantCode, nil, url.Values{
 					"search_query": []string{tt.args.query},
 					"paged":        []string{"true"},
 				}, &searchAPIResp,
 			); err != nil {
 				t.Fatal(err)
 			}
-			fmt.Printf("DBDEBUG\n%+v\nDBDEBUG\n", searchAPIResp)
+			if tt.args.wantCode != 200 {
+				return
+			}
 			if len(searchAPIResp.Response) != tt.args.wantCount {
 				t.Fatal("bad count")
 			}
