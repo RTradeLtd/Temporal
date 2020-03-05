@@ -40,7 +40,7 @@ func (api *API) searchUploadsForUser(c *gin.Context) {
 		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("APIDEBUG\n%+v\nAPIDEBUG", uploads)
+	fmt.Printf("APIDEBUG\n%+v-user-%s\nAPIDEBUG", uploads, username)
 	Respond(c, http.StatusOK, gin.H{"response": uploads})
 }
 
