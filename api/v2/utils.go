@@ -266,8 +266,8 @@ func (api *API) ensureTwoYearMax(upload *models.Upload, holdTime int64) error {
 }
 
 func (api *API) getCMCKey() string {
-	if os.Getenv("X-CMC_PRO_API_KEY") != "" {
-		return os.Getenv("X-CMC_PRO_API_KEY")
+	if os.Getenv("CMC_API") != "" {
+		return os.Getenv("CMC_API")
 	}
 	return api.cmcAPIKey
 }

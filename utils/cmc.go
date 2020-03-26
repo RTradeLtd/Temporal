@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -67,6 +68,7 @@ REFRESH:
 	}
 	req, err := http.NewRequest("GET", tickerURL, nil)
 	if err != nil {
+		fmt.Println("error: ", err)
 		return pricer.coins[coin].price, err
 	}
 	req.Header.Add("X-CMC_PRO_API_KEY", apiKey)
@@ -76,15 +78,18 @@ REFRESH:
 	client := &http.Client{}
 	response, err := client.Do(req)
 	if err != nil {
+		fmt.Println("error: ", err)
 		return pricer.coins[coin].price, err
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
+		fmt.Println("error: ", err)
 		return pricer.coins[coin].price, err
 	}
 	var decode map[string]map[string]interface{}
 	if err = json.Unmarshal(body, &decode); err != nil {
+		fmt.Println("error: ", err)
 		return pricer.coins[coin].price, err
 	}
 	// we're only interested in the "data" field
@@ -98,13 +103,16 @@ REFRESH:
 		out := data[k]
 		b, err := json.Marshal(out)
 		if err != nil {
+			fmt.Println("error: ", err)
 			return pricer.coins[coin].price, err
 		}
 		if err := json.Unmarshal(b, &datamap); err != nil {
+			fmt.Println("error: ", err)
 			return pricer.coins[coin].price, err
 		}
 		b, err = json.Marshal(datamap)
 		if err != nil {
+			fmt.Println("error: ", err)
 			return pricer.coins[coin].price, err
 		}
 		if err := json.Unmarshal(b, &quotemap); err != nil {
@@ -113,13 +121,16 @@ REFRESH:
 		if quotemap["quote"] != nil {
 			b, err = json.Marshal(quotemap["quote"])
 			if err := json.Unmarshal(b, &usdmap); err != nil {
+				fmt.Println("error: ", err)
 				return pricer.coins[coin].price, err
 			}
 			b, err = json.Marshal(usdmap["USD"])
 			if err != nil {
+				fmt.Println("error: ", err)
 				return pricer.coins[coin].price, err
 			}
 			if err := json.Unmarshal(b, &usd); err != nil {
+				fmt.Println("error: ", err)
 				return pricer.coins[coin].price, err
 			}
 			if usd.Price != 0 {
