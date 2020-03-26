@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	tickerURL = "https://api.coinmarketcap.com/v1/ticker"
+	tickerURL = "https://pro-api.coinmarketcap.comv1/cryptocurrency/quotes/latest"
 	pricer    *priceChecker
 )
 
@@ -56,7 +56,7 @@ func init() {
 // we will return that price instead of querying coinmarketcap. In the event
 // of a "stale" value we will hit the coinmarketcap api. If that errors
 // then we return both the error, and whatever price we have in-memory
-func RetrieveUsdPrice(coin string) (float64, error) {
+func RetrieveUsdPrice(coin, apiKey string) (float64, error) {
 	pricer.mux.RLock()
 	if pricer.coins[coin].price != 0 {
 		if time.Now().After(pricer.coins[coin].nextRefresh) {
@@ -74,6 +74,11 @@ REFRESH:
 		return pricer.coins[coin].price, nil
 	}
 	url := fmt.Sprintf("%s/%s", tickerURL, coin)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return pricer.coins[coin].price, err
+	}
+	req.Header.Add("X-CMC_PRO_API_KEY", apiKey)
 	response, err := http.Get(url)
 	if err != nil {
 		return pricer.coins[coin].price, err

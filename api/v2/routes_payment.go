@@ -515,17 +515,17 @@ func (api *API) getUSDValue(paymentType string) (float64, error) {
 	)
 	switch paymentType {
 	case "eth":
-		cost, err = utils.RetrieveUsdPrice("ethereum")
+		cost, err = utils.RetrieveUsdPrice("ethereum", api.getCMCKey())
 	case "xmr":
-		cost, err = utils.RetrieveUsdPrice("monero")
+		cost, err = utils.RetrieveUsdPrice("monero", api.getCMCKey())
 	case "dash":
-		cost, err = utils.RetrieveUsdPrice("dash")
+		cost, err = utils.RetrieveUsdPrice("dash", api.getCMCKey())
 	case "btc":
-		cost, err = utils.RetrieveUsdPrice("bitcoin")
+		cost, err = utils.RetrieveUsdPrice("bitcoin", api.getCMCKey())
 	case "bch":
-		cost, err = utils.RetrieveUsdPrice("bitcoin-cash")
+		cost, err = utils.RetrieveUsdPrice("bitcoin-cash", api.getCMCKey())
 	case "ltc":
-		cost, err = utils.RetrieveUsdPrice("litecoin")
+		cost, err = utils.RetrieveUsdPrice("litecoin", api.getCMCKey())
 	case "rtc":
 		cost, err = RtcCostUsd, nil
 	default:
