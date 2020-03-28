@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -262,4 +263,11 @@ func (api *API) ensureTwoYearMax(upload *models.Upload, holdTime int64) error {
 		return errors.New(eh.MaxHoldTimeError)
 	}
 	return nil
+}
+
+func (api *API) getCMCKey() string {
+	if os.Getenv("CMC_API") != "" {
+		return os.Getenv("CMC_API")
+	}
+	return api.cmcAPIKey
 }

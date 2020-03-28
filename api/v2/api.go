@@ -62,8 +62,8 @@ type API struct {
 	dc          *dash.Client
 	queues      queues
 	service     string
-
-	version string
+	cmcAPIKey   string
+	version     string
 }
 
 // Initialize is used ot initialize our API service. debug = true is useful

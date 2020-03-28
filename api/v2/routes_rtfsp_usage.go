@@ -141,7 +141,7 @@ func (api *API) addFileToHostedIPFSNetwork(c *gin.Context) {
 	}
 	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, forms["network_name"])
 	if err == nil || upload != nil {
-		Respond(c, http.StatusBadRequest, gin.H{"response": alreadyUploadedMessage})
+		Respond(c, http.StatusOK, gin.H{"response": hash, "notice": alreadyUploadedMessage})
 		return
 	}
 	var reader io.Reader

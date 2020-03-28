@@ -2,16 +2,17 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
+	"net/url"
 	"sync"
 	"time"
 )
 
 var (
-	tickerURL = "https://api.coinmarketcap.com/v1/ticker"
+	tickerURL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
 	pricer    *priceChecker
 )
 
@@ -24,23 +25,15 @@ type priceChecker struct {
 	mux   *sync.RWMutex
 }
 
-// Response used to hold response data from cmc
-type Response struct {
-	ID                 string `json:"id"`
-	Name               string `json:"name"`
-	Symbol             string `json:"symbol"`
-	Rank               string `json:"rank"`
-	PriceUsd           string `json:"price_usd"`
-	PriceBtc           string `json:"price_btc"`
-	TwentyFourHrVolume string `json:"24h_volume_usd"`
-	MarketCapUsd       string `json:"market_cap_usd"`
-	AvailableSupply    string `json:"available_supply"`
-	TotalSupply        string `json:"total_supply"`
-	MaxSupply          string `json:"null"`
-	PercentChange1h    string `json:"percent_change_1h"`
-	PercentChange24h   string `json:"percent_change_24h"`
-	PercentChange7d    string `json:"percent_change_7d"`
-	LastUpdate         string `json:"last_updated"`
+// USD contains USD prices for a cryptocurrency
+type USD struct {
+	Price            float64   `json:"price"`
+	Volume24H        float64   `json:"volume_24h"`
+	PercentChange1H  float64   `json:"percent_change_1h"`
+	PercentChange24H float64   `json:"percent_change_24h"`
+	PercentChange7D  float64   `json:"percent_change_7d"`
+	MarketCap        float64   `json:"market_cap"`
+	LastUpdated      time.Time `json:"last_updated"`
 }
 
 func init() {
@@ -56,7 +49,7 @@ func init() {
 // we will return that price instead of querying coinmarketcap. In the event
 // of a "stale" value we will hit the coinmarketcap api. If that errors
 // then we return both the error, and whatever price we have in-memory
-func RetrieveUsdPrice(coin string) (float64, error) {
+func RetrieveUsdPrice(coin, apiKey string) (float64, error) {
 	pricer.mux.RLock()
 	if pricer.coins[coin].price != 0 {
 		if time.Now().After(pricer.coins[coin].nextRefresh) {
@@ -73,27 +66,85 @@ REFRESH:
 	if pricer.coins[coin].price != 0 && !time.Now().After(pricer.coins[coin].nextRefresh) {
 		return pricer.coins[coin].price, nil
 	}
-	url := fmt.Sprintf("%s/%s", tickerURL, coin)
-	response, err := http.Get(url)
+	req, err := http.NewRequest("GET", tickerURL, nil)
 	if err != nil {
+		fmt.Println("error: ", err)
+		return pricer.coins[coin].price, err
+	}
+	req.Header.Add("X-CMC_PRO_API_KEY", apiKey)
+	q := url.Values{}
+	q.Add("slug", coin)
+	req.URL.RawQuery = q.Encode()
+	client := &http.Client{}
+	response, err := client.Do(req)
+	if err != nil {
+		fmt.Println("error: ", err)
 		return pricer.coins[coin].price, err
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
+		fmt.Println("error: ", err)
 		return pricer.coins[coin].price, err
 	}
-	var decode []Response
+	var decode map[string]map[string]interface{}
 	if err = json.Unmarshal(body, &decode); err != nil {
+		fmt.Println("error: ", err)
 		return pricer.coins[coin].price, err
 	}
-	cost, err := strconv.ParseFloat(decode[0].PriceUsd, 64)
-	if err != nil {
-		return pricer.coins[coin].price, err
+	// we're only interested in the "data" field
+	data := decode["data"]
+	var (
+		datamap, quotemap, usdmap map[string]interface{}
+		usd                       USD
+		parsed                    bool
+	)
+	for k := range data {
+		out := data[k]
+		b, err := json.Marshal(out)
+		if err != nil {
+			fmt.Println("error: ", err)
+			return pricer.coins[coin].price, err
+		}
+		if err := json.Unmarshal(b, &datamap); err != nil {
+			fmt.Println("error: ", err)
+			return pricer.coins[coin].price, err
+		}
+		b, err = json.Marshal(datamap)
+		if err != nil {
+			fmt.Println("error: ", err)
+			return pricer.coins[coin].price, err
+		}
+		if err := json.Unmarshal(b, &quotemap); err != nil {
+			return pricer.coins[coin].price, err
+		}
+		if quotemap["quote"] != nil {
+			b, err = json.Marshal(quotemap["quote"])
+			if err := json.Unmarshal(b, &usdmap); err != nil {
+				fmt.Println("error: ", err)
+				return pricer.coins[coin].price, err
+			}
+			b, err = json.Marshal(usdmap["USD"])
+			if err != nil {
+				fmt.Println("error: ", err)
+				return pricer.coins[coin].price, err
+			}
+			if err := json.Unmarshal(b, &usd); err != nil {
+				fmt.Println("error: ", err)
+				return pricer.coins[coin].price, err
+			}
+			if usd.Price != 0 {
+				parsed = true
+				pricer.coins[coin] = coinPrice{
+					price:       usd.Price,
+					nextRefresh: time.Now().Add(time.Minute * 10),
+				}
+
+			}
+		}
 	}
-	pricer.coins[coin] = coinPrice{
-		price:       cost,
-		nextRefresh: time.Now().Add(time.Minute * 10),
+	if !parsed {
+		return pricer.coins[coin].price, errors.New("failed to get price")
 	}
-	return cost, nil
+	return pricer.coins[coin].price, nil
 }
