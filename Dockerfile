@@ -1,5 +1,5 @@
 # Set up Golang build environment
-FROM golang:alpine AS build-env
+FROM golang:1.14.1-alpine3.11 AS build-env
 ARG TEMPORALVERSION
 ENV BUILD_HOME=/go/src/github.com/RTradeLtd/Temporal \
     TEMPORALVERSION=${TEMPORALVERSION} \
