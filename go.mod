@@ -1,6 +1,6 @@
 module github.com/RTradeLtd/Temporal
 
-go 1.13
+go 1.14
 
 require (
 	github.com/RTradeLtd/ChainRider-Go v1.0.8
@@ -26,8 +26,8 @@ require (
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gcash/bchutil v0.0.0-20191012211144-98e73ec336ba
 	github.com/gcash/bchwallet v0.8.2
-	github.com/gin-contrib/secure v0.0.0-20190301062601-f9a5befa6106
-	github.com/gin-gonic/gin v1.5.0
+	github.com/gin-contrib/secure v0.0.1
+	github.com/gin-gonic/gin v1.6.2
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-immutable-radix v1.1.0 // indirect
@@ -70,9 +70,7 @@ require (
 	go.bobheadxi.dev/res v0.2.0
 	go.bobheadxi.dev/zapx/zapx v0.6.8
 	go.bobheadxi.dev/zapx/ztest v0.6.4
-	go.uber.org/atomic v1.5.1 // indirect
-	go.uber.org/multierr v1.4.0 // indirect
-	go.uber.org/zap v1.13.0
+	go.uber.org/zap v1.14.1
 	golang.org/x/crypto v0.0.0-20200208060501-ecb85df21340 // indirect
 	golang.org/x/lint v0.0.0-20200130185559-910be7a94367 // indirect
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
