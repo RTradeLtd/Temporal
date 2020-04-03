@@ -323,23 +323,32 @@ func (api *API) handleUserCreate(c *gin.Context, forms map[string]string, create
 	// format a link tag
 	link := fmt.Sprintf("<a href=\"%s\">link</a>", url)
 	emailSubject := fmt.Sprintf(
-		"%s Welcome To Temporal, Read This For Crucial Getting Start Tips", forms["organization_name"],
+		"%s Welcome To Temporal 🌌 Read This For Crucial Getting Start Tips", forms["organization_name"],
 	)
 	// build email message
 	es := queue.EmailSend{
 		Subject: emailSubject,
 		Content: fmt.Sprintf(
-			"%s%s%s%s%s%s%s%s%s%s",
+			"%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
 			"Thanks for signing up with Temporal, before you get started it's important we discuss our pinning system.\n",
 			"When uploading to Temporal you must specify a \"hold time\" which tells our system how long your data should be around for.\n",
 			"When you're using Temporal via the playground, or the API directly you can configure this for up to 24 months with paid accounts, and up to 1 month for free accounts.\n",
+			"<br>",
+			"<br>",
 			"When using Temporal through third-party implementations like our IPFS HTTP API reverse proxy, or the ENS management app, we use an implicit hold time of 1 month.\n",
-			"This means that if for example you used the ENS management app to upload your website, and want it to stick around for longer than 1 month you need to extend your pin.\n",
-			"Pin extension can be done via the Temporal playground (https://play2.temporal.cloud) or via the API\n",
+			"For example if you used the ENS management app to upload your website, and want it to stick around for longer than 1 month you need to extend your pin.\n",
+			"Pin extension can be done via the <a href=\"https://play2.temporal.cloud\">Temporal Playground</a> or via the API\n",
+			"<br>",
+			"<br>",
 			"Lastly lets talk about emails! We try our best to not spam your inbox so we limit emails to a few things: payment notifications, pin expiration warnings, and processing failures\n",
 			"But before we do this, you must validate your email. Note that email validation is not required unless you want these notifications\n",
-			"To validate your email, just click the following link: "+link,
-			"Thanks for signing up! Join us on Telegram where you can receive live support and updates: https://t.me/RTradeTEMPORAL",
+			"To validate your email, just click the following "+link+"\n",
+			"<br>",
+			"<br>",
+			"Questions, comments, concerns, or just feeling talkative? Join us on Telegram where you can receive live support and updates: <a href=\"https://t.me/RTradeTEMPORAL\">click here</a>\n",
+			"<br>",
+			"<br>",
+			"Thanks for signing up!",
 		),
 		ContentType: "text/html",
 		UserNames:   []string{user.UserName},
