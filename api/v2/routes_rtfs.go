@@ -364,17 +364,6 @@ func (api *API) extendPin(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	// find usage model
-	usage, err := api.usage.FindByUserName(username)
-	if err != nil {
-		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
-		return
-	}
-	// make sure they aren't a free account
-	if usage.Tier == models.Free {
-		Fail(c, errors.New("free accounts are not allowed to extend pin times"))
-		return
-	}
 	// find upload
 	upload, err := api.upm.FindUploadByHashAndUserAndNetwork(username, hash, "public")
 	if err != nil {
