@@ -133,23 +133,12 @@ func Test_Ensure_Two_Year_Max(t *testing.T) {
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	um := models.NewUploadManager(db)
-	upload, err := um.NewUpload(
-		randString,
-		"file",
-		models.UploadOptions{
-			Username:         "testuser",
-			NetworkName:      "public",
-			HoldTimeInMonths: 1,
-			Encrypted:        false,
-		},
-	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// TODO(bonedaddy): properly test
 	type args struct {
 		holdTimeInMonths int64
-		upload           *models.Upload
 		isFree           bool
 	}
 	tests := []struct {
@@ -157,17 +146,30 @@ func Test_Ensure_Two_Year_Max(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"12-Months-paid", args{12, upload, false}, false},
-		{"22-Months-paid", args{22, upload, false}, false},
-		{"25-Months-paid", args{25, upload, false}, true},
-		{"12-Months-free", args{12, upload, true}, false},
-		{"22-Months-free", args{22, upload, true}, false},
-		{"25-Months-free", args{25, upload, true}, true},
+		{"12-Months-paid", args{12, false}, false},
+		{"22-Months-paid", args{22, false}, false},
+		{"25-Months-paid", args{25, false}, true},
+		{"12-Months-free", args{12, true}, false},
+		{"22-Months-free", args{22, true}, true},
+		{"25-Months-free", args{25, true}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			upload, err := um.NewUpload(
+				randString,
+				"file",
+				models.UploadOptions{
+					Username:         "testuser",
+					NetworkName:      "public",
+					HoldTimeInMonths: 1,
+					Encrypted:        false,
+				},
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
 			if err := api.ensureLEMaxPinTime(
-				tt.args.upload,
+				upload,
 				tt.args.holdTimeInMonths,
 				tt.args.isFree,
 			); (err != nil) != tt.wantErr {
