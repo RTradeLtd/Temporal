@@ -253,13 +253,21 @@ func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 	return holdTimeInt, nil
 }
 
-func (api *API) ensureTwoYearMax(upload *models.Upload, holdTime int64) error {
+func (api *API) ensureGEMaxPinTime(upload *models.Upload, holdTime int64, isFree bool) error {
+	var hours float64
+	if isFree {
+		// set 1 year if they are free
+		hours = 8760
+	} else {
+		// set 2 year if they are free
+		hours = 17520
+	}
 	// get current time
 	now := time.Now()
 	// get future time while factoring for additional hold time
 	then := upload.GarbageCollectDate.AddDate(0, int(holdTime), 0)
-	// get the time difference and ensure its less than the 2 year limit
-	if then.Sub(now).Hours() > 17520 {
+	// get the time difference and ensure the appropriate maximum pin time
+	if then.Sub(now).Hours() > hours {
 		return errors.New(eh.MaxHoldTimeError)
 	}
 	return nil
