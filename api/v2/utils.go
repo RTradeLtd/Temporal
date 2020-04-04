@@ -253,7 +253,7 @@ func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 	return holdTimeInt, nil
 }
 
-func (api *API) ensureGEMaxPinTime(upload *models.Upload, holdTime int64, isFree bool) error {
+func (api *API) ensureLEMaxPinTime(upload *models.Upload, holdTime int64, isFree bool) error {
 	var hours float64
 	if isFree {
 		// set 1 year if they are free

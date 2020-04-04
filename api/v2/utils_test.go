@@ -146,24 +146,30 @@ func Test_Ensure_Two_Year_Max(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// TODO(bonedaddy): properly test
 	type args struct {
 		holdTimeInMonths int64
 		upload           *models.Upload
+		isFree           bool
 	}
 	tests := []struct {
 		name    string
 		args    args
 		wantErr bool
 	}{
-		{"12-Months", args{12, upload}, false},
-		{"22-Months", args{22, upload}, false},
-		{"25-Months", args{25, upload}, true},
+		{"12-Months-paid", args{12, upload, false}, false},
+		{"22-Months-paid", args{22, upload, false}, false},
+		{"25-Months-paid", args{25, upload, false}, true},
+		{"12-Months-free", args{12, upload, true}, false},
+		{"22-Months-free", args{22, upload, true}, false},
+		{"25-Months-free", args{25, upload, true}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := api.ensureTwoYearMax(
+			if err := api.ensureLEMaxPinTime(
 				tt.args.upload,
 				tt.args.holdTimeInMonths,
+				tt.args.isFree,
 			); (err != nil) != tt.wantErr {
 				t.Fatalf("ensureTwoYearMax err = %v, wantErr %v", err, tt.wantErr)
 			}
