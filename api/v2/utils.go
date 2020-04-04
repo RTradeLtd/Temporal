@@ -232,8 +232,8 @@ func (api *API) extractPostForms(c *gin.Context, formNames ...string) (map[strin
 // returning an int64 type of the provided hold time
 func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 	var (
-		// 1 month
-		freeHoldTimeLimitInMonths int64 = 1
+		// 1 year
+		freeHoldTimeLimitInMonths int64 = 12
 		// two years
 		nonFreeHoldTimeLimitInMonths int64 = 24
 	)
