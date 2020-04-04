@@ -149,7 +149,9 @@ func Test_Ensure_Two_Year_Max(t *testing.T) {
 		{"12-Months-paid", args{12, false}, false},
 		{"22-Months-paid", args{22, false}, false},
 		{"25-Months-paid", args{25, false}, true},
-		{"12-Months-free", args{12, true}, false},
+		{"10-Months-free", args{10, true}, false},
+		{"11-Months-free", args{11, true}, false},
+		{"12-Months-free", args{12, true}, true},
 		{"22-Months-free", args{22, true}, true},
 		{"25-Months-free", args{25, true}, true},
 	}
