@@ -175,6 +175,7 @@ func Test_Ensure_Two_Year_Max(t *testing.T) {
 			); (err != nil) != tt.wantErr {
 				t.Fatalf("ensureTwoYearMax err = %v, wantErr %v", err, tt.wantErr)
 			}
+			um.DB.Unscoped().Delete(upload)
 		})
 	}
 }
