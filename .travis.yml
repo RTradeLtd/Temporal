@@ -23,6 +23,7 @@ before_script:
 - go build ./...
 - go test -run xxxx ./...
 - make testenv
+- make run-swarm
 
 script:
 - diff -u <(echo -n) <(gofmt -d -s `find . -type f -name '*.go' -not -path "./vendor/*"`)
