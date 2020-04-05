@@ -10,3 +10,7 @@ vendor
 \.vscode/
 
 /build
+
+swarmtest/datadir/swarm/bzz-f30cc317121ca7cd51f667088c9ae4aad26c861e/
+
+swarmtest/datadir/swarm/nodes/
