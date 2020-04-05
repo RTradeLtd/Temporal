@@ -205,7 +205,7 @@ fmt:
 # runs the 
 .PHONY: run-swarm
 run-swarm:
-	docker run -d -it -v ${PWD}/swarmtest/datadir:/data \
+	docker run --name temporal_swarm -d -it -v ${PWD}/swarmtest/datadir:/data \
 					-v ${PWD}/swarmtest/passwordfile:/password \
 					-p 8500:8500 \
 					ethersphere/swarm \
@@ -213,3 +213,7 @@ run-swarm:
 								--password /password \
 								--debug \
 								--verbosity 4
+
+.PHONY: stop-swarm
+stop-swarm:
+	docker stop temporal_swarm && docker rm temporal_swarm
