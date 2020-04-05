@@ -205,8 +205,8 @@ fmt:
 # runs the 
 .PHONY: run-swarm
 run-swarm:
-	docker run -d -it -v $PWD/swarmtest/datadir:/data \
-					-v $PWD/swarmtest/passwordfile:/password \
+	docker run -d -it -v ${PWD}/swarmtest/datadir:/data \
+					-v ${PWD}/swarmtest/passwordfile:/password \
 					-p 8500:8500 \
 					ethersphere/swarm \
 								--datadir /data \
