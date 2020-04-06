@@ -47,7 +47,6 @@ func (api *API) SwarmUpload(c *gin.Context) {
 		"content-type": []string{swampi.SingleFileUpload.ContentType(isTar == "true")},
 	})
 	if err != nil {
-		resp.Body.Close()
 		api.LogError(c, err, err.Error())
 		return
 	}
