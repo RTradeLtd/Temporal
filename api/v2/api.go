@@ -651,6 +651,12 @@ func (api *API) setupRoutes(debug bool) error {
 		ens.POST("/update", api.UpdateContentHash)
 	}
 
+	// swarm routes
+	swarm := v2.Group("/swarm", authware...)
+	{
+		swarm.POST("/upload", api.SwarmUpload)
+	}
+
 	api.l.Info("Routes initialized")
 	return nil
 }
