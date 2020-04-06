@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/swampi"
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +16,7 @@ func (api *API) SwarmUpload(c *gin.Context) {
 		Fail(c, errors.New("until further notice swarm based calls are not supported in production"))
 		return
 	}
+	/* TODO(bonedaddy): dont auth gate for now so we can shill dank memes
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
@@ -24,6 +24,7 @@ func (api *API) SwarmUpload(c *gin.Context) {
 	}
 	// temporary until we do database updates
 	_ = username
+	*/
 	fileHandler, err := c.FormFile("file")
 	if err != nil {
 		Fail(c, err)
