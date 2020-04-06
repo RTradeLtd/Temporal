@@ -74,7 +74,7 @@ func (api *API) SwarmUpload(c *gin.Context) {
 		Fail(c, errors.New("bad contents returned from swarm api"))
 		return
 	}
-	var response gin.H
+	var response = make(gin.H)
 	if ipfsHash != "" {
 		response["response"] = map[string]string{
 			"ipfs_hash":  ipfsHash,
