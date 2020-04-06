@@ -46,9 +46,18 @@ func (api *API) SwarmUpload(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
+	var ipfsHash string
+	// store on ipfs if requested
+	if c.PostForm("mirror_ipfs") == "true" {
+		ipfsHash, err = api.ipfs.Add(bytes.NewReader(append(fileBytes[0:0:0], fileBytes...)))
+		if err != nil {
+			Fail(c, err)
+			return
+		}
+	}
 	// lazy so im hard coding this for now
 	swamp := swampi.New("http://localhost:8500")
-	resp, err := swamp.Send(swampi.SingleFileUpload, bytes.NewReader(fileBytes), map[string][]string{
+	resp, err := swamp.Send(swampi.SingleFileUpload, bytes.NewReader(append(fileBytes[0:0:0], fileBytes...)), map[string][]string{
 		"content-type": {swampi.SingleFileUpload.ContentType(isTar == "true")},
 	})
 	if err != nil {
@@ -65,6 +74,17 @@ func (api *API) SwarmUpload(c *gin.Context) {
 		Fail(c, errors.New("bad contents returned from swarm api"))
 		return
 	}
+	var response gin.H
+	if ipfsHash != "" {
+		response["response"] = map[string]string{
+			"ipfs_hash":  ipfsHash,
+			"swarm_hash": string(contents),
+		}
+	} else {
+		response["response"] = map[string]string{
+			"swarm_hash": string(contents),
+		}
+	}
 	// TODO(bonedaddy): update database records
-	Respond(c, http.StatusOK, gin.H{"response": string(contents)})
+	Respond(c, http.StatusOK, response)
 }
