@@ -63,7 +63,7 @@ func Test_Routes_Swarm(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code recovered from /v2/swarm/upload")
 	}
-	var apiResp apiResponse
+	var apiResp mapAPIResponse
 	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
@@ -73,5 +73,11 @@ func Test_Routes_Swarm(t *testing.T) {
 	}
 	if apiResp.Code != 200 {
 		t.Fatal("bad api response status code from /v2/swarm/upload")
+	}
+	if apiResp.Response["swarm_hash"].(string) == "" {
+		t.Fatal("invalid swarm hash returned")
+	}
+	if apiResp.Response["ipfs_hash"].(string) == "" {
+		t.Fatal("invalid ipfs hash returned")
 	}
 }
