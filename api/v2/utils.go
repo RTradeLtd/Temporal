@@ -47,6 +47,8 @@ func (api *API) pageIt(c *gin.Context, db *gorm.DB, model interface{}) {
 			DB:    db,
 			Page:  pageInt,
 			Limit: limitInt,
+			// sort results starting with newest first
+			OrderBy: []string{"created_at DESC"},
 		},
 		model,
 	)
