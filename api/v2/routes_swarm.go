@@ -48,7 +48,7 @@ func (api *API) SwarmUpload(c *gin.Context) {
 	// lazy so im hard coding this for now
 	swamp := swampi.New("http://localhost:8500")
 	resp, err := swamp.Send(swampi.SingleFileUpload, bytes.NewReader(fileBytes), map[string][]string{
-		"content-type": []string{swampi.SingleFileUpload.ContentType(isTar == "true")},
+		"content-type": {swampi.SingleFileUpload.ContentType(isTar == "true")},
 	})
 	if err != nil {
 		api.LogError(c, err, err.Error())
