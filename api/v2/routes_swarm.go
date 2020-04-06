@@ -13,6 +13,10 @@ import (
 
 // SwarmUpload is used to upload data to ethereum swarm
 func (api *API) SwarmUpload(c *gin.Context) {
+	if !dev {
+		Fail(c, errors.New("until further notice swarm based calls are not supported in production"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
