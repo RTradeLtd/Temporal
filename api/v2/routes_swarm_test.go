@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 
@@ -53,6 +54,9 @@ func Test_Routes_Swarm(t *testing.T) {
 	bodyWriter.Close()
 	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/swarm/upload", bodyBuf)
+	urlValues := url.Values{}
+	urlValues.Set("mirror_ipfs", "true")
+	req.PostForm = urlValues
 	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 	api.r.ServeHTTP(testRecorder, req)
