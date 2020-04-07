@@ -375,11 +375,8 @@ func (api *API) extendPin(c *gin.Context) {
 		api.LogError(c, err, eh.UploadSearchError)(http.StatusBadRequest)
 		return
 	}
-	// indicate whether or not the user is free
-	// will be true if usg is free tier
-	var isFree = usg.Tier == models.Free
 	// ensure even with pin time extension, it wont breach two year limit
-	if err := api.ensureLEMaxPinTime(upload, holdTimeInt, isFree); err != nil {
+	if err := api.ensureLEMaxPinTime(upload, holdTimeInt, usg.Tier); err != nil {
 		Fail(c, err)
 		return
 	}

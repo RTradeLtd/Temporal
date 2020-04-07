@@ -248,28 +248,29 @@ func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 		return 0, err
 	}
 	if usageTier.Tier == models.Free && holdTimeInt > freeHoldTimeLimitInMonths {
-		return 0, errors.New("free accounts are limited to maximum hold times of 1 month")
+		return 0, errors.New("free accounts are limited to maximum hold times of 12 month")
 	} else if usageTier.Tier != models.Free && holdTimeInt > nonFreeHoldTimeLimitInMonths {
 		return 0, errors.New("non free accounts are limited to a maximum hold time of 24 months")
 	}
 	return holdTimeInt, nil
 }
 
-func (api *API) ensureLEMaxPinTime(upload *models.Upload, holdTime int64, isFree bool) error {
-	var hours float64
-	if isFree {
-		// set 1 year if they are free
+func (api *API) ensureLEMaxPinTime(upload *models.Upload, holdTime int64, tier models.DataUsageTier) error {
+	var hours int
+	switch tier {
+	case models.Free:
 		hours = 8760
-	} else {
-		// set 2 year if they are free
+	case models.Paid, models.Partner, models.WhiteLabeled:
 		hours = 17520
+	default:
+		return errors.New("invalid usage tier")
 	}
 	// get current time
 	now := time.Now()
 	// get future time while factoring for additional hold time
 	then := upload.GarbageCollectDate.AddDate(0, int(holdTime), 0)
 	// get the time difference and ensure the appropriate maximum pin time
-	if then.Sub(now).Hours() > hours {
+	if then.Sub(now).Hours() > (time.Hour * time.Duration(hours)).Hours() {
 		return errors.New(eh.MaxHoldTimeError)
 	}
 	return nil

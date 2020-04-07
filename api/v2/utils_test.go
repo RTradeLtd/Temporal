@@ -139,21 +139,28 @@ func Test_Ensure_Two_Year_Max(t *testing.T) {
 	// TODO(bonedaddy): properly test
 	type args struct {
 		holdTimeInMonths int64
-		isFree           bool
+		tier             models.DataUsageTier
 	}
 	tests := []struct {
 		name    string
 		args    args
 		wantErr bool
 	}{
-		{"12-Months-paid", args{12, false}, false},
-		{"22-Months-paid", args{22, false}, false},
-		{"25-Months-paid", args{25, false}, true},
-		{"10-Months-free", args{10, true}, false},
-		{"11-Months-free", args{11, true}, false},
-		{"12-Months-free", args{12, true}, true},
-		{"22-Months-free", args{22, true}, true},
-		{"25-Months-free", args{25, true}, true},
+		{"12-Months-paid", args{12, models.Paid}, false},
+		{"22-Months-paid", args{22, models.Paid}, false},
+		{"25-Months-paid", args{25, models.Paid}, true},
+		{"10-Months-free", args{10, models.Free}, false},
+		{"11-Months-free", args{11, models.Free}, false},
+		{"12-Months-free", args{12, models.Free}, true},
+		{"22-Months-free", args{22, models.Free}, true},
+		{"25-Months-free", args{25, models.Free}, true},
+		{"12-Months-partner", args{12, models.Partner}, false},
+		{"22-Months-partner", args{22, models.Partner}, false},
+		{"25-Months-partner", args{25, models.Partner}, true},
+		{"12-Months-whitelabeled", args{12, models.WhiteLabeled}, false},
+		{"22-Months-whitelabeled", args{22, models.WhiteLabeled}, false},
+		{"25-Months-whitelabeled", args{25, models.WhiteLabeled}, true},
+		{"not-a-real-tier", args{12, models.DataUsageTier("thetierisalie")}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -173,7 +180,7 @@ func Test_Ensure_Two_Year_Max(t *testing.T) {
 			if err := api.ensureLEMaxPinTime(
 				upload,
 				tt.args.holdTimeInMonths,
-				tt.args.isFree,
+				tt.args.tier,
 			); (err != nil) != tt.wantErr {
 				t.Fatalf("ensureTwoYearMax err = %v, wantErr %v", err, tt.wantErr)
 			}
