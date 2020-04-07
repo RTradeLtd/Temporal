@@ -136,7 +136,6 @@ func Test_Ensure_Two_Year_Max(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// TODO(bonedaddy): properly test
 	type args struct {
 		holdTimeInMonths int64
 		tier             models.DataUsageTier
