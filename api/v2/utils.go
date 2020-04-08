@@ -256,21 +256,16 @@ func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 }
 
 func (api *API) ensureLEMaxPinTime(upload *models.Upload, holdTime int64, tier models.DataUsageTier) error {
-	var hours int
+	var limit time.Time
 	switch tier {
 	case models.Free:
-		hours = 8760
+		limit = time.Now().AddDate(1, 0, 0)
 	case models.Paid, models.Partner, models.WhiteLabeled:
-		hours = 17520
+		limit = time.Now().AddDate(2, 0, 0)
 	default:
 		return errors.New("invalid usage tier")
 	}
-	// get current time
-	now := time.Now()
-	// get future time while factoring for additional hold time
-	then := upload.GarbageCollectDate.AddDate(0, int(holdTime), 0)
-	// get the time difference and ensure the appropriate maximum pin time
-	if then.Sub(now).Hours() > (time.Hour * time.Duration(hours)).Hours() {
+	if upload.GarbageCollectDate.AddDate(0, int(holdTime), 0).After(limit) {
 		return errors.New(eh.MaxHoldTimeError)
 	}
 	return nil
