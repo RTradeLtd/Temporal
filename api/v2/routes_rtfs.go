@@ -364,15 +364,9 @@ func (api *API) extendPin(c *gin.Context) {
 		Fail(c, err)
 		return
 	}
-	// find usage model
-	usage, err := api.usage.FindByUserName(username)
+	usg, err := api.usage.FindByUserName(username)
 	if err != nil {
-		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
-		return
-	}
-	// make sure they aren't a free account
-	if usage.Tier == models.Free {
-		Fail(c, errors.New("free accounts are not allowed to extend pin times"))
+		api.LogError(c, err, eh.UserSearchError)
 		return
 	}
 	// find upload
@@ -382,7 +376,7 @@ func (api *API) extendPin(c *gin.Context) {
 		return
 	}
 	// ensure even with pin time extension, it wont breach two year limit
-	if err := api.ensureTwoYearMax(upload, holdTimeInt); err != nil {
+	if err := api.ensureLEMaxPinTime(upload, holdTimeInt, usg.Tier); err != nil {
 		Fail(c, err)
 		return
 	}
