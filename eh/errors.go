@@ -131,7 +131,7 @@ const (
 	// PinExtendError is an error message used when someone attempts to extend the pin for content they haven't uploaded
 	PinExtendError = "failed to extend pin duration, this likely means you haven't actually uploaded this content before"
 	// MaxHoldTimeError is an error message when the current hold time value would breach set pin time limits
-	MaxHoldTimeError = "a hold time of this long would result in a longer maximum pin time of 2 years, please reduce your hold time and try again"
+	MaxHoldTimeError = "a hold time of this long would result in a longer maximum pin time than what your account allow, please reduce your hold time and try again"
 	// HostNameNotFoundError is an error message when api server has not hostname
 	HostNameNotFoundError = "an api host has not hostname, please set hostname"
 )

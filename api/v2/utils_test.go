@@ -133,40 +133,57 @@ func Test_Ensure_Two_Year_Max(t *testing.T) {
 	randUtils := utils.GenerateRandomUtils()
 	randString := randUtils.GenerateString(32, utils.LetterBytes)
 	um := models.NewUploadManager(db)
-	upload, err := um.NewUpload(
-		randString,
-		"file",
-		models.UploadOptions{
-			Username:         "testuser",
-			NetworkName:      "public",
-			HoldTimeInMonths: 1,
-			Encrypted:        false,
-		},
-	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	type args struct {
 		holdTimeInMonths int64
-		upload           *models.Upload
+		tier             models.DataUsageTier
 	}
 	tests := []struct {
 		name    string
 		args    args
 		wantErr bool
 	}{
-		{"12-Months", args{12, upload}, false},
-		{"22-Months", args{22, upload}, false},
-		{"25-Months", args{25, upload}, true},
+		{"12-Months-paid", args{12, models.Paid}, false},
+		{"22-Months-paid", args{22, models.Paid}, false},
+		{"25-Months-paid", args{25, models.Paid}, true},
+		{"10-Months-free", args{10, models.Free}, false},
+		{"11-Months-free", args{11, models.Free}, false},
+		{"12-Months-free", args{12, models.Free}, true},
+		{"22-Months-free", args{22, models.Free}, true},
+		{"25-Months-free", args{25, models.Free}, true},
+		{"12-Months-partner", args{12, models.Partner}, false},
+		{"22-Months-partner", args{22, models.Partner}, false},
+		{"25-Months-partner", args{25, models.Partner}, true},
+		{"12-Months-whitelabeled", args{12, models.WhiteLabeled}, false},
+		{"22-Months-whitelabeled", args{22, models.WhiteLabeled}, false},
+		{"25-Months-whitelabeled", args{25, models.WhiteLabeled}, true},
+		{"not-a-real-tier", args{12, models.DataUsageTier("thetierisalie")}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := api.ensureTwoYearMax(
-				tt.args.upload,
+			upload, err := um.NewUpload(
+				randString,
+				"file",
+				models.UploadOptions{
+					Username:         "testuser",
+					NetworkName:      "public",
+					HoldTimeInMonths: 1,
+					Encrypted:        false,
+				},
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := api.ensureLEMaxPinTime(
+				upload,
 				tt.args.holdTimeInMonths,
+				tt.args.tier,
 			); (err != nil) != tt.wantErr {
 				t.Fatalf("ensureTwoYearMax err = %v, wantErr %v", err, tt.wantErr)
 			}
+			um.DB.Unscoped().Delete(upload)
 		})
 	}
 }

@@ -120,6 +120,9 @@ REFRESH:
 		}
 		if quotemap["quote"] != nil {
 			b, err = json.Marshal(quotemap["quote"])
+			if err != nil {
+				return pricer.coins[coin].price, err
+			}
 			if err := json.Unmarshal(b, &usdmap); err != nil {
 				fmt.Println("error: ", err)
 				return pricer.coins[coin].price, err

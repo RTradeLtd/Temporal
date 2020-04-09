@@ -234,8 +234,8 @@ func (api *API) extractPostForms(c *gin.Context, formNames ...string) (map[strin
 // returning an int64 type of the provided hold time
 func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 	var (
-		// 1 month
-		freeHoldTimeLimitInMonths int64 = 1
+		// 1 year
+		freeHoldTimeLimitInMonths int64 = 12
 		// two years
 		nonFreeHoldTimeLimitInMonths int64 = 24
 	)
@@ -248,20 +248,24 @@ func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 		return 0, err
 	}
 	if usageTier.Tier == models.Free && holdTimeInt > freeHoldTimeLimitInMonths {
-		return 0, errors.New("free accounts are limited to maximum hold times of 1 month")
+		return 0, errors.New("free accounts are limited to maximum hold times of 12 month")
 	} else if usageTier.Tier != models.Free && holdTimeInt > nonFreeHoldTimeLimitInMonths {
 		return 0, errors.New("non free accounts are limited to a maximum hold time of 24 months")
 	}
 	return holdTimeInt, nil
 }
 
-func (api *API) ensureTwoYearMax(upload *models.Upload, holdTime int64) error {
-	// get current time
-	now := time.Now()
-	// get future time while factoring for additional hold time
-	then := upload.GarbageCollectDate.AddDate(0, int(holdTime), 0)
-	// get the time difference and ensure its less than the 2 year limit
-	if then.Sub(now).Hours() > 17520 {
+func (api *API) ensureLEMaxPinTime(upload *models.Upload, holdTime int64, tier models.DataUsageTier) error {
+	var limit time.Time
+	switch tier {
+	case models.Free:
+		limit = time.Now().AddDate(1, 0, 0)
+	case models.Paid, models.Partner, models.WhiteLabeled:
+		limit = time.Now().AddDate(2, 0, 0)
+	default:
+		return errors.New("invalid usage tier")
+	}
+	if upload.GarbageCollectDate.AddDate(0, int(holdTime), 0).After(limit) {
 		return errors.New(eh.MaxHoldTimeError)
 	}
 	return nil
