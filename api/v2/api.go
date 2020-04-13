@@ -9,13 +9,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/streadway/amqp"
-
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
+	recaptcha "github.com/ezzarghili/recaptcha-go"
 	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
+	"github.com/streadway/amqp"
 
 	"github.com/RTradeLtd/kaas/v2"
 	"go.uber.org/zap"
@@ -64,6 +64,8 @@ type API struct {
 	service     string
 	cmcAPIKey   string
 	version     string
+
+	captcha recaptcha.ReCAPTCHA
 }
 
 // Initialize is used ot initialize our API service. debug = true is useful
@@ -108,7 +110,11 @@ func Initialize(
 		return nil, err
 	}
 	api.version = version
-
+	captcha, err := recaptcha.NewReCAPTCHA(api.getCaptchaKey(), recaptcha.V3, time.Second*10)
+	if err != nil {
+		return nil, err
+	}
+	api.captcha = captcha
 	// init routes
 	if err = api.setupRoutes(opts.DebugLogging); err != nil {
 		return nil, err
@@ -124,7 +130,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 		dbm *database.Manager
 		err error
 	)
-
 	// set up database manager
 	dbm, err = database.New(cfg, database.Options{LogMode: debug})
 	if err != nil {
@@ -649,6 +654,11 @@ func (api *API) setupRoutes(debug bool) error {
 	{
 		ens.POST("/claim", api.ClaimENSName)
 		ens.POST("/update", api.UpdateContentHash)
+	}
+
+	recap := v2.Group("/captcha")
+	{
+		recap.POST("/verify", api.verifyCaptcha)
 	}
 
 	api.l.Info("Routes initialized")

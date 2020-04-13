@@ -23,6 +23,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/dvwright/xss-mw v0.0.0-20191029162136-7a0dab86d8f6
+	github.com/ezzarghili/recaptcha-go v4.0.0+incompatible // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gcash/bchutil v0.0.0-20191012211144-98e73ec336ba
 	github.com/gcash/bchwallet v0.8.2

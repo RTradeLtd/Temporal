@@ -17,6 +17,7 @@ import (
 	pb "github.com/RTradeLtd/grpc/krab"
 	"github.com/RTradeLtd/rtfs/v2"
 	"github.com/RTradeLtd/rtfs/v2/beam"
+	"github.com/ezzarghili/recaptcha-go"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -387,4 +388,16 @@ func (api *API) handleUserCreate(c *gin.Context, forms map[string]string, create
 		user, status,
 	},
 	})
+}
+
+func (api *API) verifyCaptcha(c *gin.Context) {
+	err := api.captcha.VerifyWithOptions(
+		c.PostForm("g-recaptcha-response"),
+		// require a threshold of 0.8, default is 0.5
+		recaptcha.VerifyOption{Threshold: 0.8},
+	)
+	if err != nil {
+		Fail(c, errors.New("captcha validation failed"))
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "captcha validation succeeded"})
 }

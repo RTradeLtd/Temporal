@@ -277,3 +277,10 @@ func (api *API) getCMCKey() string {
 	}
 	return api.cmcAPIKey
 }
+
+func (api *API) getCaptchaKey() string {
+	if os.Getenv("RECAPTCHA_KEY") != "" {
+		return os.Getenv("RECAPTCHA_KEY")
+	}
+	return ""
+}
