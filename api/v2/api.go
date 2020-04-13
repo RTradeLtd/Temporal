@@ -84,6 +84,8 @@ func Initialize(
 		err    error
 		router = gin.Default()
 	)
+	// if we dont set this, rate limiting wont work properly
+	router.ForwardedByClientIP = true
 	// update dev mode
 	dev = opts.DevMode
 	l = l.Named("api")
