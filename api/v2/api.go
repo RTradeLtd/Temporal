@@ -9,22 +9,21 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/ChainRider-Go/dash"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
+	"github.com/RTradeLtd/kaas/v2"
+	"github.com/RTradeLtd/rtfs/v2"
 	recaptcha "github.com/ezzarghili/recaptcha-go"
 	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
 	"github.com/streadway/amqp"
-
-	"github.com/RTradeLtd/kaas/v2"
+	"github.com/ulule/limiter/v3"
+	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
+	"github.com/ulule/limiter/v3/drivers/store/memory"
 	"go.uber.org/zap"
-
-	"github.com/RTradeLtd/ChainRider-Go/dash"
-	"github.com/RTradeLtd/Temporal/queue"
-	"github.com/RTradeLtd/rtfs/v2"
-
-	limit "github.com/aviddiviner/gin-limit"
 
 	"github.com/RTradeLtd/config/v2"
 	stats "github.com/semihalev/gin-stats"
@@ -384,6 +383,12 @@ func (api *API) setupRoutes(debug bool) error {
 			return err
 		}
 	}
+	// 1000 requests per hour
+	rate, err := limiter.NewRateFromFormatted(fmt.Sprintf("%v-H", connLimit))
+	if err != nil {
+		return err
+	}
+
 	// ensure we have valid cors configuration, otherwise default to allow all
 	var allowedOrigins []string
 	if len(api.cfg.API.Connection.CORS.AllowedOrigins) > 0 {
@@ -397,7 +402,7 @@ func (api *API) setupRoutes(debug bool) error {
 		// greater than what can be configured with HTTP Headers
 		xssMdlwr.RemoveXss(),
 		// rate limiting
-		limit.MaxAllowed(connLimit),
+		mgin.NewMiddleware(limiter.New(memory.NewStore(), rate)),
 		// security middleware
 		middleware.NewSecWare(dev),
 		// request id middleware

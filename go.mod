@@ -17,13 +17,12 @@ require (
 	github.com/RTradeLtd/rtns v0.0.19
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/appleboy/gofight/v2 v2.1.1 // indirect
-	github.com/aviddiviner/gin-limit v0.0.0-20170918012823-43b5f79762c1
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/dvwright/xss-mw v0.0.0-20191029162136-7a0dab86d8f6
-	github.com/ezzarghili/recaptcha-go v4.0.0+incompatible // indirect
+	github.com/ezzarghili/recaptcha-go v4.0.0+incompatible
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gcash/bchutil v0.0.0-20191012211144-98e73ec336ba
 	github.com/gcash/bchwallet v0.8.2
@@ -58,7 +57,6 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/multiformats/go-multiaddr v0.2.0
 	github.com/multiformats/go-multihash v0.0.13
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/polydawn/refmt v0.0.0-20190807091052-3d65705ee9f1 // indirect
 	github.com/prometheus/client_golang v1.4.1 // indirect
 	github.com/rs/cors v1.7.0
@@ -68,6 +66,7 @@ require (
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	github.com/stripe/stripe-go v60.0.1+incompatible
 	github.com/tv42/httpunix v0.0.0-20191220191345-2ba4b9c3382c // indirect
+	github.com/ulule/limiter/v3 v3.5.0
 	go.bobheadxi.dev/res v0.2.0
 	go.bobheadxi.dev/zapx/zapx v0.6.8
 	go.bobheadxi.dev/zapx/ztest v0.6.4
