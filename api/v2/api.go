@@ -61,7 +61,6 @@ type API struct {
 	dc          *dash.Client
 	queues      queues
 	service     string
-	cmcAPIKey   string
 	version     string
 
 	captcha recaptcha.ReCAPTCHA
