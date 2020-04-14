@@ -172,6 +172,17 @@ func (api *API) verifyEmailJWTToken(jwtString, username string) error {
 	if _, err := api.um.ValidateEmailVerificationToken(username, emailVerificationString); err != nil {
 		return err
 	}
+	// upgrade to free tier if unverified
+	usg, err := api.usage.FindByUserName(username)
+	if err != nil {
+		return err
+	}
+	// only update tier if they are an unverified user
+	// this is to provide backwards compatability where some unverified users
+	// may already be in a different tier
+	if usg.Tier == models.Unverified {
+		api.usage.UpdateTier(username, models.Free)
+	}
 	return nil
 }
 
