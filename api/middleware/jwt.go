@@ -48,6 +48,10 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, l *zap.SugaredLogg
 					return "", false
 				}
 			}
+			if !usr.EmailEnabled {
+				lAuth.Warn("unverified user tried to sign in", "username", usr.UserName)
+				return "", false
+			}
 			lAuth.Info("successful login", "username", usr.UserName)
 			return usr.UserName, true
 		},
