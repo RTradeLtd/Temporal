@@ -63,7 +63,8 @@ type API struct {
 	service     string
 	version     string
 
-	captcha recaptcha.ReCAPTCHA
+	captcha        recaptcha.ReCAPTCHA
+	captchaEnabled bool
 }
 
 // Initialize is used ot initialize our API service. debug = true is useful
@@ -110,11 +111,14 @@ func Initialize(
 		return nil, err
 	}
 	api.version = version
-	captcha, err := recaptcha.NewReCAPTCHA(api.getCaptchaKey(), recaptcha.V3, time.Second*10)
-	if err != nil {
-		return nil, err
+	if api.getCaptchaKey() != "" {
+		captcha, err := recaptcha.NewReCAPTCHA(api.getCaptchaKey(), recaptcha.V3, time.Second*10)
+		if err != nil {
+			return nil, err
+		}
+		api.captcha = captcha
+		api.captchaEnabled = true
 	}
-	api.captcha = captcha
 	// init routes
 	if err = api.setupRoutes(opts.DebugLogging); err != nil {
 		return nil, err
@@ -661,10 +665,12 @@ func (api *API) setupRoutes(debug bool) error {
 		ens.POST("/claim", api.ClaimENSName)
 		ens.POST("/update", api.UpdateContentHash)
 	}
+	if api.captchaEnabled {
+		recap := v2.Group("/captcha")
+		{
+			recap.POST("/verify", api.verifyCaptcha)
+		}
 
-	recap := v2.Group("/captcha")
-	{
-		recap.POST("/verify", api.verifyCaptcha)
 	}
 
 	api.l.Info("Routes initialized")
