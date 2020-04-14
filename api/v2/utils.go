@@ -258,10 +258,16 @@ func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	if usageTier.Tier == models.Free && holdTimeInt > freeHoldTimeLimitInMonths {
-		return 0, errors.New("free accounts are limited to maximum hold times of 12 month")
-	} else if usageTier.Tier != models.Free && holdTimeInt > nonFreeHoldTimeLimitInMonths {
-		return 0, errors.New("non free accounts are limited to a maximum hold time of 24 months")
+	switch usageTier.Tier {
+	case models.Free, models.Unverified:
+		if holdTimeInt > freeHoldTimeLimitInMonths {
+			return 0, errors.New("free accounts are limited to maximum hold times of 12 month")
+
+		}
+	default:
+		if holdTimeInt > nonFreeHoldTimeLimitInMonths {
+			return 0, errors.New("non free accounts are limited to a maximum hold time of 24 months")
+		}
 	}
 	return holdTimeInt, nil
 }
@@ -269,7 +275,7 @@ func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 func (api *API) ensureLEMaxPinTime(upload *models.Upload, holdTime int64, tier models.DataUsageTier) error {
 	var limit time.Time
 	switch tier {
-	case models.Free:
+	case models.Free, models.Unverified:
 		limit = time.Now().AddDate(1, 0, 0)
 	case models.Paid, models.Partner, models.WhiteLabeled:
 		limit = time.Now().AddDate(2, 0, 0)
