@@ -24,7 +24,7 @@ func (api *API) ClaimENSName(c *gin.Context) {
 		return
 	}
 	// prevent processing if account is free tier
-	if usage.Tier == models.Free {
+	if usage.Tier == models.Free || usage.Tier == models.Unverified {
 		Fail(c, errors.New("free accounts not eligible for ens claim"), http.StatusBadRequest)
 		return
 	}
@@ -74,7 +74,7 @@ func (api *API) UpdateContentHash(c *gin.Context) {
 		return
 	}
 	// prevent processing if account is free tier
-	if usage.Tier == models.Free {
+	if usage.Tier == models.Free || usage.Tier == models.Unverified {
 		Fail(c, errors.New("free accounts not eligible for ens claim"), http.StatusBadRequest)
 		return
 	}

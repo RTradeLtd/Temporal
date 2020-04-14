@@ -197,7 +197,7 @@ func (api *API) addFile(c *gin.Context) {
 		// if the user is within the free tier, then we throttle on-demand encryption
 		// free accounts are limited to a file upload size of 275MB when performing
 		// on-demand encryption. Non free accounts do not have this limit
-		if userUsage.Tier == models.Free {
+		if userUsage.Tier == models.Free || userUsage.Tier == models.Unverified {
 			megabytesUint := datasize.MB.Bytes()
 			maxSize := megabytesUint * 275
 			if fileHandler.Size > int64(maxSize) {

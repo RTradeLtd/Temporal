@@ -328,6 +328,9 @@ func (api *API) upgradeAccount(c *gin.Context) {
 		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
 		return
 	}
+	if usages.Tier == models.Unverified {
+		Fail(c, errors.New("unverified account upgrade process must be done via email verification"))
+	}
 	// prevent people from repeatedly calling this granting perpetual credits
 	if usages.Tier != models.Free {
 		Fail(c, errors.New("user account is already upgrade"))
