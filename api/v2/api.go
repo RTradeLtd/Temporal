@@ -112,7 +112,7 @@ func Initialize(
 	}
 	api.version = version
 	if api.getCaptchaKey() != "" {
-		captcha, err := recaptcha.NewReCAPTCHA(api.getCaptchaKey(), recaptcha.V3, time.Second*10)
+		captcha, err := recaptcha.NewReCAPTCHA(api.getCaptchaKey(), recaptcha.V3, time.Second*20)
 		if err != nil {
 			return nil, err
 		}
