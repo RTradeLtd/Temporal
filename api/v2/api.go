@@ -395,7 +395,6 @@ func (api *API) setupRoutes(debug bool) error {
 	} else {
 		rateLimit = fmt.Sprintf("%v-H", connLimit)
 	}
-	// 1000 requests per hour
 	rate, err := limiter.NewRateFromFormatted(rateLimit)
 	if err != nil {
 		return err
