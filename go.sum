@@ -42,8 +42,8 @@ github.com/RTradeLtd/crypto v2.0.0+incompatible h1:3+UEo0upD0p3A+7yLJ14UJpT6aZEh
 github.com/RTradeLtd/crypto v2.0.0+incompatible/go.mod h1:xhKwg748pxs2as6Ts65TiBBFrYzntioTqBIZEa1BUio=
 github.com/RTradeLtd/crypto/v2 v2.1.1 h1:P59zYkkNkl6K1KiTRvW52AYwLvwmtzuzZ9+AjLWmKsU=
 github.com/RTradeLtd/crypto/v2 v2.1.1/go.mod h1:saIQ67Btn4JWsOdzjn9U6Dl+aZlg+YKgg4RsQKXxjf4=
-github.com/RTradeLtd/database/v2 v2.7.5-rc1 h1:1z8eFMSEleC8Rr8mRISdq+3+2NI23FBf8eBzrNVQdk8=
-github.com/RTradeLtd/database/v2 v2.7.5-rc1/go.mod h1:2Q64z+Gdas9wgMpO72iKYW3tCsHs2SJHPzdROcj6MLE=
+github.com/RTradeLtd/database/v2 v2.7.6-rc1 h1:/H0tGPJxnQKb6aVeIyP2qQArA30nr66tEwWY5mMnaA8=
+github.com/RTradeLtd/database/v2 v2.7.6-rc1/go.mod h1:2Q64z+Gdas9wgMpO72iKYW3tCsHs2SJHPzdROcj6MLE=
 github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636 h1:i/+1LBA+YMfD1m9UnQP52A7S6y2U3C0xpMBehPkDRug=
 github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636/go.mod h1:zpzHNRdCMCG9PM9QO5jVSldXCRMJ7lY42yJ5TEe//7M=
 github.com/RTradeLtd/go-ipfs-api v0.0.0-20190308091756-8b7099fd5e21/go.mod h1:ipDfy60LjYDddlX/zluSwRVtfGR0EB1HqADazGNMUmE=
