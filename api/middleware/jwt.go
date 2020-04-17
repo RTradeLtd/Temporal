@@ -48,16 +48,21 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, l *zap.SugaredLogg
 					return "", false
 				}
 			}
+			// email enabled implies they have verified their email
+			if !usr.EmailEnabled {
+				return "", false
+			}
 			lAuth.Info("successful login", "username", usr.UserName)
 			return usr.UserName, true
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {
 			// as a final security step, ensure that we can find the user in our database
 			userManager := models.NewUserManager(db)
-			if _, err := userManager.FindByUserName(userId); err != nil {
+			usr, err := userManager.FindByUserName(userId)
+			if err != nil {
 				return false
 			}
-			return true
+			return usr.EmailEnabled
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			l.Error("invalid login detected")
