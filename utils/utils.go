@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"errors"
 	"math/big"
 
 	"github.com/RTradeLtd/database/v2/models"
@@ -17,8 +16,15 @@ func CalculatePinCost(username, contentHash string, holdTimeInMonths int64, im r
 	if err != nil {
 		return 0, err
 	}
+	// if this is true, fall back to default calculation
+	// as it wont always be possible to calculate deduplicated
+	// storage costs if the object is not of a unixfs type
 	if sizeInBytes <= 0 {
-		return 0, errors.New("failed to calculate object size")
+		stats, err := im.Stat(contentHash)
+		if err != nil {
+			return 0, err
+		}
+		sizeInBytes = int64(stats.CumulativeSize)
 	}
 	// get gigabytes convert to bytes
 	gigaInBytes := datasize.GB.Bytes()
