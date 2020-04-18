@@ -188,6 +188,12 @@ func Test_API_Routes_IPNS_Pin(t *testing.T) {
 			fakeManager.ResolveReturnsOnCall(0, validResolveResult, nil)
 			fakeManager.StatReturnsOnCall(0, &shell.ObjectStats{CumulativeSize: 5000000}, nil)
 			fakeManager.StatReturnsOnCall(1, &shell.ObjectStats{CumulativeSize: 5000000}, nil)
+			fakeManager.StatReturnsOnCall(2, &shell.ObjectStats{CumulativeSize: 5000000}, nil)
+			fakeManager.StatReturnsOnCall(3, &shell.ObjectStats{CumulativeSize: 5000000}, nil)
+			fakeManager.RefsReturnsOnCall(0, []string{"QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv", "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"}, nil)
+			fakeManager.RefsReturnsOnCall(1, []string{"QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv", "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"}, nil)
+			fakeManager.RefsReturnsOnCall(2, []string{"QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv", "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"}, nil)
+			fakeManager.RefsReturnsOnCall(3, []string{"QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv", "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"}, nil)
 			var apiResp apiResponse
 			urlValues := url.Values{}
 			urlValues.Add("hold_time", tt.args.holdTime)
