@@ -54,14 +54,8 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		Respond(c, http.StatusBadRequest, gin.H{"response": alreadyUploadedMessage})
 		return
 	}
-	// get object size
-	stats, err := api.ipfs.Stat(hash)
-	if err != nil {
-		api.LogError(c, err, eh.IPFSObjectStatError)(http.StatusBadRequest)
-		return
-	}
 	// determine cost of upload
-	cost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
+	cost, size, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
 	if err != nil {
 		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
 		return
@@ -72,7 +66,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		return
 	}
 	// update their data usage
-	if err := api.usage.UpdateDataUsage(username, uint64(stats.CumulativeSize)); err != nil {
+	if err := api.usage.UpdateDataUsage(username, uint64(size)); err != nil {
 		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
 		return
@@ -83,7 +77,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 		NetworkName:      "public",
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
-		Size:             int64(stats.CumulativeSize),
+		Size:             size,
 		CreditCost:       cost,
 		FileName:         c.PostForm("file_name"),
 	}
@@ -91,7 +85,7 @@ func (api *API) pinHashLocally(c *gin.Context) {
 	if err = api.queues.cluster.PublishMessage(qp); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
-		api.usage.ReduceDataUsage(username, uint64(stats.CumulativeSize))
+		api.usage.ReduceDataUsage(username, uint64(size))
 		return
 	}
 	// log success and return
@@ -381,7 +375,7 @@ func (api *API) extendPin(c *gin.Context) {
 		return
 	}
 	// calculate cost of hold time extension
-	cost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
+	cost, _, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
 	if err != nil {
 		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
 		return
