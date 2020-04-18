@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"math/big"
 
 	"github.com/RTradeLtd/database/v2/models"
@@ -10,12 +11,15 @@ import (
 
 // CalculatePinCost is used to calculate the cost of pining a particular content hash
 func CalculatePinCost(username, contentHash string, holdTimeInMonths int64, im rtfs.Manager, um *models.UsageManager) (float64, error) {
-	objectStat, err := im.Stat(contentHash)
+	// get total size of content hash in bytes ensuring that we calculate size
+	// by following unique references
+	sizeInBytes, _, err := rtfs.DedupAndCalculatePinSize(contentHash, im)
 	if err != nil {
-		return float64(0), err
+		return 0, err
 	}
-	// get total size of content hash in bytes
-	sizeInBytes := objectStat.CumulativeSize
+	if sizeInBytes <= 0 {
+		return 0, errors.New("failed to calculate object size")
+	}
 	// get gigabytes convert to bytes
 	gigaInBytes := datasize.GB.Bytes()
 	// convert size of content hash form int to float64
