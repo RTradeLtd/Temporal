@@ -62,10 +62,7 @@ func JwtConfigGenerate(jwtKey, realmName string, db *gorm.DB, l *zap.SugaredLogg
 			if err != nil {
 				return false
 			}
-			if usr.EmailEnabled && usr.AccountEnabled {
-				return true
-			}
-			return false
+			return usr.EmailEnabled && usr.AccountEnabled
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			l.Error("invalid login detected")
