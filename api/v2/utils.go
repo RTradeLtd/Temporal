@@ -172,6 +172,17 @@ func (api *API) verifyEmailJWTToken(jwtString, username string) error {
 	if _, err := api.um.ValidateEmailVerificationToken(username, emailVerificationString); err != nil {
 		return err
 	}
+	// upgrade to free tier if unverified
+	usg, err := api.usage.FindByUserName(username)
+	if err != nil {
+		return err
+	}
+	// only update tier if they are an unverified user
+	// this is to provide backwards compatability where some unverified users
+	// may already be in a different tier
+	if usg.Tier == models.Unverified {
+		api.usage.UpdateTier(username, models.Free)
+	}
 	return nil
 }
 
@@ -247,10 +258,16 @@ func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	if usageTier.Tier == models.Free && holdTimeInt > freeHoldTimeLimitInMonths {
-		return 0, errors.New("free accounts are limited to maximum hold times of 12 month")
-	} else if usageTier.Tier != models.Free && holdTimeInt > nonFreeHoldTimeLimitInMonths {
-		return 0, errors.New("non free accounts are limited to a maximum hold time of 24 months")
+	switch usageTier.Tier {
+	case models.Free, models.Unverified:
+		if holdTimeInt > freeHoldTimeLimitInMonths {
+			return 0, errors.New("free accounts are limited to maximum hold times of 12 month")
+
+		}
+	default:
+		if holdTimeInt > nonFreeHoldTimeLimitInMonths {
+			return 0, errors.New("non free accounts are limited to a maximum hold time of 24 months")
+		}
 	}
 	return holdTimeInt, nil
 }
@@ -258,7 +275,7 @@ func (api *API) validateHoldTime(username, holdTime string) (int64, error) {
 func (api *API) ensureLEMaxPinTime(upload *models.Upload, holdTime int64, tier models.DataUsageTier) error {
 	var limit time.Time
 	switch tier {
-	case models.Free:
+	case models.Free, models.Unverified:
 		limit = time.Now().AddDate(1, 0, 0)
 	case models.Paid, models.Partner, models.WhiteLabeled:
 		limit = time.Now().AddDate(2, 0, 0)
@@ -275,5 +292,12 @@ func (api *API) getCMCKey() string {
 	if os.Getenv("CMC_API") != "" {
 		return os.Getenv("CMC_API")
 	}
-	return api.cmcAPIKey
+	return api.cfg.APIKeys.CoinMarketCap
+}
+
+func (api *API) getCaptchaKey() string {
+	if os.Getenv("RECAPTCHA_KEY") != "" {
+		return os.Getenv("RECAPTCHA_KEY")
+	}
+	return api.cfg.APIKeys.ReCAPTCHA
 }

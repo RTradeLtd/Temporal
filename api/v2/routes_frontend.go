@@ -35,7 +35,7 @@ func (api *API) calculatePinCost(c *gin.Context) {
 		return
 	}
 	// calculate pin cost
-	totalCost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
+	totalCost, _, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
 	if err != nil {
 		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
 		Fail(c, err)

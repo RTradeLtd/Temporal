@@ -256,7 +256,8 @@ func Test_API_Setup(t *testing.T) {
 		args     args
 		wantCode int
 	}{
-		{"Login-testuser2", args{"POST", "/v2/auth/login", "testuser2", "password123!@#$%^&&**(!@#!", ""}, 200},
+		// this test should fail due to invalid email
+		{"Login-testuser2", args{"POST", "/v2/auth/login", "testuser2", "password123!@#$%^&&**(!@#!", ""}, 401},
 		{"Login-testuser", args{"POST", "/v2/auth/login", "testuser", "admin", ""}, 200},
 		// tests login via the email instead of using
 		{"Login-TestUser-Email", args{"POST", "/v2/auth/login", "test@email.com", "admin", ""}, 200},
@@ -272,7 +273,7 @@ func Test_API_Setup(t *testing.T) {
 			)
 			api.r.ServeHTTP(testRecorder, req)
 			if testRecorder.Code != tt.wantCode {
-				t.Fatalf("bad http status code from %s", tt.args.call)
+				t.Fatalf("bad http status code from %s. got %v, want %v", tt.args.call, testRecorder.Code, tt.wantCode)
 			}
 			bodBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 			if err != nil {

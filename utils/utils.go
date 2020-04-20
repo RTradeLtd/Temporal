@@ -9,13 +9,24 @@ import (
 )
 
 // CalculatePinCost is used to calculate the cost of pining a particular content hash
-func CalculatePinCost(username, contentHash string, holdTimeInMonths int64, im rtfs.Manager, um *models.UsageManager) (float64, error) {
-	objectStat, err := im.Stat(contentHash)
+// it returns the cost to bill the user, as well as the calculated size of the pin
+func CalculatePinCost(username, contentHash string, holdTimeInMonths int64, im rtfs.Manager, um *models.UsageManager) (float64, int64, error) {
+	// get total size of content hash in bytes ensuring that we calculate size
+	// by following unique references
+	sizeInBytes, _, err := rtfs.DedupAndCalculatePinSize(contentHash, im)
 	if err != nil {
-		return float64(0), err
+		return 0, 0, err
 	}
-	// get total size of content hash in bytes
-	sizeInBytes := objectStat.CumulativeSize
+	// if this is true, fall back to default calculation
+	// as it wont always be possible to calculate deduplicated
+	// storage costs if the object is not of a unixfs type
+	if sizeInBytes <= 0 {
+		stats, err := im.Stat(contentHash)
+		if err != nil {
+			return 0, 0, err
+		}
+		sizeInBytes = int64(stats.CumulativeSize)
+	}
 	// get gigabytes convert to bytes
 	gigaInBytes := datasize.GB.Bytes()
 	// convert size of content hash form int to float64
@@ -27,15 +38,15 @@ func CalculatePinCost(username, contentHash string, holdTimeInMonths int64, im r
 	// get the users usage model
 	usage, err := um.FindByUserName(username)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	// if they are free tier, they don't incur data charges
-	if usage.Tier == models.Free || usage.Tier == models.WhiteLabeled {
-		return 0, nil
+	if usage.Tier == models.Free || usage.Tier == models.WhiteLabeled || usage.Tier == models.Unverified {
+		return 0, sizeInBytes, nil
 	}
 	// dynamic pricing based on their usage tier
 	costPerMonthFloat := objectSizeInGigabytesFloat * usage.Tier.PricePerGB()
-	return costPerMonthFloat * float64(holdTimeInMonths), nil
+	return costPerMonthFloat * float64(holdTimeInMonths), sizeInBytes, nil
 }
 
 // CalculateFileCost is used to calculate the cost of storing a file
@@ -49,7 +60,7 @@ func CalculateFileCost(username string, holdTimeInMonths, size int64, um *models
 		return 0, err
 	}
 	// if they are free tier, they don't incur data charges
-	if usage.Tier == models.Free || usage.Tier == models.WhiteLabeled {
+	if usage.Tier == models.Free || usage.Tier == models.WhiteLabeled || usage.Tier == models.Unverified {
 		return 0, nil
 	}
 	// dynamic pricing based on their usage tier

@@ -517,6 +517,11 @@ var commands = map[string]cmd.Cmd{
 				fmt.Println("failed to create user account", err)
 				os.Exit(1)
 			}
+			// update tier
+			if err := models.NewUsageManager(d.DB).UpdateTier(args["user"], models.Free); err != nil {
+				fmt.Println("failed to update user account tier", err)
+				os.Exit(1)
+			}
 			// add credits
 			if _, err := models.NewUserManager(d.DB).AddCredits(args["user"], 99999999); err != nil {
 				fmt.Println("failed to grant credits to user account", err)

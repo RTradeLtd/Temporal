@@ -17,6 +17,7 @@ import (
 	pb "github.com/RTradeLtd/grpc/krab"
 	"github.com/RTradeLtd/rtfs/v2"
 	"github.com/RTradeLtd/rtfs/v2/beam"
+	"github.com/ezzarghili/recaptcha-go"
 	"github.com/gin-gonic/gin"
 	gocid "github.com/ipfs/go-cid"
 )
@@ -343,7 +344,7 @@ func (api *API) handleUserCreate(c *gin.Context, forms map[string]string, create
 			"<br>",
 			"<br>",
 			"Lastly let's talk about emails! We try our best to not spam your inbox, so we limit emails to a few things: payment notifications, pin expiration warnings, password/username retrieval and processing failures.\n",
-			"But before we do this, you must validate your email. Note that email validation is not required unless you want these notifications\n",
+			"But before we do this, you must validate your email. Additionally before validating your email, you are in the 'unverified' tier which is limited to 100MB of data consumption. Email verification is now mandatory\n",
 			"To validate your email, just click the following "+link+"\n",
 			"<br>",
 			"<br>",
@@ -387,4 +388,16 @@ func (api *API) handleUserCreate(c *gin.Context, forms map[string]string, create
 		user, status,
 	},
 	})
+}
+
+func (api *API) verifyCaptcha(c *gin.Context) {
+	err := api.captcha.VerifyWithOptions(
+		c.PostForm("g-recaptcha-response"),
+		// require a threshold of 0.8, default is 0.5
+		recaptcha.VerifyOption{Threshold: 0.8},
+	)
+	if err != nil {
+		Fail(c, errors.New("captcha validation failed"))
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "captcha validation succeeded"})
 }
