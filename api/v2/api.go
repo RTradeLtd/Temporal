@@ -9,22 +9,21 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/streadway/amqp"
-
+	"github.com/RTradeLtd/ChainRider-Go/dash"
+	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/Temporal/rtfscluster"
 	pbLens "github.com/RTradeLtd/grpc/lensv2"
 	pbOrch "github.com/RTradeLtd/grpc/nexus"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
-	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
-
 	"github.com/RTradeLtd/kaas/v2"
-	"go.uber.org/zap"
-
-	"github.com/RTradeLtd/ChainRider-Go/dash"
-	"github.com/RTradeLtd/Temporal/queue"
 	"github.com/RTradeLtd/rtfs/v2"
-
-	limit "github.com/aviddiviner/gin-limit"
+	recaptcha "github.com/ezzarghili/recaptcha-go"
+	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
+	"github.com/streadway/amqp"
+	"github.com/ulule/limiter/v3"
+	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
+	"github.com/ulule/limiter/v3/drivers/store/memory"
+	"go.uber.org/zap"
 
 	"github.com/RTradeLtd/config/v2"
 	stats "github.com/semihalev/gin-stats"
@@ -62,8 +61,10 @@ type API struct {
 	dc          *dash.Client
 	queues      queues
 	service     string
-	cmcAPIKey   string
 	version     string
+
+	captcha        recaptcha.ReCAPTCHA
+	captchaEnabled bool
 }
 
 // Initialize is used ot initialize our API service. debug = true is useful
@@ -83,6 +84,8 @@ func Initialize(
 		err    error
 		router = gin.Default()
 	)
+	// if we dont set this, rate limiting wont work properly
+	router.ForwardedByClientIP = true
 	// update dev mode
 	dev = opts.DevMode
 	l = l.Named("api")
@@ -108,7 +111,14 @@ func Initialize(
 		return nil, err
 	}
 	api.version = version
-
+	if api.getCaptchaKey() != "" {
+		captcha, err := recaptcha.NewReCAPTCHA(api.getCaptchaKey(), recaptcha.V3, time.Second*20)
+		if err != nil {
+			return nil, err
+		}
+		api.captcha = captcha
+		api.captchaEnabled = true
+	}
 	// init routes
 	if err = api.setupRoutes(opts.DebugLogging); err != nil {
 		return nil, err
@@ -124,7 +134,6 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 		dbm *database.Manager
 		err error
 	)
-
 	// set up database manager
 	dbm, err = database.New(cfg, database.Options{LogMode: debug})
 	if err != nil {
@@ -379,6 +388,18 @@ func (api *API) setupRoutes(debug bool) error {
 			return err
 		}
 	}
+	// make sure we dont throttle dev too much
+	var rateLimit string
+	if dev {
+		rateLimit = "100000-H"
+	} else {
+		rateLimit = fmt.Sprintf("%v-H", connLimit)
+	}
+	rate, err := limiter.NewRateFromFormatted(rateLimit)
+	if err != nil {
+		return err
+	}
+
 	// ensure we have valid cors configuration, otherwise default to allow all
 	var allowedOrigins []string
 	if len(api.cfg.API.Connection.CORS.AllowedOrigins) > 0 {
@@ -392,7 +413,7 @@ func (api *API) setupRoutes(debug bool) error {
 		// greater than what can be configured with HTTP Headers
 		xssMdlwr.RemoveXss(),
 		// rate limiting
-		limit.MaxAllowed(connLimit),
+		mgin.NewMiddleware(limiter.New(memory.NewStore(), rate)),
 		// security middleware
 		middleware.NewSecWare(dev),
 		// request id middleware
@@ -649,6 +670,13 @@ func (api *API) setupRoutes(debug bool) error {
 	{
 		ens.POST("/claim", api.ClaimENSName)
 		ens.POST("/update", api.UpdateContentHash)
+	}
+	if api.captchaEnabled {
+		recap := v2.Group("/captcha")
+		{
+			recap.POST("/verify", api.verifyCaptcha)
+		}
+
 	}
 
 	api.l.Info("Routes initialized")

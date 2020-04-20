@@ -47,7 +47,7 @@ func TestUtils_CalculatePinCost(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := utils.CalculatePinCost(
+			if _, _, err := utils.CalculatePinCost(
 				tt.args.username,
 				tt.args.hash,
 				tt.args.months,

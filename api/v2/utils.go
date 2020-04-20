@@ -292,5 +292,12 @@ func (api *API) getCMCKey() string {
 	if os.Getenv("CMC_API") != "" {
 		return os.Getenv("CMC_API")
 	}
-	return api.cmcAPIKey
+	return api.cfg.APIKeys.CoinMarketCap
+}
+
+func (api *API) getCaptchaKey() string {
+	if os.Getenv("RECAPTCHA_KEY") != "" {
+		return os.Getenv("RECAPTCHA_KEY")
+	}
+	return api.cfg.APIKeys.ReCAPTCHA
 }

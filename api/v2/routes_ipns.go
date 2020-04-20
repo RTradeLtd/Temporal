@@ -167,14 +167,8 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		Respond(c, http.StatusBadRequest, gin.H{"response": alreadyUploadedMessage})
 		return
 	}
-	// get size of object
-	stats, err := api.ipfs.Stat(hash)
-	if err != nil {
-		api.LogError(c, err, eh.IPFSObjectStatError)(http.StatusBadRequest)
-		return
-	}
 	// get the cost of this object
-	cost, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
+	cost, size, err := utils.CalculatePinCost(username, hash, holdTimeInt, api.ipfs, api.usage)
 	if err != nil {
 		api.LogError(c, err, eh.CostCalculationError)(http.StatusBadRequest)
 		return
@@ -184,7 +178,7 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		api.LogError(c, err, eh.InvalidBalanceError)(http.StatusPaymentRequired)
 		return
 	}
-	if err := api.usage.UpdateDataUsage(username, uint64(stats.CumulativeSize)); err != nil {
+	if err := api.usage.UpdateDataUsage(username, uint64(size)); err != nil {
 		api.LogError(c, err, eh.CantUploadError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
 		return
@@ -196,13 +190,13 @@ func (api *API) pinIPNSHash(c *gin.Context) {
 		UserName:         username,
 		HoldTimeInMonths: holdTimeInt,
 		CreditCost:       cost,
-		Size:             int64(stats.CumulativeSize),
+		Size:             int64(size),
 	}
 	// send message for processing
 	if err = api.queues.cluster.PublishMessage(qp); err != nil {
 		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
 		api.refundUserCredits(username, "pin", cost)
-		api.usage.ReduceDataUsage(username, uint64(stats.CumulativeSize))
+		api.usage.ReduceDataUsage(username, uint64(size))
 		return
 	}
 	// log and return
