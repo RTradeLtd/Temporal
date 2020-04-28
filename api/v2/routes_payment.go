@@ -454,7 +454,7 @@ func (api *API) stripeChargeTemporalX(c *gin.Context) {
 		Currency:    stripe.String(string(stripe.CurrencyUSD)),
 		Description: stripe.String("temporalx 3-node license purchase"),
 		// StatementDescriptor is what appears in their credit card billing report
-		StatementDescriptor: stripe.String("credit purchase"),
+		StatementDescriptor: stripe.String("temporalx 3-node license purchase"),
 		// email the receipt goes to
 		ReceiptEmail: stripe.String(forms["stripe_email"]),
 		Source:       source,
