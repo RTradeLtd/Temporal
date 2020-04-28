@@ -450,7 +450,7 @@ func (api *API) stripeChargeTemporalX(c *gin.Context) {
 	}
 	// initialize credit card charge parameters
 	ch, err := charge.New(&stripe.ChargeParams{
-		Amount:      stripe.Int64(299),
+		Amount:      stripe.Int64(335), // equivalent to purchase cose + GST&PST provincial taxes
 		Currency:    stripe.String(string(stripe.CurrencyUSD)),
 		Description: stripe.String("temporalx 3-node license purchase"),
 		// StatementDescriptor is what appears in their credit card billing report
