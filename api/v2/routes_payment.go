@@ -427,6 +427,61 @@ func (api *API) CreateDashPayment(c *gin.Context) {
 	Respond(c, http.StatusOK, gin.H{"response": p})
 }
 
+// stripChargeTemporalX enables purchasing the license for TemporalX
+func (api *API) stripeChargeTemporalX(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	forms, missingField := api.extractPostForms(c, "stripe_token", "stripe_email")
+	if missingField != "" {
+		FailWithMissingField(c, missingField)
+		return
+	}
+	// set the secret key after input validation
+	stripe.Key = api.cfg.Stripe.SecretKey
+	// set the source for the charge
+	// in this case it is a tokenized version of the credit card
+	source, err := stripe.SourceParamsFor(forms["stripe_token"])
+	if err != nil {
+		Fail(c, err)
+		return
+	}
+	// initialize credit card charge parameters
+	ch, err := charge.New(&stripe.ChargeParams{
+		Amount:      stripe.Int64(299),
+		Currency:    stripe.String(string(stripe.CurrencyUSD)),
+		Description: stripe.String("temporalx 3-node license purchase"),
+		// StatementDescriptor is what appears in their credit card billing report
+		StatementDescriptor: stripe.String("credit purchase"),
+		// email the receipt goes to
+		ReceiptEmail: stripe.String(forms["stripe_email"]),
+		Source:       source,
+		Params: stripe.Params{
+			Metadata: map[string]string{
+				"order_type": "temporal.credits",
+			},
+		},
+	})
+	if err != nil {
+		api.LogError(c, err, err.Error())(http.StatusBadRequest)
+		return
+	}
+	api.l.Infow("payment complete", "payment.method", "stripe", "user", username, "charge", ch)
+	if err := api.queues.email.PublishMessage(queue.EmailSend{
+		Subject:     "TemporalX License Purchase",
+		Content:     username + " has purchased a 3 node license for TemporalX",
+		ContentType: "text/html",
+		UserNames:   []string{username},
+		Emails:      []string{"admin@rtradetechnologies.com"},
+	}); err != nil {
+		api.LogError(c, err, eh.QueuePublishError)(http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "temporalx license purchase succcessful, details will be sent to email on file within 24 hours"})
+}
+
 func (api *API) stripeCharge(c *gin.Context) {
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
