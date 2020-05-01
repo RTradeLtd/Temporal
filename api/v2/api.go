@@ -586,6 +586,7 @@ func (api *API) setupRoutes(debug bool) error {
 			{
 				pin.POST("/:hash", api.pinToHostedIPFSNetwork)
 				pin.GET("/check/:hash/:networkName", api.checkLocalNodeForPinForHostedIPFSNetwork)
+				pin.DELETE("/remove/:hash", api.removePin)
 			}
 			// file upload routes
 			file := private.Group("/file")

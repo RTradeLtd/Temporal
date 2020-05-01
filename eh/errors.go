@@ -134,4 +134,6 @@ const (
 	MaxHoldTimeError = "a hold time of this long would result in a longer maximum pin time than what your account allow, please reduce your hold time and try again"
 	// HostNameNotFoundError is an error message when api server has not hostname
 	HostNameNotFoundError = "an api host has not hostname, please set hostname"
+	// PinRemovalError is an error message when we failed to remove a pin
+	PinRemovalError = "failed to remove pin and refund partial cost"
 )
