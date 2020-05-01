@@ -402,6 +402,15 @@ func (api *API) removePin(c *gin.Context) {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
 		return
 	}
+	// dont let free users be able to unpin as this can be used as an
+	// attack vector to spam ipfs nodes with pins
+	if usg, err := api.usage.FindByUserName(username); err != nil {
+		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
+		return
+	} else if usg.Tier == models.Free {
+		Fail(c, errors.New("free tier accounts are unable to remove pins, please upgrade your tier"), http.StatusBadRequest)
+		return
+	}
 	// validate hash
 	hash := c.Param("hash")
 	if _, err := gocid.Decode(hash); err != nil {
