@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="#about-temporal"><strong>About Temporal</strong></a> · 
-  <a href="#web-interfaces"><strong>Web Interfaces</strong></a> · 
+  <a href="#web-interfaces-and-endpoints"><strong>Web Interfaces & Endpoints</strong></a> · 
   <a href="#usage-and-features"><strong>Usage and Features</strong></a> · 
   <a href="/CONTRIBUTING.md"><strong>Contributing</strong></a> · 
   <a href="#license"><strong>License</strong></a> · 
