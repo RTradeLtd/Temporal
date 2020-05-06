@@ -83,7 +83,7 @@ Information about our versioning policies are available in [VERSIONING.md](/VERS
 
 ## Web Interfaces And Endpoints
 
-We have a variety of methods to access the variety of APIs and web interfaces we expose to use IPFS, via the clearnet, and as hidden services via I2P. For those that want maximal privacy we recommend using our I2P hidden services, however they require running an I2P router to access.
+We have a variety of methods to access the variety of APIs and web interfaces we expose to use IPFS, via the clearnet, and as hidden services via I2P. For those that want maximal privacy we recommend using our I2P hidden services, however they require running an I2P router to access. If you want a cheap way of running an always online I2P router you can use a Raspberry Pi [and use this script to install the I2P router, it's what the CTO for RTrade does and it works quite well](https://github.com/bonedaddy/rpi-utils/blob/b780fa8d1cbb4c822b4baa0c98520dd8cf1d33ff/scripts/install_i2p.sh).
 
 ### Clearnet
 
@@ -93,7 +93,7 @@ We have a variety of methods to access the variety of APIs and web interfaces we
 
 ### I2P
 
-As mentioned earlier to access these hidden services, you must have access to an I2P router.  If you want a cheap way of running an always online I2P router you can use a Raspberry Pi [and use this script to install the I2P router, it's what the CTO for RTrade does and it works quite well](https://github.com/bonedaddy/rpi-utils/blob/b780fa8d1cbb4c822b4baa0c98520dd8cf1d33ff/scripts/install_i2p.sh).
+The I2P endpoints are the same production endpoints that you use when accessing our platform via the clearnet, and as such you can freely use the I2P endpoints with the accounts you use on the clearnet. 
 
 * [Web Interface](http://7ds4k3ua5zzmbnfq4pvqojtemornhzyakwagcvedyycdc3ihkvja.b32.i2p)
 * [IPFS HTTP API](http://tunsbg26fowkptk3j3lgg3uzwei4disqfygfjvkjidnvparpbfza.b32.i2p/ping)
