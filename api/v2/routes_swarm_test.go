@@ -67,7 +67,7 @@ func Test_Routes_Swarm(t *testing.T) {
 	bodyWriter.Close()
 	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/swarm/upload", bodyBuf)
-	req.Header.Add("Authorization", auth(t, api))
+	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 	urlValues := url.Values{}
 	urlValues.Add("hold_time", "5")
@@ -94,7 +94,7 @@ func auth(t *testing.T, api *API) string {
 	req := httptest.NewRequest(
 		"POST",
 		"/v2/auth/login",
-		strings.NewReader(fmt.Sprint("{\n  \"username\": \"ethswarmtest\",\n  \"password\": \"password123\"\n}")),
+		strings.NewReader(fmt.Sprint("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}")),
 	)
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != http.StatusOK {
