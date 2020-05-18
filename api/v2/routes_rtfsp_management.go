@@ -30,9 +30,11 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 		FailWithMissingField(c, "network_name")
 		return
 	}
-	// make sure the name is something other than public
-	if strings.ToLower(networkName) == "public" {
-		Fail(c, errors.New("network name can't be public, or PUBLIC"))
+	switch strings.ToLower(networkName) {
+	case "public", "etherswarm":
+		Fail(c, errors.New("networok name cant be public, PUBLIC, etherswarm, or ETHERSWARM"))
+		return
+	default:
 	}
 	// retrieve parameters - thse are all optional
 	swarmKey, _ := c.GetPostForm("swarm_key")
