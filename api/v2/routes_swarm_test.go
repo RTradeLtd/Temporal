@@ -56,10 +56,11 @@ func Test_Routes_Swarm(t *testing.T) {
 	bodyWriter.Close()
 	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/swarm/upload", bodyBuf)
-	urlValues := url.Values{}
-	req.PostForm = urlValues
 	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
+	urlValues := url.Values{}
+	urlValues.Add("hold_time", "5")
+	req.PostForm = urlValues
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code recovered from /v2/swarm/upload")
