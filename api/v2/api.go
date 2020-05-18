@@ -17,6 +17,7 @@ import (
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas/v2"
 	"github.com/RTradeLtd/rtfs/v2"
+	"github.com/RTradeLtd/swampi"
 	recaptcha "github.com/ezzarghili/recaptcha-go"
 	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
 	"github.com/streadway/amqp"
@@ -62,7 +63,10 @@ type API struct {
 	queues      queues
 	service     string
 	version     string
-
+	swarm       struct {
+		endpoint1 *swampi.Swampi
+		endpoint2 *swampi.Swampi
+	}
 	captcha        recaptcha.ReCAPTCHA
 	captchaEnabled bool
 }
@@ -247,6 +251,13 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 			eth:     qmEth,
 			bch:     qmBch,
 			ens:     qmENS,
+		},
+		swarm: struct {
+			endpoint1 *swampi.Swampi
+			endpoint2 *swampi.Swampi
+		}{
+			endpoint1: swampi.New(cfg.Ethereum.Swarm.URL1),
+			endpoint2: swampi.New(cfg.Ethereum.Swarm.URL2),
 		},
 		zm: models.NewZoneManager(dbm.DB),
 		rm: models.NewRecordManager(dbm.DB),

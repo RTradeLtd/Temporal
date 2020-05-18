@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/RTradeLtd/ChainRider-Go v1.0.8
 	github.com/RTradeLtd/cmd/v2 v2.1.0
-	github.com/RTradeLtd/config/v2 v2.2.1-rc1
+	github.com/RTradeLtd/config/v2 v2.2.1-rc1.0.20200518191024-85b0c9c92560
 	github.com/RTradeLtd/crypto/v2 v2.1.1
 	github.com/RTradeLtd/database/v2 v2.7.6-rc1
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636

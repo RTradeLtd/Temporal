@@ -1,8 +1,10 @@
 package v2
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,6 +13,7 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/v2/models"
 	gpaginator "github.com/RTradeLtd/gpaginator"
+	"github.com/RTradeLtd/swampi"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -300,4 +303,41 @@ func (api *API) getCaptchaKey() string {
 		return os.Getenv("RECAPTCHA_KEY")
 	}
 	return api.cfg.APIKeys.ReCAPTCHA
+}
+
+// dualSwarmUpload enables uploading data to 2 different swarm nodes at once
+// to provide high-availability of stored data
+func (api *API) dualSwarmUpload(data []byte, isTar bool) (string, error) {
+	resp1, err := api.swarm.endpoint1.Send(swampi.SingleFileUpload, bytes.NewReader(append(data[0:0:0], data...)), map[string][]string{
+		"content-type": {swampi.SingleFileUpload.ContentType(isTar)},
+	})
+	if err != nil {
+		return "", err
+	}
+	responseData, err := ioutil.ReadAll(resp1.Body)
+	if err != nil {
+		resp1.Body.Close()
+		return "", err
+	}
+	hash1 := string(responseData)
+	resp1.Body.Close()
+	if api.swarm.endpoint2 != nil {
+		resp2, err := api.swarm.endpoint2.Send(swampi.SingleFileUpload, bytes.NewReader(append(data[0:0:0], data...)), map[string][]string{
+			"content-type": {swampi.SingleFileUpload.ContentType(isTar)},
+		})
+		if err != nil {
+			return "", err
+		}
+		responseData2, err := ioutil.ReadAll(resp1.Body)
+		if err != nil {
+			resp2.Body.Close()
+			return "", err
+		}
+		hash2 := string(responseData2)
+		resp2.Body.Close()
+		if hash1 != hash2 {
+			return "", fmt.Errorf("dual upload fail. hash1 = %s, hash2 = %s", hash1, hash2)
+		}
+	}
+	return hash1, nil
 }
