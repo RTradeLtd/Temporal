@@ -73,7 +73,7 @@ func Test_Routes_Swarm(t *testing.T) {
 	if testRecorder.Code != 200 {
 		t.Fatal("bad http status code recovered from /v2/swarm/upload")
 	}
-	var apiResp mapAPIResponse
+	var apiResp apiResponse
 	bodyBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
 	if err != nil {
 		t.Fatal(err)
