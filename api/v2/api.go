@@ -691,7 +691,7 @@ func (api *API) setupRoutes(debug bool) error {
 	}
 
 	// swarm routes
-	swarm := v2.Group("/swarm")
+	swarm := v2.Group("/swarm", authware...)
 	{
 		swarm.POST("/upload", api.SwarmUpload)
 	}
