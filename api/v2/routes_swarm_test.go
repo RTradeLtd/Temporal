@@ -3,12 +3,15 @@ package v2
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/RTradeLtd/Temporal/mocks"
@@ -38,6 +41,7 @@ func Test_Routes_Swarm(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	auth(t, api)
 	// add a file normally
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
@@ -76,4 +80,26 @@ func Test_Routes_Swarm(t *testing.T) {
 	if apiResp.Code != 200 {
 		t.Fatal("bad api response status code from /v2/swarm/upload")
 	}
+}
+
+func auth(t *testing.T, api *API) {
+	testRecorder := httptest.NewRecorder()
+	req := httptest.NewRequest(
+		"POST",
+		"/v2/auth/login",
+		strings.NewReader(fmt.Sprint("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}")),
+	)
+	api.r.ServeHTTP(testRecorder, req)
+	if testRecorder.Code != http.StatusOK {
+		t.Fatal("bad status code")
+	}
+	bodBytes, err := ioutil.ReadAll(testRecorder.Result().Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var loginResp loginResponse
+	if err = json.Unmarshal(bodBytes, &loginResp); err != nil {
+		t.Fatal(err)
+	}
+	authHeader = "Bearer " + loginResp.Token
 }
