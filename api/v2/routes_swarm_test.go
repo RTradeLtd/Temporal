@@ -87,7 +87,7 @@ func auth(t *testing.T, api *API) {
 	req := httptest.NewRequest(
 		"POST",
 		"/v2/auth/login",
-		strings.NewReader(fmt.Sprint("{\n  \"username\": \"testuser\",\n  \"password\": \"admin\"\n}")),
+		strings.NewReader(fmt.Sprint("{\n  \"username\": \"testuser\",\n  \"password\": \"admin1234@\"\n}")),
 	)
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != http.StatusOK {
