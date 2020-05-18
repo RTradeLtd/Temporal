@@ -57,7 +57,6 @@ func Test_Routes_Swarm(t *testing.T) {
 	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/swarm/upload", bodyBuf)
 	urlValues := url.Values{}
-	urlValues.Set("mirror_ipfs", "true")
 	req.PostForm = urlValues
 	req.Header.Add("Authorization", authHeader)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
@@ -75,11 +74,5 @@ func Test_Routes_Swarm(t *testing.T) {
 	}
 	if apiResp.Code != 200 {
 		t.Fatal("bad api response status code from /v2/swarm/upload")
-	}
-	if apiResp.Response["swarm_hash"].(string) == "" {
-		t.Fatal("invalid swarm hash returned")
-	}
-	if apiResp.Response["ipfs_hash"].(string) == "" {
-		t.Fatal("invalid ipfs hash returned")
 	}
 }
