@@ -69,7 +69,7 @@ func (api *API) SwarmUpload(c *gin.Context) {
 		api.usage.ReduceDataUsage(username, uint64(fileSize))
 		return
 	}
-	// uplaod
+	// upload to both of our swarm nodes
 	swarmHash, err := api.dualSwarmUpload(fileBytes, isTar == "true")
 	if err != nil {
 		api.LogError(c, err, err.Error())

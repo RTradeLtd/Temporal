@@ -21,6 +21,8 @@ func Test_Routes_Swarm(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	cfg.Ethereum.Swarm.URL1 = "http://localhost:8500"
+	cfg.Ethereum.Swarm.URL2 = "http://localhost:8500"
 	db, err := loadDatabase(cfg)
 	if err != nil {
 		t.Fatal(err)
