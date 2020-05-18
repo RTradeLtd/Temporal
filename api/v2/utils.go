@@ -328,7 +328,7 @@ func (api *API) dualSwarmUpload(data []byte, isTar bool) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		responseData2, err := ioutil.ReadAll(resp1.Body)
+		responseData2, err := ioutil.ReadAll(resp2.Body)
 		if err != nil {
 			resp2.Body.Close()
 			return "", err
