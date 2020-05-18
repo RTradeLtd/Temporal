@@ -7,11 +7,14 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/RTradeLtd/database/v2/models"
+	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 )
 
 // SwarmUpload is used to upload data to ethereum swarm
 func (api *API) SwarmUpload(c *gin.Context) {
+	api.l.Info("auth token", GetAuthToken(c))
+	api.l.Info("claims", jwt.ExtractClaims(c))
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
