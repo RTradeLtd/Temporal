@@ -41,7 +41,7 @@ func Test_Routes_Swarm(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	auth(t, api)
+	authToken := auth(t, api)
 	// add a file normally
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
@@ -60,7 +60,7 @@ func Test_Routes_Swarm(t *testing.T) {
 	bodyWriter.Close()
 	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest("POST", "/v2/swarm/upload", bodyBuf)
-	req.Header.Add("Authorization", authHeader)
+	req.Header.Add("Authorization", authToken)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 	urlValues := url.Values{}
 	urlValues.Add("hold_time", "5")
@@ -82,12 +82,12 @@ func Test_Routes_Swarm(t *testing.T) {
 	}
 }
 
-func auth(t *testing.T, api *API) {
+func auth(t *testing.T, api *API) string {
 	testRecorder := httptest.NewRecorder()
 	req := httptest.NewRequest(
 		"POST",
 		"/v2/auth/login",
-		strings.NewReader(fmt.Sprint("{\n  \"username\": \"testuser\",\n  \"password\": \"admin1234@\"\n}")),
+		strings.NewReader(fmt.Sprint("{\n  \"username\": \"testuser2\",\n  \"password\": \"password123!@#$%^&&**(!@#!\"\n}")),
 	)
 	api.r.ServeHTTP(testRecorder, req)
 	if testRecorder.Code != http.StatusOK {
@@ -101,5 +101,5 @@ func auth(t *testing.T, api *API) {
 	if err = json.Unmarshal(bodBytes, &loginResp); err != nil {
 		t.Fatal(err)
 	}
-	authHeader = "Bearer " + loginResp.Token
+	return "Bearer " + loginResp.Token
 }
