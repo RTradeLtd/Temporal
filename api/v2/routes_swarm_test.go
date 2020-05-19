@@ -84,4 +84,7 @@ func Test_Routes_Swarm(t *testing.T) {
 	if apiResp.Code != 200 {
 		t.Fatal("bad api response status code from /v2/swarm/upload")
 	}
+	if _, err := api.dbm.Upload.FindUploadByHashAndNetwork(apiResp.Response, "etherswarm"); err != nil {
+		t.Fatal(err)
+	}
 }
