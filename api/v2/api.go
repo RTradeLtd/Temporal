@@ -717,7 +717,9 @@ func getSwarmEndpoints(cfg config.Ethereum) (ret struct {
 	endpoint1 *swampi.Swampi
 	endpoint2 *swampi.Swampi
 }) {
-	ret.endpoint1 = swampi.New(cfg.Swarm.URL1)
+	if cfg.Swarm.URL1 != "" {
+		ret.endpoint1 = swampi.New(cfg.Swarm.URL1)
+	}
 	if cfg.Swarm.URL2 != "" {
 		ret.endpoint2 = swampi.New(cfg.Swarm.URL2)
 	}

@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 
@@ -12,6 +13,10 @@ import (
 
 // SwarmUpload is used to upload data to ethereum swarm
 func (api *API) SwarmUpload(c *gin.Context) {
+	if api.swarm.endpoint1 == nil {
+		Fail(c, errors.New("must have at least one non nil swarm client"))
+		return
+	}
 	username, err := GetAuthenticatedUserFromContext(c)
 	if err != nil {
 		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
