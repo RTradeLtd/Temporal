@@ -252,16 +252,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 			bch:     qmBch,
 			ens:     qmENS,
 		},
-		swarm: struct {
-			endpoint1 *swampi.Swampi
-			endpoint2 *swampi.Swampi
-		}{
-			endpoint1: swampi.New(cfg.Ethereum.Swarm.URL1),
-			endpoint2: swampi.New(cfg.Ethereum.Swarm.URL2),
-		},
-		zm: models.NewZoneManager(dbm.DB),
-		rm: models.NewRecordManager(dbm.DB),
-		nm: models.NewHostedNetworkManager(dbm.DB),
+		swarm: getSwarmEndpoints(cfg.Ethereum),
+		zm:    models.NewZoneManager(dbm.DB),
+		rm:    models.NewRecordManager(dbm.DB),
+		nm:    models.NewHostedNetworkManager(dbm.DB),
 	}, nil
 }
 
@@ -717,4 +711,15 @@ func (api *API) handleQueueError(amqpErr *amqp.Error, rabbitMQURL string, queueT
 	api.l.Warnw(
 		"successfully re-established queue connection", "queue", queueType.String())
 	return qManager, nil
+}
+
+func getSwarmEndpoints(cfg config.Ethereum) (ret struct {
+	endpoint1 *swampi.Swampi
+	endpoint2 *swampi.Swampi
+}) {
+	ret.endpoint1 = swampi.New(cfg.Swarm.URL1)
+	if cfg.Swarm.URL2 != "" {
+		ret.endpoint2 = swampi.New(cfg.Swarm.URL2)
+	}
+	return
 }
