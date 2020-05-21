@@ -308,36 +308,33 @@ func (api *API) getCaptchaKey() string {
 // dualSwarmUpload enables uploading data to 2 different swarm nodes at once
 // to provide high-availability of stored data
 func (api *API) dualSwarmUpload(data []byte, isTar bool) (string, error) {
-	resp1, err := api.swarm.endpoint1.Send(swampi.SingleFileUpload, bytes.NewReader(append(data[0:0:0], data...)), map[string][]string{
-		"content-type": {swampi.SingleFileUpload.ContentType(isTar)},
-	})
-	if err != nil {
-		return "", err
-	}
-	responseData, err := ioutil.ReadAll(resp1.Body)
-	if err != nil {
-		resp1.Body.Close()
-		return "", err
-	}
-	hash1 := string(responseData)
-	resp1.Body.Close()
-	if api.swarm.endpoint2 != nil {
-		resp2, err := api.swarm.endpoint2.Send(swampi.SingleFileUpload, bytes.NewReader(append(data[0:0:0], data...)), map[string][]string{
+	var hashes []string
+	for _, endpoint := range api.swarmEndpoints {
+		resp, err := endpoint.Send(swampi.SingleFileUpload, bytes.NewReader(append(data[0:0:0], data...)), map[string][]string{
 			"content-type": {swampi.SingleFileUpload.ContentType(isTar)},
 		})
 		if err != nil {
 			return "", err
 		}
-		responseData2, err := ioutil.ReadAll(resp2.Body)
+		responseData, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			resp2.Body.Close()
+			resp.Body.Close()
 			return "", err
 		}
-		hash2 := string(responseData2)
-		resp2.Body.Close()
-		if hash1 != hash2 {
-			return "", fmt.Errorf("dual upload fail. hash1 = %s, hash2 = %s", hash1, hash2)
+		hashes = append(hashes, string(responseData))
+		resp.Body.Close()
+	}
+	if len(hashes) == 0 {
+		return "", errors.New("failed to upload any data")
+	}
+	var found = make(map[string]bool)
+	for i, hash := range hashes {
+		if i == 0 {
+			found[hash] = true
+		}
+		if !found[hash] {
+			return "", fmt.Errorf("found mismatching hashes %", hashes)
 		}
 	}
-	return hash1, nil
+	return hashes[0], nil
 }

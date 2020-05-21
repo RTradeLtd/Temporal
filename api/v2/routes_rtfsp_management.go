@@ -34,7 +34,6 @@ func (api *API) createIPFSNetwork(c *gin.Context) {
 	case "public", "etherswarm":
 		Fail(c, errors.New("networok name cant be public, PUBLIC, etherswarm, or ETHERSWARM"))
 		return
-	default:
 	}
 	// retrieve parameters - thse are all optional
 	swarmKey, _ := c.GetPostForm("swarm_key")

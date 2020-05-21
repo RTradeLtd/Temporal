@@ -38,35 +38,32 @@ import (
 
 // API is our API service
 type API struct {
-	ipfs        rtfs.Manager
-	ipfsCluster *rtfscluster.ClusterManager
-	keys        keys
-	r           *gin.Engine
-	cfg         *config.TemporalConfig
-	dbm         *database.Manager
-	um          *models.UserManager
-	im          *models.IpnsManager
-	pm          *models.PaymentManager
-	ue          *models.EncryptedUploadManager
-	upm         *models.UploadManager
-	zm          *models.ZoneManager
-	rm          *models.RecordManager
-	nm          *models.HostedNetworkManager
-	usage       *models.UsageManager
-	orgs        *models.OrgManager
-	l           *zap.SugaredLogger
-	signer      pbSigner.SignerClient
-	orch        pbOrch.ServiceClient
-	lens        pbLens.LensV2Client
-	bchWallet   pbBchWallet.WalletServiceClient
-	dc          *dash.Client
-	queues      queues
-	service     string
-	version     string
-	swarm       struct {
-		endpoint1 *swampi.Swampi
-		endpoint2 *swampi.Swampi
-	}
+	ipfs           rtfs.Manager
+	ipfsCluster    *rtfscluster.ClusterManager
+	keys           keys
+	r              *gin.Engine
+	cfg            *config.TemporalConfig
+	dbm            *database.Manager
+	um             *models.UserManager
+	im             *models.IpnsManager
+	pm             *models.PaymentManager
+	ue             *models.EncryptedUploadManager
+	upm            *models.UploadManager
+	zm             *models.ZoneManager
+	rm             *models.RecordManager
+	nm             *models.HostedNetworkManager
+	usage          *models.UsageManager
+	orgs           *models.OrgManager
+	l              *zap.SugaredLogger
+	signer         pbSigner.SignerClient
+	orch           pbOrch.ServiceClient
+	lens           pbLens.LensV2Client
+	bchWallet      pbBchWallet.WalletServiceClient
+	dc             *dash.Client
+	queues         queues
+	service        string
+	version        string
+	swarmEndpoints []*swampi.Swampi
 	captcha        recaptcha.ReCAPTCHA
 	captchaEnabled bool
 }
@@ -252,10 +249,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 			bch:     qmBch,
 			ens:     qmENS,
 		},
-		swarm: getSwarmEndpoints(cfg.Ethereum),
-		zm:    models.NewZoneManager(dbm.DB),
-		rm:    models.NewRecordManager(dbm.DB),
-		nm:    models.NewHostedNetworkManager(dbm.DB),
+		swarmEndpoints: getSwarmEndpoints(cfg.Ethereum),
+		zm:             models.NewZoneManager(dbm.DB),
+		rm:             models.NewRecordManager(dbm.DB),
+		nm:             models.NewHostedNetworkManager(dbm.DB),
 	}, nil
 }
 
@@ -713,15 +710,14 @@ func (api *API) handleQueueError(amqpErr *amqp.Error, rabbitMQURL string, queueT
 	return qManager, nil
 }
 
-func getSwarmEndpoints(cfg config.Ethereum) (ret struct {
-	endpoint1 *swampi.Swampi
-	endpoint2 *swampi.Swampi
-}) {
+// currently only supports 2 endpoints
+func getSwarmEndpoints(cfg config.Ethereum) []*swampi.Swampi {
+	var endpoints []*swampi.Swampi
 	if cfg.Swarm.URL1 != "" {
-		ret.endpoint1 = swampi.New(cfg.Swarm.URL1)
+		endpoints = append(endpoints, swampi.New(cfg.Swarm.URL1))
 	}
 	if cfg.Swarm.URL2 != "" {
-		ret.endpoint2 = swampi.New(cfg.Swarm.URL2)
+		endpoints = append(endpoints, swampi.New(cfg.Swarm.URL2))
 	}
-	return
+	return endpoints
 }
