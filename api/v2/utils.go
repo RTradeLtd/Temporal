@@ -310,7 +310,7 @@ func (api *API) getCaptchaKey() string {
 func (api *API) dualSwarmUpload(data []byte, isTar bool) (string, error) {
 	var hashes []string
 	for _, endpoint := range api.swarmEndpoints {
-		resp, err := endpoint.Send(swampi.SingleFileUpload, bytes.NewReader(append(data[0:0:0], data...)), map[string][]string{
+		resp, err := endpoint.Send(swampi.SingleFileUpload, bytes.NewReader(data), map[string][]string{
 			"content-type": {swampi.SingleFileUpload.ContentType(isTar)},
 		})
 		if err != nil {
@@ -333,7 +333,7 @@ func (api *API) dualSwarmUpload(data []byte, isTar bool) (string, error) {
 			found[hash] = true
 		}
 		if !found[hash] {
-			return "", fmt.Errorf("found mismatching hashes %", hashes)
+			return "", fmt.Errorf("found mismatching hashes %s", hashes)
 		}
 	}
 	return hashes[0], nil

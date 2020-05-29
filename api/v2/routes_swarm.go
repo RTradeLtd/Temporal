@@ -13,8 +13,8 @@ import (
 
 // SwarmUpload is used to upload data to ethereum swarm
 func (api *API) SwarmUpload(c *gin.Context) {
-	if api.swarmEndpoints == nil {
-		Fail(c, errors.New("must have at least one non nil swarm client"))
+	if len(api.swarmEndpoints) == 0 {
+		Fail(c, errors.New("must have at least one swarm client"))
 		return
 	}
 	username, err := GetAuthenticatedUserFromContext(c)

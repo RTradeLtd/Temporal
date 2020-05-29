@@ -36,8 +36,6 @@ github.com/RTradeLtd/config/v2 v2.1.1/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyP
 github.com/RTradeLtd/config/v2 v2.1.4/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
 github.com/RTradeLtd/config/v2 v2.1.5 h1:5RqXYZJNufmsHk9tL1I2wyQHxkgc/fdXjyamoegTI4A=
 github.com/RTradeLtd/config/v2 v2.1.5/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
-github.com/RTradeLtd/config/v2 v2.2.1-rc1 h1:MXI40D1wD2jj9VTD93Xudk0He/jV0lQZY78pC9hukJI=
-github.com/RTradeLtd/config/v2 v2.2.1-rc1/go.mod h1:J2vFG/293yeXFaoX51M7hyvU+5NJqZYQ8Mm+aLiV30E=
 github.com/RTradeLtd/config/v2 v2.2.1-rc1.0.20200518191024-85b0c9c92560 h1:tMRz8v6jB9b53ULDvcKRrN3ESEJ73rxGBd3qwwooCTA=
 github.com/RTradeLtd/config/v2 v2.2.1-rc1.0.20200518191024-85b0c9c92560/go.mod h1:J2vFG/293yeXFaoX51M7hyvU+5NJqZYQ8Mm+aLiV30E=
 github.com/RTradeLtd/crypto v2.0.0+incompatible h1:3+UEo0upD0p3A+7yLJ14UJpT6aZEhpzQqF5dt9iRivM=

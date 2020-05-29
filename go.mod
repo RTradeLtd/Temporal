@@ -15,7 +15,7 @@ require (
 	github.com/RTradeLtd/kaas/v2 v2.1.3
 	github.com/RTradeLtd/rtfs/v2 v2.1.2
 	github.com/RTradeLtd/rtns v0.0.19
-	github.com/RTradeLtd/swampi v0.0.0-20200406020127-54bc15f535a2 // indirect
+	github.com/RTradeLtd/swampi v0.0.0-20200406020127-54bc15f535a2
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/appleboy/gofight/v2 v2.1.1 // indirect
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
