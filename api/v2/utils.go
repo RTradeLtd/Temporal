@@ -305,9 +305,9 @@ func (api *API) getCaptchaKey() string {
 	return api.cfg.APIKeys.ReCAPTCHA
 }
 
-// dualSwarmUpload enables uploading data to 2 different swarm nodes at once
-// to provide high-availability of stored data
-func (api *API) dualSwarmUpload(data []byte, isTar bool) (string, error) {
+// swarmUpload allows upload a file to multiple swarm backends
+// and is a poor mans way of replicating data amongst multiple swarm nodes
+func (api *API) swarmUpload(data []byte, isTar bool) (string, error) {
 	var hashes []string
 	for _, endpoint := range api.swarmEndpoints {
 		resp, err := endpoint.Send(swampi.SingleFileUpload, bytes.NewReader(data), map[string][]string{

@@ -75,7 +75,7 @@ func (api *API) SwarmUpload(c *gin.Context) {
 		return
 	}
 	// upload to both of our swarm nodes
-	swarmHash, err := api.dualSwarmUpload(fileBytes, isTar == "true")
+	swarmHash, err := api.swarmUpload(fileBytes, isTar == "true")
 	if err != nil {
 		api.LogError(c, err, err.Error())
 		api.refundUserCredits(username, "file", cost)
