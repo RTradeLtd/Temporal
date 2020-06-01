@@ -1,8 +1,10 @@
 package v2
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,6 +13,7 @@ import (
 	"github.com/RTradeLtd/Temporal/eh"
 	"github.com/RTradeLtd/database/v2/models"
 	gpaginator "github.com/RTradeLtd/gpaginator"
+	"github.com/RTradeLtd/swampi"
 	"github.com/c2h5oh/datasize"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -300,4 +303,38 @@ func (api *API) getCaptchaKey() string {
 		return os.Getenv("RECAPTCHA_KEY")
 	}
 	return api.cfg.APIKeys.ReCAPTCHA
+}
+
+// swarmUpload allows upload a file to multiple swarm backends
+// and is a poor mans way of replicating data amongst multiple swarm nodes
+func (api *API) swarmUpload(data []byte, isTar bool) (string, error) {
+	var hashes []string
+	for _, endpoint := range api.swarmEndpoints {
+		resp, err := endpoint.Send(swampi.SingleFileUpload, bytes.NewReader(data), map[string][]string{
+			"content-type": {swampi.SingleFileUpload.ContentType(isTar)},
+		})
+		if err != nil {
+			return "", err
+		}
+		responseData, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			resp.Body.Close()
+			return "", err
+		}
+		hashes = append(hashes, string(responseData))
+		resp.Body.Close()
+	}
+	if len(hashes) == 0 {
+		return "", errors.New("failed to upload any data")
+	}
+	var found = make(map[string]bool)
+	for i, hash := range hashes {
+		if i == 0 {
+			found[hash] = true
+		}
+		if !found[hash] {
+			return "", fmt.Errorf("found mismatching hashes %s", hashes)
+		}
+	}
+	return hashes[0], nil
 }

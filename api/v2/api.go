@@ -17,6 +17,7 @@ import (
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/kaas/v2"
 	"github.com/RTradeLtd/rtfs/v2"
+	"github.com/RTradeLtd/swampi"
 	recaptcha "github.com/ezzarghili/recaptcha-go"
 	pbBchWallet "github.com/gcash/bchwallet/rpc/walletrpc"
 	"github.com/streadway/amqp"
@@ -37,32 +38,32 @@ import (
 
 // API is our API service
 type API struct {
-	ipfs        rtfs.Manager
-	ipfsCluster *rtfscluster.ClusterManager
-	keys        keys
-	r           *gin.Engine
-	cfg         *config.TemporalConfig
-	dbm         *database.Manager
-	um          *models.UserManager
-	im          *models.IpnsManager
-	pm          *models.PaymentManager
-	ue          *models.EncryptedUploadManager
-	upm         *models.UploadManager
-	zm          *models.ZoneManager
-	rm          *models.RecordManager
-	nm          *models.HostedNetworkManager
-	usage       *models.UsageManager
-	orgs        *models.OrgManager
-	l           *zap.SugaredLogger
-	signer      pbSigner.SignerClient
-	orch        pbOrch.ServiceClient
-	lens        pbLens.LensV2Client
-	bchWallet   pbBchWallet.WalletServiceClient
-	dc          *dash.Client
-	queues      queues
-	service     string
-	version     string
-
+	ipfs           rtfs.Manager
+	ipfsCluster    *rtfscluster.ClusterManager
+	keys           keys
+	r              *gin.Engine
+	cfg            *config.TemporalConfig
+	dbm            *database.Manager
+	um             *models.UserManager
+	im             *models.IpnsManager
+	pm             *models.PaymentManager
+	ue             *models.EncryptedUploadManager
+	upm            *models.UploadManager
+	zm             *models.ZoneManager
+	rm             *models.RecordManager
+	nm             *models.HostedNetworkManager
+	usage          *models.UsageManager
+	orgs           *models.OrgManager
+	l              *zap.SugaredLogger
+	signer         pbSigner.SignerClient
+	orch           pbOrch.ServiceClient
+	lens           pbLens.LensV2Client
+	bchWallet      pbBchWallet.WalletServiceClient
+	dc             *dash.Client
+	queues         queues
+	service        string
+	version        string
+	swarmEndpoints []*swampi.Swampi
 	captcha        recaptcha.ReCAPTCHA
 	captchaEnabled bool
 }
@@ -248,9 +249,10 @@ func new(cfg *config.TemporalConfig, router *gin.Engine, l *zap.SugaredLogger, c
 			bch:     qmBch,
 			ens:     qmENS,
 		},
-		zm: models.NewZoneManager(dbm.DB),
-		rm: models.NewRecordManager(dbm.DB),
-		nm: models.NewHostedNetworkManager(dbm.DB),
+		swarmEndpoints: getSwarmEndpoints(cfg.Ethereum),
+		zm:             models.NewZoneManager(dbm.DB),
+		rm:             models.NewRecordManager(dbm.DB),
+		nm:             models.NewHostedNetworkManager(dbm.DB),
 	}, nil
 }
 
@@ -679,6 +681,12 @@ func (api *API) setupRoutes(debug bool) error {
 
 	}
 
+	// swarm routes
+	swarm := v2.Group("/swarm", authware...)
+	{
+		swarm.POST("/upload", api.SwarmUpload)
+	}
+
 	api.l.Info("Routes initialized")
 	return nil
 }
@@ -700,4 +708,16 @@ func (api *API) handleQueueError(amqpErr *amqp.Error, rabbitMQURL string, queueT
 	api.l.Warnw(
 		"successfully re-established queue connection", "queue", queueType.String())
 	return qManager, nil
+}
+
+// currently only supports 2 endpoints
+func getSwarmEndpoints(cfg config.Ethereum) []*swampi.Swampi {
+	var endpoints []*swampi.Swampi
+	if cfg.Swarm.URL1 != "" {
+		endpoints = append(endpoints, swampi.New(cfg.Swarm.URL1))
+	}
+	if cfg.Swarm.URL2 != "" {
+		endpoints = append(endpoints, swampi.New(cfg.Swarm.URL2))
+	}
+	return endpoints
 }

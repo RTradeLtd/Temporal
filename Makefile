@@ -200,3 +200,19 @@ imports:
 .PHONY: fmt
 fmt:
 	find . -type f -name '*.go' -exec gofmt -s -w {} \;
+
+
+# runs the 
+.PHONY: run-swarm
+run-swarm:
+	docker run --network host --name temporal_swarm -d -it -v ${PWD}/swarmtest/datadir:/data \
+					-v ${PWD}/swarmtest/passwordfile:/password \
+					ethersphere/swarm \
+								--datadir /data \
+								--password /password \
+								--debug \
+								--verbosity 4
+
+.PHONY: stop-swarm
+stop-swarm:
+	docker stop temporal_swarm && docker rm temporal_swarm

@@ -36,8 +36,8 @@ github.com/RTradeLtd/config/v2 v2.1.1/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyP
 github.com/RTradeLtd/config/v2 v2.1.4/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
 github.com/RTradeLtd/config/v2 v2.1.5 h1:5RqXYZJNufmsHk9tL1I2wyQHxkgc/fdXjyamoegTI4A=
 github.com/RTradeLtd/config/v2 v2.1.5/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
-github.com/RTradeLtd/config/v2 v2.2.1-rc1 h1:MXI40D1wD2jj9VTD93Xudk0He/jV0lQZY78pC9hukJI=
-github.com/RTradeLtd/config/v2 v2.2.1-rc1/go.mod h1:J2vFG/293yeXFaoX51M7hyvU+5NJqZYQ8Mm+aLiV30E=
+github.com/RTradeLtd/config/v2 v2.2.1-rc1.0.20200518191024-85b0c9c92560 h1:tMRz8v6jB9b53ULDvcKRrN3ESEJ73rxGBd3qwwooCTA=
+github.com/RTradeLtd/config/v2 v2.2.1-rc1.0.20200518191024-85b0c9c92560/go.mod h1:J2vFG/293yeXFaoX51M7hyvU+5NJqZYQ8Mm+aLiV30E=
 github.com/RTradeLtd/crypto v2.0.0+incompatible h1:3+UEo0upD0p3A+7yLJ14UJpT6aZEhpzQqF5dt9iRivM=
 github.com/RTradeLtd/crypto v2.0.0+incompatible/go.mod h1:xhKwg748pxs2as6Ts65TiBBFrYzntioTqBIZEa1BUio=
 github.com/RTradeLtd/crypto/v2 v2.1.1 h1:P59zYkkNkl6K1KiTRvW52AYwLvwmtzuzZ9+AjLWmKsU=
@@ -65,6 +65,8 @@ github.com/RTradeLtd/rtfs/v2 v2.1.2 h1:4wam5uStNHUqN7QBTjanKNGqQZHfK0wrnv7Z/zFD/
 github.com/RTradeLtd/rtfs/v2 v2.1.2/go.mod h1:h1C/iSVuRbNPLlTMA3i3p9ZNTUdn9sZmUUI2T8d0zMw=
 github.com/RTradeLtd/rtns v0.0.19 h1:fQ+Pqlh8BE/vVZ7080GnbBPqD9XUh/NgMbGGE+CFJII=
 github.com/RTradeLtd/rtns v0.0.19/go.mod h1:JJxEd/zPY1BN6RFOqNFUgtgRY9RT6BZdOtvXMN6NLlA=
+github.com/RTradeLtd/swampi v0.0.0-20200406020127-54bc15f535a2 h1:kP5HRkh35DgY4PZbVq9j5t4tM2r+b8s3qUEIf6/GYvc=
+github.com/RTradeLtd/swampi v0.0.0-20200406020127-54bc15f535a2/go.mod h1:moDV32CMq2d/OkX8Ib/He51rm6krNLu/r56dhWeIWLk=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/sarama v1.22.0/go.mod h1:lm3THZ8reqBDBQKQyb5HB3sY1lKp3grEbQ81aWSgPp4=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=

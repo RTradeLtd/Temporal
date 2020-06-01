@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/RTradeLtd/ChainRider-Go v1.0.8
 	github.com/RTradeLtd/cmd/v2 v2.1.0
-	github.com/RTradeLtd/config/v2 v2.2.1-rc1
+	github.com/RTradeLtd/config/v2 v2.2.1-rc1.0.20200518191024-85b0c9c92560
 	github.com/RTradeLtd/crypto/v2 v2.1.1
 	github.com/RTradeLtd/database/v2 v2.7.6-rc1
 	github.com/RTradeLtd/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636
@@ -15,6 +15,7 @@ require (
 	github.com/RTradeLtd/kaas/v2 v2.1.3
 	github.com/RTradeLtd/rtfs/v2 v2.1.2
 	github.com/RTradeLtd/rtns v0.0.19
+	github.com/RTradeLtd/swampi v0.0.0-20200406020127-54bc15f535a2
 	github.com/appleboy/gin-jwt v2.3.1+incompatible
 	github.com/appleboy/gofight/v2 v2.1.1 // indirect
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
