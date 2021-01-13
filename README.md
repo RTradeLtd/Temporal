@@ -4,7 +4,7 @@ The hosted service for this project is being shutdown. For more information [con
 
 <p align="center">
   <a href="#about-temporal"><strong>About Temporal</strong></a> · 
-  <a href="#web-interfaces"><strong>Web Interfaces</strong></a> · 
+  <a href="#web-interfaces-and-endpoints"><strong>Web Interfaces & Endpoints</strong></a> · 
   <a href="#usage-and-features"><strong>Usage and Features</strong></a> · 
   <a href="/CONTRIBUTING.md"><strong>Contributing</strong></a> · 
   <a href="#license"><strong>License</strong></a> · 
@@ -83,14 +83,27 @@ We have comprehensive API documentation available [here](https://gateway.tempora
 
 Information about our versioning policies are available in [VERSIONING.md](/VERSIONING.md)
 
-## Web Interfaces
+## Web Interfaces And Endpoints
 
-For those less interested in API usage, we have a web interface which can be used with two methods of access:
+We have a variety of methods to access the variety of APIs and web interfaces we expose to use IPFS, via the clearnet, and as hidden services via I2P. For those that want maximal privacy we recommend using our I2P hidden services, however they require running an I2P router to access. If you want a cheap way of running an always online I2P router you can use a Raspberry Pi [and use this script to install the I2P router, it's what the CTO for RTrade does and it works quite well](https://github.com/bonedaddy/rpi-utils/blob/b780fa8d1cbb4c822b4baa0c98520dd8cf1d33ff/scripts/install_i2p.sh).
 
-* [Clearnet](https://temporal.cloud) (recommended)
-* [I2P](http://riqdsr6ijsujw4tagdufhbv7drlghe2cljy2xow3irvy7grq34fq.b32.i2p/)
+### Clearnet
 
-Please note that support for the I2P Interface is very experimental at the moment and does not offer HTTPS, as well as very infrequent updates.There are no stability, or even functionality guarantees for the I2P interface.
+* [Web Interaface](https://play2.temporal.cloud)
+* [IPFS HTTP API](https://api.ipfs.temporal.cloud/ping)
+* [Temporal API](https://api.temporal.cloud/v2/systems/check)
+
+### I2P
+
+The I2P endpoints are the same production endpoints that you use when accessing our platform via the clearnet, and as such you can freely use the I2P endpoints with the accounts you use on the clearnet. 
+
+* [Web Interface](http://7ds4k3ua5zzmbnfq4pvqojtemornhzyakwagcvedyycdc3ihkvja.b32.i2p)
+* [IPFS HTTP API](http://tunsbg26fowkptk3j3lgg3uzwei4disqfygfjvkjidnvparpbfza.b32.i2p/ping)
+* [Temporal API](http://7t4iy4eopl4w2dbqj6atrn2gtxirdwqhni4jny2pqbaictjhjcjq.b32.i2p/v2/systems/check)
+
+Please note that our I2P endpoints may suffer availability issues as they are not yet implemented with high availability, and statically point to one of your backends. Additionally if our main service location suffers an outage redirective traffic to our offsite location, the I2P services will be offline. High availability for our I2P endpoints is a work in progress.
+
+For more information on the I2P infrastructure, [please consult this blog post](https://medium.com/temporal-cloud/temporal-i2p-infrastructure-refresh-52fe40751f8b).
 
 ## How We're Different
 
