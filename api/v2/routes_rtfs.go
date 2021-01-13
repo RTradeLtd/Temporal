@@ -3,6 +3,7 @@ package v2
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"html"
 	"io"
 	"io/ioutil"
@@ -393,4 +394,32 @@ func (api *API) extendPin(c *gin.Context) {
 	}
 	// return
 	Respond(c, http.StatusOK, gin.H{"response": "pin time successfully extended"})
+}
+
+func (api *API) removePin(c *gin.Context) {
+	username, err := GetAuthenticatedUserFromContext(c)
+	if err != nil {
+		api.LogError(c, err, eh.NoAPITokenError)(http.StatusBadRequest)
+		return
+	}
+	// dont let free users be able to unpin as this can be used as an
+	// attack vector to spam ipfs nodes with pins
+	if usg, err := api.usage.FindByUserName(username); err != nil {
+		api.LogError(c, err, eh.UserSearchError)(http.StatusBadRequest)
+		return
+	} else if usg.Tier == models.Free {
+		Fail(c, errors.New("free tier accounts are unable to remove pins, please upgrade your tier"), http.StatusBadRequest)
+		return
+	}
+	// validate hash
+	hash := c.Param("hash")
+	if _, err := gocid.Decode(hash); err != nil {
+		Fail(c, err)
+		return
+	}
+	if err := api.upm.RemovePin(username, hash, "public"); err != nil {
+		api.LogError(c, err, fmt.Sprint(eh.PinRemovalError+"hash: "+hash))(http.StatusBadRequest)
+		return
+	}
+	Respond(c, http.StatusOK, gin.H{"response": "pin successfuly removed with partial cost refunded"})
 }
