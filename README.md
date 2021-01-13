@@ -1,3 +1,5 @@
+The hosted service for this project is being shutdown. For more information [consult this github issue](https://github.com/RTradeLtd/Temporal/issues/489)
+
 <h1 align="center">Temporal ☄️</h1>
 
 <p align="center">
